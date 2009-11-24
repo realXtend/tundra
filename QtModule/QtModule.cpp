@@ -118,12 +118,12 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         QPoint mousePos = pos.toPoint();
 
         UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
+        
         controller_->SetCurrentModifier(GetCurrentModifier(input));
-
+        controller_->SetActiveMouseButton(Qt::RightButton);
+        
         if ( event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED )
         {
-          
-            controller_->SetActiveMouseButton(Qt::RightButton);
             controller_->InjectMousePress(pos.x(), pos.y(), canvas);
             
             if ( canvas )
@@ -146,7 +146,6 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                     QPoint pos = in_world_canvas->GetPosition().toPoint();
                     QSize size = in_world_canvas->GetSize();
                     QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
-                    controller_->SetActiveMouseButton(Qt::RightButton);
                     controller_->InjectMousePress(pos.x(), pos.y(), in_world_canvas.get());
                     event_handled = true;
                 }
@@ -162,7 +161,6 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         {
             if ( canvas != 0) 
             {
-                controller_->SetActiveMouseButton(Qt::RightButton);
                 controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
                 event_handled = true;
             }
@@ -184,14 +182,13 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                     QPoint pos = in_world_canvas->GetPosition().toPoint();
                     QSize size = in_world_canvas->GetSize();
                     QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
-                    controller_->SetActiveMouseButton(Qt::RightButton);
                     controller_->InjectMouseRelease(pos.x(), pos.y(), in_world_canvas.get());
                     event_handled = true;
                 }
                 else
                 {
                     // Deactivation release!
-                    controller_->SetActiveMouseButton(Qt::RightButton);
+                  
                     controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
                 }
         
@@ -221,16 +218,17 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         bool event_handled = false;
     
         UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
-
+    
         bool oisLMBDown = input->IsButtonDown(OIS::MB_Left);
+        
+        controller_->SetCurrentModifier(GetCurrentModifier(input));
+        controller_->SetActiveMouseButton(Qt::LeftButton);
         
         if (oisLMBDown && !mouse_left_button_down_)
         {
             //if (controller_->GetCanvasAt(pos.x(), pos.y()))
             //    framework_->GetQApplication()->setActiveWindow(controller_->GetCanvasAt(pos.x(), pos.y()));
             
-            controller_->SetCurrentModifier(GetCurrentModifier(input));
-            controller_->SetActiveMouseButton(Qt::LeftButton);
             controller_->InjectMousePress(pos.x(), pos.y(), canvas);
             
             if ( canvas )
@@ -249,12 +247,12 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         {
             if ( canvas != 0) 
             {
-                controller_->SetActiveMouseButton(Qt::LeftButton);
                 controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
                 event_handled = true;
             }
             else
             {
+               
                // Generate mouse release for inworld canvas 
                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
                 <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -269,15 +267,12 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                     QPoint pos = in_world_canvas->GetPosition().toPoint();
                     QSize size = in_world_canvas->GetSize();
                     QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
-                    controller_->SetActiveMouseButton(Qt::LeftButton);
                     controller_->InjectMouseRelease(location.x(), location.y(), in_world_canvas.get()); 
                     event_handled = true;
                 }
                 else
-                {
-                    controller_->SetActiveMouseButton(Qt::LeftButton);
                     controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
-                }
+                
               
             }
            

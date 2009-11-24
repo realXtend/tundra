@@ -323,9 +323,9 @@ void UIController::InjectMousePress(int x, int y, UICanvas* canvas)
     ActivateKeyboardFocus(currentCanvas, x, y);
 
     // Inject this mouse press to Qt.
-    SendMouseLeftButtonPressEvent(*currentCanvas, x, y);
+    SendMouseButtonPressEvent(*currentCanvas, x, y);
 
-    // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB click message.
+    // Reset the mouse cursor, for some reason it seems to get lost after sending the mouse click message.
     ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
     /// This should become redundant after that.
     UpdateMouseCursor(currentCanvas, x, y);
@@ -387,6 +387,7 @@ void UIController::InjectMouseRelease(int x, int y, UICanvas* canvas)
 
     // Translate the mouse position from QGraphicsView coordinate frame onto
     // the QGraphicsScene coordinate frame.
+   
     QPoint pos = mouseActionCanvas->MapToCanvas(x,y);
     QPoint currentMousePos(pos.x(), pos.y());
 
@@ -398,13 +399,13 @@ void UIController::InjectMouseRelease(int x, int y, UICanvas* canvas)
     mouseEvent.setLastScenePos(currentMousePos);
     mouseEvent.setLastScreenPos(currentMousePos);
     mouseEvent.setButtons(Qt::NoButton);
-    mouseEvent.setButton(Qt::LeftButton);
+    mouseEvent.setButton(button_);
     mouseEvent.setModifiers(0);
     mouseEvent.setAccepted(false);
 
     QApplication::sendEvent(mouseActionCanvas->view_->scene(), &mouseEvent);
 
-    // Reset the mouse cursor, for some reason it seems to get lost after sending the LMB release message.
+    // Reset the mouse cursor, for some reason it seems to get lost after sending the mouse release message.
     ///\todo Possibly set Ogre to set a null cursor to the main window so we can handle this at will.
     /// This should become redundant after that.
     UpdateMouseCursor(mouseActionCanvas, x, y);
@@ -417,30 +418,24 @@ void UIController::InjectDoubleClick(int x, int y, UICanvas* canvas)
    
     if ( canvas == 0)
         return;
-    //int index = GetCanvasIndexAt(point);
-    
-    //if (index != -1 && !canvases_[index]->IsHidden())
-    //{
-        // Translate the mouse position from QGraphicsView coordinate frame onto
-        // the QGraphicsScene coordinate frame.
-        //QPoint pos = canvases_[index]->MapToCanvas(x,y);
+   
     QPoint pos = canvas->MapToCanvas(x,y);    
     QPoint currentMousePos(pos.x(), pos.y());
 
     currentMouseAction = MouseActionNone;
     
-    // In case of double click we set that left button generated click -> so it is set down. 
+    // In case of double click we button generated click -> so it is set down. 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseDoubleClick);
 
-    mouseEvent.setButtonDownScenePos(Qt::LeftButton, lastMousePressPoint_);
-    mouseEvent.setButtonDownScreenPos(Qt::LeftButton, lastMousePressPoint_);
+    mouseEvent.setButtonDownScenePos(button_, lastMousePressPoint_);
+    mouseEvent.setButtonDownScreenPos(button_, lastMousePressPoint_);
     mouseEvent.setScenePos(currentMousePos);
     mouseEvent.setScreenPos(currentMousePos);
     mouseEvent.setLastScenePos(currentMousePos);
     mouseEvent.setLastScreenPos(currentMousePos);
-    mouseEvent.setButtons(Qt::LeftButton);
-    mouseEvent.setButton(Qt::LeftButton);
-    mouseEvent.setModifiers(0);
+    mouseEvent.setButtons(button_);
+    mouseEvent.setButton(button_);
+    mouseEvent.setModifiers(currentModifier_);
     mouseEvent.setAccepted(false);
 
     QApplication::sendEvent(canvas->view_->scene(), &mouseEvent);
@@ -755,7 +750,7 @@ void UIController::SendMouseMoveEvent(UICanvas &canvas, int x, int y)
     QApplication::sendEvent(canvas.view_->scene(), &mouseEvent);   
 }
 
-void UIController::SendMouseLeftButtonPressEvent(UICanvas &canvas, int x, int y)
+void UIController::SendMouseButtonPressEvent(UICanvas &canvas, int x, int y)
 {
     assert(&canvas);
 
