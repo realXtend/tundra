@@ -82,6 +82,11 @@ namespace RexLogic
         }
 	}
 
+	void Login::StartCommandParameterLogin(QString &serverEntryPointUrl)
+	{
+		emit( CommandParameterLogin(serverEntryPointUrl) );
+	}
+
     bool Login::InitUICanvases()
     {
         qtModule_ = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
@@ -608,6 +613,7 @@ namespace RexLogic
 	void WebUI::SetLoginHandler()
 	{
 		loginHandler_ = new TaigaLoginHandler(framework_, rexLogicModule_);
+		QObject::connect(controller_, SIGNAL( CommandParameterLogin(QString&) ), this, SLOT( DoCommandParameterLogin(QString&) ));
         QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
 		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool, QString&) ), this, SLOT( LoginDone(bool, QString&) ));
 	}
@@ -622,6 +628,11 @@ namespace RexLogic
 		webLogin_ = new WebLogin(this, url); 
 		QObject::connect(webLogin_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ), loginHandler_, SLOT( ProcessWebLogin(QWebFrame *) ));
 		this->layout()->addWidget(webLogin_);
+	}
+
+	void WebUI::DoCommandParameterLogin(QString &entryPointUrl)
+	{
+		static_cast<TaigaLoginHandler *>(loginHandler_)->ProcessCommandParameterLogin(entryPointUrl);
 	}
 
 }
