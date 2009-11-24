@@ -81,14 +81,15 @@ namespace RexLogic
             return true;
         }
 
+        /// Utility to get heightmap point
+        float GetPoint(int x, int y);
+
         /// Removes all stored terrain patches and the associated Ogre scene nodes.
         void Destroy();
 
     private:
         EC_Terrain(Foundation::ModuleInterface* module);
 
-        /// Utility to get heightmap point
-        float GetPoint(int x, int y);
         
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];

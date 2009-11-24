@@ -45,6 +45,7 @@
 #include "Environment/Primitive.h"
 #include "Environment/Sky.h"
 #include "Environment/Environment.h"
+#include "Environment/TerrainEditor.h"
 
 #include "QtUtils.h"
 #include "Avatar/AvatarEditor.h"
@@ -123,6 +124,7 @@ void RexLogicModule::Initialize()
     framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
+    terrain_editor_ = TerrainEditorPtr(new TerrainEditor(this));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -265,6 +267,11 @@ void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities:
         LogError("Unable to find event category for NetworkIn");
 }
 
+void RexLogicModule::SendModifyLandMessage(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height)
+{
+    GetServerConnection()->SendModifyLandPacket(x, y, brush, action, seconds, height);
+}
+
 void RexLogicModule::DeleteScene(const std::string &name)
 {
     if (!framework_->HasScene(name))
@@ -293,6 +300,7 @@ void RexLogicModule::Uninitialize()
     avatar_controllable_.reset();
     camera_controllable_.reset();
     environment_.reset();
+    terrain_editor_.reset();
 
     event_handlers_.clear();
 
@@ -622,6 +630,11 @@ void RexLogicModule::CreateEnvironment()
 TerrainPtr RexLogicModule::GetTerrainHandler()
 {
     return terrain_;
+}
+
+TerrainEditorPtr RexLogicModule::GetTerrainEditor()
+{
+    return terrain_editor_;
 }
 
 WaterPtr RexLogicModule::GetWaterHandler()

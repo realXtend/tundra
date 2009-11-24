@@ -169,6 +169,16 @@ namespace ProtocolUtilities
         /// Sends hardcoded agentappearance packet
         void SendAgentSetAppearancePacket();
 
+        /** Sends packet which modifies the world terrain.
+         *  @param x World x position
+         *  @param y World y position
+         *  @param brush Brush size (small = 0, medium = 1, large = 2)
+         *  @param action Modify land action type (flatten = 0, raise = 1, lower = 2, smooth = 3, roughen = 4, revert = 5)
+         *  @param seconds How long terrain has been modified on viewer (delta time).
+         *  @param height Previous height value on spesific world position.
+         */
+        void SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height);
+
         /** Sends a packet which creates a new inventory folder.
          *  @param parent_id The parent folder UUID.
          *  @param folder_id UUID of the folder.

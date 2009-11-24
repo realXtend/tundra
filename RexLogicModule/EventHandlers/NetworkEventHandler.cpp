@@ -17,6 +17,7 @@
 #include "Environment/Sky.h"
 #include "Environment/Environment.h"
 #include "Inventory/InventoryEvents.h"
+#include "Environment/TerrainEditor.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -109,6 +110,8 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, F
         return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
 
     case RexNetMsgLayerData:
+        // \todo remove this when scene events are complite.
+        rexlogicmodule_->GetTerrainEditor()->UpdateTerrain();
         return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata);
 
     case RexNetMsgSimulatorViewerTimeMessage:
