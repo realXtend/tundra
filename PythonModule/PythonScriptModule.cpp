@@ -60,8 +60,6 @@
 
 namespace PythonScript
 {
-    Foundation::ScriptEventInterface* PythonScriptModule::engineAccess;// for reaching engine from static method
-
     PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
         pythonqt_inited = false;
@@ -115,9 +113,7 @@ namespace PythonScript
             engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
         }
         engine_->Initialize();
-        
-        PythonScriptModule::engineAccess = dynamic_cast<Foundation::ScriptEventInterface*>(engine_.get());
-        
+              
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
         //XXX hack to have a ref to framework for api funcs
         PythonScript::staticframework = framework_;
@@ -746,6 +742,47 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
     }
 }
 
+//returns the internal Entity that's now a QObject, 
+//with no manual wrapping (just PythonQt exposing qt things)
+//experimental now, may replace the PyType in Entity.h used above
+//largely copy-paste from above now, is an experiment
+/*PyObject* GetQEntity(PyObject *self, PyObject *args)
+{
+    unsigned int ent_id_int;
+    Core::entity_id_t ent_id;
+    const Scene::EntityPtr entityptr;
+    const Scene::Entity entity;
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
+        return NULL;   
+    }
+
+    ent_id = (Core::entity_id_t) ent_id_int;
+
+    Scene::ScenePtr scene = PythonScript::GetScene();
+
+    if (scene == 0)
+    {
+        PyErr_SetString(PyExc_ValueError, "Scene is none.");
+        return NULL;   
+    }
+
+    entityptr = scene->GetEntity(ent_id);
+    if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
+    {
+        return PythonQt::self()->wrapQObject(entity.get());
+    }
+
+    else
+    {
+        PyErr_SetString(PyExc_ValueError, "No entity with the given id found."); //XXX add the id to msg
+        return NULL;   
+    }
+}*/
+
+
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
@@ -1090,6 +1127,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+/*
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
     std::cout << "PyEventCallback" << std::endl;
     const char* key;
@@ -1103,6 +1141,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
     PythonScript::PythonScriptModule::engineAccess->NotifyScriptEvent(k, m);
     Py_RETURN_TRUE;
 }
+*/
 
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
@@ -1124,9 +1163,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"setAvatarYaw", (PyCFunction)SetAvatarYaw, METH_VARARGS,
     "Changes the avatar yaw with the given amount. Keys left/right are -1/+1."},    
-
-    {"pyEventCallback", (PyCFunction)PyEventCallback, METH_VARARGS,
-    "Handling callbacks from py scripts. Calling convension: with 2 strings"},
 
     {"rayCast", (PyCFunction)RayCast, METH_VARARGS,
     "RayCasting from camera to point (x,y)."},

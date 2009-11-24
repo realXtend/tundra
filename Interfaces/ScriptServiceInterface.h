@@ -7,8 +7,22 @@
 
 namespace Foundation
 {
+    class ScriptServiceInterface : public ServiceInterface
+    {
+    public:
+        ScriptServiceInterface() {}
+        virtual ~ScriptServiceInterface() {}
 
 
+        virtual void RunScript(const std::string& scriptname) = 0;
+		virtual void RunString(const std::string& codestr) = 0;
+
+		//virtual ScriptObject* LoadScript(const std::string& scriptname, std::string& error) = 0;
+		//virtual ScriptObject* GetObject(const ScriptObject& script, const std::string& objectname, std::string& error) = 0;
+
+    };
+
+    /* deprecated: PythonQT and QObject mechanism is used instead. the old gtk using comms module used this. Webdav inventory uses PythonQt to implement a c++ module in py.
 	class ScriptObject
 	{
 	public:
@@ -34,30 +48,8 @@ namespace Foundation
         virtual ~ScriptEventInterface() {}
 		virtual void SetCallback(void(*f)(char*), std::string key) = 0;
 		virtual void NotifyScriptEvent(const std::string& key, const std::string& message) = 0;		
-	};
-
-    //! Script service interface.
-    /*!
-        \ingroup Services_group
-    
-        Provides execution of interpreted code as a service for any module to use. Used (in 0.0.1 release) by CommunicationsModule to load the Python written, Telepathy libs using impementation for instant messaging services.
-        Implemented by the \ref PythonScriptModule.
+	};    
     */
-
-    class ScriptServiceInterface : public ServiceInterface
-    {
-    public:
-        ScriptServiceInterface() {}
-        virtual ~ScriptServiceInterface() {}
-
-
-        virtual void RunScript(const std::string& scriptname) = 0;
-		virtual void RunString(const std::string& codestr) = 0;
-
-		virtual ScriptObject* LoadScript(const std::string& scriptname, std::string& error) = 0;
-		virtual ScriptObject* GetObject(const ScriptObject& script, const std::string& objectname, std::string& error) = 0;
-
-    };
 }
 
 #endif

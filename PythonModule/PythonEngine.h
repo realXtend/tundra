@@ -29,7 +29,7 @@ namespace PythonScript
     
     //! Python code runner
     //! created by PythonScriptModule.
-    class PythonEngine : public Foundation::ScriptServiceInterface, public Foundation::ScriptEventInterface
+    class PythonEngine : public Foundation::ScriptServiceInterface //, public Foundation::ScriptEventInterface
     {
     public:
         PythonEngine(Foundation::Framework* framework);
@@ -39,18 +39,21 @@ namespace PythonScript
         void Initialize();
         void Uninitialize();
 
-        //ScriptEventInterface
+        /*deprecated - ScriptEventInterface
         virtual void SetCallback(void(*f)(char*), std::string key);
         virtual void NotifyScriptEvent(const std::string& key, const std::string& message);
+        */
 
         virtual void RunScript(const std::string& scriptname);
         virtual void RunString(const std::string& codestr);
 
         // generic script wrapper interface
+        /*
         virtual Foundation::ScriptObject* LoadScript(const std::string& scriptname, std::string& error);
         virtual Foundation::ScriptObject* GetObject(const Foundation::ScriptObject& script, 
                                                     const std::string& objectname, 
                                                     std::string& error);
+        */
 
         //void Reset();
 
@@ -70,7 +73,7 @@ namespace PythonScript
         //std::map<std::string, void(*)(char*)> methods_;
         //std::map<std::string, std::vector<void(*)(char*)>> methods_;
         //std::map<std::string, std::vector<void(*)(char*)>> methods_;
-        std::map<std::string, StdFunctionVectorPtr> methods_;
+        //std::map<std::string, StdFunctionVectorPtr> methods_;
     };
 
 }
