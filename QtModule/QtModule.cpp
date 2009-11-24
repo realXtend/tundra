@@ -130,7 +130,26 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                 event_handled = true;
             else
             {
-                // Deal inworld canvas.
+                // Generate mouse pressed for inworld canvas 
+               boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
+                <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+               
+                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+              
+                // Has a entity a EC_CANVAS 
+
+                boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
+                if ( in_world_canvas.get() != 0)
+                {
+                    // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                
+                    QPoint pos = in_world_canvas->GetPosition().toPoint();
+                    QSize size = in_world_canvas->GetSize();
+                    QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                    controller_->SetActiveMouseButton(Qt::RightButton);
+                    controller_->InjectMousePress(pos.x(), pos.y(), in_world_canvas.get());
+                    event_handled = true;
+                }
 
             }
 
@@ -149,7 +168,32 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             }
             else
             {
-                // Deal inworld canvas..
+               // Generate mouse released event for inworld canvas 
+               boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
+                <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+               
+                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+              
+                // Has entity a EC_CANVAS
+
+                boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
+                if ( in_world_canvas.get() != 0)
+                {
+                    // Note here coordinate system looks quite strange, but there happends inside of InjectMouseRelease "counter" fix for coordinates. 
+                
+                    QPoint pos = in_world_canvas->GetPosition().toPoint();
+                    QSize size = in_world_canvas->GetSize();
+                    QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                    controller_->SetActiveMouseButton(Qt::RightButton);
+                    controller_->InjectMouseRelease(pos.x(), pos.y(), in_world_canvas.get());
+                    event_handled = true;
+                }
+                else
+                {
+                    // Deactivation release!
+                    controller_->SetActiveMouseButton(Qt::RightButton);
+                    controller_->InjectMouseRelease(pos.x(),pos.y(), canvas);
+                }
         
             }
         }
@@ -158,6 +202,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         
     }
 
+    //todo After OISModule refaction there should come events LEFT_MOUSE_CLICK etc. 
 
     if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
     {
