@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>376</width>
+    <height>319</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>361</width>
+     <height>301</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>Map</string>
+    </attribute>
+    <widget class="QPushButton" name="button_update">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>250</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Update</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="map_widget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>256</width>
+       <height>256</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>CrossCursor</cursorShape>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="actions_groupbox">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>0</y>
+       <width>81</width>
+       <height>161</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Action</string>
+     </property>
+     <widget class="QRadioButton" name="rad_button_roughen">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>110</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Roughen</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_lower">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>62</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Lower</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_flatten">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>14</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Flatten</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_raise">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>38</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Raise</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_smooth">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>86</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Smooth</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_revert">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>134</y>
+        <width>84</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Revert</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="brushsize_groupbox">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>160</y>
+       <width>81</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Brush size</string>
+     </property>
+     <widget class="QRadioButton" name="rad_button_small">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>12</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Small</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_medium">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>36</y>
+        <width>79</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Medium</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="rad_button_large">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>60</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Large</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>Texture</string>
+    </attribute>
+    <widget class="QWidget" name="formLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>331</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="lineEdit_2"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLineEdit" name="lineEdit_3"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLineEdit" name="lineEdit_4"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>browser</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="pushButton_4">
+        <property name="text">
+         <string>Browser</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="pushButton_5">
+        <property name="text">
+         <string>Browser</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButton_3">
+        <property name="text">
+         <string>Browser</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

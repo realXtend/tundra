@@ -31,6 +31,7 @@ namespace RexLogic
     class Login;
     class AvatarControllable;
     class CameraControllable;
+    class TerrainEditor;
 
     typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
@@ -44,6 +45,7 @@ namespace RexLogic
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
+    typedef boost::shared_ptr<TerrainEditor> TerrainEditorPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -88,6 +90,9 @@ namespace RexLogic
 
         //! @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler();
+
+        //! @return The terrain editor.
+        TerrainEditorPtr GetTerrainEditor();
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
@@ -193,6 +198,8 @@ namespace RexLogic
 
         void SendRexPrimData(Core::entity_id_t entityid);
 
+        void SendModifyLandMessage(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height);
+
     private:
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -246,6 +253,9 @@ namespace RexLogic
         //! Environment pointer.
         EnvironmentPtr environment_;
 
+        //! Terrain editor pointer.
+        TerrainEditorPtr terrain_editor_;
+
         //! Active scene pointer.
         Scene::ScenePtr activeScene_;
 
@@ -284,6 +294,9 @@ namespace RexLogic
 
         //! The new login window
         Login *loginUI_;
+
+        //! The connection state which is shown in the login window.
+        ProtocolUtilities::Connection::State connectionState_;
 
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;

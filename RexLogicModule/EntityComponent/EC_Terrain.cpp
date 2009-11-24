@@ -56,7 +56,7 @@ namespace RexLogic
         if (y < 0) y = 0;
         if (x >= cNumPatchesPerEdge * 16) x = cNumPatchesPerEdge * 16 - 1;
         if (y >= cNumPatchesPerEdge * 16) y = cNumPatchesPerEdge * 16 - 1;
-        
+
         return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
     }
     

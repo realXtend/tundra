@@ -675,6 +675,35 @@ void WorldStream::SendAgentSetAppearancePacket()
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height)
+{
+    if (!connected_)
+        return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgModifyLand);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+
+    // ModifyBlock
+    m->AddU8(action);
+    m->AddU8(brush);
+    m->AddF32(seconds);
+    m->AddF32(height);
+
+    // ParcelData
+    m->SetVariableBlockCount(1);
+    m->AddS32(-1);//LocalID
+    m->AddF32(x); //west
+    m->AddF32(y); //south
+    m->AddF32(x); //east
+    m->AddF32(y); //north
+
+    FinishMessageBuilding(m);
+}
+
 void WorldStream::SendCreateInventoryFolderPacket(
     const RexTypes::RexUUID &parent_id,
     const RexTypes::RexUUID &folder_id,
