@@ -772,6 +772,31 @@ namespace RexLogic
             SetupDefaultAppearance(entity);
             return;
         }
+        
+        const AvatarAssetMap& assets = appearance.GetAssetMap(); 
+                
+        Core::uint pending_requests = RequestAvatarResources(entity, assets);
+        
+        // In the unlikely case of no requests at all, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
+    }
+        
+    Core::uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode)
+    {
+        // Erase any old pending requests for this avatar, they are no longer interesting
+        std::vector<std::map<Core::request_tag_t, Core::entity_id_t>::iterator> tags_to_remove;
+        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_resource_tags_.begin();
+        while (i != avatar_resource_tags_.end())
+        {
+            if (i->second == entity->GetId())
+                tags_to_remove.push_back(i);
+            ++i;
+        }
+        for (Core::uint j = 0; j < tags_to_remove.size(); ++j)
+        {
+            avatar_resource_tags_.erase(tags_to_remove[j]);
+        } 
                 
         // Request needed avatar resources
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
@@ -779,19 +804,16 @@ namespace RexLogic
         if (!renderer)
         {
             RexLogicModule::LogError("Renderer does not exist");
-            return;
-        }
-        
-        const AvatarAssetMap& assets = appearance.GetAssetMap(); 
+            return 0;
+        }    
+    
         Core::RequestTagVector tags;
         AvatarAssetMap::const_iterator k = assets.begin();
-        Core::uint pending_requests = 0;
-        
+        Core::uint pending_requests = 0;        
         while (k != assets.end())
         {
-            RexLogicModule::LogDebug("Requesting inventory based avatar asset " + k->second + " type " + GetResourceTypeFromName(k->first, true));
             std::string resource_id = k->second;
-            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, true));
+            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, inventorymode));
             if (tag)
             {
                 tags.push_back(tag);
@@ -801,12 +823,9 @@ namespace RexLogic
             ++k;
         }
         avatar_pending_requests_[entity->GetId()] = pending_requests;
-        
-        // In the unlikely case of no requests at all, rebuild avatar now
-        if (!pending_requests)
-            SetupAppearance(entity);
+
+        return pending_requests;    
     }
-        
     
     
     void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
@@ -868,32 +887,8 @@ namespace RexLogic
         }
         
         appearance.SetAssetMap(assets);
-        
-        // Request needed avatar resources
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer)
-        {
-            RexLogicModule::LogError("Renderer does not exist");
-            return;
-        }
-        Core::RequestTagVector tags;
-        AvatarAssetMap::const_iterator k = assets.begin();
-        Core::uint pending_requests = 0;
-        
-        while (k != assets.end())
-        {
-            std::string resource_id = k->second;
-            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first));
-            if (tag)
-            {
-                tags.push_back(tag);
-                avatar_resource_tags_[tag] = entity->GetId();
-                pending_requests++;
-            }
-            ++k;
-        }
-        avatar_pending_requests_[entity->GetId()] = pending_requests;
+
+        Core::uint pending_requests = RequestAvatarResources(entity, assets);
         
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
