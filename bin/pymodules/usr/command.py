@@ -577,3 +577,36 @@ if 0:
     #print  dir(r.c.widget.move_button)
     r.c.widget.move_button.setChecked(False)
     
+if 0:
+    from editgui.vector3 import Vector3 as V3
+    fov = r.getCameraFOV()
+    rightvec = V3(r.getCameraRight())
+    campos = V3(r.getCameraPosition())
+    ent = r.getEntity(r.getUserAvatarId())
+    entpos = V3(ent.pos)
+    width, height = r.getScreenSize()
+    
+    x = 613
+    y = 345
+    normalized_width = 1/width
+    normalized_height = 1/height
+    
+    #print x * normalized_width
+    
+    length = (campos-entpos).length
+    worldwidth = (math.tan(fov/2)*length) * 2
+
+    #print campos, entpos, length, fov, width, height
+    
+    ent1 = r.createEntity("cruncah.mesh")
+    ent1.pos = pos.x, pos.y+worldwidth/2, pos.z
+    ent2 = r.createEntity("cruncah.mesh")
+    ent2.pos = pos.x, pos.y+worldwidth/2, pos.z
+    #~ newpos = 
+    #~ print newpos
+    
+
+    
+    
+    
+    

@@ -38,6 +38,7 @@
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
+#include <OgreViewport.h>
 
 #include "Environment/Terrain.h"
 #include "Environment/Water.h"
@@ -517,6 +518,38 @@ Core::Vector3df RexLogicModule::GetCameraRight(){
     Ogre::Vector3 right = camera->getRight();
     return Core::Vector3df(right.x, right.y, right.z);
 }
+
+Core::Real RexLogicModule::GetCameraFOV()
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+	return (Core::Real)camera->getFOVy().valueRadians();
+}
+
+Core::Real RexLogicModule::GetCameraViewportWidth()
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+	Ogre::Viewport *viewport = camera->getViewport();
+	return viewport->getActualWidth();
+}
+
+Core::Real RexLogicModule::GetCameraViewportHeight()
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+	Ogre::Viewport *viewport = camera->getViewport();
+	return viewport->getActualHeight();
+}
+
+Core::Vector3df RexLogicModule::GetCameraPosition()
+{
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+	Ogre::Vector3 pos = camera->getPosition();
+	return Core::Vector3df(pos.x, pos.y, pos.z);;
+}
+
 
 void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
 {

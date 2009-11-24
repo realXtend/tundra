@@ -117,8 +117,7 @@ class EditGUI(Component):
         #~ meshassetedit.show()
         #~ meshassetedit.move(200, 177)
         #~ self.canvas.AddWidget(meshassetedit)
-        
-        
+
         self.canvas.connect('Hidden()', self.on_hide)
         modu = r.getQtModule()
         if not DEV:
@@ -185,11 +184,16 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
         self.manipulator_state = self.MANIPULATE_NONE
+        
+        self.prev_mouse_abs_x = 0
+        self.prev_mouse_abs_y = 0
+
+        self.prev_selpos = (0,0,0)
     
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
@@ -427,6 +431,14 @@ class EditGUI(Component):
 
         #print "Got entity:", ent
         if ent is not None:
+            width, height = r.getScreenSize()
+            normalized_width = 1/width
+            normalized_height = 1/height
+            mouse_abs_x = normalized_width * mouseinfo.x
+            mouse_abs_y = normalized_height * mouseinfo.y
+            self.prev_mouse_abs_x = mouse_abs_x
+            self.prev_mouse_abs_y = mouse_abs_y
+
             r.eventhandled = self.EVENTHANDLED
             #print "Entity position is", ent.pos
             #print "Entity id is", ent.id
@@ -462,6 +474,8 @@ class EditGUI(Component):
             self.sel = None
             self.widget.label.text = "<none>"
             self.hideArrows()
+            self.prev_mouse_abs_x = 0
+            self.prev_mouse_abs_y = 0
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
@@ -477,7 +491,7 @@ class EditGUI(Component):
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
-        #print "on_mouseclick", click_id,
+        #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
         if not self.canvas.IsHidden():
             #print "Point!"
             if self.mouse_events.has_key(click_id):
@@ -498,7 +512,7 @@ class EditGUI(Component):
                         upvec = r.getCameraUp()
                         mov = mouseinfo.rel_x + mouseinfo.rel_y
                         
-                        if self.manipulator_state == self.MANIPULATE_MOVE:
+                        if self.manipulator_state == self.MANIPULATE_MOVE: #arrow move
                             pos = list(self.sel.pos)#[self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
                             
                             mov /= 7.0
@@ -511,8 +525,9 @@ class EditGUI(Component):
                     
                             self.sel.pos = pos[0], pos[1], pos[2]
                             self.move_arrows.pos = pos[0], pos[1], pos[2]
+                            self.update_guivals()
                                 
-                        elif self.manipulator_state == self.MANIPULATE_SCALE:
+                        elif self.manipulator_state == self.MANIPULATE_SCALE: #arrow scaling
                             #print "should change scale!"
                             scale = list(self.sel.scale)
 
@@ -525,20 +540,51 @@ class EditGUI(Component):
                                 scale[self.arrow_grabbed_axis] += mov
                     
                             self.sel.scale = scale[0], scale[1],scale[2]
+                            self.update_guivals()
 
-                    else:
-                        oldvec = Vector3(self.sel.pos)
-                        upvec = Vector3(r.getCameraUp())
-                        rightvec = Vector3(r.getCameraRight())
-                        #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
-                        n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
-                        newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
+                    else: #freemove
+                        #~ oldvec = Vector3(self.sel.pos)
+                        #~ upvec = Vector3(r.getCameraUp())
+                        #~ rightvec = Vector3(r.getCameraRight())
+                        #~ #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
+                        #~ n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
+                        #~ newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
                         
-                        self.move_arrows.pos = newvec.x, newvec.y, newvec.z
+                        #~ self.move_arrows.pos = newvec.x, newvec.y, newvec.z
+                        #~ self.sel.pos = newvec.x, newvec.y, newvec.z
+                        #~ #r.networkUpdate(self.sel.id)
+                        #~ #XXX also here the immediate network sync is not good,
+                        #~ #refactor out from pos setter to a separate network_update() call
+                        
+                        fov = r.getCameraFOV()
+                        rightvec = Vector3(r.getCameraRight())
+                        upvec = Vector3(r.getCameraUp())
+                        campos = Vector3(r.getCameraPosition())
+                        entpos = Vector3(self.sel.pos)
+                        width, height = r.getScreenSize()
+                        
+                        normalized_width = 1/width
+                        normalized_height = 1/height
+                        mouse_abs_x = normalized_width * mouseinfo.x
+                        mouse_abs_y = normalized_height * mouseinfo.y
+                        
+                        length = (campos-entpos).length
+                        worldwidth = (math.tan(fov/2)*length) * 2
+                        worldheight = (height*worldwidth) / width
+                        
+                        movedx = mouse_abs_x - self.prev_mouse_abs_x
+                        movedy = mouse_abs_y - self.prev_mouse_abs_y
+                        
+                        #newpos = entpos.x + ((worldwidth * moved) * rightvec), entpos.y, entpos.z
+                        newvec = entpos + ((worldwidth * movedx) * rightvec) -((worldheight * movedy) * upvec)
+                        
+                        #print newpos
                         self.sel.pos = newvec.x, newvec.y, newvec.z
-                        #r.networkUpdate(self.sel.id)
-                        #XXX also here the immediate network sync is not good,
-                        #refactor out from pos setter to a separate network_update() call
+                        self.update_guivals()
+                        #print worldwidth
+                        self.prev_mouse_abs_x = mouse_abs_x
+                        self.prev_mouse_abs_y = mouse_abs_y
+
 
     def on_exit(self):
         r.logDebug("EditGUI exiting...")
