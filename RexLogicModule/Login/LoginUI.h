@@ -100,7 +100,10 @@ namespace RexLogic
         WebUI(QWidget *parent, Login *controller, Foundation::Framework* framework, RexLogicModule *rexLogic);
         virtual ~WebUI(void);
 
-    private:
+	public slots:
+		void DoCommandParameterLogin(QString &entryPointUrl);
+
+	private:
         void InitWidget();
 		void SetLoginHandler();
 
@@ -118,6 +121,18 @@ namespace RexLogic
 	public:
         Login(Foundation::Framework* framework, RexLogicModule *rexLogicModule);
         virtual ~Login(void);
+
+	public slots:
+		void Show();
+		void Hide();
+		void Disconnect();
+        void Connected();
+		void StartCommandParameterLogin(QString &serverEntryPointUrl);
+        void StartLoginProgressUI();
+        void HideLoginProgressUI();
+        void UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState);
+        void ShowMessageToUser(QString message, int autohideSeconds);
+		void QuitApplication();
 
     private:
         bool InitUICanvases();
@@ -155,16 +170,8 @@ namespace RexLogic
         void UpdateAutoHide();
         void HideMessageFromUser();
 
-	public slots:
-		void Show();
-		void Hide();
-		void Disconnect();
-        void Connected();
-        void StartLoginProgressUI();
-        void HideLoginProgressUI();
-        void UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState);
-        void ShowMessageToUser(QString message, int autohideSeconds);
-		void QuitApplication();
+	signals:
+		void CommandParameterLogin(QString&);
 
     };
 }

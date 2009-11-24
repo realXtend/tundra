@@ -93,7 +93,6 @@ namespace TaigaProtocol
             const char *major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str();
             const char *minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str();
 
-            call.AddMember("loginuri", worldAddress_.c_str());
             call.AddMember("start", QString("last").toStdString());
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());

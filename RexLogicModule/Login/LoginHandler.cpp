@@ -209,6 +209,17 @@ namespace RexLogic
 		emit( LoginDone(success, errorMessage) );
 	}
 
+	void TaigaLoginHandler::ProcessCommandParameterLogin(QString entryPointUrl)
+	{
+		serverEntryPointUrl_ = ValidateServerUrl(entryPointUrl);
+		dynamic_cast<TaigaCredentials *>(credentials_)->SetIdentityUrl("NotNeeded");
+		if (serverEntryPointUrl_.isValid())
+		{
+			emit( LoginStarted() );
+			InstantiateWorldSession();
+		}
+	}
+
 	void TaigaLoginHandler::ProcessWebLogin(QWebFrame *webFrame)
 	{
 		int pos1, pos2;

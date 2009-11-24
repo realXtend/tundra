@@ -74,7 +74,11 @@ namespace TaigaProtocol
 	{
 		QUrl returnUrl(urlString);
 		if (returnUrl.isValid())
+		{
+			if (returnUrl.port() == -1)
+				returnUrl.setPort(80);
 			return returnUrl;
+		}
 		else
 		{
 			ProtocolModuleTaiga::LogInfo("Invalid Taiga connection url");

@@ -84,13 +84,13 @@ namespace RexLogic
 		virtual ~TaigaLoginHandler(void);
 		void InstantiateWorldSession();
 
+	public slots:
+		void ProcessCommandParameterLogin(QString entryPointUrl);
+		void ProcessWebLogin(QWebFrame *webFrame);
+
 	private:
 		boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> networkTaiga_;
 		TaigaProtocol::TaigaWorldSession *taigaWorldSession_;
-
-	public slots:
-		void ProcessWebLogin(QWebFrame *webFrame);
-
 	};
 
 }
