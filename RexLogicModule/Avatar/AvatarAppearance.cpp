@@ -911,6 +911,9 @@ namespace RexLogic
         RexLogicModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
         Core::entity_id_t id = i->second;
         avatar_resource_tags_.erase(i);
+        if (avatar_pending_requests_[id])
+            avatar_pending_requests_[id]--;
+            
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
         if (!entity)
             return true;
@@ -920,17 +923,13 @@ namespace RexLogic
             return true;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
-        if (avatar_pending_requests_[id])
+        // If was the last request, rebuild avatar
+        if (avatar_pending_requests_[id] == 0)
         {
-            avatar_pending_requests_[id]--;
-            // If was the last request, rebuild avatar
-            if (avatar_pending_requests_[id] == 0)
-            {
-                RexLogicModule::LogDebug("All resources received, rebuilding avatar");
-                SetupAppearance(entity);
-            }
+            RexLogicModule::LogDebug("All resources received, rebuilding avatar");
+            SetupAppearance(entity);
         }
-        
+    
         return true;
     }
     
