@@ -53,4 +53,8 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 
+if (MSVC)
+	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib)
+endif (MSVC)
+
 final_target ()
