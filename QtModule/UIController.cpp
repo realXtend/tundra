@@ -449,27 +449,35 @@ void UIController::InjectKeyPressed(QString& text, Qt::Key keyCode, const Qt::Ke
 
     if ( text == QString(QChar(0)) && keyCode != Qt::Key_unknown )
     {
-        // Match text using Qt:s keycode. 
-        
-        QKeySequence sequence(keyCode);
-        text = sequence.toString().toLower();
 
-        switch  (modifier)
+        ///todo make somekind check function. 
+        if ( keyCode != Qt::Key_Shift &&
+             keyCode != Qt::Key_Control &&
+             keyCode != Qt::Key_CapsLock &&
+             keyCode != Qt::Key_Alt &&
+             keyCode != Qt::Key_AltGr)
         {
-            case Qt::ShiftModifier:
-            {
-                text = text.toUpper();
-                break;
-            }
-            case Qt::ControlModifier:
-            {
-                text = text.toUpper();
-                break;
-            }
-            default:
-                break;
-        }
+            // Match text using Qt:s keycode. 
+            
+            QKeySequence sequence(keyCode);
+            text = sequence.toString().toLower();
 
+            switch  (modifier)
+            {
+                case Qt::ShiftModifier:
+                {
+                    text = text.toUpper();
+                    break;
+                }
+                case Qt::ControlModifier:
+                {
+                    text = text.toUpper();
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
 
 
@@ -513,6 +521,14 @@ void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const
     
     keyDown_ = false;
 }
+
+void UIController::InjectMouseScroll(int delta, UICanvas* canvas)
+{
+    QGraphicsSceneWheelEvent mouseEvent(QEvent::GraphicsSceneWheel);
+    
+
+}
+
 
 void UIController::SetParentWindowSize(const QSize& size)
 {
