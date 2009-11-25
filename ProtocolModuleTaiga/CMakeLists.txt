@@ -37,4 +37,8 @@ foreach (XML_FILE ${XML_FILES})
     add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
+if (MSVC)
+	target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib)
+endif (MSVC)
+
 final_target ()
