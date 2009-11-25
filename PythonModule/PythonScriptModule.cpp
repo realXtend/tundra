@@ -32,6 +32,7 @@
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
 #include "RexLogicModule.h" 
+//#include "Login/LoginUI.h" //in rexlogic
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
@@ -56,7 +57,7 @@
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
 
-#include "propertyeditor.h"
+#include "propertyeditor/propertyeditor.h"
 
 namespace PythonScript
 {
@@ -1178,8 +1179,7 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
 
     Foundation::Framework *framework_;
     RexLogic::RexLogicModule *rexlogic_;
-    RexLogic::Login *login_;
-
+ 
     if(!PyArg_ParseTuple(args, "sss", &firstAndLast, &password, &serverAddressWithPort))
     {
         PyErr_SetString(PyExc_ValueError, "Opensim login requires three params: User Name, password, server:port");
@@ -1192,11 +1192,9 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
 
     framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_->StartLoginOpensim(qfirstAndLast, qpassword, qserverAddressWithPort);
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     //if (renderer){
-
-    login_ = rexlogic_->GetLogin();
-    //login_->
 
     Py_RETURN_NONE;
 }
