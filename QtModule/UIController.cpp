@@ -522,11 +522,30 @@ void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const
     keyDown_ = false;
 }
 
-void UIController::InjectMouseScroll(int delta, UICanvas* canvas)
+void UIController::InjectMouseScroll(int x, int y, int delta, UICanvas* canvas)
 {
-    QGraphicsSceneWheelEvent mouseEvent(QEvent::GraphicsSceneWheel);
-    
+    if ( canvas == 0)
+        return;
 
+    QGraphicsSceneWheelEvent mouseEvent(QEvent::GraphicsSceneWheel);
+
+    // Map the mouse coordinate to the scene of the canvas.
+    QPoint pos = canvas->MapToCanvas(x,y);
+
+    mouseEvent.setDelta(delta);
+    mouseEvent.setOrientation(Qt::Vertical);
+
+    bool mouseButtonDown = (currentMouseAction != MouseActionNone);
+    
+    mouseEvent.setScenePos(pos);
+    mouseEvent.setScreenPos(pos);
+    mouseEvent.setButtons(mouseButtonDown ? button_ : Qt::NoButton);
+
+
+    mouseEvent.setModifiers(currentModifier_);
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(canvas->view_->scene(), &mouseEvent);
 }
 
 

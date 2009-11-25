@@ -132,7 +132,14 @@ namespace QtUI
             @param modifier Denotes whether there were any keyboard modifiers down (Alt, Shift, Ctrl, Win). */
         void InjectKeyReleased(const QString& text, Qt::Key keyCode = Qt::Key_unknown , const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
       
-        void InjectMouseScroll(int delta, UICanvas* canvas);
+        /**
+         * Sends a mouse scroll event to the canvas. 
+         * @param x is The x-coordinate in the main render window where scroll occured. 
+         * @param t The y-coordinate
+         * @param delta is a size of a scroll in degrees divided with Qt wheel step length. 
+         * @param canvas is the canvas which will receive event. 
+         */
+        void InjectMouseScroll(int x, int y, int delta, UICanvas* canvas);
 
 
         /** Call to specify the new size of the main render window into which the canvases are composited.
