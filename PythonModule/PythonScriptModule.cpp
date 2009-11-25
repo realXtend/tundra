@@ -1078,7 +1078,7 @@ PyObject* GetCameraUp(PyObject *self)
         up = rexlogic_->GetCameraUp();
         return Py_BuildValue("fff", up.x, up.y, up.z);
     }
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 PyObject* GetCameraRight(PyObject *self) 
@@ -1091,9 +1091,47 @@ PyObject* GetCameraRight(PyObject *self)
         right = rexlogic_->GetCameraRight();
         return Py_BuildValue("fff", right.x, right.y, right.z);
     }
-    return NULL;
+    Py_RETURN_NONE;
 }
 
+PyObject* GetCameraFOV(PyObject *self) 
+{
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        float fovy = rexlogic_->GetCameraFOV();
+        return Py_BuildValue("f", fovy);
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* GetCameraPosition(PyObject *self) 
+{
+	Core::Vector3df pos;
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        pos = rexlogic_->GetCameraPosition();
+        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* GetScreenSize(PyObject *self) 
+{
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        float width = rexlogic_->GetCameraViewportWidth();
+		float height = rexlogic_->GetCameraViewportHeight();
+        return Py_BuildValue("ff", width, height);
+    }
+    Py_RETURN_NONE;
+}
+		
 //slider input
 /*    UpdateSliderEvents(input_state_);
     UpdateSliderEvents(Input::State_All);*/
@@ -1226,6 +1264,16 @@ static PyMethodDef EmbMethods[] = {
     
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
+    
+	
+	{"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
+    "Get the size of the screen."},
+
+    {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
+    "Get the Field of View from the camera."},
+
+    {"getCameraPosition", (PyCFunction)GetCameraPosition, METH_VARARGS, 
+    "Get the position of the camera."},
 
     //from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
 
@@ -1434,6 +1482,28 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
+	else if (s_name.compare("boundingbox") == 0)
+	{
+		if (!placeable)
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+            return NULL;  
+		}
+		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+		if (!meshptr)
+		{
+			PyErr_SetString(PyExc_AttributeError, "mesh_ptr not found.");
+            return NULL;  
+		}
+		        
+		OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+		Core::Vector3df min, max;
+
+        mesh.GetBoundingBox(min, max);
+
+		return Py_BuildValue("ffffff", min.x, min.y, min.z, max.x, max.y, max.z);;
+	}
+
 
     std::cout << "unknown component type."  << std::endl;
     return NULL;
