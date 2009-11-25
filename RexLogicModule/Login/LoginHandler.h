@@ -5,7 +5,6 @@
 
 #include "StableHeaders.h"
 #include "RexLogicModule.h"
-#include "AssetModule.h"
 
 #include <QObject>
 #include <QWebFrame>
