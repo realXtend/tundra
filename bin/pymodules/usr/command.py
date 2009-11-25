@@ -546,8 +546,7 @@ if 0: #testing vector3/quat wrapping
 
     quat_from_euler = Quaternion(x, y, z)
     print "quat from eulers (%.4f, %.4f, %.4f, %.4f)" % (quat_from_euler.x(), quat_from_euler.y(), quat_from_euler.z(), quat_from_euler.w())
-    
-    
+        
     from editgui.conversions import *
     euler = euler_to_quat((0, 90, 0))
     print "quat from eulers", euler
@@ -567,9 +566,14 @@ if 0: #property editor tests
     #print r, dir(r)
     pe = r.getPropertyEditor()
     #print pe, pe.setObject, pe.show
-    pe.setObject(r.c.meshassetedit)
+    pe.setObject(r.c.widget)
     pe.show()
     
+if 0: #getting args from outside to run tests automatically
+    import os
+    naaliargs = os.getenv('NAALIARGS')
+    print naaliargs
+
 if 0:
     #print r.c.widget.move_button, dir(r.c.widget.move_button)
     #r.c.canvas.Show()
@@ -622,5 +626,8 @@ if 0: #bounding box tests
     max_ent.scale = 0.3, 0.3, 0.3
     max_ent.pos = pos[0] + max.y, pos[1] + max.x, pos[2] + max.z
     
-    
+if 1: #login - for running tests automatically
+    print "starting opensim login"
+    r.startLoginOpensim("Test User", "test", "localhost:9000")
+
     
