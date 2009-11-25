@@ -70,11 +70,10 @@ namespace RexLogic
 
 	void Login::Disconnect()
 	{
-        if (qtModule_.get())
-            qtModule_->SetShowControlBar(false);
-
 		if (rexLogicModule_->GetServerConnection()->IsConnected())
         {
+            if (qtModule_.get())
+                qtModule_->SetShowControlBar(false);
 			rexLogicModule_->LogoutAndDeleteWorld();
             canvas_logout_->Hide();
             canvas_login_->Show();
@@ -82,10 +81,47 @@ namespace RexLogic
         }
 	}
 
-	void Login::StartCommandParameterLogin(QString &serverEntryPointUrl)
+	void Login::StartParameterLoginTaiga(QString &serverEntryPointUrl)
 	{
+        Disconnect();
+
 		emit( CommandParameterLogin(serverEntryPointUrl) );
 	}
+
+    void Login::StartParameterLoginOpenSim(QString &firstAndLast, QString &password, QString &serverAddressWithPort)
+    {
+        Disconnect();
+
+        if (!serverAddressWithPort.startsWith("http://"))
+            serverAddressWithPort = "http://" + serverAddressWithPort;
+
+        QMap<QString, QString> map;
+        map["AuthType"] = "OpenSim";
+        map["Username"] = firstAndLast;
+        map["Password"] = password;
+        map["WorldAddress"] = serverAddressWithPort;
+        
+        emit( CommandParameterLogin(map) );
+    }
+
+    void Login::StartParameterLoginRealXtend(QString &username, QString &password, QString &authAddressWithPort, QString &serverAddressWithPort)
+    {
+        Disconnect();
+
+        if (!serverAddressWithPort.startsWith("http://"))
+            serverAddressWithPort = "http://" + serverAddressWithPort;
+        if (!authAddressWithPort.startsWith("http://"))
+            authAddressWithPort = "http://" + authAddressWithPort;
+
+        QMap<QString, QString> map;
+        map["AuthType"] = "RealXtend";
+        map["Username"] = username;
+        map["Password"] = password;
+        map["WorldAddress"] = serverAddressWithPort;
+        map["AuthenticationAddress"] = authAddressWithPort;
+        
+        emit( CommandParameterLogin(map) );
+    }
 
     bool Login::InitUICanvases()
     {
@@ -349,6 +385,8 @@ namespace RexLogic
 
     void Login::ShowMessageToUser(QString message, int autohideSeconds)
     {
+        loginInProgress_ = false;
+
         HideLoginProgressUI();
         messageLabel_->setText(message);
         messageFrame_->show();
@@ -422,9 +460,25 @@ namespace RexLogic
 		delete loginHandler_;
 	}
 
+    void NaaliUI::DoCommandParameterLogin(QMap<QString, QString> &loginInformation)
+    {
+        if (loginInformation["AuthType"] == "OpenSim")
+        {
+            if (loginInformation["Username"].count(" ") == 1 && !loginInformation["Username"].endsWith(" "))
+			    emit( ConnectOpenSim(loginInformation) );
+            else
+                controller_->ShowMessageToUser(QString("Your OpenSim username must be 'Firstname Lastname', you gave '%1'").arg(loginInformation["Username"]), 7);
+        }
+        else if (loginInformation["AuthType"] == "RealXtend")
+        {
+            emit( ConnectRealXtend(loginInformation) );
+        }
+    }
+
 	void NaaliUI::SetLoginHandler()
 	{
 		loginHandler_ = new OpenSimLoginHandler(framework_, rexLogicModule_);
+        QObject::connect(controller_, SIGNAL( CommandParameterLogin(QMap<QString, QString>&) ), this, SLOT( DoCommandParameterLogin(QMap<QString, QString>&) ));
         QObject::connect(loginHandler_, SIGNAL( LoginStarted() ), controller_, SLOT( StartLoginProgressUI() ));
 		QObject::connect(loginHandler_, SIGNAL( LoginDone(bool, QString&) ), this, SLOT( LoginDone(bool, QString&) ));
 	}
@@ -625,7 +679,7 @@ namespace RexLogic
 			return;
 		QString url(confFile.readLine());
 		confFile.close();
-		webLogin_ = new WebLogin(this, url); 
+		webLogin_ = new WebLogin(0, url); 
 		QObject::connect(webLogin_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ), loginHandler_, SLOT( ProcessWebLogin(QWebFrame *) ));
 		this->layout()->addWidget(webLogin_);
 	}

@@ -50,7 +50,7 @@ bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::
     }
     case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
     {
-        rexlogicmodule_->GetLoginUI()->UpdateLoginProgressUI(QString("Downloading of terrain and avatar completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+        rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Downloading of terrain and avatar completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
         break;
     }
     default:
