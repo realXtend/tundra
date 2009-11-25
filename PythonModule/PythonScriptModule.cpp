@@ -1157,7 +1157,7 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     //if (renderer){
 
-    login_ = rexlogic_->GetLoginUI();
+    login_ = rexlogic_->GetLogin();
     //login_->
 
     Py_RETURN_NONE;
