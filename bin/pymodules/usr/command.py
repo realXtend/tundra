@@ -605,8 +605,22 @@ if 0:
     #~ newpos = 
     #~ print newpos
     
-
+if 0: #bounding box tests
+    ent = r.getEntity(r.getUserAvatarId())
+    from editgui.vector3 import Vector3 as V3
+    bb = list(ent.boundingbox)
+    min = V3(bb[0], bb[1], bb[2])
+    max = V3(bb[3], bb[4], bb[5])
     
+    print ent.pos, min, max
+    pos = list(ent.pos)
+    min_ent = r.createEntity("cruncah1.mesh")
+    min_ent.scale = 0.3, 0.3, 0.3
+    min_ent.pos = pos[0] + min.x, pos[1] + min.y, pos[2] + min.z 
+    
+    max_ent = r.createEntity("cruncah1.mesh")
+    max_ent.scale = 0.3, 0.3, 0.3
+    max_ent.pos = pos[0] + max.y, pos[1] + max.x, pos[2] + max.z
     
     
     
