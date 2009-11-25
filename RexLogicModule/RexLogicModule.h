@@ -177,6 +177,9 @@ namespace RexLogic
         //! logout through console
         Console::CommandResult ConsoleLogout(const Core::StringVector &params);
 
+        //! login from py - temp while loginui misses dllexport
+        void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort);
+
         //! toggle fly mode through console
         Console::CommandResult ConsoleToggleFlyMode(const Core::StringVector &params);
 

@@ -481,6 +481,7 @@ void RexLogicModule::ShowAvatarEditor()
         avatar_editor_->Toggle();
 }
 
+//XXX \todo add dll exports or fix by some other way (e.g. qobjects)
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
 void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
 {
@@ -599,6 +600,11 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &p
     {
         return Console::ResultFailure("Not connected to server.");
     }
+}
+
+void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort)
+{
+    loginUI_->StartParameterLoginOpenSim(qfirstAndLast, qpassword, qserverAddressWithPort);
 }
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)
