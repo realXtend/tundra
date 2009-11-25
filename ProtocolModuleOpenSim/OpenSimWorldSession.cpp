@@ -22,7 +22,7 @@ namespace OpenSimProtocol
 	bool OpenSimWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
 	{
 		bool success = false;
-		RexLogic::OpenSimCredentials *testCredentials = dynamic_cast<RexLogic::OpenSimCredentials *>(credentials);
+		ProtocolUtilities::OpenSimCredentials *testCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(credentials);
 		if (testCredentials)
 		{
 			// Set Url and Credentials
@@ -129,7 +129,7 @@ namespace OpenSimProtocol
 
 	void OpenSimWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
 	{
-		RexLogic::OpenSimCredentials *testCredentials = dynamic_cast<RexLogic::OpenSimCredentials *>(newCredentials);
+		ProtocolUtilities::OpenSimCredentials *testCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(newCredentials);
 		if (testCredentials)
 			credentials_ = testCredentials;
 		else

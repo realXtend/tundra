@@ -1,16 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_LoginCredentials_h
-#define incl_RexLogic_LoginCredentials_h
+#ifndef incl_ProtocoUtilities_LoginCredentials_h
+#define incl_ProtocoUtilities_LoginCredentials_h
 
 #include "Interfaces/LoginCredentialsInterface.h"
 
 #include <QUrl>
 
-namespace RexLogic
+namespace ProtocolUtilities
 {
 
-	class TaigaCredentials : public ProtocolUtilities::LoginCredentialsInterface
+	class TaigaCredentials : public LoginCredentialsInterface
 	{
 
 	public:
@@ -69,4 +69,4 @@ namespace RexLogic
 
 }
 
-#endif // incl_RexLogic_LoginCredentials_h
+#endif // incl_ProtocoUtilities_LoginCredentials_h

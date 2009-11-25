@@ -16,7 +16,6 @@ namespace ProtocolUtilities
         virtual QString GetIdentity() = 0;
 
     };
-
 }
 
 #endif // incl_ProtocoUtilities_LoginCredentialsInterface_h
