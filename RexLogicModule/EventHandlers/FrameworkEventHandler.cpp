@@ -29,7 +29,7 @@ namespace RexLogic
             {
                 if (command == "-loginuri" && !parameter.isEmpty() && parameter.startsWith("http://", Qt::CaseInsensitive))
                 {
-    				rexLogic_->GetLoginUI()->StartCommandParameterLogin(parameter);
+    				rexLogic_->GetLogin()->StartParameterLoginTaiga(parameter);
                 }
 
     			if (command == "-python" || command == "-p")                   

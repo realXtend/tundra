@@ -113,7 +113,7 @@ namespace RexLogic
         InventoryPtr GetInventory() const;
 
         /// @return Login UI
-        Login *GetLoginUI() { return loginUI_; }
+        Login *GetLogin() { return loginUI_; }
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() { return camera_controllable_; }

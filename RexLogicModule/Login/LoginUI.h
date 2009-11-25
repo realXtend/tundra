@@ -57,6 +57,9 @@ namespace RexLogic
         NaaliUI(QWidget *parent, Login *controller, Foundation::Framework* framework, RexLogicModule *rexLogic);
         virtual ~NaaliUI(void);
 
+    public slots:
+        void DoCommandParameterLogin(QMap<QString, QString> &loginInformation);
+
     private:
         void InitWidget();
 		void SetLoginHandler();
@@ -127,7 +130,9 @@ namespace RexLogic
 		void Hide();
 		void Disconnect();
         void Connected();
-		void StartCommandParameterLogin(QString &serverEntryPointUrl);
+		void StartParameterLoginTaiga(QString &serverEntryPointUrl);
+        void StartParameterLoginOpenSim(QString &firstAndLast, QString &password, QString &serverAddressWithPort);
+        void StartParameterLoginRealXtend(QString &username, QString &password, QString &authAddressWithPort, QString &serverAddressWithPort);
         void StartLoginProgressUI();
         void HideLoginProgressUI();
         void UpdateLoginProgressUI(const QString &status, int progress, const ProtocolUtilities::Connection::State connectionState);
@@ -172,6 +177,7 @@ namespace RexLogic
 
 	signals:
 		void CommandParameterLogin(QString&);
+        void CommandParameterLogin(QMap<QString, QString>&);
 
     };
 }

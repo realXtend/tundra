@@ -363,7 +363,7 @@ void RexLogicModule::Update(Core::f64 frametime)
             if (!login_failed_showed_)
             {
                 login_failed_showed_ = true;
-                GetLoginUI()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
+                GetLogin()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
             }
         }
         else if ( present_state != ProtocolUtilities::Connection::STATE_CONNECTED && 
@@ -371,7 +371,7 @@ void RexLogicModule::Update(Core::f64 frametime)
                   present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
         {
             login_failed_showed_ = false;
-            GetLoginUI()->UpdateLoginProgressUI(QString(""), 0, present_state);
+            GetLogin()->UpdateLoginProgressUI(QString(""), 0, present_state);
         }
 
         /// \todo Move this to OpenSimProtocolModule.

@@ -29,7 +29,6 @@ namespace RexLogic
 		SAFE_DELETE(stopButton);
 		SAFE_DELETE(goButton);
 		SAFE_DELETE(layout_);
-        SAFE_DELETE(webView_);
         SAFE_DELETE(widget_);
 	}
 
@@ -42,7 +41,6 @@ namespace RexLogic
         if ( uiFile.exists() )
         {
 		    widget_ = loader.load(&uiFile, this);
-		    widget_->setMinimumSize(750, 550);
 		    uiFile.close();
 
 		    // Get ui elements we want to update in signal processing
@@ -53,7 +51,6 @@ namespace RexLogic
 		    // Add webview by hand, the QFormBuilder cannot do this (custom widget)
 		    QVBoxLayout *centerLayout = widget_->layout()->findChild<QVBoxLayout *>("verticalLayout_Container");
 		    webView_ = new QWebView(widget_);
-		    webView_->setMinimumSize(100,100);
 		    centerLayout->insertWidget(2, webView_);
 
 		    // Get comboBox and set url to it
