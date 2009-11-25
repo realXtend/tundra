@@ -42,6 +42,8 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DUSE_QT)
 
+add_definitions (-DREXLOGIC_MODULE_EXPORTS) 
+
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)

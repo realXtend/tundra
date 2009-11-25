@@ -5,6 +5,7 @@
 
 #include <Foundation.h>
 #include "ModuleInterface.h"
+#include "RexLogicModuleApi.h"
 
 // ProtocolUtilities inludes
 #include "WorldStream.h"
@@ -57,7 +58,7 @@ namespace RexLogic
     };
 
     //! interface for modules
-    class MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
     {
     public:
         RexLogicModule();
