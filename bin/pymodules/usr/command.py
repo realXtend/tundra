@@ -626,7 +626,7 @@ if 0: #bounding box tests
     max_ent.scale = 0.3, 0.3, 0.3
     max_ent.pos = pos[0] + max.y, pos[1] + max.x, pos[2] + max.z
     
-if 1: #login - for running tests automatically
+if 0: #login - for running tests automatically
     print "starting opensim login"
     r.startLoginOpensim("Test User", "test", "localhost:9000")
 
