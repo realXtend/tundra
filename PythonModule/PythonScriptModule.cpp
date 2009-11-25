@@ -1127,6 +1127,42 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+//XXX \todo make Login a QObject and the other login methods slots so they are all exposed
+PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
+{
+    const char* firstAndLast;
+    const char* password;
+    const char* serverAddressWithPort;
+
+    QString qfirstAndLast;
+    QString qpassword;
+    QString qserverAddressWithPort;
+
+    Foundation::Framework *framework_;
+    RexLogic::RexLogicModule *rexlogic_;
+    RexLogic::Login *login_;
+
+    if(!PyArg_ParseTuple(args, "sss", &firstAndLast, &password, &serverAddressWithPort))
+    {
+        PyErr_SetString(PyExc_ValueError, "Opensim login requires three params: User Name, password, server:port");
+        return NULL;
+    }
+    
+    qfirstAndLast = QString(firstAndLast);
+    qpassword = QString(password);
+    qserverAddressWithPort = QString(serverAddressWithPort);
+
+    framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    //boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    //if (renderer){
+
+    login_ = rexlogic_->GetLoginUI();
+    //login_->
+
+    Py_RETURN_NONE;
+}
+
 /*
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
     std::cout << "PyEventCallback" << std::endl;
@@ -1214,8 +1250,12 @@ static PyMethodDef EmbMethods[] = {
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
     "Does a network update for the Scene."},
 
+    {"startLoginOpensim", (PyCFunction)StartLoginOpensim, METH_VARARGS,
+    "Starts login using OpenSim authentication: expects User Name, password, server:port"},
+
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},
+
 	{NULL, NULL, 0, NULL}
 };
 
