@@ -443,6 +443,44 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         input->SetState(Input::State_Unknown);
 
     }
+    else if (category_id == input_event_category_ && event_id == Input::Events::SCROLL)
+    {
+        // Mouse scroll event. 
+        
+        boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+
+        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+      
+        if (!input.get())
+            return false;
+
+        Input::Events::SingleAxisMovement* axis_movement = checked_static_cast<Input::Events::SingleAxisMovement*>(data);
+
+   
+        // Poll from mouse where mouse is located. 
+        const Input::Events::Movement &mouse = input->GetMouseMovement();
+
+        QPointF pos = QPointF(mouse.x_.abs_, mouse.y_.abs_);
+        QPoint mousePos = pos.toPoint();
+
+        bool event_handled = false;
+    
+        UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
+        controller_->SetCurrentModifier(GetCurrentModifier(input));
+        
+        int delta = 15;
+        
+        if ( canvas != 0)
+            controller_->InjectMouseScroll(delta, canvas);
+        else
+        {
+            // Inworld canvas
+
+        }
+        
+
+    }
 
     return false;
 }
@@ -614,7 +652,9 @@ void QtModule::InitializeKeyCodes()
     converterMap_.insert(OIS::KC_PGUP, Qt::Key_PageUp);
     converterMap_.insert(OIS::KC_PGDOWN, Qt::Key_PageDown);
     converterMap_.insert(OIS::KC_LSHIFT, Qt::Key_Shift);
+    converterMap_.insert(OIS::KC_RSHIFT, Qt::Key_Shift);
     converterMap_.insert(OIS::KC_LCONTROL, Qt::Key_Control);
+    converterMap_.insert(OIS::KC_RCONTROL, Qt::Key_Control);
     converterMap_.insert(OIS::KC_LWIN, Qt::Key_Meta);
     converterMap_.insert(OIS::KC_LMENU, Qt::Key_Alt);
     converterMap_.insert(OIS::KC_CAPITAL, Qt::Key_CapsLock);

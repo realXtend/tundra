@@ -132,6 +132,9 @@ namespace QtUI
             @param modifier Denotes whether there were any keyboard modifiers down (Alt, Shift, Ctrl, Win). */
         void InjectKeyReleased(const QString& text, Qt::Key keyCode = Qt::Key_unknown , const Qt::KeyboardModifiers& modifier = Qt::NoModifier);
       
+        void InjectMouseScroll(int delta, UICanvas* canvas);
+
+
         /** Call to specify the new size of the main render window into which the canvases are composited.
             @param size The new size of the main render window, in pixels. */
         void SetParentWindowSize(const QSize& size);
