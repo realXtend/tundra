@@ -16,8 +16,9 @@
 
 #include "ProtocolModuleTaiga.h"
 #include "TaigaWorldSession.h"
-#include "Interfaces/LoginCredentialsInterface.h"
 
+// From ProtocolUtilities
+#include "Interfaces/LoginCredentialsInterface.h"
 #include "Login/LoginCredentials.h"
 
 namespace RexLogic

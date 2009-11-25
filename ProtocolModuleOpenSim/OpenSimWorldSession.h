@@ -64,7 +64,7 @@ namespace OpenSimProtocol
 		void SetServerEntryPointUrl(const QUrl &newUrl);
 
 	private:
-		RexLogic::OpenSimCredentials *credentials_;
+		ProtocolUtilities::OpenSimCredentials *credentials_;
 		QUrl serverEntryPointUrl_;
 
 		//! Pointer to framework

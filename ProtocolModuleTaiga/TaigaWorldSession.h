@@ -53,7 +53,7 @@ namespace TaigaProtocol
 		void SetServerEntryPointUrl(const QUrl &newUrl);
 
 	private:
-		RexLogic::TaigaCredentials *credentials_;
+		ProtocolUtilities::TaigaCredentials *credentials_;
 		QUrl serverEntryPointUrl_;
 
 		//! Pointer to framework

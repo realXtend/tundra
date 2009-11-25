@@ -22,7 +22,7 @@ namespace TaigaProtocol
 	bool TaigaWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
 	{
 		bool success = false;
-		RexLogic::TaigaCredentials *testCredentials = dynamic_cast<RexLogic::TaigaCredentials *>(credentials);
+		ProtocolUtilities::TaigaCredentials *testCredentials = dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials);
 		if (testCredentials)
 		{
 				// Set Url and Credentials
@@ -103,7 +103,7 @@ namespace TaigaProtocol
 
 	void TaigaWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
 	{
-		RexLogic::TaigaCredentials *testCredentials = dynamic_cast<RexLogic::TaigaCredentials *>(newCredentials);
+		ProtocolUtilities::TaigaCredentials *testCredentials = dynamic_cast<ProtocolUtilities::TaigaCredentials *>(newCredentials);
 		if (testCredentials)
 			credentials_ = testCredentials;
 		else

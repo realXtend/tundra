@@ -4,7 +4,7 @@
 
 #include "Login/LoginCredentials.h"
 
-namespace RexLogic
+namespace ProtocolUtilities
 {
 
 	TaigaCredentials::TaigaCredentials()

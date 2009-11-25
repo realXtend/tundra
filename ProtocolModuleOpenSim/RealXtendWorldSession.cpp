@@ -22,7 +22,7 @@ namespace OpenSimProtocol
 	bool RealXtendWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
 	{
 		bool success = false;
-		RexLogic::RealXtendCredentials *testCredentials = dynamic_cast<RexLogic::RealXtendCredentials *>(credentials);
+		ProtocolUtilities::RealXtendCredentials *testCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(credentials);
 		if (testCredentials)
 		{
 			// Set Url and Credentials
@@ -132,7 +132,7 @@ namespace OpenSimProtocol
 
 	void RealXtendWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
 	{
-		RexLogic::RealXtendCredentials *testCredentials = dynamic_cast<RexLogic::RealXtendCredentials *>(newCredentials);
+		ProtocolUtilities::RealXtendCredentials *testCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(newCredentials);
 		if (testCredentials)
 			credentials_ = testCredentials;
 		else
