@@ -57,7 +57,7 @@
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
 
-#include "propertyeditor/propertyeditor.h"
+#include "propertyeditor.h"
 
 namespace PythonScript
 {
