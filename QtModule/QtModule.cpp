@@ -469,17 +469,42 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
         UICanvas *canvas = controller_->GetCanvasAt(mousePos.x(), mousePos.y());
         controller_->SetCurrentModifier(GetCurrentModifier(input));
         
-        int delta = 15;
+        // Magical Qt wheel event step size.
+        int step = 8;
+        int delta = (axis_movement->z_.rel_)/step;
         
         if ( canvas != 0)
-            controller_->InjectMouseScroll(delta, canvas);
+        {
+            controller_->InjectMouseScroll(pos.x(), pos.y(),delta, canvas);
+            event_handled = true;
+        }
         else
         {
-            // Inworld canvas
+           
+           // Generate mouse scroll for inworld canvas 
+           boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
+            <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+           
+           if (renderer.get() == 0)
+               return false;
 
+            Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+          
+            // Has a entity a EC_CANVAS ?
+            boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
+            if ( in_world_canvas.get() != 0)
+            {
+                // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                QPoint pos = in_world_canvas->GetPosition().toPoint();
+                QSize size = in_world_canvas->GetSize();
+                QPoint location = QPoint(size.width() * result.u_ + pos.x(), size.height() * result.v_ + pos.y());
+                controller_->InjectMouseScroll(location.x(), location.y(), delta, in_world_canvas.get()); 
+                event_handled = true;
+            }
+          
         }
         
-
+        return event_handled;
     }
 
     return false;
