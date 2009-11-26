@@ -193,7 +193,7 @@ class EditGUI(Component):
         self.prev_mouse_abs_x = 0
         self.prev_mouse_abs_y = 0
 
-        self.prev_selpos = (0,0,0)
+        self.selection_box = None
     
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
@@ -349,6 +349,29 @@ class EditGUI(Component):
             #update the gui vals to show what the newly selected entity has
             self.update_guivals()
             self.widget.label.text = ent.id
+            
+            bb = list(ent.boundingbox)
+            scale = list(ent.scale)
+            min = Vector3(bb[0], bb[1], bb[2])
+            max = Vector3(bb[3], bb[4], bb[5])
+            height = abs(bb[4] - bb[1]) 
+            width = abs(bb[3] - bb[0])
+            depth = abs(bb[5] - bb[2])
+
+            if bb[6] == 0: #0 means CustomObject
+                height += scale[0]#*1.2
+                width += scale[1] #*1.2
+                depth += scale[2]#*1.2
+                
+                if self.selection_box is None:
+                    self.selection_box = r.createEntity("Selection.mesh")
+
+                self.selection_box.pos = ent.pos
+                
+                self.selection_box.scale = height, width, depth#depth, width, height
+                self.selection_box.orientation = ent.orientation
+            else:
+                r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
     def update_guivals(self):
         x, y, z = self.sel.pos
