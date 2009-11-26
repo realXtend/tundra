@@ -5,11 +5,8 @@
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "ProtocolModuleOpenSim.h"
 #include "ProtocolModuleTaiga.h"
-#include "EC_OgrePlaceable.h"
-#include "EntityComponent/EC_OpenSimPrim.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
-#include "SceneManager.h"
 
 #include <QString>
 #include <QUrl>
@@ -473,27 +470,17 @@ void WorldStream::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateInfo>& update_info_list)
 {
     if (!connected_)
         return;
 
-    // Pre-check that entities are valid, so that we don't start messagebuilding then abort
-    for(size_t i = 0; i < entity_ptr_list.size(); ++i)
-    {
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-        if (!prim_component) 
-        {
-            /* the py api allows moving any entity with a placeable component, not just prims.
-               without this check an attempt to move the avatar from py crashed here */
-            //LogWarning("Not sending entity position update of a non-prim entity (e.g. avatar), as the protocol doesn't support it.");
-            return;
-        }
-    }
-
+    if (!update_info_list.size())
+        return;
+          
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
     assert(m);
-
+                
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
@@ -503,46 +490,35 @@ void WorldStream::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> e
     size_t offset = 0;
     uint8_t data[2048]; ///\todo What is the max size?
 
-    m->SetVariableBlockCount(entity_ptr_list.size());
+    m->SetVariableBlockCount(update_info_list.size());
 
-    for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+    for(size_t i = 0; i < update_info_list.size(); ++i)
     {
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-
-        const Foundation::ComponentInterfacePtr &ogre_component = entity_ptr_list[i]->GetComponent("EC_OgrePlaceable");
-        OgreRenderer::EC_OgrePlaceable *ogre_pos = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-
-        m->AddU32(prim->LocalId);
+        m->AddU32(update_info_list[i].local_id_);
         m->AddU8(13);
 
         // Position
-        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetPosition()), sizeof(Vector3));
+        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(update_info_list[i].position_), sizeof(Vector3));
         offset += sizeof(Vector3);
 
         // Scale
-        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(ogre_pos->GetScale()), sizeof(Vector3));
+        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(update_info_list[i].scale_), sizeof(Vector3));
         offset += sizeof(Vector3);
+        
+        // Rotation todo.
     }
 
     // Add the data.
     m->AddBuffer(offset, data);
 
     ///\todo Make this work!
-    /*for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+    /*for(size_t i = 0; i < update_info_list.size(); ++i)
     {
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-
-        const Foundation::ComponentInterfacePtr &ogre_component = entity_ptr_list[i]->GetComponent("EC_OgrePlaceable");
-        OgreRenderer::EC_OgrePlaceable *ogre_pos = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());
-
-        m->AddU32(prim->LocalId);
+        m->AddU32(update_info_list[i].local_id_);
         m->AddU8(2);
 
         // Rotation
-        Vector3 val = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+        Vector3 val = Core::PackQuaternionToFloat3(update_info_list[i].orientation_);
         memcpy(&data[offset], &val, sizeof(Vector3));
         offset += sizeof(Vector3);
     }
@@ -553,11 +529,14 @@ void WorldStream::SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> e
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)
 {
     if (!connected_)
         return;
 
+    if (!name_info_list.size())
+        return;
+            
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectName);
     assert(m);
 
@@ -566,14 +545,11 @@ void WorldStream::SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_
     m->AddUUID(clientParameters_.sessionID);
 
     // ObjectData
-    m->SetVariableBlockCount(entity_ptr_list.size());
-    for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+    m->SetVariableBlockCount(name_info_list.size());
+    for(size_t i = 0; i < name_info_list.size(); ++i)
     {
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-        
-        m->AddU32(prim->LocalId);
-        m->AddBuffer(prim->ObjectName.size(), (uint8_t*)prim->ObjectName.c_str());
+        m->AddU32(name_info_list[i].local_id_);
+        m->AddBuffer(name_info_list[i].name_.size(), (uint8_t*)name_info_list[i].name_.c_str());
     }
 }
 
@@ -597,11 +573,14 @@ void WorldStream::SendObjectGrabPacket(Core::entity_id_t object_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list)
+void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list)
 {
     if (!connected_)
         return;
 
+    if (!description_info_list.size())
+        return;
+            
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDescription);
     assert(m);
 
@@ -610,14 +589,11 @@ void WorldStream::SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> enti
     m->AddUUID(clientParameters_.sessionID);
 
     // ObjectData
-    m->SetVariableBlockCount(entity_ptr_list.size());
-    for(size_t i = 0; i < entity_ptr_list.size(); ++i)
+    m->SetVariableBlockCount(description_info_list.size());
+    for(size_t i = 0; i < description_info_list.size(); ++i)
     {
-        const Foundation::ComponentInterfacePtr &prim_component = entity_ptr_list[i]->GetComponent("EC_OpenSimPrim");
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-
-        m->AddU32(prim->LocalId);
-        m->AddBuffer(prim->Description.size(), (uint8_t*)prim->Description.c_str());
+        m->AddU32(description_info_list[i].local_id_);
+        m->AddBuffer(description_info_list[i].description_.size(), (uint8_t*)description_info_list[i].description_.c_str());
     }
 }
 
