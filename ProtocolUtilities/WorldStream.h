@@ -29,6 +29,29 @@ namespace ProtocolUtilities
         DirectConnection = 0,
         AuthenticationConnection
     };
+    
+    /// Struct for object name update
+    struct ObjectNameInfo
+    {
+        Core::entity_id_t local_id_;
+        std::string name_;
+    };
+    
+    /// Struct for multipleobject update
+    struct ObjectUpdateInfo
+    {
+        Core::entity_id_t local_id_;
+        Core::Vector3df position_;
+        Core::Quaternion orientation_;
+        Core::Vector3df scale_;        
+    };
+    
+    /// Struct for description update
+    struct ObjectDescriptionInfo
+    {
+        Core::entity_id_t local_id_;
+        std::string description_;       
+    };    
 
     class WorldStream : public QObject
     {
@@ -148,12 +171,12 @@ namespace ProtocolUtilities
         void SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list);
 
         /// Sends a packet indicating change in Object's position, rotation and scale.
-        /// @param List of updated entity pointers.
-        void SendMultipleObjectUpdatePacket(std::vector<Scene::EntityPtr> entity_ptr_list);
+        /// @param List of updated entity id's/pos/rot/scale
+        void SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateInfo>& update_info_list);
 
         /// Sends a packet indicating change in Object's name.
-        /// @param List of updated entity pointers.
-        void SendObjectNamePacket(std::vector<Scene::EntityPtr> entity_ptr_list);
+        /// @param List of updated entity ids/names
+        void SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list);
 
         /// Sends a packet which indicates object has been touched.
         /// @param Local ID of the object which has been touched.
@@ -161,7 +184,7 @@ namespace ProtocolUtilities
 
         /// Sends a packet indicating change in Object's description
         /// @param List of updated entity pointers.
-        void SendObjectDescriptionPacket(std::vector<Scene::EntityPtr> entity_ptr_list);
+        void SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list);
 
         /// Sends handshake reply packet
         void SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags);
