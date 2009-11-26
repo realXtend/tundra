@@ -28,6 +28,7 @@
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
 
@@ -1502,19 +1503,32 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;  
 		}
-		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-		if (!meshptr)
+		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+		if (meshptr)
 		{
-			PyErr_SetString(PyExc_AttributeError, "mesh_ptr not found.");
-            return NULL;  
+			OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
+			Core::Vector3df min, max;
+
+			cobj.GetBoundingBox(min, max);
+
+			return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
 		}
-		        
-		OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-		Core::Vector3df min, max;
+		else
+		{
+			meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+			if (meshptr) 
+			{
+				OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+				Core::Vector3df min, max;
 
-        mesh.GetBoundingBox(min, max);
+				mesh.GetBoundingBox(min, max);
 
-		return Py_BuildValue("ffffff", min.x, min.y, min.z, max.x, max.y, max.z);;
+				return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
+			}
+		}
+		
+		PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
+        return NULL;  
 	}
 
 

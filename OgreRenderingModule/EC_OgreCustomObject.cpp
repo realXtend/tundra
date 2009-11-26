@@ -188,4 +188,21 @@ namespace OgreRenderer
             catch (...) {}
         }
     }
+
+	void EC_OgreCustomObject::GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max) const
+	{
+        if (!entity_)
+        {
+            min = Core::Vector3df(0.0, 0.0, 0.0);
+            max = Core::Vector3df(0.0, 0.0, 0.0);
+            return;
+        }
+     
+        const Ogre::AxisAlignedBox& bbox = entity_->getBoundingBox();//getMesh()->getBounds();
+        const Ogre::Vector3& bboxmin = bbox.getMinimum();
+        const Ogre::Vector3& bboxmax = bbox.getMaximum();
+        
+        min = Core::Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
+        max = Core::Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+	}
 }

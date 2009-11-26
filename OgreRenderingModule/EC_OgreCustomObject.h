@@ -80,6 +80,8 @@ namespace OgreRenderer
         //! Returns true if geometry has been committed and mesh entity created
         bool IsCommitted() { return entity_ != 0; }
         
+		void GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max) const;
+
     private:
         //! constructor
         /*! \param module renderer module

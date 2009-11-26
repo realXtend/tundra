@@ -611,21 +611,29 @@ if 0:
     
     
 if 0: #bounding box tests
-    ent = r.getEntity(r.getUserAvatarId())
+    #robo 1749872183
+    #ogrehead 1749872798
+    ent = r.getEntity(1749871222)#r.getUserAvatarId())
     from editgui.vector3 import Vector3 as V3
+    #~ print ent.boundingbox
     bb = list(ent.boundingbox)
-    min = V3(bb[0], bb[1], bb[2])
-    max = V3(bb[3], bb[4], bb[5])
-    height = abs(bb[4] - bb[1]) *1.2
-    width = abs(bb[3] - bb[0]) *1.2
-    depth = abs(bb[5] - bb[2]) *1.2
-    print ent.pos, min, max, height, width, depth
+    print bb
+    #~ scale = list(ent.scale)
+    #~ min = V3(bb[0], bb[1], bb[2])
+    #~ max = V3(bb[3], bb[4], bb[5])
+    #~ height = abs(bb[4] - bb[1]) + scale[0]#*1.2
+    #~ width = abs(bb[3] - bb[0]) + scale[1] #*1.2
+    #~ depth = abs(bb[5] - bb[2]) + scale[2]#*1.2
+    #~ #print ent.pos, 
+    #~ print min, max, height, width, depth
     
-    r.box = r.createEntity("Selection.mesh")
-    r.box.pos = ent.pos
+    #~ r.box = r.createEntity("Selection.mesh")
+    #~ r.box.pos = ent.pos
     
-    r.box.scale = depth, width, height
-    r.box.orientation = ent.orientation
+    #~ r.box.scale = height, width, depth#depth, width, height
+    #~ r.box.orientation = ent.orientation
+    
+    
     #~ min_ent = r.createEntity("cruncah1.mesh")
     #~ min_ent.scale = 0.3, 0.3, 0.3
     #~ min_ent.pos = pos[0] + min.x, pos[1] + min.y, pos[2] + min.z 
@@ -639,5 +647,3 @@ if 0: #login - for running tests automatically
     #user, pwd, server = "Test User", "test", "localhost:9000"
     user, pwd, server = "d d", "d", "world.evocativi.com:8002"
     r.startLoginOpensim(user, pwd, server)
-
-
