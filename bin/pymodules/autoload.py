@@ -50,12 +50,22 @@ else:
 try:
     editgui
 except: #first run
-    import editgui
+    try:
+        import editgui
+    except ImportError, e:
+        print "couldn't load edigui:", e
 else:
     r.logDebug("   reloading editgui")
     editgui = reload(editgui)
 
 #~ editgui = load_module("editgui")
+
+try:
+    apitest.pythonqt_gui
+except: #first run
+    import apitest.pythonqt_gui
+else:
+    pythonqt_gui = reload(apitest.pythonqt_gui)
 
 try:
     usr.sleeper
@@ -84,10 +94,13 @@ else:
 try:
     import webserver.webcontroller
 except ImportError: #socket not avaible in debugmode
+    print "NOTE: not enabling webserver 'cause socket module not available"
     import circuits
     WebServer = circuits.Component #a dummy for debugmode
 else:
     from webserver.webcontroller import WebServer
+
+import apitest.testrunner
     
 modules = [
     #apitest.circuits_testmodule.TestModule,
@@ -95,8 +108,10 @@ modules = [
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     editgui.EditGUI,
-    #WebServer
+    #apitest.pythonqt_gui.TestGui,
+    #WebServer,
     #usr.mousecontrol.MouseControl,
+    #apitest.testrunner.TestRunner
 ]
 
 #modules.append(headtrack.control.HeadTrack)
@@ -113,4 +128,6 @@ def load(circuitsmanager):
             print exc
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
+
+    #del modules #attempt to improve reloading, not keep refs to old versions
  
