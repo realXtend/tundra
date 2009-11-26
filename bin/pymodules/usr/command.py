@@ -639,3 +639,5 @@ if 0: #login - for running tests automatically
     #user, pwd, server = "Test User", "test", "localhost:9000"
     user, pwd, server = "d d", "d", "world.evocativi.com:8002"
     r.startLoginOpensim(user, pwd, server)
+
+
