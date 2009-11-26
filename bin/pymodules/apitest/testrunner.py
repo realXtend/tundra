@@ -1,19 +1,25 @@
 import rexviewer as r
 import circuits
+
 import time
+import sys #there's no exit call in naali py api now
 
 #user, pwd, server = "Test User", "test", "localhost:9000"
 user, pwd, server = "d d", "d", "world.evocativi.com:8002"
 
 class Init:
+    def __init__(self):
+        r.logInfo("TestRunner: Init")
+
     def do(self):
         r.startLoginOpensim(user, pwd, server)
         return Login()
 
 class Login:
-    WAITTIME = 30
+    WAITTIME = 60
 
     def __init__(self):
+        r.logInfo("TestRunner: Login")
         self.started = time.time()
 
     def do(self):
@@ -24,8 +30,25 @@ class Login:
         return self
 
 class Logout:
+    def __init__(self):
+        r.logInfo("TestRunner: Logout")
+
     def do(self):
-        print "Add logout here"
+        r.logout()
+        return Exit()
+
+class Exit:
+    WAITTIME = 30
+
+    def __init__(self):
+        self.started = time.time()
+
+    def do(self):
+        #print "_",
+        if time.time() > (self.started + self.WAITTIME):
+            sys.exit()
+            return None
+        
         return self
 
 class TestRunner(circuits.Component):
@@ -35,4 +58,5 @@ class TestRunner(circuits.Component):
 
     def update(self, deltatime):
         #print "Running test in state:", self.cur_state
-        self.cur_state = self.cur_state.do()
+        if self.cur_state is not None:
+            self.cur_state = self.cur_state.do()
