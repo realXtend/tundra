@@ -609,22 +609,30 @@ if 0:
     #~ newpos = 
     #~ print newpos
     
+    
 if 0: #bounding box tests
     ent = r.getEntity(r.getUserAvatarId())
     from editgui.vector3 import Vector3 as V3
     bb = list(ent.boundingbox)
     min = V3(bb[0], bb[1], bb[2])
     max = V3(bb[3], bb[4], bb[5])
+    height = abs(bb[4] - bb[1]) *1.2
+    width = abs(bb[3] - bb[0]) *1.2
+    depth = abs(bb[5] - bb[2]) *1.2
+    print ent.pos, min, max, height, width, depth
     
-    print ent.pos, min, max
-    pos = list(ent.pos)
-    min_ent = r.createEntity("cruncah1.mesh")
-    min_ent.scale = 0.3, 0.3, 0.3
-    min_ent.pos = pos[0] + min.x, pos[1] + min.y, pos[2] + min.z 
+    r.box = r.createEntity("Selection.mesh")
+    r.box.pos = ent.pos
     
-    max_ent = r.createEntity("cruncah1.mesh")
-    max_ent.scale = 0.3, 0.3, 0.3
-    max_ent.pos = pos[0] + max.y, pos[1] + max.x, pos[2] + max.z
+    r.box.scale = depth, width, height
+    r.box.orientation = ent.orientation
+    #~ min_ent = r.createEntity("cruncah1.mesh")
+    #~ min_ent.scale = 0.3, 0.3, 0.3
+    #~ min_ent.pos = pos[0] + min.x, pos[1] + min.y, pos[2] + min.z 
+    
+    #~ max_ent = r.createEntity("cruncah1.mesh")
+    #~ max_ent.scale = 0.3, 0.3, 0.3
+    #~ max_ent.pos = pos[0] + max.x, pos[1] + max.y, pos[2] + max.z
     
 if 0: #login - for running tests automatically
     print "starting opensim login"
