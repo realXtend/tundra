@@ -628,6 +628,6 @@ if 0: #bounding box tests
     
 if 0: #login - for running tests automatically
     print "starting opensim login"
-    r.startLoginOpensim("Test User", "test", "localhost:9000")
-
-    
+    #user, pwd, server = "Test User", "test", "localhost:9000"
+    user, pwd, server = "d d", "d", "world.evocativi.com:8002"
+    r.startLoginOpensim(user, pwd, server)
