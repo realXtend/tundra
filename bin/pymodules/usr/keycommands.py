@@ -76,8 +76,7 @@ class KeyCommander(Component):
         #~ print "THIS WOOORKS!!!"
 
     def run_commandpy(self):
-        import command
-        command = reload(command)
+        execfile("pymodules/usr/command.py")
         return True
         
     def restart_modulemanager(self):
