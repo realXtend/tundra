@@ -1199,6 +1199,18 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject* Logout(PyObject *self)
+{
+    Foundation::Framework *framework_;
+    RexLogic::RexLogicModule *rexlogic_;
+
+    framework_ = PythonScript::self()->GetFramework();
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_->LogoutAndDeleteWorld();
+
+    Py_RETURN_NONE;
+}
+
 /*
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
     std::cout << "PyEventCallback" << std::endl;
@@ -1298,6 +1310,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"startLoginOpensim", (PyCFunction)StartLoginOpensim, METH_VARARGS,
     "Starts login using OpenSim authentication: expects User Name, password, server:port"},
+
+    {"logout", (PyCFunction)Logout, METH_NOARGS,
+    "Log out from the world. Made for test script to be able to stop."},
 
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},

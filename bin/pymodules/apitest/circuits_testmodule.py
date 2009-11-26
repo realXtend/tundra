@@ -24,7 +24,7 @@ class TestModule(Component):
         
     def update(self, deltatime):
         if self.data == 1:
-            self.data = 2
+            self.data = 2 #change this to any non-1 number to test live reloading
         else:
             self.data = 1
         print self.data, #deltatime
@@ -32,12 +32,12 @@ class TestModule(Component):
     def on_chat(self, frm, msg):
         print "Test Module received chat message:", frm, msg
         
-    def on_input(self, evid):
+    #def on_input(self, evid):
         #print "Test Module receiving input event:", evid
         
-        if evid in inputtests:
-            print inputtests[evid]
+    #    if evid in inputtests:
+    #        print inputtests[evid]
             
-    def on_mousemove(self, m):
-        pass
+    #def on_mousemove(self, m):
+    #    pass
         #print "Mouse move", m
