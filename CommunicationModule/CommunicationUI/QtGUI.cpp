@@ -81,7 +81,7 @@ namespace CommunicationUI
 	/////////////////////////////////////////////////////////////////////
 
     UIContainer::UIContainer(QWidget *parent, Foundation::Framework *framework, boost::shared_ptr<UICanvas> canvas_login, boost::shared_ptr<UICanvas> canvas_chat)
-		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework), canvas_login_(canvas_login), canvas_chat_(canvas_chat), labelLoginConnectionStatus_(0)
+		: QWidget(parent), chatWidget_(0), loginWidget_(0), framework_(framework), canvas_login_(canvas_login), canvas_chat_(canvas_chat), labelLoginConnectionStatus_(0), popup_(0), notify_timer_(0)
 	{
 		communication_service_ = Communication::CommunicationService::GetInstance();
 
@@ -321,6 +321,8 @@ namespace CommunicationUI
 			Conversation *conversation = new Conversation(tabWidgetCoversations_, *chatSession, listItem->contact_, user_name);
 			tabWidgetCoversations_->addTab(conversation, clickedItem->icon(), QString(listItem->contact_->GetName()));
 			tabWidgetCoversations_->setCurrentWidget(conversation);
+            // For popup
+            connect((QObject*)chatSession, SIGNAL( MessageReceived(const Communication::ChatMessageInterface &) ), this, SLOT( NewMessageReceived(const Communication::ChatMessageInterface &) ));
 		}
 	}
 
@@ -344,6 +346,8 @@ namespace CommunicationUI
 				conversation->ShowMessageHistory(chatSession.GetMessageHistory());
 				tabWidgetCoversations_->addTab(conversation, GetStatusIcon(originator_presence_status), originator_name);		
 				tabWidgetCoversations_->setCurrentWidget(conversation);
+                // For popup
+                connect((QObject*)&chatSession, SIGNAL( MessageReceived(const Communication::ChatMessageInterface &) ), this, SLOT( NewMessageReceived(const Communication::ChatMessageInterface &) ));
 			}
 		}
 		else
@@ -401,6 +405,93 @@ namespace CommunicationUI
 		emit ( DestroyCanvas() );
 		QWidget::closeEvent(myCloseEvent);
 	}
+
+    void UIContainer::NewMessageReceived(const Communication::ChatMessageInterface &message)
+    {
+        if (canvas_chat_->IsHidden())
+        {
+            boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+            if (qt_module.get())
+            {
+                if (canvas_notify_popup_.get())
+                    canvas_notify_popup_.reset();
+
+                canvas_notify_popup_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
+
+                QUiLoader loader;
+                QFile uiFile("./data/ui/communication/notify_popup.ui");
+
+                if ( uiFile.exists() )
+                {
+                    if (popup_)
+                        SAFE_DELETE(popup_);
+
+                    // ui init
+                    popup_ = loader.load(&uiFile);
+                    notify_message_ = popup_->findChild<QLabel *>("statusLabel");
+                    notify_autohide_ = popup_->findChild<QLabel *>("autohideLabel");
+                    notify_show_button_ = popup_->findChild<QPushButton *>("showButton");
+                    uiFile.close();
+
+                    // content to ui
+                    notify_message_->setText(QString("%1: %2").arg(message.GetOriginator()->GetName(), message.GetText()));
+
+                    // timer and store tab name
+                    QObject::connect(notify_show_button_, SIGNAL( clicked() ), this, SLOT( ShowUiAndNewMessage() ));
+                    tabname_ = message.GetOriginator()->GetContact()->GetName();
+                    SAFE_DELETE(notify_timer_);
+                    notify_timer_ = new QTimer();
+                    QObject::connect(notify_timer_, SIGNAL( timeout() ), this, SLOT( NotifyTimerUpdate() ));
+                    timer_count_ = 10;
+                    notify_timer_->start(1000);
+
+                    // sizing and show
+                    popup_->resize(408, 83);
+                    canvas_notify_popup_->SetSize(408, 83);
+                    canvas_notify_popup_->SetPosition(0, 25);
+                    canvas_notify_popup_->SetResizable(false);
+                    canvas_notify_popup_->SetStationary(true);
+                    canvas_notify_popup_->SetAlwaysOnTop(true);
+                    canvas_notify_popup_->AddWidget(popup_);
+                    canvas_notify_popup_->Show();
+                    canvas_notify_popup_->BringToTop();
+                }
+            }
+        }
+    }
+
+    void UIContainer::ShowUiAndNewMessage()
+    {
+        tabWidgetCoversations_->SetFocusTo(tabname_);
+        canvas_chat_->Show();
+        
+        boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+        if (qt_module.get() && canvas_notify_popup_.get())
+        {
+            canvas_notify_popup_->Hide();
+            qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
+            SAFE_DELETE(popup_);
+            canvas_notify_popup_.reset();
+        }
+    }
+
+    void UIContainer::NotifyTimerUpdate()
+    {
+        if (timer_count_ > 0)
+            notify_autohide_->setText(QString("Autohide in %1").arg(QString::number(timer_count_)));
+        else
+        {
+            boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+            if (qt_module.get() && canvas_notify_popup_.get())
+            {
+                canvas_notify_popup_->Hide();
+                qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
+                SAFE_DELETE(popup_);
+                canvas_notify_popup_.reset();
+            }
+        }
+
+    }
 
 
 	/////////////////////////////////////////////////////////////////////
@@ -557,6 +648,19 @@ namespace CommunicationUI
 		for (int i=0; i<this->count(); i++)
 		{
 			if ( QString::compare(this->tabText(i), contact->GetName()) == 0 )
+			{
+				this->setCurrentIndex(i);
+				return true;
+			}
+		}
+		return false;
+	}
+
+    bool ConversationsContainer::SetFocusTo(QString &tabName)
+	{
+		for (int i=0; i<this->count(); i++)
+		{
+			if ( QString::compare(this->tabText(i), tabName) == 0 )
 			{
 				this->setCurrentIndex(i);
 				return true;

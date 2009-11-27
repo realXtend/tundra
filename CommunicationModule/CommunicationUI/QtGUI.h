@@ -62,6 +62,7 @@ namespace CommunicationUI
 		ConversationsContainer(QWidget *parent);
 		~ConversationsContainer(void);
 		bool DoesTabExist(Communication::ContactInterface *contact);
+        bool SetFocusTo(QString &tabName);
 		
 	public slots:
 		void CloseFriendRequest(FriendRequestUI *request);
@@ -145,6 +146,11 @@ namespace CommunicationUI
 		void RemoveFriend(bool clicked);
         void OnNewContact(const Communication::ContactInterface& contact);
         void OnContactRemoved(const Communication::ContactInterface& contact);
+
+        // Notify system
+        void NewMessageReceived(const Communication::ChatMessageInterface& message);
+        void ShowUiAndNewMessage();
+        void NotifyTimerUpdate();
         
 
 	protected slots:
@@ -168,6 +174,15 @@ namespace CommunicationUI
 		QPushButton *buttonRemoveFriend_;
 		ConversationsContainer *tabWidgetCoversations_;
 
+        // Notify system
+        QWidget *popup_;
+        QLabel *notify_message_;
+        QLabel *notify_autohide_;
+        QPushButton *notify_show_button_;
+        QString tabname_;
+        QTimer *notify_timer_;
+        int timer_count_;
+
 		Communication::Credentials credentials_;
 		Communication::CommunicationServiceInterface* communication_service_;
 		Communication::ConnectionInterface* im_connection_;
@@ -176,6 +191,7 @@ namespace CommunicationUI
         Foundation::Framework *framework_;
         boost::shared_ptr<UICanvas> canvas_login_;
         boost::shared_ptr<UICanvas> canvas_chat_;
+        boost::shared_ptr<UICanvas> canvas_notify_popup_;
 
 	signals:
         void ChangeToolBarButton(QString, QString);
