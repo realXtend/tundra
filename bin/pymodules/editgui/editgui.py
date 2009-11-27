@@ -250,7 +250,12 @@ class EditGUI(Component):
             r.networkUpdate(ent.id)
             #print "=>", ent.pos
             self.move_arrows.pos = pos[0], pos[1], pos[2]
-    
+            self.selection_box.pos = pos[0], pos[1], pos[2]
+
+            self.widget.xpos.setValue(pos[0])
+            self.widget.ypos.setValue(pos[1])
+            self.widget.zpos.setValue(pos[2])
+            
     def changescale(self, i, v):
         ent = self.sel
         if ent is not None:
@@ -265,12 +270,15 @@ class EditGUI(Component):
                         scale[index] += diff
             
             ent.scale = scale[0], scale[1], scale[2]
+            
             r.networkUpdate(ent.id)
-            x, y, z = self.sel.scale
-            self.widget.scalex.setValue(x)
-            self.widget.scaley.setValue(y)
-            self.widget.scalez.setValue(z)
-    
+            
+            self.widget.scalex.setValue(scale[0])
+            self.widget.scaley.setValue(scale[1])
+            self.widget.scalez.setValue(scale[2])
+            
+            self.update_selection()
+            
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
@@ -288,6 +296,7 @@ class EditGUI(Component):
             r.networkUpdate(ent.id)
             
             self.move_arrows.orientation = ort
+            self.selection_box.orientation = ort
             
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
@@ -350,28 +359,28 @@ class EditGUI(Component):
             self.update_guivals()
             self.widget.label.text = ent.id
             
-            bb = list(ent.boundingbox)
-            scale = list(ent.scale)
-            min = Vector3(bb[0], bb[1], bb[2])
-            max = Vector3(bb[3], bb[4], bb[5])
-            height = abs(bb[4] - bb[1]) 
-            width = abs(bb[3] - bb[0])
-            depth = abs(bb[5] - bb[2])
+            self.update_selection()
+    
+    def update_selection(self):             
+        bb = list(self.sel.boundingbox)
+        scale = list(self.sel.scale)
+        min = Vector3(bb[0], bb[1], bb[2])
+        max = Vector3(bb[3], bb[4], bb[5])
+        height = abs(bb[4] - bb[1]) 
+        width = abs(bb[3] - bb[0])
+        depth = abs(bb[5] - bb[2])
 
-            if bb[6] == 0: #0 means CustomObject
-                height += scale[0]#*1.2
-                width += scale[1] #*1.2
-                depth += scale[2]#*1.2
-                
-                if self.selection_box is None:
-                    self.selection_box = r.createEntity("Selection.mesh")
+        if bb[6] == 0: #0 means CustomObject
+            height += scale[0]#*1.2
+            width += scale[1] #*1.2
+            depth += scale[2]#*1.2
 
-                self.selection_box.pos = ent.pos
-                
-                self.selection_box.scale = height, width, depth#depth, width, height
-                self.selection_box.orientation = ent.orientation
-            else:
-                r.logDebug("EditGUI: EC_OgreMesh clicked...")
+            self.selection_box.pos = self.sel.pos
+            
+            self.selection_box.scale = height, width, depth#depth, width, height
+            self.selection_box.orientation =self.sel.orientation
+        else:
+            r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
     def update_guivals(self):
         x, y, z = self.sel.pos
@@ -431,6 +440,10 @@ class EditGUI(Component):
         if self.move_arrows is not None:
             self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
             self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            
+        if self.selection_box is not None:
+            self.selection_box.scale = 0.0, 0.0, 0.0
+            self.selection_box.pos = 0.0, 0.0, 0.0
         
         self.arrow_grabbed_axis = None
         self.arrow_grabbed = False
@@ -466,6 +479,8 @@ class EditGUI(Component):
             #print "Entity position is", ent.pos
             #print "Entity id is", ent.id
             #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
+            if self.selection_box is None:
+                self.selection_box = r.createEntity("Selection.mesh")
             
             if self.move_arrows is None:
                 self.move_arrows = self.createArrows()
@@ -613,8 +628,10 @@ class EditGUI(Component):
         r.logDebug("EditGUI exiting...")
         
         if r.restart:
-            #r.logDebug("...restarting...")
+            r.logDebug("...restarting...")
             self.hideArrows()
+        else:
+            r.logDebug("...not restarting...")
         
         modu = r.getQtModule()
         if self.canvas is not None:
