@@ -92,7 +92,7 @@ namespace CommunicationUI
 		void InitWidget();
 		void ConnectSignals();
 		QString GenerateTimeStamp();
-        QString GenerateTimeStamp(QDateTime &time);
+        QString GenerateTimeStamp(QDateTime time);
 		void AppendLineToConversation(QString line);
 		void AppendHTMLToConversation(QString html);
 
