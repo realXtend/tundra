@@ -69,7 +69,9 @@ namespace QtUI
     void EC_UICanvas::SetSubmeshes(const std::vector<Core::uint>& submeshes)
     {
         submeshes_ = submeshes;
-        
+        if (!submeshes_.size())
+            canvas_.reset();
+            
         Refresh();
     }
 
@@ -84,6 +86,7 @@ namespace QtUI
     void EC_UICanvas::ClearSubmeshes()
     {
         submeshes_.clear();
+        canvas_.reset();
 
         Refresh();
     }

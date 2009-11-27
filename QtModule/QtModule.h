@@ -20,6 +20,8 @@ namespace Input
 namespace QtUI
 {
 	class UICanvasManager;
+	class UICanvasTestEdit;
+	
     /** QtModule provides other modules with the ability to maintain their own
         UI canvases, onto which widgets are loaded.
         These canvases can be then shown on the 2D screen or placed into the 3D world
@@ -107,6 +109,11 @@ namespace QtUI
          */
         void SetShowControlBar(bool show);
 
+        /**
+         * Return list of all UICanvases. Do not misuse!
+         */
+        const QList<boost::shared_ptr<UICanvas> >& GetCanvases() { return controller_->GetCanvases(); }
+
     private:
         
         /// Initializes a mapping table between OIS and Qt keyboard codes.
@@ -128,6 +135,7 @@ namespace QtUI
         QPoint lastPos_;
         UIController* controller_;
 		UICanvasManager *canvasManager_;
+		UICanvasTestEdit *uicanvastestedit_;
         QMap<int, Qt::Key> converterMap_;
         QPoint lastLocation_;
     };
