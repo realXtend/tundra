@@ -204,7 +204,17 @@ class WebDavClient(object):
         else:
             dataFile.close()
             return 'False'
-        
+
+    def uploadFileBuffer(self, dataBuffer, collectionWebDavPath, resourceWebDavName):
+        if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
+            try:
+                self.resource.addResource(resourceWebDavName, dataBuffer)
+                return 'True'
+            except WebdavError, IOError:
+                return WebdavError.__str__
+        else:
+            return 'False'
+
     def createDirectory(self, collectionWebDavPath, directoryName):
         if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
             try:
