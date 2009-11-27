@@ -107,11 +107,11 @@ modules = [
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    editgui.EditGUI
+    editgui.EditGUI,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
-    #apitest.testrunner.TestRunner
+    #apitest.testrunner.TestLoginLogoutExit,
 ]
 
 #modules.append(headtrack.control.HeadTrack)
