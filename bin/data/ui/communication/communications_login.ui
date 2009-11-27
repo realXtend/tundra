@@ -230,7 +230,7 @@ QMenu {
           <item>
            <widget class="QLineEdit" name="lineEdit_Password">
             <property name="text">
-             <string/>
+             <string>Perkele9</string>
             </property>
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>

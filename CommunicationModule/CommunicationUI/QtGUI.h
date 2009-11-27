@@ -92,6 +92,7 @@ namespace CommunicationUI
 		void InitWidget();
 		void ConnectSignals();
 		QString GenerateTimeStamp();
+        QString GenerateTimeStamp(QDateTime &time);
 		void AppendLineToConversation(QString line);
 		void AppendHTMLToConversation(QString html);
 
@@ -178,6 +179,7 @@ namespace CommunicationUI
         QWidget *popup_;
         QLabel *notify_message_;
         QLabel *notify_autohide_;
+        QLabel *notify_title_;
         QPushButton *notify_show_button_;
         QString tabname_;
         QTimer *notify_timer_;

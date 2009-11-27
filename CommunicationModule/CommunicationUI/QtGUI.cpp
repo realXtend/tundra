@@ -118,7 +118,7 @@ namespace CommunicationUI
 		{
             // Init chat GUI
 			QUiLoader loader;
-			QFile uiFile("./data/ui/communications.ui");
+			QFile uiFile("./data/ui/communication/communications.ui");
 			chatWidget_ = loader.load(&uiFile, 0);
             chatWidget_->resize(720, 350);
 			uiFile.close();
@@ -344,6 +344,7 @@ namespace CommunicationUI
 			{
 				Conversation *conversation = new Conversation(tabWidgetCoversations_, chatSession, originator, user_name);
 				conversation->ShowMessageHistory(chatSession.GetMessageHistory());
+                NewMessageReceived(*chatSession.GetMessageHistory().back());
 				tabWidgetCoversations_->addTab(conversation, GetStatusIcon(originator_presence_status), originator_name);		
 				tabWidgetCoversations_->setCurrentWidget(conversation);
                 // For popup
@@ -413,8 +414,16 @@ namespace CommunicationUI
             boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
             if (qt_module.get())
             {
+                if (notify_timer_)
+                {
+                    notify_timer_->stop();
+                    SAFE_DELETE(notify_timer_);
+                }
                 if (canvas_notify_popup_.get())
-                    canvas_notify_popup_.reset();
+                {
+                    canvas_notify_popup_->Hide();
+                    qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
+                }
 
                 canvas_notify_popup_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
@@ -423,23 +432,23 @@ namespace CommunicationUI
 
                 if ( uiFile.exists() )
                 {
-                    if (popup_)
-                        SAFE_DELETE(popup_);
-
                     // ui init
                     popup_ = loader.load(&uiFile);
-                    notify_message_ = popup_->findChild<QLabel *>("statusLabel");
+                    notify_title_ = popup_->findChild<QLabel *>("titleLabel");
+                    notify_message_ = popup_->findChild<QLabel *>("messageLabel");
                     notify_autohide_ = popup_->findChild<QLabel *>("autohideLabel");
                     notify_show_button_ = popup_->findChild<QPushButton *>("showButton");
+                    
                     uiFile.close();
 
                     // content to ui
-                    notify_message_->setText(QString("%1: %2").arg(message.GetOriginator()->GetName(), message.GetText()));
-
+                    notify_title_->setText(QString("You have recieved a message from %1").arg(message.GetOriginator()->GetContact()->GetName()));
+                    notify_message_->setText(QString("%1").arg(message.GetText()));
+                    notify_autohide_->setText(QString("Autohide in 10"));
                     // timer and store tab name
                     QObject::connect(notify_show_button_, SIGNAL( clicked() ), this, SLOT( ShowUiAndNewMessage() ));
                     tabname_ = message.GetOriginator()->GetContact()->GetName();
-                    SAFE_DELETE(notify_timer_);
+                    
                     notify_timer_ = new QTimer();
                     QObject::connect(notify_timer_, SIGNAL( timeout() ), this, SLOT( NotifyTimerUpdate() ));
                     timer_count_ = 10;
@@ -462,6 +471,7 @@ namespace CommunicationUI
 
     void UIContainer::ShowUiAndNewMessage()
     {
+        notify_timer_->stop();
         tabWidgetCoversations_->SetFocusTo(tabname_);
         canvas_chat_->Show();
         
@@ -470,24 +480,28 @@ namespace CommunicationUI
         {
             canvas_notify_popup_->Hide();
             qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
-            SAFE_DELETE(popup_);
-            canvas_notify_popup_.reset();
         }
     }
 
     void UIContainer::NotifyTimerUpdate()
     {
-        if (timer_count_ > 0)
-            notify_autohide_->setText(QString("Autohide in %1").arg(QString::number(timer_count_)));
-        else
+        if (canvas_notify_popup_ && notify_autohide_ && popup_ && notify_timer_)
         {
-            boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
-            if (qt_module.get() && canvas_notify_popup_.get())
+            if (timer_count_ > 0)
             {
-                canvas_notify_popup_->Hide();
-                qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
-                SAFE_DELETE(popup_);
-                canvas_notify_popup_.reset();
+                notify_autohide_->setText(QString("Autohide in %1").arg(QString::number(timer_count_)));
+                --timer_count_;
+            }
+            else
+            {
+                boost::shared_ptr<QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtModule>(Foundation::Module::MT_Gui).lock();
+                if (qt_module.get() && canvas_notify_popup_.get())
+                {
+                    notify_timer_->stop();
+                    canvas_notify_popup_->Hide();
+                    qt_module->DeleteCanvas(canvas_notify_popup_->GetID());
+                    canvas_notify_popup_.reset();    
+                }
             }
         }
 
@@ -524,7 +538,7 @@ namespace CommunicationUI
 	{
 		// Init widget from .ui file
 		QUiLoader loader;
-		QFile uiFile("./data/ui/communications_login.ui");
+		QFile uiFile("./data/ui/communication/communications_login.ui");
 		internalWidget_ = loader.load(&uiFile, this);
 		internalWidget_->layout()->setMargin(0);
 		this->layout()->addWidget(internalWidget_);
@@ -693,7 +707,7 @@ namespace CommunicationUI
 	{
 		// Load ui to widget from file
 		QUiLoader loader;
-        QFile uiFile("./data/ui/communications_conversation.ui");
+        QFile uiFile("./data/ui/communication/communications_conversation.ui");
 		internalWidget_ = loader.load(&uiFile, this);
 		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
@@ -738,7 +752,7 @@ namespace CommunicationUI
 		{
 			Communication::ChatMessageInterface *msg = (*itrHistory);
 			QString html("<span style='color:#828282;'>[");
-			html.append(msg->GetTimeStamp().toString());
+			html.append(GenerateTimeStamp(msg->GetTimeStamp()));
 			html.append("]</span> <span style='color:#2133F0;'>");
 			html.append(msg->GetOriginator()->GetName());
 			//! @todo check if the originator is the current user
@@ -756,6 +770,12 @@ namespace CommunicationUI
         QString timestamp(QString("%1 %2").arg(time_stamp.date().toString("dd.MM.yyyy"),time_stamp.time().toString("hh:mm:ss")));
 		return timestamp;
 	}
+
+    QString Conversation::GenerateTimeStamp(QDateTime &time)
+    {
+        QString timestamp(QString("%1 %2").arg(time.date().toString("dd.MM.yyyy"),time.time().toString("hh:mm:ss")));
+		return timestamp;
+    }
 
 	void Conversation::AppendLineToConversation(QString line)
 	{
@@ -875,7 +895,7 @@ namespace CommunicationUI
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
 		QUiLoader loader;
-        QFile uiFile("./data/ui/communications_friendRequest.ui");
+        QFile uiFile("./data/ui/communication/communications_friendRequest.ui");
 		internalWidget_ = loader.load(&uiFile, this);
 		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
@@ -898,7 +918,7 @@ namespace CommunicationUI
 		this->setLayout(new QVBoxLayout());
 		this->layout()->setMargin(0);
 		QUiLoader loader;
-        QFile uiFile("./data/ui/communications_addFriend.ui");
+        QFile uiFile("./data/ui/communication/communications_addFriend.ui");
 		internalWidget_ = loader.load(&uiFile, this);
 		this->layout()->addWidget(internalWidget_);
 		uiFile.close();
