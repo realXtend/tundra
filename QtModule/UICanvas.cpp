@@ -393,6 +393,7 @@ void UICanvas::Show()
     {
         view_->show();
     }
+    emit Shown();
 }
 
 void UICanvas::Hide()

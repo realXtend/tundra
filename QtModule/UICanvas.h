@@ -224,6 +224,9 @@ namespace QtUI
 
         /** Emitted when this canvas is hidden. */
         void Hidden();
+
+        /** Emitted when this canvas is shown. */
+        void Shown();
         
     private slots:
         /** Recalculates the relative normalized canvas overlay position and size values needed 
