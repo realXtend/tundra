@@ -200,7 +200,7 @@ namespace CommunicationUI
 		{
 			// Read UI from file
 			QUiLoader loader;
-			QFile uiFile("./data/ui/communications_opensim_chat.ui");
+			QFile uiFile("./data/ui/communication/communications_opensim_chat.ui");
 			internalWidget_ = loader.load(&uiFile);
 			uiFile.close();
 
