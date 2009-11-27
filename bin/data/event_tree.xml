@@ -5,7 +5,7 @@
     <subscriber module="NetTestLogicModule" priority="100" />
     <subscriber module="PythonScriptModule" priority="103" />
     <subscriber module="InputModuleOIS" priority="1" />
-    <subscriber module="ConsoleModule" priority="101" />
+    <subscriber module="ConsoleModule" priority="105" />
     <subscriber module="OgreRenderingModule" priority="99" />
     <subscriber module="TextureDecoderModule" priority="98" />
     <subscriber module="QtModule" priority="104" />
