@@ -359,32 +359,34 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                         // Has canvas.
                         EC_UICanvas& ui_canvas = *checked_static_cast<EC_UICanvas*>(obj.get()); 
                         boost::shared_ptr<UICanvas> canvas = ui_canvas.GetCanvas();
-                
-                        // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
-                        QPoint pos = canvas->GetPosition().toPoint();
-                        QSize size = canvas->GetSize();
-                        QPoint position = QPoint(size.width() * raycast_data->u + pos.x(), size.height() * raycast_data->v + pos.y());
-                    
-                        // Poll from OIS which modifiers are on.
-
-                         boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
-                            framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
-
-                        boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
-
-                        controller_->SetCurrentModifier(GetCurrentModifier(input));
-                        controller_->InjectMousePress(position.x(), position.y(), canvas.get());
-                        mouse_left_button_down_ = true;
+                        if (canvas)
+                        {
+                            // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
+                            QPoint pos = canvas->GetPosition().toPoint();
+                            QSize size = canvas->GetSize();
+                            QPoint position = QPoint(size.width() * raycast_data->u + pos.x(), size.height() * raycast_data->v + pos.y());
                         
-                        // Forced redraw (needed?)
-                        controller_->Redraw(canvas);
+                            // Poll from OIS which modifiers are on.
 
-                        if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
-                            input->SetState(Input::State_Buffered);
-                        else if (!controller_->IsKeyboardFocus())
-                            input->SetState(Input::State_Unknown);
+                             boost::weak_ptr<Input::InputModuleOIS> inputWeak = 
+                                framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
-                        return true;
+                            boost::shared_ptr<Input::InputModuleOIS> input = inputWeak.lock();
+
+                            controller_->SetCurrentModifier(GetCurrentModifier(input));
+                            controller_->InjectMousePress(position.x(), position.y(), canvas.get());
+                            mouse_left_button_down_ = true;
+                            
+                            // Forced redraw (needed?)
+                            controller_->Redraw(canvas);
+
+                            if (controller_->IsKeyboardFocus() && input->GetState() != Input::State_Buffered)
+                                input->SetState(Input::State_Buffered);
+                            else if (!controller_->IsKeyboardFocus())
+                                input->SetState(Input::State_Unknown);
+
+                            return true;
+                        }
                     }
                 }
             }

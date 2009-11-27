@@ -149,6 +149,9 @@ namespace QtUI
     
     void UICanvasTestEdit::SetEntityId(Core::entity_id_t entity_id)
     {
+        if (!editor_widget_)
+            return;
+    
         last_entity_id_ = entity_id;
         RefreshSubmeshes();
         
