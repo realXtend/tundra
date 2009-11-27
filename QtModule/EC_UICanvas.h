@@ -38,7 +38,7 @@ namespace QtUI
         //! Sets in which submeshes to show the UICanvas (just one submesh)         
         void SetSubmeshes(Core::uint submesh);
         
-        //! Disables UICanvas from all submeshes
+        //! Disables UICanvas from all submeshes. Also resets canvas referred to.
         void ClearSubmeshes();
      
         //! Refresh.

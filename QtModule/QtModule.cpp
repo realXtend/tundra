@@ -9,6 +9,7 @@
 #include "EC_UICanvas.h"
 #include "QtModule.h"
 #include "UICanvasManager.h"
+#include "UICanvasTestEdit.h"
 
 #include <Ogre.h>
 #include "OgreRenderingModule.h"
@@ -35,7 +36,7 @@ namespace
 }
 
 QtModule::QtModule()
-:ModuleInterfaceImpl(Foundation::Module::MT_Gui), controller_(0), canvasManager_(0)
+:ModuleInterfaceImpl(Foundation::Module::MT_Gui), controller_(0), canvasManager_(0), uicanvastestedit_(0)
 {
 }
 
@@ -77,6 +78,8 @@ void QtModule::Initialize()
     InitializeKeyCodes();
    
     mouse_left_button_down_ = false;
+    
+    uicanvastestedit_ = new UICanvasTestEdit(framework_);
 }
 
 void QtModule::PostInitialize()
@@ -91,6 +94,7 @@ void QtModule::Uninitialize()
 {
     SAFE_DELETE(controller_);
 	SAFE_DELETE(canvasManager_);
+	SAFE_DELETE(uicanvastestedit_);
 }
 
 bool QtModule::HandleEvent(Core::event_category_id_t category_id,
@@ -257,7 +261,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
                 <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
                
-                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());
+                Foundation::RaycastResult result = renderer->Raycast(pos.x(), pos.y());             
               
                 // Has a entity a EC_CANVAS ?
                 boost::shared_ptr<UICanvas> in_world_canvas = GetCanvas(result);
@@ -327,67 +331,13 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             return true;
         }
     }
-    else if (category_id == input_event_category_ && event_id == Input::Events::KEY_PRESSED)
-    {
-        
-        //Hack to test making EC_UICanvases
-        //Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
-        //int keycode = key->code_;
-        //if (keycode == OIS::KC_RETURN)
-        //{
-        //    boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-        //    boost::shared_ptr<Input::InputModuleOIS> input = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
-        //    if (input && render)
-        //    {
-        //        const Input::Events::Movement &mouse = input->GetMouseMovement();
-        //        Foundation::RaycastResult result = render->Raycast(mouse.x_.abs_, mouse.y_.abs_);            
-        //        if (result.entity_)
-        //        {
-        //            Scene::Entity* entity = result.entity_;
-        //            std::cout << "Hit entity " << entity << " submesh " << result.submesh_ << std::endl;
-        //            // Entity must have either mesh or customobject
-        //            if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()) ||
-        //                entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
-        //            {
-        //                std::cout << "Can make EC_UICanvas" << std::endl;
-        //                const QList<boost::shared_ptr<UICanvas> >& canvases = controller_->GetCanvases();
-        //                static Core::uint index = 0;
-        //                if (canvases.size())
-        //                {
-        //                    index %= canvases.size();
-        //                    for (Core::uint i = 0; i < canvases.size(); ++i)
-        //                    {
-        //                        if (canvases[index]->GetDisplayMode() == UICanvas::Internal)
-        //                        {
-        //                            Foundation::ComponentPtr ecptr = CreateEC_UICanvasToEntity(entity, canvases[index]);
-        //                            if (ecptr)
-        //                            {
-        //                                EC_UICanvas& ec = *checked_static_cast<EC_UICanvas*>(ecptr.get());
-        //                                if (ec.GetSubmeshes().empty())
-        //                                    ec.SetSubmeshes(result.submesh_);
-        //                                else
-        //                                    ec.ClearSubmeshes();
-        //                            }
-        //                            index++;
-        //                            index %= canvases.size();
-        //                            break;
-        //                        } 
-        //                        index++;
-        //                        index %= canvases.size();                                  
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //}                
-    }
     else if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED)
     {
         // If entity has changed geometry or materials, and it has EC_UICanvas, make sure the EC_UICanvas refreshes
         RefreshEC_UICanvas(data);
     }
     else if ( category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_GRAB)
-    {
+    {    
         // Check that has corresponding entity a canvas.
         Scene::Events::RaycastEventData* raycast_data = dynamic_cast<Scene::Events::RaycastEventData*>(data);
         if (raycast_data != 0)
@@ -395,6 +345,11 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
             if ( scene.get() != 0)
             {
+                // Perform object selection for the UICanvasTestEdit
+                if (uicanvastestedit_)
+                {
+                    uicanvastestedit_->SetEntityId(raycast_data->localID);
+                }
                 Scene::EntityPtr entity = scene->GetEntity(raycast_data->localID);
                 if ( entity.get() != 0)
                 {
