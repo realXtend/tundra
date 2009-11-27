@@ -1200,6 +1200,12 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject *Exit(PyObject *self, PyObject *null)
+{
+    PythonScript::self()->GetFramework()->Exit();
+    Py_RETURN_NONE;
+}
+
 PyObject* Logout(PyObject *self)
 {
     Foundation::Framework *framework_;
@@ -1314,6 +1320,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"logout", (PyCFunction)Logout, METH_NOARGS,
     "Log out from the world. Made for test script to be able to stop."},
+
+    {"exit", (PyCFunction)Exit, METH_NOARGS,
+    "Exits viewer. Takes no arguments."},
 
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},

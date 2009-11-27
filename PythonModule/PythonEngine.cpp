@@ -75,17 +75,18 @@ namespace PythonScript
 
     void PythonEngine::RunString(const std::string& codestr)
     {
-        PyRun_SimpleString(codestr.c_str());
+	PyRun_SimpleString(codestr.c_str());
     }
 
     void PythonEngine::RunScript(const std::string& scriptname)
     {
-        /* could get a fp* here and pass it to
-        int PyRun_SimpleFile(FILE *fp, const char *filename)
-        but am unsure whether to use the Poco fs stuff for it an how
-        so trying this, why not? we don't need the file on the c++ side?*/
-        std::string cmd = "import " + scriptname;
-        RunString(cmd);
+	FILE *fp = fopen(scriptname.c_str(), "r");
+	if (!fp) {
+	    PythonScriptModule::LogInfo("Failed to open script " + scriptname);
+	    return;
+	}
+	PyRun_SimpleFile(fp, scriptname.c_str());
+	fclose(fp);
     }
 
     //===============================================================================================//
