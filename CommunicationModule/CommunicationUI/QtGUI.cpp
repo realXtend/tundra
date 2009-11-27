@@ -771,7 +771,7 @@ namespace CommunicationUI
 		return timestamp;
 	}
 
-    QString Conversation::GenerateTimeStamp(QDateTime &time)
+    QString Conversation::GenerateTimeStamp(QDateTime time)
     {
         QString timestamp(QString("%1 %2").arg(time.date().toString("dd.MM.yyyy"),time.time().toString("hh:mm:ss")));
 		return timestamp;
