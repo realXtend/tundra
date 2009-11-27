@@ -94,6 +94,9 @@ namespace Inventory
         // Init PythonQt for usage
         bool InitPythonQt();
 
+        // Upload data from buffer
+        void UploadBuffer(const QString &filename, QByteArray& buffer, AbstractInventoryItem *parent_folder);
+        
         /// Fetch webdav inventory url with users identity
         /// @return bool true if succeeded otherwise false
         bool FetchWebdavUrlWithIdentity();

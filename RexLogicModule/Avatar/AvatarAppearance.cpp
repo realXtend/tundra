@@ -44,14 +44,19 @@ static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
 {
-    std::string ReplaceSpaces(const std::string& orig_str)
+    std::string ReplaceChar(const std::string& orig_str, char orig, char replace)
     {
         std::string str = orig_str;
         for (Core::uint i = 0; i < str.length(); ++i)
-            if (str[i] == ' ') str[i] = '_';
+            if (str[i] == orig) str[i] = replace;
         return str;
     }
-    
+ 
+    std::string ReplaceSpaces(const std::string& orig_str)
+    {
+        return ReplaceChar(orig_str, ' ', '_');
+    }
+        
     AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
         rexlogicmodule_(rexlogicmodule),
         inv_export_state_(Idle)
@@ -1281,7 +1286,9 @@ namespace RexLogic
             data_buffer.resize(i->second.data_.size());
             memcpy(&data_buffer[0], &i->second.data_[0], i->second.data_.size());
                         
-            event_data.filenames.push_back(QString::fromStdString(i->first));
+            // Slashes in filenames cause problems. Replace. The exact format of the filename should not
+            // matter (never used to reference the asset), as long as the asset type is deduced correctly
+            event_data.filenames.push_back(QString::fromStdString(ReplaceChar(i->first, '/', '_')));
             event_data.buffers.push_back(data_buffer);
             ++i;
         }

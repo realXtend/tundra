@@ -38,8 +38,10 @@ WebDavInventoryDataModel::~WebDavInventoryDataModel()
 /// AbstractInventoryDataModel INTERFACE
 AbstractInventoryItem *WebDavInventoryDataModel::GetFirstChildFolderByName(const QString &searchName) const
 {
-    InventoryModule::LogInfo("Webdav | You are in GetFirstChildFolderByName() that is not implemented yet");
-    return 0;
+    if (!rootFolder_)
+        return 0;
+        
+    return rootFolder_->GetFirstChildFolderByName(searchName);
 }
 
 AbstractInventoryItem *WebDavInventoryDataModel::GetChildFolderById(const QString &searchId) const
@@ -300,6 +302,9 @@ void WebDavInventoryDataModel::ItemSelectedFetchContent(AbstractInventoryItem *i
 
 void WebDavInventoryDataModel::UploadFile(const QString &file_path, AbstractInventoryItem *parent_folder)
 {
+    if (!parent_folder)
+        parent_folder = GetFirstChildFolderByName("My Inventory");
+
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(parent_folder);
     if (!parentFolder)
         return;
@@ -308,6 +313,7 @@ void WebDavInventoryDataModel::UploadFile(const QString &file_path, AbstractInve
     QString filename = filePath.split("/").last();
     QString parentPath = ValidateFolderPath(parentFolder->GetID());
     QStringList result = webdavclient_.call("uploadFile", QVariantList() << filePath << parentPath << filename).toStringList();
+        
     if (result.count() >= 1)
     {
         if (result[0] == "True")
@@ -321,15 +327,49 @@ void WebDavInventoryDataModel::UploadFile(const QString &file_path, AbstractInve
     }
 }
 
+void WebDavInventoryDataModel::UploadBuffer(const QString &filename, QByteArray& buffer, AbstractInventoryItem *parent_folder)
+{
+    if (!parent_folder)
+        parent_folder = GetFirstChildFolderByName("My Inventory");
+        
+    InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(parent_folder);
+    if (!parentFolder)
+        return;
+
+    QString parentPath = ValidateFolderPath(parentFolder->GetID());  
+    QStringList result = webdavclient_.call("uploadFileBuffer", QVariantList() << buffer << parentPath << filename).toStringList();
+
+    if (result.count() >= 1)
+    {
+        if (result[0] == "True")
+        {
+            //ItemSelectedFetchContent(parent_folder);
+            FetchInventoryDescendents(parent_folder);
+            InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filename, parentPath, filename).toStdString());
+        }
+        else
+            InventoryModule::LogInfo(QString("Webdav | Upload of file %1 to path %2%3 failed\n").arg(filename, parentPath, filename).toStdString());
+    }
+}
+
 void WebDavInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
 {
-    InventoryModule::LogInfo("Webdav | You are in UploadFiles() that is not implemented yet");
+    for (Core::uint i = 0; i < filenames.size(); ++i)
+        UploadFile(filenames[i], parent_folder);
+        
+    //InventoryModule::LogInfo("Webdav | You are in UploadFiles() that is not implemented yet");
 }
 
 void WebDavInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
     AbstractInventoryItem *parent_folder)
 {
-    InventoryModule::LogInfo("Webdav | You are in UploadFilesFromBuffer() that is not implemented yet");
+    for (Core::uint i = 0; i < filenames.size(); ++i)
+    {
+        QByteArray data((const char*)&buffers[i][0], buffers[i].size());
+        UploadBuffer(filenames[i], data, parent_folder);
+    }
+
+    //InventoryModule::LogInfo("Webdav | You are in UploadFilesFromBuffer() that is not implemented yet");
 }
 
 void WebDavInventoryDataModel::DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item)
