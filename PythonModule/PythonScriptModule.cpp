@@ -48,7 +48,7 @@
 #include "RexPythonQt.h"
 
 //had to move the createcanvas func here due to the staticframework ref prob
-#include "PythonQt.h"
+#include <PythonQt.h>
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>

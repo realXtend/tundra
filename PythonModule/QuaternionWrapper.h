@@ -1,7 +1,7 @@
 #ifndef incl_QuaternionWrapper_h
 #define incl_QuaternionWrapper_h
 
-#include "PythonQt.h"
+#include <PythonQt.h>
 #include <QObject>
 #include "Core.h"
 

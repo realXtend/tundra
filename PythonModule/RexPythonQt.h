@@ -1,7 +1,7 @@
 #ifndef incl_RexPythonQt_h
 #define incl_RexPythonQt_h
 
-#include "Python.h"
+#include <Python.h>
 
 namespace PythonScript
 {

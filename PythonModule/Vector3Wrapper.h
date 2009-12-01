@@ -1,7 +1,7 @@
 #ifndef incl_Vector3Wrapper_h
 #define incl_Vector3Wrapper_h
 
-#include "PythonQt.h"
+#include <PythonQt.h>
 #include <QObject>
 #include "Core.h"
 
