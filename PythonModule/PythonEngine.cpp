@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "PythonScriptModule.h"
-#include "StableHeaders.h"
 #include "PythonEngine.h"
 
 using namespace Foundation;

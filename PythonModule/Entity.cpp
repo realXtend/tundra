@@ -1,5 +1,3 @@
-#include "StableHeaders.h"
-
 #include "PythonScriptModule.h" //for the staticframework hack, for entityptr re-get workaround
 #include "Entity.h"
 
