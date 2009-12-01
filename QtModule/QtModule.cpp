@@ -316,6 +316,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
             value = Qt::Key_unknown;
 
         ///\todo Are we missing the handling of Ctrl,Alt,AltGr,Win,Shift modifiers on keys?
+        controller_->SetCurrentModifier(GetCurrentModifier(input));
         //Qt::KeyboardModifier modifier = Qt::NoModifier;
 
         // Inject the key event to the controller. It will propagate the event to the currently active canvas.
