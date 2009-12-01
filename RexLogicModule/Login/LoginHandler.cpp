@@ -1,9 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "WorldStream.h"
+#include "DebugOperatorNew.h"
 
 #include "Login/LoginHandler.h"
+
+#include "MemoryLeakCheck.h"
+
+#include "WorldStream.h"
 
 namespace RexLogic
 {
@@ -40,10 +44,8 @@ namespace RexLogic
 	OpenSimLoginHandler::~OpenSimLoginHandler(void)
 	{
 		delete credentials_;
-		if (realXtendWorldSession_)
-			delete openSimWorldSession_;
-		if (realXtendWorldSession_)
-			delete realXtendWorldSession_;
+    	delete openSimWorldSession_;
+		delete realXtendWorldSession_;
 	}
 
 	void OpenSimLoginHandler::InstantiateWorldSession()
@@ -63,6 +65,7 @@ namespace RexLogic
 			    
 			if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 			{	
+                assert(!openSimWorldSession_); ///<\todo Pforce: Perform proper teardown of previous session to avoid memory leaks.
 				openSimWorldSession_ = new OpenSimProtocol::OpenSimWorldSession(framework_);
 				success = openSimWorldSession_->StartSession(osCredentials, &serverEntryPointUrl_);
 				if (success)
@@ -96,6 +99,7 @@ namespace RexLogic
 			    
 				if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 				{	
+                    assert(!realXtendWorldSession_); ///<\todo Pforce: Perform proper teardown of previous session to avoid memory leaks.
 					realXtendWorldSession_ = new OpenSimProtocol::RealXtendWorldSession(framework_);
 					success = realXtendWorldSession_->StartSession(rexCredentials, &serverEntryPointUrl_);
 					if (success)
@@ -125,6 +129,7 @@ namespace RexLogic
 
 	void OpenSimLoginHandler::ProcessOpenSimLogin(QMap<QString,QString> map)
 	{
+        assert(!credentials_); ///<\todo Pforce: Perform proper teardown of previous credentials to avoid memory leaks.
 		credentials_ = new ProtocolUtilities::OpenSimCredentials();
 		ProtocolUtilities::OpenSimCredentials *osCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(credentials_);
 		if (osCredentials)
@@ -152,6 +157,7 @@ namespace RexLogic
 
 	void OpenSimLoginHandler::ProcessRealXtendLogin(QMap<QString,QString> map)
 	{
+        assert(!credentials_); ///<\todo Pforce: Perform proper teardown of previous credentials to avoid memory leaks.
 		credentials_ = new ProtocolUtilities::RealXtendCredentials();
 		ProtocolUtilities::RealXtendCredentials *rexCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(credentials_);
 		if (rexCredentials)
@@ -178,8 +184,7 @@ namespace RexLogic
 	TaigaLoginHandler::~TaigaLoginHandler(void)
 	{
 		delete credentials_;
-		if (taigaWorldSession_)
-			delete taigaWorldSession_;
+		delete taigaWorldSession_;
 	}
 
 	void TaigaLoginHandler::InstantiateWorldSession()
@@ -200,6 +205,7 @@ namespace RexLogic
         }
         if ( rexLogicModule_->GetServerConnection()->PrepareCurrentProtocolModule() )
 		{
+            assert(!taigaWorldSession_); ///<\todo Pforce: Perform proper teardown of previous session to avoid memory leaks.
 			taigaWorldSession_ = new TaigaProtocol::TaigaWorldSession(framework_);
 			success = taigaWorldSession_->StartSession(credentials_, &serverEntryPointUrl_);
             if (!success)

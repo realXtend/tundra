@@ -1,17 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "CoreStdIncludes.h"
-#include "Core.h"
+#include "DebugOperatorNew.h"
+
+#include <boost/thread.hpp>
+
+#include "MemoryLeakCheck.h"
+
 #include "Foundation.h"
 
-#include "CommandManager.h"
 #include "TestModuleB.h"
 
 #include "HttpUtilities.h"
-
-#include <boost/program_options.hpp>
-#include <boost/tokenizer.hpp>
-
 
 #if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
 // for reporting memory leaks upon debug exit
@@ -20,18 +19,18 @@
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 // For generating minidump
-#  include <dbghelp.h>
-#  include <shellapi.h>
-#  include <shlobj.h>
-#pragma warning( push )
-#pragma warning( disable : 4996 )
-#  include <strsafe.h>
-#pragma warning( pop )
+#include <dbghelp.h>
+#include <shellapi.h>
+#include <shlobj.h>
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#include <strsafe.h>
+#pragma warning(pop)
 #endif
 
-void setup (Foundation::Framework &fw);
-int run (int argc, char **argv);
-void options (int argc, char **argv, Foundation::Framework &fw);
+void setup(Foundation::Framework &fw);
+int run(int argc, char **argv);
+void options(int argc, char **argv, Foundation::Framework &fw);
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
@@ -41,30 +40,46 @@ int main (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    // set debug flag for memory leaks
-#   if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
-    int tmpDbgFlag;
-    tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+    // set up a debug flag for memory leaks. Output the results to file when the app exits.
+    // Note that this file is written to the same directory where the executable resides,
+    // so you can only use this in a development version where you have write access to
+    // that directory.
+#if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
+    int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag(tmpDbgFlag);
-#   endif
 
+    HANDLE hLogFile = CreateFileW(L"fullmemoryleaklog.txt", GENERIC_WRITE, 
+      FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-#   if defined(_MSC_VER) && defined(_DMEMDUMP)
+    if (hLogFile != INVALID_HANDLE_VALUE)
+    {
+       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_WARN, hLogFile);
+       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ERROR, hLogFile);
+       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+    }
+#endif
+
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
     __try
     {
-#   endif
+#endif
+        return_value = run(argc, argv);
 
-    return_value = run(argc, argv);
-
-#   if defined(_MSC_VER) && defined(_DMEMDUMP)
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
     }
     __except(generate_dump(GetExceptionInformation()))
     {
     }
-#  endif
+#endif
 
-   return return_value;
+    // Note: We cannot close the file handle manually here. Have to let the OS close it
+    // after it has printed out the list of leaks to the file.
+//  CloseHandle(hLogFile);
+
+    return return_value;
 }
 
 //! post init setup for framework
@@ -99,11 +114,11 @@ int run (int argc, char **argv)
     catch (std::exception& e)
     {
         Foundation::Platform::Message("An exception has occurred!", e.what());
-#   if defined(_DEBUG)
+#if defined(_DEBUG)
         throw;
-#   else
+#else
         return_value = EXIT_FAILURE;
-#   endif
+#endif
     }
 #endif
 

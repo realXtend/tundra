@@ -8,6 +8,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "InventoryModule.h"
 #include "RexLogicModule.h"
 #include "InventoryWindow.h"
@@ -99,6 +101,10 @@ void InventoryModule::Uninitialize()
 {
     SAFE_DELETE(inventoryWindow_);
     LogInfo("System " + Name() + " uninitialized.");
+
+    eventManager_.reset();
+    currentWorldStream_.reset();
+    inventory_.reset();
 }
 
 void InventoryModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)

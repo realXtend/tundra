@@ -17,8 +17,11 @@
 
 #if defined(_MSC_VER) && defined(_DEBUG) 
 #include <utility>
+#include <malloc.h>
+#include <stdlib.h>
+#include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
-    
+/*    
 void *operator new(std::size_t size);
 
 void *operator new[](std::size_t size);
@@ -26,6 +29,27 @@ void *operator new[](std::size_t size);
 void operator delete(void *ptr);
 
 void operator delete[](void *ptr);
+*/
+
+__forceinline void *operator new(std::size_t size)
+{
+	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME, 1);
+}
+
+__forceinline void *operator new[](std::size_t size)
+{
+	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME ", op[]", 1);
+}
+
+__forceinline void operator delete(void *ptr)
+{
+    _free_dbg(ptr, _CLIENT_BLOCK);
+}
+
+__forceinline void operator delete[](void *ptr)
+{
+    _free_dbg(ptr, _CLIENT_BLOCK);
+}
 
 #endif // ~_MSC_VER
 

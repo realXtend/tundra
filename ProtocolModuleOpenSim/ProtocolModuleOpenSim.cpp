@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "HttpRequest.h"
 #include "Poco/Net/NetException.h"
@@ -45,6 +47,8 @@ namespace OpenSimProtocol
 	// virtual 
 	void ProtocolModuleOpenSim::Uninitialize()
 	{
+        thread_.join();
+
 		if (connected_)
 			DisconnectFromServer();
 
@@ -87,7 +91,10 @@ namespace OpenSimProtocol
 			DisconnectFromServer();
 
 		if (networkManager_)
+        {
 			networkManager_->UnregisterNetworkListener(this);
+            networkManager_.reset();
+        }
 
 		LogInfo("System " + Name() + " networking unregistered.");
 	}
@@ -168,6 +175,8 @@ namespace OpenSimProtocol
 			return;
 
 		networkManager_->Disconnect();
+    	networkManager_->UnregisterNetworkListener(this);
+        networkManager_.reset();
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
 		connected_ = false;
 		capabilities_.clear();

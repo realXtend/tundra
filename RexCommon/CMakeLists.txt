@@ -16,4 +16,13 @@ use_framework_modules (Core  )
 link_package (BOOST)
 link_package (POCO)           
 
+# MSVC -specific settings for preprocessor and PCH use
+if (MSVC)
+    # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
+    foreach(src_file ${CPP_FILES})
+        get_filename_component(basename ${src_file} NAME)
+        set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "-DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
+    endforeach(src_file ${CPP_FILES})
+endif (MSVC)
+
 final_target ()

@@ -7,6 +7,7 @@ cmake_minimum_required (VERSION 2.4)
 # Set CMake library search policy
 if (COMMAND cmake_policy)
     cmake_policy (SET CMP0003 NEW)
+    cmake_policy (SET CMP0005 NEW)
 endif (COMMAND cmake_policy)
 
 # Set CMake custom module path & include them
@@ -39,7 +40,7 @@ endif (MSVC)
 
 # Generate profiling data. Currently disabled because of threadsafety issues.
 if (MSVC)
-#   add_definitions (-DPROFILING)
+   add_definitions (-DPROFILING)
 endif (MSVC)
 
 # Set normalized path for common environment variables
@@ -67,7 +68,6 @@ endif (CAELUM)
 if (HYDRAX)
     configure_hydrax ()
 endif (HYDRAX)
-
 
 # Add all the subprojects in the rex viewer.
 

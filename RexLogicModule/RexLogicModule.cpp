@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "RexLogicModule.h"
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
@@ -51,6 +53,8 @@
 #include "QtUtils.h"
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace RexLogic
 {
@@ -302,6 +306,10 @@ void RexLogicModule::Uninitialize()
     camera_controllable_.reset();
     environment_.reset();
     terrain_editor_.reset();
+    water_.reset();
+    terrain_.reset();
+    sky_.reset();
+    activeScene_.reset();
 
     event_handlers_.clear();
 

@@ -30,8 +30,8 @@ namespace Foundation
         struct SharedLibrary : public boost::noncopyable
         {
             SharedLibrary();
-            SharedLibrary(const std::string &path) : path_(path) { sl_.load(path); cl_.loadLibrary(path_); }
-            ~SharedLibrary() { cl_.unloadLibrary(path_); }
+            SharedLibrary(const std::string &path);
+            ~SharedLibrary();
 
             //! path to the shared library
             std::string path_;
@@ -50,18 +50,9 @@ namespace Foundation
             SharedLibraryPtr shared_library_;
 
         public:
-            ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library)
-            :entry_(entry), shared_library_(shared_library)
-            {
-            }
+            ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library);
 
-            void operator()(ModuleInterface *module)
-            {
-                if (shared_library_)
-                    shared_library_->cl_.destroy(entry_, module);
-
-                delete module; // needed for modules not loaded through poco's SharedLibrary (static libs).
-            }
+            void operator()(ModuleInterface *module);
         };
 
         //! Module entry. Contains information about a module. Useful for ModuleManager introspection.

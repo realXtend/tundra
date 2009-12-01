@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ProtocolModuleTaiga.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "HttpRequest.h"
@@ -46,11 +48,16 @@ namespace TaigaProtocol
 	// virtual 
 	void ProtocolModuleTaiga::Uninitialize()
 	{
+        thread_.join();
+
 		if (connected_)
 			DisconnectFromServer();
 
 		if (networkManager_)
+        {
 			networkManager_->UnregisterNetworkListener(this);
+            networkManager_.reset();
+        }
 
 		LogInfo("System " + Name() + " uninitialized.");
 	}
@@ -88,7 +95,10 @@ namespace TaigaProtocol
 			DisconnectFromServer();
 
 		if (networkManager_)
+        {
 			networkManager_->UnregisterNetworkListener(this);
+            networkManager_.reset();
+        }
 
 		LogInfo("System " + Name() + " networking unregistered.");
 	}
@@ -174,6 +184,8 @@ namespace TaigaProtocol
 			return;
 
 		networkManager_->Disconnect();
+    	networkManager_->UnregisterNetworkListener(this);
+        networkManager_.reset();
 		loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
 		connected_ = false;
 		capabilities_.clear();

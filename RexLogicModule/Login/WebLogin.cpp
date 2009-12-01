@@ -1,13 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Login/WebLogin.h"
+#include "DebugOperatorNew.h"
 
 #include <QtUiTools>
 #include <QFile>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QWebFrame>
+
+#include "MemoryLeakCheck.h"
+
+#include "Login/WebLogin.h"
 
 namespace RexLogic
 {
@@ -132,7 +136,7 @@ namespace RexLogic
 
 	void WebLogin::ProcessPage(bool success)
 	{
-        if (widget_)
+        if (widget_ && stopButton)
         {
 		    // Update GUI
 		    stopButton->setEnabled(false);

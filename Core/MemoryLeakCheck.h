@@ -45,25 +45,6 @@ __forceinline void operator delete[](void *ptr, const char *, int)
 {
     _free_dbg(ptr, _CLIENT_BLOCK);
 }
-__forceinline void *operator new(std::size_t size)
-{
-    return _malloc_dbg(size, _CLIENT_BLOCK, "Unknown source", 1);
-}
-
-__forceinline void *operator new[](std::size_t size)
-{
-    return _malloc_dbg(size, _CLIENT_BLOCK, "Unknown source[]", 1);
-}
-
-__forceinline void operator delete(void *ptr)
-{
-    _free_dbg(ptr, _CLIENT_BLOCK);
-}
-
-__forceinline void operator delete[](void *ptr)
-{
-    _free_dbg(ptr, _CLIENT_BLOCK);
-}
 
 #define new new (__FILE__, __LINE__)
 
