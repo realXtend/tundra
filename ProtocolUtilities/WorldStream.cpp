@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "WorldStream.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "ProtocolModuleOpenSim.h"
@@ -111,7 +113,9 @@ void WorldStream::ForceServerDisconnect()
     }
 
     protocolModule_->DisconnectFromServer();
+
     connected_ = false;
+    protocolModule_.reset();
 }
 
 void WorldStream::SendUseCircuitCodePacket()
@@ -1242,6 +1246,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType
     case ProtocolUtilities::NotSet:
     default:
         LogError("Setting ProtocolType to NotSet");
+        protocolModule_.reset();
         break;
     }
 }
@@ -1292,6 +1297,7 @@ void WorldStream::UnregisterCurrentProtocolModule()
     protocolModule_ = GetCurrentProtocolModule();
     if (protocolModule_.get())
         protocolModule_->UnregisterNetworkEvents();
+    protocolModule_.reset();
 }
 
 /********************** private **********************/

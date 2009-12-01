@@ -1,3 +1,4 @@
+#include "StableHeaders.h"
 
 #include "UIGraphicsView.h"
 

@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstring>
 
+#include "DebugOperatorNew.h"
+
 #include "Poco/Net/NetException.h"
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
 
@@ -307,25 +309,13 @@ namespace ProtocolUtilities
             return 0;
 
         NetOutMessage *newMsg = 0;
+
+        // Find if we have an old message struct in the unused pool that we can use.
         if (unusedMessagePool.size() > 0)
         {
             newMsg = unusedMessagePool.front();
             unusedMessagePool.pop_front();
             newMsg->ResetWriting();
-            //existing->SetMessageInfo(info);
-            // Search if there exist allready created message in pool. 
-            //for(std::list<NetOutMessage*>::iterator iter = unusedMessagePool.begin(); iter != unusedMessagePool.end(); ++iter)
-            //if ((*iter)->GetMessageID() == id) 
-            //{    
-                // If there exist use allready created and remove it from unusedMessagePool. 
-                //newMsg = *iter;
-                //newMsg->ResetWriting();
-                //unusedMessagePool.erase(iter);
-                //break;
-            //}
-            // If there were any message with current id, create new message.
-            //if (newMsg == 0)
-            //newMsg = new NetOutMessage();
         }
         else
             newMsg = new NetOutMessage();
@@ -344,13 +334,22 @@ namespace ProtocolUtilities
 
         std::vector<uint8_t> &data = message->GetData();
         if (data.size() == 0)
+        {
+            unusedMessagePool.push_back(message);
             return;
+        }
         assert(data.size() >= message->BytesFilled());
         data.resize(message->BytesFilled());
 
         // Find and remove the given message from the usedMessagePool list, it has to be there.
+#ifdef _DEBUG
+        const size_t usedMessagePoolSize = usedMessagePool.size();
+#endif
         std::list<NetOutMessage*>::iterator newEnd = std::remove(usedMessagePool.begin(), usedMessagePool.end(), message);
         usedMessagePool.erase(newEnd, usedMessagePool.end());
+#ifdef _DEBUG
+        assert(usedMessagePoolSize == usedMessagePool.size() + 1);
+#endif
         
         // Try to Zero-encode the message if that is desired. If encoding worsens the size, we'll send unencoded.
         if (message->GetMessageInfo()->encoding == NetZeroEncoded)
@@ -379,13 +378,13 @@ namespace ProtocolUtilities
             }
         }
 
+        SendProcessedMessage(message);
+
         // Push reliable messages to queue to wait ACK from the server.
         if (message->IsReliable())
             AddMessageToResendQueue(message);
         else
             unusedMessagePool.push_back(message);
-        
-        SendProcessedMessage(message);
     }
 
     void NetMessageManager::SendProcessedMessage(NetOutMessage *msg)
@@ -501,10 +500,15 @@ namespace ProtocolUtilities
 
     void NetMessageManager::AddMessageToResendQueue(NetOutMessage *msg)
     {
-        // Don't add duplicates (timeouted and resent messages).
+        // Don't add this message to the queue, if it already exists in the queue, i.e. it has already been resent once due to a timeout.
         MessageResendList::iterator it = std::find_if(messageResendQueue.begin(), messageResendQueue.end(), MsgSeqNumMatchPred(msg->GetSequenceNumber()));
         if (it != messageResendQueue.end())
+        {
+            // If the sequence numbers matched but these are different message structs, add the message to unusedMessagePool, it's extraneous.
+            if (it->second != msg)
+                unusedMessagePool.push_back(msg);
             return;
+        }
 
         messageResendQueue.push_back(std::make_pair(time(0), msg));
     }
@@ -514,7 +518,10 @@ namespace ProtocolUtilities
         MessageResendList::iterator it = std::find_if(messageResendQueue.begin(), messageResendQueue.end(), MsgSeqNumMatchPred(packetID));
 
         if (it != messageResendQueue.end())
+        {
+            unusedMessagePool.push_back(it->second);
             messageResendQueue.erase(it);
+        }
     }
 
     void NetMessageManager::ProcessResendQueue()

@@ -8,6 +8,8 @@
 #include "Core.h"
 #include "Foundation.h"
 
+#include "DebugOperatorNew.h"
+
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -497,6 +499,12 @@ namespace PythonScript
 
         engine_->Uninitialize();
         LogInfo("Module " + Name() + " uninitialized.");
+
+        delete PythonScript::wrappedModule;
+        PythonScript::wrappedModule = 0;
+
+        em_.reset();
+        engine_.reset();
     }
     
     // virtual

@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
+
 #include "Framework.h"
 #include "ModuleManager.h"
 #include "ConfigurationManager.h"
@@ -10,9 +13,36 @@ namespace fs = boost::filesystem;
 
 typedef void (*SetProfilerFunc)(Foundation::Profiler *profiler);
 
-
 namespace Foundation
 {
+    namespace Module
+    {
+        SharedLibrary::SharedLibrary(const std::string &path)
+        :path_(path)
+        { 
+            sl_.load(path); 
+            cl_.loadLibrary(path_);
+        }
+        SharedLibrary::~SharedLibrary()
+        { 
+            cl_.unloadLibrary(path_);
+        }
+
+        ModuleDeletor::ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library)
+        :entry_(entry), shared_library_(shared_library)
+        {
+        }
+
+        void ModuleDeletor::operator()(ModuleInterface *module)
+        {
+            if (shared_library_)
+                shared_library_->cl_.destroy(entry_, module);
+
+            delete module; // needed for modules not loaded through poco's SharedLibrary (static libs).
+        }
+
+    }
+
     ModuleManager::ModuleManager(Framework *framework) :
         framework_(framework)
             , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting<std::string>("ModuleManager", "Default_Modules_Path",
