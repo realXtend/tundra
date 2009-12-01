@@ -322,11 +322,14 @@ namespace Input
             const bool mod_alt   = !((info.modifier_ & OIS::Keyboard::Alt)   == 0);
             const bool mod_ctrl  = !((info.modifier_ & OIS::Keyboard::Ctrl)  == 0);
             const bool mod_shift = !((info.modifier_ & OIS::Keyboard::Shift) == 0);
-
+            
             // check modifiers in a bit convoluted way. All combos of ctrl+a, ctrl+alt+a and ctrl+alt+shift+a must work!
             if ( ((mod_alt   && alt)   || (!mod_alt   && !alt))  &&
                  ((mod_ctrl  && ctrl)  || (!mod_ctrl  && !ctrl)) &&
                  ((mod_shift && shift) || (!mod_shift && !shift)) )
+            {
+                key_pressed = true;
+            } else if ( info.modifier_.testFlag(Input::All) )
             {
                 key_pressed = true;
             }
@@ -480,7 +483,7 @@ namespace Input
         keyeventinfo.pressed_event_id_ = pressed_event;
         keyeventinfo.released_event_id_ = released_event;
         keyeventinfo.key_ = key;
-        keyeventinfo.modifier_ = modifier;
+        keyeventinfo.modifier_ = QFlags<Modifier>(modifier);
         keyeventinfo.type_ = UnBufferedKeyEventInfo::Keyboard;
 
 #ifdef _DEBUG
@@ -531,7 +534,7 @@ namespace Input
         keyeventinfo.pressed_event_id_ = pressed_event;
         keyeventinfo.released_event_id_ = released_event;
         keyeventinfo.key_ = key;
-        keyeventinfo.modifier_ = modifier;
+        keyeventinfo.modifier_ = QFlags<Modifier>(modifier);
         keyeventinfo.type_ = UnBufferedKeyEventInfo::Mouse;
 
 #ifdef _DEBUG
@@ -583,7 +586,7 @@ namespace Input
         info.stopped_event_ = stopped_event;
         info.slider_ = slider;
         info.button_ = button;
-        info.modifier_ = modifier;
+        info.modifier_ = QFlags<Modifier>(modifier);
 
         SliderInfoMap::iterator slider_vector = sliders_.find(state);
         if (slider_vector == sliders_.end())

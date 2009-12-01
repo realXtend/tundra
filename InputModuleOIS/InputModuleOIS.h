@@ -11,6 +11,7 @@
 #include "InputModuleApi.h"
 #include "InputServiceInterface.h"
 
+#include <QFlags>
 
 namespace Foundation
 {
@@ -50,6 +51,14 @@ namespace Input
         SliderJoy1
     };
 
+    enum Modifier
+    {
+        None = 0x0,
+        Shift = OIS::Keyboard::Shift,
+        Ctrl = OIS::Keyboard::Ctrl,
+        Alt = OIS::Keyboard::Alt,
+        All = 0x0001000
+     };
 
 
     //! info for key event. Unique by keycode / modifier pair. 
@@ -73,7 +82,7 @@ namespace Input
         Core::event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
         Core::event_id_t released_event_id_; //! event that is launched when the key is released
         int key_; //! ois keycode
-        int modifier_; //! modifier key
+        QFlags<Modifier> modifier_; //! modifier key
         bool pressed_; //! is the key currently pressed down
         Type type_; //! type of the key, keyboard key, mouse button, joystick button
     };
@@ -96,7 +105,7 @@ namespace Input
         Slider slider_;
         int button_;
         //! modifiers
-        int modifier_;
+        QFlags<Modifier> modifier_;
         //! true if slider is currently dragged, false otherwise
         bool dragged_;
         //! current slider absolute and relative position
