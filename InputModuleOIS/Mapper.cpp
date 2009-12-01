@@ -264,11 +264,11 @@ namespace Input
         module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_GRAVE,   Events::SHOW_DEBUG_CONSOLE,     Events::SHOW_DEBUG_CONSOLE_REL,  0);
         module_->RegisterUnbufferedKeyEvent(Input::State_All, OIS::KC_TAB,     Events::SWITCH_CAMERA_STATE,    Events::SWITCH_CAMERA_STATE_REL, 0);
 
-        module_->RegisterSliderEvent(Input::State_FirstPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
-        module_->RegisterSliderEvent(Input::State_ThirdPerson, SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
-        module_->RegisterSliderEvent(Input::State_FreeCamera,  SliderMouse,    Events::MOUSELOOK,              Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterSliderEvent(Input::State_FirstPerson, SliderMouse,    Events::MOUSELOOK, Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterSliderEvent(Input::State_ThirdPerson, SliderMouse,    Events::MOUSELOOK, Events::MOUSELOOK_STOPPED, OIS::MB_Right);
+        module_->RegisterSliderEvent(Input::State_FreeCamera,  SliderMouse,    Events::MOUSELOOK, Events::MOUSELOOK_STOPPED, OIS::MB_Right);
 
-        module_->RegisterMouseButtonEvent(Input::State_All, OIS::MB_Left,      Events::INWORLD_CLICK, Events::INWORLD_CLICK_REL, 0);
+        module_->RegisterMouseButtonEvent(Input::State_All, OIS::MB_Left, Events::INWORLD_CLICK, Events::INWORLD_CLICK_REL, Input::All);
         module_->RegisterMouseButtonEvent(Input::State_All, OIS::MB_Left, Events::INWORLD_CLICK_BUILD, Events::INWORLD_CLICK_BUILD_REL, OIS::Keyboard::Ctrl);
         module_->RegisterMouseButtonEvent(Input::State_All, OIS::MB_Right, Events::RIGHT_MOUSECLICK_PRESSED, Events::RIGHT_MOUSECLICK_RELEASED,0);
     }
