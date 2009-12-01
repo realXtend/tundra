@@ -2,8 +2,12 @@
 
 #include "PythonScriptModule.h"
 
-#include "StableHeaders.h"
-//#include "Foundation.h"
+//disabled now 'cause couldn't get working the own version for this module for some reason
+//#include "StableHeaders.h"
+#include "CoreStdIncludes.h"
+#include "Core.h"
+#include "Foundation.h"
+
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
