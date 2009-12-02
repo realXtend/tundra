@@ -29,13 +29,6 @@ namespace RexTypes
      */
     std::string GetLLSDTagContent(const std::string& data, std::size_t& index);
     
-    //! Replaces all occurrences of a substring with another
-    /*! \param str String to modify
-        \param replace_this What substring to replace
-        \param replace_with Substring to replace with
-     */
-    void ReplaceSubstring(std::string &str, const std::string &replaceThis, const std::string &replaceWith);
-
     //! Parses a map of key,value pairs
     /*! \param data String data to construct a map from
         \return Map

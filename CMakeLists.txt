@@ -60,6 +60,7 @@ configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
 configure_propertyeditor ()
+configure_openal ()
 
 if (CAELUM)
     configure_caelum ()

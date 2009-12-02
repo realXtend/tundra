@@ -43,18 +43,12 @@ static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
-{
-    std::string ReplaceChar(const std::string& orig_str, char orig, char replace)
-    {
-        std::string str = orig_str;
-        for (Core::uint i = 0; i < str.length(); ++i)
-            if (str[i] == orig) str[i] = replace;
-        return str;
-    }
- 
+{ 
     std::string ReplaceSpaces(const std::string& orig_str)
     {
-        return ReplaceChar(orig_str, ' ', '_');
+        std::string ret = orig_str;
+        Core::ReplaceChar(ret, ' ', '_');
+        return ret;
     }
         
     AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
@@ -862,8 +856,8 @@ namespace RexLogic
         std::string& appearance_str = i->second;
 
         // Return to original format by substituting to < >
-        ReplaceSubstring(appearance_str, "&lt;", "<");
-        ReplaceSubstring(appearance_str, "&gt;", ">");
+        Core::ReplaceSubstring(appearance_str, "&lt;", "<");
+        Core::ReplaceSubstring(appearance_str, "&gt;", ">");
         
         QDomDocument avatar_doc("Avatar");
         avatar_doc.setContent(QString::fromStdString(appearance_str));
@@ -1288,7 +1282,10 @@ namespace RexLogic
                         
             // Slashes in filenames cause problems. Replace. The exact format of the filename should not
             // matter (never used to reference the asset), as long as the asset type is deduced correctly
-            event_data.filenames.push_back(QString::fromStdString(ReplaceChar(i->first, '/', '_')));
+            std::string noslash = i->first;
+            Core::ReplaceChar(noslash, '/', '_');
+            
+            event_data.filenames.push_back(QString::fromStdString(noslash));
             event_data.buffers.push_back(data_buffer);
             ++i;
         }
@@ -1498,8 +1495,8 @@ namespace RexLogic
         // Rename the exported material to the original name, so that we don't get lots of duplicates
         // to the storage with only the name changed
         std::string new_mat_name = export_name;
-        ReplaceSubstring(new_mat_name, ".material", "");
-        ReplaceSubstring(mat_string, "material " + clone->getName(), "material " + new_mat_name);
+        Core::ReplaceSubstring(new_mat_name, ".material", "");
+        Core::ReplaceSubstring(mat_string, "material " + clone->getName(), "material " + new_mat_name);
         
         if (request->assets_.find(export_name) == request->assets_.end())
         {
@@ -1749,7 +1746,7 @@ namespace RexLogic
         {
             RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
 
-            ReplaceSubstring(leafname, ".xml", ".mesh");
+            Core::ReplaceSubstring(leafname, ".xml", ".mesh");
             mesh.name_ = leafname; 
             appearance.SetMesh(mesh);
         }      
@@ -1773,7 +1770,7 @@ namespace RexLogic
         appearance.SetMesh(mesh);
         
         std::string xmlname = filename;
-        ReplaceSubstring(xmlname, ".mesh", ".xml");       
+        Core::ReplaceSubstring(xmlname, ".mesh", ".xml");       
         
         // Now optionally read parameters from an xml file that perhaps exists, but it's not fatal if it's not found           
         QFile file(filename.c_str());

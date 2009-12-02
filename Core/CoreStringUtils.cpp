@@ -41,5 +41,22 @@ namespace Core
 
         return vec;
     }
+    
+    void ReplaceSubstring(std::string &str, const std::string &replace_this, const std::string &replace_with)
+    {
+        std::size_t index = str.find(replace_this, 0);
+        while (index != std::string::npos)
+        {
+            str.replace(index, replace_this.length(), replace_with);
+            index = str.find(replace_this, 0);
+        }
+    }
+    
+    
+    void ReplaceChar(std::string& str, char replace_this, char replace_with)
+    {
+        for (Core::uint i = 0; i < str.length(); ++i)
+            if (str[i] == replace_this) str[i] = replace_with;
+    }    
 }
 

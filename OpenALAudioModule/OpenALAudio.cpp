@@ -1,7 +1,9 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
 #include <al.h>
 #include <alc.h>
 #include <Poco/Logger.h>
-#include "StableHeaders.h"
 #include "Foundation.h"
 #include "OpenALAudio.h"
 #include "OpenALAudioModule.h"

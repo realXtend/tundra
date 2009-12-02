@@ -53,17 +53,7 @@ namespace RexTypes
         
         return data.substr(begin, end - begin);
     }
-    
-    void ReplaceSubstring(std::string &str, const std::string &replace_this, const std::string &replace_with)
-    {
-        std::size_t index = str.find(replace_this, 0);
-        while (index != std::string::npos)
-        {
-            str.replace(index, replace_this.length(), replace_with);
-            index = str.find(replace_this, 0);
-        }
-    }
-    
+        
     std::map<std::string, std::string> ParseLLSDMap(const std::string& data)
     {
         // Note: we don't use the QT xml parser for example, because for instance the legacy avatar data contains 
