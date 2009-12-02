@@ -97,11 +97,13 @@ add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
 add_subdirectory (InventoryModule)
+add_subdirectory (OgreAssetEditorModule)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.
 if (NOT EXISTS CMakeOptionalModules.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModulesTemplate.txt ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModules.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModulesTemplate.txt
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModules.txt)
 endif ()
 
 # Read the set of optional modules from another file

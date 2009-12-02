@@ -35,6 +35,22 @@ InventoryItemModel::~InventoryItemModel()
 {
 }
 
+bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
+{
+///\todo Return true only if the folder is "dirty" or it has children.
+    return true;
+
+/*
+    AbstractInventoryItem *item = GetItem(index);
+///\todo Fetch inventory descendents only if the folder is "dirty".
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+//    if (folder->IsDirty())
+        dataModel_->FetchInventoryDescendents(item);
+//    folder->SetDirty(false);
+    return false;
+*/
+}
+
 QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -212,6 +228,12 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     return true;
 }
 
+void InventoryItemModel::fetchMore(const QModelIndex &parent) const
+{
+    if (canFetchMore(parent))
+        dataModel_->FetchInventoryDescendents(GetItem(parent));
+}
+
 QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
@@ -318,7 +340,7 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
         if (!existing)
             unique = true;
         else
-            InventoryModule::LogWarning("While creating new inventory folder generated an UUID that already exists! Generating a new one...");
+            InventoryModule::LogWarning("Generated an UUID that already exists! Generating a new one...");
     }
 
     dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(id.ToString()), *parentFolder, name);
@@ -441,20 +463,20 @@ int InventoryItemModel::columnCount(const QModelIndex &parent) const
     return 1;
 }
 
-void InventoryItemModel::FetchInventoryDescendents(const QModelIndex &index)
+bool InventoryItemModel::Open(const QModelIndex &index)
 {
     AbstractInventoryItem *item = GetItem(index);
-    //InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
-    //if (!folder)
-//        return;
 
-    // Fetch inventory descendents only if the folder is "dirty".
-//    if (!folder->IsDirty())
-//        return;
+    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+    {
+        fetchMore(index);
+        return canFetchMore(index);
+    }
 
-    dataModel_->FetchInventoryDescendents(item);
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+        return dataModel_->OpenItem(item);
 
-//    folder->SetDirty(false);
+    return false;
 }
 
 void InventoryItemModel::Download(const QString &store_path, const QItemSelection &selection)
@@ -465,10 +487,7 @@ void InventoryItemModel::Download(const QString &store_path, const QItemSelectio
         QModelIndex index = it.next();
         InventoryAsset *asset = dynamic_cast<InventoryAsset *>(GetItem(index));
         if (asset)
-        {
-            InventoryModule::LogInfo("Requesting item " + asset->GetName().toStdString() + " for storage from the server");
             dataModel_->DownloadFile(store_path, asset);
-        }
     }
 }
 
@@ -488,13 +507,6 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
             dataModel_->UploadFile(filename, parentItem);
     }
 }
-
-/*
-void InventoryItemModel::CurrentSelectionChanged(const QModelIndex &index)
-{
-    emit(AbstractInventoryItemSelected(GetItem(index)));
-}
-*/
 
 AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const
 {

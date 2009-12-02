@@ -3,8 +3,8 @@
 /// @file AssetUploader.h
 /// @brief Asset HTTP uploading functionality for OS & reX servers.
 
-#ifndef incl_AssetUploader_h
-#define incl_AssetUploader_h
+#ifndef incl_InventoryModule_AssetUploader_h
+#define incl__InventoryModule_AssetUploader_h
 
 #include "WorldStream.h"
 

@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file WebDavInventoryDataModel.h
- *  @brief Data model representing the WebDAV inventory model.
+ *  @file   WebDavInventoryDataModel.h
+ *  @brief  Data model providing the WebDAV inventory model backend functionality.
  */
 
 #ifndef incl_InventoryModule_WebDavInventoryDataModel_h
@@ -49,7 +49,7 @@ namespace Inventory
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
         /// AbstractInventoryDataModel override.
-        void FetchInventoryDescendents(AbstractInventoryItem *item);
+        bool FetchInventoryDescendents(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemMove(AbstractInventoryItem *item);
@@ -70,6 +70,9 @@ namespace Inventory
         AbstractInventoryItem *GetTrashFolder() const { return 0; };
 
         /// AbstractInventoryDataModel override.
+        bool OpenItem(AbstractInventoryItem *item);
+
+        /// AbstractInventoryDataModel override.
         void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
 
         /// AbstractInventoryDataModel override.
@@ -84,9 +87,6 @@ namespace Inventory
 
         /// AbstractInventoryDataModel override.
         bool GetUseTrashFolder() const { return false; }
-
-//    public slots:
-//        void ItemSelectedFetchContent(AbstractInventoryItem *item);
 
     private:
         Q_DISABLE_COPY(WebDavInventoryDataModel);
@@ -125,7 +125,6 @@ namespace Inventory
 
         /// WebDAV client pointer.
         PythonQtObjectPtr webdavclient_;
-
     };
 }
 

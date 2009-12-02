@@ -1,0 +1,157 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+/**
+ *  @file   OgreAssetEditorModule.cpp
+ *  @brief  Ogre asset editor module.provides editing and previewing tools for
+ *          OGRE assets such as mesh, material & particle scripts.
+ */
+
+#include "StableHeaders.h"
+#include "OgreAssetEditorModule.h"
+#include "Inventory/InventoryEvents.h"
+#include "AssetEvents.h"
+#include "OgreScriptEditor.h"
+
+#include <QObject>
+#include <QStringList>
+#include <QVector>
+
+namespace OgreAssetEditor
+{
+
+OgreAssetEditorModule::OgreAssetEditorModule() :
+    ModuleInterfaceImpl(Foundation::Module::MT_OgreAssetEditor),
+    inventoryEventCategory_(0),
+    assetEventCategory_(0),
+    resourceEventCategory_(0)
+{
+}
+
+OgreAssetEditorModule::~OgreAssetEditorModule()
+{
+}
+
+void OgreAssetEditorModule::Load()
+{
+    LogInfo("System " + Name() + " loaded.");
+}
+
+void OgreAssetEditorModule::Unload()
+{
+    LogInfo("System " + Name() + " unloaded.");
+}
+
+void OgreAssetEditorModule::Initialize()
+{
+    // Get event manager.
+    eventManager_ = framework_->GetEventManager();
+
+    // Register asset handlers
+//    assetHandlers_[RexTypes::RexAT_MaterialScript] = 0;
+
+//    assetHandlers_[RexTypes::RexAT_MaterialScript].push_back(boost::bind(
+//            &OgreScriptEditor::HandleAssetReadyEvent, object, _1, _2));
+
+    LogInfo("System " + Name() + " initialized.");
+}
+
+void OgreAssetEditorModule::PostInitialize()
+{
+    inventoryEventCategory_ = eventManager_->QueryEventCategory("Inventory");
+    if (inventoryEventCategory_ == 0)
+        LogError("Failed to query \"Inventory\" event category");
+
+    assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
+    if (assetEventCategory_ == 0)
+        LogError("Failed to query \"Asset\" event category");
+
+    resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
+    if (resourceEventCategory_ == 0)
+        LogError("Failed to query \"Resource\" event category");
+}
+
+void OgreAssetEditorModule::Uninitialize()
+{
+    AssetEditorMapIter it(assetEditors_);
+    while(it.hasNext())
+    {
+        QObject *editor = it.next().value();
+        SAFE_DELETE(editor);
+    }
+
+    LogInfo("System " + Name() + " uninitialized.");
+}
+
+void OgreAssetEditorModule::Update(Core::f64 frametime)
+{
+}
+
+bool OgreAssetEditorModule::HandleEvent(
+    Core::event_category_id_t category_id,
+    Core::event_id_t event_id,
+    Foundation::EventDataInterface* data)
+{
+    if (category_id == inventoryEventCategory_)
+    {
+        if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_OPEN)
+        {
+            Inventory::InventoryItemOpenEventData *openEvent = static_cast<Inventory::InventoryItemOpenEventData *>(data);
+            RexTypes::asset_type_t at = openEvent->assetType;
+            switch(at)
+            {
+            case RexTypes::RexAT_ParticleScript:
+            {
+                AssetEditorMap::iterator it = assetEditors_.find(openEvent->id);
+                if (it == assetEditors_.end())
+                {
+                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
+                    assetEditors_[openEvent->id] = editor;
+                }
+                break;
+            }
+            case RexTypes::RexAT_MaterialScript:
+            {
+                AssetEditorMap::iterator it = assetEditors_.find(openEvent->id);
+                if (it == assetEditors_.end())
+                {
+                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
+                    assetEditors_[openEvent->id] = editor;
+                }
+                break;
+            }
+            default:
+                break;
+            }
+
+            return false;
+            /*
+            LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
+            if (i != event_handlers_.end())
+            {
+                for(size_t j = 0 ; j < i->second.size(); j++)
+                {
+                    if ((i->second[j])(event_id, data))
+                        return true;
+                }
+            }
+            */
+//            eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, 0);
+        }
+    }
+
+    return false;
+}
+
+} // namespace OgreAssetEditor
+
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+void SetProfiler(Foundation::Profiler *profiler)
+{
+    Foundation::ProfilerSection::SetProfiler(profiler);
+}
+
+using namespace OgreAssetEditor;
+
+POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+    POCO_EXPORT_CLASS(OgreAssetEditorModule)
+POCO_END_MANIFEST

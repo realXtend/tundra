@@ -21,6 +21,7 @@
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 
+#include <QObject>
 #include <QStringList>
 #include <QVector>
 
@@ -39,7 +40,6 @@ InventoryModule::InventoryModule() :
 {
 }
 
-// virtual
 InventoryModule::~InventoryModule()
 {
 }
@@ -56,12 +56,14 @@ void InventoryModule::Unload()
 
 void InventoryModule::Initialize()
 {
-    // Refister event category and events.
+    // Register event category and events.
     eventManager_ = framework_->GetEventManager();
     inventoryEventCategory_ = eventManager_->RegisterEventCategory("Inventory");
-    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, "InventoryDescendent");
-    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD, "InventoryUpload");
-    eventManager_->RegisterEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, "InventoryUploadBuffer");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_DESCENDENT, "InventoryDescendent");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_UPLOAD_FILE, "InventoryUpload");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_UPLOAD_BUFFER, "InventoryUploadBuffer");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_ITEM_OPEN, "InventoryItemOpen");
+    eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_ITEM_DOWNLOADED, "InventoryItemDownloaded");
 
     // Register console commands.
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>
@@ -107,7 +109,7 @@ void InventoryModule::Uninitialize()
     inventory_.reset();
 }
 
-void InventoryModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule)
 {
     networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
     if (networkStateEventCategory_ == 0)
@@ -120,7 +122,9 @@ void InventoryModule::Update(Core::f64 frametime)
 {
 }
 
-bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id,
+bool InventoryModule::HandleEvent(
+    Core::event_category_id_t category_id,
+    Core::event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
     if (category_id == networkStateEventCategory_)
@@ -128,23 +132,23 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
         // Connected to server. Initialize inventory_ tree model.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
-            ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
-            if (!auth_data)
+            ProtocolUtilities::AuthenticationEventData *auth = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+            if (!auth)
                 return false;
 
-            switch(auth_data->type)
+            switch(auth->type)
             {
             case ProtocolUtilities::AT_Taiga:
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
                 {
-                    LogError("Python module not in use. WebDav inventory_ can't be used!");
+                    LogError("Python module not in use. WebDAV inventory can't be used!");
                     inventoryType_ = IDMT_Unknown;
                 }
                 else
                 {
                     // Create WebDAV inventory model.
-                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(auth_data->identityUrl), STD_TO_QSTR(auth_data->hostUrl)));
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(auth->identityUrl), STD_TO_QSTR(auth->hostUrl)));
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
                     inventoryType_ = IDMT_WebDav;
                 }
@@ -195,7 +199,7 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
                 checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get())->HandleInventoryDescendents(data);
 
         // Upload request from other modules.
-        if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD)
+        if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE)
         {
             InventoryUploadEventData *upload_data = dynamic_cast<InventoryUploadEventData *>(data);
             if (!upload_data)
@@ -239,11 +243,20 @@ bool InventoryModule::HandleEvent(Core::event_category_id_t category_id, Core::e
 
     if (inventoryType_ == IDMT_OpenSim)
     {
-        if(!inventory_.get())
-        return false;
+        if (!inventory_.get())
+            return false;
 
         OpenSimInventoryDataModel *osmodel = checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get());
         if (osmodel->HasPendingDownloadRequests())
+        {
+            if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
+                osmodel->HandleAssetReady(data);
+
+            if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
+                osmodel->HandleResourceReady(data);
+        }
+
+        if (osmodel->HasPendingOpenItemRequests())
         {
             if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
                 osmodel->HandleAssetReady(data);
@@ -266,7 +279,7 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
     if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    if (!inventoryType_ != IDMT_OpenSim)
+    if (inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
 
     AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
@@ -320,8 +333,8 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringV
     if (!inventory_.get())
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
-    if (!inventoryType_ != IDMT_OpenSim)
-        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
+    if (inventoryType_ != IDMT_OpenSim)
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
 
     AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
     if (!uploader)

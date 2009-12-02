@@ -34,6 +34,9 @@ namespace Inventory
         virtual ~InventoryItemModel();
 
         /// QAbstractItemModel override.
+        bool canFetchMore(const QModelIndex & parent) const;
+
+        /// QAbstractItemModel override.
         Qt::ItemFlags flags(const QModelIndex &index) const;
 
         /// QAbstractItemModel override.
@@ -47,6 +50,9 @@ namespace Inventory
 
         /// QAbstractItemModel override.
         bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+
+        /// QAbstractItemModel override.
+        void fetchMore(const QModelIndex & parent) const;
 
         /// QAbstractItemModel override.
         QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -72,6 +78,8 @@ namespace Inventory
         /// QAbstractItemModel override.
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
+        // AbstractInventoryDataModel API
+
         /// Inserts new empty folder to the model.
         /// @param position
         /// @param parent Index of the parent folder.
@@ -84,9 +92,10 @@ namespace Inventory
         /// @param item Item to be moved.
         bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
 
-        /// Requests inventory descendents from server.
+        /// 
         /// @param index Model index.
-        void FetchInventoryDescendents(const QModelIndex &index);
+        /// @return 
+        bool Open(const QModelIndex &index);
 
         /// @return Inventory data model pointer.
         AbstractInventoryDataModel *GetInventory() const { return dataModel_; }
@@ -97,11 +106,6 @@ namespace Inventory
         /// Sets if this model use trash folder or not.
         void SetUseTrash(const bool &value) { useTrash_ = value; }
 
-        /// @return True if has pending download request for matching asset reference.
-        ///\note Erases the asset if true.
-        bool HasPendingDownloadRequest(const QString &asset_reference);
-
-    public slots:
         /// Downloads assets.
         /// @param index store_path Store path for the downloaded files.
         /// @param selection Selected assets.
@@ -111,11 +115,6 @@ namespace Inventory
         /// @param index Upload destination index.
         /// @param filenames List of filenames.
         void Upload(const QModelIndex &index, QStringList filenames);
-
-//        void CurrentSelectionChanged(const QModelIndex &index);
-
-//    signals:
-//        void AbstractInventoryItemSelected(AbstractInventoryItem *item);
 
     private:
         /// Sets up view from data.

@@ -25,6 +25,8 @@
 #include <QModelIndex>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QMenu>
+#include <QAction>
 
 namespace Inventory
 {
@@ -39,7 +41,14 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     buttonUpload_(0),
     buttonAddFolder_(0),
     buttonDeleteItem_(0),
-    buttonRename_(0)
+    buttonRename_(0),
+    actionMenu_(0),
+    actionDelete_(0),
+    actionRename_(0),
+    actionCut_(0),
+    actionPaste_(0),
+    actionNewFolder_(0),
+    actionOpen_(0)
 {
     // Get QtModule and create canvas
      boost::shared_ptr<QtUI::QtModule> qtModule =
@@ -55,7 +64,6 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     canvas_->SetSize(300, 350);
     canvas_->SetStationary(false);
     canvas_->SetPosition(canvas_->GetRenderWindowSize().width() - 350, 35);
-    canvas_->SetWindowTitle(QString("Inventory"));
     canvas_->AddWidget(inventoryWidget_);
 
     // Add to control bar
@@ -70,7 +78,7 @@ InventoryWindow::~InventoryWindow()
 
 void InventoryWindow::Toggle()
 {
-    if (canvas_)
+    if (canvas_.get())
     {
         if (canvas_->IsHidden())
             canvas_->Show();
@@ -81,7 +89,7 @@ void InventoryWindow::Toggle()
 
 void InventoryWindow::Hide()
 {
-    if (canvas_)
+    if (canvas_.get())
         canvas_->Hide();
 }
 
@@ -97,6 +105,17 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     inventoryItemModel_ = new InventoryItemModel(inventory_model.get());
     treeView_->setModel(inventoryItemModel_);
 
+    // Connect download progress signals.
+    QObject::connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &)),
+        this, SLOT(OpenDownloadProgess(const QString &)));
+
+    QObject::connect(inventory_model.get(), SIGNAL(DownloadAborted(const QString &)),
+        this, SLOT(AbortDownload(const QString &)));
+
+    QObject::connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
+        this, SLOT(CloseDownloadProgess(const QString &)));
+
+    // Connect selectionChanged
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
 }
@@ -106,30 +125,11 @@ void InventoryWindow::ResetInventoryTreeModel()
     SAFE_DELETE(inventoryItemModel_);
 }
 
-/*
-void InventoryWindow::HandleInventoryDescendent(InventoryItemEventData *item_data)
+void InventoryWindow::OpenItem()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    QAbstractItemModel *model = treeView_->model();
 
-    ///\todo Can be removed?
-    if (model->columnCount(index) == 0)
-        if (!model->insertColumn(0, index))
-            return;
-
-    if (!inventoryItemModel_->InsertItem(index.row(), index, item_data))
-        return;
-
-    UpdateActions();
-}
-*/
-
-void InventoryWindow::ExpandFolder(const QModelIndex &index)
-{
-    if (!index.isValid())
-        return;
-
-    inventoryItemModel_->FetchInventoryDescendents(index);
+    inventoryItemModel_->Open(index);
 
     treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     UpdateActions();
@@ -140,15 +140,15 @@ void InventoryWindow::AddFolder()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
-    inventoryItemModel_->FetchInventoryDescendents(index);
+    inventoryItemModel_->Open(index);
 
     // Next few lines not probably needed, but saved in case we will have multiple columns in the near future.
     if (model->columnCount(index) == 0)
         if (!model->insertColumn(0, index))
             return;
 
-    ///\todo    Change the functionality so that new user Add Folder it creates new folder but doesn't notify
-    ///         server until the name has been given.
+    ///\todo    Change the functionality and flow so that when user clicks Add Folder it creates new folder but doesn't notify
+    ///         server until the name has been committed.
     bool ok = false;
     QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder",
         "Please give name of the new folder", QLineEdit::Normal, "", &ok);
@@ -225,6 +225,21 @@ void InventoryWindow::UpdateActions()
         treeView_->closePersistentEditor(treeView_->selectionModel()->currentIndex());
 }
 
+void InventoryWindow::OpenDownloadProgess(const QString &asset_id)
+{
+    ///\todo
+}
+
+void InventoryWindow::AbortDownload(const QString &asset_id)
+{
+    ///\todo
+}
+
+void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
+{
+    ///\todo
+}
+
 void InventoryWindow::InitInventoryWindow()
 {
     // Create widget from ui file
@@ -246,14 +261,26 @@ void InventoryWindow::InitInventoryWindow()
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
 //    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
-    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
+    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
+    // Buttons
     QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
     QObject::connect(buttonUpload_, SIGNAL(clicked(bool)), this, SLOT(Upload()));
     QObject::connect(buttonDownload_, SIGNAL(clicked(bool)), this, SLOT(Download()));
+
+    // Actions
+/*
+    QObject::connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
+    QObject::connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
+    QObject::connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
+    QObject::connect(actionCut_, SIGNAL(triggered()), this, SLOT(removeRow()));
+    QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(removeColumn()));
+    QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));}
+    QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
+*/
 }
 
 } // namespace Inventory

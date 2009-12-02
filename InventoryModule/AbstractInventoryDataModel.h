@@ -62,7 +62,8 @@ namespace Inventory
 
         /// Request inventory descendents for spesific folder from the server.
         /// @param item Folder.
-        virtual void FetchInventoryDescendents(AbstractInventoryItem *item) = 0;
+        /// @return True, if the folder could be opened.
+        virtual bool FetchInventoryDescendents(AbstractInventoryItem *item) = 0;
 
         /// Notifies server about item move operation.
         /// @item Inventory item.
@@ -79,6 +80,11 @@ namespace Inventory
         /// Notifies server about item update operation(e.g. name changed).
         /// @item Inventory item.
         virtual void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name) = 0;
+
+        /// Opens inventory item.
+        /// @param Inventory item.
+        /// @return True if the item at spesific index could be openeded, false otherwise.
+        virtual bool OpenItem(AbstractInventoryItem *item) = 0;
 
         /// Uploads file.
         /// @param filename Filename.
@@ -109,6 +115,16 @@ namespace Inventory
 
         /// @return Inventory trash folder.
         virtual bool GetUseTrashFolder() const = 0;
+
+    signals:
+        /// Indicates that asset download has started.
+        void DownloadStarted(const QString &asset_id);
+
+        /// Indicates that asset download has aborted.
+        void DownloadAborted(const QString &asset_id);
+
+        /// Indicates that asset download is completed.
+        void DownloadCompleted(const QString &asset_id);
 
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);

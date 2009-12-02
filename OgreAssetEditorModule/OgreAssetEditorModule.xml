@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-    <entry>InventoryModule</entry>
+    <entry>OgreAssetEditorModule</entry>
     <dependency>RexLogicModule</dependency>
     <dependency>QtModule</dependency>
-    <dependency>PythonScriptModule</dependency>
 </config>

@@ -11,5 +11,6 @@
     <subscriber module="QtModule" priority="104" />
     <subscriber module="InventoryModule" priority="100" />
     <subscriber module="CommunicationModule" priority="100" />
+    <subscriber module="OgreAssetEditorModule" priority="100" />
 </subscribers>
 
