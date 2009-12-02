@@ -2,7 +2,7 @@
 
 /**
  *  @file   OgreScriptEditor.h
- *  @brief 
+ *  @brief  Editing tool for OGRE material and particle scripts.
  */
 
 #ifndef incl_InventoryModule_OgreScriptEditor_h
@@ -27,17 +27,13 @@ namespace QtUI
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
+    class AssetInterface;
+    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 namespace PropertyEditor
 {
     class PropertyEditor;
-}
-
-namespace RexTypes
-{
-    class RexUUID;
 }
 
 namespace OgreAssetEditor
@@ -49,18 +45,18 @@ namespace OgreAssetEditor
     public:
         /// Constructor.
         /// @param framework Framework.pointer.
+        /// @param asset_type Asset type.
+        /// @param name Name.
         OgreScriptEditor(Foundation::Framework *framework,
             const RexTypes::asset_type_t &asset_type,
             const QString &name);
-//            const RexTypes::RexUUID &inventory_id,
-//            const RexTypes::RexUUID &asset_id,
 
         /// Destructor.
         virtual ~OgreScriptEditor();
 
     public slots:
-        bool HandleAssetReady(Foundation::EventDataInterface *data);
-//        void HandleAssetReady();
+        ///
+        void HandleAssetReady(Foundation::AssetPtr asset);
 
     private slots:
         /// Save As

@@ -139,7 +139,9 @@ namespace Inventory
 
         /// Handles ASSET_READY event.
         /// @param data Event data.
-        void HandleAssetReady(Foundation::EventDataInterface *data);
+        void HandleAssetReadyForDownload(Foundation::EventDataInterface *data);
+
+        void HandleAssetReadyForOpen(Foundation::EventDataInterface *data);
 
 #ifdef _DEBUG
         /// Prints the inventory tree structure to std::cout.

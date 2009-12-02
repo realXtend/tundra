@@ -250,19 +250,20 @@ bool InventoryModule::HandleEvent(
         if (osmodel->HasPendingDownloadRequests())
         {
             if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
-                osmodel->HandleAssetReady(data);
+                osmodel->HandleAssetReadyForDownload(data);
 
             if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
-                osmodel->HandleResourceReady(data);
+                osmodel->HandleAssetReadyForDownload(data);
+
+            return false;
         }
 
         if (osmodel->HasPendingOpenItemRequests())
         {
             if (category_id == assetEventCategory_ && event_id == Asset::Events::ASSET_READY)
-                osmodel->HandleAssetReady(data);
+                osmodel->HandleAssetReadyForOpen(data);
 
-            if (category_id == resourceEventCategory_ && event_id == Resource::Events::RESOURCE_READY)
-                osmodel->HandleResourceReady(data);
+            return false;
         }
     }
 

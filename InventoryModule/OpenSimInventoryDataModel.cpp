@@ -238,7 +238,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
 
             tag = asset_service->RequestAsset(asset_reference_id, GetTypeNameFromAssetType(asset_type));
             if (tag)
-                openRequests_[qMakePair(tag, asset_type)] = asset->GetName();
+                openRequests_[qMakePair(tag, asset_type)] = asset->GetID();
         }
         break;
     }
@@ -266,7 +266,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
 
     InventoryItemOpenEventData itemOpen;
     itemOpen.requestTag = tag;
-    itemOpen.id = QSTR_TO_UUID(asset->GetID());
+    itemOpen.inventoryId = QSTR_TO_UUID(asset->GetID());
     itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
     itemOpen.assetType = asset_type;
     itemOpen.inventoryType = asset->GetInventoryType();
@@ -422,7 +422,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
     downloadRequests_.erase(i);
 }
 
-void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface *data)
+void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDataInterface *data)
 {
     Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
     Core::request_tag_t tag = assetReady->tag_;
@@ -467,6 +467,42 @@ void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface 
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);
+}
+
+void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInterface *data)
+{
+    Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
+    Core::request_tag_t tag = assetReady->tag_;
+    asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
+
+    AssetRequestMap::iterator i = openRequests_.find(qMakePair(tag, asset_type));
+    if (i == openRequests_.end())
+        return;
+
+    emit DownloadCompleted(assetReady->asset_id_.c_str());
+
+    // Send InventoryItemDownloaded event.
+    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    if (event_category == 0)
+        return;
+
+    InventoryItemDownloadedEventData itemDownloaded;
+    itemDownloaded.inventoryId = QSTR_TO_UUID(i.value());
+    itemDownloaded.asset = assetReady->asset_;
+    itemDownloaded.requestTag = tag;
+    itemDownloaded.assetType = asset_type;
+
+/*    itemOpen.requestTag = tag;
+    itemOpen.id = QSTR_TO_UUID(asset->GetID());
+    itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
+    itemOpen.assetType = asset_type;
+    itemOpen.inventoryType = asset->GetInventoryType();
+    itemOpen.name = asset->GetName().toStdString();
+*/
+    event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
+
+    openRequests_.erase(i);
 }
 
 void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventDataInterface *data)

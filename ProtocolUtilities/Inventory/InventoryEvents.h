@@ -87,11 +87,23 @@ namespace Inventory
         InventoryItemOpenEventData() {}
         virtual ~InventoryItemOpenEventData() {}
         Core::request_tag_t requestTag;
-        RexUUID id;
+        RexUUID inventoryId;
         RexUUID assetId;
         inventory_type_t inventoryType;
         asset_type_t assetType;
         std::string name;
+    };
+
+    /// Event data class to be used with EVENT_INVENTORY_ITEM_DOWNLOADED.
+    class InventoryItemDownloadedEventData : public Foundation::EventDataInterface
+    {
+    public:
+        InventoryItemDownloadedEventData() {}
+        virtual ~InventoryItemDownloadedEventData() {}
+        RexUUID inventoryId;
+        Foundation::AssetPtr asset;
+        Core::request_tag_t requestTag;
+        asset_type_t assetType;
     };
 }
 

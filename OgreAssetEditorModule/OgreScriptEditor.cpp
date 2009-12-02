@@ -2,7 +2,7 @@
 
 /**
  *  @file   OgreScriptEditor.cpp
- *  @brief 
+ *  @brief  Editing tool for OGRE material and particle scripts.
  */
 
 #include "StableHeaders.h"
@@ -24,12 +24,10 @@
 namespace OgreAssetEditor
 {
 
-OgreScriptEditor::OgreScriptEditor(Foundation::Framework *framework,
+OgreScriptEditor::OgreScriptEditor(
+    Foundation::Framework *framework,
     const RexTypes::asset_type_t &asset_type,
     const QString &name) :
-//    const RexTypes::RexUUID &inventory_id,
-//    const RexTypes::RexUUID &asset_id,
-
     framework_(framework),
     mainWidget_(0),
     editorWidget_(0),
@@ -41,16 +39,17 @@ OgreScriptEditor::OgreScriptEditor(Foundation::Framework *framework,
 {
     InitEditorWindow();
 
-    if (asset_type == RexTypes::RexAT_ParticleScript)
-    {
+//    if (asset_type == RexTypes::RexAT_ParticleScript)
+//    {
         // Raw text edit for particle scripts.
         textEdit_ = new QTextEdit(editorWidget_);
         textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
         textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
         textEdit_->resize(editorWidget_->size());
-        textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        //textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        textEdit_->setLineWrapMode(QTextEdit::NoWrap);
         textEdit_->show();
-    }
+//    }
 
 /*
     if (asset_type == RexTypes::RexAT_MaterialScript)
@@ -74,15 +73,15 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(propertyEditor_);
 }
 
-bool OgreScriptEditor::HandleAssetReady(Foundation::EventDataInterface *data)
+void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 {
-    Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-
-    int tag = assetReady->tag_;
-    Foundation::AssetPtr asset = assetReady->asset_;
-
-
-    return false;
+    QString script((const char *)asset->GetData());
+    if (!script.isEmpty() && !script.isNull())
+    {
+        // Replaces tabs (ascii code decimal 9) with 4 spaces.
+        script.replace(QChar(9), "    ");
+        textEdit_->setText(script);
+    }
 }
 
 void OgreScriptEditor::SaveAs()
@@ -140,6 +139,7 @@ void OgreScriptEditor::InitEditorWindow()
     buttonSaveAs_ = mainWidget_->findChild<QPushButton *>("buttonSaveAs");
     buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
     editorWidget_= mainWidget_->findChild<QWidget *>("widgetEditor");
+    editorWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Connect signals
     QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
