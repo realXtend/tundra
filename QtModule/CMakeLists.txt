@@ -1,3 +1,10 @@
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
+#############################################################################################
+
 # Define target name and output directory
 init_target (QtModule OUTPUT modules/core)
 
@@ -7,8 +14,11 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
-    
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+# Qt4 Moc files to subgroup "CMake Moc"
+MocFolder ()
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
@@ -52,7 +62,7 @@ endif (MSVC)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
 final_target ()

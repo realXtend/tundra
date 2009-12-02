@@ -2,7 +2,7 @@
 
 /**
  *  @file InventoryWindow.h
- *  @brief The inventory window.
+ *  @brief The inventory window. Should be totally unaware of the underlaying inventory data model.
  */
 
 #ifndef incl_InventoryModule_InventoryWindow_h
@@ -14,12 +14,15 @@
 
 #include <QPointer>
 #include <QObject>
+#include <QMap>
 
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
 class QItemSelection;
 class QModelIndex;
+class QMenu;
+class QAction;
 
 namespace QtUI
 {
@@ -72,13 +75,9 @@ namespace Inventory
         /// Hides the inventory window.
         void Hide();
 
-        /// Handles data from InventoryDescendent packet.
-//        void HandleInventoryDescendent(InventoryItemEventData *item_data);
-
     private slots:
-        /// Expands the inventory folder in the treeview
-        /// @param index Index of folder to be expanded.
-        void ExpandFolder(const QModelIndex &index);
+        /// Opens inventory item (folder or asset) when user double-clicks it.
+        void OpenItem();
 
         /// Adds new folder.
         void AddFolder();
@@ -97,6 +96,18 @@ namespace Inventory
 
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
+
+        /// Opens download progress dialog.
+        /// @param asset_id Asset id.
+        void OpenDownloadProgess(const QString &asset_id);
+
+        /// Aborts download.
+        /// @param asset_id Asset id.
+        void AbortDownload(const QString &asset_id);
+
+        /// Closes download progress dialog.
+        /// @param asset_id Asset id.
+        void CloseDownloadProgess(const QString &asset_id);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -136,6 +147,27 @@ namespace Inventory
 
         /// Rename button.
         QPushButton *buttonRename_;
+
+        /// Action menu.
+        QMenu *actionMenu_;
+
+        /// Delete action.
+        QAction *actionDelete_;
+
+        /// Rename action.
+        QAction *actionRename_;
+
+        /// Cut action.
+        QAction *actionCut_;
+
+        /// Paste action.
+        QAction *actionPaste_;
+
+        /// New Folder action.
+        QAction *actionNewFolder_;
+
+        /// Open action.
+        QAction *actionOpen_;
     };
 }
 

@@ -13,7 +13,8 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES AbstractInventoryDataModel.h AbstractInventoryItem.h AssetUploader.h InventoryAsset.h
-    InventoryFolder.h InventoryItemModel.h InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h)
+    InventoryFolder.h InventoryItemModel.h InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h
+    DownloadProgressDialog.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -24,8 +25,6 @@ MocFolder ()
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
-
-add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (POCO)
@@ -41,7 +40,7 @@ use_modules (RexCommon RexLogicModule ProtocolUtilities QtModule HttpUtilities A
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules (RexCommon RexLogicModule ProtocolUtilities HttpUtilities QtModule)
+link_modules (RexCommon RexLogicModule ProtocolUtilities QtModule HttpUtilities)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)

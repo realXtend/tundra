@@ -3,8 +3,8 @@
 /// @file J2kEncoder.h
 /// @brief J2k encoding functionality required by image uploads.
 
-#ifndef incl_J2kEncoder_h
-#define incl_J2kEncoder_h
+#ifndef incl_InventoryModule_J2kEncoder_h
+#define incl_InventoryModule_J2kEncoder_h
 
 #include <Ogre.h>
 

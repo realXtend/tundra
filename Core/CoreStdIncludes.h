@@ -8,8 +8,8 @@
 #define _WINDOWS
 #endif
 
-#if defined(WIN32) && !defined(_WIN32_WINNT)		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	                        // Change this to the appropriate value to target other versions of Windows.
+#if defined(WIN32) && !defined(_WIN32_WINNT)        // Allow use of features specific to Windows XP or later.
+#define _WIN32_WINNT 0x0501                         // Change this to the appropriate value to target other versions of Windows.
 #endif
 
 #if defined(WIN32)
@@ -43,17 +43,7 @@
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>
 #include <Poco/ClassLibrary.h>
-
-// Disable annoying C4805 warning caused by Poco/Mutex_WIN32.h
-#if defined(_WINDOWS)
-#pragma warning( push )
-#pragma warning( disable : 4805 )
-#endif
 #include <Poco/ClassLoader.h>
-#if defined(_WINDOWS)
-#pragma warning( pop )
-#endif
-
 #include <Poco/Util/XMLConfiguration.h>
 #include <Poco/XML/XMLWriter.h>
 

@@ -15,6 +15,12 @@
 #include "EventDataInterface.h"
 #include "WorldStream.h"
 
+namespace ProtocolUtilities
+{
+    class ProtocolModuleInterface;
+    typedef boost::weak_ptr<ProtocolModuleInterface> ProtocolWeakPtr;
+}
+
 namespace Inventory
 {
     class InventoryWindow;
@@ -37,7 +43,7 @@ namespace Inventory
         InventoryModule();
 
         /// Default destructor 
-        virtual ~InventoryModule();
+        ~InventoryModule();
 
         /// ModuleInterfaceImpl overrides.
         void Load();
@@ -46,8 +52,12 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(Core::f64 frametime);
-        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
-        void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+        bool HandleEvent(
+            Core::event_category_id_t category_id,
+            Core::event_id_t event_id,
+            Foundation::EventDataInterface* data);
+
+        void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -69,6 +79,8 @@ namespace Inventory
     private:
         InventoryModule(const InventoryModule &);
         void operator=(const InventoryModule &);
+
+        void RegisterInventoryItemHandler(RexTypes::asset_type_t asset_type, QObject *handler);
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;

@@ -63,10 +63,11 @@ namespace Foundation
             MT_CommunicationUI,
             MT_Input,
             MT_TextureDecoder,
-			MT_Inventory,
-			MT_TaigaProtocol,
-			MT_Unknown
-		};
+            MT_Inventory,
+            MT_TaigaProtocol,
+            MT_OgreAssetEditor,
+            MT_Unknown
+        };
 
         //! Returns string from type enum.
         /*!
@@ -78,8 +79,9 @@ namespace Foundation
 
             static const std::string type_strings[MT_Unknown] = {
                  "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
-                 "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule", "CommunicationModule",
-				 "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule", "TaigaProtocolModule" };
+                 "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
+                 "CommunicationModule", "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule",
+                 "TaigaProtocolModule", "OgreAssetEditorModule" };
 
             return type_strings[type];
         }

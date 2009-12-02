@@ -561,7 +561,7 @@ if 0:
     print pos, pos.x(), pos.y(), pos.z()
     ent.pos = pos
     
-if 0: #property editor tests
+if 1: #property editor tests
     #print r.c
     #print r, dir(r)
     pe = r.getPropertyEditor()

@@ -1,4 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
+/// @file   RexTypes.h
+/// @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
+
 #ifndef incl_RexTypes_h
 #define incl_RexTypes_h
 
@@ -345,7 +349,7 @@ namespace RexTypes
     }
 
     bool IsNull(const RexAssetID& id);
-    
+
     //! \return true if asset id is non-null (not empty) and can not be construed as an UUID
     bool IsUrlBased(const RexAssetID& id);
 

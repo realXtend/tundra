@@ -50,7 +50,6 @@
 #include "Environment/Environment.h"
 #include "Environment/TerrainEditor.h"
 
-#include "QtUtils.h"
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
 
@@ -63,7 +62,13 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     send_input_state_(false),
     login_failed_showed_(false),
     movement_damping_constant_(10.0f),
-    camera_state_(CS_Follow)
+    camera_state_(CS_Follow),
+    network_handler_(0),
+    input_handler_(0),
+    scene_handler_(0),
+    network_state_handler_(0),
+    framework_handler_(0),
+    loginUI_(0)
 {
 }
 
@@ -159,45 +164,45 @@ void RexLogicModule::PostInitialize()
     } else
         LogError("Unable to find event category for Input");
 
-	// Action events.
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
-	if (eventcategoryid != 0)
-	{
-		event_handlers_[eventcategoryid].push_back(boost::bind(
-			&AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
-		event_handlers_[eventcategoryid].push_back(
-			boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
-	} else
-		LogError("Unable to find event category for Action");
+    // Action events.
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
+    if (eventcategoryid != 0)
+    {
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
+        event_handlers_[eventcategoryid].push_back(
+            boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
+    } else
+        LogError("Unable to find event category for Action");
 
-	// Scene events.
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
-	if (eventcategoryid != 0)
-	{
-		event_handlers_[eventcategoryid].push_back(boost::bind(
-			&SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
-		event_handlers_[eventcategoryid].push_back(boost::bind(
-			&AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
-		event_handlers_[eventcategoryid].push_back(boost::bind(
-			&CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
-	} else
-		LogError("Unable to find event category for Scene");
+    // Scene events.
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
+    if (eventcategoryid != 0)
+    {
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
+    } else
+        LogError("Unable to find event category for Scene");
 
-	// Resource events
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
-	if (eventcategoryid != 0)
-		event_handlers_[eventcategoryid].push_back(
-			boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
-	else
-		LogError("Unable to find event category for Resource");
+    // Resource events
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+    if (eventcategoryid != 0)
+        event_handlers_[eventcategoryid].push_back(
+            boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
+    else
+        LogError("Unable to find event category for Resource");
 
     // Inventory events
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
-	if (eventcategoryid != 0)
-		event_handlers_[eventcategoryid].push_back(
-			boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
-	else
-		LogError("Unable to find event category for Inventory");
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
+    if (eventcategoryid != 0)
+        event_handlers_[eventcategoryid].push_back(
+            boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
+    else
+        LogError("Unable to find event category for Inventory");
 
     // Asset events
 	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
@@ -207,67 +212,67 @@ void RexLogicModule::PostInitialize()
 	else
 		LogError("Unable to find event category for Asset");
     
-	// Framework events
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
-	if (eventcategoryid != 0)
-		event_handlers_[eventcategoryid].push_back(boost::bind(
-			&FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
-	else
-		LogError("Unable to find event category for Framework");
+    // Framework events
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+    if (eventcategoryid != 0)
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+    else
+        LogError("Unable to find event category for Framework");
 
-	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
-		(Foundation::Service::ST_Renderer).lock();
-	if (renderer)
-	{
-		Ogre::Camera *cam = renderer->GetCurrentCamera();
-		cam->setPosition(-10, -10, -10);
-		cam->lookAt(0,0,0);
-	}
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
+        (Foundation::Service::ST_Renderer).lock();
+    if (renderer)
+    {
+        Ogre::Camera *cam = renderer->GetCurrentCamera();
+        cam->setPosition(-10, -10, -10);
+        cam->lookAt(0,0,0);
+    }
 
-	send_input_state_ = true;
+    send_input_state_ = true;
 
-	// Create the login window.
-	loginUI_ = new Login(framework_, this);
+    // Create the login window.
+    loginUI_ = new Login(framework_, this);
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
 {
     // NetworkState events
-	LogicEventHandlerMap::iterator i;
+    LogicEventHandlerMap::iterator i;
     Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
     if (eventcategoryid != 0)
-	{
-		i = event_handlers_.find(eventcategoryid);
-		if (i == event_handlers_.end())
-		{
-			event_handlers_[eventcategoryid].push_back(boost::bind(
-				&NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-			LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
-		}
-		else
-		{
-			LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
-		}
-	}
+    {
+        i = event_handlers_.find(eventcategoryid);
+        if (i == event_handlers_.end())
+        {
+            event_handlers_[eventcategoryid].push_back(boost::bind(
+                &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+            LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
+        }
+        else
+        {
+            LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
+        }
+    }
     else
         LogError("Unable to find event category for NetworkState");
 
     // NetworkIn events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
     if (eventcategoryid != 0)
-	{
-		i = event_handlers_.find(eventcategoryid);
-		if (i == event_handlers_.end())
-		{
-			event_handlers_[eventcategoryid].push_back(boost::bind(
-				&NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-			LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
-		}
-		else
-		{
-			LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
-		}
-	}
+    {
+        i = event_handlers_.find(eventcategoryid);
+        if (i == event_handlers_.end())
+        {
+            event_handlers_[eventcategoryid].push_back(boost::bind(
+                &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
+            LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
+        }
+        else
+        {
+            LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
+        }
+    }
     else
         LogError("Unable to find event category for NetworkIn");
 }
@@ -313,12 +318,12 @@ void RexLogicModule::Uninitialize()
 
     event_handlers_.clear();
 
-    SAFE_DELETE (network_handler_);
-    SAFE_DELETE (input_handler_);
-    SAFE_DELETE (scene_handler_);
-    SAFE_DELETE (network_state_handler_);
-    SAFE_DELETE (framework_handler_);
-	SAFE_DELETE (loginUI_);
+    SAFE_DELETE(network_handler_);
+    SAFE_DELETE(input_handler_);
+    SAFE_DELETE(scene_handler_);
+    SAFE_DELETE(network_state_handler_);
+    SAFE_DELETE(framework_handler_);
+    SAFE_DELETE(loginUI_);
 
     LogInfo("Module " + Name() + " uninitialized.");
 }
@@ -326,9 +331,9 @@ void RexLogicModule::Uninitialize()
 #ifdef _DEBUG
 void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (!renderer)
+    OgreRenderer::RendererPtr renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(
+        Foundation::Service::ST_Renderer).lock();
+    if (!renderer.get())
         return;
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -514,15 +519,19 @@ Core::entity_id_t RexLogicModule::GetUserAvatarId()
     return entity->GetId();
 }
 
-Core::Vector3df RexLogicModule::GetCameraUp(){
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+Core::Vector3df RexLogicModule::GetCameraUp()
+{
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(
+        Foundation::Service::ST_Renderer).lock();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 up = camera->getUp();
     return Core::Vector3df(up.x, up.y, up.z);
 }
 
-Core::Vector3df RexLogicModule::GetCameraRight(){
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+Core::Vector3df RexLogicModule::GetCameraRight()
+{
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(
+        Foundation::Service::ST_Renderer).lock();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 right = camera->getRight();
     return Core::Vector3df(right.x, right.y, right.z);
@@ -565,7 +574,6 @@ void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
     GetPrimitiveHandler()->SendRexPrimData(entityid);
 }
 
-
 Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
 {
     std::string name = "Test User";
@@ -585,7 +593,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
     if (params.size() > 2)
         server = params[2];
 
-	//! REMOVE
+    //! REMOVE
     //bool success = world_stream_->ConnectToServer(name, passwd, server);
 
     // overwrite the password so it won't stay in-memory
@@ -595,7 +603,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
     //    return Console::ResultSuccess();
     //else
     //    return Console::ResultFailure("Failed to connect to server.");
-	return Console::ResultFailure("Cannot login from console no more");
+    return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &params)
@@ -777,7 +785,7 @@ Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
         return Scene::EntityPtr();
     else
         return GetPrimEntity(iter->second);
-} 
+}
 
 Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
 {
@@ -808,8 +816,10 @@ void RexLogicModule::UpdateObjects(Core::f64 frametime)
 
     // Damping interpolation factor, dependent on frame time
     Core::Real factor = pow(2.0, -frametime * movement_damping_constant_);
-    if (factor < 0.0) factor = 0.0;
-    if (factor > 1.0) factor = 1.0;
+    if (factor < 0.0)
+        factor = 0.0;
+    if (factor > 1.0)
+        factor = 1.0;
     Core::Real rev_factor = 1.0 - factor;
 
     for(Scene::SceneManager::iterator iter = activeScene_->begin();

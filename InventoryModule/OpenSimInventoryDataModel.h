@@ -1,15 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file OpenSimInventoryDataModel.h
- *  @brief Data model providing logic for working with the hierarchy of an OpenSim inventory.
+ *  @file   OpenSimInventoryDataModel.h
+ *  @brief  Data model providing the OpenSim inventory model backend functionality.
  */
 
 #ifndef incl_InventoryModule_OpenSimInventoryDataModel_h
 #define incl_InventoryModule_OpenSimInventoryDataModel_h
 
 #include "AbstractInventoryDataModel.h"
-#include "CoreTypes.h"
+//#include "CoreTypes.h"
 #include "RexTypes.h"
 #include "WorldStream.h"
 
@@ -69,7 +69,7 @@ namespace Inventory
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
         /// AbstractInventoryDataModel override.
-        void FetchInventoryDescendents(AbstractInventoryItem *item);
+        bool FetchInventoryDescendents(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemMove(AbstractInventoryItem *item);
@@ -82,6 +82,9 @@ namespace Inventory
 
         /// AbstractInventoryDataModel override.
         void NotifyServerAboutItemUpdate(AbstractInventoryItem *item, const QString &old_name);
+
+        /// AbstractInventoryDataModel override.
+        bool OpenItem(AbstractInventoryItem *item);
 
         /// AbstractInventoryDataModel override.
         void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
@@ -119,6 +122,9 @@ namespace Inventory
 
         ///@return True if inventory has pending downloads.
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
+
+        ///@return True if inventory has pending item open requests.
+        bool HasPendingOpenItemRequests() const { return openRequests_.size() > 0; }
 
         /// @return Asset uploader.
         AssetUploader *GetAssetUploader() const {return assetUploader_; }
@@ -170,6 +176,9 @@ namespace Inventory
 
         /// Download request map.
         AssetRequestMap downloadRequests_;
+
+        /// Item open request map.
+        AssetRequestMap openRequests_;
 
         /// Asset uploader.
         AssetUploader *assetUploader_;

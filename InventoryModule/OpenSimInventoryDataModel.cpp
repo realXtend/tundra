@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file OpenSimInventoryDataModel.cpp
- *  @brief Data model providing logic for working with the hierarchy of an OpenSim inventory.
+ *  @file   OpenSimInventoryDataModel.cpp
+ *  @brief  Data model providing the OpenSim inventory model backend functionality.
  */
 
 #include "StableHeaders.h"
@@ -20,6 +20,9 @@
 #include <QFile>
 #include <QImage>
 #include <QStringList>
+
+#include <OgreImage.h>
+#include <OgreException.h>
 
 namespace Inventory
 {
@@ -133,16 +136,18 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
     return parent->AddChild(newAsset);
 }
 
-void OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *item)
+bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *item)
 {
     if(item->GetItemType() != AbstractInventoryItem::Type_Folder)
-        return;
+        return false;
 
     if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(worldLibraryOwnerId_));
     else
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()));
+
+    return true;
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem *item)
@@ -187,6 +192,88 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryIte
             QSTR_TO_UUID(asset->GetParent()->GetID()), asset->GetAssetType(), asset->GetInventoryType(),
             asset->GetName().toStdString(), asset->GetDescription().toStdString());
     }
+}
+
+bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
+{
+    using namespace Foundation;
+
+    InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
+    if (!asset)
+        return false;
+
+    std::string asset_reference_id = asset->GetAssetReference().toStdString();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    Core::request_tag_t tag = 0;
+
+    asset_type_t asset_type = asset->GetAssetType();
+    switch(asset_type)
+    {
+    /*
+    case RexAT_Texture:
+    {
+        // Request textures from texture decoder.
+        if (service_manager->IsRegistered(Service::ST_Texture))
+        {
+            boost::shared_ptr<TextureServiceInterface> texture_service =
+                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
+
+            tag = texture_service->RequestTexture(asset_reference_id );
+            if (tag)
+                openRequests_[qMakePair(tag, asset_type)] = asset->GetName();
+        }
+        break;
+    }
+    */
+//    case RexAT_Mesh:
+//    case RexAT_Skeleton:
+    case RexAT_MaterialScript:
+    case RexAT_ParticleScript:
+    {
+        // Request other assets from asset system.
+        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        {
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+                service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+
+            tag = asset_service->RequestAsset(asset_reference_id, GetTypeNameFromAssetType(asset_type));
+            if (tag)
+                openRequests_[qMakePair(tag, asset_type)] = asset->GetName();
+        }
+        break;
+    }
+    case RexAT_Texture:
+    case RexAT_Mesh:
+    case RexAT_Skeleton:
+    case RexAT_GenericAvatarXml:
+    case RexAT_FlashAnimation:
+        InventoryModule::LogError("Non-supported asset type for opening: " + GetTypeNameFromAssetType(asset_type));
+        break;
+    case RexAT_None:
+    default:
+        InventoryModule::LogError("Invalid asset type for opening.");
+        break;
+    }
+
+    if (!tag)
+        return false;
+
+    // Send InventoryItemOpen event.
+    EventManagerPtr event_mgr = framework_->GetEventManager();
+    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    if (event_category == 0)
+        return false;
+
+    InventoryItemOpenEventData itemOpen;
+    itemOpen.requestTag = tag;
+    itemOpen.id = QSTR_TO_UUID(asset->GetID());
+    itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
+    itemOpen.assetType = asset_type;
+    itemOpen.inventoryType = asset->GetInventoryType();
+    itemOpen.name = asset->GetName().toStdString();
+    event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_OPEN, &itemOpen);
+
+    return true;
 }
 
 void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInventoryItem *parent_folder)
@@ -234,6 +321,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     switch(asset_type)
     {
+    /*
     case RexAT_Texture:
     {
         // Request textures from texture decoder.
@@ -246,7 +334,10 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             if (tag)
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
         }
+        break;
     }
+    */
+    case RexAT_Texture:
     case RexAT_Mesh:
     case RexAT_Skeleton:
     case RexAT_MaterialScript:
@@ -259,8 +350,11 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
                 service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
             Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
-            if (tag) 
+            if (tag)
+            {
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+                emit DownloadStarted(id.c_str());
+            }
         }
         break;
     }
@@ -288,6 +382,9 @@ void OpenSimInventoryDataModel::SetWorldStream(ProtocolUtilities::WorldStreamPtr
 
 void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
 {
+    ///\todo    It seems that we don't necessarily need to handle ResourceReady.
+    ///         Ogre seems to be able to create files from AssetReady events.
+
     Resource::Events::ResourceReady* resourceReady = checked_static_cast<Resource::Events::ResourceReady *>(data);
     RexTypes::asset_type_t asset_type = RexAT_Texture;
     Core::request_tag_t tag = resourceReady->tag_;
@@ -301,9 +398,24 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
     if (tex->GetLevel() != 0)
         return;
 
-    uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
-    QImage img = QImage::fromData(tex->GetData(), size);
-    img.save(i.value());
+///\todo Use QImage?
+//    QImage img = QImage::fromData(tex->GetData(), size);
+//    img.save(i.value());
+
+    Ogre::Image image;
+    try
+    {
+        uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)tex->GetData(), size, false));
+        image.load(stream);
+        image.save(i.value().toStdString());
+    }
+    catch(Ogre::Exception &ex)
+    {
+        InventoryModule::LogError("Could not create image file " + i.value().toStdString() + ". Reason: " + ex.what() + ".");
+        downloadRequests_.erase(i);
+        return;
+    }
 
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
@@ -318,18 +430,39 @@ void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface 
 //    QString asset_id = assetReady->asset_->GetId().c_str();
 
     // Don't handle AssetReady's for textures. We're interested in ResourceReady event for textures;
-    if (asset_type == RexAT_Texture)
-        return;
+//    if (asset_type == RexAT_Texture)
+//        return;
 
     AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
     if (i == downloadRequests_.end())
         return;
 
+    emit DownloadCompleted(assetReady->asset_id_.c_str());
+
     Foundation::AssetPtr asset = assetReady->asset_;
-    QFile file(i.value());
-    file.open(QIODevice::WriteOnly);
-    file.write((const char*)asset->GetData(), asset->GetSize());
-    file.close();
+    if (asset_type == RexAT_Texture)
+    {
+        Ogre::Image image;
+        try
+        {
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)asset->GetData(), asset->GetSize(), false));
+            image.load(stream);
+            image.save(i.value().toStdString());
+        }
+        catch(Ogre::Exception &ex)
+        {
+            InventoryModule::LogError("Could not create image file " + i.value().toStdString() + ". Reason: " + ex.what() + ".");
+            downloadRequests_.erase(i);
+            return;
+        }
+    }
+    else
+    {
+        QFile file(i.value());
+        file.open(QIODevice::WriteOnly);
+        file.write((const char*)asset->GetData(), asset->GetSize());
+        file.close();
+    }
 
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
@@ -338,7 +471,6 @@ void OpenSimInventoryDataModel::HandleAssetReady(Foundation::EventDataInterface 
 
 void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventDataInterface *data)
 {
-
     InventoryItemEventData *item_data = checked_static_cast<InventoryItemEventData *>(data);
 
     AbstractInventoryItem *parentFolder = GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));

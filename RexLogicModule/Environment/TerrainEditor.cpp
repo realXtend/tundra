@@ -194,7 +194,7 @@ namespace RexLogic
         QObject::connect(rad_button_large, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
 
         // Add canvas to control bar
-        //qt_module->AddCanvasToControlBar(canvas_, QString("Terrain Editor"));
+        qt_module->AddCanvasToControlBar(canvas_, QString("Terrain Editor"));
         file.close();
     }
 
