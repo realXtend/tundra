@@ -127,7 +127,7 @@ macro (configure_ois)
         NAMES Ois ois OIS 
         COMPONENTS OIS
         PREFIXES ${ENV_NAALI_DEP_PATH})
-    
+
     sagase_configure_report (OIS)
 endmacro (configure_ois)
 
@@ -192,7 +192,7 @@ macro (configure_curl)
 endmacro (configure_curl)
 
 macro (configure_openjpeg)
-    sagase_configure_package (OPENJPEG 
+    sagase_configure_package (OPENJPEG
         NAMES OpenJpeg OpenJPEG openjpeg
         COMPONENTS OpenJpeg OpenJPEG openjpeg
         PREFIXES ${ENV_NAALI_DEP_PATH}
@@ -274,3 +274,11 @@ macro (configure_propertyeditor)
         PREFIXES ${ENV_NAALI_DEP_PATH}/propertyeditor ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (PROPERTYEDITOR)
 endmacro (configure_propertyeditor)
+
+macro (configure_openal)
+    sagase_configure_package(OPENAL
+        NAMES OpenAL openal
+        COMPONENTS al OpenAL32
+        PREFIXES ${ENV_NAALI_DEP_PATH}/OpenAL ${ENV_NAALI_DEP_PATH}/OpenAL/libs/Win32)
+    sagase_configure_report (OPENAL)
+endmacro (configure_openal)

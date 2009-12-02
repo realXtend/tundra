@@ -48,8 +48,8 @@ namespace RexLogic
         }
         
         // Replace < > so that xmlrpc call doesn't get confused
-        ReplaceSubstring(request->avatar_xml_, "<", "&lt;");
-        ReplaceSubstring(request->avatar_xml_, ">", "&gt;");
+        Core::ReplaceSubstring(request->avatar_xml_, "<", "&lt;");
+        Core::ReplaceSubstring(request->avatar_xml_, ">", "&gt;");
         
         std::size_t pos = request->authserver_.rfind(":");
         if (pos != std::string::npos)
@@ -72,7 +72,7 @@ namespace RexLogic
         RexLogicModule::LogInfo("Authenticated for export");
         
         std::string export_url = avatar_url;
-        ReplaceSubstring(export_url, "/avatar/", "/xmlrpc/");
+        Core::ReplaceSubstring(export_url, "/avatar/", "/xmlrpc/");
         
         try
         {
