@@ -165,6 +165,8 @@ class EditGUI(Component):
         self.widget.newObject.connect('clicked()', self.createObject)
         self.widget.deleteObject.connect('clicked()', self.deleteObject)
         self.widget.setMesh.connect('clicked()', self.setMesh)
+        self.widget.duplicate.connect('clicked()', self.duplicate)
+        self.widget.undo.connect('clicked()', self.undo)
         
         self.widget.move_button.connect('clicked()', self.manipulator_move)
         self.widget.scale_button.connect('clicked()', self.manipulator_scale)
@@ -184,7 +186,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -306,6 +308,12 @@ class EditGUI(Component):
         if self.widgetList.has_key(text):
             self.select(self.widgetList[text][0])
     
+    def undo(self):
+        print "undo clicked"
+        
+    def duplicate(self):
+        print "duplicate clicked"
+        
     def createObject(self):
         ent_id = r.getUserAvatarId()
         ent = r.getEntity(ent_id)
@@ -321,10 +329,16 @@ class EditGUI(Component):
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
     def deleteObject(self):
-        pass #not implemented yet, this is a stub waiting for impl
-        #ent = self.sel
-        #if ent is not None:
-        #    r.sendObjectRemovePacket(ent.id)
+        ent = self.sel
+        if ent is not None:
+            worldstream = r.getServerConnection()
+            #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
+            worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+            self.hideArrows()
+            id, tWid = self.widgetList.pop(str(ent.id))
+            #print tWid, tWid.text(0)
+            tWid.delete()
+            self.sel = None
 
     def setMesh(self):
         """callback for the original set mesh button, going away."""
