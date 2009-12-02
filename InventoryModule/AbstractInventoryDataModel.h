@@ -117,13 +117,24 @@ namespace Inventory
         virtual bool GetUseTrashFolder() const = 0;
 
     signals:
+        /// Indicates that asset upload has started.
+        /// @param asset_id
+        void UploadStarted(const QString &asset_id);
+
+        /// Indicates that asset upload has started.
+        /// @param asset_id
+        void UploadCompleted(const QString &asset_id);
+
         /// Indicates that asset download has started.
+        /// @param asset_id
         void DownloadStarted(const QString &asset_id);
 
         /// Indicates that asset download has aborted.
+        /// @param asset_id
         void DownloadAborted(const QString &asset_id);
 
         /// Indicates that asset download is completed.
+        /// @param asset_id
         void DownloadCompleted(const QString &asset_id);
 
     private:

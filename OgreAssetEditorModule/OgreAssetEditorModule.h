@@ -14,6 +14,7 @@
 #include "RexUUID.h"
 
 #include <QMap>
+#include <QPair>
 
 class QObject;
 
@@ -53,8 +54,8 @@ namespace OgreAssetEditor
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
 
-        typedef QMap<RexTypes::RexUUID, QObject *> AssetEditorMap;
-        typedef QMapIterator<RexTypes::RexUUID, QObject *> AssetEditorMapIter;
+        typedef QMap<QPair<RexTypes::RexUUID, Core::request_tag_t>, QObject *> AssetEditorMap;
+        typedef QMapIterator<QPair<RexTypes::RexUUID, Core::request_tag_t>, QObject *> AssetEditorMapIter;
 
     private:
         OgreAssetEditorModule(const OgreAssetEditorModule &);

@@ -130,7 +130,7 @@ QFrame#MainFrame {
       <item>
        <widget class="QWidget" name="widgetEditor" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -154,6 +154,12 @@ QFrame#MainFrame {
          </property>
          <item>
           <widget class="QPushButton" name="buttonSaveAs">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>Save As</string>
            </property>
@@ -161,6 +167,12 @@ QFrame#MainFrame {
          </item>
          <item>
           <widget class="QPushButton" name="buttonCancel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>Cancel</string>
            </property>

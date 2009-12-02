@@ -101,21 +101,21 @@ bool OgreAssetEditorModule::HandleEvent(
             {
             case RexTypes::RexAT_ParticleScript:
             {
-                AssetEditorMap::iterator it = assetEditors_.find(openEvent->id);
+                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(openEvent->inventoryId, openEvent->requestTag));
                 if (it == assetEditors_.end())
                 {
                     OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
-                    assetEditors_[openEvent->id] = editor;
+                    assetEditors_[qMakePair(openEvent->inventoryId, openEvent->requestTag)] = editor;
                 }
                 break;
             }
             case RexTypes::RexAT_MaterialScript:
             {
-                AssetEditorMap::iterator it = assetEditors_.find(openEvent->id);
+                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(openEvent->inventoryId, openEvent->requestTag));
                 if (it == assetEditors_.end())
                 {
                     OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
-                    assetEditors_[openEvent->id] = editor;
+                    assetEditors_[qMakePair(openEvent->inventoryId, openEvent->requestTag)] = editor;
                 }
                 break;
             }
@@ -124,18 +124,14 @@ bool OgreAssetEditorModule::HandleEvent(
             }
 
             return false;
-            /*
-            LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
-            if (i != event_handlers_.end())
-            {
-                for(size_t j = 0 ; j < i->second.size(); j++)
-                {
-                    if ((i->second[j])(event_id, data))
-                        return true;
-                }
-            }
-            */
-//            eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, 0);
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
+        {
+            Inventory::InventoryItemDownloadedEventData *downloaded = static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
+            AssetEditorMap::iterator it = assetEditors_.find(qMakePair(downloaded->inventoryId, downloaded->requestTag));
+            if (it != assetEditors_.end())
+                dynamic_cast<OgreScriptEditor *>(it.value())->HandleAssetReady(downloaded->asset);
         }
     }
 
