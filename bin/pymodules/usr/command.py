@@ -561,7 +561,7 @@ if 0:
     print pos, pos.x(), pos.y(), pos.z()
     ent.pos = pos
     
-if 1: #property editor tests
+if 0: #property editor tests
     #print r.c
     #print r, dir(r)
     pe = r.getPropertyEditor()
@@ -647,3 +647,24 @@ if 0: #login - for running tests automatically
     #user, pwd, server = "Test User", "test", "localhost:9000"
     user, pwd, server = "d d", "d", "world.evocativi.com:8002"
     r.startLoginOpensim(user, pwd, server)
+    
+if 0: #getserver test
+    #print dir(r)
+    #print "YO", r.getTrashFolderId()
+    #r.deleteObject(2351241440)
+    worldstream = r.getServerConnection()
+    
+    #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
+    worldstream.SendObjectDeRezPacket(2891301779, r.getTrashFolderId())
+    #ent = r.getEntity(r.getUserAvatarId())
+    #worldstream.SendObjectDeletePacket(1278500474, True)
+    #~ ent = r.getEntity(2208825114)
+    #~ print ent
+    
+if 0: #undo tests
+    e = r.getEntity(1749873429)
+    print e.prim
+    e_uuid = "360eea54-6c3e-46e6-8ee2-511d294d5467"
+    worldstream = r.getServerConnection()
+    #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
+    worldstream.SendObjectUndoPacket(e_uuid)

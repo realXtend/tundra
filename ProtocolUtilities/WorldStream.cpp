@@ -1190,6 +1190,82 @@ void WorldStream::SendAgentResumePacket()
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id)
+{
+	if(!connected_)
+		return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgDeRezObject);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+	m->AddUUID(RexUUID()); //group_id
+	
+	// ObjectData
+	m->AddU8(4); //trash ?
+	RexUUID ruuid = RexUUID();
+	ruuid.FromString(trash_id.toStdString());
+	m->AddUUID(ruuid);
+	m->AddUUID(RexUUID::CreateRandom()); //transaction_id
+	m->AddU8(1);
+	m->AddU8(1);
+
+	m->SetVariableBlockCount(1);
+    m->AddU32(ent_id);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectUndoPacket(const QString &ent_id)
+{
+	if(!connected_)
+		return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUndo);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+	m->AddUUID(RexUUID());      // GroupID
+
+	// ObjectData
+	m->SetVariableBlockCount(1);
+	RexUUID ruuid = RexUUID();
+	ruuid.FromString(ent_id.toStdString());
+    m->AddUUID(ruuid);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id)
+{
+	ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDuplicate);
+    assert(m);
+	// AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+	m->AddUUID(RexUUID());      // GroupID
+
+	// SharedData
+	m->AddVector3(Vector3::ZERO); //umm, prolly needs the location... offset
+
+	/*
+	{
+		SharedData			Single
+
+		{	DuplicateFlags	U32			}	// see object_flags.h
+	}
+	*/
+	m->SetVariableBlockCount(1);
+	m->AddU32(ent_id);
+
+    FinishMessageBuilding(m);
+}
+
+
 std::string WorldStream::GetCapability(const std::string &name)
 {
     protocolModule_ = GetCurrentProtocolModule();

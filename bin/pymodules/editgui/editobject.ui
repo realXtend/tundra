@@ -78,7 +78,7 @@ QPushButton::pressed{
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>140</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -181,7 +181,7 @@ border: 1px solid grey;</string>
         <x>10</x>
         <y>30</y>
         <width>111</width>
-        <height>131</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -303,13 +303,13 @@ border-bottom-right-radius: 10px;
 border: 1px solid grey;</string>
       </property>
       <property name="text">
-       <string>Delete Object</string>
+       <string>Move to Trash</string>
       </property>
      </widget>
      <widget class="QPushButton" name="setMesh">
       <property name="geometry">
        <rect>
-        <x>319</x>
+        <x>240</x>
         <y>180</y>
         <width>61</width>
         <height>21</height>
@@ -412,6 +412,40 @@ border: 1px solid grey;</string>
       </property>
       <property name="checked">
        <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="duplicate">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>160</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string>border-radius: 0px;
+border: 1px solid grey;</string>
+      </property>
+      <property name="text">
+       <string>Duplicate</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="undo">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>180</y>
+        <width>61</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string>border-radius: 0px;
+border: 1px solid grey;</string>
+      </property>
+      <property name="text">
+       <string>Undo</string>
       </property>
      </widget>
     </widget>

@@ -418,6 +418,15 @@ namespace ProtocolUtilities
         /// Unregisters the eventmanager from current Protocol Module
         void UnregisterCurrentProtocolModule();
 
+		/// sends the derez packet for the entity ent_id
+		void SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id);
+
+		/// sends the undo packet for the entity ent_id
+		void SendObjectUndoPacket(const QString &ent_id);
+
+		/// duplicate the object
+		void SendObjectDuplicatePacket(const unsigned long ent_id);
+
     public:
         /// Name used for logging.
         static const std::string &LoggerName;
