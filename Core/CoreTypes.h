@@ -12,7 +12,7 @@
 /**
  * Gnu GCC have C99-standard macros as an extension but in some system there does not exist them so we define them by ourself. 
  */
-template <class T> inline bool _finite(T f) { return f == std::numeric_limits<T>::infinity(); }
+template <class T> inline bool _finite(T f) { return f != std::numeric_limits<T>::infinity(); }
 template <class T> inline bool _isnan(T f) { return f != f; }
 
 #endif 
