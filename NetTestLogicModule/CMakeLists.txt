@@ -9,12 +9,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 use_package (BOOST)
 use_package (POCO)
-use_modules (OpenSimProtocol ReXLogic RexCommon)
+use_modules (Core Foundation Interfaces SceneManager OpenSimProtocolModule RexLogicModule RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_modules (OpenSimProtocolModule RexCommon RexLogicModule)
+link_modules (Core Foundation Interfaces SceneManager OpenSimProtocolModule RexCommon RexLogicModule)
 link_package (BOOST)
 link_package (POCO)
 

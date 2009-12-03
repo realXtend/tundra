@@ -1,4 +1,4 @@
-# Add header and source files from given subfolder 
+# Add header and source files from given subfolder
 # to H_FILES and CPP_FILES variables
 #
 # Alose create source groups (filters in Visual Studio)
@@ -54,20 +54,18 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (GLIB)
+use_package (CURL)
+use_package (XMLRPC)
 use_package (DBUS)
 use_package (DBUS_GLIB)
 use_package (TELEPATHY_QT4)
 use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
-use_package (GSTREAMER) 
+use_package (GSTREAMER)
 use_package (FARSIGHT2)
-
-use_modules (QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (Core Foundation Interfaces RexCommon) 
-
-link_modules (QtModule RexLogicModule ProtocolUtilities)
 
 link_package (BOOST)
 link_package (POCO)
@@ -78,8 +76,11 @@ link_package (TELEPATHY_QT4)
 link_package (DBUS_GLIB)
 link_package (DBUS)
 link_package (GLIB)
+link_package (CURL)
+link_package (XMLRPC)
 link_package (GSTREAMER)
 link_package (FARSIGHT2)
+link_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

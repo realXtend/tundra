@@ -28,18 +28,20 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
+use_package (CURL)
+use_package (XMLRPC)
 use_package (PROPERTYEDITOR)
-
-use_modules (RexLogicModule ProtocolUtilities QtModule InventoryModule AssetModule OgreRenderingModule)
+use_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities QtModule InventoryModule AssetModule OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (Core Foundation Interfaces RexCommon)
 
-link_modules (RexLogicModule ProtocolUtilities QtModule InventoryModule AssetModule OgreRenderingModule)
+link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities QtModule InventoryModule AssetModule OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)
 link_package (QT4)
+link_package (CURL)
+link_package (XMLRPC)
 link_package (PROPERTYEDITOR)
 
 # Copy XML files from source directory to target directory

@@ -6,7 +6,6 @@
 # 3. call use_package (${PACKAGE}) once per build target
 # 3. call use_modules() with a list of local module names for includes
 # 4. call build_library/executable() on the source files
-# 5. call use_framework_modules() with a list of framework module names
 # 5. call link_package (${PACKAGE}) once per build target
 # 5. call link_modules() with a list of local module names libraries
 # 6. call final_target () at the end of build target's cmakelists.txt
@@ -100,16 +99,7 @@ macro (use_package PREFIX)
     link_directories (${${PREFIX}_LIBRARY_DIRS})
 endmacro (use_package)
 
-# include local framework headers and libraries
-macro (use_framework_modules)
-    set (INTERNAL_FRAMEWORK_DIR "..")
-    foreach (module_ ${ARGN})
-        include_directories (${INTERNAL_FRAMEWORK_DIR}/${module_})
-        target_link_libraries (${TARGET_NAME} ${module_})
-    endforeach ()
-endmacro (use_framework_modules)
-
-# include local module headers 
+# include local module headers
 macro (use_modules)
     message (STATUS "-- using modules:")
     set (INTERNAL_MODULE_DIR "..")
