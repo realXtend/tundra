@@ -1018,6 +1018,16 @@ PyObject* GetQtModule(PyObject *self)
     return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
 }
 
+PyObject* GetServerConnection(PyObject *self)
+{
+	RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+		return PythonQt::self()->wrapQObject(rexlogic_->GetServerConnection().get());
+	PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
+	return NULL;
+}
+
 PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 {
 	RexLogic::RexLogicModule *rexlogic_;
@@ -1067,6 +1077,40 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 	}
 
 	Py_RETURN_NONE;
+}
+
+PyObject* DeleteObject(PyObject *self, PyObject *args)
+{
+	RexLogic::RexLogicModule *rexlogic_;
+
+    unsigned int ent_id_int;
+    Core::entity_id_t ent_id;
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
+        return NULL;   
+    }
+
+    ent_id = (Core::entity_id_t) ent_id_int;
+
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        rexlogic_->GetServerConnection()->SendObjectDeletePacket(ent_id);
+	}
+
+	Py_RETURN_NONE;
+}
+
+PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
+{
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	ProtocolUtilities::InventoryFolderSkeleton *folder = rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
+	if (folder)
+		return Py_BuildValue("s", folder->id.ToString().c_str());
+	return NULL;
 }
 
 PyObject* GetUserAvatarId(PyObject* self)
@@ -1174,8 +1218,8 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Scene::EntityPtr entity = scene->GetEntity(ent_id);
     Scene::Events::SceneEventData event_data(ent_id);
     event_data.entity_ptr_list.push_back(entity);
-    PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-
+    //PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+	
     Py_RETURN_NONE;
 }
 
@@ -1336,8 +1380,18 @@ static PyMethodDef EmbMethods[] = {
     {"exit", (PyCFunction)Exit, METH_NOARGS,
     "Exits viewer. Takes no arguments."},
 
+    {"getServerConnection", (PyCFunction)GetServerConnection, METH_NOARGS,
+    "Gets the server connection."},
+
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},
+
+
+    {"deleteObject", (PyCFunction)DeleteObject, METH_VARARGS, 
+    "deletes an object"},
+
+    {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
+    "gets the trash folder id"},
 
 	{NULL, NULL, 0, NULL}
 };
@@ -1459,6 +1513,24 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
 			return PyString_FromString(text.c_str());
 		}*/
     }
+	else if(s_name.compare("uuid") == 0)
+	{
+		//std::cout << ".. getting prim" << std::endl;
+        if (!prim)
+        {
+            PyErr_SetString(PyExc_AttributeError, "prim not found.");
+            return NULL;   
+        }
+		return PyString_FromString(prim->FullId.ToString().c_str());
+	}
+	else if(s_name.compare("editable") == 0)
+	{
+		// refactor to take into account permissions etc aswell later?
+		if(!placeable)
+			Py_RETURN_FALSE;
+		else
+			Py_RETURN_TRUE;
+	}
 
     else if (s_name.compare("pos") == 0)
     {
@@ -1794,6 +1866,12 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
             return NULL;
         }
+	}
+	
+	else if(s_name.compare("uuid") == 0)
+	{
+        PythonScript::self()->LogInfo("UUID cannot be set manually.");
+        return 0;   
 	}
 
     //std::cout << "unknown component type."  << std::endl;

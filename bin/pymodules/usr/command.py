@@ -668,3 +668,11 @@ if 0: #undo tests
     worldstream = r.getServerConnection()
     #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
     worldstream.SendObjectUndoPacket(e_uuid)
+    
+if 0: #undo tests and ent.uuid
+    e = r.getEntity(2762243177)
+    print e, e.uuid, e.editable  
+    worldstream = r.getServerConnection()
+    #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
+    worldstream.SendObjectUndoPacket(e.uuid)
+    

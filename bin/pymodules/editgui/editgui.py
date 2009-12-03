@@ -309,7 +309,14 @@ class EditGUI(Component):
             self.select(self.widgetList[text][0])
     
     def undo(self):
-        print "undo clicked"
+        #print "undo clicked"
+        ent = self.sel
+        if ent is not None:
+            print ent.uuid
+            worldstream = r.getServerConnection()
+            worldstream.SendObjectUndoPacket(ent.uuid)
+            self.hideArrows()
+            self.sel = None
         
     def duplicate(self):
         print "duplicate clicked"
