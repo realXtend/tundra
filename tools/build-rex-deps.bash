@@ -17,7 +17,7 @@ tags=$deps/tags
 
 # -j<n> param for make, for how many processes to run concurrently
 
-nprocs=1
+nprocs=2
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
@@ -36,8 +36,8 @@ if lsb_release -c | grep -q karmic; then
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libglib libogre-dev libois-dev libceguiogre-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake
-	sudo apt-get install 'libboost1.40.*-dev'
+	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
+	sudo apt-get install 'libboost1.40.*-dev' 
 	
 fi
 
@@ -45,7 +45,7 @@ if lsb_release -c | grep -q jaunty; then
 	sudo aptitude -y install build-essential libboost1.37-dev \
 	 libopenjpeg-dev libxmlrpc-epi-dev libcurl4-gnutls-dev libqt4-dev \
 	 libexpat1-dev libphonon-dev python-dev scons g++ python-gtk2-dev \
-	 libdbus-glib-1-dev ccache bison flex libxml2-dev liboil-dev
+	 libdbus-glib-1-dev ccache bison flex libxml2-dev liboil-dev libalut-dev
 	sudo apt-get install 'libboost1.37.*-dev' cmake
 	 
 fi
@@ -167,7 +167,7 @@ build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy
 cd $viewer
 cat > ccache-g++-wrapper <<EOF
 #!/bin/sh
-exec ccache g++ \$@
+exec ccache g++ -O -g \$@
 EOF
 chmod +x ccache-g++-wrapper
 NAALI_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
