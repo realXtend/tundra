@@ -31,6 +31,11 @@ link_package (XMLRPC)
 link_package (QT4)
 link_package (CURL)
 
+# Copy XML files from source directory to target directory
+foreach (XML_FILE ${XML_FILES})
+    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+endforeach (XML_FILE)
+
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
