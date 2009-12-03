@@ -5,8 +5,7 @@
 
 #include "CoreStdIncludes.h"
 #include "Core.h"
-#include "ForwardDefines.h"
-
+#include "Foundation.h"
 
 #endif // incl_Framework_StableHeaders_h
 
