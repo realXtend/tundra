@@ -24,8 +24,6 @@ namespace QtUI
 
 UIController::UIController()
 :responseTimeLimit_(500), 
-keyDown_(false), 
-multipleKeyLimit_(150), 
 currentMouseAction(MouseActionNone),
 mouseActionCanvas(0),
 mouseHoverCanvas(0),
@@ -40,18 +38,7 @@ UIController::~UIController()
 
 void UIController::Update()
 {
-    ///\todo Remove and move to OIS.
-    // If a key-press repeat period has elapsed, trigger a keypress event.
-    if (keyDown_ && keyTimer_.elapsed() > multipleKeyLimit_)
-    {
-        // Restart the timer.
-        keyTimer_ = QTime();
-        keyTimer_.start();
     
-        for (QList<QPair<Qt::Key, QString> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
-            InjectKeyPressed((*iter).second, (*iter).first);
-    }
-
     // Redraw any dirty canvases.
     QList<boost::shared_ptr<UICanvas> >::iterator iter = canvases_.begin();
     for(; iter != canvases_.end(); ++iter)
@@ -491,12 +478,7 @@ void UIController::InjectKeyPressed(QString& text, Qt::Key keyCode, const Qt::Ke
         keyboardFocusCanvas->Activate();
 
      QApplication::sendEvent(keyboardFocusCanvas->view_->scene(), &keyEvent);
-     keyDown_ = true;
-     keyTimer_.start();
-
-     // Add key into list (if it is unique).
-     if (!pressedKeys_.contains(qMakePair(keyCode, text)))
-          pressedKeys_.append(qMakePair(keyCode, text));
+    
 }
 
 void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const Qt::KeyboardModifiers& modifier)
@@ -510,17 +492,9 @@ void UIController::InjectKeyReleased(const QString& text, Qt::Key keyCode, const
     keyEvent.setAccepted(false);
     
     QApplication::sendEvent(keyboardFocusCanvas->view_->scene(), &keyEvent);
-    keyTimer_ = QTime();
-  
-    int size = pressedKeys_.size()-1;
-    for(int i = size; i > 0; --i)
-    {
-        if (pressedKeys_[i].first == keyCode)
-            pressedKeys_.removeAt(i);
-    }
     
-    keyDown_ = false;
-}
+
+ }
 
 void UIController::InjectMouseScroll(int x, int y, int delta, UICanvas* canvas)
 {

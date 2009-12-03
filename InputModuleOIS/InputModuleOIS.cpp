@@ -20,6 +20,10 @@ namespace Input
         , event_category_(0)
         , dragged_(false)
         , input_state_(State_Unknown)
+        , repeat_key_(false)
+        , last_key_code_(0)
+        , last_key_text_(0)
+        , multipleKeyLimit_(150)
     {
     }
 
@@ -229,6 +233,25 @@ namespace Input
                 {
                     SendKeyEvents(input_state_);
                 }
+                 else if ( repeat_key_ && keyTimer_.elapsed() > multipleKeyLimit_)
+                {
+                    // Restart the timer.
+                    keyTimer_ = QTime();
+                    keyTimer_.start();
+                    for (QList<QPair<int, Core::uint> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
+                    {
+                        if ( keyboard_->isKeyDown(static_cast<OIS::KeyCode>((*iter).first)) )
+                        {
+                            Events::BufferedKey key_event((*iter).first, (*iter).second);
+                            framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_PRESSED, &key_event);
+                        }
+                        else
+                           iter = pressedKeys_.erase(iter);
+
+                        
+                    }
+                }
+
                 SendKeyEvents(Input::State_All);
 
                 //! \bug If key released -event is not send for hiding console window, keyboard will remain in buffered state and no keyboard events will be sent.
@@ -635,6 +658,12 @@ namespace Input
     {
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_PRESSED, &key_event);
+        repeat_key_ = true;
+        keyTimer_.start();
+        
+        // Add key into list (if it is unique).
+        if (!pressedKeys_.contains(qMakePair(static_cast<int>(arg.key), arg.text)))
+            pressedKeys_.append(qMakePair(static_cast<int>(arg.key), arg.text));
 
         return handled;
     }
@@ -642,7 +671,23 @@ namespace Input
     {
         Events::BufferedKey key_event(arg.key, arg.text);
         bool handled = framework_->GetEventManager()->SendEvent(event_category_, Events::BUFFERED_KEY_RELEASED, &key_event);
+   
+        keyTimer_ = QTime();
+    
+        int size = pressedKeys_.size();
+        for(int i = size; i--;)
+        {
+            if (pressedKeys_[i].first == arg.key)
+                pressedKeys_.removeAt(i);
+            else if ( pressedKeys_[i].second == arg.text)
+                pressedKeys_.removeAt(i);
+        }
+        if ( pressedKeys_.size() != 0)
+            repeat_key_ = true;
+        else
+            repeat_key_ = false;
 
+        
         return handled;
     }
 

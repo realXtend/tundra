@@ -12,6 +12,8 @@
 #include "InputServiceInterface.h"
 
 #include <QFlags>
+#include <QTime>
+#include <QPair>
 
 namespace Foundation
 {
@@ -297,6 +299,15 @@ namespace Input
 
         //! vector of key states, used for sending raw keycode events. Plain array should be fine.
         bool key_states_[256];
+
+        bool repeat_key_;
+        int last_key_code_;
+        Core::uint last_key_text_;
+
+        int multipleKeyLimit_;
+        QTime keyTimer_;
+
+        QList<QPair<int, Core::uint> > pressedKeys_;
     };
 }
 #endif

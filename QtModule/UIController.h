@@ -268,21 +268,6 @@ namespace QtUI
         /// \todo Move away from here to OIS.
         int responseTimeLimit_;
 
-        /// Is some key hold down. 
-        /// \todo Move away from here to OIS.
-        bool keyDown_;
-
-        /// \todo Move away from here to OIS.
-        QTime keyTimer_;
-        
-        /// Time when key press down event is though as a multiple key press event. 
-        /// \todo Move away from here to OIS.
-        int multipleKeyLimit_;
-
-        /// Current pressed keys
-        /// \todo Move away from here to OIS.
-        QList<QPair<Qt::Key, QString> > pressedKeys_;
-
         Qt::KeyboardModifier currentModifier_;
         Qt::MouseButton button_;
         
