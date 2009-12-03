@@ -42,7 +42,7 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DUSE_QT)
 
-add_definitions (-DREXLOGIC_MODULE_EXPORTS) 
+add_definitions (-DREXLOGIC_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
@@ -53,7 +53,7 @@ use_package (OPENJPEG)
 use_package (OIS)
 use_package (XMLRPC)
 
-use_modules (Core Foundation Interfaces SceneManager RexLogicModule OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
