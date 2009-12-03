@@ -12,13 +12,11 @@ add_definitions (-DTEXTURE_DECODER_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OPENJPEG)
-use_modules (RexCommon AssetModule)
+use_modules (Core Foundation Interfaces RexCommon AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces)
 
-link_modules (RexCommon)
-
+link_modules (Core Foundation Interfaces  RexCommon)
 link_package (BOOST)
 link_package (POCO)
 link_package (OPENJPEG)

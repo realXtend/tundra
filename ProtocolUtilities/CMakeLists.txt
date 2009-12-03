@@ -44,14 +44,14 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (XMLRPC)
-use_modules (ProtocolUtilities RpcUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities RpcUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
-use_framework_modules (Core Foundation Interfaces RexCommon)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities RpcUtilities)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

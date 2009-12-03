@@ -12,15 +12,14 @@ add_definitions (-DINPUTOIS_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OIS)
-use_modules (OgreRenderingModule)
+use_modules (Core Foundation Interfaces OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (OIS)
-
+link_modules (Core Foundation Interfaces)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

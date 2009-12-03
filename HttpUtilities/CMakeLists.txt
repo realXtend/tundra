@@ -9,13 +9,14 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)
+use_modules (Core Foundation Interfaces)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
+link_modules (Core Foundation Interfaces)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

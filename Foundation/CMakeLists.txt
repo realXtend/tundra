@@ -17,14 +17,14 @@ add_definitions (-DUSE_QT)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim OgreRenderingModule)
+use_modules (Core Foundation Interfaces SceneManager RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
-use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
+link_modules (Core Interfaces SceneManager)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

@@ -9,15 +9,13 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 use_package (BOOST)
 use_package (POCO)
-use_modules (RexCommon ReXLogic OpenSimProtocol OgreRenderingModule)
+use_modules (Core Foundation Interfaces SceneManager RexCommon ReXLogic OpenSimProtocol OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_modules (RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
-
+link_modules (Core Foundation Interfaces SceneManager RexCommon RexLogicModule OpenSimProtocolModule OgreRenderingModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -1,3 +1,5 @@
+configure_openal ()
+
 # Define target name and output directory
 init_target (OpenALAudioModule OUTPUT modules/core)
 
@@ -24,13 +26,11 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OPENAL)
-use_modules (RexCommon)
-
+use_modules (Core Foundation Interfaces RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces)
 
-link_modules (Foundation Interfaces)
+link_modules (Core Foundation Interfaces RexCommon)
 link_package (BOOST)
 link_package (POCO)
 link_package (OPENAL)

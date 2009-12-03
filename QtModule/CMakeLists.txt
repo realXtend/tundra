@@ -32,12 +32,11 @@ use_package (OGRE)
 use_package (OIS) # ///\todo Remove.
 use_package (QT4)
 use_package (POCO)
-use_modules (RexCommon OgreRenderingModule InputModuleOIS)
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule InputModuleOIS)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-use_framework_modules (Core Foundation Interfaces SceneManager)
 
-link_modules (RexCommon OgreRenderingModule InputModuleOIS)
+link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule InputModuleOIS)
 link_package (OIS)
 link_package (OGRE)
 link_package (BOOST)

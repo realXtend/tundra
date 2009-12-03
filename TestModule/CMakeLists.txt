@@ -9,14 +9,13 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 use_package (BOOST)
 use_package (POCO)
-use_modules (OgreRenderingSystem)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingSystem)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces SceneManager)
 
 link_package (BOOST)
 link_package (POCO)
-
+link_modules (Core Foundation Interfaces SceneManager)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

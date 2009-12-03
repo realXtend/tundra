@@ -12,17 +12,18 @@ add_definitions (-DUSE_QT -DASSET_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)
+use_package (XMLRPC)
 use_package (QT4)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
-use_framework_modules (Core Foundation Interfaces)
-use_modules (RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
-link_modules (RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
+link_package (XMLRPC)
 link_package (QT4)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
