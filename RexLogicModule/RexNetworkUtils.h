@@ -3,6 +3,8 @@
 #ifndef incl_RexNetworkUtils_h
 #define incl_RexNetworkUtils_h
 
+#include "ModuleInterface.h"
+#include "ComponentInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 
