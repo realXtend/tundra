@@ -3,8 +3,6 @@
 #ifndef incl_RexNetworkUtils_h
 #define incl_RexNetworkUtils_h
 
-#include "ModuleInterface.h"
-#include "ComponentInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 
@@ -16,12 +14,12 @@ namespace Ogre
 namespace RexLogic
 {       
     //! Creates an OBB for debug visualization of the extents of the given scene object.
-    Ogre::ManualObject *DebugCreateOgreBoundingBox(
-        Foundation::ModuleInterface *module,
-        const Foundation::ComponentInterfacePtr ogrePlaceable,
-        const std::string &materialName,
-        Core::Vector3df scale = Core::Vector3df(1.0, 1.0, 1.0));
-    
+    //Ogre::ManualObject *DebugCreateOgreBoundingBox(
+    //    Foundation::ModuleInterface *module,
+    //    const Foundation::ComponentInterfacePtr ogrePlaceable,
+    //    const std::string &materialName,
+    //    Core::Vector3df scale = Core::Vector3df(1.0, 1.0, 1.0));
+
     //! Helper functions for getting values from terseupdate packets
     Core::Quaternion GetProcessedQuaternion(const uint8_t* bytes);
     Core::Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale);
