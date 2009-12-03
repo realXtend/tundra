@@ -48,8 +48,8 @@ namespace RexLogic
         }
         
         // Replace < > so that xmlrpc call doesn't get confused
-        Core::ReplaceSubstring(request->avatar_xml_, "<", "&lt;");
-        Core::ReplaceSubstring(request->avatar_xml_, ">", "&gt;");
+        Core::ReplaceSubstringInplace(request->avatar_xml_, "<", "&lt;");
+        Core::ReplaceSubstringInplace(request->avatar_xml_, ">", "&gt;");
         
         std::size_t pos = request->authserver_.rfind(":");
         if (pos != std::string::npos)
@@ -71,8 +71,7 @@ namespace RexLogic
         
         RexLogicModule::LogInfo("Authenticated for export");
         
-        std::string export_url = avatar_url;
-        Core::ReplaceSubstring(export_url, "/avatar/", "/xmlrpc/");
+        std::string export_url = Core::ReplaceSubstring(avatar_url, "/avatar/", "/xmlrpc/");
         
         try
         {
@@ -131,7 +130,7 @@ namespace RexLogic
                         asset_call.AddMember("sessionhash", sessionhash);
                         asset_call.AddMember("itemname", name);
                         asset_call.AddMember("hashcode", asset->second.hash_);
-                        
+                     
                         RexLogicModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + Core::ToString<int>(asset->second.data_.size()));
                         
                         XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)(&asset->second.data_[0]), asset->second.data_.size());

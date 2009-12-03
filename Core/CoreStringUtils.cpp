@@ -42,7 +42,21 @@ namespace Core
         return vec;
     }
     
-    void ReplaceSubstring(std::string &str, const std::string &replace_this, const std::string &replace_with)
+    std::string ReplaceSubstring(const std::string &str, const std::string &replace_this, const std::string &replace_with)
+    {
+        std::string ret = str;
+        ReplaceSubstringInplace(ret, replace_this, replace_with);
+        return ret;
+    }
+    
+    std::string ReplaceChar(const std::string& str, char replace_this, char replace_with)
+    {
+        std::string ret = str;
+        ReplaceCharInplace(ret, replace_this, replace_with);
+        return ret;
+    }      
+    
+    void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with)
     {
         std::size_t index = str.find(replace_this, 0);
         while (index != std::string::npos)
@@ -53,7 +67,7 @@ namespace Core
     }
     
     
-    void ReplaceChar(std::string& str, char replace_this, char replace_with)
+    void ReplaceCharInplace(std::string& str, char replace_this, char replace_with)
     {
         for (Core::uint i = 0; i < str.length(); ++i)
             if (str[i] == replace_this) str[i] = replace_with;
