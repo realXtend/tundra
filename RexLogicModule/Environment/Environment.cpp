@@ -12,7 +12,14 @@
 namespace RexLogic
 {
 
-Environment::Environment(RexLogicModule *owner) : owner_(owner)
+Environment::Environment(RexLogicModule *owner) :
+    owner_(owner),
+    usecSinceStart_(0),
+    secPerDay_(0),
+    secPerYear_(0),
+    sunDirection_(Vector3()),
+    sunPhase_(0),
+    sunAngVelocity_(0)
 {
 }
 
@@ -47,16 +54,17 @@ void Environment::CreateEnvironment()
     cachedEnvironmentEntity_ = entity;
 }
 
-///\todo Remove this when Caelum is working ok.
-bool test = true;
-
 bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
-    ///\ secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server
-    usecSinceStart_ = (time_t)msg.ReadU64();
+    ///\todo    secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server
+    ///         Investigate what't the case with newer servers.
+    ///         Also usecSinceStart seems to be the default one i.e. server doesn't add its time zone
+    ///         difference to it so we add it in Caelum. If the newer servers add it, don't do it anymore
+    ///         in Caelum.
+    time_t usec = (time_t)msg.ReadU64();
     secPerDay_ = msg.ReadU32();
     secPerYear_ = msg.ReadU32();
     sunDirection_ = msg.ReadVector3();
@@ -76,13 +84,12 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::Netwo
 
     /** \note
      *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received
-     *  (about every tenth second that is) because the Caleum system has its own perception of time. But let's
-     *  do it anyways for now.
+     *  (about every tenth second that is) because the Caleum system has its own perception of time. To it just once.
      */
-    if (test)
+    if (usecSinceStart_ == 0)
     {
+        usecSinceStart_ = usec;
         env.SetTime(usecSinceStart_);
-        test = false;
     }
 
     return false;
