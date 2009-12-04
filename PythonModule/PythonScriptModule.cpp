@@ -368,33 +368,32 @@ namespace PythonScript
         {
             SubscribeToNetworkEvents();
         }
-
-        if (value)
-        {
-            if (PyObject_IsTrue(value))
-            {
-                //LogInfo("X_INPUT_EVENT returned True.");
-                return true;  
-            } 
-            else 
-            {
-                //LogInfo("X_INPUT_EVENT returned False.");
-                return false;
-            }
-        }
-        
+		        
         //was for first receive chat test, when no module provided it, so handles net event directly
         /* got a crash with this now during login, when the viewer was also getting asset data etc.
            disabling the direct reading of network data here now to be on the safe side,
-           this has always behaved correctly till now though (since march). --antont june 12th 
-        if (category_id == inboundCategoryID_)
+           this has always behaved correctly till now though (since march). --antont june 12th */
+        
+		else if (category_id == inboundCategoryID_)
         {
-            ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<OpenSimProtocol::NetworkEventInboundData *>(data);
-            const NetMsgID msgID = event_data->messageID;
-            NetInMessage *msg = event_data->message;
-            const NetMessageInfo *info = event_data->message->GetMessageInfo();
-            assert(info);
-            
+			ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+			ProtocolUtilities::NetMsgID msgID = event_data->messageID;
+			//ProtocolUtilities::NetInMessage *msg = event_data->message;
+			const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
+			std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
+
+			//Core::Vector3df data = event_data->message->GetData();
+            //assert(info);
+			const std::string str = info->name;
+			unsigned int id = info->id;
+
+			//testing if the unsigned int actually is the same NetMsgID, in this case RexNetMsgAgentAlertMessage == 0xffff0087
+			//if (id == 0xff09) //RexNetMsgObjectProperties == 0xff09
+			//	LogInfo("golly... it worked");
+
+			value = PyObject_CallMethod(pmmInstance, "INBOUND_NETWORK", "Is", id, str.c_str());//, msgID, msg);
+
+			/*
             std::stringstream ss;
             ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
             //LogInfo(ss.str());
@@ -419,10 +418,23 @@ namespace PythonScript
 
                 break;
                 }
-            }
-        }*/
+            }*/
+        }
 
-        return false;
+        if (value)
+        {
+            if (PyObject_IsTrue(value))
+            {
+                //LogInfo("X_INPUT_EVENT returned True.");
+                return true;  
+            } 
+            else 
+            {
+                //LogInfo("X_INPUT_EVENT returned False.");
+                return false;
+            }
+        }
+		return false;
     }
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
@@ -1210,7 +1222,6 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 
     ent_id = (Core::entity_id_t) ent_id_int;
     
-
     Scene::ScenePtr scene = PythonScript::GetScene();
     if (!scene)
     {
@@ -1221,7 +1232,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Scene::EntityPtr entity = scene->GetEntity(ent_id);
     Scene::Events::SceneEventData event_data(ent_id);
     event_data.entity_ptr_list.push_back(entity);
-    //PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+    PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 	
     Py_RETURN_NONE;
 }
@@ -1292,12 +1303,32 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
     Py_RETURN_TRUE;
 }
 */
+PyObject* RandomTest(PyObject* self, PyObject* args)
+{
+	unsigned int starter;
+    ProtocolUtilities::NetMsgID id;
 
+    if(!PyArg_ParseTuple(args, "I", &starter))
+    {
+        PyErr_SetString(PyExc_ValueError, "param should be an integer.");
+        return NULL;   
+    }
+
+    id = (ProtocolUtilities::NetMsgID) starter;
+
+	if (id == 0xffff0087)
+		PythonScript::self()->LogDebug("Test successfull!!");
+
+	Py_RETURN_NONE;
+}
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
     {"sendChat", (PyCFunction)SendChat, METH_VARARGS,
     "Send the given text as an in-world chat message."},
+
+    {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
+    "RandomTest function."},
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
@@ -1340,7 +1371,6 @@ static PyMethodDef EmbMethods[] = {
     
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
-    
 	
 	{"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
     "Get the size of the screen."},
@@ -1389,9 +1419,8 @@ static PyMethodDef EmbMethods[] = {
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},
 
-
     {"deleteObject", (PyCFunction)DeleteObject, METH_VARARGS, 
-    "deletes an object"},
+    "deletes an object (not used)"},
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},

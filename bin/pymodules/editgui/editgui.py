@@ -197,6 +197,8 @@ class EditGUI(Component):
 
         self.selection_box = None
     
+        self.worldstream = r.getServerConnection()
+    
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
             self.hideArrows()
@@ -249,7 +251,6 @@ class EditGUI(Component):
             pos[i] = v
             #converted to list to have it mutable
             ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
-            r.networkUpdate(ent.id)
             #print "=>", ent.pos
             self.move_arrows.pos = pos[0], pos[1], pos[2]
             self.selection_box.pos = pos[0], pos[1], pos[2]
@@ -257,6 +258,7 @@ class EditGUI(Component):
             self.widget.xpos.setValue(pos[0])
             self.widget.ypos.setValue(pos[1])
             self.widget.zpos.setValue(pos[2])
+            r.networkUpdate(ent.id)
             
     def changescale(self, i, v):
         ent = self.sel
@@ -312,11 +314,12 @@ class EditGUI(Component):
         #print "undo clicked"
         ent = self.sel
         if ent is not None:
-            print ent.uuid
-            worldstream = r.getServerConnection()
-            worldstream.SendObjectUndoPacket(ent.uuid)
-            self.hideArrows()
-            self.sel = None
+            #print ent.uuid
+            #worldstream = r.getServerConnection()
+            self.worldstream.SendObjectUndoPacket(ent.uuid)
+            #self.hideArrows()
+            #self.sel = None
+            self.update_guivals()
         
     def duplicate(self):
         print "duplicate clicked"
@@ -338,9 +341,9 @@ class EditGUI(Component):
     def deleteObject(self):
         ent = self.sel
         if ent is not None:
-            worldstream = r.getServerConnection()
+            #worldstream = r.getServerConnection()
             #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
-            worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+            self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
             self.hideArrows()
             id, tWid = self.widgetList.pop(str(ent.id))
             #print tWid, tWid.text(0)
@@ -366,6 +369,7 @@ class EditGUI(Component):
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
             self.sel_activated = False
+            self.worldstream.SendObjectSelectPacket(ent.id)
             
             if not self.widgetList.has_key(str(self.sel.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
@@ -399,7 +403,7 @@ class EditGUI(Component):
             self.selection_box.pos = self.sel.pos
             
             self.selection_box.scale = height, width, depth#depth, width, height
-            self.selection_box.orientation =self.sel.orientation
+            self.selection_box.orientation = self.sel.orientation
         else:
             r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
@@ -420,7 +424,10 @@ class EditGUI(Component):
         self.widget.rot_x.setValue(euler[0])
         self.widget.rot_y.setValue(euler[1])
         self.widget.rot_z.setValue(euler[2])        
-            
+         
+        self.selection_box.pos = self.sel.pos
+        self.selection_box.orientation =self.sel.orientation
+        
             #~ if self.cam is None and ogreroot:
                 #~ rs = root.getRenderSystem()
                 #~ vp = rs._getViewport()
@@ -461,10 +468,6 @@ class EditGUI(Component):
         if self.move_arrows is not None:
             self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
             self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
-            
-        if self.selection_box is not None:
-            self.selection_box.scale = 0.0, 0.0, 0.0
-            self.selection_box.pos = 0.0, 0.0, 0.0
         
         self.arrow_grabbed_axis = None
         self.arrow_grabbed = False
@@ -474,7 +477,12 @@ class EditGUI(Component):
         self.widget.rotate_button.setChecked(False)
         self.widget.scale_button.setChecked(False)
         #XXX todo: change these after theres a ent.hide type way
-
+        
+    def hideSelector(self):
+        if self.selection_box is not None:
+            self.selection_box.scale = 0.0, 0.0, 0.0
+            self.selection_box.pos = 0.0, 0.0, 0.0
+            
     def LeftMouseDown(self, mouseinfo):
         self.left_button_down = True
         #ent = r.rayCast(mouseinfo.x, mouseinfo.y)
@@ -533,6 +541,7 @@ class EditGUI(Component):
             self.sel = None
             self.widget.label.text = "<none>"
             self.hideArrows()
+            self.hideSelector()
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
             
@@ -584,7 +593,7 @@ class EditGUI(Component):
                     
                             self.sel.pos = pos[0], pos[1], pos[2]
                             self.move_arrows.pos = pos[0], pos[1], pos[2]
-                            self.update_guivals()
+                            #self.update_guivals()
                                 
                         elif self.manipulator_state == self.MANIPULATE_SCALE: #arrow scaling
                             #print "should change scale!"
@@ -599,7 +608,7 @@ class EditGUI(Component):
                                 scale[self.arrow_grabbed_axis] += mov
                     
                             self.sel.scale = scale[0], scale[1],scale[2]
-                            self.update_guivals()
+                            #self.update_guivals()
 
                     else: #freemove
                         #~ oldvec = Vector3(self.sel.pos)
@@ -639,11 +648,15 @@ class EditGUI(Component):
                         
                         #print newpos
                         self.sel.pos = newvec.x, newvec.y, newvec.z
-                        self.update_guivals()
                         #print worldwidth
                         self.prev_mouse_abs_x = mouse_abs_x
                         self.prev_mouse_abs_y = mouse_abs_y
-
+                    
+                    self.update_guivals()
+                        
+    def on_inboundnetwork(self, id, name, callback):
+        pass
+        #print "editgui got an inbound network event:", id, name
 
     def on_exit(self):
         r.logDebug("EditGUI exiting...")
@@ -651,19 +664,36 @@ class EditGUI(Component):
         if r.restart:
             r.logDebug("...restarting...")
             self.hideArrows()
-        else:
-            r.logDebug("...not restarting...")
+        #~ else:
+            #~ r.logDebug("...not restarting...")
         
         modu = r.getQtModule()
         if self.canvas is not None:
             modu.DeleteCanvas(self.canvas)
 
-        r.logDebug("   ...exit done.")
-
+        #r.logDebug("   ...exit done.")
 
     def on_hide(self):
         self.hideArrows()
+        self.hideSelector()
         self.sel = None
+        
+        """
+        #you get this if arrows are shown and you quit
+        
+        Traceback (most recent call last):
+          File "pymodules\editgui\editgui.py", line 678, in on_hide
+            self.hideArrows()
+          File "pymodules\editgui\editgui.py", line 469, in hideArrows
+            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
+        RuntimeError: default scene not there when trying to use an entity.
+        Traceback (most recent call last):
+          File "pymodules\editgui\editgui.py", line 678, in on_hide
+            self.hideArrows()
+          File "pymodules\editgui\editgui.py", line 469, in hideArrows
+            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
+        RuntimeError: default scene not there when trying to use an entity.        
+        """
         
 #barrel on 0.5 in viila: 
 # Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
