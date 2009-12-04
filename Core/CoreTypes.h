@@ -44,7 +44,8 @@ namespace Core
     typedef unsigned int entity_id_t;
     typedef unsigned int event_category_id_t;
     typedef unsigned int event_id_t;
-
+    typedef unsigned int sound_id_t;
+    
     namespace
     {
         event_category_id_t IllegalEventCategory = 0;

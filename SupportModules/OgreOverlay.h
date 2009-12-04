@@ -4,6 +4,7 @@
 #define incl_ConsoleOgre_h
 
 #include "ModuleInterface.h"
+#include "ConsoleServiceInterface.h"
 
 namespace Foundation
 {

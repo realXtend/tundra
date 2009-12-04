@@ -20,6 +20,8 @@
 #include "AssetEvents.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "ResourceInterface.h"
 
 #include <QObject>
 #include <QStringList>

@@ -4,8 +4,9 @@
 #define incl_Foundation_Framework_h
 
 #include "ConfigurationManager.h"
-#include "ServiceInterfaces.h"
 #include "ServiceManager.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "EventDataInterface.h"
 #include "Profiler.h"
 
 class QApplication;

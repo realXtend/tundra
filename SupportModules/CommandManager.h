@@ -4,7 +4,7 @@
 #define incl_ConsoleCommandManager_h
 
 #include "ConsoleCommandServiceInterface.h"
-
+#include "ConsoleServiceInterface.h"
 
 namespace Console
 {

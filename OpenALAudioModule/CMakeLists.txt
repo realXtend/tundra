@@ -9,19 +9,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-if (HYDRAX)
-	INCLUDE_HYDRAX()
-endif (HYDRAX)
-
-if (CAELUM)
-	add_definitions (-DCAELUM)
-endif (CAELUM)
-
-if (HYDRAX)
-	add_definitions (-DHYDRAX)
-endif (HYDRAX)
-
-add_definitions (-DOGRE_MODULE_EXPORTS) 
+add_definitions (-DOPENAL_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)

@@ -10,6 +10,7 @@
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
 #include "XMLRPCAssetProvider.h"
+#include "AssetServiceInterface.h"
 
 #include "Poco/URI.h"
 #include "Poco/Base64Decoder.h"

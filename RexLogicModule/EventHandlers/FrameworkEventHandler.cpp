@@ -5,6 +5,7 @@
 #include "WorldStream.h"
 #include "Login/LoginHandler.h"
 #include "Login/LoginUI.h"
+#include "ScriptServiceInterface.h"
 
 #include <QMap>
 

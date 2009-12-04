@@ -11,7 +11,7 @@
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
-#include "ServiceInterfaces.h"
+#include "ConsoleCommandServiceInterface.h"
 
 //! this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \

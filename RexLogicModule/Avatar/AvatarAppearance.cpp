@@ -28,6 +28,8 @@
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
 #include "AssetEvents.h"
+#include "AssetServiceInterface.h"
+#include "RenderServiceInterface.h"
 #include "Inventory/InventoryEvents.h"
 
 #include "Poco/URI.h"

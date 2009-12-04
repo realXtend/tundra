@@ -5,6 +5,7 @@
 #include "RendererEvents.h"
 #include "InputModuleOIS.h"
 #include "Mapper.h"
+#include "RenderServiceInterface.h"
 
 namespace Input
 {

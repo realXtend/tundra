@@ -17,6 +17,8 @@
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
+#include "RenderServiceInterface.h"
+#include "ConsoleServiceInterface.h"
 
 #include "RexQEngine.h"
 

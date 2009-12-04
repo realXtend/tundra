@@ -10,6 +10,7 @@
 #include "RexAsset.h"
 #include "RexTypes.h"
 #include "UDPAssetProvider.h"
+#include "AssetServiceInterface.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;
