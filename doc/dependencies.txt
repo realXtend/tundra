@@ -31,7 +31,21 @@ This project has the following dependencies:
 
 - Caelum OGRE Add-on 0.4: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
 
-- Telepathy-python 0.15.8 or newer,  http://telepathy.freedesktop.org/wiki/Telepathy%20Python
+- Telepathy-farsight 0.0.12.1 or newer,  http://telepathy.freedesktop.org/releases/telepathy-farsight/
+
+- Telepathy-glib 0.7.37 or newer , http://telepathy.freedesktop.org/wiki/Telepathy%20GLib
+
+- Telepathy-Qt4 0.1.11 or newer , http://telepathy.freedesktop.org/wiki/Telepathy-Qt4
+
+- GStreamer 0.10.24 or newer, http://gstreamer.freedesktop.org/
+
+- Farsight2 0.0.14 or newer , http://farsight.freedesktop.org/wiki/Farsight2Design
+
+- dbus-glib 0.78 or newer , http://www.freedesktop.org/wiki/Software/DBusBindings
+
+- glib 2.0 or newer , http://en.wikipedia.org/wiki/GLib
+
+- dbus , http://www.freedesktop.org/wiki/Software/dbus
 
 
 OBTAINING DEPENDENCIES
