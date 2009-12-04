@@ -10,6 +10,8 @@ namespace TelepathyIM
 	
 	VoiceSession::VoiceSession(Tp::StreamedMediaChannelPtr tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel)
 	{
+        farsight_channel_ = new FarsightChannel(tp_channel, "dshowaudiosrc", "directsoundsink", "autovideosrc");
+
 	    connect(tp_channel->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnIncomingChannelReady(Tp::PendingOperation*) ));
@@ -63,6 +65,9 @@ namespace TelepathyIM
 
 	void VoiceSession::OnIncomingChannelReady(Tp::PendingOperation *op)
 	{
+        Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
+        Tp::StreamedMediaChannelPtr chan = Tp::StreamedMediaChannelPtr(qobject_cast<Tp::StreamedMediaChannel *>(pr->object()));
+
 		if (op->isError())
 		{
 			state_ = STATE_ERROR;
@@ -72,8 +77,14 @@ namespace TelepathyIM
 		Tp::ContactPtr contact = tp_channel_->initiatorContact();
 		//! @todo IMPLEMENT
 
-		// tp_channel_->acceptCall();
-		// tp_channel_->requestClose();
+		tp_channel_->acceptCall(); // DEBUG: Auto answer
+        // tp_channel_->requestClose(); // reject
+
+        connect(chan->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(OnStreamFeatureReady(Tp::PendingOperation*)));
+		
+
 	}
 
 	void VoiceSession::OnOutgoingChannelReady(Tp::PendingOperation *op)
@@ -83,22 +94,68 @@ namespace TelepathyIM
 			state_ = STATE_ERROR;
 			return;
 		}
-		//! @todo IMPLEMENT
+		
 		Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
 		Tp::ContactPtr contact = cm->lookupContactByHandle(tp_channel_->targetHandle());
 		Q_ASSERT(contact);
 
 
+
+        connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(OnStreamFeatureReady(Tp::PendingOperation*)));
+	}
+
+    void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)
+    {
+        if (op->isError())
+        {
+            LogError("Stream feature cannot become ready!");
+            return;
+        }
+        state_ = STATE_OPEN;
+        connect(tp_channel_.data(), SIGNAL( streamAdded(const Tp::MediaStreamPtr &) ), SLOT( OnStreamAdded(const Tp::MediaStreamPtr &) ));
+        connect(tp_channel_.data(), SIGNAL( streamRemoved(const Tp::MediaStreamPtr &) ), SLOT( OnStreamRemoved(const Tp::MediaStreamPtr &) ));
+        connect(tp_channel_.data(), SIGNAL( streamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ),
+                                    SLOT( OnStreamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ));
+        connect(tp_channel_.data(), SIGNAL( streamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ), SLOT( OnStreamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ));
+
+
 		Tp::MediaStreams streams = tp_channel_->streams();
 		for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
 		{
+            Tp::MediaStreamPtr stream = *i;
+            
 			Tp::MediaStreamType type = (*i)->type();
 			switch(type)
 			{
 			case Tp::MediaStreamTypeAudio: break;
 			case Tp::MediaStreamTypeVideo: break;
 			}
+
+            OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
+            OnStreamStateChanged(stream, stream->state());
 		}
-	}
+    }
+
+    void VoiceSession::OnStreamAdded(const Tp::MediaStreamPtr &media_stream)
+    {
+        // todo: IMPLEMENT
+    }
+
+    void VoiceSession::OnStreamRemoved(const Tp::MediaStreamPtr &media_stream)
+    {
+        // todo: IMPLEMENT
+    }
+
+    void VoiceSession::OnStreamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend ps)
+    {
+        // todo: IMPLEMENT
+    }
+
+    void VoiceSession::OnStreamStateChanged(const Tp::MediaStreamPtr &strean, Tp::MediaStreamState state)
+    {
+        // todo: IMPLEMENT
+    }
 
 } // end of namespace: TelepathyIM
