@@ -10,15 +10,15 @@ namespace Foundation
     //! An interface for sound functionality.
     class SoundServiceInterface : public ServiceInterface
     {
+    public:
         enum SoundState
         {
             Stopped = 0,
             Loading,
             Starting,
-            Started
+            Playing
         };
-        
-    public:
+       
         SoundServiceInterface() {}
         virtual ~SoundServiceInterface() {}
 
@@ -45,6 +45,9 @@ namespace Foundation
          */     
         virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local, Core::Vector3df& position, Core::sound_id_t channel = 0) = 0;
 
+        //! Gets state of channel
+        virtual SoundState GetSoundState(Core::sound_id_t id) = 0;
+        
         //! Stops sound that's playing & destroys the channel
         virtual void StopSound(Core::sound_id_t id) = 0;
         //! Adjusts pitch of sound

@@ -60,8 +60,22 @@ namespace OpenALAudio
         initialized_ = false;
     }
 
+    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(Core::sound_id_t id)
+    {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return Foundation::SoundServiceInterface::Stopped;
+        return i->second->GetState();
+    }
+    
     void SoundSystem::Update()
     {
+        SoundChannelMap::iterator i = channels_.begin();
+        while (i != channels_.end())
+        {
+            i->second->Update();
+            ++i;
+        }
     }
     
     void SoundSystem::SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation)
