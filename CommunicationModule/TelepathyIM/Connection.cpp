@@ -310,6 +310,7 @@ namespace TelepathyIM
 			};
         
 			tp_connection_->capabilitiesInterface()->AdvertiseCapabilities( Tp::CapabilityPairList() << capability, QStringList());
+            LogDebug("Advertise capabilities.");
 		}
 
 		if( tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS) )
@@ -534,10 +535,11 @@ namespace TelepathyIM
 				}
 				else
 				{
-					//Contact* null_contact = new Contact(tp_text_channel->initiatorContact());
-					//ChatSession* session = new ChatSession(*null_contact, tp_text_channel);
-					//private_chat_sessions_.push_back(session);
-					//emit( ChatSessionReceived(*session) );
+                    Contact* null_contact = new Contact(tp_streamed_media_channel->initiatorContact()); // we don't have the contact!
+
+                    VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
+					voice_sessions_.push_back(session);
+					emit( VoiceSessionReceived(*session) );
 				}
 			}
 		}
