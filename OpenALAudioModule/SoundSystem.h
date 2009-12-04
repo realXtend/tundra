@@ -16,6 +16,9 @@ namespace Foundation
 
 namespace OpenALAudio
 {
+    typedef std::map<Core::sound_id_t, SoundChannelPtr> SoundChannelMap;
+    typedef std::map<std::string, SoundPtr> SoundMap;
+      
     class SoundSystem : public Foundation::SoundServiceInterface
     {
 	public:
@@ -45,6 +48,8 @@ namespace OpenALAudio
          */     
         Core::sound_id_t PlaySound3D(const std::string& name, bool local, Core::Vector3df& position, Core::sound_id_t channel = 0);
 
+        //! Gets state of channel
+        Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id);
         //! Stops sound that's playing & destroys the channel
         void StopSound(Core::sound_id_t id);
         //! Adjusts pitch of sound
@@ -80,7 +85,10 @@ namespace OpenALAudio
         //! OpenAL device
         ALCdevice* device_;
         
-        //! Active 
+        //! Active channels
+        SoundChannelMap channels_;
+        //! Currently loaded sounds
+        SoundMap sounds_;        
     };
 
     typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;
