@@ -2,10 +2,8 @@
 
 #include "StableHeaders.h"
 #include "OpenALAudioModule.h"
-#include <Poco/ClassLibrary.h>
-#include "Foundation.h"
-#include "ComponentRegistrarInterface.h"
-#include "EC_OpenALEntity.h"
+#include "SoundSystem.h"
+#include "EC_AttachedSound.h"
 
 namespace OpenALAudio
 {
@@ -23,7 +21,7 @@ namespace OpenALAudio
 		using namespace OpenALAudio;
 
 		LogInfo("Module " + Name() + " loaded.");
-		DECLARE_MODULE_EC(EC_OpenALEntity);
+		DECLARE_MODULE_EC(EC_AttachedSound);
 	}
 
     //Virtual
@@ -35,22 +33,16 @@ namespace OpenALAudio
 	
     void OpenALAudioModule::PreInitialize()
 	{
-		sound_ = OpenALAudio::SoundPtr(new OpenALAudio::Sound(framework_));
 	}
 	
     //Virtual
     void OpenALAudioModule::Initialize()
     {
-        sound_->Initialize();
-        if (sound_->GetBufferCount() < 1)
-        {
-            LogInfo("Module " + Name() + " initialization failed!");
+		soundsystem_ = SoundSystemPtr(new SoundSystem(framework_));    
+        if (!soundsystem_->IsInitialized())
             return;
-        }
 
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, sound_);
-
-        LogInfo("Module " + Name() + " initialized with " + sound_->LogBufferCount() + " buffers.");
+		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
     }
 
     void OpenALAudioModule::PostInitialize()
@@ -59,9 +51,8 @@ namespace OpenALAudio
 
     void OpenALAudioModule::Uninitialize()
 	{
-        sound_->Uninitialize();
-        framework_->GetServiceManager()->UnregisterService(sound_);
-		sound_.reset();
+        framework_->GetServiceManager()->UnregisterService(soundsystem_);
+		soundsystem_.reset();
 
 		LogInfo("Module " + Name() + " uninitialized.");
 	}
@@ -70,7 +61,8 @@ namespace OpenALAudio
 	{
         {
             PROFILE(OpenALAudioModule_Update);
-		    sound_->Update();
+            if (soundsystem_)
+                soundsystem_->Update();
         }
         RESETPROFILER;
 	}

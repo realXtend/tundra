@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OpenALAudioModule_h
-#define incl_OpenALAudioModule_h
+#ifndef incl_OpenALAudio_OpenALAudioModule_h
+#define incl_OpenALAudio_OpenALAudioModule_h
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
-#include "OpenALAudio.h"
+#include "OpenALAudioModuleApi.h"
 
 namespace Foundation
 {
@@ -14,11 +14,11 @@ namespace Foundation
 
 namespace OpenALAudio
 {
-    class Sound;
-    typedef boost::shared_ptr<Sound> SoundPtr;
+    class SoundSystem;
+    typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;
 
     //! interface for modules
-    class MODULE_API OpenALAudioModule : public Foundation::ModuleInterfaceImpl
+    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterfaceImpl
 	{
     public:
 		OpenALAudioModule();
@@ -39,8 +39,10 @@ namespace OpenALAudio
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Sound;
 
+        SoundSystemPtr GetSoundSystem() { return soundsystem_; }
+        
     private:
-		OpenALAudio::SoundPtr sound_;
+		SoundSystemPtr soundsystem_;
     };
 }
 

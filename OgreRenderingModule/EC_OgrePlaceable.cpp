@@ -15,7 +15,7 @@ namespace OgreRenderer
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),
         attached_(false),
-        select_priority_(-1000000)
+        select_priority_(0)
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         scene_node_ = scene_mgr->createSceneNode();

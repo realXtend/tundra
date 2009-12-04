@@ -13,6 +13,9 @@
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "InputEvents.h"
+#include "InputServiceInterface.h"
+#include "RenderServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
 
 #include "RexLogicModule.h" //much of the api is here

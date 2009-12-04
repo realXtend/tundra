@@ -21,6 +21,7 @@
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Entity.h"
+#include "ConsoleServiceInterface.h"
 
 
 namespace OgreRenderer

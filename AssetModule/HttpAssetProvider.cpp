@@ -15,6 +15,7 @@
 #include "RexAsset.h"
 #include "RexTypes.h"
 #include "HttpAssetProvider.h"
+#include "AssetServiceInterface.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;

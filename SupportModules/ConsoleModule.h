@@ -4,6 +4,7 @@
 #define incl_ConsoleModule_h
 
 #include "ModuleInterface.h"
+#include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
 
 namespace Foundation

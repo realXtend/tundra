@@ -13,6 +13,8 @@
 #include "ResourceHandler.h"
 #include "OgreMaterialUtils.h"
 #include "RexTypes.h"
+#include "TextureServiceInterface.h"
+#include "AssetServiceInterface.h"
 
 namespace OgreRenderer
 {

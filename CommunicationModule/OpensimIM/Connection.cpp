@@ -3,6 +3,7 @@
 #include <RealXtend/RexProtocolMsgIDs.h>
 #include "Connection.h"
 #include "ConnectionProvider.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace OpensimIM
 {

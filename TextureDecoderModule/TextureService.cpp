@@ -9,6 +9,7 @@
 #include "TextureResource.h"
 #include "TextureService.h"
 #include "RexTypes.h"
+#include "AssetServiceInterface.h"
 
 namespace TextureDecoder
 {

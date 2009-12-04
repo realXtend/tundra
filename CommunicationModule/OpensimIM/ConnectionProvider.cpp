@@ -2,6 +2,7 @@
 #include "ConnectionProvider.h"
 #include "Connection.h"
 #include "../Credentials.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace OpensimIM
 {

@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_ServiceManager_h
 #define incl_Foundation_ServiceManager_h
 
-#include "ServiceInterfaces.h"
+#include "ServiceInterface.h"
 
 namespace Foundation
 {

@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "ModuleInterface.h"
+#include "RenderServiceInterface.h"
 #include "QtModuleApi.h"
 #include "UIController.h"
 #include <QMap>

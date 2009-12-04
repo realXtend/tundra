@@ -16,6 +16,8 @@
 #include "ResourceInterface.h"
 #include "TextureResource.h"
 #include "AssetUploader.h"
+#include "TextureServiceInterface.h"
+#include "AssetServiceInterface.h"
 
 #include <QFile>
 #include <QImage>

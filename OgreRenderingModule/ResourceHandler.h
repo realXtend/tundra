@@ -4,6 +4,7 @@
 #define incl_OgreRenderer_ResourceHandler_h
 
 #include "ResourceInterface.h"
+#include "AssetInterface.h"
 
 namespace OgreRenderer
 {

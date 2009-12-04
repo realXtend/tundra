@@ -1,6 +1,7 @@
 #include "Test.h"
 #include "Credentials.h"
 #include "CommunicationService.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace CommunicationTest
 {
