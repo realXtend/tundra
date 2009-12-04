@@ -32,7 +32,10 @@ class ModuleManager:
     def LOGIN_INFO(self, *args):
         pass
         #print "Login updated", args
-    
+    def INBOUND_NETWORK(self, id, name):
+        pass
+        #print "Manager got a NETWORK_IN event", id, name
+        
     def exit(self):
         print "exiting module manager"
         pass

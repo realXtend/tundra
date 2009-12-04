@@ -25,6 +25,7 @@ class MouseClick(Event): pass
 class EntityUpdate(Event): pass
 class Exit(Event): pass
 class LoginInfo(Event): pass
+class InboundNetwork(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -46,7 +47,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -126,7 +127,15 @@ class ComponentRunner(Component):
         self.eventhandled = False
         #self.m.send(LoginInfo(self.callback), "on_login")
         return self.eventhandled
+    
+    def INBOUND_NETWORK(self, id, name):
+        #print "Circuits got network_in event:", id, name
+        self.eventhandled = False
+        self.m.send(InboundNetwork(id, name, self.callback), "on_inboundnetwork")
+        return self.eventhandled
+        ##r.randomTest(id) #for testing whether the id gotten is the same after a circulation on the python, note: worked
         
+               
     def exit(self):
         r.logInfo("Circuits manager stopping...")
         self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX

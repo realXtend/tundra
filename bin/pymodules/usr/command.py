@@ -662,17 +662,17 @@ if 0: #getserver test
     #~ print ent
     
 if 0: #undo tests
-    e = r.getEntity(1749873429)
-    print e.prim
-    e_uuid = "360eea54-6c3e-46e6-8ee2-511d294d5467"
-    worldstream = r.getServerConnection()
-    #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
-    worldstream.SendObjectUndoPacket(e_uuid)
-    
-if 0: #undo tests and ent.uuid
-    e = r.getEntity(2762243177)
-    print e, e.uuid, e.editable  
+    e = r.getEntity(1752805599)
+    print e.prim, e.uuid
+    e_uuid = "d81432f2-28f3-4e05-ac8a-abb4b625dbe4-"
     worldstream = r.getServerConnection()
     #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
     worldstream.SendObjectUndoPacket(e.uuid)
+    
+if 0: #undo tests and ent.uuid
+    e = r.getEntity(1752805599)
+    print e, e.uuid, e.editable  
+    worldstream = r.getServerConnection()
+    #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
+    worldstream.SendObjectSelectPacket(ent.id)
     
