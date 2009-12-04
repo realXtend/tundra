@@ -76,11 +76,12 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::Netwo
     if (!component)
         return false;
 
-    // Update the sunlight direction and angle velocity.
-    ///\note Not needed anymore as we use Caleum now.
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (component.get());
-//    env.SetSunDirection(-sunDirection_);
+
+    // Update the sunlight direction and angle velocity.
+    if (!UseCaelum())
+        env.SetSunDirection(-sunDirection_);
 
     /** \note
      *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received

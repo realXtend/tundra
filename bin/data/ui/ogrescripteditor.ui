@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AvatarEditor</class>
- <widget class="QWidget" name="AvatarEditor">
+ <class>mainWidget</class>
+ <widget class="QWidget" name="mainWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,20 +11,21 @@
    </rect>
   </property>
   <property name="styleSheet">
-   <string>/* Containers */
+   <string>
+    /* Containers */
+    QWidget#mainWidget
+    {
+        background-color: rgba(255, 255, 255, 0);
+    }
 
-QWidget#AvatarEditor {
-	background-color: rgba(255, 255, 255, 0);
-}
-
-QFrame#MainFrame {
-	background-color: rgba(85, 170, 255, 175);
-	border: 2px solid rgba(85, 170, 255, 200);
-	padding: 5px;
-	border-radius:15px;
-}
-
-</string>
+    QFrame#MainFrame
+    {
+        background-color: rgba(85, 170, 255, 175);
+        border: 2px solid rgba(85, 170, 255, 200);
+        padding: 5px;
+        border-radius:15px;
+    }
+   </string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -130,7 +131,7 @@ QFrame#MainFrame {
       <item>
        <widget class="QWidget" name="widgetEditor" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>

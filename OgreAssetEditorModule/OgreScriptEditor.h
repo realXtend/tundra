@@ -3,6 +3,7 @@
 /**
  *  @file   OgreScriptEditor.h
  *  @brief  Editing tool for OGRE material and particle scripts.
+ *          Provides raw text edit for particles and QProperty editing for materials.
  */
 
 #ifndef incl_InventoryModule_OgreScriptEditor_h
@@ -38,6 +39,8 @@ namespace PropertyEditor
 
 namespace OgreAssetEditor
 {
+    class OgreMaterialProperties;
+
     class OgreScriptEditor : public QObject
     {
         Q_OBJECT
@@ -97,6 +100,11 @@ namespace OgreAssetEditor
 
         /// Text edit field used in raw edit mode.
         QTextEdit *textEdit_;
+
+        /// Asset type.
+        const RexTypes::asset_type_t assetType_;
+        
+        OgreMaterialProperties *materialProperties_;
     };
 }
 
