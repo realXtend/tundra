@@ -19,7 +19,8 @@ namespace OpenALAudio
         
         void Play(SoundPtr sound, bool positional);
         void SetPositional(bool enable);
-        void SetPosition(Core::Vector3df pos);
+        void SetLooped(bool enable);
+        void SetPosition(const Core::Vector3df& pos);
         void SetPitch(Core::Real pitch);
         void SetGain(Core::Real gain);
         void Stop();

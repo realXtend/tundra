@@ -30,7 +30,10 @@ namespace OpenALAudio
                 ALint playing;
                 alGetSourcei(handle_, AL_SOURCE_STATE, &playing);
                 if (playing != AL_PLAYING)
+                {
                     state_ = Foundation::SoundServiceInterface::Stopped;
+                    sound_.reset();
+                }
             }
             break;
         }
@@ -51,5 +54,40 @@ namespace OpenALAudio
             alDeleteSources(1, &handle_);
             handle_ = 0;
         }    
+    }
+    
+    void SoundChannel::Stop()
+    {
+        if (handle_)
+        {
+            alSourceStop(handle_);
+            state_ = Foundation::SoundServiceInterface::Stopped;
+            sound_.reset();
+        }
+    }
+    
+    void SoundChannel::SetPosition(const Core::Vector3df& position)
+    {
+        position_ = position;
+    }
+    
+    void SoundChannel::SetPositional(bool enable)
+    {
+        positional_ = enable;
+    }
+    
+    void SoundChannel::SetLooped(bool enable)
+    {
+        looped_ = enable;
+    }
+    
+    void SoundChannel::SetPitch(Core::Real pitch)
+    {
+        pitch_ = pitch;
+    }
+    
+    void SoundChannel::SetGain(Core::Real gain)
+    {
+        gain_ = gain;
     }
 }
