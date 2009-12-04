@@ -37,7 +37,7 @@ namespace OgreAssetEditor
         ~OgreMaterialProperties();
 
         ///@ return OgreMaterialPtr
-        Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial();
+        Ogre::MaterialPtr ToOgreMaterial();
 
     private:
         /// Creates the QProperties for this material.
