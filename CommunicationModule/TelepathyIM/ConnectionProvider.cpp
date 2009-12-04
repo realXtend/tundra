@@ -13,6 +13,7 @@ namespace TelepathyIM
         //! Ensures that gabble and dbus daemon processes are not running 
         //! and start new dbus daemon process
 		ClearGabble();
+        //g_main_loop_.start();
 #else
       	InitializeTelepathyConnectionManager("gabble");
 #endif
@@ -25,6 +26,7 @@ namespace TelepathyIM
 // We want to stopt dbus daemon only on Windows platform
 #ifdef WIN32
 		StopDBusDaemon();
+      //  g_main_loop_.Stop();
 #endif
 	}
 

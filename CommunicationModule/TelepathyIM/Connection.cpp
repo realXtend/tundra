@@ -309,8 +309,7 @@ namespace TelepathyIM
                 Tp::ChannelMediaCapabilityNATTraversalGTalkP2P
 			};
         
-			// disabled temporarily (until 0.0.2 is out)
-			//tp_connection_->capabilitiesInterface()->AdvertiseCapabilities( Tp::CapabilityPairList() << capability, QStringList());
+			tp_connection_->capabilitiesInterface()->AdvertiseCapabilities( Tp::CapabilityPairList() << capability, QStringList());
 		}
 
 		if( tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS) )
