@@ -69,7 +69,7 @@ namespace OpenALAudio
     }
     
     void SoundSystem::Update()
-    {
+    {        
         SoundChannelMap::iterator i = channels_.begin();
         while (i != channels_.end())
         {
@@ -102,26 +102,56 @@ namespace OpenALAudio
 
     void SoundSystem::StopSound(Core::sound_id_t id)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;    
+            
+        i->second->Stop();
     }
     
     void SoundSystem::SetPitch(Core::sound_id_t id, Core::Real pitch)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;        
+            
+        i->second->SetPitch(pitch);  
     }
     
     void SoundSystem::SetGain(Core::sound_id_t id, Core::Real gain)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;  
+            
+        i->second->SetGain(gain);
     }
     
     void SoundSystem::SetLooped(Core::sound_id_t id, bool looped)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;  
+            
+        i->second->SetLooped(looped);
     }
     
     void SoundSystem::SetPositional(Core::sound_id_t id, bool positional)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;  
+         
+        i->second->SetPositional(positional);
     }
     
     void SoundSystem::SetPosition(Core::sound_id_t id, Core::Vector3df position)
     {
+        SoundChannelMap::iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return;  
+            
+        i->second->SetPosition(position);
     }
     
 }
