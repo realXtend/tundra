@@ -221,6 +221,7 @@ namespace Communication
 
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
+
 	signals:
 
 	};
@@ -250,6 +251,20 @@ namespace Communication
 		void Opened(ChatSessionInterface*);
 		void Closed(VoiceSessionInterface*);
 	};
+
+    /**
+     *  TODO...
+     *
+     */
+    class VideoSessionInterface : public QObject
+    {
+        Q_OBJECT
+    public:
+        enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR};
+        virtual State GetState() const = 0;
+
+        virtual void Close() = 0;
+    };
 
 	/**
 	 * A received friend request. This can be accepted or rejected. If Accpet() methos is called1
