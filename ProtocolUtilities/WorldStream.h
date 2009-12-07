@@ -156,7 +156,7 @@ namespace ProtocolUtilities
 
         /// Sends a packet which indicates selection of a group of prims.
         /// @param Local ID of the object which is selected.
-        void SendObjectSelectPacket(Core::entity_id_t object_id);
+        void SendObjectSelectPacket(const unsigned int object_id);
 
         /// Sends a packet which indicates selection of a prim.
         /// @param List of local ID's of objects which are selected.
@@ -425,8 +425,12 @@ namespace ProtocolUtilities
 		void SendObjectUndoPacket(const QString &ent_id);
 
 		/// duplicate the object
-		void SendObjectDuplicatePacket(const unsigned long ent_id);
-
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset);
+		/// same as above but takes the offset vector as three ints
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z);
+		/// without the offset, reverts to Vector.ZERO
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
+		
     public:
         /// Name used for logging.
         static const std::string &LoggerName;

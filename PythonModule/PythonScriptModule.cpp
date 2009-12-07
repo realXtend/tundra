@@ -1555,6 +1555,16 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         }
 		return PyString_FromString(prim->FullId.ToString().c_str());
 	}
+	else if(s_name.compare("updateflags") == 0)
+	{
+		//std::cout << ".. getting prim" << std::endl;
+        if (!prim)
+        {
+            PyErr_SetString(PyExc_AttributeError, "prim not found.");
+            return NULL;   
+        }
+		return Py_BuildValue("I", prim->UpdateFlags);
+	}
 	else if(s_name.compare("editable") == 0)
 	{
 		// refactor to take into account permissions etc aswell later?

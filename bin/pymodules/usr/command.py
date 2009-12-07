@@ -676,3 +676,11 @@ if 0: #undo tests and ent.uuid
     #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
     worldstream.SendObjectSelectPacket(ent.id)
     
+if 0: #updateflag checks, duplicate tests
+    e = r.getEntity(2054915991)
+    print e, e.uuid, e.editable, e.updateflags
+    ws = r.getServerConnection()
+    #print dir(ws)
+    x, y, z = e.pos
+    ws.SendObjectDuplicatePacket(e.id, e.updateflags, 1, 1, 1)
+    
