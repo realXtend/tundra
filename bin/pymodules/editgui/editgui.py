@@ -37,7 +37,9 @@ else:
     root = ogre.Root.getSingleton()
     ogreroot = root.isInitialised()
     V3 = ogre.Vector3
-    
+
+#are in Naali QObject QTModule::UICanvas as QEnums, in PythonQt module now
+#naali.py: UICanvas = PythontQt.__dict__['QTModule::UICanvas']
 INTERNAL = 1
 EXTERNAL = 0
 
@@ -683,32 +685,10 @@ class EditGUI(Component):
         try:
             if self.move_arrows is not None:
                 ent = self.move_arrows.id 
+        #is called by qt also when viewer is exiting,
+        #when the scene (in rexlogic module) is not there anymore.
         except RuntimeError, e:
             r.logDebug("on_hide: scene not found")
         else:
             self.hideArrows()
             self.hideSelector()
-        
-        
-        """
-        #you get this if arrows are shown and you quit
-        
-        Traceback (most recent call last):
-          File "pymodules\editgui\editgui.py", line 678, in on_hide
-            self.hideArrows()
-          File "pymodules\editgui\editgui.py", line 469, in hideArrows
-            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-        RuntimeError: default scene not there when trying to use an entity.
-        Traceback (most recent call last):
-          File "pymodules\editgui\editgui.py", line 678, in on_hide
-            self.hideArrows()
-          File "pymodules\editgui\editgui.py", line 469, in hideArrows
-            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-        RuntimeError: default scene not there when trying to use an entity.        
-        """
-        
-#barrel on 0.5 in viila: 
-# Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
-# inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
-
-
