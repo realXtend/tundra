@@ -101,6 +101,7 @@ else:
     from webserver.webcontroller import WebServer
 
 import apitest.testrunner
+import mediaurlhandler.mediaurlhandler
     
 modules = [
     #apitest.circuits_testmodule.TestModule,
@@ -108,6 +109,7 @@ modules = [
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     editgui.EditGUI,
+    #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
