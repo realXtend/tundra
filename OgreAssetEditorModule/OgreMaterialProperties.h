@@ -5,13 +5,13 @@
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
-#ifndef incl_InventoryModule_OgreMaterialProperties_h
-#define incl_InventoryModule_OgreMaterialProperties_h
+#ifndef incl_OgreAssetEditorModule_OgreMaterialProperties_h
+#define incl_OgreAssetEditorModule_OgreMaterialProperties_h
 
 #include <QObject>
-//#include <QMap>
-//#include <QString>
-//#include <QVariant>
+#include <QMap>
+#include <QString>
+#include <QVariant>
 
 namespace Ogre
 {
@@ -36,18 +36,33 @@ namespace OgreAssetEditor
         /// Destructor.
         ~OgreMaterialProperties();
 
+        typedef QMap<QString, QVariant> PropertyMap;
+        typedef QMapIterator<QString, QVariant> PropertyMapIter;
+
+        /// @return Property map (QString name, QVariant value).
+        PropertyMap GetPropertyMap();
+
+        /// @return Does this material have valid properties.
+        bool HasProperties();
+
+        /// Returns value for requested property.
+        /// param name Property name.
+//        template <class T> GetProperty(const QString &name);
+
+        /// Returns value for requested property.
+        /// param name Property name.
+//        QVariant GetProperty(const QString &name);
+
         ///@ return OgreMaterialPtr
         Ogre::MaterialPtr ToOgreMaterial();
 
     private:
-        /// Creates the QProperties for this material.
-        /// @True If succesful, false otherwise.
-        bool CreateProperties(OgreRenderer::OgreMaterialResource *material);
+        /// Creates the QProperties dynamically for this material.
+        /// @True if creation was succesful, false otherwise.
+        bool CreateProperties();
 
         /// Material resource pointer.
         OgreRenderer::OgreMaterialResource *material_;
-
-//        QMap<QString, QVariant> properties_;
     };
 }
 

@@ -30,7 +30,6 @@ use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
-use_package (PROPERTYEDITOR)
 use_modules (Core Foundation Interfaces RexCommon  ProtocolUtilities QtModule AssetModule OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
@@ -42,7 +41,6 @@ link_package (OGRE)
 link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)
-link_package (PROPERTYEDITOR)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

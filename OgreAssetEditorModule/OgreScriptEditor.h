@@ -6,8 +6,8 @@
  *          Provides raw text edit for particles and QProperty editing for materials.
  */
 
-#ifndef incl_InventoryModule_OgreScriptEditor_h
-#define incl_InventoryModule_OgreScriptEditor_h
+#ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
+#define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
 #include "RexTypes.h"
 
@@ -32,11 +32,6 @@ namespace Foundation
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
-namespace PropertyEditor
-{
-    class PropertyEditor;
-}
-
 namespace OgreAssetEditor
 {
     class OgreMaterialProperties;
@@ -58,15 +53,19 @@ namespace OgreAssetEditor
         virtual ~OgreScriptEditor();
 
     public slots:
-        ///
+        /// Handles the asset data for script.
         void HandleAssetReady(Foundation::AssetPtr asset);
+
+        /// Closes the window.
+        void Close();
 
     private slots:
         /// Save As
         void SaveAs();
 
-        /// Cancel
-        void Cancel();
+        /// Validates the script name
+        /// @param name Name.
+        void ValidateScriptName(const QString &name);
 
     private:
         Q_DISABLE_COPY(OgreScriptEditor);
@@ -95,15 +94,16 @@ namespace OgreAssetEditor
         /// Cancel button.
         QPushButton *buttonCancel_;
 
-        /// Property editor.
-        PropertyEditor::PropertyEditor *propertyEditor_;
-
         /// Text edit field used in raw edit mode.
         QTextEdit *textEdit_;
 
         /// Asset type.
         const RexTypes::asset_type_t assetType_;
-        
+
+        /// Name.
+        QString name_;
+
+        ///
         OgreMaterialProperties *materialProperties_;
     };
 }
