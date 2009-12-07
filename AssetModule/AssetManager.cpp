@@ -185,7 +185,10 @@ namespace Asset
         {
             (*i)->Update(frametime);
             ++i;
-        }       
+        }      
+        
+        // Update cache
+        cache_->Update(frametime); 
     }
     
     Foundation::AssetPtr AssetManager::GetFromCache(const std::string& asset_id)

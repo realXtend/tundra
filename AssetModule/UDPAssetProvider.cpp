@@ -22,7 +22,7 @@ namespace Asset
     UDPAssetProvider::UDPAssetProvider(Foundation::Framework* framework) :
         framework_(framework)
     {
-        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("UDPAssetProvider", "timeout", DEFAULT_ASSET_TIMEOUT);
+        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "udp_timeout", DEFAULT_ASSET_TIMEOUT);
 
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         

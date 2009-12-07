@@ -57,12 +57,12 @@ namespace OpenALAudio
 		LogInfo("Module " + Name() + " uninitialized.");
 	}
 
-    void OpenALAudioModule::Update()
+    void OpenALAudioModule::Update(Core::f64 frametime)
 	{
         {
             PROFILE(OpenALAudioModule_Update);
             if (soundsystem_)
-                soundsystem_->Update();
+                soundsystem_->Update(frametime);
         }
         RESETPROFILER;
 	}

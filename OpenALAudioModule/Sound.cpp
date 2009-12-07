@@ -6,7 +6,7 @@
 namespace OpenALAudio
 {
     
-    Sound::Sound() : handle_(0), datasize_(0)
+    Sound::Sound() : handle_(0), size_(0), age_(0.0)
     {
     }
     
@@ -18,4 +18,15 @@ namespace OpenALAudio
             handle_ = 0;
         }
     }
+    
+    void Sound::ResetAge()
+    {
+        age_ = 0.0;
+    }
+    
+    void Sound::AddAge(Core::f64 time)
+    {
+        age_ += time;
+    }
+    
 }

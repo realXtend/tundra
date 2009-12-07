@@ -14,25 +14,41 @@ namespace OpenALAudio
     class SoundChannel
     {
     public:
+        //! Constructor.
         SoundChannel();
+        //! Destructor.
         ~SoundChannel();
         
-        void Play(SoundPtr sound, bool positional);
+        //! Start playing sound. Set to pending state if sound is actually not loaded yet
+        void Play(SoundPtr sound, bool positional);       
+        //! Set positional state
         void SetPositional(bool enable);
+        //! Set looped state
         void SetLooped(bool enable);
-        void SetPosition(const Core::Vector3df& pos);
+        //! Set position. Also sets positional = true
+        void SetPosition(const Core::Vector3df& pos);        
+        //! Set pitch.
         void SetPitch(Core::Real pitch);
+        //! Set gain.
         void SetGain(Core::Real gain);
-        void Stop();
+        //! Set range parameters.
+        void SetRange(Core::Real radius, Core::Real rolloff);        
+        //! Stop.
+        void Stop();        
+        //! Per-frame update.
         void Update();
-        
+        //! Return current state of channel.
         Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
 
     private:
         //! Create OpenAL source if one does not exist yet
-        bool CreateSource();
+        bool CreateSource();      
         //! Delete OpenAL source
-        void DeleteSource();
+        void DeleteSource();       
+        //! Set positionality & position
+        void SetPositionAndMode();
+        //! Start playback
+        void StartPlaying();
     
         //! OpenAL handle
         ALuint handle_;
@@ -42,9 +58,13 @@ namespace OpenALAudio
         Core::Real pitch_;
         //! Gain
         Core::Real gain_;
-        //! Looped
+        //! Max. radius
+        Core::Real radius_;
+        //! Rolloff parameter
+        Core::Real rolloff_;
+        //! Looped flag
         bool looped_;
-        //! Positional
+        //! Positional flag
         bool positional_;
         //! Position
         Core::Vector3df position_;

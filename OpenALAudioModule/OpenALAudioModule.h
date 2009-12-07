@@ -30,7 +30,7 @@ namespace OpenALAudio
 		virtual void Initialize();
 		virtual void Uninitialize();
 		virtual void PostInitialize();
-		virtual void Update();
+		virtual void Update(Core::f64 frametime);
 
 		MODULE_LOGGING_FUNCTIONS;
 
