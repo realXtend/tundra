@@ -5,6 +5,8 @@
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
+///\todo use GpuProgramType & GpuConstantType from OgreGpuProgam.h
+
 #include "StableHeaders.h"
 #include "OgreMaterialProperties.h"
 #include "OgreMaterialResource.h"
@@ -18,23 +20,46 @@
 namespace OgreAssetEditor
 {
 
-OgreMaterialProperties::OgreMaterialProperties(OgreRenderer::OgreMaterialResource *material)
+OgreMaterialProperties::OgreMaterialProperties(OgreRenderer::OgreMaterialResource *material) :
+    material_(material)
 {
-    CreateProperties(material);
+    if (material_)
+        if (material_->IsValid())
+            CreateProperties();
 }
 
 OgreMaterialProperties::~OgreMaterialProperties()
 {
-//    properties_.clear();
 }
 
-bool OgreMaterialProperties::CreateProperties(OgreRenderer::OgreMaterialResource *material)
+bool OgreMaterialProperties::HasProperties()
 {
-    Ogre::MaterialPtr matPtr = material->GetMaterial();
+    return GetPropertyMap().size() > 0;
+}
+
+OgreMaterialProperties::PropertyMap OgreMaterialProperties::GetPropertyMap()
+{
+    PropertyMap map;
+
+    QListIterator<QByteArray> it(dynamicPropertyNames());
+    while(it.hasNext())
+    {
+        QString propertyName = it.next();
+        if (propertyName.isNull() || propertyName.isEmpty())
+            continue;
+
+        ///\todo, we use string for values now, change to floats and vectors. float4, float4color, uuid
+        map[propertyName] = property(propertyName.toStdString().c_str()).toString();
+    }
+
+    return map;
+}
+
+bool OgreMaterialProperties::CreateProperties()
+{
+    Ogre::MaterialPtr matPtr = material_->GetMaterial();
     if (matPtr.isNull())
         return false;
-
-    material_ = material;
 
     // Material
     Ogre::Material::TechniqueIterator tIter = matPtr->getTechniqueIterator();
@@ -196,7 +221,6 @@ bool OgreMaterialProperties::CreateProperties(OgreRenderer::OgreMaterialResource
     return true;
 }
 
-/*LLUUID asset_uuid, std::map<LLString, LLString> material_map*/
 Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 {
 //    std::map<LLString, LLString>::const_iterator iter;
