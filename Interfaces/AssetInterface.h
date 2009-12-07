@@ -22,19 +22,19 @@ namespace Foundation
         virtual ~AssetInterface() {}
         
         //! Returns asset id. Can be for example UUID in text form
-        virtual const std::string& GetId() = 0;
+        virtual const std::string& GetId() const = 0;
         
         //! Returns asset type in text form
-        virtual const std::string& GetType() = 0;
+        virtual const std::string& GetType() const = 0;
         
         //! Returns asset data size
-        virtual Core::uint GetSize() = 0;
+        virtual Core::uint GetSize() const = 0;
         
         //! Returns asset data
-        virtual const Core::u8* GetData() = 0;
+        virtual const Core::u8* GetData() const = 0;
 
 		//! Returns asset metadata
-		virtual AssetMetadataInterface* GetMetadata() = 0;
+		virtual AssetMetadataInterface* GetMetadata() const = 0;
     };
 	
 }

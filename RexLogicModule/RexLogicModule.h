@@ -190,6 +190,11 @@ namespace RexLogic
         /// Shows (or rather toggles) the avatar editor window.
         void ShowAvatarEditor();
 
+        //! Update sound listener position
+        /*! Uses current camera for now
+         */
+        void UpdateSoundListener();
+
         //! XXX have linking probs to AvatarController so trying this wrapper
         void SetAvatarYaw(Core::Real newyaw);
         void SetAvatarRotation(Core::Quaternion newrot);

@@ -10,14 +10,4 @@ namespace Asset
     {
     }
     
-    void RexAsset::ResetAge()
-    {
-        age_ = 0.0;
-    }
-    
-    void RexAsset::AddAge(Core::f64 time)
-    {
-        age_ += time;
-    }
-    
 }

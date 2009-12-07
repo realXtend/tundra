@@ -26,31 +26,31 @@ namespace Asset
         virtual ~RexAsset() {};
         
         //! returns asset ID
-        virtual const std::string& GetId() { return asset_id_; }
+        virtual const std::string& GetId() const { ResetAge(); return asset_id_; }
         
         //! returns asset type
-        virtual const std::string& GetType() { return asset_type_; }
+        virtual const std::string& GetType() const { ResetAge(); return asset_type_; }
         
         //! returns asset data size
-        virtual Core::uint GetSize() { return data_.size(); }
+        virtual Core::uint GetSize() const { ResetAge(); return data_.size(); }
         
         //! returns asset data
-        virtual const Core::u8* GetData() { return &data_[0]; }
+        virtual const Core::u8* GetData() const { ResetAge(); return &data_[0]; }
         
         //! returns asset data vector, non-const. For internal use
-        AssetDataVector& GetDataInternal() { return data_; }
+        AssetDataVector& GetDataInternal() { ResetAge(); return data_; }
 
 		//! returns asset metadata
-		virtual Foundation::AssetMetadataInterface* GetMetadata() {return (Foundation::AssetMetadataInterface*)&metadata_;}
+		virtual Foundation::AssetMetadataInterface* GetMetadata() const { ResetAge(); return (Foundation::AssetMetadataInterface*)&metadata_;}
 
         //! returns asset age (for caching)
         Core::f64 GetAge() const { return age_; }
 
         //! adds age to asset
-        void AddAge(Core::f64 time);
+        void AddAge(Core::f64 time) const { age_ += time; }
         
         //! resets age of asset
-        void ResetAge();
+        void ResetAge() const { age_ = 0.0; }
         
     private:
         //! asset id
@@ -62,7 +62,7 @@ namespace Asset
 		//! asset metadata
 		RexAssetMetadata metadata_;
 		//! asset age
-		Core::f64 age_;
+		mutable Core::f64 age_;
     };
 
 }
