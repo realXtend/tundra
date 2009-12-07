@@ -137,6 +137,7 @@ namespace TelepathyIM
         virtual void IncomingFriendRequestAccepted(FriendRequest *request);
         virtual void PresencePublicationFinished(Tp::PendingOperation* op);
         virtual void OnPresenceSubscriptionCanceled(Contact* contact);
+        virtual void IncomingVoiceSessionReady(VoiceSession *session);
 
 	};
 	typedef std::vector<Connection*> ConnectionVector;

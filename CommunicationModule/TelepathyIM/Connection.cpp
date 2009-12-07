@@ -531,7 +531,8 @@ namespace TelepathyIM
 					//! @todo get the actual contact object
 					VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
 					voice_sessions_.push_back(session);
-					emit( VoiceSessionReceived(*session) );
+					//emit( VoiceSessionReceived(*session) );
+                    connect(session, SIGNAL( Ready(ChatSession*) ), SLOT( IncomingVoiceSessionReady(VoiceSession*) ));
 				}
 				else
 				{
@@ -539,7 +540,8 @@ namespace TelepathyIM
 
                     VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
 					voice_sessions_.push_back(session);
-					emit( VoiceSessionReceived(*session) );
+                    connect(session, SIGNAL( Ready(ChatSession*) ), SLOT( IncomingVoiceSessionReady(VoiceSession*) ));
+					//emit( VoiceSessionReceived(*session) );
 				}
 			}
 		}
@@ -657,6 +659,11 @@ namespace TelepathyIM
         //! Actual contact object is deleted at deconstructor of connection object
         friend_list_.RemoveContact(contact);
         emit ContactRemoved(*contact);
+    }
+
+    void Connection::IncomingVoiceSessionReady(VoiceSession *session)
+    {
+        emit( VoiceSessionReceived(*session) );
     }
 
 } // end of namespace: TelepathyIM

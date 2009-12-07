@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTime>
+#include <QWidget>
 #include <exception>
 #include <Foundation.h>
 
@@ -222,8 +223,6 @@ namespace Communication
 		//! Provides name of this participant
 		virtual QString GetName() const = 0;
 
-	signals:
-
 	};
 	typedef std::vector<VoiceSessionParticipantInterface*> VoiceSessionParticipantVector;
 
@@ -236,7 +235,7 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
-		enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
+		enum State { STATE_INITIALIZING, STATE_RINGING_LOCAL, STATE_RINGING_REMOTE, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
 		//! @return State of the session
 		virtual State GetState() const = 0;
@@ -245,12 +244,20 @@ namespace Communication
 		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
 
 		virtual void Close() = 0;
+        virtual void Accept() = 0;
+        virtual void Reject() = 0;
+        
 	signals:
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);
 		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
-		void Opened(ChatSessionInterface*);
+		void Opened(VoiceSessionInterface*);
 		void Closed(VoiceSessionInterface*);
 	};
+
+    class VideoWidget : public QWidget
+    {
+
+    };
 
     /**
      *  TODO...
@@ -264,6 +271,10 @@ namespace Communication
         virtual State GetState() const = 0;
 
         virtual void Close() = 0;
+        
+        virtual VideoWidget* GetRemoteVideo() = 0;
+        virtual VideoWidget* GetLocalVideo() = 0;
+
     };
 
 	/**

@@ -62,10 +62,10 @@ namespace CommunicationTest
 	{
 		Communication::Credentials jabber_credentials;
 		jabber_credentials.SetProtocol("jabber");
-		jabber_credentials.SetUserID("realxtend@jabber.org");
-		jabber_credentials.SetServer("jabber.org");
+		jabber_credentials.SetUserID("matti.kuonanoja@gmail.com");
+		jabber_credentials.SetServer("talk.google.com");
 		jabber_credentials.SetPort(5222);
-		jabber_credentials.SetPassword("");
+		jabber_credentials.SetPassword("google666");
 
 		OpenConnection(jabber_credentials);
 	}
@@ -279,6 +279,7 @@ namespace CommunicationTest
 		try
 		{
 			connect(&connection, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface&) ), SLOT(OnChatSessionReceived( Communication::ChatSessionInterface&) ));
+            connect(&connection, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT(OnVoiceSessionReceived( Communication::VoiceSessionInterface&) ));
 		}
 		catch(Core::Exception &e)
 		{
@@ -300,6 +301,14 @@ namespace CommunicationTest
 		}
 		chat.SendMessage("Hello world");
 	}
+
+    void Test::OnVoiceSessionReceived( Communication::VoiceSessionInterface& session)
+    {
+        QString message = QString("Voice session request reseived from: ???");
+        LogInfo(message.toStdString());
+        session.Reject();
+//        session.Accept();
+    }
 
 	void Test::OnJabberConnectionError(Communication::ConnectionInterface& connection)
 	{
