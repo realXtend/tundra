@@ -9,7 +9,7 @@ namespace OpenALAudio
     SoundChannel::SoundChannel() :
         handle_(0),
         pitch_(1.0f),
-        gain_(0.0f),
+        gain_(1.0f),
         position_(0.0f, 0.0f, 0.0f),    
         radius_(10.0f),
         rolloff_(1.0f),    
@@ -74,9 +74,10 @@ namespace OpenALAudio
         
         if (!handle_)
         {
-            OpenALAudioModule::LogWarning("Could not create OpenAL sound source");
+            OpenALAudioModule::LogError("Could not create OpenAL sound source");
             return false;
         }   
+        
         alSourcef(handle_, AL_GAIN, gain_);
         alSourcef(handle_, AL_PITCH, pitch_);
         alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);

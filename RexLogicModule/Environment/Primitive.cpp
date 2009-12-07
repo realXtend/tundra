@@ -605,11 +605,14 @@ void Primitive::HandleDrawType(Core::entity_id_t entityid)
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            Core::request_tag_t tag = renderer->RequestResource(mesh_name, OgreRenderer::OgreMeshResource::GetTypeStatic());
+            if (renderer)
+            {
+                Core::request_tag_t tag = renderer->RequestResource(mesh_name, OgreRenderer::OgreMeshResource::GetTypeStatic());
 
-            // Remember that we are going to get a resource event for this entity
-            if (tag)
-                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
+            }
         }
         
         // Set rendering distance & shadows
@@ -679,11 +682,14 @@ void Primitive::HandleDrawType(Core::entity_id_t entityid)
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            Core::request_tag_t tag = renderer->RequestResource(script_name, OgreRenderer::OgreParticleResource::GetTypeStatic());
+            if (renderer)
+            {
+                Core::request_tag_t tag = renderer->RequestResource(script_name, OgreRenderer::OgreParticleResource::GetTypeStatic());
 
-            // Remember that we are going to get a resource event for this entity
-            if (tag)
-                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_ParticleScript)] = entityid;
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_ParticleScript)] = entityid;
+            }
         }
     }
     else
@@ -717,6 +723,8 @@ void Primitive::HandlePrimTexturesAndMaterial(Core::entity_id_t entityid)
     
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (!renderer)
+        return;
 
     // Check for prim material override
     if ((prim.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim.Materials[0].asset_id)))
@@ -779,6 +787,8 @@ void Primitive::HandleMeshMaterials(Core::entity_id_t entityid)
  
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (!renderer)
+        return;
         
     // Loop through all the materials in the mesh 
     MaterialMap::const_iterator i = prim.Materials.begin();

@@ -223,9 +223,9 @@ namespace OgreRenderer
 
         // Request from texture decoder
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        if (service_manager->IsRegistered(Foundation::Service::ST_Texture))
+        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
+        if (texture_service)
         {
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
             // Perform the actual decode request only once, for the first request
             if (request_tags_.find(id) == request_tags_.end())
             {
@@ -308,10 +308,9 @@ namespace OgreRenderer
         
         // Request from asset system
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
         {
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-
             // Perform the actual asset request only once, for the first request
             if (request_tags_.find(id) == request_tags_.end())
             {
@@ -477,9 +476,9 @@ namespace OgreRenderer
         for (Core::uint i = 0; i < references.size(); ++i)
         {
             Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-            if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (asset_service)
             {
-                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
                 // Check that the dependency is asset based
                 if (asset_service->IsValidId(references[i].id_))
                 {

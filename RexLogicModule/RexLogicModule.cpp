@@ -13,6 +13,7 @@
 #include "EventHandlers/FrameworkEventHandler.h"
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
+#include "SoundServiceInterface.h"
 #include "SceneManager.h"
 #include "Login/LoginUI.h"
 #include "Avatar/AvatarControllable.h"
@@ -369,6 +370,9 @@ void RexLogicModule::Update(Core::f64 frametime)
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
 
+        // update sound listener position/orientation
+        UpdateSoundListener();
+
         // Poll the connection state and update the info to the UI.
         ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
         if (present_state == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
@@ -421,6 +425,29 @@ void RexLogicModule::Update(Core::f64 frametime)
     RESETPROFILER;
 }
 
+void RexLogicModule::UpdateSoundListener()
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (!renderer)
+        return;
+    
+    Ogre::Camera *camera = renderer->GetCurrentCamera();        
+    if (!camera)
+        return;
+
+    boost::shared_ptr<Foundation::SoundServiceInterface> sound = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!sound)
+        return;                
+    
+    Ogre::Vector3 pos = camera->getPosition();
+    Ogre::Quaternion orient = camera->getOrientation();
+    
+    sound->SetListener(
+        Core::Vector3df(pos.x, pos.y, pos.z),
+        Core::Quaternion(orient.x, orient.y, orient.z, orient.w)
+    );
+}
+            
 // virtual
 bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
 {

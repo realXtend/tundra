@@ -39,9 +39,9 @@ namespace Foundation
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
             {
-                std::string what("Service type ");
-                what += boost::lexical_cast<std::string>(type) + " not registered!";
-                Foundation::RootLogDebug(what);
+                //std::string what("Service type ");
+                //what += boost::lexical_cast<std::string>(type) + " not registered!";
+                //Foundation::RootLogDebug(what);
 
                 return ServiceWeakPtr();
             }

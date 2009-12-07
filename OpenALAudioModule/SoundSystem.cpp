@@ -247,6 +247,19 @@ namespace OpenALAudio
             return i->second;
         }
         
+        // Loading of local wav sound
+        std::string name_lower = name;
+        boost::algorithm::to_lower(name_lower);                
+        if (local && (name_lower.find(".wav") != std::string::npos))
+        {
+            SoundPtr new_sound(new Sound());
+            if (new_sound->LoadWavFromFile(name))
+            {
+                sounds_[name] = new_sound;
+                return new_sound;
+            }
+        }        
+        
         return SoundPtr();
     }
     
