@@ -12,15 +12,23 @@
 namespace Asset
 {
 
-const char *AssetCache::DEFAULT_ASSET_CACHE_PATH = "/assetcache";
+const char *DEFAULT_ASSET_CACHE_PATH = "/assetcache";
+const int DEFAULT_MEMORY_CACHE_SIZE = 32 * 1024 * 1024;
+const Core::f64 CACHE_CHECK_INTERVAL = 1.0;
 
 AssetCache::AssetCache(Foundation::Framework* framework) :
-    framework_(framework), md5_engine_(0)
+    framework_(framework), 
+    memory_cache_size_(DEFAULT_MEMORY_CACHE_SIZE),
+    update_time_(0.0),
+    md5_engine_(0)
 {
     // Create asset cache directory
     cache_path_ = framework_->GetPlatform()->GetApplicationDataDirectory() + DEFAULT_ASSET_CACHE_PATH;
     if (boost::filesystem::exists(cache_path_) == false)
         boost::filesystem::create_directory(cache_path_);
+
+    // Set size of memory cache
+    memory_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "memory_cache_size", DEFAULT_MEMORY_CACHE_SIZE);
 
     CheckDiskCache();
 
@@ -47,13 +55,56 @@ void AssetCache::CheckDiskCache()
     }
 }
 
+void AssetCache::Update(Core::f64 frametime)
+{
+    update_time_ += frametime;   
+    if (update_time_ < CACHE_CHECK_INTERVAL)
+        return;
+    
+    AssetMap::iterator i = assets_.begin();
+    AssetMap::iterator oldest_asset = assets_.end();
+    Core::f64 oldest_age = 0;
+    
+    Core::uint total_size = 0;
+    while (i != assets_.end())
+    {
+        RexAsset* asset = dynamic_cast<RexAsset*>(i->second.get());
+        if (asset)
+        {
+            asset->AddAge(update_time_);
+            total_size += asset->GetSize();
+            if (asset->GetAge() >= oldest_age)
+            {
+                oldest_age = asset->GetAge();
+                oldest_asset = i;
+            }
+        }
+               
+        ++i;
+    }
+    
+    if (total_size > memory_cache_size_)
+    {
+        if (oldest_asset != assets_.end())   
+            assets_.erase(oldest_asset);
+    }    
+    
+    update_time_ = 0.0;
+}
+
 Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool check_memory, bool check_disk)
 {
     if (check_memory)
     {
         AssetMap::iterator i = assets_.find(asset_id);
         if (i != assets_.end())
+        {
+            RexAsset* asset = dynamic_cast<RexAsset*>(i->second.get());            
+            if (asset)
+                asset->ResetAge();
+        
             return i->second;
+        }
     }
     
     if (check_disk)

@@ -93,7 +93,7 @@ namespace Asset
         virtual void StoreAsset(Foundation::AssetPtr asset);
         
         //! Performs time-based update
-        /*! Calls update function of all registered asset providers
+        /*! Calls update function of all registered asset providers, and of cache
             \param frametime Seconds since last frame
          */
         void Update(Core::f64 frametime);            

@@ -32,6 +32,9 @@ namespace Asset
          */
         void StoreAsset(Foundation::AssetPtr asset);
 
+        //! Update. Adds age to assets, removes oldest if cache size too big
+        void Update(Core::f64 frametime);
+
     private:
         //! Check contents of disk cache
         void CheckDiskCache();
@@ -46,9 +49,12 @@ namespace Asset
 
         //! Current disk asset cache path
         std::string cache_path_;
-
-        //! Default disk asset cache path
-        static const char *DEFAULT_ASSET_CACHE_PATH;
+        
+        //! Maximum memory cache size
+        Core::uint memory_cache_size_;
+        
+        //! Update time accumulator
+        Core::f64 update_time_;
 
         //! Assets known to be in disk cache
         //! Values are hash values from asset id's

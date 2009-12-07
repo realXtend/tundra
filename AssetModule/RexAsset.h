@@ -40,9 +40,18 @@ namespace Asset
         //! returns asset data vector, non-const. For internal use
         AssetDataVector& GetDataInternal() { return data_; }
 
-		//! Returns asset metadata
+		//! returns asset metadata
 		virtual Foundation::AssetMetadataInterface* GetMetadata() {return (Foundation::AssetMetadataInterface*)&metadata_;}
 
+        //! returns asset age (for caching)
+        Core::f64 GetAge() const { return age_; }
+
+        //! adds age to asset
+        void AddAge(Core::f64 time);
+        
+        //! resets age of asset
+        void ResetAge();
+        
     private:
         //! asset id
         std::string asset_id_;
@@ -52,6 +61,8 @@ namespace Asset
         AssetDataVector data_;
 		//! asset metadata
 		RexAssetMetadata metadata_;
+		//! asset age
+		Core::f64 age_;
     };
 
 }

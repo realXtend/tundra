@@ -24,7 +24,7 @@ namespace Asset
         framework_(framework),
         manager_(framework)
     {
-        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("XMLRPCAssetProvider", "timeout", DEFAULT_ASSET_TIMEOUT);
+        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "xmlrpc_timeout", DEFAULT_ASSET_TIMEOUT);
 
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         

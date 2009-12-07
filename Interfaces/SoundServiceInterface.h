@@ -15,7 +15,6 @@ namespace Foundation
         {
             Stopped = 0,
             Loading,
-            Starting,
             Playing
         };
        
@@ -50,16 +49,24 @@ namespace Foundation
         
         //! Stops sound that's playing & destroys the channel
         virtual void StopSound(Core::sound_id_t id) = 0;
+        
         //! Adjusts pitch of sound
         virtual void SetPitch(Core::sound_id_t id, Core::Real pitch) = 0;
+        
         //! Adjusts gain of sound
         virtual void SetGain(Core::sound_id_t id, Core::Real gain) = 0;
+        
         //! Adjusts looping status of sound 
         virtual void SetLooped(Core::sound_id_t id, bool looped) = 0;
+        
         //! Adjusts positional status of sound
         virtual void SetPositional(Core::sound_id_t id, bool positional) = 0;
+        
         //! Adjusts position of sound
         virtual void SetPosition(Core::sound_id_t id, Core::Vector3df position) = 0;
+        
+        //! Adjusts range of sound
+        virtual void SetRange(Core::sound_id_t id, Core::Real radius, Core::Real rolloff) = 0;
     };
 }
 
