@@ -9,11 +9,12 @@
 #include "../interface.h"
 #include "Contact.h"
 #include "FarsightChannel.h"
+#include "VoiceSessionParticipant.h"
 
 namespace TelepathyIM
 {
 	/**
-	 *       
+	 *  Uses Tp::StreamedMediaChannel for communicating with dbus       
 	 */
 	class VoiceSession : public Communication::VoiceSessionInterface
 	{
@@ -24,6 +25,7 @@ namespace TelepathyIM
 	public:
 		VoiceSession(Tp::StreamedMediaChannelPtr tp_channel);
 		VoiceSession(Tp::ContactPtr tp_contact);
+        virtual ~VoiceSession();
 
 		//! @return State of the session
 		virtual Communication::VoiceSessionInterface::State GetState() const;
@@ -32,12 +34,30 @@ namespace TelepathyIM
 		virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
 
 		virtual void Close();
+
+        virtual void Accept();
+
+        virtual void Reject();
+
 	protected:
+        void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
+        void CreateAudioStream();
+        QString GetReadon() { return reason_; };
+        
+
 		State state_;
 		Tp::StreamedMediaChannelPtr tp_channel_;
         FarsightChannel* farsight_channel_;
 
+        Tp::PendingMediaStreams *pending_audio_streams_;
+        Tp::MediaStreamPtr audio_stream_;
+        Tp::ContactPtr tp_contact_;
+        QString reason_;      
+        VoiceSessionParticipantVector participants_;
+
 	protected slots:
+        void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
+        void OnFarsightChannelStatusChanged(FarsightChannel::Status status);
 		void OnOutgoingChannelCreated(Tp::PendingOperation *op);
 		void OnIncomingChannelReady(Tp::PendingOperation *op);
 		void OnOutgoingChannelReady(Tp::PendingOperation *op);
@@ -46,7 +66,9 @@ namespace TelepathyIM
         void OnStreamRemoved(const Tp::MediaStreamPtr &media_stream);
         void OnStreamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend ps);
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
-
+        void OnAudioStreamCreated(Tp::PendingOperation *op);
+    signals:
+		void Ready(VoiceSession* session);
     };
 
     typedef std::vector<VoiceSession*> VoiceSessionVector;

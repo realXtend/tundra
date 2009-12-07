@@ -66,6 +66,7 @@ namespace CommunicationTest
 		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
 		void OnChatSessionReceived( Communication::ChatSessionInterface& chat);
 		void ShowContacts(Communication::ConnectionInterface& connection);
+        void OnVoiceSessionReceived( Communication::VoiceSessionInterface& session);
 	};
 
 } // end of namespace: CommunicationTest
