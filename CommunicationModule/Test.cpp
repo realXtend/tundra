@@ -65,7 +65,7 @@ namespace CommunicationTest
 		jabber_credentials.SetUserID("matti.kuonanoja@gmail.com");
 		jabber_credentials.SetServer("talk.google.com");
 		jabber_credentials.SetPort(5222);
-		jabber_credentials.SetPassword("google666");
+		jabber_credentials.SetPassword("");
 
 		OpenConnection(jabber_credentials);
 	}
