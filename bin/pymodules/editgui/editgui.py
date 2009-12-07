@@ -322,7 +322,11 @@ class EditGUI(Component):
             self.update_guivals()
         
     def duplicate(self):
-        print "duplicate clicked"
+        #print "duplicate clicked"
+        ent = self.sel
+        if ent is not None:
+            #print e, e.uuid, e.editable, e.updateflags
+            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
         
     def createObject(self):
         ent_id = r.getUserAvatarId()
@@ -345,6 +349,7 @@ class EditGUI(Component):
             #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
             self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
             self.hideArrows()
+            self.hideSelector()
             id, tWid = self.widgetList.pop(str(ent.id))
             #print tWid, tWid.text(0)
             tWid.delete()
@@ -674,9 +679,16 @@ class EditGUI(Component):
         #r.logDebug("   ...exit done.")
 
     def on_hide(self):
-        self.hideArrows()
-        self.hideSelector()
         self.sel = None
+        try:
+            if self.move_arrows is not None:
+                ent = self.move_arrows.id 
+        except RuntimeError, e:
+            r.logDebug("on_hide: scene not found")
+        else:
+            self.hideArrows()
+            self.hideSelector()
+        
         
         """
         #you get this if arrows are shown and you quit

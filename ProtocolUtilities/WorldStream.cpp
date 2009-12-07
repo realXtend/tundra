@@ -396,7 +396,7 @@ void WorldStream::SendAgentUpdatePacket(
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectSelectPacket(Core::entity_id_t object_id)
+void WorldStream::SendObjectSelectPacket(const unsigned int object_id)
 {
     if (!connected_)
         return;
@@ -410,7 +410,7 @@ void WorldStream::SendObjectSelectPacket(Core::entity_id_t object_id)
 
     // ObjectData
     m->SetVariableBlockCount(1);
-    m->AddU32(object_id);
+    m->AddU32((Core::entity_id_t)object_id);
 
     FinishMessageBuilding(m);
 }
@@ -1240,7 +1240,7 @@ void WorldStream::SendObjectUndoPacket(const QString &ent_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id)
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset)
 {
 	ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDuplicate);
     assert(m);
@@ -1250,19 +1250,22 @@ void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id)
 	m->AddUUID(RexUUID());      // GroupID
 
 	// SharedData
-	m->AddVector3(Vector3::ZERO); //umm, prolly needs the location... offset
-
-	/*
-	{
-		SharedData			Single
-
-		{	DuplicateFlags	U32			}	// see object_flags.h
-	}
-	*/
+	m->AddVector3(offset); //umm, prolly needs the location... offset
+	m->AddU32(flags);
 	m->SetVariableBlockCount(1);
 	m->AddU32(ent_id);
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z)
+{
+	SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(offset_x, offset_y, offset_z));
+}
+
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags)
+{
+	SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(0,0,0));
 }
 
 
