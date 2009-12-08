@@ -91,7 +91,7 @@ namespace TelepathyIM
 		static const int DBUS_SESSION_PORT_ = 12434;
 		QStringList supported_protocols_;
 
-        GMainLoopThread* g_main_loop_;
+        GMainLoopThread g_main_loop_;
 
 	private slots:
 		void OnConnectionManagerReady(Tp::PendingOperation *op);

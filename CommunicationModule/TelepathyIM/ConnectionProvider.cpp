@@ -2,6 +2,9 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/PendingReady>
 #include "ConnectionProvider.h"
+#include "FarsightChannel.h"
+
+
 // #include <TelepathyQt4/Debug__> // disabled because header not found on Linux
 
 namespace TelepathyIM
@@ -13,6 +16,7 @@ namespace TelepathyIM
         //! Ensures that gabble and dbus daemon processes are not running 
         //! and start new dbus daemon process
 		ClearGabble();
+        
         //g_main_loop_.start();
 #else
       	InitializeTelepathyConnectionManager("gabble");
@@ -26,7 +30,7 @@ namespace TelepathyIM
 // We want to stopt dbus daemon only on Windows platform
 #ifdef WIN32
 		StopDBusDaemon();
-      //  g_main_loop_.Stop();
+        //g_main_loop_.StopLoop();
 #endif
 	}
 
@@ -150,7 +154,8 @@ namespace TelepathyIM
 		Tp::registerTypes();
 		// Tp::enableDebug(true);
 		// Tp::enableWarnings(true);
-//		qRegisterMetaType<Tp::FarsightChannel::Status>(); // for streamed media
+
+        qRegisterMetaType<TelepathyIM::FarsightChannel::Status>(); // for streamed media
 
 		tp_connection_manager_ = Tp::ConnectionManager::create(name);
 		connect(tp_connection_manager_->becomeReady(Tp::ConnectionManager::FeatureCore), SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionManagerReady(Tp::PendingOperation*) ));

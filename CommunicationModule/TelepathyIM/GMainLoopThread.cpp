@@ -9,10 +9,12 @@ namespace TelepathyIM
     
     void GMainLoopThread::run()
     {
+        LogDebug("g_main_loop started.");
         g_main_loop_run (g_main_loop_);
+        LogDebug("g_main_loop ended.");
     }
 
-    void GMainLoopThread::Stop()
+    void GMainLoopThread::StopLoop()
     {
         g_main_loop_quit(g_main_loop_);
     }
