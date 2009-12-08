@@ -10,14 +10,10 @@
 #include "Avatar/AvatarControllable.h"
 #include "ConversionUtils.h"
 #include "BitStream.h"
-#include "Environment/TerrainDecoder.h"
-#include "Environment/Terrain.h"
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
-#include "Environment/Sky.h"
-#include "Environment/Environment.h"
 #include "Inventory/InventoryEvents.h"
-#include "Environment/TerrainEditor.h"
+#include "SceneEvents.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -109,13 +105,14 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, F
     case RexNetMsgObjectProperties:
         return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
 
-    case RexNetMsgLayerData:
+    //case RexNetMsgLayerData:
         // \todo remove this when scene events are complite.
-        rexlogicmodule_->GetTerrainEditor()->UpdateTerrain();
-        return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata);
+        //rexlogicmodule_->GetTerrainEditor()->UpdateTerrain();
+        //return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata);
+        //return HandleOSNE_LayerData(netdata);
 
-    case RexNetMsgSimulatorViewerTimeMessage:
-        return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata);
+    //case RexNetMsgSimulatorViewerTimeMessage:
+    //    return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata);
 
     case RexNetMsgInventoryDescendents:
         return HandleOSNE_InventoryDescendents(netdata);
@@ -180,8 +177,8 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEv
         return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
     else if (methodname == "RexAppearance")
         return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
-    else if (methodname == "RexSky")
-          return rexlogicmodule_->GetSkyHandler()->HandleRexGM_RexSky(data);
+    //else if (methodname == "RexSky")
+    //      return rexlogicmodule_->GetSkyHandler()->HandleRexGM_RexSky(data);
     else
         return false;
 }
@@ -220,8 +217,17 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
         return false;
     }
 
-    RexLogic::TerrainPtr terrainHandler = rexlogicmodule_->GetTerrainHandler();
-    terrainHandler->SetTerrainTextures(terrain);
+    Scene::Events::TerrainTexturesEventData texture_data;
+    texture_data.terrain[0] = terrain[0];
+    texture_data.terrain[1] = terrain[1];
+    texture_data.terrain[2] = terrain[2];
+    texture_data.terrain[3] = terrain[3];
+    Core::event_category_id_t scene_event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
+    assert(scene_event_category);
+    rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(scene_event_category, Scene::Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE , &texture_data);
+
+    //RexLogic::TerrainPtr terrainHandler = rexlogicmodule_->GetTerrainHandler();
+    //terrainHandler->SetTerrainTextures(terrain);
 
     const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
     rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);

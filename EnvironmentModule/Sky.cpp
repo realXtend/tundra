@@ -3,16 +3,17 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
-#include "RexLogicModule.h"
-#include "Environment/Sky.h"
+#include "EnvironmentModule.h"
+#include "Sky.h"
 #include "SceneManager.h"
 #include "CoreTypes.h"
 #include "OgreTextureResource.h"
+#include "NetworkEvents.h"
 
-namespace RexLogic
+namespace Environment
 {
 
-Sky::Sky(RexLogicModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
+Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
 {
 }
 
@@ -32,7 +33,7 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     if (instance_count < 4)
     {
-        RexLogicModule::LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
+        EnvironmentModule::LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
         return false;
     }
 
@@ -191,7 +192,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     Scene::EntityPtr sky = GetSkyEntity().lock();
     if (!sky)
     {
-        RexLogicModule::LogError("Could not get SkyEntityPtr!");
+        EnvironmentModule::LogError("Could not get SkyEntityPtr!");
         return;
     }
 
@@ -229,7 +230,7 @@ void Sky::SetSkyTexture(const RexAssetID &texture_id)
         skyPlaneTexture_ = texture_id;
         break;
     default:
-        RexLogicModule::LogError("SetSkyTexture can be used only for SkyDome and SkyPlane!");
+        EnvironmentModule::LogError("SetSkyTexture can be used only for SkyDome and SkyPlane!");
         break;
     }
 }
@@ -238,7 +239,7 @@ void Sky::SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount])
 {
     if (type_ != OgreRenderer::SKYTYPE_DOME)
     {
-        RexLogicModule::LogError("SetSkyBoxTextures can be used only for SkyBox!");
+        EnvironmentModule::LogError("SetSkyBoxTextures can be used only for SkyBox!");
         return;
     }
 
@@ -248,7 +249,7 @@ void Sky::SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount])
 
 void Sky::FindCurrentlyActiveSky()
 {
-    Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {

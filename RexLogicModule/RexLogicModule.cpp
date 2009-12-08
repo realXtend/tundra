@@ -24,8 +24,6 @@
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_Terrain.h"
-#include "EntityComponent/EC_Water.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
@@ -43,13 +41,8 @@
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
 
-#include "Environment/Terrain.h"
-#include "Environment/Water.h"
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
-#include "Environment/Sky.h"
-#include "Environment/Environment.h"
-#include "Environment/TerrainEditor.h"
 
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
@@ -87,8 +80,6 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimAvatar);
-    DECLARE_MODULE_EC(EC_Terrain);
-    DECLARE_MODULE_EC(EC_Water);
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
@@ -135,7 +126,6 @@ void RexLogicModule::Initialize()
     framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-    terrain_editor_ = TerrainEditorPtr(new TerrainEditor(this));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -310,12 +300,6 @@ void RexLogicModule::Uninitialize()
     primitive_.reset();
     avatar_controllable_.reset();
     camera_controllable_.reset();
-    environment_.reset();
-    terrain_editor_.reset();
-    water_.reset();
-    terrain_.reset();
-    sky_.reset();
-    activeScene_.reset();
 
     event_handlers_.clear();
 
@@ -416,9 +400,6 @@ void RexLogicModule::Update(Core::f64 frametime)
 
             // Update avatar name overlay positions.
             GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
-
-            // Update environment-spesific visual effects.
-            GetEnvironmentHandler()->UpdateVisualEffects(frametime);
         }
     }
 
@@ -471,23 +452,6 @@ bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);
 
-    if (event_id == Resource::Events::RESOURCE_READY)
-    {
-        Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
-        assert(res);
-        if (!res)
-            return false;
-        
-        OgreRenderer::OgreTextureResource *tex = dynamic_cast<OgreRenderer::OgreTextureResource *>(res->resource_.get());
-        if (tex)
-        {
-            // Pass the texture asset to the terrain manager - the texture might be in the terrain.
-            terrain_->OnTextureReadyEvent(res);
-            // Pass the texture asset to the sky manager - the texture might be in the sky.
-            sky_->OnTextureReadyEvent(res);
-        }
-    }
-
     return false;
 }
 
@@ -510,7 +474,7 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
     if (avatar_)
         avatar_->HandleLogout();
-    
+
     if (framework_->HasScene("World"))
         DeleteScene("World");
 }
@@ -675,55 +639,6 @@ void RexLogicModule::SwitchCameraState()
     }
 }
 
-void RexLogicModule::CreateTerrain()
-{
-    terrain_ = TerrainPtr(new Terrain(this));
-
-    Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
-    entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
-
-    terrain_->FindCurrentlyActiveTerrain();
-}
-
-void RexLogicModule::CreateWater()
-{
-    water_ = WaterPtr(new Water(this));
-    water_->CreateWaterGeometry();
-}
-
-void RexLogicModule::CreateSky()
-{
-    sky_ = SkyPtr(new Sky(this));
-    Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
-    entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
-
-    sky_->FindCurrentlyActiveSky();
-
-    if (!GetEnvironmentHandler()->UseCaelum())
-        sky_->CreateDefaultSky();
-}
-
-void RexLogicModule::CreateEnvironment()
-{
-    environment_ = EnvironmentPtr(new Environment(this));
-    environment_->CreateEnvironment();
-}
-
-TerrainPtr RexLogicModule::GetTerrainHandler()
-{
-    return terrain_;
-}
-
-TerrainEditorPtr RexLogicModule::GetTerrainEditor()
-{
-    return terrain_editor_;
-}
-
-WaterPtr RexLogicModule::GetWaterHandler()
-{
-    return water_;
-}
-
 AvatarPtr RexLogicModule::GetAvatarHandler()
 {
     return avatar_;
@@ -737,16 +652,6 @@ AvatarEditorPtr RexLogicModule::GetAvatarEditor()
 PrimitivePtr RexLogicModule::GetPrimitiveHandler()
 {
     return primitive_;
-}
-
-SkyPtr RexLogicModule::GetSkyHandler()
-{
-    return sky_;
-}
-
-EnvironmentPtr RexLogicModule::GetEnvironmentHandler()
-{
-    return environment_;
 }
 
 InventoryPtr RexLogicModule::GetInventory() const
@@ -777,18 +682,20 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     activeScene_ = framework_->CreateScene(name);
     framework_->SetDefaultWorldScene(activeScene_);
 
+    Core::event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
+    if (scene_event_category == 0)
+        LogError("Failed to query \"Framework\" event category");
+
     // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
     // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
     // we just create one default terrain.
-    CreateTerrain();
-
-    CreateEnvironment();
+    //CreateTerrain();
 
     // Also create a default sky to the scene.
-    CreateSky();
+    //CreateSky();
 
     // Create a water handler.
-    CreateWater();
+    //CreateWater();
 
     return GetCurrentActiveScene();
 }
@@ -843,10 +750,8 @@ void RexLogicModule::UpdateObjects(Core::f64 frametime)
 
     // Damping interpolation factor, dependent on frame time
     Core::Real factor = pow(2.0, -frametime * movement_damping_constant_);
-    if (factor < 0.0)
-        factor = 0.0;
-    if (factor > 1.0)
-        factor = 1.0;
+    if (factor < 0.0) factor = 0.0;
+    if (factor > 1.0) factor = 1.0;
     Core::Real rev_factor = 1.0 - factor;
 
     for(Scene::SceneManager::iterator iter = activeScene_->begin();

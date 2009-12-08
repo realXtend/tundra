@@ -5,15 +5,16 @@
 #ifndef incl_Water_h
 #define incl_Water_h
 
-#include "EntityComponent/EC_Water.h"
+#include "EC_Water.h"
+#include "EnvironmentModuleApi.h"
 
-namespace RexLogic
+namespace Environment
 {
 
-class Water
+class ENVIRONMENT_MODULE_API Water
 {
 public:
-    Water(RexLogicModule *owner_);
+    Water(EnvironmentModule *owner_);
     ~Water();
 
     //! Looks through all the entities in RexLogic's currently active scene to find the Water
@@ -26,7 +27,7 @@ public:
     void CreateWaterGeometry();
 
 private:
-    RexLogicModule *owner_;
+    EnvironmentModule *owner_;
 
     Scene::EntityWeakPtr cachedWaterEntity_;
 };

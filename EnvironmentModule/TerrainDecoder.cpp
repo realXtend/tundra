@@ -8,10 +8,11 @@
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
 
 #include "BitStream.h"
-#include "Environment/TerrainDecoder.h"
-#include "RexLogicModule.h"
+#include "TerrainDecoder.h"
+//#include "RexLogicModule.h"
+#include "EnvironmentModule.h"
 
-namespace RexLogic
+namespace Environment
 {
 
 namespace
@@ -144,7 +145,7 @@ void DecodeTerrainPatch(int *patches, ProtocolUtilities::BitStream &bits, const 
         {
             std::stringstream ss;
             ss << "Out of bits when decoding terrain vertex " << i << "!";
-            RexLogicModule::LogInfo(ss.str());
+            EnvironmentModule::LogInfo(ss.str());
             for(; i < size * size; ++i)
                 patches[i] = 0;
             return;
@@ -261,7 +262,7 @@ void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities
         if (patch.header.x >= cPatchesPerEdge || patch.header.y >= cPatchesPerEdge)
         {
             ///\todo Log out warning - invalid packet?
-            RexLogicModule::LogInfo("Invalid patch data!");
+            EnvironmentModule::LogInfo("Invalid patch data!");
             return;
         }
 

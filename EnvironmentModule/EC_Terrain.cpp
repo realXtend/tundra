@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EntityComponent/EC_Terrain.h"
+#include "EC_Terrain.h"
 
 #include <Ogre.h>
 #include "Renderer.h"
 
-namespace RexLogic
+namespace Environment
 {
     EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module)
     :Foundation::ComponentInterface(module->GetFramework()),
@@ -50,7 +50,7 @@ namespace RexLogic
             }
     }
     
-    float EC_Terrain::GetPoint(int x, int y)
+    float EC_Terrain::GetPoint(int x, int y) const
     {
         if (x < 0) x = 0;
         if (y < 0) y = 0;

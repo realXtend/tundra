@@ -22,31 +22,20 @@ namespace RexLogic
     class SceneEventHandler;
     class NetworkStateEventHandler;
     class FrameworkEventHandler;
-    class Terrain;
     class Avatar;
     class AvatarEditor;
     class Primitive;
-    class Sky;
-    class Water;
-    class Environment;
     class Login;
     class AvatarControllable;
     class CameraControllable;
-    class TerrainEditor;
 
     typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
-    typedef boost::weak_ptr<Terrain> TerrainWeakPtr;
-    typedef boost::shared_ptr<Terrain> TerrainPtr;
-    typedef boost::shared_ptr<Water> WaterPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
-    typedef boost::shared_ptr<Sky> SkyPtr;
-    typedef boost::shared_ptr<Environment> EnvironmentPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
-    typedef boost::shared_ptr<TerrainEditor> TerrainEditorPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -86,15 +75,6 @@ namespace RexLogic
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
 
-        //! @return The logic object that manages the water-related parts of the scene.
-        WaterPtr GetWaterHandler();
-
-        //! @return The terrain handler object that manages reX terrain logic.
-        TerrainPtr GetTerrainHandler();
-
-        //! @return The terrain editor.
-        TerrainEditorPtr GetTerrainEditor();
-
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler();
 
@@ -103,12 +83,6 @@ namespace RexLogic
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler();
-
-        //! @return The sky handler object that manages reX sky logic.
-        SkyPtr GetSkyHandler();
-
-        //! @return The environment handler object that manages reX environment logic.
-        EnvironmentPtr GetEnvironmentHandler();
 
         /// @return Invetory pointer.
         InventoryPtr GetInventory() const;
@@ -204,11 +178,11 @@ namespace RexLogic
 
         Core::Vector3df GetCameraUp();
         Core::Vector3df GetCameraRight();
-		Core::Vector3df GetCameraPosition();
-		Core::Real GetCameraViewportWidth();
-		Core::Real GetCameraViewportHeight();
+        Core::Vector3df GetCameraPosition();
+        Core::Real GetCameraViewportWidth();
+        Core::Real GetCameraViewportHeight();
 
-		Core::Real GetCameraFOV();
+        Core::Real GetCameraFOV();
 
         void SendRexPrimData(Core::entity_id_t entityid);
 
@@ -246,12 +220,6 @@ namespace RexLogic
         //! Event handler map.
         LogicEventHandlerMap event_handlers_;
 
-        //! Water pointer.
-        WaterPtr water_;
-
-        //! Terrain pointer.
-        TerrainPtr terrain_;
-
         //! Avatar pointer.
         AvatarPtr avatar_;
 
@@ -261,15 +229,6 @@ namespace RexLogic
         //! Primitive pointer.
         PrimitivePtr primitive_;
 
-        //! Sky pointer.
-        SkyPtr sky_;
-
-        //! Environment pointer.
-        EnvironmentPtr environment_;
-
-        //! Terrain editor pointer.
-        TerrainEditorPtr terrain_editor_;
-
         //! Active scene pointer.
         Scene::ScenePtr activeScene_;
 
@@ -278,18 +237,6 @@ namespace RexLogic
         /// if not. Thanks go to Ogre for having issues with this..
         void DebugSanityCheckOgreCameraTransform();
 #endif
-
-        //! Recreates the water. Called at startup.
-        void CreateWater();
-
-        //! Recreates the terrain. Called at startup.
-        void CreateTerrain();
-
-        //! Recreates the sky. Called at startup.
-        void CreateSky();
-
-        //! Recreates the environment. Called at startup.
-        void CreateEnvironment();
 
         //! workaround for not being able to send events during initialization
         bool send_input_state_;

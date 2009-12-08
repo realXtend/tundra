@@ -41,7 +41,7 @@ namespace RexLogic
                 // Make sure the rexlogic also thinks connection is closed.
                 if (rexlogicmodule_->GetServerConnection()->IsConnected())
                     rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
-                    
+
                 if (framework_->HasScene("World"))
                     rexlogicmodule_->DeleteScene("World");
                 break;

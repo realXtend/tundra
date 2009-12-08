@@ -3,12 +3,12 @@
 ///        Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 /// For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef RexLogic_Terrain_h
-#define RexLogic_Terrain_h 
+#ifndef Environment_Terrain_h
+#define Environment_Terrain_h 
 
 #include "BitStream.h"
 
-namespace RexLogic
+namespace Environment
 {
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs

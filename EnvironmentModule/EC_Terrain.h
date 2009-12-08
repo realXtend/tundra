@@ -12,7 +12,7 @@ namespace Ogre
     class SceneNode;
 }
 
-namespace RexLogic
+namespace Environment
 {
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
     class EC_Terrain : public Foundation::ComponentInterface
@@ -62,6 +62,16 @@ namespace RexLogic
             return patches[y][x];
         }
 
+        /// @return The patch at given (x,y) coordinates. Pass in values in range [0, 15]. Read only
+        const Patch &GetPatch(int x, int y) const
+        {
+            assert(x >= 0);
+            assert(y >= 0);
+            assert(x < cNumPatchesPerEdge);
+            assert(y < cNumPatchesPerEdge);
+            return patches[y][x];
+        }
+
         /// Calculate terrain normal
         /// @param x patch horizontal number
         /// @param y patch vertical number
@@ -82,7 +92,7 @@ namespace RexLogic
         }
 
         /// Utility to get heightmap point
-        float GetPoint(int x, int y);
+        float GetPoint(int x, int y) const;
 
         /// Removes all stored terrain patches and the associated Ogre scene nodes.
         void Destroy();

@@ -88,6 +88,7 @@ add_subdirectory (QtModule)
 add_subdirectory (HttpUtilities)
 add_subdirectory (RpcUtilities)
 add_subdirectory (ProtocolUtilities)
+add_subdirectory (EnvironmentModule)
 
 # The following are not really core modules,
 # but you can't do anything practical without

@@ -19,14 +19,16 @@
 #include "OgreConversionUtils.h"
 
 #include "BitStream.h"
-#include "Environment/TerrainDecoder.h"
-#include "RexLogicModule.h"
-#include "Environment/Terrain.h"
+#include "TerrainDecoder.h"
+//#include "RexLogicModule.h"
+#include "EnvironmentModule.h"
+#include "Terrain.h"
 #include "SceneManager.h"
+#include "NetworkEvents.h"
 
-namespace RexLogic
+namespace Environment
 {
-    Terrain::Terrain(RexLogicModule *owner)
+    Terrain::Terrain(EnvironmentModule *owner)
     :owner_(owner)
     {
     }
@@ -45,13 +47,13 @@ namespace
         {
             std::stringstream ss;
             ss << "Ogre Texture \"" << texName << "\" not found!";
-            RexLogicModule::LogWarning(ss.str());
+            EnvironmentModule::LogWarning(ss.str());
             return;
         }
 
         std::stringstream ss;
         ss << "Texture \"" << texName << "\": width: " << tex->getWidth() << ", height: " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
-        RexLogicModule::LogDebug(ss.str());
+        EnvironmentModule::LogDebug(ss.str());
     }
 
     const char terrainMaterialName[] = "TerrainMaterial";
@@ -283,7 +285,7 @@ namespace
     {
         if (patch.heightData.size() < patchSize * patchSize)
         {
-            RexLogicModule::LogWarning("Not enough height map data to fill patch points!");
+            EnvironmentModule::LogWarning("Not enough height map data to fill patch points!");
             return;
         }
 
@@ -393,6 +395,14 @@ namespace
                 SetTerrainMaterialTexture(i, tex->id_.c_str());
     }
 
+    const RexAssetID &Terrain::GetTerrainTextureID(int index) const
+    {
+        if(index < 0) index = 0;
+        if(index > num_terrain_textures) index = num_terrain_textures;
+
+        return terrain_textures_[index];
+    }
+
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
     bool Terrain::HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data)
     {
@@ -447,7 +457,10 @@ namespace
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        //RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(owner_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        //assert(rexLogic);
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();//GetFramework()->GetDefaultWorldScene();//rexLogic->GetCurrentActiveScene();
+
         for(Scene::SceneManager::iterator iter = scene->begin();
             iter != scene->end(); ++iter)
         {

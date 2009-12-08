@@ -6,6 +6,7 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "EC_OgreSky.h"
+#include "EnvironmentModuleApi.h"
 
 namespace Resource
 {
@@ -15,13 +16,18 @@ namespace Resource
     }
 }
 
-namespace RexLogic
+namespace ProtocolUtilities
+{
+    class NetworkEventInboundData;
+}
+
+namespace Environment
 {
     /// Sky component
-    class Sky
+    class ENVIRONMENT_MODULE_API Sky
     {
     public:
-        Sky(RexLogicModule *owner);
+        Sky(EnvironmentModule *owner);
         virtual ~Sky();
 
         /// The OGRE SkyBox has 6 textures: front, back, left, right, top and bottom.
@@ -53,11 +59,11 @@ namespace RexLogic
 
         /// Set the sky texture for Skydome or Skyplane.
         /// @param texture_id
-        void SetSkyTexture(const RexAssetID &texture_id);
+        void SetSkyTexture(const RexTypes::RexAssetID &texture_id);
 
         /// Sets the SkyBox textures.
         /// @param textures array of texture UUID's.
-        void SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount]);
+        void SetSkyBoxTextures(const RexTypes::RexAssetID textures[skyBoxTextureCount]);
 
         /// Looks through all the entities in RexLogic's currently active scene to find the Sky
         /// entity. Caches it internally. Use GetSkyEntity to obtain it afterwards.    
@@ -71,7 +77,7 @@ namespace RexLogic
         void operator =(const Sky &);
 
         /// RexLogicModule pointer.
-        RexLogicModule *owner_;
+        EnvironmentModule *owner_;
 
         /// The type of the sky (none, box, dome or plane).
         OgreRenderer::SkyType type_;
@@ -89,16 +95,16 @@ namespace RexLogic
         Core::request_tag_t skyPlaneTextureRequest_;
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
-        RexAssetID skyBoxTextures_[skyBoxTextureCount];
+        RexTypes::RexAssetID skyBoxTextures_[skyBoxTextureCount];
 
         /// List of skybox image names (UUID's) as strings.
-        std::vector<RexAssetID> skyBoxImages_;
+        std::vector<RexTypes::RexAssetID> skyBoxImages_;
 
         /// UUID of the texture asset the skydome uses for rendering. Should be stored per-scene.
-        RexAssetID skyDomeTexture_;
+        RexTypes::RexAssetID skyDomeTexture_;
 
         /// UUID of the texture asset the skyplane uses for rendering. Should be stored per-scene.
-        RexAssetID skyPlaneTexture_;
+        RexTypes::RexAssetID skyPlaneTexture_;
 
         /// Keeps count of the skybox images.
         size_t skyBoxImageCount_;

@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EntityComponent/EC_Water.h"
+#include "EC_Water.h"
 
 #include <Ogre.h>
 #include "Renderer.h"
 
-namespace RexLogic
+namespace Environment
 {
     EC_Water::EC_Water(Foundation::ModuleInterface* module)
     :Foundation::ComponentInterface(module->GetFramework()),
