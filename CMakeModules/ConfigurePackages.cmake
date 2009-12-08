@@ -206,7 +206,7 @@ endmacro (configure_openjpeg)
 macro (configure_telepathy_qt4)
     sagase_configure_package (TELEPATHY_QT4 
         NAMES QtTelepathy Telepathy-QT4 telepathy-qt4 TelepathyQt4
-        COMPONENTS QtTelepathyCore QtTelepathyCommon QtTelepathyClient telepathy-qt4 connection # connection added here to help sagase to find include folder with connection.h file
+        COMPONENTS QtTelepathyCore QtTelepathyCommon QtTelepathyClient telepathy-qt4 telepathy-qt4-farsight connection # connection added here to help sagase to find include folder with connection.h file
         PREFIXES ${ENV_NAALI_DEP_PATH} )
     sagase_configure_report (TELEPATHY_QT4)
 endmacro (configure_telepathy_qt4)
@@ -214,7 +214,7 @@ endmacro (configure_telepathy_qt4)
 macro (configure_gstreamer)
     sagase_configure_package (GSTREAMER
         NAMES gstreamer gst gstreamer-0.10
-        COMPONENTS libavcodec libavformat libavutil libgstapp-0.10 libgstaudio-0.10 libgstbase-0.10 libgstcontroller-0.10 ibgstdataprotocol-0.10 libgstdshow-0.10 libgstinterfaces-0.10 libgstnet-0.10 libgstnetbuffer-0.10 libgstpbutils-0.10 libgstriff-0.10 libgstreamer-0.10 libgstrtp-0.10 libgstrtsp-0.10 libgstsdp-0.10 libgsttag-0.10 libgstvideo-0.10 libjpeg-static libjpeg gst # gst added to help sagese to find include folder with gst.h file
+        COMPONENTS gstreamer gstfarsight gstinterfaces gst # gst added to help sagese to find include folder with gst.h file
         PREFIXES ${ENV_NAALI_DEP_PATH})
     sagase_configure_report (GSTREAMER)
 endmacro (configure_gstreamer)
