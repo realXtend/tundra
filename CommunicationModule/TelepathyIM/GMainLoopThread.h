@@ -1,6 +1,7 @@
 #ifndef incl_Communication_TelepathyIM_GMainLoopThread_h
 #define incl_Communication_TelepathyIM_GMainLoopThread_h
 
+#include <Foundation.h>
 #include <glib-object.h>
 #include <gst/gst.h>
 #include <glib.h>
@@ -19,10 +20,12 @@ namespace TelepathyIM
 	 */
 	class GMainLoopThread : public QThread
     {
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
     public:
         GMainLoopThread();
         virtual void run();
-        virtual void Stop();
+        virtual void StopLoop();
 
     private:
            GMainLoop* g_main_loop_;

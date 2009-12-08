@@ -14,7 +14,7 @@ namespace TelepathyIM
         state_ = STATE_RINGING_LOCAL;
         tp_contact_ = tp_channel->initiatorContact();
 
-        connect(tp_channel->becomeReady(),
+        connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
 	}

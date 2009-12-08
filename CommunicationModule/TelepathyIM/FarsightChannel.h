@@ -102,4 +102,6 @@ namespace TelepathyIM
 
 } // end of namespace: TelepathyIM
 
+Q_DECLARE_METATYPE(TelepathyIM::FarsightChannel::Status)
+
 #endif // incl_Communication_TelepathyIM_FarsightChannel_h
