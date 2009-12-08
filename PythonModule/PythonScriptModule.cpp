@@ -1211,6 +1211,7 @@ PyObject* GetScreenSize(PyObject *self)
 
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
+	//PythonScript::self()->LogDebug("NetworkUpdate");
     unsigned int ent_id_int;
     Core::entity_id_t ent_id;
 
