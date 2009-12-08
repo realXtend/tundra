@@ -539,8 +539,10 @@ namespace TelepathyIM
                     Contact* null_contact = new Contact(tp_streamed_media_channel->initiatorContact()); // we don't have the contact!
 
                     VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
+                    connect(session, SIGNAL( Ready(VoiceSession*) ), SLOT( IncomingVoiceSessionReady(VoiceSession*) ));
+
 					voice_sessions_.push_back(session);
-                    connect(session, SIGNAL( Ready(ChatSession*) ), SLOT( IncomingVoiceSessionReady(VoiceSession*) ));
+                    
 					//emit( VoiceSessionReceived(*session) );
 				}
 			}
