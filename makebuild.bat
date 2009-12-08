@@ -1,11 +1,15 @@
 @rem Makes a build directory of the viewer, so that you can run the NSIS install script
 @rem You should have VS2008 redistributable (vcredist_x86.exe) in your viewer trunk root
+@rem as well as OpenAL installer (oalinst.exe)
 @echo off
 rmdir build /S /Q
 md build
 copy readme.txt build
 copy vcredist_x86.exe build
+copy oalinst.exe build
 xcopy bin\*.* build /S /C /Y
+del build\openal32.dll
+del build\wrap_oal.dll
 del build\*d4.dll
 del build\*_d.dll
 del build\Poco*d.dll

@@ -25,11 +25,13 @@ Section ""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
+  ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
 
   WriteUninstaller "$INSTDIR\uninstaller.exe"
 
   Delete "$INSTDIR\vcredist_x86.exe"
+  Delete "$INSTDIR\oalinst.exe"
 SectionEnd
 
 Section "Start Menu Shortcuts"
