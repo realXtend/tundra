@@ -23,7 +23,7 @@ namespace TelepathyIM
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
 	public:
-		VoiceSession(Tp::StreamedMediaChannelPtr tp_channel);
+		VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel);
 		VoiceSession(Tp::ContactPtr tp_contact);
         virtual ~VoiceSession();
 

@@ -17,7 +17,15 @@ namespace TelepathyIM
         //! and start new dbus daemon process
 		ClearGabble();
         
-        //g_main_loop_.start();
+        // Initialize glib
+        g_type_init();
+
+        // Initialize GStreamer
+        int argc=0;
+        char **argv = NULL;
+        gst_init(&argc, &argv);
+        g_main_loop_.start();
+        
 #else
       	InitializeTelepathyConnectionManager("gabble");
 #endif
@@ -30,7 +38,9 @@ namespace TelepathyIM
 // We want to stopt dbus daemon only on Windows platform
 #ifdef WIN32
 		StopDBusDaemon();
-        //g_main_loop_.StopLoop();
+        
+        //g_main_loop_quit(g_main_loop_.g_main_loop_);  // hack, should be inside the thread class
+        g_main_loop_.terminate(); // even more evil hack. Thread should exit by it's own
 #endif
 	}
 
