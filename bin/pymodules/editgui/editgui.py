@@ -85,6 +85,8 @@ class EditGUI(Component):
     AXIS_Y = 1
     AXIS_Z = 2
     
+    UPDATE_INTERVAL = 0.05 #how often the networkUpdate will be sent
+    
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
@@ -188,7 +190,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -200,6 +202,12 @@ class EditGUI(Component):
         self.selection_box = None
     
         self.worldstream = r.getServerConnection()
+        
+        self.dragging = False
+        
+        #~ self.modified = False
+        #~ self.modifying = False
+        self.time = 0
     
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
@@ -240,7 +248,14 @@ class EditGUI(Component):
             else:
                 self.widget.rotate_button.setChecked(False) 
                 self.manipulator_state = self.MANIPULATE_NONE
-        
+    
+    def float_equal(self, a,b):
+        #print abs(a-b), abs(a-b)<0.01
+        if abs(a-b)<0.01:
+            return True
+        else:
+            return False
+
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
@@ -248,44 +263,53 @@ class EditGUI(Component):
         ent = self.sel
         
         if ent is not None:
-            #print "sel pos:", ent.pos,
+            #print "sel pos:", ent.pos, pos[i], v
             pos = list(ent.pos) #should probably wrap Vector3, see test_move.py for refactoring notes. 
-            pos[i] = v
-            #converted to list to have it mutable
-            ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
-            #print "=>", ent.pos
-            self.move_arrows.pos = pos[0], pos[1], pos[2]
-            self.selection_box.pos = pos[0], pos[1], pos[2]
+    
+            if not self.float_equal(pos[i],v):
+                pos[i] = v
+                #converted to list to have it mutable
+                ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
+                #print "=>", ent.pos
+                self.move_arrows.pos = pos[0], pos[1], pos[2]
+                #self.selection_box.pos = pos[0], pos[1], pos[2]
 
-            self.widget.xpos.setValue(pos[0])
-            self.widget.ypos.setValue(pos[1])
-            self.widget.zpos.setValue(pos[2])
-            r.networkUpdate(ent.id)
+                self.widget.xpos.setValue(pos[0])
+                self.widget.ypos.setValue(pos[1])
+                self.widget.zpos.setValue(pos[2])
+                self.modified = True
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
             
     def changescale(self, i, v):
         ent = self.sel
         if ent is not None:
             oldscale = list(ent.scale)
             scale = list(ent.scale)
-            scale[i] = v
-            if self.widget.scale_lock.checked:
-                diff = scale[i] - oldscale[i]
-                for index in range(len(scale)):
-                    #print index, scale[index], index == i
-                    if index != i:
-                        scale[index] += diff
-            
-            ent.scale = scale[0], scale[1], scale[2]
-            
-            r.networkUpdate(ent.id)
-            
-            self.widget.scalex.setValue(scale[0])
-            self.widget.scaley.setValue(scale[1])
-            self.widget.scalez.setValue(scale[2])
-            
-            self.update_selection()
+                
+            if not self.float_equal(scale[i],v):
+                scale[i] = v
+                if self.widget.scale_lock.checked:
+                    diff = scale[i] - oldscale[i]
+                    for index in range(len(scale)):
+                        #print index, scale[index], index == i
+                        if index != i:
+                            scale[index] += diff
+                
+                ent.scale = scale[0], scale[1], scale[2]
+                
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
+                
+                self.widget.scalex.setValue(scale[0])
+                self.widget.scaley.setValue(scale[1])
+                self.widget.scalez.setValue(scale[2])
+                self.modified = True
+
+                self.update_selection()
             
     def changerot(self, i, v):
+        return
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
@@ -294,15 +318,20 @@ class EditGUI(Component):
             #print "sel orientation:", ent.orientation
             #from euler x,y,z to to quat
             euler = list(quat_to_euler(ent.orientation))
-            euler[i] = v
-            ort = euler_to_quat(euler)
-            #print euler, ort
-            #print euler, ort
-            ent.orientation = ort
-            r.networkUpdate(ent.id)
-            
-            self.move_arrows.orientation = ort
-            self.selection_box.orientation = ort
+                
+            if not self.float_equal(euler[i],v):
+                euler[i] = v
+                ort = euler_to_quat(euler)
+                #print euler, ort
+                #print euler, ort
+                ent.orientation = ort
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
+                    
+                self.modified = True
+
+                self.move_arrows.orientation = ort
+                self.selection_box.orientation = ort
             
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
@@ -322,6 +351,7 @@ class EditGUI(Component):
             #self.hideArrows()
             #self.sel = None
             self.update_guivals()
+            self.modified = False
         
     def duplicate(self):
         #print "duplicate clicked"
@@ -554,9 +584,15 @@ class EditGUI(Component):
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
+        
         if self.sel:
-            r.networkUpdate(self.sel.id)
+            if self.sel_activated:
+                r.networkUpdate(self.sel.id)
+            
             self.sel_activated = True
+        
+        if self.dragging:
+            self.dragging = False
         
     def RightMouseDown(self, mouseinfo):
         self.right_button_down = True
@@ -582,15 +618,35 @@ class EditGUI(Component):
         if not self.canvas.IsHidden():
             if self.left_button_down :
                 if self.sel is not None and self.sel_activated:
+                    self.dragging = True
                     if self.arrow_grabbed:
                         rightvec = r.getCameraRight()
                         upvec = r.getCameraUp()
-                        mov = mouseinfo.rel_x + mouseinfo.rel_y
+                        #mov = mouseinfo.rel_x + mouseinfo.rel_y
                         
+                        fov = r.getCameraFOV()
+                        campos = Vector3(r.getCameraPosition())
+                        entpos = Vector3(self.sel.pos)
+                        width, height = r.getScreenSize()
+                        
+                        normalized_width = 1/width
+                        normalized_height = 1/height
+                        mouse_abs_x = normalized_width * mouseinfo.x
+                        mouse_abs_y = normalized_height * mouseinfo.y
+                        
+                        length = (campos-entpos).length
+                        worldwidth = (math.tan(fov/2)*length) * 2
+                        worldheight = (height*worldwidth) / width
+                        
+                        movedx = mouse_abs_x - self.prev_mouse_abs_x
+                        movedy = mouse_abs_y - self.prev_mouse_abs_y
+                        
+                        mov = movedx + movedy
+
                         if self.manipulator_state == self.MANIPULATE_MOVE: #arrow move
-                            pos = list(self.sel.pos)#[self.sel.pos[0], self.sel.pos[1], self.sel.pos[2]]
+                            pos = list(self.sel.pos)
                             
-                            mov /= 7.0
+                            #mov /= 7.0
                             
                             if self.arrow_grabbed_axis == 2:
                                 pos[self.arrow_grabbed_axis] -= mov
@@ -606,7 +662,7 @@ class EditGUI(Component):
                             #print "should change scale!"
                             scale = list(self.sel.scale)
 
-                            mov /= 9.0
+                            #mov /= 9.0
                             
                             if self.arrow_grabbed_axis == 2:
                                 scale[self.arrow_grabbed_axis] -= mov
@@ -692,3 +748,37 @@ class EditGUI(Component):
         else:
             self.hideArrows()
             self.hideSelector()
+        
+    def update(self, time):
+        #print "here", time
+        if not self.canvas.IsHidden(): #do we need this here?
+            self.time += time
+            ent = self.sel
+            if self.time > self.UPDATE_INTERVAL:
+                if ent is not None:
+                    try:
+                        sel_pos = self.selection_box.pos
+                        ent_pos = ent.pos
+                        #print ent_pos, sel_pos
+                        if sel_pos != ent_pos:
+                            #print "oh dear"
+                            self.time = 0
+                            self.selection_box.pos = ent_pos
+                            self.move_arrows.pos = ent_pos
+                    except RuntimeError, e:
+                        r.logDebug("update: scene not found")
+                        
+
+                    #~ self.time += time
+                    #~ if self.time >= self.UPDATE_INTERVAL:
+                        #~ #print "hep"
+                        #~ self.time = 0
+                        #~ ent = self.sel
+                        #~ if self.modified and ent is not None:
+                            #~ r.networkUpdate(ent.id)
+                            #~ self.modified = False
+                    
+#barrel on 0.5 in viila: 
+# Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
+# inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
+
