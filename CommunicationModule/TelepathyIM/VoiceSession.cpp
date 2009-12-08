@@ -9,17 +9,16 @@
 namespace TelepathyIM
 {
 	
-	VoiceSession::VoiceSession(Tp::StreamedMediaChannelPtr tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), audio_stream_(0)
+	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), audio_stream_(0), farsight_channel_(0)
 	{
         state_ = STATE_RINGING_LOCAL;
-        tp_contact_ = tp_channel->initiatorContact();
 
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
 	}
 
-	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), audio_stream_(0)
+	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), audio_stream_(0), farsight_channel_(0)
 	{
         state_ = STATE_RINGING_REMOTE;
         tp_contact_ = tp_contact;
@@ -143,7 +142,8 @@ namespace TelepathyIM
 	void VoiceSession::OnIncomingChannelReady(Tp::PendingOperation *op)
 	{
         Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
-        Tp::StreamedMediaChannelPtr chan = Tp::StreamedMediaChannelPtr(qobject_cast<Tp::StreamedMediaChannel *>(pr->object()));
+
+        tp_channel_ = Tp::StreamedMediaChannelPtr(qobject_cast<Tp::StreamedMediaChannel *>(pr->object()));
 
 		if (op->isError())
 		{
@@ -156,6 +156,7 @@ namespace TelepathyIM
 		}
 
 		tp_contact_ = tp_channel_->initiatorContact();
+        QString id = tp_contact_->id();
 		
 //		tp_channel_->acceptCall(); // DEBUG: Auto answer
         // tp_channel_->requestClose(); // reject

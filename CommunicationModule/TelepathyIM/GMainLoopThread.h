@@ -27,7 +27,7 @@ namespace TelepathyIM
         virtual void run();
         virtual void StopLoop();
 
-    private:
+    //private:
            GMainLoop* g_main_loop_;
     };
 
