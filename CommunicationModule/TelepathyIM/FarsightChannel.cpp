@@ -23,7 +23,7 @@ namespace TelepathyIM
         ConnectTfChannelEvents();
 
         
-        g_value_init (&volume_, G_TYPE_DOUBLE);
+        //g_value_init (&volume_, G_TYPE_DOUBLE);
         pipeline_ = gst_pipeline_new(NULL);
         bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
 
@@ -33,12 +33,14 @@ namespace TelepathyIM
         
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
-        audio_volume_  = gst_element_factory_make("volume", NULL);
+        //audio_volume_  = gst_element_factory_make("volume", NULL);
 
         audio_bin_ = gst_bin_new("audio-output-bin");
         
-        gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_volume_, audioSink, NULL);
-        gst_element_link_many(audio_resample_, audio_volume_, audioSink, NULL);
+//        gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_volume_, audioSink, NULL);
+        gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_output_, NULL);
+        gst_element_link_many(audio_resample_, audio_output_, NULL);
+        //gst_element_link_many(audio_resample_, audio_volume_, audioSink, NULL);
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
@@ -112,8 +114,8 @@ namespace TelepathyIM
             return;
         }
         double setValue = value*10; // range is from 0 to 10
-        g_value_set_double(&volume_, setValue); 
-        g_object_set_property (G_OBJECT(audio_volume_), "volume", &volume_);
+        //g_value_set_double(&volume_, setValue); 
+        //g_object_set_property (G_OBJECT(audio_volume_), "volume", &volume_);
     }
     
     void FarsightChannel::SetAudioRecordVolume(const double value)
