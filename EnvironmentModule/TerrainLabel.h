@@ -1,11 +1,11 @@
-#ifndef incl_RexLogic_TerrainLabel_h
-#define incl_RexLogic_TerrainLabel_h
+#ifndef incl_Environment_TerrainLabel_h
+#define incl_Environment_TerrainLabel_h
 
 #include <Foundation.h>
 
 #include <QLabel>
 
-namespace RexLogic
+namespace Environment
 {
     // This label will send a signal when some of mouse event has happend inside this label.
     class TerrainLabel: public QLabel

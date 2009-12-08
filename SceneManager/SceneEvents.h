@@ -80,6 +80,9 @@ namespace Scene
         /// An action event that can be sent by anyone to create a new entity.
         static const Core::event_id_t EVENT_ENTITY_CREATE = 0x10;
 
+        /// An event that will let the environment module to know what are the terrain textures we want to use.
+        static const Core::event_id_t EVENT_ENVIRONMENT_TERRAIN_TEXTURE = 0x11;
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {
@@ -177,6 +180,15 @@ namespace Scene
             Core::Vector3df position;
         };
 
+        class TerrainTexturesEventData : public Foundation::EventDataInterface
+        {
+        public:
+            TerrainTexturesEventData() {}
+            virtual ~TerrainTexturesEventData() {}
+            /// should be same as RexTypes::RexAssetID. std::string is used because we dont want more dependences.
+            std::string terrain[4];
+        };
+
         namespace
         {
             void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
@@ -191,6 +203,8 @@ namespace Scene
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECT, "Entity Select");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECTED, "Entity Selected");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
+
+                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE, "Update terrain texture IDs");
 
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");

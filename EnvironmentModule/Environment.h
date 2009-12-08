@@ -5,14 +5,22 @@
 #ifndef incl_RexLogicModule_Environment_h
 #define incl_RexLogicModule_Environment_h
 
-namespace RexLogic
+#include "RexTypes.h"
+#include "EnvironmentModuleApi.h"
+
+namespace ProtocolUtilities
 {
-    class Environment
+    class NetworkEventInboundData;
+}
+
+namespace Environment
+{
+    class ENVIRONMENT_MODULE_API Environment
     {
     public:
         /// Default constructor.
         /// @param owner The owner module.
-        Environment(RexLogicModule *owner);
+        Environment(EnvironmentModule *owner);
 
         /// Default destructor.
         virtual ~Environment();
@@ -45,7 +53,7 @@ namespace RexLogic
         Scene::EntityWeakPtr cachedEnvironmentEntity_;
 
         /// Pointer to the RexLogicModule which owns this class.
-        RexLogicModule *owner_;
+        EnvironmentModule *owner_;
 
         /// Server's perception of time (UNIX EPOCH).
         time_t usecSinceStart_;
@@ -57,13 +65,13 @@ namespace RexLogic
         uint32_t secPerYear_;
 
         /// Direction of the sunlight.
-        Vector3 sunDirection_;
+        RexTypes::Vector3 sunDirection_;
 
         /// Unknown/not needed. \todo delete?
         float sunPhase_;
 
         /// Sun's angle velocity.
-        Vector3 sunAngVelocity_;
+        RexTypes::Vector3 sunAngVelocity_;
     };
 }
 

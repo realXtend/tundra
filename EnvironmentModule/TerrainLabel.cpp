@@ -3,7 +3,7 @@
 
 #include <QMouseEvent>
 
-namespace RexLogic
+namespace Environment
 {
     TerrainLabel::TerrainLabel(QWidget *parent, Qt::WindowFlags f): QLabel(parent, f)
     {

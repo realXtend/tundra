@@ -4,38 +4,50 @@
 //#include "RexServerConnection.h"
 //#include "OpenSimProtocolModule.h"
 
-#include "RexLogicModule.h"
-#include "Environment/TerrainDecoder.h"
-#include "Environment/Terrain.h"
-#include "Environment/TerrainEditor.h"
-#include "Environment/TerrainLabel.h"
+#include "EnvironmentModule.h"
+#include "TerrainDecoder.h"
+#include "Terrain.h"
+#include "TerrainEditor.h"
+#include "TerrainLabel.h"
+
+#include "TextureInterface.h"
+#include "TextureServiceInterface.h"
 
 #include <QtUiTools>
 #include <QPushButton>
 #include <QImage>
 #include <QLabel>
 #include <QColor>
-#include <QPainter>
 #include <QMouseEvent>
 #include <QRadioButton>
 #include <QGroupBox>
+#include <QTabWidget>
+#include <QLineEdit>
 
-namespace RexLogic
+namespace Environment
 {
-    TerrainEditor::TerrainEditor(RexLogicModule* rexlogicmodule):
-    rexlogicmodule_(rexlogicmodule),
+    TerrainEditor::TerrainEditor(EnvironmentModule* environment_module):
+    environment_module_(environment_module),
     editor_widget_(0),
     action_(Flatten),
     brush_size_(Small)
     //mouse_press_flag_(no_button)
     {
         InitEditorWindow();
-        terrain_ = rexlogicmodule->GetTerrainHandler();
+
+        // Those two arrays size should always be the same as how many terrain textures we are using.
+        terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
+        terrain_texture_requests_.resize(cNumberOfTerrainTextures);
+        terrain_ = environment_module_->GetTerrainHandler();
     }
 
     TerrainEditor::~TerrainEditor()
     {
-
+        boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        if(qt_module.get() && canvas_)
+        {
+            qt_module->DeleteCanvas(canvas_->GetID());
+        }
     }
 
     void TerrainEditor::Toggle()
@@ -61,15 +73,16 @@ namespace RexLogic
 
             if(terrain_component->AllPatchesLoaded())
             {
+                // Find image label in widget so we can get the basic information about the image that we are about to update.
                 QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
                 const QPixmap *pixmap = label->pixmap();
                 QImage image = pixmap->toImage();
 
                 // Make sure that image is in right size.
-                if(image.height() != 256 || image.width() != 256)
+                if(image.height() != cHeightmapImageHeight || image.width() != cHeightmapImageWidth)
                     return;
 
-                // Generate image based on heightmap values. The Highest value in heightmap will show on image as white and the lowest as black.
+                // Generate image based on heightmap values. The Highest value in heightmap will show on image as white color and the lowest as black color.
                 MinMaxValue values = GetMinMaxHeightmapValue(*terrain_component);
                 for(int height = 0; height < image.height(); height++)
                 {
@@ -83,13 +96,14 @@ namespace RexLogic
                     }
                 }
 
+                // Set new image into the label.
                 label->setPixmap(QPixmap::fromImage(image));
                 label->show();
             }
         }
     }
 
-    MinMaxValue TerrainEditor::GetMinMaxHeightmapValue(EC_Terrain &terrain)
+    MinMaxValue TerrainEditor::GetMinMaxHeightmapValue(EC_Terrain &terrain) const
     {
         float min, max;
         min = 65535.0f;
@@ -99,25 +113,20 @@ namespace RexLogic
 
         if(terrain.AllPatchesLoaded())
         {
-            for(int i = 0; i < terrain.cNumPatchesPerEdge; i++)
+            for(int i = 0; i < cHeightmapImageWidth; i++)
             {
-                for(int j = 0; j < terrain.cNumPatchesPerEdge; j++)
+                for(int j = 0; j < cHeightmapImageHeight; j++)
                 {
-                    const EC_Terrain::Patch &patch = terrain.GetPatch(i, j);
-                    std::vector<float> height_data = patch.heightData;
-                    for(int k = 0; k < height_data.size(); k++)
+                    float height_value = terrain.GetPoint(i, j);
+                    if(height_value < min)
                     {
-                        float value = height_data[k];
-                        if(value < min)
-                        {
-                            min = value;
-                            values.first = value;
-                        }
-                        else if(value > max)
-                        {
-                            max = value;
-                            values.second = value;
-                        }
+                        min = height_value;
+                        values.first = height_value;
+                    }
+                    else if(height_value > max)
+                    {
+                        max = height_value;
+                        values.second = height_value;
                     }
                 }
             }
@@ -127,20 +136,19 @@ namespace RexLogic
 
     void TerrainEditor::InitEditorWindow()
     {
-        boost::shared_ptr<QtUI::QtModule> qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 
         // Make sure that qt module was found.
         if(qt_module.get() == 0)
             return;
 
-        // \todo Right now mouse move event wont be sented if left mouse button is down, we need to use external window and 
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
+        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
         QUiLoader loader;
         QFile file("./data/ui/terrain_editor.ui");
 
         if(!file.exists())
         {
-            RexLogicModule::LogError("Cannot find terrain editor ui file");
+            EnvironmentModule::LogError("Cannot find terrain editor ui file");
             return;
         }
 
@@ -169,7 +177,7 @@ namespace RexLogic
 
         // Set signals
         QPushButton *update_button = editor_widget_->findChild<QPushButton *>("button_update");
-        QObject::connect(update_button, SIGNAL(clicked()), this, SLOT(UpdateTerrain(UpdateTerrain())));
+        QObject::connect(update_button, SIGNAL(clicked()), this, SLOT(UpdateTerrain()));
 
         QRadioButton *rad_button_flatten = editor_widget_->findChild<QRadioButton *>("rad_button_flatten");
         QRadioButton *rad_button_raise = editor_widget_->findChild<QRadioButton *>("rad_button_raise");
@@ -193,6 +201,9 @@ namespace RexLogic
         QObject::connect(rad_button_medium, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
         QObject::connect(rad_button_large, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
 
+        QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
+        QObject::connect(tab_widget, SIGNAL(currentChanged(int)), this, SLOT(TabWidgetChanged(int)));
+
         // Add canvas to control bar
         qt_module->AddCanvasToControlBar(canvas_, QString("Terrain Editor"));
         file.close();
@@ -214,14 +225,14 @@ namespace RexLogic
             }
         }
 
-        assert(rexlogicmodule_);
-        if(!rexlogicmodule_)
+        assert(environment_module_);
+        if(!environment_module_)
         {
-            RexLogicModule::LogError("Can't update terrain because rexlogicmodule is not intialized.");
+            EnvironmentModule::LogError("Can't update terrain because rexlogicmodule is not intialized.");
             return;
         }
 
-        terrain_ = rexlogicmodule_->GetTerrainHandler();
+        terrain_ = environment_module_->GetTerrainHandler();
         if(!terrain_)
             return;
 
@@ -280,7 +291,7 @@ namespace RexLogic
                 QPoint position = ev->pos();
                 Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
                 EC_Terrain *terrain_component = checked_static_cast<EC_Terrain *>(entity->GetComponent("EC_Terrain").get());
-                rexlogicmodule_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, start_height_);
+                environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, start_height_);
         }*/
 
         if(ev->type() == QEvent::MouseButtonPress || ev->type() == QEvent::MouseMove)
@@ -288,12 +299,12 @@ namespace RexLogic
             if(ev->button() == Qt::LeftButton)
             {
                 // Draw a white point where we have clicked.
-                QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
+                /*QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
                 const QPixmap *pixmap = label->pixmap();
                 QImage image = pixmap->toImage();
                 image.setPixel(ev->pos(), qRgb(255, 255, 255));
                 label->setPixmap(QPixmap::fromImage(image));
-                label->show();
+                label->show();*/
 
                 // Send modify land message to server.
                 QPoint position = ev->pos();
@@ -305,7 +316,7 @@ namespace RexLogic
                 if(!terrain_component)
                     return;
 
-                rexlogicmodule_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, terrain_component->GetPoint(position.x(), position.y()));
+                environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, terrain_component->GetPoint(position.x(), position.y()));
             }
         }
     }
@@ -377,5 +388,105 @@ namespace RexLogic
             action_ = Revert;
             return;
         }
+    }
+
+    void TerrainEditor::TabWidgetChanged(int index)
+    {
+        if(index == 0) // Map tab
+        {
+            UpdateTerrain();
+        }
+        else if(index == 1) // Texture tab
+        {
+            if(!terrain_.get())
+                return;
+
+            QLineEdit *line_edit = 0;
+            for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+            {
+                //Get terrain texture asset ids so that we can request those image resources.
+                RexTypes::RexAssetID terrain_id = terrain_->GetTerrainTextureID(i);
+                QString line_edit_name("texture_line_edit_" + QString("%1").arg(i + 1));
+
+                // Check if terrain texture hasn't changed for last time, if not we dont need to request a new texture resource and we can continue on next texture.
+                if(terrain_texture_id_list_[i] == terrain_id)
+                    continue;
+
+                terrain_texture_id_list_[i] = terrain_id;
+
+                line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
+                if(!line_edit)
+                    continue;
+                line_edit->setText(QString::fromStdString(terrain_id));
+
+                Foundation::ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
+                if(service_manager)
+                {
+                    if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
+                    {
+                        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
+                            service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+                        if(!texture_service)
+                            continue;
+
+                        // Request texture assets.
+                        terrain_texture_requests_[i] = texture_service->RequestTexture(terrain_id);
+                    }
+                }
+            }
+        }
+    }
+
+    void TerrainEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
+    {
+        for(Core::uint index = 0; index < terrain_texture_requests_.size(); index++)
+        {
+            if(terrain_texture_requests_[index] == res->tag_)
+            {
+                Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
+                if(!tex && tex->GetLevel() != 0)
+                    return;
+
+                uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
+                QImage img = ConvertToQImage(*tex);//QImage::fromData(tex->GetData(), size);
+                QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
+                texture_label->setPixmap(QPixmap::fromImage(img));
+                texture_label->show();
+            }
+        }
+    }
+
+    QImage TerrainEditor::ConvertToQImage(Foundation::TextureInterface &tex)
+    {
+        Core::uint img_width        = tex.GetWidth(); 
+        Core::uint img_height       = tex.GetHeight(); 
+        Core::uint img_components   = tex.GetComponents();
+        Core::u8 *data              = tex.GetData();
+        Core::uint img_width_step   = img_width * img_components;
+        QImage image;
+
+        if(img_width > 0 && img_height > 0 && img_components > 0)
+        {
+            // For RGB32.
+            if(img_components == 3)
+            {
+                image = QImage(QSize(img_width, img_height), QImage::Format_RGB32);
+                for(Core::uint height = 0; height < img_height; height++)
+                {
+                    for(Core::uint width = 0; width < img_width; width++)
+                    {
+                        Core::u8 color[3];
+                        for(Core::uint comp = 0; comp < img_components; comp++)
+                        {
+                            Core::uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
+                            color[comp] = data[index];
+                        }
+                        image.setPixel(width, height, qRgb(color[0], color[1], color[2]));
+                    }
+                }
+            }
+        }
+
+        return image;
     }
 }

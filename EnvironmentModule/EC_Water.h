@@ -13,7 +13,7 @@ namespace Ogre
     class Entity;
 }
 
-namespace RexLogic
+namespace Environment
 {
     /// Represents data related to a water plane.
     class EC_Water : public Foundation::ComponentInterface

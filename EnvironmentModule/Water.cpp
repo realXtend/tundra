@@ -17,14 +17,14 @@
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 
-#include "RexLogicModule.h"
-#include "Environment/Water.h"
+#include "EnvironmentModule.h"
+#include "Water.h"
 #include "SceneManager.h"
 
-namespace RexLogic
+namespace Environment
 {
 
-Water::Water(RexLogicModule *owner)
+Water::Water(EnvironmentModule *owner)
 :owner_(owner)
 {
 }
@@ -35,7 +35,7 @@ Water::~Water()
 
 void Water::FindCurrentlyActiveWater()
 {
-    Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
@@ -55,7 +55,7 @@ Scene::EntityWeakPtr Water::GetWaterEntity()
 
 void Water::CreateWaterGeometry()
 {
-    Scene::ScenePtr active_scene = owner_->GetCurrentActiveScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
 
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_Water"));

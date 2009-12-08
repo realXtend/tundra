@@ -401,6 +401,8 @@ namespace Foundation
     void Framework::RemoveScene(const std::string &name)
     {
         SceneMap::iterator scene = scenes_.find(name);
+        if (default_scene_ == scene->second)
+            default_scene_.reset();
         if (scene != scenes_.end())
             scenes_.erase(scene);
     }

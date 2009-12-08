@@ -12,5 +12,6 @@
     <subscriber module="InventoryModule" priority="100" />
     <subscriber module="CommunicationModule" priority="100" />
     <subscriber module="OgreAssetEditorModule" priority="100" />
+    <subscriber module="EnvironmentModule" priority="100" />
 </subscribers>
 

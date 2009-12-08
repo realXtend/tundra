@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_TerrainEditor_h
-#define incl_RexLogic_TerrainEditor_h
+#ifndef incl_Environment_TerrainEditor_h
+#define incl_Environment_TerrainEditor_h
 
 #include <Foundation.h>
 #include "UICanvas.h"
@@ -11,9 +11,22 @@
 
 class QImage;
 
-namespace RexLogic
+namespace Resource
 {
-    class RexLogicModule;
+    namespace Events
+    {
+        class ResourceReady;
+    }
+}
+
+namespace Foundation
+{
+    class TextureInterface;
+}
+
+namespace Environment
+{
+    class EnvironmentModule;
     class Terrain;
     class EC_Terrain;
 
@@ -55,7 +68,7 @@ namespace RexLogic
         };*/
 
         //! Constuctor
-        TerrainEditor(RexLogicModule *rexlogicmodule);
+        TerrainEditor(EnvironmentModule *environment_module);
 
         //! Destructor
         ~TerrainEditor();
@@ -63,8 +76,14 @@ namespace RexLogic
         //! Change editor window visibility.
         void Toggle();
 
+        //! Handle resource ready event.
+        void HandleResourceReady(Resource::Events::ResourceReady *res);
+
+        void SetTerrainTextureID();
+
         static const int cHeightmapImageWidth  = 256;
         static const int cHeightmapImageHeight = 256;
+        static const int cNumberOfTerrainTextures = 4;
 
     public slots:
         //! Send a terrain paint message to server.
@@ -82,38 +101,52 @@ namespace RexLogic
         //! Called when terrain action option has changed.
         void PaintActionChanged();
 
+        //! Called when tab window state has changed.
+        void TabWidgetChanged(int index);
+
     private:
+        //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
+        //! @Param tex Reference to texture resource.
+        //! @Return converted QImage.
+        QImage ConvertToQImage(Foundation::TextureInterface &tex);
+
         //! Create a window for terrain editor.
         void InitEditorWindow();
 
         //! Create a new heightmap image that will show heightmap values in grayscale.format
         void CreateHeightmapImage();
 
-        //! Return heightmap smallest and largest value (first = min and second = max).
-        MinMaxValue GetMinMaxHeightmapValue(EC_Terrain &terrain);
+        //! Asset_tags for terrain texture requests.
+        std::vector<int> terrain_texture_requests_;
 
-        //! Pointer for rexLogicModule.
-        RexLogicModule *rexlogicmodule_;
+        /// Terrain texture id list.
+        std::vector<std::string> terrain_texture_id_list_;
 
-        //! Canvas for terrain editor window
+        /// Return heightmap smallest and largest value (first = min and second = max).
+        MinMaxValue GetMinMaxHeightmapValue(EC_Terrain &terrain) const;
+
+        /// Pointer for rexLogicModule.
+        EnvironmentModule *environment_module_;
+
+        /// Canvas for terrain editor window
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
-        //! Main widget for editor
+        /// Main widget for editor
         QWidget *editor_widget_;
 
-        //! Terrain geometry information.
+        /// Terrain geometry information.
         boost::shared_ptr<Terrain> terrain_;
 
-        //! Brush size (small, medium and large).
+        /// Brush size (small, medium and large).
         BrushSize brush_size_;
 
-        //! Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
+        /// Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
         ModifyLandAction action_;
 
-        //! Mouse press flags
+        /// Mouse press flags
         //Core::u8 mouse_press_flag_;
 
-        //! 
+        /// 
         //Core::Real start_height_;
     };
 }

@@ -5,7 +5,8 @@
 #define incl_Terrain_h
 
 #include "Entity.h"
-#include "EntityComponent/EC_Terrain.h"
+#include "EC_Terrain.h"
+#include "EnvironmentModuleApi.h"
 
 namespace Resource
 {
@@ -15,15 +16,22 @@ namespace Resource
     }
 }
 
-namespace RexLogic
+namespace ProtocolUtilities
 {
+    class NetworkEventInboundData;
+}
+
+namespace Environment
+{
+
+struct DecodedTerrainPatch;
 
 //! Handles the logic related to the OpenSim Terrain. Note - partially lacks support for multiple scenes - the Terrain object is not instantiated
 //! per-scene, but it contains data that should be stored per-scene. This doesn't affect anything unless we will some day actually have several scenes.
-class Terrain
+class ENVIRONMENT_MODULE_API Terrain
 {
 public:
-    Terrain(RexLogicModule *owner_);
+    Terrain(EnvironmentModule *owner_);
     ~Terrain();
 
     //! Called to handle an OpenSim LayerData packet.
@@ -35,7 +43,7 @@ public:
 
     /// Sets the new terrain texture UUIDs that are used for this terrain. Places
     /// new resource requests to the asset handler if any of the textures have changed.
-    void SetTerrainTextures(const RexAssetID textures[num_terrain_textures]);
+    void SetTerrainTextures(const RexTypes::RexAssetID textures[num_terrain_textures]);
 
     void RequestTerrainTextures();
 
@@ -48,13 +56,17 @@ public:
 
     //! Called whenever a texture is loaded so it can be attached to the terrain.
     void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
+
+    //! Get terrain texture on terrain_textures array.
+    const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
+
 private:
-    RexLogicModule *owner_;
+    EnvironmentModule *owner_;
 
     Core::request_tag_t terrain_texture_requests_[num_terrain_textures];
 
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
-    RexAssetID terrain_textures_[num_terrain_textures];
+    RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
 
     Scene::EntityWeakPtr cachedTerrainEntity_;
 

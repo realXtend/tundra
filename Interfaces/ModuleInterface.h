@@ -66,6 +66,7 @@ namespace Foundation
             MT_Inventory,
             MT_TaigaProtocol,
             MT_OgreAssetEditor,
+			MT_Environment,
             MT_Unknown
         };
 
@@ -81,7 +82,7 @@ namespace Foundation
                  "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
                  "CommunicationModule", "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule",
-                 "TaigaProtocolModule", "OgreAssetEditorModule" };
+                 "TaigaProtocolModule", "OgreAssetEditorModule", "EnvironmentModule" };
 
             return type_strings[type];
         }
@@ -138,7 +139,7 @@ namespace Foundation
         //! Post-initialization for the module. At this point Initialize() has been called for all enabled modules.
         //! Only override if you need. Do not call.
         virtual void PostInitialize() = 0;
-        
+																																						
         //! Uninitialize the module. Called when module is removed from use
         //! Override in your own module. Do not call.
         virtual void Uninitialize() = 0;
