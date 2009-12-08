@@ -57,7 +57,8 @@ namespace TelepathyIM
 	void VoiceSession::Close()
 	{
         state_ = STATE_CLOSED;
-		Tp::PendingOperation* op = tp_channel_->requestClose();
+        if ( !tp_channel_.isNull())
+		    Tp::PendingOperation* op = tp_channel_->requestClose();
 	}
 
     void VoiceSession::Accept()
@@ -69,7 +70,6 @@ namespace TelepathyIM
         }
 
         tp_channel_->acceptCall();
-       
 
         farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");
 
@@ -134,7 +134,7 @@ namespace TelepathyIM
 
 		Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
 		tp_channel_ = Tp::StreamedMediaChannel::create(pending_channel->connection(),pending_channel->objectPath(), pending_channel->immutableProperties());
-	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
+	    connect(tp_channel_->becomeReady(),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnOutgoingChannelReady(Tp::PendingOperation*) ));
 	}
@@ -177,6 +177,7 @@ namespace TelepathyIM
 		
 		Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
 		tp_contact_ = cm->lookupContactByHandle(tp_channel_->targetHandle());
+        QString id = tp_contact_->id();
 
         farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");
 
@@ -208,8 +209,6 @@ namespace TelepathyIM
                                     SLOT( OnStreamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ));
         connect(tp_channel_.data(), SIGNAL( streamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ), SLOT( OnStreamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ));
 
-        CreateAudioStream();
-
 		Tp::MediaStreams streams = tp_channel_->streams();
 		for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
 		{
@@ -227,6 +226,7 @@ namespace TelepathyIM
             OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
             OnStreamStateChanged(stream, stream->state());
 		}
+        CreateAudioStream();
     }
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
@@ -256,7 +256,6 @@ namespace TelepathyIM
 
     void VoiceSession::UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send)
     {
-        // DO WE NEED THIS ???
         if (send)
         {
             if (!(stream->direction() & Tp::MediaStreamDirectionSend))
@@ -332,8 +331,9 @@ namespace TelepathyIM
             LogError(error.toStdString());
             return;
         }
+        pending_audio_streams_ = 0;
 
-        // todo: IMPLEMENT
+        // do nothing as OnStreamAdded signal will be emitted
     }
 
 } // end of namespace: TelepathyIM
