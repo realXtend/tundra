@@ -1,4 +1,4 @@
-# In CMakeOptionalModules.txt you can configure which additional modules 
+# In CMakeOptionalModules.txt you can configure which additional modules
 # are added to the build. Do not commit CMakeOptionalModules.txt into the 
 # SVN repository! The idea is that everyone can customize the set of 
 # modules to build using that file, without having to fear about an 
@@ -18,6 +18,6 @@
 #add_subdirectory (NetTestLogicModule)
 add_subdirectory (PythonModule)
 add_subdirectory (CommunicationModule)
-#add_subdirectory (OpenALAudioModule)
+add_subdirectory (OpenALAudioModule)
 #add_subdirectory (RexCBLogin) # RexLogic::RexWebLogin replaces this atm anyways
 #add_subdirectory (RexQtScriptModule)
