@@ -17,7 +17,7 @@
 #include "Terrain.h"
 #include "Water.h"
 #include "Environment.h"
-#include "sky.h"
+#include "Sky.h"
 #include "TerrainEditor.h"
 
 namespace Environment
