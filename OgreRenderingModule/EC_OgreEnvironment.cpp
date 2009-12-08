@@ -121,17 +121,20 @@ Core::Color EC_OgreEnvironment::GetAmbientLightColor() const
 
 void EC_OgreEnvironment::SetSunColor(const Core::Color &color)
 {
-    sunlight_->setDiffuseColour(ToOgreColor(color));
+    if (sunlight_)
+        sunlight_->setDiffuseColour(ToOgreColor(color));
 }
 
 void EC_OgreEnvironment::SetSunDirection(const Core::Vector3df &direction)
 {
-    sunlight_->setDirection(ToOgreVector3(direction));
+    if (sunlight_)
+        sunlight_->setDirection(ToOgreVector3(direction));
 }
 
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
 {
-    sunlight_->setCastShadows(enabled);
+    if (sunlight_)
+        sunlight_->setCastShadows(enabled);
 }
 
 void EC_OgreEnvironment::SetTime(const time_t &time)
