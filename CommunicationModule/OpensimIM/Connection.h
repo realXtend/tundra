@@ -3,7 +3,7 @@
 
 #include <Foundation.h>
 #include <QStringList>
-#include "../interface.h"
+#include "interface.h"
 #include "ChatSession.h"
 #include "Contact.h"
 #include "FriendRequest.h"

@@ -4,8 +4,8 @@
 #include "StableHeaders.h"
 #include "LoginHelper.h"
 
-#include "../Credentials.h"
-#include "../CommunicationService.h"
+#include "Credentials.h"
+#include "CommunicationService.h"
 
 #include <QUrl>
 
@@ -56,13 +56,13 @@ namespace UiHelpers
         QObject::connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
         QObject::connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));
         
-        emit( StateChange(UiState::Connecting) );
+        emit( StateChange(UiDefines::UiStates::Connecting) );
     }
 
     void LoginHelper::LoginCancelled()
     {
         im_connection_->Close();
-        emit( StateChange(UiState::Disconnected) );
+        emit( StateChange(UiDefines::UiStates::Disconnected) );
     }
 
     void LoginHelper::ConnectionEstablished(Communication::ConnectionInterface &connection_interface)

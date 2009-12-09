@@ -7,7 +7,7 @@
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 #include <Foundation.h>
-#include "../interface.h"
+#include "interface.h"
 #include "Contact.h"
 #include "ContactGroup.h"
 #include "ChatSession.h"

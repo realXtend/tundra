@@ -3,7 +3,7 @@
 
 #include <Foundation.h>
 #include <NetworkEvents.h>
-#include "../interface.h"
+#include "interface.h"
 #include "ChatSessionParticipant.h"
 
 

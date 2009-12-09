@@ -3,12 +3,24 @@
 #ifndef incl_Communication_UiDefines_h
 #define incl_Communication_UiDefines_h
 
-enum UiState
-{
-    NoStateChange = 0,
-    Disconnected = 1,
-    Connecting = 2,
-    Connected = 3
-};
+#include <QObject>
 
+namespace UiDefines
+{
+    class UiStates : public QObject
+    {
+    
+    Q_OBJECT 
+    
+    public:
+        enum ConnectionState
+        {
+            NoStateChange = 0,
+            Disconnected = 1,
+            Connecting = 2,
+            Connected = 3
+        };
+    
+    };
+}
 #endif // incl_Communication_UiDefines_h

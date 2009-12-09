@@ -5,7 +5,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
-#include "../interface.h"
+#include "interface.h"
 
 namespace TelepathyIM
 {

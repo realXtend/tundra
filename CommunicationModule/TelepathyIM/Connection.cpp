@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include "Connection.h"

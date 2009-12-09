@@ -1,7 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+
 #include <QStringList>
 #include "ConnectionProvider.h"
 #include "Connection.h"
-#include "../Credentials.h"
+#include "Credentials.h"
 #include "ConsoleCommandServiceInterface.h"
 
 namespace OpensimIM

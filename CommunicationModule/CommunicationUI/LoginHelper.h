@@ -5,9 +5,9 @@
 
 #include "MasterWidget.h"
 #include "UiDefines.h"
-#include "../ui_LoginWidget.h"
+#include "ui_LoginWidget.h"
 
-#include "../interface.h"
+#include "interface.h"
 
 #include <QObject>
 
@@ -36,7 +36,7 @@ namespace UiHelpers
         Communication::ConnectionInterface *im_connection_;
 
     signals:
-        void StateChange(UiState);
+        void StateChange(UiDefines::UiStates::ConnectionState);
 
     };
 }

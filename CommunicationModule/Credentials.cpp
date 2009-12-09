@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+
 #include "Credentials.h"
 
 namespace Communication
@@ -16,7 +20,7 @@ namespace Communication
 	{
 		protocol_ = protocol;
 	}
-	
+
 	QString Credentials::GetProtocol() const
 	{
 		return protocol_;
