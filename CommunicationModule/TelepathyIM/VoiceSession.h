@@ -59,7 +59,7 @@ namespace TelepathyIM
 
 	protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
-        void OnFarsightChannelStatusChanged(FarsightChannel::Status status);
+        void OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status);
 		void OnOutgoingChannelCreated(Tp::PendingOperation *op);
 		void OnIncomingChannelReady(Tp::PendingOperation *op);
 		void OnOutgoingChannelReady(Tp::PendingOperation *op);

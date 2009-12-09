@@ -86,8 +86,8 @@ namespace TelepathyIM
             SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
         connect(farsight_channel_,
-            SIGNAL(statusChanged(FarsightChannel::Status)),
-            SLOT(OnFarsightChannelStatusChanged(FarsightChannel::Status)));
+            SIGNAL(statusChanged(TelepathyIM::FarsightChannel::Status)),
+            SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)));
     }
 
     void VoiceSession::Reject()
@@ -204,8 +204,12 @@ namespace TelepathyIM
             // DEBUG...
 			switch(type)
 			{
-			case Tp::MediaStreamTypeAudio: break;
-			case Tp::MediaStreamTypeVideo: break;
+			case Tp::MediaStreamTypeAudio:
+                LogDebug("Received AUDIO CHANNEL");
+                break;
+			case Tp::MediaStreamTypeVideo:
+                LogDebug("Received VIDEO CHANNEL");
+                break;
 			}
 
             OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
@@ -214,7 +218,7 @@ namespace TelepathyIM
 
         Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
 
-        if ( pending_audio_streams_ != 0 && audio_stream.isNull() )
+        if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
     }
 
@@ -226,7 +230,7 @@ namespace TelepathyIM
         emit Closed(this);
     }
 
-    void VoiceSession::OnFarsightChannelStatusChanged(FarsightChannel::Status status)
+    void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
     {
         switch (status) {
         case FarsightChannel::StatusConnecting:
@@ -249,6 +253,7 @@ namespace TelepathyIM
         {
             if (!(stream->direction() & Tp::MediaStreamDirectionSend))
             {
+                LogDebug("Change stream direction to: DirectionSend");
                 int dir = stream->direction() | Tp::MediaStreamDirectionSend;
                 stream->requestDirection((Tp::MediaStreamDirection) dir);
                 LogInfo("Start sending");
@@ -258,6 +263,7 @@ namespace TelepathyIM
         {
             if (stream->direction() & Tp::MediaStreamDirectionSend) 
             {
+                LogDebug("Change stream direction to: ~DirectionSend");
                 int dir = stream->direction() & ~Tp::MediaStreamDirectionSend;
                 stream->requestDirection((Tp::MediaStreamDirection) dir);
             }
@@ -266,6 +272,16 @@ namespace TelepathyIM
 
     void VoiceSession::OnStreamAdded(const Tp::MediaStreamPtr &stream)
     {
+        if (stream->type() == Tp::MediaStreamTypeAudio)
+        {
+            LogDebug("Added AUDIO STREAM");
+        }
+
+        if (stream->type() == Tp::MediaStreamTypeVideo)
+        {
+            LogDebug("Added VIDEO STREAM");
+        }
+
         UpdateStreamDirection(stream, true);
         OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
         OnStreamStateChanged(stream, stream->state());
@@ -275,7 +291,12 @@ namespace TelepathyIM
     {
         if (stream->type() == Tp::MediaStreamTypeAudio)
         {
+            LogDebug("Removed AUDIO STREAM");
+        }
 
+        if (stream->type() == Tp::MediaStreamTypeVideo)
+        {
+            LogDebug("Removed VIDEO STREAM");
         }
 
         // todo: IMPLEMENT
@@ -286,17 +307,18 @@ namespace TelepathyIM
         // todo: IMPLEMENT
         if (direction == Tp::MediaStreamDirectionSend)
         {
-
+            LogDebug("Stream direction changed to: SEND");
 
         } else if (direction == Tp::MediaStreamDirectionReceive)
         {
+            LogDebug("Stream direction changed to: RECEIVE");
 
         } else if (direction == (Tp::MediaStreamDirectionSend | Tp::MediaStreamDirectionReceive))
         {
-
+            LogDebug("Stream direction changed to: SEND & RECEIVE");
         } else
         {
-
+            LogDebug("Stream direction changed to: NONE");
         }
     }
 
@@ -305,9 +327,15 @@ namespace TelepathyIM
         // todo: IMPLEMENT
         switch(state)
         {
-        case Tp::MediaStreamStateDisconnected: break;
-        case Tp::MediaStreamStateConnecting: break;
-        case Tp::MediaStreamStateConnected: break;
+        case Tp::MediaStreamStateDisconnected:
+            LogDebug("Stream state changed to: DISCONNECT");
+            break;
+        case Tp::MediaStreamStateConnecting:
+            LogDebug("Stream state changed to: CONNECTING...");
+            break;
+        case Tp::MediaStreamStateConnected:
+            LogDebug("Stream state changed to: CONNECTED");
+            break;
         }
     }
 
