@@ -73,7 +73,7 @@ namespace TelepathyIM
 
         Tp::StreamedMediaChannelPtr channel_;
         Status status_;
-        GValue volume_;
+        //GValue volume_;
         GValue input_volume_;
         TfChannel *tf_channel_; // telepathy-farsight channel, that this class basically wraps
         
@@ -84,20 +84,23 @@ namespace TelepathyIM
         GstElement *audio_input_;
         GstElement *audio_output_;
         GstElement *video_input_;
+        GstElement *video_tee_;
         
         // audio modification elements
         GstElement *audio_resample_;
         GstElement *audio_volume_;
 
-        GstElement *video_tee_;
-
         // bins
         GstElement *audio_bin_;
         GstElement *video_bin_;
         
-        GstPad  *_ghost;
+        GstPad  *audio_ghost_;
+
+        
         //VideoWidget *videoPreview;
         //VideoWidget *videoOutput;
+        GstElement *video_preview_element_;
+        GstElement *video_remote_output_element_;
     };
 
 } // end of namespace: TelepathyIM
