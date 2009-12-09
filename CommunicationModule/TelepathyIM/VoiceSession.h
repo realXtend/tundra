@@ -43,6 +43,8 @@ namespace TelepathyIM
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();
         QString GetReadon() { return reason_; };
+        Tp::MediaStreamPtr GetAudioMediaStream();
+        Tp::MediaStreamPtr GetVideoMediaStream(); // video
         
 
 		State state_;
@@ -50,7 +52,7 @@ namespace TelepathyIM
         FarsightChannel* farsight_channel_;
 
         Tp::PendingMediaStreams *pending_audio_streams_;
-        Tp::MediaStreamPtr audio_stream_;
+//        Tp::MediaStreamPtr audio_stream_;
         Tp::ContactPtr tp_contact_;
         QString reason_;      
         VoiceSessionParticipantVector participants_;

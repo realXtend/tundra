@@ -37,10 +37,8 @@ namespace TelepathyIM
 
         audio_bin_ = gst_bin_new("audio-output-bin");
         
-//        gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_volume_, audioSink, NULL);
         gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_output_, NULL);
         gst_element_link_many(audio_resample_, audio_output_, NULL);
-        //gst_element_link_many(audio_resample_, audio_volume_, audioSink, NULL);
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
