@@ -49,7 +49,7 @@ namespace TelepathyIM
         void SetAudioRecordVolume(const double value);
 
     Q_SIGNALS:
-        void statusChanged(FarsightChannel::Status status);
+        void statusChanged(TelepathyIM::FarsightChannel::Status status);
 
     private:
 
