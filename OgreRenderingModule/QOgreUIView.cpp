@@ -29,6 +29,8 @@ namespace OgreRenderer
 
     QOgreUIView::~QOgreUIView ()
     {
+       if ( this->scene() != 0 ) 
+            delete this->scene();
     }
 
     void QOgreUIView::Initialize_()
