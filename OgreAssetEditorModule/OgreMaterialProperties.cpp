@@ -12,6 +12,7 @@
 #include "OgreMaterialResource.h"
 
 #include <Ogre.h>
+#include <OgreMaterialSerializer.h>
 
 #include <QVariant>
 #include <QVector>
@@ -20,12 +21,14 @@
 namespace OgreAssetEditor
 {
 
-OgreMaterialProperties::OgreMaterialProperties(OgreRenderer::OgreMaterialResource *material) :
+OgreMaterialProperties::OgreMaterialProperties(const QString &name, OgreRenderer::OgreMaterialResource *material) :
     material_(material)
 {
     if (material_)
         if (material_->IsValid())
             CreateProperties();
+
+    setObjectName(name);
 }
 
 OgreMaterialProperties::~OgreMaterialProperties()
@@ -50,6 +53,7 @@ OgreMaterialProperties::PropertyMap OgreMaterialProperties::GetPropertyMap()
 
         ///\todo, we use string for values now, change to floats and vectors. float4, float4color, uuid
         map[propertyName] = property(propertyName.toStdString().c_str()).toString();
+        std::cout << propertyName.toStdString() << " " << property(propertyName.toStdString().c_str()).toString().toStdString() << std::endl;
     }
 
     return map;
@@ -436,6 +440,16 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
     return MatPtrClone;
 }
 
+QString OgreMaterialProperties::ToString()
+{
+    Ogre::MaterialPtr matPtr = ToOgreMaterial();
+    if (matPtr.isNull())
+        return "";
+
+    Ogre::MaterialSerializer serializer;
+    serializer.queueForExport(matPtr, true, false);
+    return QString(serializer.getQueuedAsString().c_str());
+}
 
 }
 

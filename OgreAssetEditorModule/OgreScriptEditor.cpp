@@ -23,9 +23,7 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QHeaderView>
-
-#include <OgreMaterial.h>
-#include <OgreMaterialSerializer.h>
+#include <QTableWidget>
 
 namespace OgreAssetEditor
 {
@@ -41,36 +39,22 @@ OgreScriptEditor::OgreScriptEditor(
     buttonSaveAs_(0),
     buttonCancel_(0),
     textEdit_(0),
+    propertyTable_(0),
     assetType_(asset_type),
     name_(name),
     materialProperties_(0)
 {
     InitEditorWindow();
 
-//    if (assetType_ == RexTypes::RexAT_ParticleScript)
-    {
-        // Raw text edit for particle scripts.
-        textEdit_ = new QTextEdit(editorWidget_);
-        textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        textEdit_->resize(editorWidget_->size());
-        textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        textEdit_->setLineWrapMode(QTextEdit::NoWrap);
+    if (assetType_ == RexTypes::RexAT_ParticleScript)
+        CreateTextEdit();
 
-//        QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-//        layout->addWidget(editorWidget_);
-
-        textEdit_->show();
-    }
-
-/*
     else if (assetType_ == RexTypes::RexAT_MaterialScript)
     {
         // Create editing widgets for material scripts.
-        QVBoxLayout *layout  = editorWidget_->findChild<QVBoxLayout *>("verticalLayout");
-        layout->addWidget(propertyEditor_);
+        //QVBoxLayout *layout  = editorWidget_->findChild<QVBoxLayout *>("verticalLayout");
+        //layout->addWidget(propertyEditor_);
     }
-*/
 
     lineEditName_->setText(name_);
 
@@ -82,40 +66,83 @@ OgreScriptEditor::~OgreScriptEditor()
 {
     SAFE_DELETE(textEdit_);
     SAFE_DELETE(materialProperties_);
+    SAFE_DELETE(propertyTable_);
 }
 
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 {
-//    if (assetType_ == RexTypes::RexAT_ParticleScript)
+    bool edit_raw = false;
+
+    if (assetType_ == RexTypes::RexAT_ParticleScript)
+        edit_raw = true;
+
+    if (assetType_ == RexTypes::RexAT_MaterialScript)
+    {
+        OgreRenderer::OgreMaterialResource material(asset->GetId(), asset);
+        materialProperties_ = new OgreMaterialProperties(name_, &material);
+
+        if (!materialProperties_->HasProperties())
+        {
+            edit_raw = true;
+        }
+        else
+        {
+            OgreMaterialProperties::PropertyMap propMap = materialProperties_->GetPropertyMap();
+            OgreMaterialProperties::PropertyMapIter it(propMap);
+            size_t mapSize = propMap.size();
+
+            propertyTable_ = new QTableWidget(mapSize, 2);
+            propertyTable_->setHorizontalHeaderLabels(QStringList() << tr("Property") << tr("Value"));
+            propertyTable_->verticalHeader()->setVisible(false);
+            propertyTable_->resize(150, 50);
+
+            int index = 0;
+            while(it.hasNext())
+            {
+                QTableWidgetItem *propertyItem = new QTableWidgetItem(it.peekNext().key());
+                QTableWidgetItem *valueItem = new QTableWidgetItem;
+                valueItem->setData(Qt::DisplayRole, it.peekNext().value());
+
+                propertyTable_->setItem(index, 0, propertyItem);
+                propertyTable_->setItem(index, 1, valueItem);
+                ++index;
+                it.next();
+            }
+
+            propertyTable_->resizeColumnToContents(0);
+            propertyTable_->horizontalHeader()->setStretchLastSection(true);
+
+            QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+            if (layout)
+                layout->addWidget(propertyTable_);
+
+//            QGridLayout *layout = new QGridLayout;
+//            layout->addWidget(table, 0, 0);
+//            setLayout(layout);
+        }
+    }
+
+    if (edit_raw)
     {
         QString script(QByteArray((const char*)asset->GetData(), asset->GetSize()));
         if (script.isEmpty() && script.isNull())
         {
-            OgreAssetEditorModule::LogError("Invalid data for generating particle script.");
+            OgreAssetEditorModule::LogError("Invalid data for generating an OGRE script.");
             return;
         }
 
         // Replace tabs (ASCII code decimal 9) with 4 spaces because tabs might appear incorrectly.
         script.trimmed();
         script.replace(QChar(9), "    ");
+
+        CreateTextEdit();
         textEdit_->setText(script);
     }
-/*
-    else if (assetType_ == RexTypes::RexAT_MaterialScript)
-    {
-        OgreRenderer::OgreMaterialResource material(asset->GetId(), asset);
-        materialProperties_ = new OgreMaterialProperties(&material);
-        
-        //if materialProperties_->HasProperties() -> create UI
-        //else raw edit
-//        if (materialProperties_)
-    }
-*/
 }
 
 void OgreScriptEditor::Close()
 {
-    ///\todo This destrours only the canvas. Delete the editor instance also.
+    ///\todo This destroys only the canvas. Delete the editor instance also.
 
      boost::shared_ptr<QtUI::QtModule> qtModule =
         framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
@@ -135,7 +162,7 @@ void OgreScriptEditor::SaveAs()
 
     // Get the script.
     QString script;
-//    if (assetType_ == RexTypes::RexAT_ParticleScript)
+    if (assetType_ == RexTypes::RexAT_ParticleScript)
     {
         script = textEdit_->toPlainText();
         script.trimmed();
@@ -145,15 +172,9 @@ void OgreScriptEditor::SaveAs()
             return;
         }
     }
-/*
-    else if (assetType_ == RexTypes::RexAT_MaterialScript)
-    {
-        Ogre::MaterialPtr matPtr = materialProperties_->ToOgreMaterial();
-        Ogre::MaterialSerializer serializer;
-        serializer.queueForExport(matPtr, true, false);
-        script = serializer.getQueuedAsString().c_str();
-    }
-*/
+
+    if (assetType_ == RexTypes::RexAT_MaterialScript)
+        script = materialProperties_->ToString();
 
     // Get the name.
     QString filename = lineEditName_->text();
@@ -222,13 +243,26 @@ void OgreScriptEditor::InitEditorWindow()
     buttonSaveAs_ = mainWidget_->findChild<QPushButton *>("buttonSaveAs");
     buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
     editorWidget_= mainWidget_->findChild<QWidget *>("widgetEditor");
-//    editorWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Connect signals
     QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
-    QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()()));
+    QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+}
 
+void OgreScriptEditor::CreateTextEdit()
+{
+    // Raw text edit for particle scripts.
+    textEdit_ = new QTextEdit(editorWidget_);
+    textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    textEdit_->resize(editorWidget_->size());
+    textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    textEdit_->setLineWrapMode(QTextEdit::NoWrap);
+
+//        QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+//        layout->addWidget(editorWidget_);
+    textEdit_->show();
 }
 
 } // namespace RexLogic
