@@ -15,10 +15,13 @@
 
 #include <QObject>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QLineEdit;
 class QWidget;
 class QTextEdit;
+class QTableWidget;
+QT_END_NAMESPACE
 
 namespace QtUI
 {
@@ -73,6 +76,9 @@ namespace OgreAssetEditor
         /// Initializes the inventory UI.
         void InitEditorWindow();
 
+        /// 
+        void CreateTextEdit();
+
         /// Framework pointer.
         Foundation::Framework *framework_;
 
@@ -102,6 +108,9 @@ namespace OgreAssetEditor
 
         /// Name.
         QString name_;
+
+        /// Table widget for editing material properties.
+        QTableWidget *propertyTable_;
 
         ///
         OgreMaterialProperties *materialProperties_;

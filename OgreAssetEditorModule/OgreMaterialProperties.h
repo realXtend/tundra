@@ -31,7 +31,7 @@ namespace OgreAssetEditor
     public:
         /// Constructor.
         /// @param material OgreMaterialResource pointer.
-        explicit OgreMaterialProperties(OgreRenderer::OgreMaterialResource *material);
+        explicit OgreMaterialProperties(const QString &name, OgreRenderer::OgreMaterialResource *material);
 
         /// Destructor.
         ~OgreMaterialProperties();
@@ -48,13 +48,13 @@ namespace OgreAssetEditor
         /// Returns value for requested property.
         /// param name Property name.
 //        template <class T> GetProperty(const QString &name);
-
-        /// Returns value for requested property.
-        /// param name Property name.
 //        QVariant GetProperty(const QString &name);
 
-        ///@ return OgreMaterialPtr
+        /// @return OgreMaterialPtr
         Ogre::MaterialPtr ToOgreMaterial();
+
+        /// @return Material script as a string.
+        QString ToString();
 
     private:
         /// Creates the QProperties dynamically for this material.
