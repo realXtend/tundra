@@ -51,7 +51,7 @@ namespace TelepathyIM
         gst_object_sink(audio_bin_);
 
         GstElement *video_src;
-
+        
         if(videoSrc!=NULL) // If the videoSrc!=NULL we set up the pipeline with video preview elements
         {
             // create video elems,
@@ -128,8 +128,9 @@ namespace TelepathyIM
 
     GstElement* FarsightChannel::setUpElement(QString elemName)
     {
-        const char* arrayTest = elemName.toStdString().c_str();
-        GstElement* element = gst_element_factory_make(elemName.toStdString().c_str(), NULL);
+        std::string tempElemName = elemName.toStdString();
+        const char* cStrElemName = tempElemName.c_str();
+        GstElement* element = gst_element_factory_make(cStrElemName, NULL);
         gst_object_ref(element);
         gst_object_sink(element);
         return element;
