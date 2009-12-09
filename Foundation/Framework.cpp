@@ -20,7 +20,7 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 
-#include "RexQEngine.h"
+#include "QtFrameworkEngine.h"
 
 namespace Resource
 {
@@ -121,7 +121,7 @@ namespace Foundation
             Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
-            q_engine_ = boost::shared_ptr<RexQEngine>(new RexQEngine(this, argc_, argv_));
+            engine_.reset (new QtFrameworkEngine(this, argc_, argv_));
 
             initialized_ = true;
         }
@@ -247,7 +247,8 @@ namespace Foundation
         try
         {
             po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
-        } catch (std::exception &e)
+        } 
+        catch (std::exception &e)
         {
             Foundation::RootLogWarning(e.what());
         }
@@ -259,17 +260,6 @@ namespace Foundation
         PROFILE(FW_PostInitialize);
 
         Core::event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
-
-        // headless mode based on program options
-        //! \todo disabled since doesn't work with Qt -cm
-        //if (cm_options_.count("headless"))
-        //{
-        //    module_manager_->ExcludeModule("GtkmmUI");
-        //    module_manager_->ExcludeModule(Foundation::Module::MT_Renderer);
-        //    module_manager_->ExcludeModule("CommunicationUIModule");
-        //    module_manager_->ExcludeModule(Foundation::Module::MT_CommunicationUI);
-        //}
-
         srand(time(0));
 
         LoadModules();
@@ -336,44 +326,34 @@ namespace Foundation
         //}
     }
 
-    std::string Framework::GetApplicationMainWindowHandle() const
-    {
-        return q_engine_->GetMainWindowHandle();
-    }
 
-    QWidget *Framework::GetApplicationMainWindowQWidget() const
-    {
-        return q_engine_->GetMainWindowQWidget();
-    }
-
-    QApplication *Framework::GetQApplication() const
-    {
-        return q_engine_->GetQApplication();
-    }
 
     void Framework::Go()
     {
         PROFILE(FW_Go);
         PostInitialize();
-        q_engine_->Go();     
+
+        engine_->Go();     
         UnloadModules();
     }
 
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (q_engine_)
-            q_engine_->SendQAppQuitMessage();
+        if (engine_.get())
+            engine_->SendQAppQuitMessage();
     }
 
     void Framework::LoadModules()
     {
         {
             PROFILE(FW_LoadModules);
+            Foundation::RootLogDebug("\n\nLOADING MODULES\n================================================================\n");
             module_manager_->LoadAvailableModules();
         }
         {
             PROFILE(FW_InitializeModules);
+            Foundation::RootLogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
             module_manager_->InitializeModules();
         }
     }
@@ -626,5 +606,25 @@ namespace Foundation
             //    "Limit fps. Usage: FrameLimit(max_frames)", 
             //    Console::Bind(this, &Framework::ConsoleLimitFrames)));
         }
+    }
+
+    QApplication *Framework::GetQApplication() const
+    {
+        return engine_->GetQApplication();
+    }
+
+    QGraphicsView *Framework::GetUIView() const
+    {
+        return engine_->GetUIView();
+    }
+
+    void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
+    {
+        engine_->SetUIView(view);
+    }
+
+    KeyStateListener *Framework::GetKeyState () const
+    {
+        return engine_->GetKeyState();
     }
 }

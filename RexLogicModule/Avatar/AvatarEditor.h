@@ -4,11 +4,15 @@
 #define incl_RexLogic_AvatarEditor_h
 
 #include "Foundation.h"
-#include "UICanvas.h"
 
 #include <QObject>
 
 class QTabWidget;
+
+namespace UiServices
+{
+    class UiProxyWidget;
+}
     
 namespace RexLogic
 {
@@ -23,8 +27,6 @@ namespace RexLogic
         AvatarEditor(RexLogicModule *rexlogicmodule);
         ~AvatarEditor();
         
-        //! Toggle visibility of editor window
-        void Toggle();
         //! Rebuild edit view
         void RebuildEditView();
         
@@ -64,12 +66,12 @@ namespace RexLogic
         
         //! Ask a filename from the user. Store the directory used.
         std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
-               
-        //! Canvas for avatar editor
-        boost::shared_ptr<QtUI::UICanvas> canvas_;
         
         //! Main widget for avatar editor
         QWidget *avatar_widget_;
+
+        //! Proxy Widget of ui
+        UiServices::UiProxyWidget *avatar_editor_proxy_widget_;
         
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;

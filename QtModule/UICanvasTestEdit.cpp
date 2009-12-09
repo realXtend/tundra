@@ -5,6 +5,7 @@
 #include "QtModule.h"
 #include "SceneManager.h"
 #include "EC_UICanvas.h"
+
 #include "QtUtils.h"
 
 #include <QtUiTools>
@@ -15,9 +16,17 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 
+#include <UiModule.h>
+#include <UiSceneManager.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
+
 namespace QtUI
 {
-    UICanvasTestEdit::UICanvasTestEdit(Foundation::Framework* framework) : framework_(framework), editor_widget_(0), last_entity_id_(0)
+    UICanvasTestEdit::UICanvasTestEdit(Foundation::Framework* framework) 
+        : framework_(framework), 
+          editor_widget_(0),
+          last_entity_id_(0)
     {   
         InitEditorWindow();    
     }
@@ -29,20 +38,21 @@ namespace QtUI
         
         if (qt_ui)
         {
-            if (canvas_)
-                qt_ui->DeleteCanvas(canvas_->GetID());
-        }    
+            foreach(boost::shared_ptr<UICanvas> proxy_canvas, proxy_widget_canvases_)
+                qt_ui->DeleteCanvas(proxy_canvas->GetID());
+        }
+
+        SAFE_DELETE(editor_widget_);
+        editor_widget_proxy_ = 0;
     }
     
     void UICanvasTestEdit::InitEditorWindow()
     {
-        boost::shared_ptr<QtUI::QtModule> qt_module = framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
 
         // If this occurs, we're most probably operating in headless mode.
-        if (qt_module.get() == 0)
+        if (ui_module.get() == 0)
             return;
-
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
         QUiLoader loader;
         QFile file("./data/ui/uicanvastestedit.ui");
@@ -53,26 +63,12 @@ namespace QtUI
             return;
         }
 
-        editor_widget_ = loader.load(&file); 
+        editor_widget_ = loader.load(&file);
         if (!editor_widget_)
             return;
-            
-        // Set canvas size. 
-        QSize size = editor_widget_->size();
-        canvas_->SetSize(size.width() + 1, size.height() + 1);
-        canvas_->SetWindowTitle(QString("3D UICanvas Test Edit"));
-        canvas_->SetPosition(60,60);
-                        
-        canvas_->AddWidget(editor_widget_);
-   
-        // Set canvas scrollbar policy
-        QGraphicsView* view = canvas_->GetView();
-        view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
 
-	    // Add to control bar
-		qt_module->AddCanvasToControlBar(canvas_, QString("3D UICanvas Test Edit"));
-		
+        editor_widget_proxy_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "3D GUI"));
+
 		// Connect signals   
         QPushButton *button = editor_widget_->findChild<QPushButton *>("but_bind");
         if (button)
@@ -80,21 +76,27 @@ namespace QtUI
         button = editor_widget_->findChild<QPushButton *>("but_unbind");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(UnbindCanvas()));
-        QObject::connect(canvas_.get(), SIGNAL(Shown()), this, SLOT(Shown()));
-        QObject::connect(canvas_.get(), SIGNAL(Hidden()), this, SLOT(Hidden()));
+        QObject::connect(editor_widget_proxy_, SIGNAL(Visible(bool)), this, SLOT(Shown(bool)));
     }
 
     void UICanvasTestEdit::BindCanvas()
     {
+        // Get ui elements
         QComboBox* combo_s = editor_widget_->findChild<QComboBox*>("combo_subobject");    
         if (!combo_s)
             return;    
         QComboBox* combo_c = editor_widget_->findChild<QComboBox*>("combo_canvas");    
         if (!combo_c)
             return;
+
+        // Get QtModule
         Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
-        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());  
-                
+        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+
+        // Get UiModule
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+
+        // Get Scene
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (scene.get())
         {
@@ -102,18 +104,24 @@ namespace QtUI
             if (entity.get())
             {
                 Core::uint submesh = combo_s->currentIndex();
-                QString canvasid = combo_c->currentText();
-                boost::shared_ptr<UICanvas> canvas;
+                QString proxy_widget_name = combo_c->currentText();
+                boost::shared_ptr<QtUI::UICanvas> canvas;
                 
-                const QList<boost::shared_ptr<UICanvas> >& canvases = qt_ui->GetCanvases();
-                for (Core::uint i = 0; i < canvases.size(); ++i)
+                // Get proxy widget for selected name
+                UiServices::UiProxyWidget *proxy_widget = ui_module->GetSceneManager()->GetProxyWidget(proxy_widget_name);
+                if (proxy_widget)
                 {
-                    if (canvases[i]->GetID() == canvasid)
-                        canvas = canvases[i];
-                }
-                
-                if (canvas)
-                {
+                    ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxy_widget);
+                    proxy_widget->widget()->setWindowFlags(Qt::Widget);
+                    canvas = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
+                    canvas->SetSize(proxy_widget->size().width(), proxy_widget->size().height());
+                    canvas->SetPosition(100,100);
+                    canvas->AddProxyWidget(proxy_widget);
+                    canvas->Show();
+                    proxy_widget->show();
+
+                    proxy_widget_canvases_.append(canvas);
+
                     EC_UICanvas* ec = dynamic_cast<EC_UICanvas*>(qt_ui->CreateEC_UICanvasToEntity(entity.get(), canvas).get());
                     if (ec)
                         ec->SetSubmeshes(submesh);
@@ -133,19 +141,38 @@ namespace QtUI
             {
                 EC_UICanvas* ec = dynamic_cast<EC_UICanvas*>(entity->GetComponent(EC_UICanvas::NameStatic()).get());
                 if (ec)
+                {
+                    // Get proxy widget from 3D canvas
+                    boost::shared_ptr<QtUI::UICanvas> canvas = ec->GetCanvas();
+                    QGraphicsProxyWidget *proxy_widget = canvas->Remove3DProxyWidget();
+                    proxy_widget->widget()->setWindowFlags(Qt::Dialog);
+
                     ec->ClearSubmeshes();
+                    
+                    // Remove proxy widget from local QList so it we wont try to delete in decostructor
+                    proxy_widget_canvases_.removeOne(canvas);
+
+                    // Get QtModule and delete the 3D canvas
+                    Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
+                    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+                    if (qt_ui)
+                        qt_ui->DeleteCanvas(canvas->GetID());
+
+                    // Add proxy widget back to 2D scene
+                    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                    ui_module->GetSceneManager()->AddProxyWidget((UiServices::UiProxyWidget *)proxy_widget);
+
+                }
             }
         }
     }
     
-    void UICanvasTestEdit::Shown()
+    void UICanvasTestEdit::Shown(bool visible)
     {
-        RefreshCanvases();
-    }
-
-    void UICanvasTestEdit::Hidden()
-    {
-        SetEntityId(0);
+        if (visible)
+            RefreshCanvases();
+        else
+            SetEntityId(0);
     }
     
     void UICanvasTestEdit::SetEntityId(Core::entity_id_t entity_id)
@@ -203,17 +230,18 @@ namespace QtUI
         if (!editor_widget_)
             return;
                 
-        Foundation::ModuleSharedPtr qt_module = framework_->GetModuleManager()->GetModule("QtModule").lock();
-        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-        const QList<boost::shared_ptr<UICanvas> >& canvases = qt_ui->GetCanvases();
+        Foundation::ModuleSharedPtr ui_module = framework_->GetModuleManager()->GetModule("UiServices").lock();
+
+        UiServices::UiModule *ui_services = dynamic_cast<UiServices::UiModule*>(ui_module.get());
+        const QList<UiServices::UiProxyWidget *> proxy_widgets = ui_services->GetSceneManager()->GetAllProxyWidgets();
         
         QComboBox* combo = editor_widget_->findChild<QComboBox*>("combo_canvas");    
         if (!combo)
             return;
                 
         combo->clear();
-        for (Core::uint i = 0; i < canvases.size(); ++i)
-            combo->addItem(canvases[i]->GetID());
+        foreach(UiServices::UiProxyWidget *proxy_widget, proxy_widgets)
+            combo->addItem(proxy_widget->getWidgetProperties().getWidgetName());
     }
     
 }

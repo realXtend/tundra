@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Login/LoginContainer.h"
+#include "RexLogicModule.h"
+
 #include "EventHandlers/FrameworkEventHandler.h"
+#include "EventHandlers/LoginHandler.h"
 #include "WorldStream.h"
-#include "Login/LoginHandler.h"
-#include "Login/LoginUI.h"
 #include "ScriptServiceInterface.h"
 
 #include <QMap>

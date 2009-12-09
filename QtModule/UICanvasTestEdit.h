@@ -8,6 +8,11 @@
 
 #include <QObject>
 
+namespace UiServices
+{
+    class UiProxyWidget;
+}
+
 namespace QtUI
 {
     //! An editor view for assigning EC_UICanvases to world objects, for test purposes
@@ -29,10 +34,8 @@ namespace QtUI
         void BindCanvas();
         //! Handle UICanvas unbind from entity -action
         void UnbindCanvas();
-        //! Handle show of editor
-        void Shown();
-        //! Handle hide of editor
-        void Hidden();
+        //! Handle show/hide of editor
+        void Shown(bool visible);
         
     private:
         //! Initialize the canvas/widget
@@ -46,14 +49,18 @@ namespace QtUI
         //! Framework
         Foundation::Framework* framework_;
         
-        //! Canvas for the editor view
-        boost::shared_ptr<QtUI::UICanvas> canvas_;
-        
         //! Main widget for the editor view
         QWidget *editor_widget_;        
 
         //! Last selected entity
         Core::entity_id_t last_entity_id_;
+
+        //! Ui services proxy widget for ui
+        UiServices::UiProxyWidget *editor_widget_proxy_;
+
+        //! Container for all created UICanvases
+        QList<boost::shared_ptr<QtUI::UICanvas> > proxy_widget_canvases_;
+
     };
 }
 

@@ -53,10 +53,7 @@ NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLo
     
     boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = protocolModule_.lock();
     if (!sp.get())
-    {
-        RexLogicModule::LogError("NetworkEventHandler: Could not acquire ProtocolModule!");
-        return;
-    }
+        RexLogicModule::LogError("NetworkEventHandler: Protocol module not set yet! Will fetch later when networking occurs...");
     
     Foundation::ModuleWeakPtr renderer = framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
     if (renderer.expired() == false)

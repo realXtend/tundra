@@ -9,8 +9,7 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
 
-// Login class pointer being used, can this be done somehow prettier?
-#include "Login/LoginUI.h" 
+#include "Login/LoginContainer.h" 
 
 namespace RexLogic
 {

@@ -6,25 +6,41 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>268</width>
-    <height>345</height>
+    <width>247</width>
+    <height>192</height>
    </rect>
   </property>
   <property name="styleSheet">
    <string>/* Containers */
 
 QWidget#UICanvasTestEdit {
-	background-color: rgba(255, 255, 255, 0);
+		background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
 }
 
-QFrame#MainFrame {
-	background-color: rgba(85, 170, 255, 175);
-	border: 2px solid rgba(85, 170, 255, 200);
-	padding: 5px;
-	border-radius:15px;
+QLabel {
+	color: rgb(255,255,255);
 }
 
-</string>
+/* QPUSHBUTTON */
+
+QPushButton {
+	color: rgb(0, 0, 0);
+	min-width: 60px;
+	font-size: 12px;
+	border: 1px solid;
+	border-color: rgb(48, 48, 48);
+	border-radius: 8px;
+	border-top-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	padding: 2px 5px;
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
+}
+
+QPushButton:hover {
+	border-color: rgba(0, 0, 0, 255);
+	color: rgb(0,0,0);
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
+}</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -42,33 +58,6 @@ QFrame#MainFrame {
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string>
-            color: rgb(255, 255, 255);
-            padding-bottom: 3px;
-            background-color: rgba(255, 255, 255, 0);
-          </string>
-        </property>
-        <property name="text">
-         <string>3D UICanvas Test Edit</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QLabel" name="label_4">
         <property name="sizePolicy">
@@ -160,13 +149,6 @@ QFrame#MainFrame {
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QPushButton" name="but_bind">
-          <property name="text">
-           <string>Bind Canvas</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -181,6 +163,13 @@ QFrame#MainFrame {
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="but_bind">
+          <property name="text">
+           <string>Bind Canvas</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="but_unbind">

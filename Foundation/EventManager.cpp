@@ -29,9 +29,9 @@ namespace Foundation
     {
         if (event_category_map_.find(name) == event_category_map_.end())
         {
-            Foundation::RootLogInfo("Registering event category " + name);
             event_category_map_[name] = next_category_id_;
             next_category_id_++;
+            Foundation::RootLogDebug("Registered event category " + name);
         }
         else
         {
@@ -77,7 +77,7 @@ namespace Foundation
         if (event_map_[category_id].find(event_id) != event_map_[category_id].end())
             Foundation::RootLogWarning("Overwriting already registered event with " + name);
         else
-            Foundation::RootLogInfo("Registering event " + name);
+            Foundation::RootLogDebug("Registering event " + name);
 
         event_map_[category_id][event_id] = name;
     }
@@ -263,7 +263,7 @@ namespace Foundation
     {
         PROFILE(EventManager_LoadEventSubscriberTree);
 
-        Foundation::RootLogInfo("Loading event subscriber tree from " + filename);
+        Foundation::RootLogDebug("Loading event subscriber tree with " + filename);
 
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))

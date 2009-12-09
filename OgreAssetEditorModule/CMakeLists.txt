@@ -30,11 +30,11 @@ use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces RexCommon  ProtocolUtilities QtModule AssetModule OgreRenderingModule)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities QtModule AssetModule OgreRenderingModule UiModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities QtModule OgreRenderingModule)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities QtModule UiModule OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)

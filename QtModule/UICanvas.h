@@ -203,7 +203,15 @@ namespace QtUI
         /** Adds a widget into this canvas.
             Call this method to add any type of widget into the QGraphicsScene contained in this
             canvas. This canvas will take the ownership of the widget and free it when appropriate. */
-        void AddWidget(QWidget* widget); 
+        void AddWidget(QWidget* widget);
+
+        /** Adds a proxy widget into the canvases scene 
+            This method is used when transforming QGraphicsProxyWidgets from normal UI scene to 3D canvas scene */
+        void AddProxyWidget(QGraphicsProxyWidget *proxy_widget);
+
+        /** Gets, removes and returns Canvases proxy widget
+            This is used only when we want to return the QGraphicsProxyWidget to the 2D scene from 3D canvas scene */
+        QGraphicsProxyWidget *Remove3DProxyWidget();
 
         /// Sets the window title. For internal canvases the title is not shown, so this has no effect.
         void SetWindowTitle(const QString& title);

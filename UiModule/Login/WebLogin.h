@@ -8,11 +8,9 @@
 #include <QWebView>
 #include <QProgressBar>
 
-namespace RexLogic
+namespace CoreUi
 {
-	class RexLogicModule;
-	class WebLogin 
-		: public QWidget
+	class WebLogin : public QWidget
 	{
 		Q_OBJECT
 
@@ -33,14 +31,14 @@ namespace RexLogic
 
 		QWidget *widget_;
 		QWebView *webView_;
-		QProgressBar *progressBar;
+		QProgressBar *progress_bar_;
 		QLabel *statusLabel;
-		QComboBox *comboBoxAddress;
-		QPushButton *refreshButton;
-		QPushButton *backButton;
-		QPushButton *forwardButton;
-		QPushButton *stopButton;
-		QPushButton *goButton;
+		QComboBox *combobox_address_;
+		QPushButton *refresh_button_;
+		QPushButton *back_button_;
+		QPushButton *forward_button_;
+		QPushButton *stop_button_;
+		QPushButton *go_button_;
 		QVBoxLayout *layout_;
 		QString address_;
 

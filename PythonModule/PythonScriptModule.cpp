@@ -64,6 +64,9 @@
 #include "QtModule.h"
 #include "UICanvas.h"
 
+//the new qt integration, the previous stuff (above) still used for 3d inworld things
+#include <UiModule.h>
+
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
 
@@ -1022,7 +1025,6 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
 
 PyObject* GetPropertyEditor(PyObject *self)
 {
-	
 	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
 	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
 	return PythonQt::self()->wrapQObject(pe); 
@@ -1031,6 +1033,20 @@ PyObject* GetPropertyEditor(PyObject *self)
 PyObject* GetQtModule(PyObject *self)
 {
     return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
+}
+
+PyObject* GetUiSceneManager(PyObject *self)
+{
+    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+
+    // If this occurs, we're most probably operating in headless mode.
+    if (ui_module.get() == 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing."); //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
+        return NULL;
+    }
+
+    return PythonQt::self()->wrapQObject(ui_module->GetSceneManager());
 }
 
 PyObject* GetServerConnection(PyObject *self)
@@ -1390,8 +1406,11 @@ static PyMethodDef EmbMethods[] = {
     //{"closeAndDeleteCanvas", (PyCFunction)CloseAndDeleteCanvas, METH_VARARGS, 
     //"closes and deletes the given canvas"},
 
-    {"getQtModule", (PyCFunction)GetQtModule, METH_VARARGS, 
+    {"getQtModule", (PyCFunction)GetQtModule, METH_NOARGS, 
     "gets the qt module"},
+
+    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
+    "gets the qt ui module"},
 
     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
     "Creates a new prim at the given points"},

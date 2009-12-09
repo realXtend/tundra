@@ -114,7 +114,7 @@ namespace Foundation
             assert (module.empty() == false);
             exclude_list_.insert(module);
 
-            Foundation::RootLogInfo("Module: " + module + " added to exclude list.");
+            Foundation::RootLogDebug("Added module " + module + " to exclude list");
         }
 
         //! Returns true if the specified module type is exluded from being loaded

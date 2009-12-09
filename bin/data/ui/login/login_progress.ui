@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>837</width>
-    <height>637</height>
+    <width>691</width>
+    <height>127</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>127</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -20,11 +26,11 @@
 
 QFrame#MainFrame {
 	padding: 25px;
-	background-color: rgba(195, 195, 195, 100);
+	background-color: qconicalgradient(cx:0, cy:0, angle:85.7, stop:0.460227 rgba(0, 0, 0, 255), stop:0.75 rgba(0, 169, 255, 255));
 }
 
-QLabel#statusLabel {
-	color: rgb(100, 135, 255);
+QLabel  {
+	color: rgb(255, 255, 255);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -82,6 +88,20 @@ QLabel#statusLabel {
         </item>
         <item>
          <widget class="QProgressBar" name="progressBar">
+          <property name="styleSheet">
+           <string>QProgressBar {
+	color: rgb(0, 0, 0);
+    border: 1px solid white;
+	border-radius: 8px;
+	text-align: center;
+}
+
+ QProgressBar::chunk {
+	background-color: qlineargradient(spread:pad, x1:0.489, y1:0, x2:0.5, y2:1, stop:0 rgba(0, 169, 255, 200), stop:1 rgba(0, 0, 0, 255));
+	border-bottom-left-radius: 7px;
+	border-top-left-radius: 7px;
+ }</string>
+          </property>
           <property name="value">
            <number>0</number>
           </property>

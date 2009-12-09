@@ -9,6 +9,8 @@
 #include "ConfigurationManager.h"
 #include "Poco/UnicodeConverter.h"
 
+#include <QString>
+
 namespace fs = boost::filesystem;
 
 typedef void (*SetProfilerFunc)(Foundation::Profiler *profiler);
@@ -282,7 +284,7 @@ namespace Foundation
         boost::algorithm::to_lower(ext);
         if (ext == ".xml")
         {
-            Foundation::RootLogDebug("Attempting to load module definition file: " + path.file_string());
+            Foundation::RootLogDebug("LOADING " + path.file_string());
             fs::path modulePath(path);
             modulePath.replace_extension("");
 
@@ -332,7 +334,7 @@ namespace Foundation
                     }
                 }
                 if (!found)
-                    Foundation::RootLogWarning("Failed to find dependency " + *it + "."); 
+                    Foundation::RootLogWarning("Failed to find dependency " + *it); 
             }
 
             // Then load the module itself
@@ -379,7 +381,7 @@ namespace Foundation
             catch (Poco::Exception &e)
             {
                 Foundation::RootLogError(e.displayText());
-                Foundation::RootLogError("Failed to load dynamic library: " + path + ".");
+                Foundation::RootLogError("Failed to load dynamic library: " + path);
                 return;
             }
         }
@@ -390,22 +392,22 @@ namespace Foundation
         {   
             if (HasModuleEntry(*it))
             {
-                Foundation::RootLogDebug("Module " + *it + " already loaded.");
+                Foundation::RootLogDebug(">> " + *it + " already loaded");
                 continue;
             }
 
             if (IsExcluded(*it))
             {
-                Foundation::RootLogInfo("Module " + *it + " excluded and not loaded.");
+                Foundation::RootLogDebug(">> " + *it + " excluded and not loaded");
                 continue;
             }
 
-            Foundation::RootLogInfo("Attempting to load module: " + *it + ".");
+            Foundation::RootLogDebug(">> Attempting to load module " + *it);
 
 
             if (library->cl_.findClass(*it) == 0)
             {
-                throw Core::Exception("Entry class not found from module.");
+                throw Core::Exception("Entry class not found from module");
             }
 
 
@@ -436,12 +438,12 @@ namespace Foundation
 
                 modules_.push_back(entry);
 
-                Foundation::RootLogInfo("Module " + *it + " loaded.");
+                //Foundation::RootLogInfo("   > " + *it + " loaded");
             } 
             else
             {
-                Foundation::RootLogInfo("Module " + module->Name() + " is excluded and not loaded.");
-//                SAFE_DELETE (module);
+                Foundation::RootLogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
+                //SAFE_DELETE (module);
             }
         }
     }
@@ -470,7 +472,7 @@ namespace Foundation
     {
         assert(module);
         assert(module->State() == Foundation::Module::MS_Loaded);
-        Foundation::RootLogInfo("Initializing module " + module->Name() + ".");
+        Foundation::RootLogDebug("INITIALIZING module " + module->Name());
         module->InitializeInternal();
     }
 
@@ -484,7 +486,7 @@ namespace Foundation
     void ModuleManager::UninitializeModule(ModuleInterface *module)
     {
         assert(module);
-        Foundation::RootLogInfo("Uninitializing module " + module->Name() + ".");
+        Foundation::RootLogDebug("UNINITIALIZING module " + module->Name());
         module->UninitializeInternal();
     }
 

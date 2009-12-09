@@ -34,7 +34,7 @@ init_target (CommunicationModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h )
 file (GLOB XML_FILES *.xml)
-file (GLOB UI_FILES *.ui)
+file (GLOB UI_FILES CommunicationUI/ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
 AddSourceFolder(OpensimIM)

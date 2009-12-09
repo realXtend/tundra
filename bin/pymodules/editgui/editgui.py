@@ -1,3 +1,4 @@
+
 """
 A gui tool for editing.
 
@@ -40,8 +41,8 @@ else:
 
 #are in Naali QObject QTModule::UICanvas as QEnums, in PythonQt module now
 #naali.py: UICanvas = PythontQt.__dict__['QTModule::UICanvas']
-INTERNAL = 1
-EXTERNAL = 0
+#INTERNAL = 1
+#EXTERNAL = 0
 
 OIS_KEY_ALT = 256
 OIS_KEY_M = 50
@@ -91,25 +92,33 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-        mode = INTERNAL
-        if DEV:
-            mode = EXTERNAL
-        self.canvas = r.createCanvas(mode) #now for drag&drop dev
-        
+        #mode = INTERNAL
+        #if DEV:
+        #    mode = EXTERNAL
+        #self.canvas = r.createCanvas(mode) #old way before qt refactor
+         
         self.move_arrows = None
         uifile = QFile(self.UIFILE)
 
         ui = loader.load(uifile)
         width = ui.size.width()
         height = ui.size.height()
+        
+        if not DEV:
+            uism = r.getUiSceneManager()
+            self.proxywidget = uism.AddWidgetToCurrentScene(ui)
+            #modu.AddCanvasToControlBar(ui, "World Edit")
+            #XXX change to te new signal. self.proxywidget.connect('Hidden()', self.on_hide)
+        else:
+            ui.show()
+        
+        #self.canvas.SetSize(width, height)
+        #self.canvas.SetPosition(30, 30)
+        #self.canvas.SetResizable(False)
 
-        self.canvas.SetSize(width, height)
-        self.canvas.SetPosition(30, 30)
-        self.canvas.SetResizable(False)
+        #ui.resize(width, height)
 
-        ui.resize(width, height)
-
-        self.canvas.AddWidget(ui)
+        #self.canvas.AddWidget(ui)
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
@@ -123,12 +132,9 @@ class EditGUI(Component):
         #~ meshassetedit.move(200, 177)
         #~ self.canvas.AddWidget(meshassetedit)
 
-        self.canvas.connect('Hidden()', self.on_hide)
+
         modu = r.getQtModule()
-        if not DEV:
-            modu.AddCanvasToControlBar(self.canvas, "World Edit")
-        else:
-            self.canvas.Show()
+
         #for some reason setRange is not there. is not not a slot of these?
         #"QDoubleSpinBox has no attribute named 'setRange'"
         #apparently they are properties .minimum and .maximum, made in the xml now
@@ -611,7 +617,7 @@ class EditGUI(Component):
     def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
         #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
-        if not self.canvas.IsHidden():
+        if 0: #XXXnot self.canvas.IsHidden():
             #print "Point!"
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
@@ -623,7 +629,7 @@ class EditGUI(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
 
-        if not self.canvas.IsHidden():
+        if 0: #XXX not self.canvas.IsHidden():
             if self.left_button_down :
                 if self.sel is not None and self.sel_activated:
                     self.dragging = True              
@@ -750,7 +756,7 @@ class EditGUI(Component):
             #~ r.logDebug("...not restarting...")
         
         modu = r.getQtModule()
-        if self.canvas is not None:
+        if 0: #XXX self.canvas is not None:
             modu.DeleteCanvas(self.canvas)
 
         #r.logDebug("   ...exit done.")
@@ -770,7 +776,7 @@ class EditGUI(Component):
         
     def update(self, time):
         #print "here", time
-        if not self.canvas.IsHidden(): #do we need this here?
+        if 0: #XXX not self.canvas.IsHidden(): #do we need this here?
             self.time += time
             ent = self.sel
             if self.time > self.UPDATE_INTERVAL:

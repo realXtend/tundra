@@ -6,18 +6,20 @@
 #include "RexLogicModule.h"
 #include "ComponentManager.h"
 #include "Poco/ClassLibrary.h"
+#include "EventDataInterface.h"
+#include "TextureInterface.h"
+#include "SoundServiceInterface.h"
+#include "SceneManager.h"
+#include "Avatar/AvatarControllable.h"
+#include "CameraControllable.h"
+
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
 #include "EventHandlers/FrameworkEventHandler.h"
-#include "EventDataInterface.h"
-#include "TextureInterface.h"
-#include "SoundServiceInterface.h"
-#include "SceneManager.h"
-#include "Login/LoginUI.h"
-#include "Avatar/AvatarControllable.h"
-#include "CameraControllable.h"
+#include "EventHandlers/LoginHandler.h"
+#include "EventHandlers/MainPanelHandler.h"
 
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_SpatialSound.h"
@@ -47,6 +49,8 @@
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
 
+#include <Login/LoginContainer.h>
+
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic
@@ -62,7 +66,7 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     scene_handler_(0),
     network_state_handler_(0),
     framework_handler_(0),
-    loginUI_(0)
+    login_ui_(0)
 {
 }
 
@@ -126,6 +130,7 @@ void RexLogicModule::Initialize()
     framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
+    main_panel_handler_ = new MainPanelHandler(framework_, this);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -222,8 +227,11 @@ void RexLogicModule::PostInitialize()
 
     send_input_state_ = true;
 
-    // Create the login window.
-    loginUI_ = new Login(framework_, this);
+	// Create the login window, give it the loginhandlers
+    os_login_handler_ = new OpenSimLoginHandler(framework_, this);
+    taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
+	login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
+    main_panel_handler_->ConnectToLoginHandler();
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -303,12 +311,14 @@ void RexLogicModule::Uninitialize()
 
     event_handlers_.clear();
 
-    SAFE_DELETE(network_handler_);
-    SAFE_DELETE(input_handler_);
-    SAFE_DELETE(scene_handler_);
-    SAFE_DELETE(network_state_handler_);
-    SAFE_DELETE(framework_handler_);
-    SAFE_DELETE(loginUI_);
+    SAFE_DELETE (network_handler_);
+    SAFE_DELETE (input_handler_);
+    SAFE_DELETE (scene_handler_);
+    SAFE_DELETE (network_state_handler_);
+    SAFE_DELETE (framework_handler_);
+    SAFE_DELETE (os_login_handler_);
+    SAFE_DELETE (taiga_login_handler_);
+	SAFE_DELETE (login_ui_);
 
     LogInfo("Module " + Name() + " uninitialized.");
 }
@@ -355,7 +365,7 @@ void RexLogicModule::Update(Core::f64 frametime)
         avatar_->Update(frametime);
 
         // update sound listener position/orientation
-        UpdateSoundListener();
+        //UpdateSoundListener();
 
         // Poll the connection state and update the info to the UI.
         ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
@@ -477,12 +487,6 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
     if (framework_->HasScene("World"))
         DeleteScene("World");
-}
-
-void RexLogicModule::ShowAvatarEditor()
-{
-    if (avatar_editor_)
-        avatar_editor_->Toggle();
 }
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
@@ -611,7 +615,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &p
 
 void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort)
 {
-    loginUI_->StartParameterLoginOpenSim(qfirstAndLast, qpassword, qserverAddressWithPort);
+    login_ui_->StartParameterLoginOpenSim(qfirstAndLast, qpassword, qserverAddressWithPort);
 }
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)

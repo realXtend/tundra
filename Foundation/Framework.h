@@ -10,6 +10,7 @@
 #include "Profiler.h"
 
 class QApplication;
+class QGraphicsView;
 class QWidget;
 
 namespace Poco
@@ -25,7 +26,8 @@ namespace ProtocolUtilities
 
 namespace Foundation
 {
-    class RexQEngine;
+    class QtFrameworkEngine;
+    class KeyStateListener;
 
     //! contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
@@ -149,7 +151,7 @@ namespace Foundation
         const SceneMap &GetSceneMap() const { return scenes_; }
 
         //! Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-//        Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
+        //! Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
         Profiler &GetProfiler() { return profiler_; }
 
         //! Add a new log listener for poco log
@@ -191,13 +193,21 @@ namespace Foundation
 
         //! Loads all available modules. Do not call normally.
         void LoadModules();
+
         //! Unloads all available modules. Do not call normally.
         void UnloadModules();
 
-        std::string GetApplicationMainWindowHandle() const;
-
-        QWidget *GetApplicationMainWindowQWidget() const;
+        //! Get main QApplication
         QApplication *GetQApplication() const;
+
+        //! Get main UI View
+        QGraphicsView *GetUIView() const;
+
+        //! Set main UI View
+        void SetUIView(std::auto_ptr <QGraphicsView> view);
+
+        //! Get the current keyboard state (which keys are pressed)
+        KeyStateListener *GetKeyState () const;
 
     private:
         //! Registers framework specific console commands
@@ -237,7 +247,7 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
-        boost::shared_ptr<RexQEngine> q_engine_;
+        std::auto_ptr <QtFrameworkEngine> engine_;
 
         //! maximum number of ticks (milliseconds) per frame for frame limiter
         Core::uint max_ticks_;

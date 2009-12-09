@@ -10,7 +10,6 @@
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
 #include "Framework.h"
-#include "QtModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
 #include "OgreMaterialResource.h"
@@ -24,6 +23,10 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QTableWidget>
+
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
 
 namespace OgreAssetEditor
 {
@@ -144,10 +147,10 @@ void OgreScriptEditor::Close()
 {
     ///\todo This destroys only the canvas. Delete the editor instance also.
 
-     boost::shared_ptr<QtUI::QtModule> qtModule =
-        framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+    // boost::shared_ptr<QtUI::QtModule> qtModule =
+    //    framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 
-    qtModule->DeleteCanvas(canvas_->GetID());
+    //qtModule->DeleteCanvas(canvas_->GetID());
 }
 
 void OgreScriptEditor::SaveAs()
@@ -201,21 +204,19 @@ void OgreScriptEditor::SaveAs()
 
 void OgreScriptEditor::ValidateScriptName(const QString &name)
 {
-    if (name == name_ || name.isNull() || name.isEmpty())
-        buttonSaveAs_->setEnabled(false);
-    else
-        buttonSaveAs_->setEnabled(true);
+    script_editor_proxy_widget_->hide();
+    // boost::shared_ptr<QtUI::QtModule> qtModule =
+    //    framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+
+    //qtModule->DeleteCanvas(canvas_->GetID());
 }
 
 void OgreScriptEditor::InitEditorWindow()
 {
     // Get QtModule and create canvas
-     boost::shared_ptr<QtUI::QtModule> qtModule =
-        framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-    if (!qtModule.get())
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
         return;
-
-    canvas_ = qtModule->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
     // Create widget from ui file
     QUiLoader loader;
@@ -230,13 +231,13 @@ void OgreScriptEditor::InitEditorWindow()
     file.close();
 
     QSize size = mainWidget_->size();
-    canvas_->SetSize(size.width() + 1, size.height() + 1);
-    canvas_->SetSize(size.width() + 1, size.height() + 1);
-    canvas_->SetWindowTitle(QString("OGRE Script Editor"));
-    canvas_->SetStationary(false);
-    canvas_->SetPosition(40, 40);
-    canvas_->AddWidget(mainWidget_);
-    canvas_->Show();
+    //canvas_->SetSize(size.width() + 1, size.height() + 1);
+    //canvas_->SetSize(size.width() + 1, size.height() + 1);
+    //canvas_->SetWindowTitle(QString("OGRE Script Editor"));
+    //canvas_->SetStationary(false);
+    //canvas_->SetPosition(40, 40);
+    //canvas_->AddWidget(mainWidget_);
+    //canvas_->Show();
 
     // Get controls
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
@@ -248,6 +249,9 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
     QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+
+    // Add widget to UI via ui services module
+    script_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), size, Qt::Dialog, "Script Editor"));
 }
 
 void OgreScriptEditor::CreateTextEdit()

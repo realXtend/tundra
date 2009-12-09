@@ -13,7 +13,7 @@ namespace Foundation
     {
         assert(service.expired() == false);
 
-        Foundation::RootLogInfo("Registering service. Service_type: " + boost::lexical_cast<std::string>(type) + ".");
+        Foundation::RootLogDebug("Registering service type " + boost::lexical_cast<std::string>(type));
 
         if (services_.find(type) != services_.end())
         {
@@ -23,7 +23,6 @@ namespace Foundation
         services_[type] = service;
 
 #ifdef _DEBUG
-        // for debugging purposes
         ServicePtr upped_service = service.lock();
         Foundation::RootLogDebug("Registering service type " + Core::ToString(type) + " with usage count " + Core::ToString(upped_service.use_count()));
         services_usage_[type] = upped_service.use_count();
@@ -42,7 +41,7 @@ namespace Foundation
             assert (iter->second.expired() == false);
             if (iter->second.lock().get() == upped_service.get())
             {
-                Foundation::RootLogInfo("Unregistering service type " + Core::ToString(iter->first) + ".");
+                Foundation::RootLogDebug("Unregistering service type " + Core::ToString(iter->first));
 
 #ifdef _DEBUG
             if (upped_service.use_count() > services_usage_[iter->first]) // not efficient according to boost doc, so use only in debug

@@ -23,9 +23,9 @@ class QTextEdit;
 class QTableWidget;
 QT_END_NAMESPACE
 
-namespace QtUI
+namespace UiServices
 {
-    class UICanvas;
+    class UiProxyWidget;
 }
 
 namespace Foundation
@@ -82,9 +82,6 @@ namespace OgreAssetEditor
         /// Framework pointer.
         Foundation::Framework *framework_;
 
-        /// Canvas for the inventory window.
-        boost::shared_ptr<QtUI::UICanvas> canvas_;
-
         /// The editor main window widget.
         QWidget *mainWidget_;
 
@@ -114,6 +111,9 @@ namespace OgreAssetEditor
 
         ///
         OgreMaterialProperties *materialProperties_;
+
+        /// Proxy widget for the ui
+        UiServices::UiProxyWidget *script_editor_proxy_widget_;
     };
 }
 
