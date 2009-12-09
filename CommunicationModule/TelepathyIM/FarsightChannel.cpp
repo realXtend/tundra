@@ -1,6 +1,5 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 #include "StableHeaders.h"
+
 #include "FarsightChannel.h"
 
 #include <TelepathyQt4/Farsight/Channel>
@@ -45,21 +44,53 @@ namespace TelepathyIM
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
-        _ghost = gst_ghost_pad_new("sink", sink);
-        gst_element_add_pad(GST_ELEMENT(audio_bin_), _ghost);
+        audio_ghost_ = gst_ghost_pad_new("sink", sink);
+        gst_element_add_pad(GST_ELEMENT(audio_bin_), audio_ghost_);
         gst_object_unref(G_OBJECT(sink));
         gst_object_ref(audio_bin_);
         gst_object_sink(audio_bin_);
 
         GstElement *video_src;
-        if(videoSrc!=NULL)
+
+        if(videoSrc!=NULL) // If the videoSrc!=NULL we set up the pipeline with video preview elements
         {
             // create video elems,
-            // If the videoSrc!=NULL we set up the pipeline with video preview elements
-            video_src = gst_element_factory_make(videoSrc.toStdString().c_str(), NULL);
+            video_bin_ = gst_bin_new("video-input-bin");
+            
+            GstElement *scale = gst_element_factory_make("videoscale", NULL);
+            GstElement *rate = gst_element_factory_make("videorate", NULL);
+            GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
+            GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
+            GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
+                    "width", G_TYPE_INT, 320,
+                    "height", G_TYPE_INT, 240,
+                    NULL);
+            g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
+
+            video_src = setUpElement(videoSrc);
+            gst_bin_add_many(GST_BIN(video_bin_), video_src, scale, rate, colorspace, capsfilter, NULL);
+            gst_element_link_many(video_src, scale, rate, colorspace, capsfilter, NULL);
+            GstPad *src = gst_element_get_static_pad(capsfilter, "src");
+            GstPad *ghost = gst_ghost_pad_new("src", src);
+            Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_bin_), ghost));
+            gst_object_unref(G_OBJECT(src));
+            gst_object_ref(video_input_);
+            gst_object_sink(video_input_);
+
+            video_tee_ = setUpElement("tee");
+            //video_preview_element_ = setUpElement("glimagesink");
+            video_preview_element_ = setUpElement("autovideosink");
+            gst_bin_add_many(GST_BIN(pipeline_), video_bin_, video_tee_,
+                    video_preview_element_, NULL);
+            gst_element_link_many(video_bin_, video_tee_,
+                    video_preview_element_, NULL);
+
+            video_remote_output_element_ = setUpElement("autovideosink");
         }
         // can empty pipeline be put to playing when video is not used?, lets try anyway
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+        status_ = StatusConnecting;
+        emit statusChanged(status_);
     }
 
     FarsightChannel::~FarsightChannel()
@@ -97,6 +128,7 @@ namespace TelepathyIM
 
     GstElement* FarsightChannel::setUpElement(QString elemName)
     {
+        const char* arrayTest = elemName.toStdString().c_str();
         GstElement* element = gst_element_factory_make(elemName.toStdString().c_str(), NULL);
         gst_object_ref(element);
         gst_object_sink(element);
