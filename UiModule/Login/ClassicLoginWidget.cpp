@@ -133,6 +133,9 @@ namespace CoreUi
 
 	void ClassicLoginWidget::ParseInputAndConnect()
 	{
+        if (controller_->isLoginInProgress())
+            return;
+
         int fieldMissingCount = 0;
         QStringList missingFields;
         QString errorMessage;
