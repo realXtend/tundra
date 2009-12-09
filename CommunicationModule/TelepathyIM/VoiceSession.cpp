@@ -9,7 +9,7 @@
 namespace TelepathyIM
 {
 	
-	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), audio_stream_(0), farsight_channel_(0)
+	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0)
 	{
         state_ = STATE_RINGING_LOCAL;
 
@@ -18,7 +18,7 @@ namespace TelepathyIM
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
 	}
 
-	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), audio_stream_(0), farsight_channel_(0)
+	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0)
 	{
         state_ = STATE_RINGING_REMOTE;
         tp_contact_ = tp_contact;
@@ -84,10 +84,6 @@ namespace TelepathyIM
         connect(farsight_channel_,
             SIGNAL(statusChanged(FarsightChannel::Status)),
             SLOT(OnFarsightChannelStatusChanged(FarsightChannel::Status)));
-
-		//state_ = STATE_OPEN;
-		//emit Ready(this);
-		//emit Opened(this);
     }
 
     void VoiceSession::Reject()
@@ -107,18 +103,9 @@ namespace TelepathyIM
     {
         if (pending_audio_streams_ )
             return;
+
         pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeAudio);
-
         connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
-
-//        Tp::MediaStreams streams = tp_channel_->streams();
-//        foreach (const Tp::MediaStreamPtr &stream, streams)
-//        {
-//            if (stream->type() == Tp::MediaStreamTypeAudio)
-//            {
-////                return stream;
-//            }
-//        }
     }
 
 	void VoiceSession::OnOutgoingChannelCreated(Tp::PendingOperation *op)
@@ -157,14 +144,8 @@ namespace TelepathyIM
 
 		tp_contact_ = tp_channel_->initiatorContact();
         QString id = tp_contact_->id();
-		
-//		tp_channel_->acceptCall(); // DEBUG: Auto answer
-        // tp_channel_->requestClose(); // reject
 
-
-//		state_ = STATE_OPEN;
 		emit Ready(this);
-//		emit Opened(this);
 	}
 
 	void VoiceSession::OnOutgoingChannelReady(Tp::PendingOperation *op)
@@ -226,7 +207,11 @@ namespace TelepathyIM
             OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
             OnStreamStateChanged(stream, stream->state());
 		}
-        CreateAudioStream();
+
+        Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
+
+        if ( pending_audio_streams_ != 0 && audio_stream.isNull() )
+            CreateAudioStream();
     }
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
@@ -334,6 +319,16 @@ namespace TelepathyIM
         pending_audio_streams_ = 0;
 
         // do nothing as OnStreamAdded signal will be emitted
+    }
+
+    Tp::MediaStreamPtr VoiceSession::GetAudioMediaStream()
+    {
+        Tp::MediaStreams streams = tp_channel_->streams();
+        foreach (const Tp::MediaStreamPtr &stream, streams) {
+            if (stream->type() == Tp::MediaStreamTypeAudio)
+                return stream;
+        }
+        return Tp::MediaStreamPtr();
     }
 
 } // end of namespace: TelepathyIM
