@@ -34,6 +34,8 @@ namespace CoreUi
         LoginContainer(Foundation::Framework *framework, RexLogic::OpenSimLoginHandler *os_login_handler, RexLogic::TaigaLoginHandler *taiga_login_handler);
         virtual ~LoginContainer();
 
+        bool isLoginInProgress() { return login_is_in_progress_; }
+
 	public slots:
 		void Connected();
         void QuitApplication();
