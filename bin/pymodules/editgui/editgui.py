@@ -43,8 +43,9 @@ else:
 INTERNAL = 1
 EXTERNAL = 0
 
-UP = 0
-RIGHT = 1
+OIS_KEY_ALT = 256
+OIS_KEY_M = 50
+OIS_KEY_S = 31
 
 DEV =False #if this is false, the canvas is added to the controlbar
 
@@ -208,6 +209,13 @@ class EditGUI(Component):
         #~ self.modified = False
         #~ self.modifying = False
         self.time = 0
+        
+        self.SHORTCUTS = {
+            (OIS_KEY_M, OIS_KEY_ALT): self.manipulator_move,#"ALT+M", #move
+            (OIS_KEY_S, OIS_KEY_ALT): self.manipulator_scale,#"ALT+S" #, #scale
+            #(OIS_KEY_R, ALT): "ALT+R" #rotate
+        }
+    
     
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
@@ -618,41 +626,61 @@ class EditGUI(Component):
         if not self.canvas.IsHidden():
             if self.left_button_down :
                 if self.sel is not None and self.sel_activated:
-                    self.dragging = True
+                    self.dragging = True              
+                    fov = r.getCameraFOV()
+                    rightvec = Vector3(r.getCameraRight())
+                    upvec = Vector3(r.getCameraUp())
+                    campos = Vector3(r.getCameraPosition())
+                    entpos = Vector3(self.sel.pos)
+                    width, height = r.getScreenSize()
+                    
+                    normalized_width = 1/width
+                    normalized_height = 1/height
+                    mouse_abs_x = normalized_width * mouseinfo.x
+                    mouse_abs_y = normalized_height * mouseinfo.y
+                    
+                    length = (campos-entpos).length
+                    worldwidth = (math.tan(fov/2)*length) * 2
+                    worldheight = (height*worldwidth) / width
+                    movedx = mouse_abs_x - self.prev_mouse_abs_x
+                    movedy = mouse_abs_y - self.prev_mouse_abs_y
+                    #used in freemoving to get the size of movement right
+                    amount_x = (worldwidth * movedx)
+                    amount_y = (worldheight * movedy)
+                    
                     if self.arrow_grabbed:
-                        rightvec = r.getCameraRight()
-                        upvec = r.getCameraUp()
+                        #rightvec = r.getCameraRight()
+                        #upvec = r.getCameraUp()
                         #mov = mouseinfo.rel_x + mouseinfo.rel_y
                         
-                        fov = r.getCameraFOV()
-                        campos = Vector3(r.getCameraPosition())
-                        entpos = Vector3(self.sel.pos)
-                        width, height = r.getScreenSize()
+                        temp = [0,0,0]
+                        temp[self.arrow_grabbed_axis] = 1
+                        axis_vec = Vector3(temp)
+                        #print amount_x, amount_y
+                        mousey_on_arrow_projection = upvec.dot(axis_vec) * axis_vec
+                        lengthy = mousey_on_arrow_projection.length * amount_y
+                        mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
+                        lengthx = mousex_on_arrow_projection.length * amount_x
+                        #print "X, Y", lengthx, lengthy
+                        #print mouse_on_arrow_projection, upvec, axis_vec
                         
-                        normalized_width = 1/width
-                        normalized_height = 1/height
-                        mouse_abs_x = normalized_width * mouseinfo.x
-                        mouse_abs_y = normalized_height * mouseinfo.y
-                        
-                        length = (campos-entpos).length
-                        worldwidth = (math.tan(fov/2)*length) * 2
-                        worldheight = (height*worldwidth) / width
-                        
-                        movedx = mouse_abs_x - self.prev_mouse_abs_x
-                        movedy = mouse_abs_y - self.prev_mouse_abs_y
-                        
-                        mov = movedx + movedy
-
                         if self.manipulator_state == self.MANIPULATE_MOVE: #arrow move
                             pos = list(self.sel.pos)
                             
                             #mov /= 7.0
-                            
-                            if self.arrow_grabbed_axis == 2:
+                            #print rightvec[self.arrow_grabbed_axis], rightvec
+                            if self.arrow_grabbed_axis == self.AXIS_Z:
+                                mov = lengthy
+                                #print mov, pos[self.arrow_grabbed_axis],
                                 pos[self.arrow_grabbed_axis] -= mov
+                                #print pos[self.arrow_grabbed_axis]
                             else:
+                                mov = lengthx 
                                 mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                #print mov, pos[self.arrow_grabbed_axis],
                                 pos[self.arrow_grabbed_axis] += mov
+                            
+                            #print pos[self.arrow_grabbed_axis]
                     
                             self.sel.pos = pos[0], pos[1], pos[2]
                             self.move_arrows.pos = pos[0], pos[1], pos[2]
@@ -664,14 +692,18 @@ class EditGUI(Component):
 
                             #mov /= 9.0
                             
-                            if self.arrow_grabbed_axis == 2:
+                            if self.arrow_grabbed_axis == self.AXIS_Z:
+                                mov = lengthy
                                 scale[self.arrow_grabbed_axis] -= mov
                             else:
+                                #mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                mov = lengthx
                                 mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
                                 scale[self.arrow_grabbed_axis] += mov
                     
                             self.sel.scale = scale[0], scale[1],scale[2]
                             #self.update_guivals()
+                            self.update_selection()
 
                     else: #freemove
                         #~ oldvec = Vector3(self.sel.pos)
@@ -686,37 +718,24 @@ class EditGUI(Component):
                         #~ #r.networkUpdate(self.sel.id)
                         #~ #XXX also here the immediate network sync is not good,
                         #~ #refactor out from pos setter to a separate network_update() call
-                        
-                        fov = r.getCameraFOV()
-                        rightvec = Vector3(r.getCameraRight())
-                        upvec = Vector3(r.getCameraUp())
-                        campos = Vector3(r.getCameraPosition())
-                        entpos = Vector3(self.sel.pos)
-                        width, height = r.getScreenSize()
-                        
-                        normalized_width = 1/width
-                        normalized_height = 1/height
-                        mouse_abs_x = normalized_width * mouseinfo.x
-                        mouse_abs_y = normalized_height * mouseinfo.y
-                        
-                        length = (campos-entpos).length
-                        worldwidth = (math.tan(fov/2)*length) * 2
-                        worldheight = (height*worldwidth) / width
-                        
-                        movedx = mouse_abs_x - self.prev_mouse_abs_x
-                        movedy = mouse_abs_y - self.prev_mouse_abs_y
-                        
-                        #newpos = entpos.x + ((worldwidth * moved) * rightvec), entpos.y, entpos.z
-                        newvec = entpos + ((worldwidth * movedx) * rightvec) -((worldheight * movedy) * upvec)
+
+                        newpos = entpos + (amount_x * rightvec) - (amount_y * upvec)
                         
                         #print newpos
-                        self.sel.pos = newvec.x, newvec.y, newvec.z
+                        self.sel.pos = newpos.x, newpos.y, newpos.z
                         #print worldwidth
-                        self.prev_mouse_abs_x = mouse_abs_x
-                        self.prev_mouse_abs_y = mouse_abs_y
+                        
+                    self.prev_mouse_abs_x = mouse_abs_x
+                    self.prev_mouse_abs_y = mouse_abs_y
                     
                     self.update_guivals()
-                        
+   
+    #~ def on_keyup(self, keycode, keymod, callback):
+        #~ if not self.canvas.IsHidden():
+            #~ #print keycode, keymod
+            #~ if self.SHORTCUTS.has_key((keycode, keymod)):
+                #~ self.SHORTCUTS[(keycode, keymod)]()
+        
     def on_inboundnetwork(self, id, name, callback):
         pass
         #print "editgui got an inbound network event:", id, name
@@ -758,17 +777,18 @@ class EditGUI(Component):
                 if ent is not None:
                     try:
                         sel_pos = self.selection_box.pos
+                        arr_pos = self.move_arrows.pos
                         ent_pos = ent.pos
                         #print ent_pos, sel_pos
                         if sel_pos != ent_pos:
                             #print "oh dear"
                             self.time = 0
                             self.selection_box.pos = ent_pos
+                        if arr_pos != ent_pos:
                             self.move_arrows.pos = ent_pos
                     except RuntimeError, e:
                         r.logDebug("update: scene not found")
                         
-
                     #~ self.time += time
                     #~ if self.time >= self.UPDATE_INTERVAL:
                         #~ #print "hep"
