@@ -49,7 +49,7 @@ namespace OgreRenderer
         ui_overlay_container_->setMetricsMode(Ogre::GMM_PIXELS);
 
         ui_overlay_->add2D(static_cast <Ogre::OverlayContainer *> (ui_overlay_container_));
-        ui_overlay_->setZOrder(Ogre::ushort(600));
+        ui_overlay_->setZOrder(Ogre::ushort(500));
         ui_overlay_->show();
 
         ResizeOverlay(width, height);

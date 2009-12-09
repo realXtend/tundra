@@ -88,7 +88,7 @@ void EC_OgreConsoleOverlay::CreateOverlay()
     else
         overlay_->hide();
 
-    overlay_->setZOrder(500);
+    overlay_->setZOrder(501);
 }
 
 void EC_OgreConsoleOverlay::Display(const std::string &text)
