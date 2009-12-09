@@ -6,125 +6,116 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
-    <height>117</height>
+    <width>337</width>
+    <height>159</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>LoginWidget</string>
   </property>
-  <property name="styleSheet">
-   <string>/* CONTAINERS */
-
-QWidget#LoginWidget {
-	background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
-}
-
-/* QLABEL */
-
-QLabel {
-	color: rgb(255,255,255);
-}
-
-/* QPUSHBUTTON */
-
-QPushButton {
-	color: rgb(0, 0, 0);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid;
-	border-color: rgb(48, 48, 48);
-	border-radius: 8px;
-	border-top-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	border-color: rgba(0, 0, 0, 255);
-	color: rgb(0,0,0);
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
-}
-
-QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
-	margin-right:15px;
-}
-
-/* QLINEEDIT */
-
-QLineEdit {
-	border: 1px solid grey;
-	border-radius: 0px;
-	border-bottom-right-radius: 8px;
-}</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="serverLabel">
-         <property name="text">
-          <string>Server</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="serverLineEdit"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="usernameLabel">
-         <property name="text">
-          <string>Username</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="usernameLineEdit"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="passwordLabel">
-         <property name="text">
-          <string>Password</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="passwordLineEdit">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="connectPushButton">
-         <property name="text">
-          <string>Connect</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
+    <widget class="QFrame" name="MainFrame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="statusLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Estrangelo Edessa</family>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Provide your IM credentials</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="serverLabel">
+            <property name="text">
+             <string>Server</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="serverLineEdit"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="usernameLabel">
+            <property name="text">
+             <string>Username</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="usernameLineEdit"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="passwordLabel">
+            <property name="text">
+             <string>Password</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="passwordLineEdit">
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>1</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="connectPushButton">
+            <property name="text">
+             <string>Connect</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

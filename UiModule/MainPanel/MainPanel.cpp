@@ -166,5 +166,7 @@ namespace CoreUi
             framework_->GetConfigManager()->SetSetting<std::string>(configGroup.toStdString(), configKey.toStdString(), input_map["WorldAddress"].toStdString());
 	    else
 		    framework_->GetConfigManager()->DeclareSetting<std::string>(configGroup.toStdString(), configKey.toStdString(), input_map["WorldAddress"].toStdString());
+        
+        framework_->GetConfigManager()->Export();
     }
 }

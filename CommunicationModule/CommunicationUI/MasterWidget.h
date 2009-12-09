@@ -8,10 +8,13 @@
 
 #include "ui_LoginWidget.h"
 #include "ui_LoadingWidget.h"
+#include "ui_SessionManagerWidget.h"
 
 namespace UiHelpers
 {
+    class ConfigHelper;
     class LoginHelper;
+    class SessionManager;
 }
 
 namespace CommunicationUI
@@ -23,7 +26,7 @@ namespace CommunicationUI
     Q_PROPERTY(UiDefines::UiStates::ConnectionState ui_state_ READ uiState WRITE setUiState)
 
     public:
-        MasterWidget();
+        MasterWidget(Foundation::Framework *framework);
         virtual ~MasterWidget();
 
     public slots:
@@ -34,12 +37,20 @@ namespace CommunicationUI
         void ChangeContext(UiDefines::UiStates::ConnectionState new_state = UiDefines::UiStates::NoStateChange);
 
     private:
-        Ui::LoginWidget login_ui_;
-        Ui::LoadingWidget loading_ui_;
+        void InitializeSelf();
+        QSize CleanSelf();
+
+        Ui::LoginWidget *login_ui_;
+        Ui::LoadingWidget *loading_ui_;
+        Ui::SessionManagerWidget *session_manager_ui_;
 
         UiDefines::UiStates::ConnectionState ui_state_;
+
         UiHelpers::LoginHelper *login_helper_;
-        
+        UiHelpers::ConfigHelper *config_helper_;
+        UiHelpers::SessionManager *session_manager_;
+
+        QSize current_size_;
     };
 }
 
