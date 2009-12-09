@@ -3,13 +3,12 @@
 #ifndef incl_Communication_LoginHelper_h
 #define incl_Communication_LoginHelper_h
 
-#include "MasterWidget.h"
 #include "UiDefines.h"
 #include "ui_LoginWidget.h"
 
 #include "interface.h"
 
-#include <QObject>
+#include <QMap>
 
 namespace UiHelpers
 {
@@ -17,23 +16,36 @@ namespace UiHelpers
     {
 
     Q_OBJECT
+    Q_PROPERTY(QString error_message_ READ GetErrorMessage)
 
     public:
-        LoginHelper(Ui::LoginWidget login_ui);
+        LoginHelper();
         virtual ~LoginHelper();
+
+        //! Setters
+        void SetupUi(Ui::LoginWidget *login_ui) { SAFE_DELETE(login_ui_); login_ui_ = login_ui; }
+
+        //! Getters
+        QString GetErrorMessage() { return error_message_; }
+        QMap<QString,QString> GetPreviousCredentials();
+        Communication::ConnectionInterface *GetConnectionInterface() { return im_connection_; }
 
     public slots:
         void TryLogin();
-        void LoginCancelled();
-
-        void ConnectionEstablished(Communication::ConnectionInterface &connection_interface);
+        void LoginCanceled();
+        
         void ConnectionFailed(Communication::ConnectionInterface &connection_interface);
+        void ConnectionEstablished(Communication::ConnectionInterface &connection_interface);
     
     private:
-        Ui::LoginWidget login_ui_;
+        Ui::LoginWidget *login_ui_;
 
         Communication::CommunicationServiceInterface *communication_service_;
         Communication::ConnectionInterface *im_connection_;
+
+        QString error_message_;
+        QString username_;
+        QString server_;
 
     signals:
         void StateChange(UiDefines::UiStates::ConnectionState);
