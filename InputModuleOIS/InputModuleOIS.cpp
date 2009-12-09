@@ -47,8 +47,6 @@ namespace Input
     // virtual
     void InputModuleOIS::Initialize()
     {
-        LogInfo("*** Initializing OIS ***");
-
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         event_category_ = event_manager->RegisterEventCategory("Input");
         //registering these two as a test now.
@@ -540,7 +538,7 @@ namespace Input
                 // replace old event
                 *it = keyeventinfo;
 
-                LogDebug("Replaced previously bound key.");
+                //LogDebug("Replaced previously bound key.");
             } else
             {
                 // register new event
@@ -591,7 +589,7 @@ namespace Input
                 // replace old event
                 *it = keyeventinfo;
 
-                LogDebug("Replaced previously bound key.");
+                //LogDebug("Replaced previously bound key.");
             } else
             {
                 // register new event

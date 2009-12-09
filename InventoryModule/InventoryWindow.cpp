@@ -11,10 +11,13 @@
 #include "Framework.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
-#include "QtModule.h"
 #include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
+
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -50,47 +53,33 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionNewFolder_(0),
     actionOpen_(0)
 {
-    // Get QtModule and create canvas
-     boost::shared_ptr<QtUI::QtModule> qtModule =
-        framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-    if (!qtModule.get())
-        return;
-
-    canvas_ = qtModule->CreateCanvas(QtUI::UICanvas::Internal).lock();
-
-    InitInventoryWindow();
-
-    // Add local widget to canvas, setup initial size and title.
-    canvas_->SetSize(300, 350);
-    canvas_->SetStationary(false);
-    canvas_->SetPosition(canvas_->GetRenderWindowSize().width() - 350, 35);
-    canvas_->AddWidget(inventoryWidget_);
-
-    // Add to control bar
-    qtModule->AddCanvasToControlBar(canvas_, QString("Inventory"));
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+    {
+        InitInventoryWindow();
+        inventoryProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(inventoryWidget_, UiServices::UiWidgetProperties("Inventory"));
+    }
 }
 
 // virtual
 InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
+    SAFE_DELETE(inventoryWidget_);
+    inventoryProxyWidget_ = 0;
 }
 
 void InventoryWindow::Toggle()
 {
-    if (canvas_.get())
-    {
-        if (canvas_->IsHidden())
-            canvas_->Show();
-        else
-            canvas_->Hide();
-    }
+    if (inventoryProxyWidget_->isVisible())
+        inventoryProxyWidget_->hide();
+    else
+        inventoryProxyWidget_->show();
 }
 
 void InventoryWindow::Hide()
 {
-    if (canvas_.get())
-        canvas_->Hide();
+    inventoryProxyWidget_->hide();
 }
 
 void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
@@ -150,7 +139,7 @@ void InventoryWindow::AddFolder()
     ///\todo    Change the functionality and flow so that when user clicks Add Folder it creates new folder but doesn't notify
     ///         server until the name has been committed.
     bool ok = false;
-    QString newFolderName = QInputDialog::getText(canvas_->GetView(), "Create New Folder",
+    QString newFolderName = QInputDialog::getText(inventoryWidget_, "Create New Folder",
         "Please give name of the new folder", QLineEdit::Normal, "", &ok);
     if (!ok)
         return;

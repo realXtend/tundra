@@ -12,6 +12,8 @@
 
 #include <Ogre.h>
 
+#include <QGraphicsScene>
+
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
 //#include <OgreD3D9RenderWindow.h>
 
@@ -20,6 +22,8 @@ using namespace Foundation;
 namespace OgreRenderer
 {
     //! Responds to Ogre's window events and manages the realXtend world render window.
+
+    //! REMOVE THIS WITH NEW QT INTEGRATION
     class EventListener : public Ogre::WindowEventListener
     {
     public:
@@ -107,8 +111,15 @@ namespace OgreRenderer
         config_filename_ (config),
         plugins_filename_ (plugins),
         ray_query_(0),
-        window_title_(window_title)
+        window_title_(window_title),
+        q_ogre_ui_view_(0)
     {
+        q_ogre_ui_view_ = new QOgreUIView();
+        q_ogre_ui_view_->setScene(new QGraphicsScene());
+
+        // ownership of uiview passed to framework
+        framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
+
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
         renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
@@ -145,6 +156,7 @@ namespace OgreRenderer
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
         }
 
+        SAFE_DELETE(q_ogre_world_view_);
         resource_handler_.reset();
 
         root_.reset();
@@ -163,13 +175,15 @@ namespace OgreRenderer
     {
         if (initialized_)
             return;
+
+        OgreRenderingModule::LogDebug("\n\nINITIALIZING OGRE \n================================================================\n");
             
         std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
         //Setting low logging level can potentially make things like mesh/skeleton loading faster
-        //Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
+        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
 
         log_listener_ = OgreLogListenerPtr(new LogListener);   
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
@@ -214,48 +228,41 @@ namespace OgreRenderer
 
         Ogre::NameValuePairList params;
 
-        /// \todo These could be removed for good once we're sure we don't need to embed Ogre into GTK or Qt *ever*.
-//        if (!external_window_parameter_.empty()) 
-//            params["externalWindowHandle"] = external_window_parameter_;
-//        else
-//            params["externalWindowHandle"] = framework_->GetApplicationMainWindowHandle();
-
-        //! \todo -1 is actually valid value for window position but not sure how to properly handle 'invalid' value so leave like this for now. -cm
-        if (window_left != -1)
-            params["left"] = Core::ToString(window_left);
-        if (window_top != -1)
-            params["top"] = Core::ToString(window_top);
-
         try
         {
-            renderwindow_ = root_->createRenderWindow(window_title_, width, height, fullscreen, &params);
+            q_ogre_ui_view_->resize(width, height);
+            q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
+            q_ogre_ui_view_->setWindowTitle(QString(window_title_.c_str()));
+            q_ogre_ui_view_->show();
 
-            ///\todo To disable Ogre setting the default arrow mouse cursor, use the following: Commented out for now
-            /// since we don't have Ogre D3D9RenderSystem in Ogre deps. Do something similar for other Ogre Render
-            /// Systems as well.
-            /*
-            Ogre::D3D9RenderWindow *renderWnd = dynamic_cast<Ogre::D3D9RenderWindow*>(renderwindow_);
-            if (renderWnd)
-            {
-                HWND mainWnd = renderWnd->getWindowHandle();
-                SetClassLong(mainWnd, GCL_HCURSOR, 0);
-            }
-            */
+            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow
+                (window_title_, width, height, window_left, window_top, fullscreen);           
+
+            q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
+            
+            q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
+            
+            q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
         }
-        catch (Ogre::Exception e) {}
+        catch (Ogre::Exception e) { /* Could throw exception? */ }
         
-        if (!renderwindow_)
+        if (renderwindow_)
+        {
+            renderwindow_->setDeactivateOnFocusChange(false);
+
+            OgreRenderingModule::LogDebug("Initliazing resources, may take a while...");
+            SetupResources();
+            SetupScene();
+
+            Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
+            initialized_ = true;          
+        }
+        else
         {
             throw Core::Exception("Could not create Ogre rendering window");
         }
-        renderwindow_->setDeactivateOnFocusChange(false);
 
-        SetupResources();
-        SetupScene();
-
-        Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
-              
-        initialized_ = true;
+        OgreRenderingModule::LogDebug("\n"); 
     }
 
     void Renderer::PostInitialize()
@@ -338,6 +345,7 @@ namespace OgreRenderer
         camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
         Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
         camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
+        camera_->setAutoAspectRatio(true);
 
         ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
         ray_query_->setSortByDistance(true); 
@@ -412,7 +420,10 @@ namespace OgreRenderer
     void Renderer::Render()
     {
         if (!initialized_) return;
-        
+
+/*
+OLD OGRE RENDER FUNCTION
+
         PROFILE(Renderer_Render);
         root_->_fireFrameStarted();
         
@@ -426,6 +437,33 @@ namespace OgreRenderer
         renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
 
         root_->_fireFrameEnded();
+*/
+
+        if (q_ogre_ui_view_->isDirty())
+        {
+            QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
+            QRect viewrect(QPoint (0, 0), viewsize);
+
+            // compositing back buffer
+            QImage buffer(viewsize, QImage::Format_ARGB32);
+#ifdef _DEBUG
+            buffer.fill(Qt::transparent);
+#endif
+            QPainter painter(&buffer);
+
+            // paint ui view into buffer
+            q_ogre_ui_view_->render(&painter);
+
+            // blit ogre view into buffer
+            Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
+            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
+
+            q_ogre_world_view_->OverlayUI(bufbox);
+        }
+        q_ogre_world_view_->RenderOneFrame();
+
+        q_ogre_ui_view_->setDirty(false);
+
     }
 
     Core::uint GetSubmeshFromIndexRange(Core::uint index, const std::vector<Core::uint>& submeshstartindex)

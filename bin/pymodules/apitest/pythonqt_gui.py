@@ -4,14 +4,17 @@ from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton, QLineEdit, QInpu
 
 from circuits import Component
 
-INTERNAL = 1
-EXTERNAL = 0
+#INTERNAL = 1
+#EXTERNAL = 0
+
+#print dir(PythonQt)
+UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
 
 class TestGui(Component):
     def __init__(self):
         Component.__init__(self)
         #loader = QUiLoader() 
-        self.canvas = r.createCanvas(EXTERNAL)
+        uism = r.getUiSceneManager() #self.canvas = r.createCanvas(EXTERNAL)
 
         #group = QGroupBox()
         #box = QVBoxLayout(group)
@@ -22,9 +25,9 @@ class TestGui(Component):
 
         lineedit = QLineEdit()
         lineedit.show()
-        self.canvas.AddWidget(lineedit)
-
-        self.canvas.Show()
+        #uiprops = UiWidgetProperties("PythonQt Test")
+        uism.AddWidgetToCurrentScene(lineedit) #uiprops) #self.canvas.AddWidget(lineedit)
+        #self.canvas.Show()
 
         #QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
 

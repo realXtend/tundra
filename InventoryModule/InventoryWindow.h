@@ -24,11 +24,6 @@ class QModelIndex;
 class QMenu;
 class QAction;
 
-namespace QtUI
-{
-    class UICanvas;
-}
-
 namespace Foundation
 {
     class Framework;
@@ -39,6 +34,11 @@ namespace ProtocolUtilities
 {
     class WorldStream;
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+}
+
+namespace UiServices
+{
+    class UiProxyWidget;
 }
 
 namespace Inventory
@@ -118,9 +118,6 @@ namespace Inventory
         /// Framework pointer.
         Foundation::Framework *framework_;
 
-        /// Canvas for the inventory window.
-        boost::shared_ptr<QtUI::UICanvas> canvas_;
-
         /// Inventory view model.
         QPointer<InventoryItemModel> inventoryItemModel_;
 
@@ -168,6 +165,9 @@ namespace Inventory
 
         /// Open action.
         QAction *actionOpen_;
+
+        /// Proxy Widget for ui
+        UiServices::UiProxyWidget *inventoryProxyWidget_;
     };
 }
 

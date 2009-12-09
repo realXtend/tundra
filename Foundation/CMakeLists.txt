@@ -4,7 +4,7 @@ init_target (Foundation)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES RexQEngine.h)
+file (GLOB MOC_FILES QtFrameworkEngine.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.
@@ -17,6 +17,7 @@ add_definitions (-DUSE_QT)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
+use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})

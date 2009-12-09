@@ -66,9 +66,10 @@ namespace Foundation
             MT_Inventory,
             MT_TaigaProtocol,
             MT_OgreAssetEditor,
+            MT_UiServices,
 			MT_Environment,
-            MT_Unknown
-        };
+			MT_Unknown
+		};
 
         //! Returns string from type enum.
         /*!
@@ -82,7 +83,7 @@ namespace Foundation
                  "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
                  "CommunicationModule", "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule",
-                 "TaigaProtocolModule", "OgreAssetEditorModule", "EnvironmentModule" };
+                 "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule" };
 
             return type_strings[type];
         }

@@ -1,14 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Avatar/AvatarEditor.h"
-#include "Avatar/Avatar.h"
-#include "Avatar/AvatarAppearance.h"
+#include "AvatarEditor.h"
+#include "Avatar.h"
+#include "AvatarAppearance.h"
+
 #include "SceneManager.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EC_UICanvas.h"
 #include "RexLogicModule.h"
-#include "QtModule.h"
 #include "QtUtils.h"
 
 #include <QtUiTools>
@@ -17,6 +17,10 @@
 #include <QLabel>
 #include <QScrollBar>
 #include <QTabWidget>
+
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
 
 namespace RexLogic
 {
@@ -34,27 +38,9 @@ namespace RexLogic
 
     AvatarEditor::~AvatarEditor()
     {
-        Foundation::ModuleSharedPtr qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
-        QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-        
-        if (qt_ui)
-        {
-            if (canvas_)
-                qt_ui->DeleteCanvas(canvas_->GetID());
-        }
-        
+        SAFE_DELETE(avatar_widget_);
+        avatar_editor_proxy_widget_ = 0;
         rexlogicmodule_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
-    }
-           
-    void AvatarEditor::Toggle()
-    {
-        if (canvas_)
-        {
-            if (canvas_->IsHidden())
-                canvas_->Show();
-            else
-                canvas_->Hide();
-        }
     }
     
     void AvatarEditor::ExportAvatar()
@@ -64,13 +50,11 @@ namespace RexLogic
     
     void AvatarEditor::InitEditorWindow()
     {
-        boost::shared_ptr<QtUI::QtModule> qt_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
 
         // If this occurs, we're most probably operating in headless mode.
-        if (qt_module.get() == 0)
+        if (ui_module.get() == 0)
             return;
-
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
 
         QUiLoader loader;
         QFile file("./data/ui/avatareditor.ui");
@@ -84,20 +68,9 @@ namespace RexLogic
         avatar_widget_ = loader.load(&file); 
         if (!avatar_widget_)
             return;
-            
-        // Set canvas size. 
-        QSize size = avatar_widget_->size();
-        canvas_->SetSize(size.width() + 1, size.height() + 1);
-        canvas_->SetWindowTitle(QString("Avatar Editor"));
-        canvas_->SetPosition(40,40);
                         
-        canvas_->AddWidget(avatar_widget_);
+        avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor"));
    
-        // Set canvas scrollbar policy
-        QGraphicsView* view = canvas_->GetView();
-        view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
-
         // Set scrollbar steps on controls
         QScrollArea* scroll = avatar_widget_->findChild<QScrollArea*>("scroll_attachments");
         if (scroll)
@@ -115,7 +88,7 @@ namespace RexLogic
         }
    
 	    // Add to control bar
-		qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));
+		/*qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));*/
 			           
         // Connect signals            
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");

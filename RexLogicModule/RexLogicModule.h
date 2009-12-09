@@ -7,12 +7,11 @@
 #include "ModuleInterface.h"
 #include "RexLogicModuleApi.h"
 
-// ProtocolUtilities inludes
-#include "WorldStream.h"
+#include <WorldStream.h>
 
-namespace OpenSimProtocol
+namespace CoreUi
 {
-    class InventoryModel;
+    class LoginContainer;
 }
 
 namespace RexLogic
@@ -25,9 +24,11 @@ namespace RexLogic
     class Avatar;
     class AvatarEditor;
     class Primitive;
-    class Login;
     class AvatarControllable;
     class CameraControllable;
+    class OpenSimLoginHandler;
+    class TaigaLoginHandler;
+    class MainPanelHandler;
 
     typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
@@ -88,7 +89,7 @@ namespace RexLogic
         InventoryPtr GetInventory() const;
 
         /// @return Login UI
-        Login *GetLogin() { return loginUI_; }
+        CoreUi::LoginContainer *GetLogin() { return login_ui_; }
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() { return camera_controllable_; }
@@ -160,9 +161,6 @@ namespace RexLogic
 
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
-
-        /// Shows (or rather toggles) the avatar editor window.
-        void ShowAvatarEditor();
 
         //! Update sound listener position
         /*! Uses current camera for now
@@ -250,12 +248,6 @@ namespace RexLogic
         typedef std::map<RexUUID, Core::entity_id_t> IDMap;
         IDMap UUIDs_;
 
-        //! The login window.
-        //RexLoginWindow *loginWindow_;
-
-        //! The new login window
-        Login *loginUI_;
-
         //! The connection state which is shown in the login window.
         ProtocolUtilities::Connection::State connectionState_;
 
@@ -267,6 +259,18 @@ namespace RexLogic
 
         //! current camera state
         CameraState camera_state_;
+
+        //! Pointer to the login window
+        CoreUi::LoginContainer *login_ui_;
+
+        //! OpenSim login handler
+        OpenSimLoginHandler *os_login_handler_;
+
+        //! Taiga login handler
+        TaigaLoginHandler *taiga_login_handler_;
+
+        //! MainPanel handler
+        MainPanelHandler *main_panel_handler_;
     };
 }
 

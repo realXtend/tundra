@@ -21,14 +21,13 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Avatar/AvatarEditor.h Login/*.h)
+file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
 AddSourceFolder (EntityComponent)
 AddSourceFolder (EventHandlers)
 AddSourceFolder (Environment)
-AddSourceFolder (Login)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
@@ -53,11 +52,11 @@ use_package (OPENJPEG)
 use_package (OIS)
 use_package (XMLRPC)
 
-use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule UiModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 link_package (OIS)
 link_package (OGRE)

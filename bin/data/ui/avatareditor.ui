@@ -6,22 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
-    <height>440</height>
+    <width>332</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="styleSheet">
    <string>/* Containers */
-
-QWidget#AvatarEditor {
-	background-color: rgba(255, 255, 255, 0);
-}
-
 QFrame#MainFrame {
-	background-color: rgba(85, 170, 255, 175);
-	border: 2px solid rgba(85, 170, 255, 200);
+		background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
 	padding: 5px;
-	border-radius:15px;
 }
 
 </string>
@@ -45,33 +38,6 @@ QFrame#MainFrame {
       <property name="margin">
        <number>0</number>
       </property>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string>
-            color: rgb(255, 255, 255);
-            padding-bottom: 3px;
-            background-color: rgba(255, 255, 255, 0);
-          </string>
-        </property>
-        <property name="text">
-         <string>Avatar Editor</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QWidget" name="panel_appearance" native="true">
         <property name="sizePolicy">

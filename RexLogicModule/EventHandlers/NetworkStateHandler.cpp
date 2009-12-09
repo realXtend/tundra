@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "RexLogicModule.h"
-#include "Login/LoginUI.h"
+#include "Login/LoginContainer.h"
 #include "NetworkEvents.h"
 
 namespace RexLogic

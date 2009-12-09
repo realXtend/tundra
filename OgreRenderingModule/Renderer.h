@@ -9,6 +9,9 @@
 #include "ResourceInterface.h"
 #include "OgreModuleApi.h"
 
+#include "QOgreUIView.h"
+#include "QOgreWorldView.h"
+
 namespace Foundation
 {
     class Framework;
@@ -235,6 +238,12 @@ namespace OgreRenderer
         
         //! added resource directories
         Core::StringVector added_resource_directories_;
+
+        //! Ogre UI View Widget, inherits QGraphicsView
+        QOgreUIView *q_ogre_ui_view_;
+
+        //! Ogre World View
+        QOgreWorldView *q_ogre_world_view_;
     };
 }
 

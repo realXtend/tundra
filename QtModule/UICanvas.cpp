@@ -198,7 +198,7 @@ void UICanvas::Resize(int width, int height, Corner anchor)
     ResizeWidgets(width, height);
 
     dirty_ = true;
-//    RenderSceneToOgreSurface();
+    RenderSceneToOgreSurface();
 }
 
 QPoint UICanvas::MapToCanvas(int x, int y)
@@ -435,6 +435,21 @@ void UICanvas::AddWidget(QWidget* widget)
     scene_widgets_.append(scene->addWidget(widget));
 }
 
+void UICanvas::AddProxyWidget(QGraphicsProxyWidget *proxy_widget)
+{
+    QGraphicsScene* scene = view_->scene();
+    scene->addItem(proxy_widget);
+    // We will not add the proxy widget to scene_widgets_ due we dont have the permission to delete it
+    // when canvas is deleted. This is because it was not initialized by UICanvas as it is when adding a QWidget
+}
+
+QGraphicsProxyWidget *UICanvas::Remove3DProxyWidget()
+{
+    QGraphicsItem *item = view_->scene()->items()[0];
+    view_->scene()->removeItem(item);
+    return (QGraphicsProxyWidget*)item;
+}
+
 void UICanvas::SetWindowTitle(const QString& title) 
 {
 	view_->setWindowTitle(title);
@@ -467,6 +482,7 @@ void UICanvas::drawBackground(QPainter* painter, const QRectF &rect)
 
 void UICanvas::RenderSceneToOgreSurface()
 {
+
     // Render if and only if scene is dirty.
     if ((!dirty_ && !renderwindow_changed_) || mode_ == External)
         return;
@@ -510,6 +526,7 @@ void UICanvas::RenderSceneToOgreSurface()
     {
         dirty_ = false;
     }
+
 }
 
 void UICanvas::ResizeEvent(QResizeEvent* event)

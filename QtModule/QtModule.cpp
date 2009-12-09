@@ -58,7 +58,6 @@ void QtModule::PreInitialize()
 
 void QtModule::Initialize()
 {
-
     // Sanity check
     SAFE_DELETE(controller_);
     
@@ -470,10 +469,7 @@ bool QtModule::HandleEvent(Core::event_category_id_t category_id,
 
 boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::DisplayMode mode)
 {
-    boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();
-    
-    //canvas->setParent(framework_->GetApplicationMainWindowQWidget());
-    
+    boost::shared_ptr<UICanvas> canvas = controller_->CreateCanvas(mode).lock();   
     return canvas;
 }
 
