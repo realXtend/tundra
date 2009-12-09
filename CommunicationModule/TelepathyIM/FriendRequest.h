@@ -3,7 +3,7 @@
 
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/PendingOperation>
-#include "../interface.h"
+#include "interface.h"
 
 namespace TelepathyIM
 {

@@ -9,6 +9,7 @@
 #       and before setting SOURCE_FILES variable
 # TODO: Add support for more deep folder structures. Current
 #       implementation only support folders directly under project folder
+
 macro (AddSourceFolder folder_name)
     file (GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
     file (GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
@@ -17,6 +18,18 @@ macro (AddSourceFolder folder_name)
     set (H_FILES ${H_FILES} ${H_FILES_IN_FOLDER_${folder_name}})
     set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
 endmacro (AddSourceFolder)
+
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
+macro (UiFolder)
+    file (GLOB GENERATED_UI_H ui_*.h)
+    source_group ("Generated UI" FILES ${GENERATED_UI_H})
+endmacro (UiFolder)
+
+#############################################################################################
 
 configure_telepathy_qt4 ()
 configure_gstreamer ()
@@ -41,6 +54,11 @@ AddSourceFolder(OpensimIM)
 AddSourceFolder(TelepathyIM)
 AddSourceFolder(CommunicationUI)
 
+# Qt4 Moc files to subgroup "CMake Moc"
+# and ui_*.h generated .h files to "Generated UI" subgroup
+MocFolder ()
+UiFolder ()
+
 set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap 
@@ -63,7 +81,7 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (CommunicationModule Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -86,5 +104,13 @@ link_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule Proto
 foreach (XML_FILE ${XML_FILES})
 	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
+
+# Precompiled headers on MSVC
+if (MSVC)
+    foreach( src_file ${CPP_FILES} )
+            set_source_files_properties( ${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h")
+    endforeach( src_file ${CPP_FILES} )
+    set_source_files_properties(StableHeaders.cpp PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
+endif (MSVC)
 
 final_target ()

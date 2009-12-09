@@ -1,5 +1,10 @@
-#include "../../RexLogicModule/RexLogicModule.h"
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+
+#include <RexLogicModule.h>
 #include <QTime>
+
 #include "ChatSession.h"
 
 namespace OpensimIM

@@ -7,9 +7,9 @@
 #include <QtModule.h>
 #include <QtGui>
 
-#include "../interface.h"
-#include "../Credentials.h"
-#include "../CommunicationService.h"
+#include "interface.h"
+#include "Credentials.h"
+#include "CommunicationService.h"
 
 namespace CommunicationUI
 {

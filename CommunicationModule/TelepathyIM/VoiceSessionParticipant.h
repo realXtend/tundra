@@ -1,7 +1,7 @@
 #ifndef incl_Communication_TelepathyIM_VoiceSessionParticipant_h
 #define incl_Communication_TelepathyIM_VoiceSessionParticipant_h
 
-#include "../interface.h"
+#include "interface.h"
 #include "Contact.h"
 
 namespace TelepathyIM

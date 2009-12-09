@@ -1,6 +1,9 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include <StableHeaders.h>
-#include "../../RexLogicModule/RexLogicModule.h" // chat
+#include <RexLogicModule.h> // chat
 #include <RealXtend/RexProtocolMsgIDs.h>
+
 #include "Connection.h"
 #include "ConnectionProvider.h"
 #include "ConsoleCommandServiceInterface.h"

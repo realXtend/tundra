@@ -6,8 +6,8 @@
 #include "Foundation.h"
 #include "UiDefines.h"
 
-#include "../ui_LoginWidget.h"
-#include "../ui_LoadingWidget.h"
+#include "ui_LoginWidget.h"
+#include "ui_LoadingWidget.h"
 
 namespace UiHelpers
 {
@@ -20,7 +20,7 @@ namespace CommunicationUI
     {
     
     Q_OBJECT
-    Q_PROPERTY(UiState ui_state_ READ uiState WRITE setUiState)
+    Q_PROPERTY(UiDefines::UiStates::ConnectionState ui_state_ READ uiState WRITE setUiState)
 
     public:
         MasterWidget();
@@ -28,16 +28,16 @@ namespace CommunicationUI
 
     public slots:
         //! Getters and setters
-        void setUiState(UiState state) { ui_state_ = state; }
-        UiState uiState() { return ui_state_; }
+        void setUiState(UiDefines::UiStates::ConnectionState state) { ui_state_ = state; }
+        UiDefines::UiStates::ConnectionState uiState() { return ui_state_; }
 
-        void ChangeContext(UiState new_state = UiState::NoStateChange);
+        void ChangeContext(UiDefines::UiStates::ConnectionState new_state = UiDefines::UiStates::NoStateChange);
 
     private:
         Ui::LoginWidget login_ui_;
         Ui::LoadingWidget loading_ui_;
 
-        UiState ui_state_;
+        UiDefines::UiStates::ConnectionState ui_state_;
         UiHelpers::LoginHelper *login_helper_;
         
     };

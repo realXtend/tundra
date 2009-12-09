@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+
 #include "CommunicationService.h"
 #include <QList>
 #include "NetworkEvents.h"
@@ -155,7 +159,7 @@ namespace Communication
 				supported_protocols_.append(protocol);
                 emit( NewProtocolSupported(protocol) );
             }
-		}
+	}
 
 		for (QStringList::iterator i = supported_protocols_.begin(); i != supported_protocols_.end(); ++i)
 		{

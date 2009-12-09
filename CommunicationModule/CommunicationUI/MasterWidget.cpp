@@ -8,7 +8,7 @@ namespace CommunicationUI
 {
     MasterWidget::MasterWidget()
         : QWidget(),
-          ui_state_(UiState::Disconnected),
+        ui_state_(UiDefines::UiStates::Disconnected),
           login_helper_(new UiHelpers::LoginHelper(login_ui_))
     {
         ChangeContext();
@@ -20,26 +20,26 @@ namespace CommunicationUI
         SAFE_DELETE(login_helper_);
     }
 
-    void MasterWidget::ChangeContext(UiState new_state)
+    void MasterWidget::ChangeContext(UiDefines::UiStates::ConnectionState new_state)
     {
-        ui_state_ = (new_state == UiState::NoStateChange ? ui_state_ : new_state);
+        ui_state_ = (new_state == UiDefines::UiStates::NoStateChange ? ui_state_ : new_state);
 
         switch (ui_state_)
         {
-            case UiState::Disconnected:
+            case UiDefines::UiStates::Disconnected:
             {
                 login_ui_.setupUi(this);
                 QObject::connect(login_ui_.connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
-                QObject::connect(login_helper_, SIGNAL( StateChange(UiState) ), this, SLOT( ChangeContext(UiState) ));
+                QObject::connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
                 break;
             }
-            case UiState::Connecting:
+            case UiDefines::UiStates::Connecting:
             {
                 loading_ui_.setupUi(this);
                 QObject::connect(loading_ui_.cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCancelled() ));
                 break;
             }
-            case UiState::Connected:
+            case UiDefines::UiStates::Connected:
             {
                 break;
             }
