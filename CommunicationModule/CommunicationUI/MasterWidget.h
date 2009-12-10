@@ -6,15 +6,21 @@
 #include "Foundation.h"
 #include "UiDefines.h"
 
-#include "ui_LoginWidget.h"
-#include "ui_LoadingWidget.h"
-#include "ui_SessionManagerWidget.h"
+#include <QWidget>
+#include <QSize>
 
 namespace UiHelpers
 {
     class ConfigHelper;
     class LoginHelper;
     class SessionManager;
+}
+
+namespace Ui
+{
+    class LoginWidget;
+    class LoadingWidget;
+    class SessionManagerWidget;
 }
 
 namespace CommunicationUI

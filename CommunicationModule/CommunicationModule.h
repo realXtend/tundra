@@ -8,8 +8,11 @@
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"
+
+#include "CommunicationUI/MasterWidget.h"
 #include "CommunicationUI/QtGUI.h"
 #include "CommunicationUI/OpenSimChat.h"
+
 #include "Test.h"
 
 namespace ProtocolUtilities
@@ -57,7 +60,7 @@ namespace Communication
 		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
 
-
+        CommunicationUI::MasterWidget *master_test_;
 		CommunicationUI::QtGUI* qt_ui_;
 		CommunicationUI::OpenSimChat* opensim_ui_;
 		CommunicationServiceInterface* communication_service_;

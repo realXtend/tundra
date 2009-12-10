@@ -66,10 +66,10 @@ namespace CommunicationTest
 	{
 		Communication::Credentials jabber_credentials;
 		jabber_credentials.SetProtocol("jabber");
-		jabber_credentials.SetUserID("matti.kuonanoja@gmail.com");
+		jabber_credentials.SetUserID("jonne.nauha@gmail.com");
 		jabber_credentials.SetServer("talk.google.com");
 		jabber_credentials.SetPort(5222);
-		jabber_credentials.SetPassword("");
+		jabber_credentials.SetPassword("Perkele9");
 
 		OpenConnection(jabber_credentials);
 	}

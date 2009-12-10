@@ -2,9 +2,14 @@
 
 #include "StableHeaders.h"
 #include "MasterWidget.h"
+
 #include "LoginHelper.h"
 #include "ConfigHelper.h"
 #include "SessionManager.h"
+
+#include "ui_LoginWidget.h"
+#include "ui_LoadingWidget.h"
+#include "ui_SessionManagerWidget.h"
 
 #include <QFile>
 
@@ -15,7 +20,7 @@ namespace CommunicationUI
           ui_state_(UiDefines::UiStates::Disconnected),
           login_helper_(new UiHelpers::LoginHelper),
           config_helper_(new UiHelpers::ConfigHelper(framework)),
-          session_manager_(new UiHelpers::SessionManager),
+          session_manager_(new UiHelpers::SessionManager(this)),
           login_ui_(new Ui::LoginWidget),
           loading_ui_(new Ui::LoadingWidget),
           session_manager_ui_(new Ui::SessionManagerWidget)
@@ -51,22 +56,28 @@ namespace CommunicationUI
                 if (!login_helper_->GetErrorMessage().isEmpty())
                     login_ui_->statusLabel->setText(login_helper_->GetErrorMessage());
                 
-
-                QObject::connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
-                QObject::connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
+                connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
+                connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
                 break;
             }
             case UiDefines::UiStates::Connecting:
             {
                 loading_ui_->setupUi(this);
-                QObject::connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
+                connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
                 break;
             }
             case UiDefines::UiStates::Connected:
             {
                 config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
                 session_manager_ui_->setupUi(this);
+
+                connect(session_manager_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
                 session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface());
+                break;
+            }
+            case UiDefines::UiStates::Exit:
+            {
+                close();
                 break;
             }
         }

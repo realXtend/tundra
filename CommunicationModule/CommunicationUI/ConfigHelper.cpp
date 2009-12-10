@@ -16,7 +16,7 @@ namespace UiHelpers
 
     ConfigHelper::~ConfigHelper()
     {
-
+        framework_ = 0;
     }
 
     void ConfigHelper::ReadLoginData(Ui::LoginWidget *login_ui)
