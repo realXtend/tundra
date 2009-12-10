@@ -12,7 +12,7 @@ init_target (EnvironmentModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EnvironmentEditor.h TerrainLabel.h)
+file (GLOB MOC_FILES Water.h EnvironmentEditor.h TerrainLabel.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

@@ -34,6 +34,7 @@ namespace Environment
     class EnvironmentModule;
     class Terrain;
     class EC_Terrain;
+    class Water;
 
     typedef QPair<float, float> MinMaxValue;
 
@@ -76,12 +77,13 @@ namespace Environment
         EnvironmentEditor(EnvironmentModule *environment_module);
 
         //! Destructor
-        ~EnvironmentEditor();
+        virtual ~EnvironmentEditor();
 
         //! Handle resource ready event.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
 
         void SetTerrainTextureID();
+
 
         static const int cHeightmapImageWidth  = 256;
         static const int cHeightmapImageHeight = 256;
@@ -90,6 +92,8 @@ namespace Environment
     public slots:
         //! Get a new terrain texture from rexlogic.
         void UpdateTerrain();
+
+        void UpdateWaterGeometry();
 
         //! Called when qMouseEvent event is generated.
         void HandleMouseEvent(QMouseEvent *ev);
@@ -140,14 +144,14 @@ namespace Environment
         //! Pointer for environment module.
         EnvironmentModule *environment_module_;
 
-        //! Canvas for terrain editor window
-        boost::shared_ptr<QtUI::UICanvas> canvas_;
-
         //! Main widget for editor
         QWidget *editor_widget_;
 
         //! Terrain geometry information.
         boost::shared_ptr<Terrain> terrain_;
+
+        //! Water information (geometry etc.)
+        boost::shared_ptr<Water> water_;
 
         //! Brush size (small, medium and large).
         BrushSize brush_size_;

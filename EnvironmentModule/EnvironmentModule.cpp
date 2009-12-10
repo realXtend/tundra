@@ -19,7 +19,7 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
-#include <QDebug>
+#include "EC_Water.h"
 
 namespace Environment
 {
@@ -158,11 +158,11 @@ namespace Environment
         {
             if (event_id == Scene::Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE) // \todo this event should be removed and texture ids should be parered using modules own private service.
             {
-                Scene::Events::TerrainTexturesEventData* texure_data = dynamic_cast<Scene::Events::TerrainTexturesEventData *>(data);
-                if (texure_data)
+                Scene::Events::TerrainTexturesEventData* texture_data = dynamic_cast<Scene::Events::TerrainTexturesEventData *>(data);
+                if (texture_data)
                 {
                     if (terrain_.get())
-                        terrain_->SetTerrainTextures(texure_data->terrain);
+                        terrain_->SetTerrainTextures(texture_data->terrain);
                 }
             }
             else if ( event_id == Scene::Events::EVENT_ENVIRONMENT_WATER )
