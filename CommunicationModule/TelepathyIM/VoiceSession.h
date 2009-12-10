@@ -42,6 +42,7 @@ namespace TelepathyIM
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();
+        void CreateVideoStream();
         QString GetReadon() { return reason_; };
         Tp::MediaStreamPtr GetAudioMediaStream();
         Tp::MediaStreamPtr GetVideoMediaStream(); // video
