@@ -48,7 +48,13 @@ namespace Foundation
         /*! \param id Channel id
             \return Current state (stopped, loading sound asset, playing)
          */
-        virtual SoundState GetSoundState(Core::sound_id_t id) = 0;
+        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id) const = 0;
+        
+        //! Gets name of sound played/pending on channel
+        /*! \param id Channel id
+            \return Sound name, or empty if no sound
+         */
+        virtual const std::string& GetSoundName(Core::sound_id_t id) const = 0;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
