@@ -10,6 +10,9 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <OgreTexture.h>
+#include <OgreGpuProgram.h>
+
 #include <QObject>
 #include <QMap>
 #include <QString>
@@ -28,8 +31,6 @@ namespace OgreRenderer
 
 namespace Ogre
 {
-    enum GpuConstantType;
-    enum TextureType;
     class MaterialPtr;
 }
 
