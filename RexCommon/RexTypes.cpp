@@ -13,6 +13,10 @@ const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
 {
     if (asset_type == ASSETTYPENAME_TEXTURE)
         return RexAT_Texture;
+    if (asset_type == ASSETTYPENAME_SOUNDVORBIS)
+        return RexAT_SoundVorbis;
+    if (asset_type == ASSETTYPENAME_SOUNDWAV)
+        return RexAT_SoundWav;
     if (asset_type == ASSETTYPENAME_MESH)
         return RexAT_Mesh;
     if (asset_type == ASSETTYPENAME_SKELETON)
@@ -33,6 +37,10 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
 {
     if (asset_type == RexAT_Texture)
         return ASSETTYPENAME_TEXTURE;
+    if (asset_type == RexAT_SoundVorbis)
+        return ASSETTYPENAME_SOUNDVORBIS;
+    if (asset_type == RexAT_SoundWav)
+        return ASSETTYPENAME_SOUNDWAV;
     if (asset_type == RexAT_Mesh)
         return ASSETTYPENAME_MESH;
     if (asset_type == RexAT_Skeleton)
