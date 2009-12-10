@@ -54,7 +54,7 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
+        //environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
     }
 
     void EnvironmentModule::PostInitialize()
@@ -98,11 +98,17 @@ namespace Environment
 
     void EnvironmentModule::Update(Core::f64 frametime)
     {
+        // HACK Initialize editor_widget_ in correct time. 
+
+        if ( environment_editor_.get() == 0 && terrain_.get() != 0 && water_.get() != 0)
+            environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
+
         if((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
             if(environment_.get())
                 environment_->UpdateVisualEffects(frametime);
         }
+
     }
 
     bool EnvironmentModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
