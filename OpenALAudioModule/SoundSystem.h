@@ -46,7 +46,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */     
-        virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local = false, Core::Vector3df& position = Core::Vector3df(0.0f, 0.0f, 0.0f), Core::sound_id_t channel = 0);
+        virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local = false, Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f), Core::sound_id_t channel = 0);
 
         //! Gets state of channel
         /*! \param id Channel id
