@@ -75,7 +75,18 @@ namespace TelepathyIM
 
         tp_channel_->acceptCall();
 
-        farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");
+                                                              
+        //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
+        try
+        {
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
+        }
+        catch(...) // todo: find out exception types
+        {
+            LogError("Cannot create FarsightChannel object!");
+            state_ = STATE_ERROR;
+
+        }
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),

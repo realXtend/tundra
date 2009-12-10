@@ -29,7 +29,7 @@ namespace TelepathyIM
         char **argv = NULL;
         gst_init(&argc, &argv);
         g_main_loop_.start();
-        
+
 #else
       	InitializeTelepathyConnectionManager("gabble");
 #endif
