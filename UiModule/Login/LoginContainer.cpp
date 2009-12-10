@@ -16,16 +16,19 @@
 
 namespace CoreUi
 {
-    LoginContainer::LoginContainer(Foundation::Framework *framework, RexLogic::OpenSimLoginHandler *os_login_handler, RexLogic::TaigaLoginHandler *taiga_login_handler) 
-        : framework_(framework),
-          os_login_handler_(os_login_handler),
-          taiga_login_handler_(taiga_login_handler),
-          login_widget_(0), 
-          login_progress_widget_(0), 
-          progress_bar_timer_(0), 
-          autohide_timer_(0), 
-          login_progress_bar_(0), 
-          login_status_(0)
+    LoginContainer::LoginContainer(
+        Foundation::Framework *framework,
+        RexLogic::OpenSimLoginHandler *os_login_handler,
+        RexLogic::TaigaLoginHandler *taiga_login_handler) :
+        framework_(framework),
+        os_login_handler_(os_login_handler),
+        taiga_login_handler_(taiga_login_handler),
+        login_widget_(0), 
+        login_progress_widget_(0), 
+        progress_bar_timer_(0), 
+        autohide_timer_(0), 
+        login_progress_bar_(0), 
+        login_status_(0)
     {
         ui_services_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
         if (ui_services_.lock().get())
@@ -59,15 +62,15 @@ namespace CoreUi
         login_progress_proxy_widget_ = 0;
     }
 
-	void LoginContainer::QuitApplication()
-	{
+    void LoginContainer::QuitApplication()
+    {
         emit( QuitApplicationSignal() );
-	}
+    }
 
-	void LoginContainer::StartParameterLoginTaiga(QString &server_entry_point_url)
-	{
-		emit( CommandParameterLogin(server_entry_point_url) );
-	}
+    void LoginContainer::StartParameterLoginTaiga(QString &server_entry_point_url)
+    {
+        emit( CommandParameterLogin(server_entry_point_url) );
+    }
 
     void LoginContainer::StartParameterLoginOpenSim(QString &first_and_last, QString &password, QString &server_address_with_port)
     {
