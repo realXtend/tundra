@@ -1,9 +1,5 @@
 #include "StableHeaders.h"
 #include "QtModule.h"
-//#include "RexProtocolMsgIDs.h"
-//#include "RexServerConnection.h"
-//#include "OpenSimProtocolModule.h"
-
 #include "EnvironmentModule.h"
 #include "TerrainDecoder.h"
 #include "Terrain.h"
@@ -12,6 +8,10 @@
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
+
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
 
 #include <QtUiTools>
 #include <QPushButton>
@@ -43,11 +43,12 @@ namespace Environment
 
     TerrainEditor::~TerrainEditor()
     {
-        boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+        /*boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
         if(qt_module.get() && canvas_)
         {
             qt_module->DeleteCanvas(canvas_->GetID());
-        }
+        }*/
+        TerrainEditorProxyWidget_ = 0;
     }
 
     void TerrainEditor::Toggle()
@@ -82,7 +83,7 @@ namespace Environment
                 if(image.height() != cHeightmapImageHeight || image.width() != cHeightmapImageWidth)
                     return;
 
-                // Generate image based on heightmap values. The Highest value in heightmap will show on image as white color and the lowest as black color.
+                // Generate image based on heightmap values. The Highest value on heightmap will show image as white color and the lowest as black color.
                 MinMaxValue values = GetMinMaxHeightmapValue(*terrain_component);
                 for(int height = 0; height < image.height(); height++)
                 {
@@ -98,7 +99,7 @@ namespace Environment
 
                 // Set new image into the label.
                 label->setPixmap(QPixmap::fromImage(image));
-                label->show();
+                //label->show();
             }
         }
     }
@@ -136,30 +137,22 @@ namespace Environment
 
     void TerrainEditor::InitEditorWindow()
     {
-        boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-
-        // Make sure that qt module was found.
-        if(qt_module.get() == 0)
-            return;
-
-        canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::Internal).lock();
         QUiLoader loader;
         QFile file("./data/ui/terrain_editor.ui");
-
         if(!file.exists())
         {
             EnvironmentModule::LogError("Cannot find terrain editor ui file");
             return;
         }
-
         editor_widget_ = loader.load(&file);
-        if(!editor_widget_)
+        file.close();
+
+        boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!ui_module.get())
             return;
 
-        QSize size = editor_widget_->size(); 
-        canvas_->SetSize(size.width(), size.height());
-        canvas_->AddWidget(editor_widget_);
-        canvas_->SetPosition(60, 60);
+        TerrainEditorProxyWidget_ = 
+            ui_module->GetSceneManager()->AddWidgetToCurrentScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "Terrain Editor"));
 
         QWidget *map_widget = editor_widget_->findChild<QWidget *>("map_widget");
         if(map_widget)
@@ -167,18 +160,28 @@ namespace Environment
             TerrainLabel *label = new TerrainLabel(map_widget, 0);
             label->setObjectName("map_label");
             QObject::connect(label, SIGNAL(SendMouseEvent(QMouseEvent*)), this, SLOT(HandleMouseEvent(QMouseEvent*)));
-            label->resize(map_widget->size());
+            //label->resize(map_widget->size());
 
             // Create a QImage object and set it in label.
             QImage heightmap(cHeightmapImageWidth, cHeightmapImageHeight, QImage::Format_RGB32);
+            heightmap.fill(0);
             label->setPixmap(QPixmap::fromImage(heightmap));
-            label->show();
         }
 
-        // Set signals
+        // Button Signals
         QPushButton *update_button = editor_widget_->findChild<QPushButton *>("button_update");
-        QObject::connect(update_button, SIGNAL(clicked()), this, SLOT(UpdateTerrain()));
+        QPushButton *apply_button_one = editor_widget_->findChild<QPushButton *>("apply_button_1");
+        QPushButton *apply_button_two = editor_widget_->findChild<QPushButton *>("apply_button_2");
+        QPushButton *apply_button_three = editor_widget_->findChild<QPushButton *>("apply_button_3");
+        QPushButton *apply_button_four = editor_widget_->findChild<QPushButton *>("apply_button_4");
 
+        QObject::connect(update_button, SIGNAL(clicked()), this, SLOT(UpdateTerrain()));
+        QObject::connect(apply_button_one, SIGNAL(clicked()), this, SLOT(ApplyButtonPressed()));
+        QObject::connect(apply_button_two, SIGNAL(clicked()), this, SLOT(ApplyButtonPressed()));
+        QObject::connect(apply_button_three, SIGNAL(clicked()), this, SLOT(ApplyButtonPressed()));
+        QObject::connect(apply_button_four, SIGNAL(clicked()), this, SLOT(ApplyButtonPressed()));
+
+        // RadioButton Signals
         QRadioButton *rad_button_flatten = editor_widget_->findChild<QRadioButton *>("rad_button_flatten");
         QRadioButton *rad_button_raise = editor_widget_->findChild<QRadioButton *>("rad_button_raise");
         QRadioButton *rad_button_lower = editor_widget_->findChild<QRadioButton *>("rad_button_lower");
@@ -201,17 +204,90 @@ namespace Environment
         QObject::connect(rad_button_medium, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
         QObject::connect(rad_button_large, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
 
+        // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
         QObject::connect(tab_widget, SIGNAL(currentChanged(int)), this, SLOT(TabWidgetChanged(int)));
 
-        // Add canvas to control bar
-        qt_module->AddCanvasToControlBar(canvas_, QString("Terrain Editor"));
-        file.close();
+        // Line Edit signals
+        QLineEdit *line_edit_one = editor_widget_->findChild<QLineEdit *>("texture_line_edit_1");
+        QLineEdit *line_edit_two = editor_widget_->findChild<QLineEdit *>("texture_line_edit_2");
+        QLineEdit *line_edit_three = editor_widget_->findChild<QLineEdit *>("texture_line_edit_3");
+        QLineEdit *line_edit_four = editor_widget_->findChild<QLineEdit *>("texture_line_edit_4");
+
+        QObject::connect(line_edit_one, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+        QObject::connect(line_edit_two, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+        QObject::connect(line_edit_three, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+        QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
     }
 
-    void TerrainEditor::SendModifyLandMessage()
+    void TerrainEditor::LineEditReturnPressed()
     {
-        
+        if(!terrain_.get())
+        {
+            EnvironmentModule::LogError("Cannot change terrain texture cause pointer to terrain isn't initialized on editor yet.");
+            return;
+        }
+
+        const QLineEdit *sender = qobject_cast<QLineEdit *>(QObject::sender());
+        int line_edit_number = 0;
+        if(sender)
+        {
+            // Make sure that the signal sender was some of those line edit widgets.
+            if(sender->objectName()      == "texture_line_edit_1") line_edit_number = 0;
+            else if(sender->objectName() == "texture_line_edit_2") line_edit_number = 1;
+            else if(sender->objectName() == "texture_line_edit_3") line_edit_number = 2;
+            else if(sender->objectName() == "texture_line_edit_4") line_edit_number = 3;
+
+            if(line_edit_number >= 0)
+            {
+                if(terrain_texture_id_list_[line_edit_number] != sender->text().toStdString())
+                {
+                    terrain_texture_id_list_[line_edit_number] = sender->text().toStdString();
+                    RexTypes::RexAssetID texture_id[cNumberOfTerrainTextures];
+                    for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+                        texture_id[i] = terrain_texture_id_list_[i];
+                    terrain_->SetTerrainTextures(texture_id);
+
+                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
+                }
+            }
+        }
+    }
+
+    void TerrainEditor::ApplyButtonPressed()
+    {
+        if(!terrain_.get())
+        {
+            EnvironmentModule::LogError("Cannot change terrain texture cause pointer to terrain isn't initialized on editor yet.");
+            return;
+        }
+
+        const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
+        int button_number = 0;
+        if(sender)
+        {
+            // Make sure that the signal sender was some of those apply buttons.
+            if(sender->objectName()      == "apply_button_1") button_number = 0;
+            else if(sender->objectName() == "apply_button_2") button_number = 1;
+            else if(sender->objectName() == "apply_button_3") button_number = 2;
+            else if(sender->objectName() == "apply_button_4") button_number = 3;
+
+            if(button_number >= 0)
+            {
+                QString line_edit_name("texture_line_edit_" + QString("%1").arg(button_number + 1));
+                QLineEdit *line_edit = editor_widget_->findChild<QLineEdit*>(line_edit_name);
+                if(terrain_texture_id_list_[button_number] != line_edit->text().toStdString())
+                {
+                    terrain_texture_id_list_[button_number] = line_edit->text().toStdString();
+                    RexTypes::RexAssetID texture_id[cNumberOfTerrainTextures];
+                    for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+                        texture_id[i] = terrain_texture_id_list_[i];
+                    terrain_->SetTerrainTextures(texture_id);
+
+                    terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
+                }
+            }
+        }
     }
 
     void TerrainEditor::UpdateTerrain()
@@ -228,7 +304,7 @@ namespace Environment
         assert(environment_module_);
         if(!environment_module_)
         {
-            EnvironmentModule::LogError("Can't update terrain because rexlogicmodule is not intialized.");
+            EnvironmentModule::LogError("Can't update terrain because environment module is not intialized.");
             return;
         }
 
@@ -419,20 +495,7 @@ namespace Environment
                     continue;
                 line_edit->setText(QString::fromStdString(terrain_id));
 
-                Foundation::ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
-                if(service_manager)
-                {
-                    if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
-                    {
-                        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                            service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
-                        if(!texture_service)
-                            continue;
-
-                        // Request texture assets.
-                        terrain_texture_requests_[i] = texture_service->RequestTexture(terrain_id);
-                    }
-                }
+                terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
         }
     }
@@ -447,11 +510,11 @@ namespace Environment
                 if(!tex && tex->GetLevel() != 0)
                     return;
 
-                uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
+                //uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
                 QImage img = ConvertToQImage(*tex);//QImage::fromData(tex->GetData(), size);
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
                 texture_label->setPixmap(QPixmap::fromImage(img));
-                texture_label->show();
+                //texture_label->show();
             }
         }
     }
@@ -488,5 +551,26 @@ namespace Environment
         }
 
         return image;
+    }
+
+    Core::request_tag_t TerrainEditor::RequestTerrainTexture(Core::uint index)
+    {
+        if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
+
+        Foundation::ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
+        if(service_manager)
+        {
+            if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
+            {
+                boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
+                    service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+                if(!texture_service)
+                    return 0;
+
+                // Request texture assets.
+                return texture_service->RequestTexture(terrain_texture_id_list_[index]);
+            }
+        }
+        return 0;
     }
 }

@@ -33,9 +33,9 @@ use_package (XMLRPC)
 use_package (OGRE)
 use_package (QT4)
 
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities QtModule) 
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities QtModule UiModule) 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
-link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities QtModule)
+link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities QtModule UiModule)
 
 link_package (BOOST)
 link_package (POCO)
