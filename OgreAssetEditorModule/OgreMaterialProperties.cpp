@@ -5,13 +5,12 @@
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
-///\todo use GpuProgramType & GpuConstantType from OgreGpuProgam.h
-
 #include "StableHeaders.h"
 #include "OgreMaterialProperties.h"
 #include "OgreMaterialResource.h"
 
-#include <Ogre.h>
+#include <OgreMaterial.h>
+#include <OgreTechnique.h>
 #include <OgreMaterialSerializer.h>
 
 #include <QVariant>
@@ -21,9 +20,10 @@
 namespace OgreAssetEditor
 {
 
-OgreMaterialProperties::OgreMaterialProperties(const QString &name, OgreRenderer::OgreMaterialResource *material) :
-    material_(material)
+OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset) :
+    material_(0)
 {
+    material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), asset);
     if (material_)
         if (material_->IsValid())
             CreateProperties();
@@ -33,6 +33,7 @@ OgreMaterialProperties::OgreMaterialProperties(const QString &name, OgreRenderer
 
 OgreMaterialProperties::~OgreMaterialProperties()
 {
+    SAFE_DELETE(material_);
 }
 
 bool OgreMaterialProperties::HasProperties()
@@ -40,7 +41,7 @@ bool OgreMaterialProperties::HasProperties()
     return GetPropertyMap().size() > 0;
 }
 
-OgreMaterialProperties::PropertyMap OgreMaterialProperties::GetPropertyMap()
+PropertyMap OgreMaterialProperties::GetPropertyMap()
 {
     PropertyMap map;
 
@@ -50,10 +51,7 @@ OgreMaterialProperties::PropertyMap OgreMaterialProperties::GetPropertyMap()
         QString propertyName = it.next();
         if (propertyName.isNull() || propertyName.isEmpty())
             continue;
-
-        ///\todo, we use string for values now, change to floats and vectors. float4, float4color, uuid
-        map[propertyName] = property(propertyName.toStdString().c_str()).toString();
-        std::cout << propertyName.toStdString() << " " << property(propertyName.toStdString().c_str()).toString().toStdString() << std::endl;
+        map[propertyName] = property(propertyName.toStdString().c_str()).toMap();
     }
 
     return map;
@@ -92,11 +90,12 @@ bool OgreMaterialProperties::CreateProperties()
                         Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
                         while(mapIter.hasMoreElements())
                         {
-                            std::string paramName = mapIter.peekNextKey();
+                            QString paramName = mapIter.peekNextKey().c_str();
                             const Ogre::GpuConstantDefinition &paramDef  = mapIter.getNext();
+
                             // Filter names that end with '[0]'
-                            std::string::size_type found = paramName.find_last_of("[0]");
-                            if (found != paramName.npos)
+                            int found = paramName.indexOf("[0]");
+                            if (found != -1)
                                 continue;
 
                             // Ignore auto parameters
@@ -125,16 +124,16 @@ bool OgreMaterialProperties::CreateProperties()
                             verPtr->_readRawConstants(paramDef.physicalIndex, count, &*paramValue.begin());
 
                             QTextStream vector_string;
-                            //std::stringstream vector_string;
+                            QString string;
+                            vector_string.setString(&string, QIODevice::WriteOnly);
+
                             for(iter = paramValue.begin(); iter != paramValue.end(); ++iter)
                                 vector_string << *iter << " ";
 
-                            // Insert vertex program values into the map
-                            // add to "VP" to the end of the parameter name in order to identify VP parameters
-                            paramName.append(" VP");
-
-                            // Add QPROPERTY
-                            setProperty(paramName.c_str(), *vector_string.string());
+                            // Add QPROPERTY. Add to "VP" to the end of the parameter name in order to identify VP parameters.
+                            QMap<QString, QVariant> typeValuePair;
+                            typeValuePair[GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                            setProperty(paramName.append(" VP").toLatin1(), QVariant(typeValuePair));
                         }
                     }
                 }
@@ -155,48 +154,51 @@ bool OgreMaterialProperties::CreateProperties()
                             Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
                             while(mapIter.hasMoreElements())
                             {
-                                std::string paramName = mapIter.peekNextKey();
+                                QString paramName = mapIter.peekNextKey().c_str();
                                 const Ogre::GpuConstantDefinition &paramDef  = mapIter.getNext();
+
                                 // Filter names that end with '[0]'
-                                std::string::size_type found = paramName.find_last_of("[0]");
-                                if (found == paramName.npos)
+                                int found = paramName.indexOf("[0]");
+                                if (found != -1)
+                                    continue;
+
+                                // Ignore auto parameters
+                                bool is_auto_param = false;
+                                Ogre::GpuProgramParameters::AutoConstantIterator autoConstIter = fragPtr->getAutoConstantIterator();
+                                while(autoConstIter.hasMoreElements())
                                 {
-                                    // Ignore auto parameters
-                                    bool is_auto_param = false;
-                                    Ogre::GpuProgramParameters::AutoConstantIterator autoConstIter = fragPtr->getAutoConstantIterator();
-                                    while(autoConstIter.hasMoreElements())
+                                    Ogre::GpuProgramParameters::AutoConstantEntry autoConstEnt = autoConstIter.getNext();
+                                    if (autoConstEnt.physicalIndex == paramDef.physicalIndex)
                                     {
-                                        Ogre::GpuProgramParameters::AutoConstantEntry autoConstEnt = autoConstIter.getNext();
-                                        if (autoConstEnt.physicalIndex == paramDef.physicalIndex)
-                                        {
-                                            is_auto_param = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if(!is_auto_param)
-                                    {
-                                        if (paramDef.isFloat())
-                                        {
-                                            size_t count = paramDef.elementSize * paramDef.arraySize;
-                                            std::vector<float> paramValue;
-                                            std::vector<float>::iterator iter;
-                                            paramValue.resize(count, 0);
-                                            fragPtr->_readRawConstants(paramDef.physicalIndex, count, &*paramValue.begin());
-                                            
-                                            std::stringstream vector_string;
-                                            for(iter = paramValue.begin(); iter != paramValue.end(); ++iter)
-                                                vector_string << *iter << " ";
-
-                                            // Insert fragment program values into the map
-                                            // add to " FP" to the end of the parameter name in order to identify FP parameters
-                                            paramName.append(" FP");
-
-                                            // Add QPROPERTY
-                                            setProperty(paramName.c_str(), QString(vector_string.str().c_str()));
-                                        }
+                                        is_auto_param = true;
+                                        break;
                                     }
                                 }
+
+                                if (is_auto_param)
+                                    continue;
+
+                                if (!paramDef.isFloat())
+                                    continue;
+
+                                size_t count = paramDef.elementSize * paramDef.arraySize;
+                                QVector<float> paramValue;
+                                QVector<float>::iterator iter;
+                                paramValue.resize(count);
+
+                                fragPtr->_readRawConstants(paramDef.physicalIndex, count, &*paramValue.begin());
+
+                                QTextStream vector_string;
+                                QString string;
+                                vector_string.setString(&string, QIODevice::WriteOnly);
+
+                                for(iter = paramValue.begin(); iter != paramValue.end(); ++iter)
+                                    vector_string << *iter << " ";
+
+                                // Add QPROPERTY. Add to " FP" to the end of the parameter name in order to identify FP parameters
+                                TypeValuePair typeValuePair;
+                                typeValuePair[GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                                setProperty(paramName.append(" FP").toLatin1(), QVariant(typeValuePair));
                             }
                         }
                     }
@@ -208,15 +210,17 @@ bool OgreMaterialProperties::CreateProperties()
             {
                 // Texture units
                 const Ogre::TextureUnitState *tu = texIter.getNext();
-
+                
                 // Don't insert tu's with empty texture names (i.e. shadowMap)
-                // add to "TU" to the end of the parameter name in order to identify FP parameters
+                // add to " TU" to the end of the parameter name in order to identify texture units.
                 if(tu->getTextureName().size() > 0)
                 {
-                    QString tu_name(tu->getName().c_str());
-                    tu_name.append(" TU");
+                    QString tuName(tu->getName().c_str());
+
                     // Add QPROPERTY
-                    setProperty(tu_name.toStdString().c_str(), QString(tu->getTextureName().c_str()));
+                    TypeValuePair typeValuePair;
+                    typeValuePair[TextureTypeToString(tu->getTextureType())] = tu->getTextureName().c_str();
+                    setProperty(tuName.append(" TU").toLatin1(), typeValuePair);
                 }
             }
         }
@@ -227,35 +231,9 @@ bool OgreMaterialProperties::CreateProperties()
 
 Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 {
-//    std::map<LLString, LLString>::const_iterator iter;
-
-/*
-    LLOgreAssetLoader* assetLoader = LLOgreRenderer::getPointer()->getAssetLoader();
-    if (!assetLoader) 
-    {
-        Ogre::MaterialPtr nullPtr;
-        nullPtr.setNull();
-        return nullPtr;
-    }
-
-    if(!assetLoader->isMaterialLoaded(asset_uuid))
-    {
-        // Material not loaded, load now
-        assetLoader->loadAsset(asset_uuid, LLAssetType::AT_MATERIAL, 0);
-    }
-
-    RexOgreMaterial* material = assetLoader->getMaterial(asset_uuid);
-    if (!material) 
-    {
-        Ogre::MaterialPtr nullPtr;
-        nullPtr.setNull();
-        return nullPtr;
-    }
-*/
-
-    // Make clone from the original and uset that for the new material
+    // Make clone from the original and uset that for creating the new material.
     Ogre::MaterialPtr MatPtr = material_->GetMaterial();
-    Ogre::MaterialPtr MatPtrClone = MatPtr->clone("MatPtrClone");
+    Ogre::MaterialPtr MatPtrClone = MatPtr->clone(objectName().toStdString() + "Clone");
 
     // Material
     if(!MatPtrClone.isNull())
@@ -297,16 +275,18 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                                 if (!paramDef.isFloat())
                                     continue;
 
+                                size_t size = paramDef.elementSize * paramDef.arraySize;
                                 QVector<float> newParamValue;
                                 QVector<float>::iterator it;
-                                newParamValue.resize(paramDef.elementSize * paramDef.arraySize);
+                                newParamValue.resize(size);
 
                                 // Find the corresponding property value.
                                 QVariant val = property(paramName.append(" VP").toLatin1());
                                 if (!val.isValid() || val.isNull())
                                     continue;
 
-                                QString newValueString(val.toByteArray());
+                                TypeValuePair typeValuePair = val.toMap();
+                                QString newValueString(typeValuePair.begin().value().toByteArray());
                                 newValueString.trimmed();
 
                                 // fill the float vector with new values
@@ -326,8 +306,20 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                                 }
 
                                 // Set the new value.
-                                Ogre::Vector4 vector(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3]);
-                                verPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+                                ///\todo use the exact count rather than just 4 values if needed.
+                                if (size == 16)
+                                {
+                                    Ogre::Matrix4 matrix(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3],
+                                        newParamValue[4], newParamValue[5], newParamValue[6], newParamValue[7],
+                                        newParamValue[8], newParamValue[9], newParamValue[10], newParamValue[11],
+                                        newParamValue[12], newParamValue[13], newParamValue[14], newParamValue[15]);
+                                    verPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+                                }
+                                else
+                                {
+                                    Ogre::Vector4 vector(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3]);
+                                    verPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+                                }
                             }
                         }
                     }
@@ -337,12 +329,12 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                 {
                     // Fragment program
                     const Ogre::GpuProgramPtr &fragProg = pass->getFragmentProgram();
-                    if(!fragProg.isNull())
+                    if (!fragProg.isNull())
                     {
                         Ogre::GpuProgramParametersSharedPtr fragPtr = pass->getFragmentProgramParameters();
                         if (!fragPtr.isNull())
                         {
-                            if(fragPtr->hasNamedParameters())
+                            if (fragPtr->hasNamedParameters())
                             {
                                 // Named parameters (constants)
                                 Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
@@ -358,16 +350,18 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                                     if (!paramDef.isFloat())
                                         continue;
 
+                                    size_t size = paramDef.elementSize * paramDef.arraySize;
                                     QVector<float> newParamValue;
                                     QVector<float>::iterator it;
-                                    newParamValue.resize(paramDef.elementSize * paramDef.arraySize);
+                                    newParamValue.resize(size);
 
                                     // Find the corresponding property value.
                                     QVariant val = property(paramName.append(" FP").toLatin1());
                                     if (!val.isValid() || val.isNull())
                                         continue;
 
-                                    QString newValueString(val.toByteArray());
+                                    TypeValuePair typeValuePair = val.toMap();
+                                    QString newValueString(typeValuePair.begin().value().toByteArray());
                                     newValueString.trimmed();
 
                                     // Fill the float vector with new values.
@@ -386,9 +380,21 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                                         i = j + 1;
                                     }
 
-                                    // Set the new value 
-                                    Ogre::Vector4 vector(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3]);
-                                    fragPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+                                    // Set the new value.
+                                    ///\todo use the exact count rather than just 4 values if needed.
+                                    if (size == 16)
+                                    {
+                                        Ogre::Matrix4 matrix(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3],
+                                            newParamValue[4], newParamValue[5], newParamValue[6], newParamValue[7],
+                                            newParamValue[8], newParamValue[9], newParamValue[10], newParamValue[11],
+                                            newParamValue[12], newParamValue[13], newParamValue[14], newParamValue[15]);
+                                        fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+                                    }
+                                    else
+                                    {
+                                        Ogre::Vector4 vector(newParamValue[0], newParamValue[1], newParamValue[2], newParamValue[3]);
+                                        fragPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+                                    }
                                 }
                             }
                         }
@@ -408,25 +414,28 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                     if (!val.isValid() || val.isNull())
                         continue;
 
-                    tu->setTextureName(QString(val.toByteArray()).toStdString().c_str());
+                    TypeValuePair typeValuePair = val.toMap();
+                    QString newValueString(typeValuePair.begin().value().toByteArray());
+                    newValueString.trimmed();
+
+                    tu->setTextureName(newValueString.toStdString());
                     /*
                     //QString new_texture_name = iter->second;
                     RexUUID new_name(iter->second);
                     // If new texture is UUID-based one, make sure the corresponding RexOgreTexture gets created,
                     // because we may not be able to load it later if load fails now
-                    if (LLUUID::validate(new_texture_name))
+                    if (RexUUID::IsValid(new_texture_name))
                     {
-                        LLUUID imageID(new_texture_name);
-                        if (imageID != LLUUID::null)
+                        RexUUID imageID(new_texture_name);
+                        if (!imageID.IsNull())
                         {
-                            LLViewerImage* image = gImageList.getImage(imageID);
+                            image* image = imageList.getImage(imageID);
                             if (image)
                             {
                                 image->getOgreTexture();
                             }
                         }
                     }
-
                     //tu->setTextureName(iter->second);
                     */
                 }
@@ -451,5 +460,119 @@ QString OgreMaterialProperties::ToString()
     return QString(serializer.getQueuedAsString().c_str());
 }
 
+// static
+QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantType &type)
+{
+    using namespace Ogre;
+    ///\note We use GCT_UNKNOWN for texture units' texture names.
+
+    QString str("");
+    switch(type)
+    {
+    case GCT_FLOAT1:
+        str = "FLOAT1";
+        break;
+    case GCT_FLOAT2:
+        str = "FLOAT2";
+        break;
+    case GCT_FLOAT3:
+        str = "FLOAT3";
+        break;
+    case GCT_FLOAT4:
+        str = "FLOAT4";
+        break;
+    case GCT_SAMPLER1D:
+        str = "SAMPLER1D";
+        break;
+    case GCT_SAMPLER2D:
+        str = "SAMPLER2D";
+        break;
+    case GCT_SAMPLER3D:
+        str = "SAMPLER3D";
+        break;
+    case GCT_SAMPLERCUBE:
+        str = "SAMPLERCUBE";
+        break;
+    case GCT_SAMPLER1DSHADOW:
+        str = "SAMPLER1DSHADOW";
+        break;
+    case GCT_SAMPLER2DSHADOW:
+        str = "SAMPLER2DSHADOW";
+        break;
+    case GCT_MATRIX_2X2:
+        str = "MATRIX_2X2";
+        break;
+    case GCT_MATRIX_2X3:
+        str = "MATRIX_2X3";
+        break;
+    case GCT_MATRIX_2X4:
+        str = "MATRIX_2X4";
+        break;
+    case GCT_MATRIX_3X2:
+        str = "MATRIX_3X2";
+        break;
+    case GCT_MATRIX_3X3:
+        str = "MATRIX_3X3";
+        break;
+    case GCT_MATRIX_3X4:
+        str = "MATRIX_3X4";
+        break;
+    case GCT_MATRIX_4X2:
+        str = "MATRIX_4X2";
+        break;
+    case GCT_MATRIX_4X3:
+        str = "MATRIX_4X3";
+        break;
+    case GCT_MATRIX_4X4:
+        str = "MATRIX_4X4";
+        break;
+    case GCT_INT1:
+        str = "GCT_INT1";
+        break;
+    case GCT_INT2:
+        str = "GCT_INT2";
+        break;
+    case GCT_INT3:
+        str = "GCT_INT3";
+        break;
+    case GCT_INT4:
+        str = "GCT_INT4";
+        break;
+    case GCT_UNKNOWN:
+    default:
+        str = "GCT_UNKNOWN";
+        break;
+    };
+
+    return str;
 }
 
+// static
+QString OgreMaterialProperties::TextureTypeToString(const Ogre::TextureType &type)
+{
+    using namespace Ogre;
+
+    QString str("");
+    switch(type)
+    {
+    case TEX_TYPE_1D:
+        str = "TEX_1D";
+        break;
+    case TEX_TYPE_2D:
+        str = "TEX_2D";
+        break;
+    case TEX_TYPE_3D:
+        str = "TEX_3D";
+        break;
+    case TEX_TYPE_CUBE_MAP:
+        str = "TEX_CUBEMAP";
+        break;
+    default:
+        str = "UNKNOWN";
+        break;
+    };
+
+    return str;
+}
+
+}

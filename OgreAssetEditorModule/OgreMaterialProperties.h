@@ -8,14 +8,17 @@
 #ifndef incl_OgreAssetEditorModule_OgreMaterialProperties_h
 #define incl_OgreAssetEditorModule_OgreMaterialProperties_h
 
+#include <boost/shared_ptr.hpp>
+
 #include <QObject>
 #include <QMap>
 #include <QString>
-#include <QVariant>
 
-namespace Ogre
+namespace Foundation
 {
-    class MaterialPtr;
+    class Framework;
+    class AssetInterface;
+    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 namespace OgreRenderer
@@ -23,38 +26,54 @@ namespace OgreRenderer
     class OgreMaterialResource;
 }
 
+namespace Ogre
+{
+    enum GpuConstantType;
+    enum TextureType;
+    class MaterialPtr;
+}
+
 namespace OgreAssetEditor
 {
+    typedef QMap<QString, QVariant> PropertyMap;
+    typedef QMap<QString, QVariant> TypeValuePair;
+    typedef QMapIterator<QString, QVariant> PropertyMapIter;
+
     class OgreMaterialProperties : public QObject
     {
         Q_OBJECT
+
     public:
         /// Constructor.
-        /// @param material OgreMaterialResource pointer.
-        explicit OgreMaterialProperties(const QString &name, OgreRenderer::OgreMaterialResource *material);
+        /// @param asset Asset pointer to the material binary data.
+        explicit OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset);
 
         /// Destructor.
         ~OgreMaterialProperties();
 
-        typedef QMap<QString, QVariant> PropertyMap;
-        typedef QMapIterator<QString, QVariant> PropertyMapIter;
-
-        /// @return Property map (QString name, QVariant value).
+        /// Convenience function returning map of property names, their type and values.
+        /// Provides easier access to the properties than iterating dynamic properties by hand.
+        /// @return Property map (QString(name), QVariant(QMap(type, value)).
         PropertyMap GetPropertyMap();
 
         /// @return Does this material have valid properties.
         bool HasProperties();
 
-        /// Returns value for requested property.
-        /// param name Property name.
-//        template <class T> GetProperty(const QString &name);
-//        QVariant GetProperty(const QString &name);
-
-        /// @return OgreMaterialPtr
+        /// @return Material script as an OgreMaterialPtr.
         Ogre::MaterialPtr ToOgreMaterial();
 
         /// @return Material script as a string.
         QString ToString();
+
+        /// Utility function for converting Ogre::GpuConstantType enum to type string.
+        /// @param type Ogre::GpuConstantType enum.
+        /// @return Type as string.
+        static QString GpuConstantTypeToString(const Ogre::GpuConstantType &type);
+
+        /// Utility function for converting Ogre::GpuConstantType enum to type string.
+        /// @param type Ogre::GpuConstantType enum.
+        /// @return Type as string.
+        static QString TextureTypeToString(const Ogre::TextureType &type);
 
     private:
         /// Creates the QProperties dynamically for this material.

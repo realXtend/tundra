@@ -14,6 +14,9 @@
 #include "AssetEvents.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+#include <UiWidgetProperties.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -23,10 +26,8 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QTableWidget>
-
-#include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include <QBrush>
+#include <QColor>
 
 namespace OgreAssetEditor
 {
@@ -36,6 +37,7 @@ OgreScriptEditor::OgreScriptEditor(
     const RexTypes::asset_type_t &asset_type,
     const QString &name) :
     framework_(framework),
+    proxyWidget_(0),
     mainWidget_(0),
     editorWidget_(0),
     lineEditName_(0),
@@ -49,16 +51,6 @@ OgreScriptEditor::OgreScriptEditor(
 {
     InitEditorWindow();
 
-    if (assetType_ == RexTypes::RexAT_ParticleScript)
-        CreateTextEdit();
-
-    else if (assetType_ == RexTypes::RexAT_MaterialScript)
-    {
-        // Create editing widgets for material scripts.
-        //QVBoxLayout *layout  = editorWidget_->findChild<QVBoxLayout *>("verticalLayout");
-        //layout->addWidget(propertyEditor_);
-    }
-
     lineEditName_->setText(name_);
 
     buttonSaveAs_->setEnabled(false);
@@ -68,8 +60,8 @@ OgreScriptEditor::OgreScriptEditor(
 OgreScriptEditor::~OgreScriptEditor()
 {
     SAFE_DELETE(textEdit_);
-    SAFE_DELETE(materialProperties_);
     SAFE_DELETE(propertyTable_);
+    SAFE_DELETE(materialProperties_);
 }
 
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
@@ -81,48 +73,12 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 
     if (assetType_ == RexTypes::RexAT_MaterialScript)
     {
-        OgreRenderer::OgreMaterialResource material(asset->GetId(), asset);
-        materialProperties_ = new OgreMaterialProperties(name_, &material);
+        materialProperties_ = new OgreMaterialProperties(name_, asset);
 
         if (!materialProperties_->HasProperties())
-        {
             edit_raw = true;
-        }
         else
-        {
-            OgreMaterialProperties::PropertyMap propMap = materialProperties_->GetPropertyMap();
-            OgreMaterialProperties::PropertyMapIter it(propMap);
-            size_t mapSize = propMap.size();
-
-            propertyTable_ = new QTableWidget(mapSize, 2);
-            propertyTable_->setHorizontalHeaderLabels(QStringList() << tr("Property") << tr("Value"));
-            propertyTable_->verticalHeader()->setVisible(false);
-            propertyTable_->resize(150, 50);
-
-            int index = 0;
-            while(it.hasNext())
-            {
-                QTableWidgetItem *propertyItem = new QTableWidgetItem(it.peekNext().key());
-                QTableWidgetItem *valueItem = new QTableWidgetItem;
-                valueItem->setData(Qt::DisplayRole, it.peekNext().value());
-
-                propertyTable_->setItem(index, 0, propertyItem);
-                propertyTable_->setItem(index, 1, valueItem);
-                ++index;
-                it.next();
-            }
-
-            propertyTable_->resizeColumnToContents(0);
-            propertyTable_->horizontalHeader()->setStretchLastSection(true);
-
-            QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-            if (layout)
-                layout->addWidget(propertyTable_);
-
-//            QGridLayout *layout = new QGridLayout;
-//            layout->addWidget(table, 0, 0);
-//            setLayout(layout);
-        }
+            CreatePropertyEditor();
     }
 
     if (edit_raw)
@@ -146,11 +102,7 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 void OgreScriptEditor::Close()
 {
     ///\todo This destroys only the canvas. Delete the editor instance also.
-
-    // boost::shared_ptr<QtUI::QtModule> qtModule =
-    //    framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-
-    //qtModule->DeleteCanvas(canvas_->GetID());
+    proxyWidget_->close();
 }
 
 void OgreScriptEditor::SaveAs()
@@ -204,17 +156,61 @@ void OgreScriptEditor::SaveAs()
 
 void OgreScriptEditor::ValidateScriptName(const QString &name)
 {
-    script_editor_proxy_widget_->hide();
-    // boost::shared_ptr<QtUI::QtModule> qtModule =
-    //    framework_->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+    if (name == name_ || name.isEmpty() || name.isNull())
+        buttonSaveAs_->setEnabled(false);
+    else
+        buttonSaveAs_->setEnabled(true);
+}
 
-    //qtModule->DeleteCanvas(canvas_->GetID());
+void OgreScriptEditor::PropertyChanged(int row, int column)
+{
+    QTableWidgetItem *nameItem = propertyTable_->item(row, column - 2);
+    QTableWidgetItem *typeItem = propertyTable_->item(row, column - 1);
+    QTableWidgetItem *valueItem = propertyTable_->item(row, column);
+    if (!nameItem || !typeItem || !valueItem)
+        return;
+
+    QString newValueString(valueItem->text());
+    newValueString.trimmed();
+    bool valid = true;
+
+    ///\todo No validity check for texture names.
+    QString type = typeItem->text();
+    if (type != "TEX_1D" && type != "TEX_2D" && type != "TEX_3D" && type != "TEX_CUBEMAP")
+    {
+        int i = 0, j = 0;
+        while(j != -1 && valid)
+        {
+            j = newValueString.indexOf(' ', i);
+            QString newValue = newValueString.mid(i, j == -1 ? j : j - i);
+            if (!newValue.isEmpty())
+                newValue.toFloat(&valid);
+            i = j + 1;
+        }
+    }
+
+    if (valid)
+    {
+        valueItem->setBackgroundColor(QColor(QColor(81, 255, 81)));
+        QMap<QString, QVariant> typeValuePair;
+        typeValuePair[typeItem->text()] = newValueString;
+        materialProperties_->setProperty(nameItem->text().toLatin1(), QVariant(typeValuePair));
+        ValidateScriptName(lineEditName_->text());
+    }
+    else
+    {
+        valueItem->setBackgroundColor(QColor(255, 73, 73));
+        buttonSaveAs_->setEnabled(false);
+    }
+
+    propertyTable_->setCurrentItem(valueItem, QItemSelectionModel::Deselect);
 }
 
 void OgreScriptEditor::InitEditorWindow()
 {
     // Get QtModule and create canvas
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return;
 
@@ -230,14 +226,14 @@ void OgreScriptEditor::InitEditorWindow()
     mainWidget_ = loader.load(&file, 0);
     file.close();
 
-    QSize size = mainWidget_->size();
-    //canvas_->SetSize(size.width() + 1, size.height() + 1);
-    //canvas_->SetSize(size.width() + 1, size.height() + 1);
-    //canvas_->SetWindowTitle(QString("OGRE Script Editor"));
-    //canvas_->SetStationary(false);
-    //canvas_->SetPosition(40, 40);
-    //canvas_->AddWidget(mainWidget_);
-    //canvas_->Show();
+    QWidget *widgetName = mainWidget_->findChild<QWidget *>("widgetName");
+    QWidget *widgetEditor = mainWidget_->findChild<QWidget *>("widgetEditor");
+    QWidget *widgetButton = mainWidget_->findChild<QWidget *>("widgetButton");
+
+    QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+    layout->addWidget(widgetName);
+    layout->addWidget(widgetEditor);
+    layout->addWidget(widgetButton);
 
     // Get controls
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
@@ -251,12 +247,17 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     // Add widget to UI via ui services module
-    script_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), size, Qt::Dialog, "Script Editor"));
+    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
+        mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "OGRE Script Editor", false));
+    proxyWidget_->show();
+
+    ///\todo doesn't seem to do the trick.
+    //proxyWidget_->widget()->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void OgreScriptEditor::CreateTextEdit()
 {
-    // Raw text edit for particle scripts.
+    // Raw text edit for particle scripts or material scripts without properties.
     textEdit_ = new QTextEdit(editorWidget_);
     textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -264,9 +265,69 @@ void OgreScriptEditor::CreateTextEdit()
     textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textEdit_->setLineWrapMode(QTextEdit::NoWrap);
 
-//        QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-//        layout->addWidget(editorWidget_);
+//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+//  layout->addWidget(editorWidget_);
     textEdit_->show();
 }
 
-} // namespace RexLogic
+void OgreScriptEditor::CreatePropertyEditor()
+{
+    PropertyMap propMap = materialProperties_->GetPropertyMap();
+    PropertyMapIter it(propMap);
+
+    propertyTable_ = new QTableWidget(propMap.size(), 3);
+    propertyTable_->setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
+    propertyTable_->verticalHeader()->setVisible(false);
+
+    int row = 0;
+    while(it.hasNext())
+    {
+        it.next();
+        QMap<QString, QVariant> typeValuePair = it.value().toMap();
+
+        // Property name
+        QTableWidgetItem *nameItem = new QTableWidgetItem(it.key());
+        nameItem->setFlags(Qt::ItemIsEnabled);
+
+        // Property type
+        QTableWidgetItem *typeItem = new QTableWidgetItem(typeValuePair.begin().key());
+        typeItem->setFlags(Qt::ItemIsEnabled);
+
+        ///\todo Drag&drop support for texture uuid cells.
+        /*if (propertyItem->text().indexOf(" TU") != -1)
+        {
+        }*/
+
+        // Property value
+        QTableWidgetItem *valueItem = new QTableWidgetItem;
+        valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
+        valueItem->setBackgroundColor(QColor(81, 255, 81));
+
+        propertyTable_->setItem(row, 0, nameItem);
+        propertyTable_->setItem(row, 1, typeItem);
+        propertyTable_->setItem(row, 2, valueItem);
+        ++row;
+    }
+
+    propertyTable_->resizeColumnToContents(0);
+    propertyTable_->horizontalHeader()->setStretchLastSection(true);
+    propertyTable_->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    propertyTable_->setParent(editorWidget_);
+    propertyTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ///\todo Take size from table, not from widget.
+    //editorWidget_->resize(propertyTable_->size());
+    propertyTable_->resize(editorWidget_->size());
+    propertyTable_->show();
+
+//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+//  if (layout)
+//      layout->addWidget(propertyTable_);
+
+//  QGridLayout *layout = new QGridLayout;
+//  layout->addWidget(table, 0, 0);
+//  setLayout(layout);
+
+    QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
+}
+
+}

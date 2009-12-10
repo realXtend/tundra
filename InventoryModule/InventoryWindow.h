@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryWindow.h
- *  @brief The inventory window. Should be totally unaware of the underlaying inventory data model.
+ *  @file   InventoryWindow.h
+ *  @brief  Inventory window. Should be totally unaware of the underlaying inventory data model.
  */
 
 #ifndef incl_InventoryModule_InventoryWindow_h
@@ -16,6 +16,7 @@
 #include <QObject>
 #include <QMap>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QTreeWidgetItem;
 class QTreeView;
@@ -23,6 +24,7 @@ class QItemSelection;
 class QModelIndex;
 class QMenu;
 class QAction;
+QT_END_NAMESPACE
 
 namespace Foundation
 {
@@ -68,9 +70,6 @@ namespace Inventory
 
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
-
-        /// Toggles inventory window visibility.
-        void Toggle();
 
         /// Hides the inventory window.
         void Hide();
@@ -167,7 +166,7 @@ namespace Inventory
         QAction *actionOpen_;
 
         /// Proxy Widget for ui
-        UiServices::UiProxyWidget *inventoryProxyWidget_;
+        UiServices::UiProxyWidget *proxyWidget_;
     };
 }
 
