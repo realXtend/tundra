@@ -135,7 +135,7 @@ namespace OpenALAudio
         return i->first;     
     }
     
-    Core::sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Core::Vector3df& position, Core::sound_id_t channel)
+    Core::sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Core::Vector3df position, Core::sound_id_t channel)
     {        
         SoundPtr sound = GetSound(name, local);
         if (!sound)
