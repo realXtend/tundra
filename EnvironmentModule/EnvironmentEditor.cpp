@@ -229,6 +229,7 @@ namespace Environment
                 
                 QObject::connect(water_.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
             }
+            
         }
 
     }
