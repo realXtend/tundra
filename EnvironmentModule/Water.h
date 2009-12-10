@@ -23,13 +23,22 @@ public:
 
     //! @return The scene entity that represents the terrain in the currently active world.
     Scene::EntityWeakPtr GetWaterEntity();
-
+    
+    //! Creates water geometry, uses a default value to water height
     void CreateWaterGeometry();
+
+    //! Sets a new water height to scene water.
+    void SetWaterHeight(float height);
+
+    //! @return The scene water height.
+    //! @note If error occuers returns -1.0
+    float GetWaterHeight() const;
 
 private:
     EnvironmentModule *owner_;
-
+    EC_Water* waterComponent_;
     Scene::EntityWeakPtr cachedWaterEntity_;
+  
 };
 
 }
