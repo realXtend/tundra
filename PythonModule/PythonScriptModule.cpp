@@ -63,6 +63,8 @@
 #include <QApplication>
 #include "QtModule.h"
 #include "UICanvas.h"
+#include "UiWidgetProperties.h"
+#include "UiProxyWidget.h"
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
@@ -1023,6 +1025,58 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
     return can;
 }
 
+PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
+{        
+    if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
+    {
+        //std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
+        PythonScript::self()->LogInfo("PythonScript's framework is not present!");
+        return NULL;
+    }
+	UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
+    return PythonQt::self()->wrapQObject(prop);;
+}
+PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
+{
+	boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+	
+	PyObject* pywidget;
+	PyObject* pyuiprops;
+
+    if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
+    {
+		return NULL;
+	}
+
+	if (!PyObject_TypeCheck(pywidget, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
+
+	if (!PyObject_TypeCheck(pyuiprops, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
+
+	PythonQtInstanceWrapper* wrapped_widget = (PythonQtInstanceWrapper*)pywidget;
+	PythonQtInstanceWrapper* wrapped_uiproperty = (PythonQtInstanceWrapper*)pyuiprops;
+
+	QObject* widget_ptr = wrapped_widget->_obj;
+	QObject* uiproperty_ptr = wrapped_uiproperty->_obj;
+
+	QWidget* widget = (QWidget*)widget_ptr;
+	const UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
+    // If this occurs, we're most probably operating in headless mode.
+    if (ui_module.get() == 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing."); //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
+        return NULL;
+    }
+
+	UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
+	return PythonQt::self()->wrapQObject(uiproxywidget);
+}
+
 PyObject* GetPropertyEditor(PyObject *self)
 {
 	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
@@ -1444,6 +1498,12 @@ static PyMethodDef EmbMethods[] = {
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
+
+    {"createUiWidgetProperty", (PyCFunction)CreateUiWidgetProperty, METH_VARARGS, 
+    "creates a new UiWidgetProperty"},
+	
+    {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
+    "creates a new UiProxyWidget"},
 
 	{NULL, NULL, 0, NULL}
 };

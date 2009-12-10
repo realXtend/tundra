@@ -38,10 +38,10 @@ namespace UiServices
         UiProxyWidget* AddWidgetToCurrentScene(QWidget *widget);
 
         //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
-        UiProxyWidget* AddWidgetToCurrentScene(QWidget *widget, const UiWidgetProperties &widget_properties);
+		UiProxyWidget* AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties);
 
         //! Adds a already created UiProxyWidget into the scene, used for 3D to canvas swaps
-        bool AddProxyWidget(UiProxyWidget *widget);
+        bool AddProxyWidget(UiServices::UiProxyWidget *widget);
 
         //! Remove a proxy widget from scene if it exist there
         void RemoveProxyWidgetFromCurrentScene(const UiProxyWidget *widget);

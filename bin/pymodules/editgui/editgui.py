@@ -24,7 +24,7 @@ import rexviewer as r
 import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile
+from PythonQt.QtCore import QFile, QSize
 from circuits import Component
 
 from conversions import * #for euler - quat -euler conversions
@@ -106,9 +106,17 @@ class EditGUI(Component):
         
         if not DEV:
             uism = r.getUiSceneManager()
-            self.proxywidget = uism.AddWidgetToCurrentScene(ui)
+            uiprops = r.createUiWidgetProperty()
+            uiprops.widget_name_ = "World Edit"
+            uiprops.my_size_ = QSize(width, height)
+            #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
+            self.proxywidget = r.createUiProxyWidget(ui, uiprops)
+            #print widget, dir(widget)
+            if not uism.AddProxyWidget(self.proxywidget):
+                print "Adding the ProxyWidget to the bar failed."
             #modu.AddCanvasToControlBar(ui, "World Edit")
             #XXX change to te new signal. self.proxywidget.connect('Hidden()', self.on_hide)
+            self.proxywidget.connect('Visible(bool)', self.on_hide)
         else:
             ui.show()
         
@@ -197,7 +205,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -221,7 +229,8 @@ class EditGUI(Component):
             (OIS_KEY_S, OIS_KEY_ALT): self.manipulator_scale,#"ALT+S" #, #scale
             #(OIS_KEY_R, ALT): "ALT+R" #rotate
         }
-    
+        
+        self.active = False
     
     def manipulator_move(self):
         if not self.widget.move_button.isChecked():
@@ -617,7 +626,7 @@ class EditGUI(Component):
     def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
         #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
-        if 0: #XXXnot self.canvas.IsHidden():
+        if self.active: #XXXnot self.canvas.IsHidden():
             #print "Point!"
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
@@ -629,7 +638,7 @@ class EditGUI(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
 
-        if 0: #XXX not self.canvas.IsHidden():
+        if self.active: #XXX not self.canvas.IsHidden():
             if self.left_button_down :
                 if self.sel is not None and self.sel_activated:
                     self.dragging = True              
@@ -761,22 +770,25 @@ class EditGUI(Component):
 
         #r.logDebug("   ...exit done.")
 
-    def on_hide(self):
-        self.sel = None
-        try:
-            if self.move_arrows is not None:
-                ent = self.move_arrows.id 
-        #is called by qt also when viewer is exiting,
-        #when the scene (in rexlogic module) is not there anymore.
-        except RuntimeError, e:
-            r.logDebug("on_hide: scene not found")
-        else:
-            self.hideArrows()
-            self.hideSelector()
+    def on_hide(self, shown):
+        self.active = shown
         
+        if self.active:
+            self.sel = None
+            try:
+                if self.move_arrows is not None:
+                    ent = self.move_arrows.id 
+            #is called by qt also when viewer is exiting,
+            #when the scene (in rexlogic module) is not there anymore.
+            except RuntimeError, e:
+                r.logDebug("on_hide: scene not found")
+            else:
+                self.hideArrows()
+                self.hideSelector()
+            
     def update(self, time):
         #print "here", time
-        if 0: #XXX not self.canvas.IsHidden(): #do we need this here?
+        if self.active: #XXX not self.canvas.IsHidden(): #do we need this here?
             self.time += time
             ent = self.sel
             if self.time > self.UPDATE_INTERVAL:

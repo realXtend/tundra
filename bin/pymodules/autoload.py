@@ -60,12 +60,12 @@ else:
 
 #~ editgui = load_module("editgui")
 
-try:
-    apitest.pythonqt_gui
-except: #first run
-    import apitest.pythonqt_gui
-else:
-    pythonqt_gui = reload(apitest.pythonqt_gui)
+#~ try:
+    #~ apitest.pythonqt_gui
+#~ except: #first run
+    #~ import apitest.pythonqt_gui
+#~ else:
+    #~ pythonqt_gui = reload(apitest.pythonqt_gui)
 
 try:
     usr.sleeper
