@@ -5,6 +5,9 @@
 #include "OpenALAudioModule.h"
 #include "WavLoader.h"
 #include "VorbisDecoder.h"
+#include "RexTypes.h"
+#include "AssetServiceInterface.h"
+#include "AssetEvents.h"
 
 namespace OpenALAudio
 {
@@ -257,32 +260,49 @@ namespace OpenALAudio
             return i->second;
         }
         
-        // Loading of local wav sound
-        std::string name_lower = name;
-        boost::algorithm::to_lower(name_lower);                
-        if (local && (name_lower.find(".wav") != std::string::npos))
-        {
-            SoundPtr new_sound(new Sound(name));
-            if (WavLoader::LoadFromFile(new_sound.get(), name))
+        if (local)
+        {        
+            // Loading of local wav sound
+            std::string name_lower = name;
+            boost::algorithm::to_lower(name_lower);                
+            if (name_lower.find(".wav") != std::string::npos)
             {
-                sounds_[name] = new_sound;
-                return new_sound;
-            }
-        }        
-        
-        // Loading of local ogg sound
-        if (local && (name_lower.find(".ogg") != std::string::npos))
-        {
-            SoundPtr new_sound(new Sound(name));
+                SoundPtr new_sound(new Sound(name));
+                if (WavLoader::LoadFromFile(new_sound.get(), name))
+                {
+                    sounds_[name] = new_sound;
+                    return new_sound;
+                }
+            }        
             
-            // See if the file exists. If it does, read it and post a decode request                       
-            if (DecodeLocalOggFile(new_sound.get(), name))
+            // Loading of local ogg sound
+            if (name_lower.find(".ogg") != std::string::npos)
             {
-                // Now the sound exists in cache with no data yet. We'll fill in later
+                SoundPtr new_sound(new Sound(name));
+                
+                // See if the file exists. If it does, read it and post a decode request                       
+                if (DecodeLocalOggFile(new_sound.get(), name))
+                {
+                    // Now the sound exists in cache with no data yet. We'll fill in later
+                    sounds_[name] = new_sound;
+                    return new_sound;
+                }
+            }   
+        }
+        else
+        {
+            // Loading of sound from assetdata, assumed to be vorbis compressed stream
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (asset_service)
+            {
+                SoundPtr new_sound(new Sound(name));
                 sounds_[name] = new_sound;
+                
+                // The sound will be filled with data later
+                asset_service->RequestAsset(name, RexTypes::ASSETTYPENAME_SOUNDVORBIS);                                             
                 return new_sound;
             }
-        }        
+        }  
                         
         return SoundPtr();
     }
@@ -302,7 +322,7 @@ namespace OpenALAudio
         {
             i->second->AddAge(update_time_);   
             total_size += i->second->GetSize();
-            // Don't erase zero size sounds, because they haven't been created yet are probably waiting for assetdata
+            // Don't erase zero size sounds, because they haven't been created yet and are probably waiting for assetdata
             if ((i->second->GetAge() >= oldest_age) && (i->second->GetSize()))
             {
                 oldest_age = i->second->GetAge();
@@ -366,6 +386,29 @@ namespace OpenALAudio
             
     bool SoundSystem::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        if (event_id != Asset::Events::ASSET_READY)
+            return false;
+        
+        Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
+        if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_SOUNDVORBIS)
+        {
+            if (!event_data->asset_)
+                return false;
+            // Find the sound from our cache
+            SoundMap::iterator i = sounds_.find(event_data->asset_id_);
+            if (i == sounds_.end())
+                return false;   
+            // If sound already has data, do not queue another decode request
+            if (i->second->GetSize() != 0)
+                return false;
+            VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
+            new_request->name_ = event_data->asset_id_;                
+            new_request->buffer_.resize(event_data->asset_->GetSize());
+            //! \todo use asset data directly instead of copying to decode request buffer
+            memcpy(&new_request->buffer_[0], event_data->asset_->GetData(), event_data->asset_->GetSize());
+            framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);  
+        }
+        
         return false;
     }
 }

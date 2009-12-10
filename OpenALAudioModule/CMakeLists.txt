@@ -18,7 +18,7 @@ use_package (POCO)
 use_package (OPENAL)
 use_package (OGG)
 use_package (VORBIS)
-use_modules (Core Foundation Interfaces RexCommon)
+use_modules (Core Foundation Interfaces RexCommon AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 

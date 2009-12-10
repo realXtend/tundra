@@ -146,6 +146,8 @@ namespace RexTypes
     ///\note When adding new asset/inventory types, remember also to add them to the functions.
     // UDP Asset types
     const asset_type_t RexAT_Texture = 0;
+    const asset_type_t RexAT_SoundVorbis = 1;
+    const asset_type_t RexAT_SoundWav = 17;
     const asset_type_t RexAT_Mesh = 43;
     const asset_type_t RexAT_Skeleton = 44;
     const asset_type_t RexAT_MaterialScript = 45;
@@ -172,6 +174,8 @@ namespace RexTypes
     const std::string ASSETTYPENAME_FLASH_ANIMATION("FlashAnimation");
     const std::string ASSETTYPENAME_GENERIC_AVATAR_XML("GenericAvatarXml");
     const std::string ASSETTYPENAME_IMAGE("Image"); // Avatar asset. No UDP equivalent
+    const std::string ASSETTYPENAME_SOUNDVORBIS("SoundVorbis");
+    const std::string ASSETTYPENAME_SOUNDWAV("SoundWav");
     const std::string ASSETTYPENAME_UNKNOWN("Unknown");
 
     // Inventory category names.
