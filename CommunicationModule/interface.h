@@ -387,7 +387,13 @@ namespace Communication
 		//! @param message Any text is accepted
 		virtual void SetPresenceMessage(const QString &message) = 0;
 
-		//! Closes the connection
+		//! Get presene status state of user
+		virtual QString GetPresenceStatus() = 0;
+
+        //! Get presene status message of user
+		virtual QString GetPresenceMessage() = 0;
+
+        //! Closes the connection
 		virtual void Close() = 0;
 
 	signals:
