@@ -45,6 +45,9 @@ namespace OpenALAudio
 
     void OpenALAudioModule::PostInitialize()
 	{
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        asset_event_category_ = event_manager->QueryEventCategory("Asset");
+        task_event_category_ = event_manager->QueryEventCategory("Task");
 	}
 
     void OpenALAudioModule::Uninitialize()
@@ -64,6 +67,23 @@ namespace OpenALAudio
         }
         RESETPROFILER;
 	}
+	
+    bool OpenALAudioModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (category_id == asset_event_category_)
+        {
+            if (soundsystem_)
+                return soundsystem_->HandleAssetEvent(event_id, data);
+            else return false;
+        }
+        if (category_id == task_event_category_)
+        {
+            if (soundsystem_)
+                return soundsystem_->HandleTaskEvent(event_id, data);
+            else return false;
+        }
+        return false;
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

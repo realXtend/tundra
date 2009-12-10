@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "SoundSystem.h"
 #include "OpenALAudioModule.h"
+#include "WavLoader.h"
+#include "VorbisDecoder.h"
 
 namespace OpenALAudio
 {
@@ -22,6 +24,10 @@ namespace OpenALAudio
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
         Initialize();
+        
+        // Create vorbis decoder thread task and let the framework thread task manager handle it
+        VorbisDecoder* decoder = new VorbisDecoder();
+        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));        
     }
 
     SoundSystem::~SoundSystem()
@@ -257,7 +263,7 @@ namespace OpenALAudio
         if (local && (name_lower.find(".wav") != std::string::npos))
         {
             SoundPtr new_sound(new Sound(name));
-            if (new_sound->LoadWavFromFile(name))
+            if (WavLoader::LoadFromFile(new_sound.get(), name))
             {
                 sounds_[name] = new_sound;
                 return new_sound;
@@ -268,8 +274,11 @@ namespace OpenALAudio
         if (local && (name_lower.find(".ogg") != std::string::npos))
         {
             SoundPtr new_sound(new Sound(name));
-            if (new_sound->LoadOggFromFile(name))
+            
+            // See if the file exists. If it does, read it and post a decode request                       
+            if (DecodeLocalOggFile(new_sound.get(), name))
             {
+                // Now the sound exists in cache with no data yet. We'll fill in later
                 sounds_[name] = new_sound;
                 return new_sound;
             }
@@ -293,7 +302,8 @@ namespace OpenALAudio
         {
             i->second->AddAge(update_time_);   
             total_size += i->second->GetSize();
-            if (i->second->GetAge() >= oldest_age)
+            // Don't erase zero size sounds, because they haven't been created yet are probably waiting for assetdata
+            if ((i->second->GetAge() >= oldest_age) && (i->second->GetSize()))
             {
                 oldest_age = i->second->GetAge();
                 oldest_sound = i;
@@ -308,5 +318,54 @@ namespace OpenALAudio
         }
         
         update_time_ = 0.0;
+    }
+    
+    bool SoundSystem::DecodeLocalOggFile(Sound* sound, const std::string& name)
+    {
+        boost::filesystem::path file_path(name);      
+        std::ifstream file(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
+        if (!file.is_open())
+        {
+            OpenALAudioModule::LogError("Could not open file: " + name + ".");
+            return false;
+        }
+
+        VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
+        new_request->name_ = name;
+    
+        std::filebuf *pbuf = file.rdbuf();
+        size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+        new_request->buffer_.resize(size);
+        pbuf->pubseekpos(0, std::ios::in);
+        pbuf->sgetn((char *)&new_request->buffer_[0], size);
+        file.close();
+                
+        framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);
+        return true;
+    }
+    
+    bool SoundSystem::HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (event_id != Task::Events::REQUEST_COMPLETED)
+            return false;
+        VorbisDecodeResult* result = dynamic_cast<VorbisDecodeResult*>(data);
+        if (!result || result->task_description_ != "VorbisDecoder")
+            return false;
+
+        // If we can find the sound from our cache, and the result contains data, stuff the data into the sound
+        SoundMap::iterator i = sounds_.find(result->name_);
+        if (i == sounds_.end())
+            return false;
+                   
+        if (!result->buffer_.size())
+            return true;
+                    
+        i->second->LoadFromBuffer(&result->buffer_[0], result->buffer_.size(), result->frequency_, true, result->stereo_); 
+        return true;
+    }
+            
+    bool SoundSystem::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        return false;
     }
 }
