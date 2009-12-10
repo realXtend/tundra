@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Environment_TerrainEditor_h
-#define incl_Environment_TerrainEditor_h
+#ifndef incl_Environment_EnvironmentEditor_h
+#define incl_Environment_EnvironmentEditor_h
 
 #include <Foundation.h>
 #include "UICanvas.h"
@@ -37,7 +37,7 @@ namespace Environment
 
     typedef QPair<float, float> MinMaxValue;
 
-    class TerrainEditor: public QObject
+    class EnvironmentEditor: public QObject
     {
         Q_OBJECT
 
@@ -73,10 +73,10 @@ namespace Environment
         };*/
 
         //! Constuctor
-        TerrainEditor(EnvironmentModule *environment_module);
+        EnvironmentEditor(EnvironmentModule *environment_module);
 
         //! Destructor
-        ~TerrainEditor();
+        ~EnvironmentEditor();
 
         //! Handle resource ready event.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
@@ -110,7 +110,7 @@ namespace Environment
         void ApplyButtonPressed();
 
     private:
-        Q_DISABLE_COPY(TerrainEditor);
+        Q_DISABLE_COPY(EnvironmentEditor);
 
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
         //! @Param tex Reference to texture resource.
@@ -156,7 +156,7 @@ namespace Environment
         ModifyLandAction action_;
 
         /// Proxy Widget for ui
-        UiServices::UiProxyWidget *TerrainEditorProxyWidget_;
+        UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
 
         //! Mouse press flags
         //Core::u8 mouse_press_flag_;

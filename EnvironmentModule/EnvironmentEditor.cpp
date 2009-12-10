@@ -3,7 +3,7 @@
 #include "EnvironmentModule.h"
 #include "TerrainDecoder.h"
 #include "Terrain.h"
-#include "TerrainEditor.h"
+#include "EnvironmentEditor.h"
 #include "TerrainLabel.h"
 
 #include "TextureInterface.h"
@@ -26,7 +26,7 @@
 
 namespace Environment
 {
-    TerrainEditor::TerrainEditor(EnvironmentModule* environment_module):
+    EnvironmentEditor::EnvironmentEditor(EnvironmentModule* environment_module):
     environment_module_(environment_module),
     editor_widget_(0),
     action_(Flatten),
@@ -41,12 +41,12 @@ namespace Environment
         terrain_ = environment_module_->GetTerrainHandler();
     }
 
-    TerrainEditor::~TerrainEditor()
+    EnvironmentEditor::~EnvironmentEditor()
     {
-        TerrainEditorProxyWidget_ = 0;
+        EnvironmentEditorProxyWidget_ = 0;
     }
 
-    void TerrainEditor::CreateHeightmapImage()
+    void EnvironmentEditor::CreateHeightmapImage()
     {
         if(terrain_.get() && editor_widget_)
         {
@@ -85,7 +85,7 @@ namespace Environment
         }
     }
 
-    MinMaxValue TerrainEditor::GetMinMaxHeightmapValue(EC_Terrain &terrain) const
+    MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(EC_Terrain &terrain) const
     {
         float min, max;
         min = 65535.0f;
@@ -116,10 +116,10 @@ namespace Environment
         return values;
     }
 
-    void TerrainEditor::InitEditorWindow()
+    void EnvironmentEditor::InitEditorWindow()
     {
         QUiLoader loader;
-        QFile file("./data/ui/terrain_editor.ui");
+        QFile file("./data/ui/environment_editor.ui");
         if(!file.exists())
         {
             EnvironmentModule::LogError("Cannot find terrain editor ui file");
@@ -132,8 +132,8 @@ namespace Environment
         if (!ui_module.get())
             return;
 
-        TerrainEditorProxyWidget_ = 
-            ui_module->GetSceneManager()->AddWidgetToCurrentScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "Terrain Editor"));
+        EnvironmentEditorProxyWidget_ = 
+            ui_module->GetSceneManager()->AddWidgetToCurrentScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "Environment Editor"));
 
         QWidget *map_widget = editor_widget_->findChild<QWidget *>("map_widget");
         if(map_widget)
@@ -201,7 +201,7 @@ namespace Environment
         QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
     }
 
-    void TerrainEditor::LineEditReturnPressed()
+    void EnvironmentEditor::LineEditReturnPressed()
     {
         if(!terrain_.get())
         {
@@ -235,7 +235,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::ApplyButtonPressed()
+    void EnvironmentEditor::ApplyButtonPressed()
     {
         if(!terrain_.get())
         {
@@ -271,7 +271,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::UpdateTerrain()
+    void EnvironmentEditor::UpdateTerrain()
     {
         // We only need to update terrain information when window is visible.
         if(canvas_.get())
@@ -296,7 +296,7 @@ namespace Environment
         CreateHeightmapImage();
     }
 
-    void TerrainEditor::HandleMouseEvent(QMouseEvent *ev)
+    void EnvironmentEditor::HandleMouseEvent(QMouseEvent *ev)
     {
         // Ugly this need to be removed when mouse move events are working corretly in Rex UICanvas.
         // Check if mouse has pressed.
@@ -378,7 +378,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::BrushSizeChanged()
+    void EnvironmentEditor::BrushSizeChanged()
     {
         QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_small");
         if(rad_button->isChecked())
@@ -402,7 +402,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::PaintActionChanged()
+    void EnvironmentEditor::PaintActionChanged()
     {
         QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_flatten");
         if(rad_button->isChecked())
@@ -447,7 +447,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::TabWidgetChanged(int index)
+    void EnvironmentEditor::TabWidgetChanged(int index)
     {
         if(index == 0) // Map tab
         {
@@ -481,7 +481,7 @@ namespace Environment
         }
     }
 
-    void TerrainEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
+    void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
     {
         for(Core::uint index = 0; index < terrain_texture_requests_.size(); index++)
         {
@@ -500,7 +500,7 @@ namespace Environment
         }
     }
 
-    QImage TerrainEditor::ConvertToQImage(Foundation::TextureInterface &tex)
+    QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
         Core::uint img_width        = tex.GetWidth(); 
         Core::uint img_height       = tex.GetHeight(); 
@@ -534,7 +534,7 @@ namespace Environment
         return image;
     }
 
-    Core::request_tag_t TerrainEditor::RequestTerrainTexture(Core::uint index)
+    Core::request_tag_t EnvironmentEditor::RequestTerrainTexture(Core::uint index)
     {
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
