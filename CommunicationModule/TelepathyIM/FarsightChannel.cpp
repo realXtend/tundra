@@ -10,12 +10,11 @@ namespace TelepathyIM
                                      const QString &audioSrc, 
                                      const QString &audioSink, 
                                      const QString &videoSrc) 
-                                     : QObject(0)
-                                     // are these needed?
-                                     //channel_(0), tf_channel_(0), bus_(0), pipeline_(0), audio_input_(0), 
-                                     //audio_output_(0), video_input_(0), video_tee_(0), 
-                                     //audio_volume_(0),
-                                     //audio_resample_(0)
+                                     : QObject(0),
+                                     channel_(0), tf_channel_(0), bus_(0), pipeline_(0), audio_input_(0), 
+                                     audio_output_(0), video_input_(0), video_tee_(0), 
+                                     audio_volume_(0),
+                                     audio_resample_(0)
     {
         tf_channel_ = createFarsightChannel(channel);        
         if (!tf_channel_) {
@@ -51,8 +50,9 @@ namespace TelepathyIM
         gst_object_sink(audio_bin_);
 
         GstElement *video_src;
+
         
-        if(videoSrc!=NULL) // If the videoSrc!=NULL we set up the pipeline with video preview elements
+        if( videoSrc.length() != 0) // If the videoSrc!=NULL we set up the pipeline with video preview elements
         {
             // create video elems,
             video_bin_ = gst_bin_new("video-input-bin");
@@ -72,14 +72,14 @@ namespace TelepathyIM
             gst_element_link_many(video_src, scale, rate, colorspace, capsfilter, NULL);
             GstPad *src = gst_element_get_static_pad(capsfilter, "src");
             GstPad *ghost = gst_ghost_pad_new("src", src);
-            Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_bin_), ghost));
+         //   Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_bin_), ghost));
             gst_object_unref(G_OBJECT(src));
-            gst_object_ref(video_input_);
-            gst_object_sink(video_input_);
+            gst_object_ref(video_bin_); // <---- CRASH !!!
+            gst_object_sink(video_bin_);
 
             video_tee_ = setUpElement("tee");
-            //video_preview_element_ = setUpElement("glimagesink");
-            video_preview_element_ = setUpElement("autovideosink");
+            video_preview_element_ = setUpElement("glimagesink");
+            //video_preview_element_ = setUpElement("autovideosink");
             gst_bin_add_many(GST_BIN(pipeline_), video_bin_, video_tee_,
                     video_preview_element_, NULL);
             gst_element_link_many(video_bin_, video_tee_,
@@ -129,7 +129,7 @@ namespace TelepathyIM
     GstElement* FarsightChannel::setUpElement(QString elemName)
     {
         std::string tempElemName = elemName.toStdString();
-        const char* cStrElemName = tempElemName.c_str();
+        const gchar* cStrElemName = tempElemName.c_str();
         GstElement* element = gst_element_factory_make(cStrElemName, NULL);
         gst_object_ref(element);
         gst_object_sink(element);
@@ -227,7 +227,7 @@ namespace TelepathyIM
 
     void FarsightChannel::onSrcPadAdded(TfStream *stream,
         GstPad *src, FsCodec *codec, FarsightChannel *self)
-    {
+    {                                            
         guint media_type;
 
         g_object_get(stream, "media-type", &media_type, NULL);
