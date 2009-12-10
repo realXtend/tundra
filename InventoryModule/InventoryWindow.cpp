@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryWindow.cpp
- *  @brief The inventory window.
+ *  @file   InventoryWindow.cpp
+ *  @brief  Inventory window. Should be totally unaware of the underlaying inventory data model.
  */
 
 #include "StableHeaders.h"
@@ -53,11 +53,13 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionNewFolder_(0),
     actionOpen_(0)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
     {
         InitInventoryWindow();
-        inventoryProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(inventoryWidget_, UiServices::UiWidgetProperties("Inventory"));
+        proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
+            inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
     }
 }
 
@@ -66,20 +68,12 @@ InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
     SAFE_DELETE(inventoryWidget_);
-    inventoryProxyWidget_ = 0;
-}
-
-void InventoryWindow::Toggle()
-{
-    if (inventoryProxyWidget_->isVisible())
-        inventoryProxyWidget_->hide();
-    else
-        inventoryProxyWidget_->show();
+    proxyWidget_ = 0;
 }
 
 void InventoryWindow::Hide()
 {
-    inventoryProxyWidget_->hide();
+    proxyWidget_->hide();
 }
 
 void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)

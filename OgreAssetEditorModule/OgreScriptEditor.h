@@ -70,17 +70,28 @@ namespace OgreAssetEditor
         /// @param name Name.
         void ValidateScriptName(const QString &name);
 
+        /// Validates the propertys new value.
+        /// @param row Row of the cell.
+        /// @param column Column of the cell.
+        void PropertyChanged(int row, int column);
+
     private:
         Q_DISABLE_COPY(OgreScriptEditor);
 
         /// Initializes the inventory UI.
         void InitEditorWindow();
 
-        /// 
+        /// Creates the text edit field for raw editing.
         void CreateTextEdit();
+
+        /// Creates the property table for material property editing.
+        void CreatePropertyEditor();
 
         /// Framework pointer.
         Foundation::Framework *framework_;
+
+        /// Proxy widget for the ui
+        UiServices::UiProxyWidget *proxyWidget_;
 
         /// The editor main window widget.
         QWidget *mainWidget_;
@@ -100,20 +111,17 @@ namespace OgreAssetEditor
         /// Text edit field used in raw edit mode.
         QTextEdit *textEdit_;
 
-        /// Asset type.
-        const RexTypes::asset_type_t assetType_;
-
-        /// Name.
-        QString name_;
-
         /// Table widget for editing material properties.
         QTableWidget *propertyTable_;
 
-        ///
-        OgreMaterialProperties *materialProperties_;
+        /// Asset type.
+        const RexTypes::asset_type_t assetType_;
 
-        /// Proxy widget for the ui
-        UiServices::UiProxyWidget *script_editor_proxy_widget_;
+        /// Script name.
+        QString name_;
+
+        /// Material properties.
+        OgreMaterialProperties *materialProperties_;
     };
 }
 
