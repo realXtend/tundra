@@ -39,6 +39,9 @@ namespace TelepathyIM
 
         virtual void Reject();
 
+        //virtual void EnableAudioSending(bool value);
+        //virtual void EnableVideoSending(bool value);
+
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();

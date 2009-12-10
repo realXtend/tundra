@@ -75,18 +75,18 @@ namespace TelepathyIM
 
         tp_channel_->acceptCall();
 
-                                                              
-        
         try
         {
             farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
             //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
         }
-        catch(...) // todo: find out exception types
+        catch(Core::Exception &e) 
         {
-            LogError("Cannot create FarsightChannel object!");
+            QString message = QString("Cannot create FarsightChannel object - ").append(e.what());
+            LogError(message.toStdString());
             state_ = STATE_ERROR;
-
+            emit StateChanged(state_);
+            return;
         }
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
@@ -201,19 +201,38 @@ namespace TelepathyIM
 		for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
 		{
             Tp::MediaStreamPtr stream = *i;
-            
-			Tp::MediaStreamType type = (*i)->type();
 
-            // DEBUG...
-			switch(type)
+            QString type = "UNKNOWN";
+			switch(stream->type())
 			{
 			case Tp::MediaStreamTypeAudio:
-                LogDebug("Received AUDIO CHANNEL");
+                type = "AUDIO";
                 break;
 			case Tp::MediaStreamTypeVideo:
-                LogDebug("Received VIDEO CHANNEL");
+                type = "VIDEO";
                 break;
 			}
+
+            QString direction = "unknown";
+            
+            switch(stream->direction())
+			{
+			case Tp::MediaStreamDirectionNone:
+                direction = "None";
+                break;
+            case Tp::MediaStreamDirectionSend:
+                direction = "Send";
+                break;
+			case Tp::MediaStreamDirectionReceive:
+                direction = "Receive";
+                break;
+			case Tp::MediaStreamDirectionBidirectional:
+                direction = "Bidirectional";
+                break;
+			}
+            
+            QString log_message = type.append(" stream is ready: direction is ").append(direction);
+            LogDebug(log_message.toStdString());
 
             OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
             OnStreamStateChanged(stream, stream->state());
@@ -223,6 +242,8 @@ namespace TelepathyIM
 
         if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
+        else
+            UpdateStreamDirection(audio_stream, true);
 
         emit ( Opened(this) );
     }
