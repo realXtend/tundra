@@ -114,6 +114,12 @@ namespace OpensimIM
         bool HandleRexNetMsgImprovedInstantMessage(ProtocolUtilities::NetInMessage& msg);
 
 		virtual Communication::ChatSessionInterface* OpenPrivateChatSession(const QString &user_id);
+
+		//! Get presene status state of user
+        virtual QString GetPresenceStatus() { return ""; };
+
+        //! Get presene status message of user
+		virtual QString GetPresenceMessage() { return ""; };
 	
 	protected:
 		//! Add console commands: 

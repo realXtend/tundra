@@ -95,6 +95,13 @@ namespace TelepathyIM
 		//! connection
 		virtual Communication::FriendRequestVector GetFriendRequests() const;
 
+		//! Get presene status state of user
+        virtual QString GetPresenceStatus() { return presence_status_; };
+
+        //! Get presene status message of user
+		virtual QString GetPresenceMessage() { return presence_message_; };
+
+
 		//! Closes the connection
 		virtual void Close();
 	protected:
