@@ -25,20 +25,35 @@ namespace TelepathyIM
         
         //g_value_init (&volume_, G_TYPE_DOUBLE);
         pipeline_ = gst_pipeline_new(NULL);
+        if (pipeline_ == 0)
+            throw Core::Exception("Cannot create GStreamer pipeline.");
         bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
+        if (bus_ == 0)
+            throw Core::Exception("Cannot create GStreamer bus.");
 
         // create audioSrc, audioSink, videoSrc based on given vals
         audio_input_ = setUpElement(audioSrc);
+        if (audio_input_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio input element.");
+
         audio_output_ = setUpElement(audioSink);
+        if (audio_output_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio output element.");
         
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
+        if (audio_resample_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio resample element.");
+
         //audio_volume_  = gst_element_factory_make("volume", NULL);
 
         audio_bin_ = gst_bin_new("audio-output-bin");
-        
+        if (audio_bin_ == 0)
+            throw Core::Exception("Cannot create GStreamer bin for audio playback.");
+
         gst_bin_add_many(GST_BIN(audio_bin_), audio_resample_, audio_output_, NULL);
         gst_element_link_many(audio_resample_, audio_output_, NULL);
+        // todo: Check for errors
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");

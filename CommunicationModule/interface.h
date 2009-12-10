@@ -252,6 +252,8 @@ namespace Communication
 		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
 		void Opened(VoiceSessionInterface*);
 		void Closed(VoiceSessionInterface*);
+        void StateChanged(Communication::VoiceSessionInterface::State state);
+        // todo: Error signal?
 	};
 
     class VideoWidgetInterface : public QWidget
