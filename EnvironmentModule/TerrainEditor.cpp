@@ -43,26 +43,7 @@ namespace Environment
 
     TerrainEditor::~TerrainEditor()
     {
-        /*boost::shared_ptr<QtUI::QtModule> qt_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-        if(qt_module.get() && canvas_)
-        {
-            qt_module->DeleteCanvas(canvas_->GetID());
-        }*/
         TerrainEditorProxyWidget_ = 0;
-    }
-
-    void TerrainEditor::Toggle()
-    {
-        if(canvas_.get())
-        {
-            if(canvas_->IsHidden())
-            {
-                canvas_->Show();
-                UpdateTerrain();
-            }
-            else
-                canvas_->Hide();
-        }
     }
 
     void TerrainEditor::CreateHeightmapImage()

@@ -179,7 +179,12 @@ namespace Environment
             if (event_id == RexNetMsgLayerData)
             {
                 if(terrain_.get())
-                    return terrain_->HandleOSNE_LayerData(netdata);
+                {
+                    bool kill_event = terrain_->HandleOSNE_LayerData(netdata);
+                    if(terrain_editor_.get())
+                        terrain_editor_->UpdateTerrain();
+                    return kill_event;
+                }
             }
             else if (event_id == RexNetMsgGenericMessage)
             {

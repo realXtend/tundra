@@ -78,9 +78,6 @@ namespace Environment
         //! Destructor
         ~TerrainEditor();
 
-        //! Change editor window visibility.
-        void Toggle();
-
         //! Handle resource ready event.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
 
