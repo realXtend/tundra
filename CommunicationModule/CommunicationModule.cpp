@@ -8,7 +8,13 @@ namespace Communication
 {
 
 	CommunicationModule::CommunicationModule(void) 
-        : ModuleInterfaceImpl("CommunicationModule"), qt_ui_(0), opensim_ui_(0), communication_service_(0), test_(0), event_category_networkstate_(0), event_category_framework_(0)
+        : ModuleInterfaceImpl("CommunicationModule"), 
+          qt_ui_(0), opensim_ui_(0), 
+          master_test_(0), 
+          communication_service_(0), 
+          test_(0), 
+          event_category_networkstate_(0), 
+          event_category_framework_(0)
 	{
 	}
 
@@ -65,6 +71,7 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
+        SAFE_DELETE(master_test_);
 		SAFE_DELETE(qt_ui_);
 		SAFE_DELETE(opensim_ui_);
         SAFE_DELETE(test_);
@@ -116,7 +123,10 @@ namespace Communication
         if (protocol.compare("jabber") == 0)
         {
             if (!qt_ui_)
+            {
+                //master_test_ = new CommunicationUI::MasterWidget(framework_);
                 qt_ui_ = new CommunicationUI::QtGUI(framework_);
+            }
             return;
         }
     }

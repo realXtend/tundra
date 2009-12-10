@@ -35,3 +35,12 @@ QPushButton:hover {
 	color: rgb(0,0,0);
 	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
 }
+
+QMenuBar, QMenuBar::item {
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(240, 246, 255, 255), stop:0.295455 rgba(226, 233, 239, 255), stop:0.744318 rgba(204, 210, 225, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QMenuBar::item:selected {
+	border: 1px solid grey;
+	border-radius: 4px;
+}

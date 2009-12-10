@@ -11,7 +11,8 @@
 namespace UiHelpers
 {
     LoginHelper::LoginHelper()
-        : login_ui_(0),
+        : QObject(),
+          login_ui_(0),
           communication_service_(Communication::CommunicationService::GetInstance()),
           im_connection_(0),
           error_message_(""),
@@ -23,7 +24,9 @@ namespace UiHelpers
 
     LoginHelper::~LoginHelper()
     {
-        SAFE_DELETE(im_connection_);
+        login_ui_ = 0;
+        im_connection_ = 0;
+        communication_service_ = 0;
     }
 
     QMap<QString, QString> LoginHelper::GetPreviousCredentials()
@@ -69,29 +72,29 @@ namespace UiHelpers
         }
         catch (Core::Exception &e) { /* e.what() for error */ }
 
-        QObject::connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
-        QObject::connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));
-        
-        emit( StateChange(UiDefines::UiStates::Connecting) );
+        connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
+        connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));
+        emit StateChange(UiDefines::UiStates::Connecting);
     }
 
     void LoginHelper::LoginCanceled()
     {
         error_message_ = "Connecting operation canceled";
         im_connection_->Close();
-        emit( StateChange(UiDefines::UiStates::Disconnected) );
+        emit StateChange(UiDefines::UiStates::Disconnected);
     }
 
     void LoginHelper::ConnectionFailed(Communication::ConnectionInterface &connection_interface)
     {
         error_message_ = "Connecting failed, please check your credentials";
         im_connection_->Close();
-        emit( StateChange(UiDefines::UiStates::Disconnected) );
+        emit StateChange(UiDefines::UiStates::Disconnected);
     }
 
     void LoginHelper::ConnectionEstablished(Communication::ConnectionInterface &connection_interface)
     {
         error_message_ = "";
-        emit( StateChange(UiDefines::UiStates::Connected) );
+        emit StateChange(UiDefines::UiStates::Connected);
     }
+
 }
