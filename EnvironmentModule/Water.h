@@ -5,41 +5,53 @@
 #ifndef incl_Water_h
 #define incl_Water_h
 
-#include "EC_Water.h"
 #include "EnvironmentModuleApi.h"
+#include "EnvironMentModule.h"
+#include <QObject>
 
 namespace Environment
 {
+    class EC_Water;
 
-class ENVIRONMENT_MODULE_API Water
-{
-public:
-    Water(EnvironmentModule *owner_);
-    ~Water();
+    class ENVIRONMENT_MODULE_API Water : public QObject
+    {
+        Q_OBJECT 
 
-    //! Looks through all the entities in RexLogic's currently active scene to find the Water
-    //! entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
-    void FindCurrentlyActiveWater();
+        public:
+        
+            Water(EnvironmentModule *owner_);
+            virtual ~Water();
 
-    //! @return The scene entity that represents the terrain in the currently active world.
-    Scene::EntityWeakPtr GetWaterEntity();
-    
-    //! Creates water geometry, uses a default value to water height
-    void CreateWaterGeometry();
+            //! Looks through all the entities in RexLogic's currently active scene to find the Water
+            //! entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
+            void FindCurrentlyActiveWater();
 
-    //! Sets a new water height to scene water.
-    void SetWaterHeight(float height);
+            //! @return The scene entity that represents the terrain in the currently active world.
+            Scene::EntityWeakPtr GetWaterEntity();
+            
+            //! Creates water geometry, uses a default value to water height
+            void CreateWaterGeometry();
+       
+            //! @return The scene water height.
+            //! @note If error occuers returns -1.0
+            float GetWaterHeight() const;
 
-    //! @return The scene water height.
-    //! @note If error occuers returns -1.0
-    float GetWaterHeight() const;
+        public slots:
 
-private:
-    EnvironmentModule *owner_;
-    EC_Water* waterComponent_;
-    Scene::EntityWeakPtr cachedWaterEntity_;
+            //! Sets a new water height to scene water.
+            void SetWaterHeight(float height);   
+
+        signals:
+            //! Emited when water height has been changed. 
+            void HeightChanged(double height);
+
+        private:
+
+            EnvironmentModule *owner_;
+            EC_Water* waterComponent_;
+            Scene::EntityWeakPtr cachedWaterEntity_;
   
-};
+    };
 
 }
 

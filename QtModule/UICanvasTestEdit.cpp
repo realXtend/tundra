@@ -8,7 +8,7 @@
 
 #include "QtUtils.h"
 
-#include <QtUiTools>
+#include <QUiLoader>
 #include <QPushButton>
 #include <QLabel>
 #include <QComboBox>

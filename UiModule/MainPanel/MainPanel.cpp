@@ -4,7 +4,7 @@
 #include "MainPanel.h"
 #include "MainPanelButton.h"
 
-#include <QtUiTools>
+#include <QUiLoader>
 #include <QFile>
 #include <QUrl>
 

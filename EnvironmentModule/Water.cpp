@@ -17,9 +17,10 @@
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 
-#include "EnvironmentModule.h"
 #include "Water.h"
 #include "SceneManager.h"
+
+#include "EC_Water.h"
 
 namespace Environment
 {
@@ -71,7 +72,10 @@ void Water::CreateWaterGeometry()
 void Water::SetWaterHeight(float height)
 {   
     if ( waterComponent_ != 0)
+    {
         waterComponent_->SetWaterHeight(height);
+        emit HeightChanged(static_cast<double>(height));
+    }
 }
 
 float Water::GetWaterHeight() const 

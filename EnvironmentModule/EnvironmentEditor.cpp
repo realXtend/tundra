@@ -1,10 +1,11 @@
 #include "StableHeaders.h"
-#include "QtModule.h"
+
 #include "EnvironmentModule.h"
 #include "TerrainDecoder.h"
 #include "Terrain.h"
 #include "EnvironmentEditor.h"
 #include "TerrainLabel.h"
+#include "Water.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
@@ -13,7 +14,7 @@
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
 
-#include <QtUiTools>
+#include <QUiLoader>
 #include <QPushButton>
 #include <QImage>
 #include <QLabel>
@@ -23,6 +24,7 @@
 #include <QGroupBox>
 #include <QTabWidget>
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 
 namespace Environment
 {
@@ -33,12 +35,16 @@ namespace Environment
     brush_size_(Small)
     //mouse_press_flag_(no_button)
     {
-        InitEditorWindow();
-
         // Those two arrays size should always be the same as how many terrain textures we are using.
+       
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
         terrain_texture_requests_.resize(cNumberOfTerrainTextures);
         terrain_ = environment_module_->GetTerrainHandler();
+        water_ = environment_module_->GetWaterHandler();
+
+        InitEditorWindow();
+
+       
     }
 
     EnvironmentEditor::~EnvironmentEditor()
@@ -199,7 +205,40 @@ namespace Environment
         QObject::connect(line_edit_two, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_three, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+    
+        // Water editing button connections.
+
+        QPushButton* water_apply_button = editor_widget_->findChild<QPushButton *>("water_apply_button");
+        QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
+        
+        if ( water_apply_button != 0 && water_height_box != 0 )
+        {
+            water_height_box->setMinimum(0.0);
+            QObject::connect(water_apply_button, SIGNAL(clicked()), this, SLOT(UpdateWaterGeometry()));
+            
+            if ( water_.get() != 0)
+            {
+                // Initialize
+                double height = water_->GetWaterHeight();
+                
+                // Case if some reason water is not yet created. 
+                if ( height < 0 )
+                    height = 0.0;
+                
+                water_height_box->setValue(height);
+                
+                QObject::connect(water_.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
+            }
+        }
+
     }
+
+    void EnvironmentEditor::UpdateWaterGeometry()
+    {
+        QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
+        if ( water_.get() != 0 && water_height_box != 0)
+            water_->SetWaterHeight(static_cast<float>(water_height_box->value())); 
+     }
 
     void EnvironmentEditor::LineEditReturnPressed()
     {
@@ -274,6 +313,7 @@ namespace Environment
     void EnvironmentEditor::UpdateTerrain()
     {
         // We only need to update terrain information when window is visible.
+        /*
         if(canvas_.get())
         {
             if(canvas_->IsHidden())
@@ -281,6 +321,7 @@ namespace Environment
                 return;
             }
         }
+        */
 
         assert(environment_module_);
         if(!environment_module_)
