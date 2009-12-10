@@ -6,7 +6,7 @@
 #define incl_Water_h
 
 #include "EnvironmentModuleApi.h"
-#include "EnvironMentModule.h"
+#include "EnvironmentModule.h"
 #include <QObject>
 
 namespace Environment
