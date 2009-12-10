@@ -24,6 +24,11 @@ namespace Foundation
     class TextureInterface;
 }
 
+namespace UiServices
+{
+    class UiProxyWidget;
+}
+
 namespace Environment
 {
     class EnvironmentModule;
@@ -86,9 +91,6 @@ namespace Environment
         static const int cNumberOfTerrainTextures = 4;
 
     public slots:
-        //! Send a terrain paint message to server.
-        void SendModifyLandMessage();
-
         //! Get a new terrain texture from rexlogic.
         void UpdateTerrain();
 
@@ -104,7 +106,15 @@ namespace Environment
         //! Called when tab window state has changed.
         void TabWidgetChanged(int index);
 
+        //! Called when user has pressed enter or return on editor's LineEdit widget.
+        void LineEditReturnPressed();
+
+        //! Called when apply button have been pressed
+        void ApplyButtonPressed();
+
     private:
+        Q_DISABLE_COPY(TerrainEditor);
+
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
         //! @Param tex Reference to texture resource.
         //! @Return converted QImage.
@@ -116,34 +126,42 @@ namespace Environment
         //! Create a new heightmap image that will show heightmap values in grayscale.format
         void CreateHeightmapImage();
 
-        //! Asset_tags for terrain texture requests.
-        std::vector<int> terrain_texture_requests_;
+        //! Ask texture decoder for a texture resource.
+        //! @Param index for terrain_texture_id_list_ that holds the uuid that we want to use to request the resource that we need. Range should be [0 - 3].
+        //! @Return request tag for the texture.
+        Core::request_tag_t RequestTerrainTexture(Core::uint index);
 
-        /// Terrain texture id list.
+        //! Asset_tags for terrain texture requests.
+        std::vector<Core::request_tag_t> terrain_texture_requests_;
+
+        //! Terrain texture id list.
         std::vector<std::string> terrain_texture_id_list_;
 
-        /// Return heightmap smallest and largest value (first = min and second = max).
+        //! Return heightmap smallest and largest value (first = min and second = max).
         MinMaxValue GetMinMaxHeightmapValue(EC_Terrain &terrain) const;
 
-        /// Pointer for rexLogicModule.
+        //! Pointer for environment module.
         EnvironmentModule *environment_module_;
 
-        /// Canvas for terrain editor window
+        //! Canvas for terrain editor window
         boost::shared_ptr<QtUI::UICanvas> canvas_;
 
-        /// Main widget for editor
+        //! Main widget for editor
         QWidget *editor_widget_;
 
-        /// Terrain geometry information.
+        //! Terrain geometry information.
         boost::shared_ptr<Terrain> terrain_;
 
-        /// Brush size (small, medium and large).
+        //! Brush size (small, medium and large).
         BrushSize brush_size_;
 
-        /// Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
+        //! Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
         ModifyLandAction action_;
 
-        /// Mouse press flags
+        /// Proxy Widget for ui
+        UiServices::UiProxyWidget *TerrainEditorProxyWidget_;
+
+        //! Mouse press flags
         //Core::u8 mouse_press_flag_;
 
         /// 
