@@ -115,7 +115,7 @@ namespace TextureDecoder
                 new_decode_request->id_ = request.GetId();
                 new_decode_request->level_ = request.GetNextLevel();
                 new_decode_request->source_ = asset;
-                framework_->GetThreadTaskManager()->AddRequest("TextureDecoder", new_decode_request);
+                framework_->GetThreadTaskManager()->AddRequest<DecodeRequest>("TextureDecoder", new_decode_request);
                 
                 request.SetDecodeRequested(true);
             }

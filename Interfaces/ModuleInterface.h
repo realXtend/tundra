@@ -80,7 +80,7 @@ namespace Foundation
             assert(type != MT_Unknown);
 
             static const std::string type_strings[MT_Unknown] = {
-                 "OgreRenderingModule", "OgreGtkWindowModule", "SoundModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
+                 "OgreRenderingModule", "OgreGtkWindowModule", "OpenALAudioModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
                  "CommunicationModule", "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule",
                  "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule" };

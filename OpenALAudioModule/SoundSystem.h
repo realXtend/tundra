@@ -109,6 +109,12 @@ namespace OpenALAudio
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(Core::f64 frametime);
         
+        //! Handles an asset event. Called from OpenALAudioModule.
+        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        
+        //! Handles a thread task event. Called from OpenALAudioModule.
+        bool HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+                
         //! Returns initialized status
         bool IsInitialized() const { return initialized_; }
 
@@ -118,12 +124,16 @@ namespace OpenALAudio
         //! Uninitialize OpenAL sound
         void Uninitialize();
         //! Return next sound channel ID
-        Core::sound_id_t GetNextSoundChannelID();
-               
+        Core::sound_id_t GetNextSoundChannelID();  
         //! Get sound
-        /*! Creates new if necessary. Initiates asset download as necessary.
+        /*! Creates new if necessary. Initiates asset decode/download as necessary.
          */ 
         SoundPtr GetSound(const std::string& name, bool local);
+        //! Posts request for local decode of ogg file
+        /* \return true if file could be found & decode initiated. This does not yet tell if the data is valid, though
+         */
+        bool DecodeLocalOggFile(Sound* sound, const std::string& name);
+        
         //! Update sound cache. Ages sounds and removes oldest if cache too big
         void UpdateCache(Core::f64 frametime);
         

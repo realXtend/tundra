@@ -38,9 +38,14 @@ namespace OpenALAudio
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Sound;
-        
+      
+        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+                
     private:
 		SoundSystemPtr soundsystem_;
+		
+		Core::event_category_id_t task_event_category_;
+		Core::event_category_id_t asset_event_category_;
     };
 }
 

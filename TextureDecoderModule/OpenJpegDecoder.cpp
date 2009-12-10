@@ -109,8 +109,6 @@ namespace TextureDecoder
     {
         if (!request)
             return;
-        
-        PROFILE(OpenJpegDecoder_PerformDecode);
 
         DecodeResultPtr result(new DecodeResult());
 
