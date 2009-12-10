@@ -114,6 +114,16 @@ namespace OpenALAudio
         sound_.reset();
     }
     
+    const std::string& SoundChannel::GetSoundName() const
+    {   
+        static std::string empty;
+        
+        if (!sound_)
+            return empty;
+        else
+            return sound_->GetName();
+    }
+    
     void SoundChannel::SetPosition(const Core::Vector3df& position)
     {
         positional_ = true;

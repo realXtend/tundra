@@ -39,7 +39,9 @@ namespace OpenALAudio
         void Update(const Core::Vector3df& listener_pos);
         //! Return current state of channel.
         Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
-
+        //! Return name/id of sound that's playing, empty if nothing playing
+        const std::string& GetSoundName() const;
+        
     private:
         //! Create OpenAL source if one does not exist yet
         bool CreateSource();      

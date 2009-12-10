@@ -52,7 +52,13 @@ namespace OpenALAudio
         /*! \param id Channel id
             \return Current state (stopped, loading sound asset, playing)
          */
-        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id);
+        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id) const;
+        
+        //! Gets name of sound played/pending on channel
+        /*! \param id Channel id
+            \return Sound name, or empty if no sound
+         */
+        virtual const std::string& GetSoundName(Core::sound_id_t id) const;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id

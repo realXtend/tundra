@@ -69,13 +69,23 @@ namespace OpenALAudio
         initialized_ = false;
     }
 
-    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(Core::sound_id_t id)
+    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(Core::sound_id_t id) const
     {
-        SoundChannelMap::iterator i = channels_.find(id);
+        SoundChannelMap::const_iterator i = channels_.find(id);
         if (i == channels_.end())
             return Foundation::SoundServiceInterface::Stopped;
         return i->second->GetState();
     }
+    
+    const std::string& SoundSystem::GetSoundName(Core::sound_id_t id) const
+    {
+        static std::string empty;
+        
+        SoundChannelMap::const_iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return empty;
+        return i->second->GetSoundName();
+    }    
     
     void SoundSystem::Update(Core::f64 frametime)
     {        
@@ -246,7 +256,7 @@ namespace OpenALAudio
         boost::algorithm::to_lower(name_lower);                
         if (local && (name_lower.find(".wav") != std::string::npos))
         {
-            SoundPtr new_sound(new Sound());
+            SoundPtr new_sound(new Sound(name));
             if (new_sound->LoadWavFromFile(name))
             {
                 sounds_[name] = new_sound;
@@ -257,7 +267,7 @@ namespace OpenALAudio
         // Loading of local ogg sound
         if (local && (name_lower.find(".ogg") != std::string::npos))
         {
-            SoundPtr new_sound(new Sound());
+            SoundPtr new_sound(new Sound(name));
             if (new_sound->LoadOggFromFile(name))
             {
                 sounds_[name] = new_sound;

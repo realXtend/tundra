@@ -113,7 +113,11 @@ namespace OpenALAudio
         return ret;
     }    
     
-    Sound::Sound() : handle_(0), size_(0), age_(0.0)
+    Sound::Sound(const std::string& name) : 
+        name_(name),
+        handle_(0), 
+        size_(0), 
+        age_(0.0)
     {
     }
     

@@ -12,7 +12,7 @@ namespace OpenALAudio
     {
     public:
         //! Constructor
-        Sound();
+        Sound(const std::string& name);
         //! Destructor
         ~Sound();
         
@@ -28,7 +28,9 @@ namespace OpenALAudio
                 
         //! Load raw data from buffer
         bool LoadFromBuffer(Core::u8* data, Core::uint size, Core::uint frequency, bool sixteenbit, bool stereo);
-                        
+
+        //! Return sound name
+        const std::string& GetName() const { return name_; }                        
         //! Return OpenAL handle
         ALuint GetHandle() const { ResetAge(); return handle_; }
         //! Return datasize of sound in bytes
@@ -47,6 +49,8 @@ namespace OpenALAudio
         //! Delete sound buffer
         void DeleteBuffer();
         
+        //! Name or id
+        std::string name_;
         //! OpenAL handle
         ALuint handle_;
         //! Total size of audio data
