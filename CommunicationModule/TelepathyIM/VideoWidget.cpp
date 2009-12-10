@@ -11,13 +11,10 @@
 
 namespace TelepathyIM
 {
-
-    //QWidget(bus,parent)
     VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent) : QWidget(parent), bus_((GstBus *) gst_object_ref(bus)), overlay_(0), sink_(0)
     {
         notifier_ = fs_element_added_notifier_new();
         g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
-
 
         sink_ = gst_element_factory_make("glimagesink", NULL);   //TODO: Get element name as argument
         gst_object_ref(sink_);
@@ -27,7 +24,6 @@ namespace TelepathyIM
         gst_bus_enable_sync_message_emission(bus_);
 
         g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
-
 
         QPalette palette;
         palette.setColor(QPalette::Background, Qt::black);

@@ -8,13 +8,17 @@
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <telepathy-farsight/channel.h>
 #include <Foundation.h>
+#include "VideoWidget.h"
 
 
 namespace TelepathyIM
 {
     /**
-     *  // todo: make audio buffer available for AudioModule to playback
-     *  // Wrapper class for telepathy-farsight channel
+     *  Wrapper class for telepathy-farsight channel
+     *
+     *  // todo: - make audio buffer available for AudioModule to playback
+     *           - add checks for object creation
+     *  
      */
     class FarsightChannel : public QObject
     {
@@ -97,8 +101,9 @@ namespace TelepathyIM
         GstPad  *audio_ghost_;
 
         
-        //VideoWidget *videoPreview;
-        //VideoWidget *videoOutput;
+        VideoWidget *video_preview_widget_;
+        VideoWidget *video_remote_output_widget_;
+
         GstElement *video_preview_element_;
         GstElement *video_remote_output_element_;
     };
