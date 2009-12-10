@@ -1,8 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 /// @file Water.cpp
 /// @brief Manages Water-related Rex logic.
-/// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Water.h"
+#include "EnvironmentModule.h"
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>
@@ -16,19 +19,15 @@
 #include "Renderer.h"
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
-
-#include "Water.h"
 #include "SceneManager.h"
-
 #include "EC_Water.h"
 
 namespace Environment
 {
 
-Water::Water(EnvironmentModule *owner)
-: owner_(owner), waterComponent_(0)
+Water::Water(EnvironmentModule *owner) :
+    owner_(owner), waterComponent_(0)
 {
-    
 }
 
 Water::~Water()
@@ -46,9 +45,7 @@ void Water::FindCurrentlyActiveWater()
         Scene::Entity &entity = **iter;
         Foundation::ComponentInterfacePtr waterComponent = entity.GetComponent("EC_Water");
         if (waterComponent.get())
-        {
             cachedWaterEntity_ = scene->GetEntity(entity.GetId());
-        }
     }
 }
 
@@ -70,8 +67,8 @@ void Water::CreateWaterGeometry()
 }
 
 void Water::SetWaterHeight(float height)
-{   
-    if ( waterComponent_ != 0)
+{
+    if (waterComponent_ != 0)
     {
         waterComponent_->SetWaterHeight(height);
         emit HeightChanged(static_cast<double>(height));
@@ -81,7 +78,7 @@ void Water::SetWaterHeight(float height)
 float Water::GetWaterHeight() const 
 {
     float height = -1.0;
-    if ( waterComponent_ != 0)
+    if (waterComponent_ != 0)
         height = waterComponent_->GetWaterHeight();
 
     return height;
