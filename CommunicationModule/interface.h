@@ -254,7 +254,7 @@ namespace Communication
 		void Closed(VoiceSessionInterface*);
 	};
 
-    class VideoWidget : public QWidget
+    class VideoWidgetInterface : public QWidget
     {
 
     };
@@ -272,8 +272,8 @@ namespace Communication
 
         virtual void Close() = 0;
         
-        virtual VideoWidget* GetRemoteVideo() = 0;
-        virtual VideoWidget* GetLocalVideo() = 0;
+        virtual VideoWidgetInterface* GetRemoteVideo() = 0;
+        virtual VideoWidgetInterface* GetLocalVideo() = 0;
 
     };
 
