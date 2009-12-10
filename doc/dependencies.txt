@@ -29,7 +29,7 @@ This project has the following dependencies:
 
 - OpenAL 1.1: http://connect.creativelabs.com/openal/
 
-- Caelum OGRE Add-on 0.4: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
+- Caelum OGRE Add-on 0.5: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
 
 - Telepathy-farsight 0.0.12.1 or newer,  http://telepathy.freedesktop.org/releases/telepathy-farsight/
 

@@ -11,7 +11,7 @@
 #include "RexLogicModule.h"
 #include "QtUtils.h"
 
-#include <QtUiTools>
+#include <QUiLoader>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QLabel>
