@@ -27,46 +27,82 @@ namespace OpenALAudio
 
         //! Sets listener position & orientation
         /*! \param position Position
-            \param orientation Orientation as quaternion.
+            \param orientation Orientation as quaternion
          */
-        void SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation);       
+        virtual void SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation);       
         
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
-            \return nonzero sound id, if successful (in case of loading from asset, actual sound may start later)
+            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */           
-        Core::sound_id_t PlaySound(const std::string& name, bool local, Core::sound_id_t channel = 0);
+        virtual Core::sound_id_t PlaySound(const std::string& name, bool local = false, Core::sound_id_t channel = 0);
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param position Position of sound
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
-            \return nonzero sound id, if successful (in case of loading from asset, actual sound will start later)            
+            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */     
-        Core::sound_id_t PlaySound3D(const std::string& name, bool localsemp, Core::Vector3df& position, Core::sound_id_t channel = 0);
+        virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local = false, Core::Vector3df& position = Core::Vector3df(0.0f, 0.0f, 0.0f), Core::sound_id_t channel = 0);
 
         //! Gets state of channel
-        Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id);        
+        /*! \param id Channel id
+            \return Current state (stopped, loading sound asset, playing)
+         */
+        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id);
+        
         //! Stops sound that's playing & destroys the channel
-        void StopSound(Core::sound_id_t id);        
-        //! Adjusts pitch of sound
-        void SetPitch(Core::sound_id_t id, Core::Real pitch);
-        //! Adjusts gain of sound
-        void SetGain(Core::sound_id_t id, Core::Real gain);
-        //! Adjusts looping status of sound 
-        void SetLooped(Core::sound_id_t id, bool looped);        
-        //! Adjusts positional status of sound
-        void SetPositional(Core::sound_id_t id, bool positional);        
-        //! Adjusts position of sound
-        void SetPosition(Core::sound_id_t id, Core::Vector3df position);
-        //! Adjusts range of sound
-        void SetRange(Core::sound_id_t id, Core::Real radius, Core::Real rolloff);        
+        /*! \param id Channel id
+         */
+        virtual void StopSound(Core::sound_id_t id);
+        
+        //! Adjusts pitch of channel
+        /*! \param id Channel id
+            \param pitch Pitch relative to sound's original pitch (1.0 = original)
+         */
+        virtual void SetPitch(Core::sound_id_t id, Core::Real pitch);
+        
+        //! Adjusts gain of channel
+        /*! \param id Channel id
+            \param gain New gain value, 1.0 = full volume, 0.0 = silence
+         */        
+        virtual void SetGain(Core::sound_id_t id, Core::Real gain);
+        
+        //! Adjusts looping status of channel
+        /*! \param id Channel id
+            \param looped Whether to loop
+         */           
+        virtual void SetLooped(Core::sound_id_t id, bool looped);
+        
+        //! Adjusts positional status of channel
+        /*! \param id Channel id
+            \param positional Positional status
+         */               
+        virtual void SetPositional(Core::sound_id_t id, bool positional);
+        
+        //! Sets position of channel
+        /*! \param id Channel id
+            \param position New position
+         */   
+        virtual void SetPosition(Core::sound_id_t id, Core::Vector3df position);
+        
+        //! Adjusts range parameters of positional sound channel.
+        /*! \param id Channel id
+            \param inner_radius Within inner radius, sound will be played at gain
+            \param outer_radius Outside outer radius, sound will be silent
+            \param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared 
+            Between radiuses, attenuation will be interpolated and raised to power of rolloff
+            If outer_radius is 0, there will be no attenuation (sound is always played at gain)
+            Also, for non-positional channels the range parameters have no effect.
+         */
+        virtual void SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff); 
 
-        //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule
+        //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(Core::f64 frametime);
+        
         //! Returns initialized status
         bool IsInitialized() const { return initialized_; }
 
@@ -103,6 +139,11 @@ namespace OpenALAudio
         Core::f64 update_time_;
         //! Next channel id
         Core::sound_id_t next_channel_id_;
+        
+        //! Listener position
+        Core::Vector3df listener_position_;
+        //! Listener orientation
+        Core::Quaternion listener_orientation_;
     };
 
     typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;

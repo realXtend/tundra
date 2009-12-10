@@ -8,6 +8,7 @@
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
+#include "SoundServiceInterface.h"
 
 #include "Login/LoginContainer.h" 
 
@@ -83,7 +84,7 @@ bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::
         break;
     }
     case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
-    {
+    {            
         rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Downloading of terrain and avatar completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
         break;
     }

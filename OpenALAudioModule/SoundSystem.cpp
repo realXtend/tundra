@@ -16,7 +16,8 @@ namespace OpenALAudio
         device_(0), 
         next_channel_id_(0),
         sound_cache_size_(DEFAULT_SOUND_CACHE_SIZE),
-        update_time_(0)
+        update_time_(0),
+        listener_position_(0.0, 0.0, 0.0)
     {
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
@@ -33,11 +34,6 @@ namespace OpenALAudio
         if (initialized_)
             return;
             
-        //Initial listener properties
-        ALfloat listener_pos[] = {0.0,0.0,0.0};
-        ALfloat listener_vel[] = {0.0,0.0,0.0};
-        ALfloat listener_orient[] = {0.0,0.0,-1.0, 0.0,1.0,0.0};
-
         device_ = alcOpenDevice(NULL); 
         if (!device_)
         {
@@ -54,11 +50,6 @@ namespace OpenALAudio
            
         alcMakeContextCurrent(context_);
         initialized_ = true;
-
-        //Set initial listener position, velocity and orientation
-        alListenerfv(AL_POSITION, listener_pos);
-        alListenerfv(AL_VELOCITY, listener_vel);
-        alListenerfv(AL_ORIENTATION, listener_orient);
     }
 
     void SoundSystem::Uninitialize()
@@ -89,11 +80,20 @@ namespace OpenALAudio
     void SoundSystem::Update(Core::f64 frametime)
     {        
         std::vector<SoundChannelMap::iterator> channels_to_delete;
+
+        // Update listener position/orientation to sound device
+        ALfloat pos[] = {listener_position_.x, listener_position_.y, listener_position_.z};
+        alListenerfv(AL_POSITION, pos);
+        Core::Vector3df front = listener_orientation_ * Core::Vector3df(0.0f, -1.0f, 0.0f);
+        Core::Vector3df up = listener_orientation_ * Core::Vector3df(0.0f, 0.0f, -1.0f); 
+        ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
+        alListenerfv(AL_ORIENTATION, orient);    
         
+        // Update channel attenuations, check which have stopped
         SoundChannelMap::iterator i = channels_.begin();
         while (i != channels_.end())
         {
-            i->second->Update();
+            i->second->Update(listener_position_);
             if (i->second->GetState() == Foundation::SoundServiceInterface::Stopped)
                 channels_to_delete.push_back(i);
             ++i;
@@ -104,22 +104,16 @@ namespace OpenALAudio
             channels_.erase(channels_to_delete[j]);   
            
         // Age the sound cache
-        UpdateCache(frametime);        
+        UpdateCache(frametime);      
     }
     
     void SoundSystem::SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation)
     {
         if (!initialized_)
             return;
-            
-        ALfloat listener_pos[] = {position.x, position.y, position.z};
-        alListenerfv(AL_POSITION, listener_pos);
-
-        // OpenSim coordinate axes: identity orientation is negative X (front), positive Z (up)
-        Core::Vector3df front = orientation * Core::Vector3df(-1.0f, 0.0f, 0.0f);
-        Core::Vector3df up = orientation * Core::Vector3df(0.0f, 0.0f, 1.0f); 
-        ALfloat listener_orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
-        alListenerfv(AL_ORIENTATION, listener_orient);        
+     
+        listener_position_ = position;
+        listener_orientation_ = orientation;    
     }
       
     Core::sound_id_t SoundSystem::PlaySound(const std::string& name, bool local, Core::sound_id_t channel)
@@ -142,7 +136,7 @@ namespace OpenALAudio
     }
     
     Core::sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Core::Vector3df& position, Core::sound_id_t channel)
-    {
+    {        
         SoundPtr sound = GetSound(name, local);
         if (!sound)
             return 0;
@@ -214,13 +208,13 @@ namespace OpenALAudio
         i->second->SetPosition(position);
     }
     
-    void SoundSystem::SetRange(Core::sound_id_t id, Core::Real radius, Core::Real rolloff)
+    void SoundSystem::SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
             return;  
             
-        i->second->SetRange(radius, rolloff);
+        i->second->SetRange(inner_radius, outer_radius, rolloff);
     }    
  
     Core::sound_id_t SoundSystem::GetNextSoundChannelID()
@@ -260,6 +254,17 @@ namespace OpenALAudio
             }
         }        
         
+        // Loading of local ogg sound
+        if (local && (name_lower.find(".ogg") != std::string::npos))
+        {
+            SoundPtr new_sound(new Sound());
+            if (new_sound->LoadOggFromFile(name))
+            {
+                sounds_[name] = new_sound;
+                return new_sound;
+            }
+        }        
+                        
         return SoundPtr();
     }
     

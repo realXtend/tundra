@@ -20,6 +20,14 @@ namespace OpenALAudio
         bool LoadWavFromFile(const std::string& filename);
         //! Load WAV data from data buffer
         bool LoadWavFromBuffer(Core::u8* data, Core::uint size);
+        
+        //! Load OGG data from file
+        bool LoadOggFromFile(const std::string& filename);
+        //! Load OGG data from data buffer
+        bool LoadOggFromBuffer(Core::u8* data, Core::uint size);
+                
+        //! Load raw data from buffer
+        bool LoadFromBuffer(Core::u8* data, Core::uint size, Core::uint frequency, bool sixteenbit, bool stereo);
                         
         //! Return OpenAL handle
         ALuint GetHandle() const { ResetAge(); return handle_; }

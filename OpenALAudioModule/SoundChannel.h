@@ -31,12 +31,12 @@ namespace OpenALAudio
         void SetPitch(Core::Real pitch);
         //! Set gain.
         void SetGain(Core::Real gain);
-        //! Set range parameters.
-        void SetRange(Core::Real radius, Core::Real rolloff);        
+        //! Set range parameters
+        void SetRange(Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff);        
         //! Stop.
         void Stop();        
-        //! Per-frame update.
-        void Update();
+        //! Per-frame update with new listener position
+        void Update(const Core::Vector3df& listener_pos);
         //! Return current state of channel.
         Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
 
@@ -45,8 +45,12 @@ namespace OpenALAudio
         bool CreateSource();      
         //! Delete OpenAL source
         void DeleteSource();       
+        //! Calculate attenuation from position, listener position & range parameters
+        void CalculateAttenuation(const Core::Vector3df& listener_pos);
         //! Set positionality & position
         void SetPositionAndMode();
+        //! Set gain, taking attenuation into account
+        void SetAttenuatedGain();
         //! Start playback
         void StartPlaying();
     
@@ -58,10 +62,14 @@ namespace OpenALAudio
         Core::Real pitch_;
         //! Gain
         Core::Real gain_;
-        //! Max. radius
-        Core::Real radius_;
-        //! Rolloff parameter
+        //! Inner radius
+        Core::Real inner_radius_;
+        //! Outer radius
+        Core::Real outer_radius_;
+        //! Rolloff power factor
         Core::Real rolloff_;
+        //! Last calculated attenuation factor
+        Core::Real attenuation_;
         //! Looped flag
         bool looped_;
         //! Positional flag

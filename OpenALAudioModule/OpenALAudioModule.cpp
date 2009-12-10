@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "OpenALAudioModule.h"
 #include "SoundSystem.h"
-#include "EC_AttachedSound.h"
 
 namespace OpenALAudio
 {
@@ -21,7 +20,6 @@ namespace OpenALAudio
 		using namespace OpenALAudio;
 
 		LogInfo("Module " + Name() + " loaded.");
-		DECLARE_MODULE_EC(EC_AttachedSound);
 	}
 
     //Virtual

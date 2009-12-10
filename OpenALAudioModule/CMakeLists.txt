@@ -1,4 +1,6 @@
 configure_openal ()
+configure_ogg ()
+configure_vorbis ()
 
 # Define target name and output directory
 init_target (OpenALAudioModule OUTPUT modules/core)
@@ -14,6 +16,8 @@ add_definitions (-DOPENAL_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (OPENAL)
+use_package (OGG)
+use_package (VORBIS)
 use_modules (Core Foundation Interfaces RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
@@ -22,6 +26,8 @@ link_modules (Core Foundation Interfaces RexCommon)
 link_package (BOOST)
 link_package (POCO)
 link_package (OPENAL)
+link_package (OGG)
+link_package (VORBIS)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

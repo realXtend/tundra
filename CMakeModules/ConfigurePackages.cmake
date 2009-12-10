@@ -282,3 +282,29 @@ macro (configure_openal)
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenAL ${ENV_NAALI_DEP_PATH}/OpenAL/libs/Win32)
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
+
+macro (configure_ogg)
+    sagase_configure_package(OGG
+        NAMES ogg libogg
+        COMPONENTS ogg libogg
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libogg)
+        
+        # Force include dir on MSVC
+        if (MSVC)
+  		   set (OGG_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libogg/include)
+        endif ()
+    sagase_configure_report (OGG)
+endmacro (configure_ogg)
+
+macro (configure_vorbis)
+    sagase_configure_package(VORBIS
+        NAMES vorbis libvorbis
+        COMPONENTS vorbis libvorbis libvorbisfile
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
+        
+        # Force include dir on MSVC
+        if (MSVC)
+  		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
+        endif ()
+    sagase_configure_report (VORBIS)
+endmacro (configure_vorbis)
