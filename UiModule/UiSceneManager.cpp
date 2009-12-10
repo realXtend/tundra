@@ -49,7 +49,7 @@ namespace UiServices
         return AddWidgetToCurrentScene(widget, UiWidgetProperties());
     }
 
-    UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget, const UiWidgetProperties &widget_properties)
+    UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
     {
         UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
         
@@ -59,7 +59,7 @@ namespace UiServices
             return 0;
     }
 
-    bool UiSceneManager::AddProxyWidget(UiProxyWidget *widget)
+	bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *widget)
     {
         if (ui_view_)
         {

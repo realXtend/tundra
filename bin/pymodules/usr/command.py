@@ -684,3 +684,29 @@ if 0: #updateflag checks, duplicate tests
     x, y, z = e.pos
     ws.SendObjectDuplicatePacket(e.id, e.updateflags, 1, 1, 1)
     
+if 1:
+    #~ from PythonQt.QtUiTools import QUiLoader
+    #~ from PythonQt.QtCore import QFile
+    #~ #prop = r.getUiWidgetProperty()
+    #~ #print prop, dir(prop), prop.widget_name_
+    #~ loader = QUiLoader()
+    #~ uifile = QFile("pymodules/editgui/editobject.ui")
+    #~ ui = loader.load(uifile)
+    #~ uiprops = r.createUiWidgetProperty()
+    #~ uiprops.widget_name_ = "WOOT"
+    #~ widget = r.createUiProxyWidget(ui, uiprops)
+    #~ print widget, dir(widget)
+    
+    #~ uism = r.getUiSceneManager()
+    #~ if uism.AddProxyWidget(widget):
+        #~ print "WORKED!"
+    
+    #~ modu =  r.getQtModule()
+    #~ print modu, dir(modu)
+    #~ whee = modu.whee()
+    #~ print whee, dir(whee)#, whee.about()
+    
+    print r.c, r.c.proxywidget, dir(r.c.proxywidget)
+    def whee(boo):
+        print boo
+    r.c.proxywidget.connect('Visible(bool)', whee)

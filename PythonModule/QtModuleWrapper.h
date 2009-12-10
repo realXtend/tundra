@@ -5,10 +5,11 @@
 #include <QObject>
 #include "QtModule.h"
 #include "UICanvas.h"
+//#include "UiWidgetProperties.h"
 
 namespace PythonScript 
 {
-    class QtModuleWrapper : public QObject
+	class QtModuleWrapper : public QObject
     {
 
         Q_OBJECT
@@ -27,11 +28,12 @@ namespace PythonScript
 			
 			bool RemoveCanvasFromControlBar(QtUI::UICanvas* canvas);
 
+			//UiServices::UiWidgetProperties* test() { return new UiServices::UiWidgetProperties(""); }
+
         private:
             Foundation::Framework *framework_;
 
     };
-
 }
 
 #endif
