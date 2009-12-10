@@ -22,7 +22,7 @@
 #include "EventHandlers/MainPanelHandler.h"
 
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_SpatialSound.h"
+#include "EntityComponent/EC_AttachedSound.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
@@ -80,7 +80,7 @@ void RexLogicModule::Load()
     PROFILE(RexLogicModule_Load);
 
     DECLARE_MODULE_EC(EC_FreeData);
-    DECLARE_MODULE_EC(EC_SpatialSound);
+    DECLARE_MODULE_EC(EC_AttachedSound);
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimAvatar);
@@ -365,7 +365,7 @@ void RexLogicModule::Update(Core::f64 frametime)
         avatar_->Update(frametime);
 
         // update sound listener position/orientation
-        //UpdateSoundListener();
+        UpdateSoundListener();
 
         // Poll the connection state and update the info to the UI.
         ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
@@ -816,6 +816,16 @@ void RexLogicModule::UpdateObjects(Core::f64 frametime)
             // General animation controller update
             OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
             animctrl.Update(frametime);
+        }
+        
+        // Attached sound update
+        Foundation::ComponentPtr sound_ptr = entity.GetComponent(EC_AttachedSound::NameStatic());
+        if (ogrepos_ptr && sound_ptr)
+        {
+            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get());
+            EC_AttachedSound &sound = *checked_static_cast<EC_AttachedSound*>(sound_ptr.get());
+            sound.Update(frametime);
+            sound.SetPosition(ogrepos.GetPosition());
         }
     }
 }

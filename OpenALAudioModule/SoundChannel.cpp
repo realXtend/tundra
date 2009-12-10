@@ -6,13 +6,20 @@
 
 namespace OpenALAudio
 {
+    static const Core::Real MINIMUM_ROLLOFF = 0.1f;
+    static const Core::Real DEFAULT_ROLLOFF = 2.0f;
+    static const Core::Real DEFAULT_INNER_RADIUS = 1.0f;
+    static const Core::Real DEFAULT_OUTER_RADIUS = 50.0f;
+    
     SoundChannel::SoundChannel() :
         handle_(0),
         pitch_(1.0f),
         gain_(1.0f),
-        position_(0.0f, 0.0f, 0.0f),    
-        radius_(10.0f),
-        rolloff_(1.0f),    
+        position_(0.0, 0.0, 0.0), 
+        inner_radius_(DEFAULT_INNER_RADIUS),
+        outer_radius_(DEFAULT_OUTER_RADIUS),
+        rolloff_(DEFAULT_ROLLOFF),
+        attenuation_(1.0f),
         positional_(false),
         looped_(false),
         state_(Foundation::SoundServiceInterface::Stopped)
@@ -24,13 +31,16 @@ namespace OpenALAudio
         DeleteSource();
     }
     
-    void SoundChannel::Update()
-    {
+    void SoundChannel::Update(const Core::Vector3df& listener_pos)
+    {   
+        CalculateAttenuation(listener_pos);         
+        SetAttenuatedGain();
+        
         switch (state_)
         {
             case Foundation::SoundServiceInterface::Playing:
             if (handle_)
-            {
+            {                
                 ALint playing;
                 alGetSourcei(handle_, AL_SOURCE_STATE, &playing);
                 if (playing != AL_PLAYING)
@@ -42,7 +52,7 @@ namespace OpenALAudio
             break;
             
             case Foundation::SoundServiceInterface::Loading:
-            // If pending sound has now valid handle, start playback
+            // If pending sound has valid handle, start playback now
             if (sound_->GetHandle())
                 StartPlaying();
             break;                    
@@ -59,11 +69,8 @@ namespace OpenALAudio
         if (!sound_)
             return;
             
-        if (sound_->GetHandle())
-            StartPlaying();
-        else
-            // Sound asset not yet loaded, set pending state
-            state_ = Foundation::SoundServiceInterface::Loading;
+        // Start actual playback on next update
+        state_ = Foundation::SoundServiceInterface::Loading;
     }
         
     
@@ -78,11 +85,13 @@ namespace OpenALAudio
             return false;
         }   
         
-        alSourcef(handle_, AL_GAIN, gain_);
         alSourcef(handle_, AL_PITCH, pitch_);
         alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);
+        // No matter whether sound is positional or not, we use own attenuation, so OpenAL rolloff is 0
+        alSourcef(handle_, AL_ROLLOFF_FACTOR, 0.0);       
         
         SetPositionAndMode();
+        SetAttenuatedGain();   
                     
         return true;
     }
@@ -136,14 +145,20 @@ namespace OpenALAudio
     
     void SoundChannel::SetGain(Core::Real gain)
     {
-        gain_ = gain;
-        if (handle_)
-            alSourcef(handle_, AL_GAIN, gain_);               
+        gain_ = gain;          
     }
     
-    void SoundChannel::SetRange(Core::Real radius, Core::Real rolloff)
+    void SoundChannel::SetRange(Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff)
     {
-        radius_ = radius;
+        if (rolloff < MINIMUM_ROLLOFF) 
+            rolloff = MINIMUM_ROLLOFF;
+        if (inner_radius < 0.0f)
+            inner_radius = 0.0f;
+        if (outer_radius < 0.0f)
+            outer_radius = 0.0f;
+
+        inner_radius_ = inner_radius;
+        outer_radius_ = outer_radius;
         rolloff_ = rolloff;
     }
     
@@ -156,6 +171,7 @@ namespace OpenALAudio
                 alSourcei(handle_, AL_SOURCE_RELATIVE, AL_FALSE);
                 ALfloat sound_pos[] = {position_.x, position_.y, position_.z};
                 alSourcefv(handle_, AL_POSITION, sound_pos);
+
             }
             else
             {
@@ -163,6 +179,40 @@ namespace OpenALAudio
                 ALfloat sound_pos[] = {0.0, 0.0, 0.0};
                 alSourcefv(handle_, AL_POSITION, sound_pos);
             }
+        }
+    }
+    
+    void SoundChannel::CalculateAttenuation(const Core::Vector3df& listener_pos)
+    {
+        if ((outer_radius_ == 0.0f) || (outer_radius_ <= inner_radius_))
+        {
+            attenuation_ = 1.0f;
+            return;
+        }
+          
+        Core::Real distance = (position_ - listener_pos).getLength();
+        if (distance <= inner_radius_)
+        {
+            attenuation_ = 1.0f;
+            return;
+        }
+        if (distance >= outer_radius_)
+        {
+            attenuation_ = 0.0f;
+            return;
+        }
+                            
+        attenuation_ = pow(1.0f - (distance - inner_radius_) / (outer_radius_ - inner_radius_), rolloff_);
+    }  
+    
+    void SoundChannel::SetAttenuatedGain()
+    {
+        if (handle_)
+        {            
+            if (positional_)
+                alSourcef(handle_, AL_GAIN, gain_ * attenuation_);          
+            else  
+                alSourcef(handle_, AL_GAIN, gain_);     
         }
     }
     
