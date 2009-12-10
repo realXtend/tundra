@@ -22,7 +22,6 @@ namespace TelepathyIM
             return;
         }
         ConnectTfChannelEvents();
-
         
         //g_value_init (&volume_, G_TYPE_DOUBLE);
         pipeline_ = gst_pipeline_new(NULL);
@@ -50,7 +49,6 @@ namespace TelepathyIM
         gst_object_sink(audio_bin_);
 
         GstElement *video_src;
-
         
         if( videoSrc.length() != 0) // If the videoSrc!=NULL we set up the pipeline with video preview elements
         {
@@ -72,20 +70,25 @@ namespace TelepathyIM
             gst_element_link_many(video_src, scale, rate, colorspace, capsfilter, NULL);
             GstPad *src = gst_element_get_static_pad(capsfilter, "src");
             GstPad *ghost = gst_ghost_pad_new("src", src);
-         //   Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_bin_), ghost));
+            Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_bin_), ghost));
             gst_object_unref(G_OBJECT(src));
-            gst_object_ref(video_bin_); // <---- CRASH !!!
+            gst_object_ref(video_bin_);
             gst_object_sink(video_bin_);
 
             video_tee_ = setUpElement("tee");
-            video_preview_element_ = setUpElement("glimagesink");
-            //video_preview_element_ = setUpElement("autovideosink");
+            gst_object_ref(video_tee_);
+            gst_object_sink(video_tee_);
+
+            video_preview_widget_ = new VideoWidget(bus_);
+            video_preview_element_ = video_preview_widget_->GetVideoSink();
+            
             gst_bin_add_many(GST_BIN(pipeline_), video_bin_, video_tee_,
                     video_preview_element_, NULL);
             gst_element_link_many(video_bin_, video_tee_,
                     video_preview_element_, NULL);
-
-            video_remote_output_element_ = setUpElement("autovideosink");
+            
+            video_remote_output_widget_ = new VideoWidget(bus_);
+            video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
         }
         // can empty pipeline be put to playing when video is not used?, lets try anyway
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
