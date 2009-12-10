@@ -193,7 +193,13 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
 
     msg.SkipToNextVariable(); // SimOwner
     msg.SkipToNextVariable(); // IsEstateManager
-    msg.SkipToNextVariable(); // WaterHeight
+
+    //msg.SkipToNextVariable(); // WaterHeight
+
+    // Set water data ( WaterHeight) . 
+    Scene::Events::WaterEventData water_data(msg.ReadF32());
+
+    
     msg.SkipToNextVariable(); // BillableFactor
     msg.SkipToNextVariable(); // CacheID
     for(int i = 0; i < 4; ++i)
@@ -203,7 +209,7 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
     terrain[1] = msg.ReadUUID().ToString();
     terrain[2] = msg.ReadUUID().ToString();
     terrain[3] = msg.ReadUUID().ToString();
-
+    
     RexLogicModule::LogInfo("Joined to sim " + sim_name);
 
     // Create the "World" scene.
@@ -221,7 +227,9 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
     texture_data.terrain[3] = terrain[3];
     Core::event_category_id_t scene_event_category = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
     assert(scene_event_category);
+
     rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(scene_event_category, Scene::Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE , &texture_data);
+    rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(scene_event_category, Scene::Events::EVENT_ENVIRONMENT_WATER , &water_data);
 
     //RexLogic::TerrainPtr terrainHandler = rexlogicmodule_->GetTerrainHandler();
     //terrainHandler->SetTerrainTextures(terrain);

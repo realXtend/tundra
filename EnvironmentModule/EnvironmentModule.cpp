@@ -19,6 +19,7 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "TerrainEditor.h"
+#include <QDebug>
 
 namespace Environment
 {
@@ -164,6 +165,13 @@ namespace Environment
                         terrain_->SetTerrainTextures(texure_data->terrain);
                 }
             }
+            else if ( event_id == Scene::Events::EVENT_ENVIRONMENT_WATER )
+            {
+                Scene::Events::WaterEventData* water_event_data = dynamic_cast<Scene::Events::WaterEventData* >(data);
+                if ( water_event_data != 0 && water_.get() != 0)
+                    water_->SetWaterHeight(water_event_data->height);
+                
+            }
         }
         else if(category_id == network_in_event_category_) // For NetworkIn events
         {
@@ -193,6 +201,7 @@ namespace Environment
                 if (environment_.get())
                     return environment_->HandleOSNE_SimulatorViewerTimeMessage(netdata);
             }
+           
         }
         else if (category_id == network_state_event_category_) // For NetworkState category
         {

@@ -25,12 +25,15 @@ namespace Environment
 {
 
 Water::Water(EnvironmentModule *owner)
-:owner_(owner)
+: owner_(owner), waterComponent_(0)
 {
+    
 }
 
 Water::~Water()
 {
+    // Does not own.
+    waterComponent_ = 0;
 }
 
 void Water::FindCurrentlyActiveWater()
@@ -59,10 +62,25 @@ void Water::CreateWaterGeometry()
 
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_Water"));
-    EC_Water *waterComponent = checked_static_cast<EC_Water*>(entity->GetComponent("EC_Water").get());
-    waterComponent->SetWaterHeight(20.f);
+    waterComponent_ = checked_static_cast<EC_Water*>(entity->GetComponent("EC_Water").get());
+    waterComponent_->SetWaterHeight(20.f);
 
     cachedWaterEntity_ = entity;
+}
+
+void Water::SetWaterHeight(float height)
+{   
+    if ( waterComponent_ != 0)
+        waterComponent_->SetWaterHeight(height);
+}
+
+float Water::GetWaterHeight() const 
+{
+    float height = -1.0;
+    if ( waterComponent_ != 0)
+        height = waterComponent_->GetWaterHeight();
+
+    return height;
 }
 
 }

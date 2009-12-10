@@ -83,6 +83,9 @@ namespace Scene
         /// An event that will let the environment module to know what are the terrain textures we want to use.
         static const Core::event_id_t EVENT_ENVIRONMENT_TERRAIN_TEXTURE = 0x11;
 
+        /// An event that will let the enviroment module to know about water which is used. 
+        static const Core::event_id_t EVENT_ENVIRONMENT_WATER = 0x12;
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {
@@ -187,6 +190,16 @@ namespace Scene
             virtual ~TerrainTexturesEventData() {}
             /// should be same as RexTypes::RexAssetID. std::string is used because we dont want more dependences.
             std::string terrain[4];
+        };
+
+        class WaterEventData : public Foundation::EventDataInterface
+        {
+        public:
+            WaterEventData() : height(0.0) {}
+            WaterEventData(float h) : height(h) {}
+            virtual ~WaterEventData() {}
+            /// Water height 
+            float height;
         };
 
         namespace
