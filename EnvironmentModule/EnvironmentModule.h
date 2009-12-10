@@ -20,11 +20,11 @@ namespace Environment
     class Water;
     class Environment;
     class Sky;
-    class TerrainEditor;
+    class EnvironmentEditor;
 
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
-    typedef boost::shared_ptr<TerrainEditor> TerrainEditorPtr;
+    typedef boost::shared_ptr<EnvironmentEditor> EnvironmentEditorPtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
@@ -55,8 +55,8 @@ namespace Environment
         /// @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler();
 
-        /// @return The terrain editor.
-        TerrainEditorPtr GetTerrainEditor();
+        /// @return The environment editor.
+        EnvironmentEditorPtr GetEnvironmentEditor();
 
         /// @return The environment handler.
         EnvironmentPtr GetEnvironmentHandler();
@@ -144,7 +144,7 @@ namespace Environment
         SkyPtr sky_;
 
         /// Terrain editor pointer.
-        TerrainEditorPtr terrain_editor_;
+        EnvironmentEditorPtr environment_editor_;
 
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 

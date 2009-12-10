@@ -18,7 +18,7 @@
 #include "Water.h"
 #include "Environment.h"
 #include "Sky.h"
-#include "TerrainEditor.h"
+#include "EnvironmentEditor.h"
 #include <QDebug>
 
 namespace Environment
@@ -54,7 +54,7 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        terrain_editor_ = TerrainEditorPtr(new TerrainEditor(this));
+        environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
     }
 
     void EnvironmentModule::PostInitialize()
@@ -91,7 +91,7 @@ namespace Environment
         water_.reset();
         environment_.reset();
         sky_.reset();
-        terrain_editor_.reset();
+        environment_editor_.reset();
 
         LogInfo("System " + Name() + " uninitialized.");
     }
@@ -148,9 +148,9 @@ namespace Environment
                 Foundation::TextureInterface *decoded_tex = decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
                 if (decoded_tex)
                 {
-                    // Pass the texture asset to terrain editor.
-                    if(terrain_editor_.get())
-                        terrain_editor_->HandleResourceReady(res);
+                    // Pass the texture asset to environment editor.
+                    if(environment_editor_.get())
+                        environment_editor_->HandleResourceReady(res);
                 }
             }
         }
@@ -181,8 +181,8 @@ namespace Environment
                 if(terrain_.get())
                 {
                     bool kill_event = terrain_->HandleOSNE_LayerData(netdata);
-                    if(terrain_editor_.get())
-                        terrain_editor_->UpdateTerrain();
+                    if(environment_editor_.get())
+                        environment_editor_->UpdateTerrain();
                     return kill_event;
                 }
             }
@@ -240,9 +240,9 @@ namespace Environment
         return terrain_;
     }
 
-    TerrainEditorPtr EnvironmentModule::GetTerrainEditor()
+    EnvironmentEditorPtr EnvironmentModule::GetEnvironmentEditor()
     {
-        return terrain_editor_;
+        return environment_editor_;
     }
 
     EnvironmentPtr EnvironmentModule::GetEnvironmentHandler()
