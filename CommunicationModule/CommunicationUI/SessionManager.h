@@ -43,7 +43,7 @@ namespace UiHelpers
 
     private slots:
         void Hide() { parent_->hide(); }
-        void Logout() { emit StateChange(UiDefines::UiStates::Disconnected); }
+        void SignOut() { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
         void Exit() { emit StateChange(UiDefines::UiStates::Exit); }
         
         void StatusHandler(UiDefines::PresenceStatus::PresenceState new_status);

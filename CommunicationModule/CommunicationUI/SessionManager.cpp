@@ -47,6 +47,16 @@ namespace UiHelpers
         //CreateFriendsManager()
         
         StatusHandler(UiDefines::PresenceStatus::Available);
+
+        qDebug() << "\nFriendlist:\n" << endl;
+        Communication::ContactVector contacts = im_connection_->GetContacts().GetContacts();
+        Communication::ContactVector::const_iterator iter;
+
+        for( iter=contacts.begin(); iter!=contacts.end(); iter++ )
+		{
+            Communication::ContactInterface *contact = (*iter);
+            qDebug() << contact->GetName() << "(" << contact->GetPresenceStatus() << ")" << endl;
+        }
     }
 
     QMenuBar *SessionManager::ConstructMenuBar()
@@ -54,11 +64,10 @@ namespace UiHelpers
         // QMenuBar and QMenu init
         menu_bar_ = new QMenuBar(parent_);
         
-        // FILE
+        // FILE menu
         QMenu *file_menu = new QMenu("File", parent_);    
-        file_menu->addAction("Hide", this, SLOT( Hide() ));
-
-        // FILE -> CHANGE STATUS
+        
+        // FILE -> CHANGE STATUS menu
         QMenu *status_menu = new QMenu("Change Status", parent_);
         
         QAction *available_status = status_menu->addAction("Available", this, SLOT( StatusAvailable() ));
@@ -78,10 +87,11 @@ namespace UiHelpers
         status_group->addAction(offline_status);
         available_status->setChecked(true);
 
-        // FILE
+        // FILE content
         file_menu->addMenu(status_menu);
-        file_menu->addSeparator();        
-        file_menu->addAction("Sign out", this, SLOT( Logout() ));
+        file_menu->addAction("Sign out", this, SLOT( SignOut() ));
+        file_menu->addSeparator();
+        file_menu->addAction("Hide", this, SLOT( Hide() ));
         file_menu->addAction("Exit", this, SLOT( Exit() ));
         menu_bar_->addMenu(file_menu);
 
