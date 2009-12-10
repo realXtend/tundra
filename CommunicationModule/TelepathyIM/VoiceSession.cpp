@@ -76,10 +76,11 @@ namespace TelepathyIM
         tp_channel_->acceptCall();
 
                                                               
-        //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
+        
         try
         {
-            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
+            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
         }
         catch(...) // todo: find out exception types
         {
@@ -112,15 +113,6 @@ namespace TelepathyIM
         tp_channel_->requestClose(); // reject
         state_ = STATE_CLOSED;
         reason_ = "User rejected incoming call.";
-    }
-
-    void VoiceSession::CreateAudioStream()
-    {
-        if (pending_audio_streams_ )
-            return;
-
-        pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeAudio);
-        connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
     }
 
 	void VoiceSession::OnOutgoingChannelCreated(Tp::PendingOperation *op)
@@ -231,50 +223,79 @@ namespace TelepathyIM
 
         if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
+
+        emit ( Opened(this) );
     }
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
     {
-        LogInfo(" VoiceSession::OnChannelInvalidated(");
+        QString log_message = QString(" VoiceSession::OnChannelInvalidated - ").append(error).append(" - ").append(message);
+        LogInfo(log_message.toStdString());
         state_ = STATE_ERROR;
         reason_ = message;
         emit Closed(this);
+    }
+
+    void VoiceSession::CreateAudioStream()
+    {
+        if (pending_audio_streams_ )
+            return;
+
+        pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeAudio);
+        connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
+    }
+
+    void VoiceSession::CreateVideoStream()
+    {
+        if (pending_audio_streams_ )
+            return;
+
+        pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeVideo);
+        connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
     }
 
     void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
     {
         switch (status) {
         case FarsightChannel::StatusConnecting:
-            LogInfo("VoiceSession: Connecting...");
+            LogInfo("VoiceSession: FarsightChannel status = Connecting...");
             break;
         case FarsightChannel::StatusConnected:
-            LogInfo("VoiceSession: Connected.");
+            LogInfo("VoiceSession: FarsightChannel status = Connected.");
             break;
         case FarsightChannel::StatusDisconnected:
+            LogInfo("VoiceSession: Call FarsightChannel status = terminated.");
+            state_ = STATE_CLOSED;
             tp_channel_->requestClose();
-            // TODO: emit signal
-            LogInfo("VoiceSession: Call terminated.");
+            emit Closed(this);
             break;
         }
     }
 
     void VoiceSession::UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send)
     {
+        QString type = "UNKNOWN";
+        if (stream->type() == Tp::MediaStreamTypeAudio);
+            type = "AUDIO";
+        if (stream->type() == Tp::MediaStreamTypeVideo);
+            type = "VIDEO";
+
         if (send)
         {
             if (!(stream->direction() & Tp::MediaStreamDirectionSend))
             {
-                LogDebug("Change stream direction to: DirectionSend");
+                QString log_message = QString("Change ").append(type).append("stream direction to: DirectionSend");
+                LogDebug(log_message.toStdString());
                 int dir = stream->direction() | Tp::MediaStreamDirectionSend;
                 stream->requestDirection((Tp::MediaStreamDirection) dir);
-                LogInfo("Start sending");
             }
         }
         else
         {
             if (stream->direction() & Tp::MediaStreamDirectionSend) 
             {
-                LogDebug("Change stream direction to: ~DirectionSend");
+                QString log_message = QString("Change ").append(type).append("stream direction to: ~DirectionSend");
+                LogDebug(log_message.toStdString());
                 int dir = stream->direction() & ~Tp::MediaStreamDirectionSend;
                 stream->requestDirection((Tp::MediaStreamDirection) dir);
             }
@@ -309,8 +330,6 @@ namespace TelepathyIM
         {
             LogDebug("Removed VIDEO STREAM");
         }
-
-        // todo: IMPLEMENT
     }
 
     void VoiceSession::OnStreamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend ps)
