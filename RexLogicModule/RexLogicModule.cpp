@@ -426,14 +426,14 @@ void RexLogicModule::UpdateSoundListener()
     if (!camera)
         return;
 
-    boost::shared_ptr<Foundation::SoundServiceInterface> sound = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-    if (!sound)
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
         return;                
     
     Ogre::Vector3 pos = camera->getPosition();
     Ogre::Quaternion orient = camera->getOrientation();
     
-    sound->SetListener(
+    soundsystem->SetListener(
         Core::Vector3df(pos.x, pos.y, pos.z),
         Core::Quaternion(orient.x, orient.y, orient.z, orient.w)
     );

@@ -6,6 +6,7 @@
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include "EntityComponent/EC_AttachedSound.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
@@ -23,6 +24,8 @@
 #include "ResourceInterface.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
+#include "AssetServiceInterface.h"
+#include "SoundServiceInterface.h"
 
 namespace RexLogic
 {
@@ -1302,5 +1305,86 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
         }
     }
 }
+
+bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+    
+    std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
+    RexTypes::RexUUID entityid = msg.ReadUUID(); // ObjectID 
+    msg.ReadUUID(); // OwnerID
+    Core::Real gain = msg.ReadF32(); // Gain
+    Core::u8 flags = msg.ReadU8(); // Flags
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return false;   
+    
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
+        return false;
+        
+    // Create attachedsound component into the entity, if doesn't exist already
+    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
+    if (!attachedsoundptr)
+        entity->AddEntityComponent(attachedsoundptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_AttachedSound::NameStatic()));    
+    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
+    
+    // Remove/stop previous attached sounds
+    attachedsound.RemoveAllSounds();
+    
+    // Get initial position of sound from the placeable (will be updated later if the entity moves)
+    Core::Vector3df position(0.0f, 0.0f, 0.0f);
+    Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    if (placeableptr)
+    {
+        OgreRenderer::EC_OgrePlaceable &placeable = 
+            *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
+        position = placeable.GetPosition();
+    }
+                
+    // Start new sound
+    Core::sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
+    soundsystem->SetGain(new_sound, gain);
+    if (flags & RexTypes::ATTACHED_SOUND_LOOP)
+        soundsystem->SetLooped(new_sound, true);
+    
+    // Attach sound that the position will be updated / sound will be stopped if entity destroyed
+    attachedsound.AddSound(new_sound);
+    
+    return false;
+}
+
+bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+   
+    RexTypes::RexUUID entityid = msg.ReadUUID(); // ObjectID 
+    Core::Real gain = msg.ReadF32(); // Gain    
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return false;   
+    
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
+        return false;
+        
+    // Get attachedsound component
+    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
+    if (!attachedsoundptr)
+        return false;
+        
+    // Change gain of sound(s) this entity is playing 
+    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());    
+    const std::vector<Core::sound_id_t>& sounds = attachedsound.GetSounds();
+    for (Core::uint i = 0; i < sounds.size(); ++i)
+        soundsystem->SetGain(sounds[i], gain);
+    
+    return false;
+}
+
 
 } // namespace RexLogic

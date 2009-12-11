@@ -59,11 +59,9 @@ namespace OpenALAudio
         }
     }
     
-    void SoundChannel::Play(SoundPtr sound, bool positional)
+    void SoundChannel::Play(SoundPtr sound)
     {        
         Stop();
-     
-        SetPositional(positional);
                
         sound_ = sound;        
         if (!sound_)
@@ -155,6 +153,11 @@ namespace OpenALAudio
     
     void SoundChannel::SetGain(Core::Real gain)
     {
+        if (gain < 0.0f) 
+            gain = 0.0f;
+        if (gain > 1.0f)
+            gain = 1.0f;
+            
         gain_ = gain;          
     }
     

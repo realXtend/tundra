@@ -86,6 +86,21 @@ namespace OpenALAudio
         return i->second->GetState();
     }
     
+    std::vector<Core::sound_id_t> SoundSystem::GetActiveSounds() const
+    {
+        std::vector<Core::sound_id_t> ret;
+        
+        SoundChannelMap::const_iterator i = channels_.begin();
+        while (i != channels_.end())        
+        {
+            if (i->second->GetState() != Foundation::SoundServiceInterface::Stopped)
+                ret.push_back(i->first);
+            ++i;
+        }
+        
+        return ret;
+    }
+    
     const std::string& SoundSystem::GetSoundName(Core::sound_id_t id) const
     {
         static std::string empty;
@@ -149,7 +164,7 @@ namespace OpenALAudio
         }
         
         i->second->SetPositional(false);
-        i->second->Play(sound, false);
+        i->second->Play(sound);
          
         return i->first;     
     }
@@ -168,7 +183,7 @@ namespace OpenALAudio
         }
         
         i->second->SetPosition(position);
-        i->second->Play(sound, false);            
+        i->second->Play(sound);            
                 
         return i->first;     
     }        
@@ -243,7 +258,7 @@ namespace OpenALAudio
             next_channel_id_++;
             if (!next_channel_id_)
                 next_channel_id_ = 1;
-            // Must be previously unused
+            // Must be currently unused
             if (channels_.find(next_channel_id_) == channels_.end())
                 break;
         }
