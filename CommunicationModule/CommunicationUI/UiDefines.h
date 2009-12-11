@@ -113,7 +113,7 @@ namespace UiDefines
     public:
 
         //! Generates a formatted timestamp of the current time and date and returns it as a QString
-	    static QString TimeStampGenerator::GenerateTimeStamp()
+	    static QString GenerateTimeStamp()
 	    {
             QDateTime time_stamp = QDateTime::currentDateTime();
 
@@ -122,7 +122,7 @@ namespace UiDefines
 	    }
 
         //! Formats an already existing QDateTime and returns it as a QString
-        static QString TimeStampGenerator::FormatTimeStamp(QDateTime time)
+        static QString FormatTimeStamp(QDateTime time)
         {
             QString timestamp(QString("%1 %2").arg(time.date().toString("dd.MM.yyyy"),time.time().toString("hh:mm:ss")));
 		    return timestamp;
