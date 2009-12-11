@@ -145,7 +145,8 @@ namespace UiManagers
 
     void SessionManager::ChatSessionRecieved(Communication::ChatSessionInterface &chat_session)
     {
-        session_helper_->CreateNewChatSessionWidget(&chat_session, session_helper_->GetFriendsNameFromParticipants(chat_session.GetParticipants()));
+      QString friends_name = session_helper_->GetFriendsNameFromParticipants(chat_session.GetParticipants());
+      session_helper_->CreateNewChatSessionWidget(static_cast<Communication::ChatSessionInterface *>(&chat_session), friends_name);
     }
 
     void SessionManager::VoiceSessionRecieved(Communication::VoiceSessionInterface &voice_session)

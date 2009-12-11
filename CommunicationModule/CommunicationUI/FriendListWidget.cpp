@@ -112,7 +112,8 @@ namespace CommunicationUI
             if (contact)
             {
                 Communication::ChatSessionInterface *chat_session = im_connection_->OpenPrivateChatSession(*contact);
-                emit NewChatSessionStarted(chat_session, contact->GetID());
+                QString id = contact->GetID();
+                emit NewChatSessionStarted(chat_session, id);
             }
         }
     }
