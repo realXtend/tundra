@@ -4,11 +4,10 @@
 #define incl_Communication_FriendListItem_h
 
 #include <QObject>
+#include <QListWidget>
 #include <QListWidgetItem>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QLabel>
 #include <QIcon>
+#include <QString>
 
 #include "interface.h"
 
@@ -24,7 +23,7 @@ namespace CommunicationUI
     Q_PROPERTY(QString current_status_message_ WRITE SetStatusMessage READ GetStatusMessage)
 
     public:
-        FriendListItem(QListWidget *parent, QString &id, QString &name, QString &status, QString &status_message);
+        FriendListItem(QListWidget *parent_widget, QString id, QString name, QString status, QString status_message);
         virtual ~FriendListItem();
 
         //! Getters
