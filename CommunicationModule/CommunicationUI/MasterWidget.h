@@ -13,6 +13,10 @@ namespace UiHelpers
 {
     class ConfigHelper;
     class LoginHelper;
+}
+
+namespace UiManagers
+{
     class SessionManager;
 }
 
@@ -54,7 +58,7 @@ namespace CommunicationUI
 
         UiHelpers::LoginHelper *login_helper_;
         UiHelpers::ConfigHelper *config_helper_;
-        UiHelpers::SessionManager *session_manager_;
+        UiManagers::SessionManager *session_manager_;
 
         QSize current_size_;
     };

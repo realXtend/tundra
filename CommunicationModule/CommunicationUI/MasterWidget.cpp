@@ -20,7 +20,7 @@ namespace CommunicationUI
           ui_state_(UiDefines::UiStates::Disconnected),
           login_helper_(new UiHelpers::LoginHelper),
           config_helper_(new UiHelpers::ConfigHelper(framework)),
-          session_manager_(new UiHelpers::SessionManager(this)),
+          session_manager_(new UiManagers::SessionManager(this)),
           login_ui_(new Ui::LoginWidget),
           loading_ui_(new Ui::LoadingWidget),
           session_manager_ui_(new Ui::SessionManagerWidget)
@@ -77,7 +77,7 @@ namespace CommunicationUI
             }
             case UiDefines::UiStates::Exit:
             {
-                close();
+                destroy();
                 break;
             }
         }

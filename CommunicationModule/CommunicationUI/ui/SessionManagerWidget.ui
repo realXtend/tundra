@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>578</width>
-    <height>191</height>
+    <width>585</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,34 +29,77 @@
        <bold>false</bold>
       </font>
      </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="usernameLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Estrangelo Edessa</family>
-          <pointsize>14</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>username@server.com</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="usernameLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Estrangelo Edessa</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>username@server.com</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="statusMessageLabel">
+          <property name="font">
+           <font>
+            <family>Verdana</family>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>status message</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="statusIconLabel">
+          <property name="minimumSize">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QTabWidget" name="tabWidget">
+       <widget class="QTabWidget" name="sessionsTabWidget">
         <property name="styleSheet">
          <string> QTabWidget::pane { /* The tab widget frame */
      border: 1px solid #9B9B9B;
@@ -78,7 +121,7 @@
      min-width: 8ex;
      padding: 2px;
      padding-right: 5px;
-     padding-left: 5px;
+     padding-left: 1px;
  }
 
  QTabBar::tab:selected, QTabBar::tab:hover {
@@ -118,6 +161,9 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
+        <property name="movable">
+         <bool>true</bool>
+        </property>
         <widget class="QWidget" name="DefaultTab">
          <property name="styleSheet">
           <string>QWidget {
@@ -129,14 +175,17 @@ QLabel {
 }</string>
          </property>
          <attribute name="title">
-          <string>Connected</string>
+          <string>  Connected</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="spacing">
            <number>0</number>
           </property>
+          <property name="margin">
+           <number>15</number>
+          </property>
           <item>
-           <widget class="QLabel" name="infoText_3">
+           <widget class="QLabel" name="infoText_1">
             <property name="font">
              <font>
               <family>Estrangelo Edessa</family>
@@ -147,97 +196,26 @@ QLabel {
              <string>color: rgb(69, 159, 255);</string>
             </property>
             <property name="text">
-             <string>Hello and welcome to Naali Communications Widget!</string>
+             <string>Hello and Welcome to Naali Communications Widget!</string>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <property name="spacing">
-             <number>3</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="infoText_1">
-              <property name="text">
-               <string>To begin click</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="friendlistPushButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>35</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string>QPushButton {
-	color: rgb(69, 159, 255);
-	border: 0px;
-	border-radius:0px;
-	background-color: rgba(255, 255, 255, 0);
-}
-
-QPushButton:hover {
-	color: rgb(115, 134, 255);
-	border: 0px;
-	border-radius:0px;
-	color: rgb(43, 99, 255);
-}
-
-QPushButton::pressed {
-	color: rgb(69, 159, 255);
-	border: 0px;
-	border-radius:0px;
-	background-color: rgba(255, 255, 255, 0);
-}</string>
-              </property>
-              <property name="text">
-               <string>here</string>
-              </property>
-              <property name="flat">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="infoText_2">
-              <property name="text">
-               <string>for your friends list. There you can start chat, video or audio sessions with your friends.</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QLabel" name="infoText_4">
+           <widget class="QLabel" name="infoText_2">
             <property name="text">
              <string>You can find all important functionality from the menu that is located at the top of this window.</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer_1">
+           <widget class="QLabel" name="infoText_3">
+            <property name="text">
+             <string>To start click the Show Friend List button. There you can start chat,  video or audio sessions with your friends.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>

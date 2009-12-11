@@ -4,6 +4,9 @@
 #define incl_Communication_SessionManager_h
 
 #include "MasterWidget.h"
+#include "SessionHelper.h"
+#include "FriendListWidget.h"
+#include "ChatSessionWidget.h"
 #include "UiDefines.h"
 
 #include <QMenuBar>
@@ -13,50 +16,60 @@
 #include "ui_SessionManagerWidget.h"
 #include "interface.h"
 
-namespace UiHelpers
+namespace UiManagers
 {
     class SessionManager : public QObject
     {
 
     Q_OBJECT
-    Q_PROPERTY(UiDefines::PresenceStatus::PresenceState presence_status_ READ GetPresenceStatus)
         
     public:
         SessionManager(CommunicationUI::MasterWidget *parent);
         virtual ~SessionManager();
 
+        //! Setup ui
         void SetupUi(Ui::SessionManagerWidget *session_manager_ui) { SAFE_DELETE(session_manager_ui_); session_manager_ui_ = session_manager_ui; }
-        void Start(const QString &username, Communication::ConnectionInterface *im_connection);
+        //! Start the ui manager
+        void Start(const QString &username, Communication::ConnectionInterface *im_connection);      
 
-        UiDefines::PresenceStatus::PresenceState GetPresenceStatus() { return presence_status_; }
-
-        
     private:
-        QMenuBar *ConstructMenuBar();
+        QWidget *main_parent_;
         QMenuBar *menu_bar_;
+        QAction *available_status, *chatty_status, *away_status;
+        QAction *extended_away_status, *busy_status, *hidden_status;
 
-        Ui::SessionManagerWidget *session_manager_ui_;
-        Communication::ConnectionInterface *im_connection_;
-        CommunicationUI::MasterWidget *parent_;
+        Ui::SessionManagerWidget            *session_manager_ui_;
+        UiHelpers::SessionHelper            *session_helper_;
+        Communication::ConnectionInterface  *im_connection_;
+        CommunicationUI::MasterWidget       *parent_;
+        CommunicationUI::FriendListWidget   *friend_list_widget_;
 
-        UiDefines::PresenceStatus::PresenceState presence_status_;
+    public slots:
+        void StatusChangedOutSideMenuBar(const QString &status_code);
 
     private slots:
-        void Hide() { parent_->hide(); }
-        void SignOut() { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
-        void Exit() { emit StateChange(UiDefines::UiStates::Exit); }
-        
-        void StatusHandler(UiDefines::PresenceStatus::PresenceState new_status);
-        void StatusAvailable() {}
-        void StatusAway() {}
-        void StatusBusy() {}
-        void StatusOffline() {}
+        QMenuBar *ConstructMenuBar();
+        void CreateFriendListWidget();
 
+        void Hide()     { parent_->hide(); }
+        void SignOut()  { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
+        void Exit()     { friend_list_widget_->close(); im_connection_->Close(); emit StateChange(UiDefines::UiStates::Exit); }
+
+        void StatusAvailable()    { emit StatusChange(QString("available")); }
+        void StatusChatty()       { emit StatusChange(QString("chat"));      }
+        void StatusAway()         { emit StatusChange(QString("away"));      }
+        void StatusExtendedAway() { emit StatusChange(QString("xa"));        }
+        void StatusBusy()         { emit StatusChange(QString("dnd"));       }
+        void StatusHidden()       { emit StatusChange(QString("hidden"));    }
+
+        void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); }
+
+        void ChatSessionRecieved(Communication::ChatSessionInterface& chat_session);
         void VoiceSessionRecieved(Communication::VoiceSessionInterface& voice_session);
 
     signals:
         void StateChange(UiDefines::UiStates::ConnectionState);
-        void StatusChange(UiDefines::PresenceStatus::PresenceState);
+        void StatusChange(const QString &);
 
     };
 }
