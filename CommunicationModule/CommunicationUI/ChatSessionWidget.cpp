@@ -93,6 +93,7 @@ namespace CommunicationUI
 
     void ChatSessionWidget::CloseConversation()
     {
+        chat_session_->Close();
         emit Closed(his_name_);
     }
 }

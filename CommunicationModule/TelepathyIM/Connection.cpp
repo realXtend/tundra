@@ -302,6 +302,9 @@ namespace TelepathyIM
         QObject::connect(tp_connection_->becomeReady(features),
 		                 SIGNAL(finished(Tp::PendingOperation *)),
 				         SLOT(OnConnectionReady(Tp::PendingOperation *)));
+
+        connect(tp_connection_.data(), SIGNAL( statusChanged(uint , uint) ), SLOT( OnConnectionStatusChanged(uint , uint ) ) );
+        connect(tp_connection_.data(), SIGNAL( selfHandleChanged(uint) ), SLOT( OnSelfHandleChanged(uint) ));
 		
         if (tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES))
         {
@@ -670,6 +673,16 @@ namespace TelepathyIM
     void Connection::IncomingVoiceSessionReady(VoiceSession *session)
     {
         emit( VoiceSessionReceived(*session) );
+    }
+
+    void Connection::OnConnectionStatusChanged(uint status, uint reason)
+    {
+        // TODO: IMPLEMENT
+    }
+
+    void Connection::OnSelfHandleChanged(uint handle) 
+    {
+        // TODO: IMPLEMENT
     }
 
 } // end of namespace: TelepathyIM
