@@ -54,6 +54,9 @@ namespace OpenALAudio
          */
         virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id) const;
         
+        //! Gets all non-stopped channels id's
+        virtual std::vector<Core::sound_id_t> GetActiveSounds() const;
+                
         //! Gets name of sound played/pending on channel
         /*! \param id Channel id
             \return Sound name, or empty if no sound

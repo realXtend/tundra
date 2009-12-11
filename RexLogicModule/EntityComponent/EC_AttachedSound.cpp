@@ -41,20 +41,19 @@ namespace RexLogic
             return;
             
         for (Core::uint i = 0; i < sounds_.size(); ++i)
-        {
-            if (soundsystem)
-                soundsystem->SetPosition(sounds_[i], position);
-        }	    
+            soundsystem->SetPosition(sounds_[i], position);
 	}
 	
 	void EC_AttachedSound::RemoveSound(Core::sound_id_t sound)
     {
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+
+
         std::vector<Core::sound_id_t>::iterator i = sounds_.begin();
         while (i != sounds_.end())
         {
             if ((*i) == sound)
             {
-                boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
                 if (soundsystem)
                     soundsystem->StopSound((*i));
                 sounds_.erase(i);

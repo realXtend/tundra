@@ -14,6 +14,8 @@
 #include "Environment/Primitive.h"
 #include "Inventory/InventoryEvents.h"
 #include "SceneEvents.h"
+#include "SoundServiceInterface.h"
+#include "AssetServiceInterface.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -101,7 +103,7 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, F
 
     case RexNetMsgObjectProperties:
         return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
-
+       
     //case RexNetMsgLayerData:
         // \todo remove this when scene events are complite.
         //rexlogicmodule_->GetTerrainEditor()->UpdateTerrain();
@@ -117,6 +119,18 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, F
     case RexNetMsgUpdateCreateInventoryItem:
         return HandleOSNE_UpdateCreateInventoryItem(netdata);
 
+    case RexNetMsgAttachedSound:
+        return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_AttachedSound(netdata);
+
+    case RexNetMsgAttachedSoundGainChange:
+        return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_AttachedSoundGainChange(netdata);
+
+    case RexNetMsgSoundTrigger:
+        return HandleOSNE_SoundTrigger(netdata);
+
+    case RexNetMsgPreloadSound:
+        return HandleOSNE_PreloadSound(netdata);
+        
     default:
         break;
     }
@@ -510,6 +524,73 @@ bool NetworkEventHandler::HandleOSNE_UpdateCreateInventoryItem(ProtocolUtilities
         }
     }
 
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+ 
+    size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+    
+    while (instance_count)
+    {     
+        msg.ReadUUID(); // ObjectID
+        msg.ReadUUID(); // OwnerID
+        std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
+    
+        // Preload the sound asset into cache, the sound service will get it from there when actually needed    
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
+            asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);       
+    
+        --instance_count;
+    }
+    
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+    
+    std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
+    msg.ReadUUID(); // OwnerID
+    msg.ReadUUID(); // ObjectID
+    msg.ReadUUID(); // ParentID
+    msg.ReadU64(); // Regionhandle, todo handle
+    Core::Vector3df position = msg.ReadVector3(); // Position
+    Core::Real gain = msg.ReadF32(); // Gain
+          
+    // Because sound triggers are not supposed to stop the previous sound, like attached sounds do, 
+    // it is easy to spam with 100's of sound trigger requests.
+    // What we do now is that if we find the same sound playing "too many" times, we stop one of them
+    static const Core::uint MAX_SOUND_INSTANCE_COUNT = 4;
+    Core::uint same_sound_detected = 0;
+    Core::sound_id_t sound_to_stop = 0;    
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
+        return false;
+        
+    std::vector<Core::sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
+    for (Core::uint i = 0; i < playing_sounds.size(); ++i)
+    {
+        if (soundsystem->GetSoundName(playing_sounds[i]) == asset_id)
+        {
+            same_sound_detected++;
+            // This should be the oldest instance of the sound, because soundsystem gives channel ids from a map (ordered)                
+            if (!sound_to_stop)
+                sound_to_stop = playing_sounds[i]; 
+        }
+    }
+    if (same_sound_detected >= MAX_SOUND_INSTANCE_COUNT)
+        soundsystem->StopSound(sound_to_stop);
+        
+    Core::sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
+    soundsystem->SetGain(new_sound, gain);
+              
     return false;
 }
 

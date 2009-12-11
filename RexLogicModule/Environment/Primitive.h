@@ -24,6 +24,9 @@ namespace RexLogic
         bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
         
+        bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
+                
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
                         
         bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);

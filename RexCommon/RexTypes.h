@@ -315,9 +315,12 @@ namespace RexTypes
     const int EXTRUSION_STRAIGHT = 16;
 
     // Primitive texture entry material type
-    const uint8_t MATERIALTYPE_BUMP_BITS = 0x1f;
+    const uint8_t MATERIALTYPE_BUMP = 0x1f;
     const uint8_t MATERIALTYPE_FULLBRIGHT = 0x20;
-    const uint8_t MATERIALTYPE_SHINY_BITS = 0xc0;
+    const uint8_t MATERIALTYPE_SHINY = 0xc0;
+
+    // Attached sound flags
+    const uint8_t ATTACHED_SOUND_LOOP = 0x01;    
 
     typedef std::string RexAssetID;
 

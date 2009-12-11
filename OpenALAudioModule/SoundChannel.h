@@ -20,7 +20,7 @@ namespace OpenALAudio
         ~SoundChannel();
         
         //! Start playing sound. Set to pending state if sound is actually not loaded yet
-        void Play(SoundPtr sound, bool positional);       
+        void Play(SoundPtr sound);       
         //! Set positional state
         void SetPositional(bool enable);
         //! Set looped state
