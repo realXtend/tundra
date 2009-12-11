@@ -4,6 +4,7 @@
 #include "SessionHelper.h"
 #include "FriendListWidget.h"
 #include "ChatSessionWidget.h"
+#include "VideoSessionWidget.h"
 #include "UiDefines.h"
 
 #include <QDebug>
@@ -66,7 +67,7 @@ namespace UiHelpers
 
     /************* GET IT *************/
 
-    QString SessionHelper::GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector participant_vector)
+    QString SessionHelper::GetChatInviteSendersName(Communication::ChatSessionParticipantVector participant_vector)
     {
         Communication::ChatSessionParticipantVector::const_iterator iter;
         for( iter=participant_vector.begin(); iter!=participant_vector.end(); iter++ )
@@ -78,21 +79,42 @@ namespace UiHelpers
         return "";
     }
 
+    QString SessionHelper::GetVideoInviteSendersName(Communication::VoiceSessionParticipantVector participant_vector)
+    {
+        Communication::VoiceSessionParticipantVector::const_iterator iter;
+        for( iter=participant_vector.begin(); iter!=participant_vector.end(); iter++ )
+	    {
+            Communication::VoiceSessionParticipantInterface *participant = (*iter);
+            if (participant->GetID() != my_name_)
+                return participant->GetID();
+        }
+        return "";
+    }
+
     /************* CHECK IT *************/
 
-    bool SessionHelper::DoesTabExist(const QString &chat_friends_name)
+    bool SessionHelper::DoesChatTabExist(const QString &chat_friends_name)
 	{
-        int tab_count = session_manager_ui_->sessionsTabWidget->count();
-		for (int index = 0; index < tab_count; ++index)
-		{
-			if ( QString::compare(session_manager_ui_->sessionsTabWidget->tabText(index), chat_friends_name) == 0 )
-			{
-				session_manager_ui_->sessionsTabWidget->setCurrentIndex(index);
-				return true;
-			}
-		}
+        if (chat_sessions_pointers_map_.contains(chat_friends_name))
+        {
+            QWidget *found_tab_widget = chat_sessions_pointers_map_[chat_friends_name].first;
+            session_manager_ui_->sessionsTabWidget->setCurrentWidget(found_tab_widget);
+            return true;
+        }
 		return false;
 	}
+
+    void SessionHelper::TabWidgetStateCheck()
+    {
+        if (!welcome_tab_destroyed)
+        {
+            session_manager_ui_->sessionsTabWidget->clear();
+            welcome_tab_destroyed = true;
+        }
+
+        if (info_widget_)
+            SAFE_DELETE(info_widget_);
+    }
 
     /************* DO IT *************/
 
@@ -122,21 +144,28 @@ namespace UiHelpers
 
     void SessionHelper::CreateNewChatSessionWidget(Communication::ChatSessionInterface *chat_session, QString &chat_friends_name)
     {
-        if (!welcome_tab_destroyed)
-        {
-            session_manager_ui_->sessionsTabWidget->clear();
-            welcome_tab_destroyed = true;
-        }
+        TabWidgetStateCheck();
 
-        if (info_widget_)
-            SAFE_DELETE(info_widget_);
-
-        if (!DoesTabExist(chat_friends_name))
+        if (!DoesChatTabExist(chat_friends_name))
         {
+            // Add tab and connections
             CommunicationUI::ChatSessionWidget *chat_session_tab = new CommunicationUI::ChatSessionWidget(main_parent_, chat_session, my_name_, chat_friends_name);
             int index = session_manager_ui_->sessionsTabWidget->addTab(chat_session_tab, QIcon(":images/iconChat.png"), chat_friends_name);
             session_manager_ui_->sessionsTabWidget->setCurrentIndex(index);
             connect(chat_session_tab, SIGNAL( Closed(const QString &) ), this, SLOT( CloseTab(const QString &) ));
+
+            // Store to local container
+            chat_sessions_pointers_map_[chat_friends_name].first = chat_session_tab;
+            chat_sessions_pointers_map_[chat_friends_name].second = chat_session;
         }
+    }
+
+    void SessionHelper::CreateNewVideoSessionWidget(Communication::VoiceSessionInterface *video_session, QString &chat_friends_name)
+    {
+        TabWidgetStateCheck();
+
+        CommunicationUI::VideoSessionWidget *video_session_tab = new CommunicationUI::VideoSessionWidget(main_parent_, video_session, my_name_, chat_friends_name);
+        int index = session_manager_ui_->sessionsTabWidget->addTab(video_session_tab, QIcon(":images/iconChat.png"), chat_friends_name);
+        session_manager_ui_->sessionsTabWidget->setCurrentIndex(index);
     }
 }

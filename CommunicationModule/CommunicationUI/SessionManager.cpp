@@ -51,8 +51,8 @@ namespace UiManagers
         session_helper_->SetMyStatusMessage(im_connection_->GetPresenceMessage());
 
         // Connect slots to ConnectionInterface
-        connect(im_connection_, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT( VoiceSessionRecieved(Communication::VoiceSessionInterface&) ));
-        connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), SLOT( ChatSessionRecieved(Communication::ChatSessionInterface&) ));
+        connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), SLOT( ChatSessionReceived(Communication::ChatSessionInterface&) ));
+        connect(im_connection_, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT( VideoSessionReceived(Communication::VoiceSessionInterface&) ));
     }
 
     QMenuBar *SessionManager::ConstructMenuBar()
@@ -125,6 +125,8 @@ namespace UiManagers
                 session_helper_, SLOT( SetMyStatus(const QString &) ));
         connect(friend_list_widget_, SIGNAL( NewChatSessionStarted(Communication::ChatSessionInterface *, QString &) ),
                 session_helper_, SLOT( CreateNewChatSessionWidget(Communication::ChatSessionInterface *, QString &) ));
+        connect(friend_list_widget_, SIGNAL( NewVideoSessionStarted(Communication::VoiceSessionInterface *, QString &) ),
+                session_helper_, SLOT( CreateNewVideoSessionWidget(Communication::VoiceSessionInterface *, QString &) ));
     }
 
     void SessionManager::StatusChangedOutSideMenuBar(const QString &status_code)
@@ -143,15 +145,15 @@ namespace UiManagers
             hidden_status->setChecked(true);
     }
 
-    void SessionManager::ChatSessionRecieved(Communication::ChatSessionInterface &chat_session)
+    void SessionManager::ChatSessionReceived(Communication::ChatSessionInterface &chat_session)
     {
-      QString friends_name = session_helper_->GetFriendsNameFromParticipants(chat_session.GetParticipants());
-      session_helper_->CreateNewChatSessionWidget(static_cast<Communication::ChatSessionInterface *>(&chat_session), friends_name);
+        QString friends_name = session_helper_->GetChatInviteSendersName(chat_session.GetParticipants());
+        session_helper_->CreateNewChatSessionWidget(static_cast<Communication::ChatSessionInterface *>(&chat_session), friends_name);
     }
 
-    void SessionManager::VoiceSessionRecieved(Communication::VoiceSessionInterface &voice_session)
+    void SessionManager::VideoSessionReceived(Communication::VoiceSessionInterface &video_session)
     {
-        qDebug() << "Voice session recieved with state" << QString::number((int)voice_session.GetState()) << endl;
-        voice_session.Accept();
+        QString friends_name = session_helper_->GetVideoInviteSendersName(video_session.GetParticipants());
+        session_helper_->CreateNewVideoSessionWidget(static_cast<Communication::VoiceSessionInterface *>(&video_session), friends_name);
     }
 }

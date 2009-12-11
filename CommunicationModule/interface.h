@@ -167,6 +167,8 @@ namespace Communication
 	 * Text message based communication session with one or more participants.
 	 * This can represents irc channel or jabber conversation.
 	 *
+     * @todo Getter for originator of the chat session (gui needs id of friend to create tab and store id to local containers with that id).
+     *       GUI now needs to go through ChatSessionParticipantVector and do unneccesary looping to get one QString
 	 */
 	class ChatSessionInterface: public QObject
 	{
@@ -207,7 +209,7 @@ namespace Communication
 
 	/**
 	 * @todo Design issue: Do we need two separaed participant classes?
-	 *
+     *
 	 */
 	class VoiceSessionParticipantInterface : public QObject
 	{
@@ -239,7 +241,9 @@ namespace Communication
 	/**
 	 *  \NOTE This is interface is under construction
 	 *        More information about audio module planning is needed.
-	 *       
+     *
+	 * @todo Getter for originator of the chat session (gui needs id of friend to create tab and store id to local containers with that id).
+     *       GUI now needs to go through ChatSessionParticipantVector and do unneccesary looping to get one QString
 	 */
 	class VoiceSessionInterface: public QObject
 	{
@@ -253,12 +257,13 @@ namespace Communication
 		//! @return all known participants of the chat session inlcuding the user
 		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
 
-		virtual void Close() = 0;
-        virtual void Accept() = 0;
-        virtual void Reject() = 0;
-
         virtual Communication::VideoWidgetInterface* GetRemoteVideo() = 0;
         virtual Communication::VideoWidgetInterface* GetOwnVideo() = 0;
+
+    public slots:
+        virtual void Close() = 0;
+        virtual void Accept() = 0;
+        virtual void Reject() = 0;
         
 	signals:
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);
