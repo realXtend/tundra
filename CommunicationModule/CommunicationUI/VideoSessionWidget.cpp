@@ -100,6 +100,8 @@ namespace CommunicationUI
         internal_h_layout_->addWidget(video_session_->GetOwnVideo());
         internal_h_layout_->addWidget(video_session_->GetRemoteVideo());
 
+        video_session_->GetOwnVideo()->SetParentWidget(*this); // test
+
         video_session_ui_.mainVerticalLayout->insertLayout(0, internal_h_layout_);
     }
 }
