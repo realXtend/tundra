@@ -38,7 +38,7 @@ namespace UiHelpers
         void SetMyStatusMessage(const QString &status_message);
         
         //! Getters
-        QString GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector &participant_vector);
+        QString GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector participant_vector);
         QString &GetPresenceStatus() { return presence_status_; }
 
         //! Checkers
