@@ -19,10 +19,13 @@ namespace TelepathyIM
 #ifdef WIN32
         //! Ensures that gabble and dbus daemon processes are not running 
         //! and start new dbus daemon process
+
+        //InitializeDBusAndGabble();
 		ClearGabble();
         
         // Initialize glib
         g_type_init();
+        // InitializeGLib();
 
         // Initialize GStreamer
         int argc=0;
@@ -33,6 +36,7 @@ namespace TelepathyIM
         QString text;
         text.sprintf("GStreamer version %i.%i.%i.%i initialized.", major, minor, micro, nano);
         LogInfo(text.toStdString());
+        // InitializeGStreamer();
 
         g_main_loop_.start();
 
