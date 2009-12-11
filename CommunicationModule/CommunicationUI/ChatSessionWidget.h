@@ -18,8 +18,8 @@ namespace CommunicationUI
         virtual ~ChatSessionWidget();
 
     private:
-        void ChatSessionWidget::MessageToConversation(QString &formatted_text) { chat_session_ui_.chatTextArea->appendHtml(formatted_text); }
-        void ChatSessionWidget::ShowMessageHistory(Communication::ChatMessageVector messageHistory);
+        void MessageToConversation(QString &formatted_text) { chat_session_ui_.chatTextArea->appendHtml(formatted_text); }
+        void ShowMessageHistory(Communication::ChatMessageVector messageHistory);
         
         Ui::ChatSessionWidget chat_session_ui_;
         Communication::ChatSessionInterface *chat_session_;
