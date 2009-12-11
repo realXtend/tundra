@@ -274,6 +274,8 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
     itemOpen.inventoryType = asset->GetInventoryType();
     itemOpen.name = asset->GetName().toStdString();
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_OPEN, &itemOpen);
+    ///\todo Read the return value from the event and open a download progress dialog if the asset editor
+    /// did not want to open its own progress window.
 
     return true;
 }
@@ -494,15 +496,9 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     itemDownloaded.asset = assetReady->asset_;
     itemDownloaded.requestTag = tag;
     itemDownloaded.assetType = asset_type;
-
-/*    itemOpen.requestTag = tag;
-    itemOpen.id = QSTR_TO_UUID(asset->GetID());
-    itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
-    itemOpen.assetType = asset_type;
-    itemOpen.inventoryType = asset->GetInventoryType();
-    itemOpen.name = asset->GetName().toStdString();
-*/
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
+
+    ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
 
     openRequests_.erase(i);
 }

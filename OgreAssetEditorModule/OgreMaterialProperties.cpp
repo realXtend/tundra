@@ -236,7 +236,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
     Ogre::MaterialPtr MatPtrClone = MatPtr->clone(objectName().toStdString() + "Clone");
 
     // Material
-    if(!MatPtrClone.isNull())
+    if (!MatPtrClone.isNull())
     {
         // Technique
         Ogre::Material::TechniqueIterator tIter = MatPtrClone->getTechniqueIterator();

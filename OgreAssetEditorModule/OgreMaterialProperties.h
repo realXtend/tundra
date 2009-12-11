@@ -29,11 +29,6 @@ namespace OgreRenderer
     class OgreMaterialResource;
 }
 
-namespace Ogre
-{
-    class MaterialPtr;
-}
-
 namespace OgreAssetEditor
 {
     typedef QMap<QString, QVariant> PropertyMap;
@@ -54,7 +49,7 @@ namespace OgreAssetEditor
 
         /// Convenience function returning map of property names, their type and values.
         /// Provides easier access to the properties than iterating dynamic properties by hand.
-        /// @return Property map (QString(name), QVariant(QMap(type, value)).
+        /// @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]].
         PropertyMap GetPropertyMap();
 
         /// @return Does this material have valid properties.

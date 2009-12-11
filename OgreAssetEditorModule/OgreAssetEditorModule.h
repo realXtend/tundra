@@ -25,6 +25,8 @@ namespace Foundation
 
 namespace OgreAssetEditor
 {
+    class MaterialWizard;
+
     class OgreAssetEditorModule : public Foundation::ModuleInterfaceImpl
     {
     public:
@@ -75,6 +77,9 @@ namespace OgreAssetEditor
 
         /// Asset editors
         AssetEditorMap assetEditors_;
+
+        /// Material wizard.
+        MaterialWizard *materialWizard_;
     };
 }
 

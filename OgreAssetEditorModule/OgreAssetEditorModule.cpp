@@ -8,9 +8,11 @@
 
 #include "StableHeaders.h"
 #include "OgreAssetEditorModule.h"
-#include "Inventory/InventoryEvents.h"
-#include "AssetEvents.h"
 #include "OgreScriptEditor.h"
+#include "MaterialWizard.h"
+
+#include <Inventory/InventoryEvents.h>
+#include <AssetEvents.h>
 
 #include <QObject>
 #include <QStringList>
@@ -23,7 +25,8 @@ OgreAssetEditorModule::OgreAssetEditorModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_OgreAssetEditor),
     inventoryEventCategory_(0),
     assetEventCategory_(0),
-    resourceEventCategory_(0)
+    resourceEventCategory_(0),
+    materialWizard_(0)
 {
 }
 
@@ -68,6 +71,8 @@ void OgreAssetEditorModule::PostInitialize()
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
     if (resourceEventCategory_ == 0)
         LogError("Failed to query \"Resource\" event category");
+
+     materialWizard_ = new MaterialWizard(framework_);
 }
 
 void OgreAssetEditorModule::Uninitialize()
