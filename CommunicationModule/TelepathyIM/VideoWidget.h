@@ -22,8 +22,11 @@ namespace TelepathyIM
 
         virtual bool VideoAvailable();
 
+        virtual void SetParentWidget(QWidget &parent);
+
         GstElement *GetVideoSink() const;
         bool EventFilter(QEvent *ev);
+
 
 
     private Q_SLOTS:
@@ -39,6 +42,7 @@ namespace TelepathyIM
         FsElementAddedNotifier *notifier_;
         GstElement *sink_;
         GstElement *overlay_;
+        WId window_id_; 
     };
 
 } // End of namespace: TelepathyIM

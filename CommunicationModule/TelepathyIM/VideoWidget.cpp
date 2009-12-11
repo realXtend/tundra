@@ -29,6 +29,7 @@ namespace TelepathyIM
         palette.setColor(QPalette::Background, Qt::black);
         setPalette(palette);
         setAutoFillBackground(true);
+        window_id_ = winId();
     }
 
     VideoWidget::~VideoWidget()
@@ -91,11 +92,9 @@ namespace TelepathyIM
     {
         if (overlay_ && GST_IS_X_OVERLAY(overlay_))
         {
-            WId windowId = winId();
-            //gulong guWindowId = (gulong) windowId;
+//            WId windowId = winId();
             QApplication::syncX();
-            gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(overlay_),
-                    (gulong) windowId);
+            gst_x_overlay_set_xwindow_id( GST_X_OVERLAY(overlay_), (gulong) window_id_);
         }
         WindowExposed();
     }
@@ -116,4 +115,13 @@ namespace TelepathyIM
         else
             return false;
     }
+
+    void VideoWidget::SetParentWidget(QWidget &parent)
+    {
+        // todo: IMPLEMENT
+
+        window_id_ = parent.winId();
+        SetOverlay();
+    }
+
 }

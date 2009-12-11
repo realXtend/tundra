@@ -327,9 +327,9 @@ namespace TelepathyIM
     void VoiceSession::UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send)
     {
         QString type = "UNKNOWN";
-        if (stream->type() == Tp::MediaStreamTypeAudio);
+        if (stream->type() == Tp::MediaStreamTypeAudio)
             type = "AUDIO";
-        if (stream->type() == Tp::MediaStreamTypeVideo);
+        if (stream->type() == Tp::MediaStreamTypeVideo)
             type = "VIDEO";
 
         if (send)
@@ -393,22 +393,36 @@ namespace TelepathyIM
             type="VIDEO";
 
         QString log_message = type;
+        bool new_state = false;
         if (direction == Tp::MediaStreamDirectionSend)
         {
+            audio_in_enabled_ = false;
+            audio_out_enabled_ = true;
             log_message.append(" stream direction changed to: SEND");
 
         } else if (direction == Tp::MediaStreamDirectionReceive)
         {
+            audio_in_enabled_ = true;
+            audio_out_enabled_ = false;
             log_message.append(" stream direction changed to: RECEIVE");
 
         } else if (direction == (Tp::MediaStreamDirectionSend | Tp::MediaStreamDirectionReceive))
         {
+            audio_in_enabled_ = true;
+            audio_out_enabled_ = true;
             log_message.append(" stream direction changed to: SEND & RECEIVE");
         } else
         {
+            audio_in_enabled_ = false;
+            audio_out_enabled_ = false;
             log_message.append(" stream direction changed to: NONE");
         }
         LogDebug(log_message.toStdString());
+
+        if (stream->type() == Tp::MediaStreamTypeAudio)
+            emit AudioInEnabledStateChanged(new_state);
+        if (stream->type() == Tp::MediaStreamTypeVideo)
+            emit VideoInEnabledStateChanged(new_state);
     }
 
     void VoiceSession::OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state)
@@ -498,6 +512,20 @@ namespace TelepathyIM
         if (farsight_channel_)
             return farsight_channel_->GetRemoteOutputVideo();
         return 0;
+    }
+
+    void VoiceSession::SetAudioOutEnabled(bool value)
+    {
+        Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
+        if (audio_stream)
+            UpdateStreamDirection(audio_stream, value);
+    }
+
+    void VoiceSession::SetVideoOutEnabled(bool value)
+    {
+        Tp::MediaStreamPtr video_stream = GetVideoMediaStream();
+        if (video_stream)
+            UpdateStreamDirection(video_stream, value);
     }
 
 } // end of namespace: TelepathyIM

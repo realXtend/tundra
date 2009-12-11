@@ -14,7 +14,9 @@
 namespace TelepathyIM
 {
 	/**
-	 *  Uses Tp::StreamedMediaChannel for communicating with dbus       
+	 *  Uses Tp::StreamedMediaChannel for communicating with dbus    
+     *
+     *  TODO: audio/video in/out enabled variable setting is NOT COMPLETE YET!
 	 */
 	class VoiceSession : public Communication::VoiceSessionInterface
 	{
@@ -35,15 +37,21 @@ namespace TelepathyIM
 
 		virtual void Close();
 
+        //! Accept incoming session
         virtual void Accept();
 
+        //! Reject incoming session
         virtual void Reject();
 
         virtual Communication::VideoWidgetInterface* GetRemoteVideo();
         virtual Communication::VideoWidgetInterface* GetOwnVideo();
 
-        //virtual void EnableAudioSending(bool value);
-        //virtual void EnableVideoSending(bool value);
+        virtual void SetAudioOutEnabled(bool value);
+        virtual void SetVideoOutEnabled(bool value);
+        virtual bool GetAudioInEnabled() { return audio_in_enabled_; };
+        virtual bool GetVideoInEnabled() { return video_in_enabled_; };
+        virtual bool GetAudioOutEnabled() { return audio_out_enabled_; };
+        virtual bool GetVideoOutEnabled() { return video_out_enabled_; };
 
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
@@ -54,7 +62,6 @@ namespace TelepathyIM
         Tp::MediaStreamPtr GetAudioMediaStream(); // todo: make objects for audio and video streams
         Tp::MediaStreamPtr GetVideoMediaStream(); 
         
-
 		State state_;
 		Tp::StreamedMediaChannelPtr tp_channel_;
         FarsightChannel* farsight_channel_;
@@ -65,6 +72,11 @@ namespace TelepathyIM
         Tp::ContactPtr tp_contact_;
         QString reason_;      
         VoiceSessionParticipantVector participants_;
+
+        bool audio_in_enabled_;
+        bool video_in_enabled_;
+        bool audio_out_enabled_;
+        bool video_out_enabled_;
 
 	protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
@@ -81,7 +93,17 @@ namespace TelepathyIM
         void OnVideoStreamCreated(Tp::PendingOperation *op);
 
     signals:
+
+        // When incoming session is ready for accecpt/reject
 		void Ready(VoiceSession* session);
+
+        void AudioInEnabledStateChanged(bool state);
+
+        void VideoInEnabledStateChanged(bool state);
+
+        void AudioOutEnabledStateChanged(bool state);
+
+        void VideoOutEnabledStateChanged(bool state);
     };
 
     typedef std::vector<VoiceSession*> VoiceSessionVector;
