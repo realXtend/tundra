@@ -13,12 +13,11 @@ namespace TelepathyIM
 			return;
 		id_ = tp_contact->id();
 		name_ = tp_contact->alias();
-		QString avatar = tp_contact->avatarToken();
+		QString avatar = tp_contact->avatarToken();  // todo: use this information
 
 		connect(tp_contact_.data(),
                 SIGNAL( simplePresenceChanged(const QString &, uint, const QString &) ),
                 SLOT( OnSimplePresenceChanged(const QString &, uint, const QString &) ));
-
 		connect(tp_contact_.data(),
                 SIGNAL( subscriptionStateChanged(Tp::Contact::PresenceState) ),
                 SLOT( OnContactChanged() ));
@@ -32,6 +31,7 @@ namespace TelepathyIM
 
 	Contact::~Contact()
 	{
+        // todo: disconnect signals?
 	}
 
 	QString Contact::GetID() const

@@ -145,7 +145,8 @@ namespace TelepathyIM
         virtual void PresencePublicationFinished(Tp::PendingOperation* op);
         virtual void OnPresenceSubscriptionCanceled(Contact* contact);
         virtual void IncomingVoiceSessionReady(VoiceSession *session);
-
+        virtual void OnConnectionStatusChanged(uint status, uint reason);
+        virtual void OnSelfHandleChanged(uint handle) ;
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

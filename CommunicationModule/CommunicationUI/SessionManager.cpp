@@ -37,7 +37,6 @@ namespace UiManagers
         session_helper_ = new UiHelpers::SessionHelper(main_parent_, im_connection);
         session_helper_->SetupManagerUi(session_manager_ui_);
 
-        SAFE_DELETE(im_connection_);
         im_connection_ = im_connection;
         im_connection_->SetPresenceStatus(session_helper_->GetPresenceStatus());
 
