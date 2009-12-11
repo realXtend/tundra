@@ -15,9 +15,6 @@ namespace TelepathyIM
 	
 	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
-        state_ = STATE_RINGING_LOCAL;
-        emit StateChanged(state_);
-
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
@@ -25,9 +22,6 @@ namespace TelepathyIM
 
 	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
-        state_ = STATE_RINGING_REMOTE;
-        emit StateChanged(state_);
-
         tp_contact_ = tp_contact;
 	    QVariantMap request;
 		request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
@@ -55,10 +49,16 @@ namespace TelepathyIM
 
 	Communication::VoiceSessionParticipantVector VoiceSession::GetParticipants() const
 	{
-		Communication::VoiceSessionParticipantVector empty_vector;
+		Communication::VoiceSessionParticipantVector participants;
+
+        for (VoiceSessionParticipantVector::const_iterator i = participants_.begin(); i != participants_.end(); i++)
+        {
+            VoiceSessionParticipant* participant = *i;
+            participants.push_back( participant );
+        }
         
 		//! @todo IMPLEMENT
-		return empty_vector;
+		return participants;
 	}
 
 	void VoiceSession::Close()
@@ -157,7 +157,14 @@ namespace TelepathyIM
 		}
 
 		tp_contact_ = tp_channel_->initiatorContact();
+
+        Contact* contact = new Contact(tp_contact_);   // HACK: The contact should be get from Connection object (now we don't delete it!!!)
+        VoiceSessionParticipant* participant = new VoiceSessionParticipant(contact);
+        participants_.push_back(participant);
         QString id = tp_contact_->id();
+
+        state_ = STATE_RINGING_LOCAL;
+        emit StateChanged(state_);
 
 		emit Ready(this);
 	}
@@ -188,6 +195,9 @@ namespace TelepathyIM
         connect(farsight_channel_,
             SIGNAL(statusChanged(FarsightChannel::Status)),
             SLOT(OnFarsightChannelStatusChanged(FarsightChannel::Status)));
+
+        state_ = STATE_RINGING_REMOTE;
+        emit StateChanged(state_);
 	}
 
     void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)

@@ -18,7 +18,7 @@ namespace TelepathyIM
     {
         try
         {
-        tf_channel_ = createFarsightChannel(channel);        
+            tf_channel_ = createFarsightChannel(channel);        
         }
         catch(...)
         {
@@ -266,7 +266,7 @@ namespace TelepathyIM
             g_object_ref(element);
             break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:
-            //element = self->video_output_->element();
+            element = self->video_remote_output_element_;
             break;
         default:
             Q_ASSERT(false);

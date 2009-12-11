@@ -34,9 +34,8 @@ namespace CommunicationUI
 
     void VideoSessionWidget::SessionStateChanged(Communication::VoiceSessionInterface::State new_state)
     {
+        
         SAFE_DELETE(confirmation_widget_);
-        SAFE_DELETE(internal_v_layout_);
-        SAFE_DELETE(internal_h_layout_);
 
         switch (new_state)
         {
@@ -66,7 +65,7 @@ namespace CommunicationUI
     void VideoSessionWidget::ShowConfirmationWidget()
     {
         confirmation_widget_ = new QWidget();
-        internal_v_layout_ = new QVBoxLayout();
+        internal_v_layout_ = new QVBoxLayout(confirmation_widget_);
         internal_h_layout_ = new QHBoxLayout();
         QLabel *question_label = new QLabel(QString("%1 wants to start a video conversation with you").arg(his_name_));
         QPushButton *accept_button = new QPushButton("Accept", confirmation_widget_);
@@ -90,7 +89,8 @@ namespace CommunicationUI
         internal_v_layout_->addLayout(internal_h_layout_);
         internal_v_layout_->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
 
-        video_session_ui_.mainVerticalLayout->insertLayout(0, internal_v_layout_);
+        confirmation_widget_->setLayout(internal_v_layout_);
+        video_session_ui_.mainVerticalLayout->insertWidget(0, confirmation_widget_);
     }
 
     void VideoSessionWidget::ShowVideoWidgets()
