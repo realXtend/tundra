@@ -124,8 +124,8 @@ namespace Communication
         {
             if (!qt_ui_)
             {
-                //master_test_ = new CommunicationUI::MasterWidget(framework_);
-                qt_ui_ = new CommunicationUI::QtGUI(framework_);
+                master_test_ = new CommunicationUI::MasterWidget(framework_);
+                //qt_ui_ = new CommunicationUI::QtGUI(framework_);
             }
             return;
         }

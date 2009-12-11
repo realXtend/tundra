@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ChatSessionWidget</class>
+ <widget class="QWidget" name="ChatSessionWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>596</width>
+    <height>261</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ChatSessionWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string>QLineEdit {
+	min-height: 20px;
+	border: 0px;
+	border-top: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+}
+
+QPlainTextEdit {
+	border: 0px;
+}
+
+QPushButton {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(255, 255, 255);
+}
+
+QPushButton:hover {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QPushButton::pressed {
+	color: rgb(0,0,0);
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(207, 207, 207);
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="MainFrame">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="topLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPlainTextEdit" name="chatTextArea">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="plainText">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="bottomLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLineEdit" name="sendMessageLineEdit">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="closePushButton">
+            <property name="text">
+             <string>Close</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

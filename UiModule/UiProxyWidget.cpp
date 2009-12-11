@@ -33,7 +33,7 @@ namespace UiServices
         show_timeline_->setFrameRange(0, 100);
         show_timeline_->setUpdateInterval(40);
         show_timeline_->setCurveShape(QTimeLine::EaseOutCurve);
-        QObject::connect(show_timeline_, SIGNAL( frameChanged(int) ), this, SLOT( AnimationStep(int) ));
+        QObject::connect(show_timeline_, SIGNAL( frameChanged(int) ), SLOT( AnimationStep(int) ));
     }
 
     void UiProxyWidget::AnimationStep(int step)
@@ -48,14 +48,14 @@ namespace UiServices
 
     void UiProxyWidget::showEvent(QShowEvent *show_event)
     {
-        emit( Visible(true) );
+        emit Visible(true);
         QGraphicsProxyWidget::showEvent(show_event);
 	    //show_timeline_->start();
     }  
 
     void UiProxyWidget::hideEvent(QHideEvent *hide_event)
     {
-        emit( Visible(false) );
+        emit Visible(false);
         QGraphicsProxyWidget::hideEvent(hide_event);
     }
 
