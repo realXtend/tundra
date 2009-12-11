@@ -66,7 +66,7 @@ namespace UiHelpers
 
     /************* GET IT *************/
 
-    QString SessionHelper::GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector &participant_vector)
+    QString SessionHelper::GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector participant_vector)
     {
         Communication::ChatSessionParticipantVector::const_iterator iter;
         for( iter=participant_vector.begin(); iter!=participant_vector.end(); iter++ )
