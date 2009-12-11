@@ -64,8 +64,8 @@ namespace UiManagers
 
         void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); }
 
-        void ChatSessionRecieved(Communication::ChatSessionInterface& chat_session);
-        void VoiceSessionRecieved(Communication::VoiceSessionInterface& voice_session);
+        void ChatSessionReceived(Communication::ChatSessionInterface& chat_session);
+        void VideoSessionReceived(Communication::VoiceSessionInterface& voice_session);
 
     signals:
         void StateChange(UiDefines::UiStates::ConnectionState);

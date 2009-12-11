@@ -83,8 +83,7 @@ namespace CommunicationUI
         clicked_item_ = dynamic_cast<CommunicationUI::FriendListItem *>(friend_item);
         QMenu *friend_actions_menu = new QMenu(this);
         friend_actions_menu->addAction(QIcon(":images/iconChat.png"), "Start Chat", this, SLOT( StartChatSession() ));
-        friend_actions_menu->addAction(QIcon(":images/iconPhone.png"), "Start Voice Session"); // add slot
-        friend_actions_menu->addAction(QIcon(":images/iconVideo.png"), "Start Video Session"); // add slot
+        friend_actions_menu->addAction(QIcon(":images/iconVideo.png"), "Start Video Conversation", this, SLOT( StartVideoSession() ));
         friend_actions_menu->addSeparator();
         friend_actions_menu->addAction(QIcon(":images/iconRename.png"), "Rename"); // add slot
         friend_actions_menu->addAction(QIcon(":images/iconRemove.png"), "Remove"); // add slot
@@ -106,7 +105,7 @@ namespace CommunicationUI
 
     void FriendListWidget::StartChatSession()
     {
-        if (!session_helper_->DoesTabExist(clicked_item_->GetID()))
+        if (!session_helper_->DoesChatTabExist(clicked_item_->GetID()))
         {
             Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
             if (contact)
@@ -115,6 +114,17 @@ namespace CommunicationUI
                 QString id = contact->GetID();
                 emit NewChatSessionStarted(chat_session, id);
             }
+        }
+    }
+
+    void FriendListWidget::StartVideoSession()
+    {
+        Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
+        if (contact)
+        {
+            Communication::VoiceSessionInterface *video_session = im_connection_->OpenVoiceSession(*contact);
+            QString id = contact->GetID();
+            emit NewVideoSessionStarted(video_session, contact->GetID());
         }
     }
 

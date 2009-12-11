@@ -5,7 +5,12 @@
 
 #include "Foundation.h"
 #include "ui_SessionManagerWidget.h"
+
+#include "ChatSessionWidget.h"
+
 #include <QObject>
+#include <QMap>
+#include <QPair>
 
 #include "interface.h"
 
@@ -38,15 +43,19 @@ namespace UiHelpers
         void SetMyStatusMessage(const QString &status_message);
         
         //! Getters
-        QString GetFriendsNameFromParticipants(Communication::ChatSessionParticipantVector participant_vector);
+        QString GetChatInviteSendersName(Communication::ChatSessionParticipantVector participant_vector);
+        QString GetVideoInviteSendersName(Communication::VoiceSessionParticipantVector participant_vector);
         QString &GetPresenceStatus() { return presence_status_; }
 
         //! Checkers
-        bool DoesTabExist(const QString &chat_friends_name);
+        bool DoesChatTabExist(const QString &chat_friends_name);
+        //bool DoesVideoTabExist(const QString &video_friends_name);
+        void TabWidgetStateCheck();
 
         //! Doers
         void CloseTab(const QString &chat_friends_name);
         void CreateNewChatSessionWidget(Communication::ChatSessionInterface *chat_session, QString &chat_friends_name);
+        void CreateNewVideoSessionWidget(Communication::VoiceSessionInterface *video_session, QString &chat_friends_name);
 
     private:
         Ui::SessionManagerWidget            *session_manager_ui_;
@@ -59,6 +68,9 @@ namespace UiHelpers
         QString presence_status_message_;
         QString my_name_;
         bool welcome_tab_destroyed;
+
+        QMap<QString, QPair<CommunicationUI::ChatSessionWidget *, Communication::ChatSessionInterface *>> chat_sessions_pointers_map_;
+        //QMap<QString, QPair<CommunicationUI::VideoSessionWidget *, Communication::VoiceSessionInterface *>> video_sessions_pointers_map_;
 
     signals:
         void ChangeMenuBarStatus(const QString &);

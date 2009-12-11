@@ -43,10 +43,12 @@ namespace CommunicationUI
 
     private slots:
         void StatusChange(const QString &item_string);
-        void StartChatSession(); 
+        void StartChatSession();
+        void StartVideoSession();
 
     signals:
         void NewChatSessionStarted(Communication::ChatSessionInterface *, QString &);
+        void NewVideoSessionStarted(Communication::VoiceSessionInterface *, QString &);
         void StatusChanged(const QString &);
 
     };

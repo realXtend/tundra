@@ -26,7 +26,7 @@ namespace CommunicationUI
 		{	
 			LogWarning("Could not aqquire QtModule and show Comm UI");
 		}
-		else 
+		else
 		{
 			// Set param to QtUI::UICanvas::Internal to put inside ogre window
 			canvas_login_ = qt_module->CreateCanvas(UICanvas::Internal).lock();
