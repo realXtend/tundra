@@ -13,7 +13,7 @@
 namespace TelepathyIM
 {
 	
-	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0)
+	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
         state_ = STATE_RINGING_LOCAL;
 
@@ -22,7 +22,7 @@ namespace TelepathyIM
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
 	}
 
-	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0)
+	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
         state_ = STATE_RINGING_REMOTE;
         tp_contact_ = tp_contact;
@@ -64,6 +64,11 @@ namespace TelepathyIM
         if ( !tp_channel_.isNull())
 		    Tp::PendingOperation* op = tp_channel_->requestClose();
 	}
+
+    //void VoiceSession::Accept()
+    //{
+    //    emit AcceptSignal();
+    //}
 
     void VoiceSession::Accept()
     {
@@ -239,11 +244,17 @@ namespace TelepathyIM
 		}
 
         Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
+        Tp::MediaStreamPtr video_stream = GetVideoMediaStream();
 
         if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
         else
             UpdateStreamDirection(audio_stream, true);
+
+        //if ( pending_video_streams_ == 0 && video_stream.isNull() )
+        //    CreateVideoStream();
+        //else
+        //    UpdateStreamDirection(video_stream, true);
 
         emit ( Opened(this) );
     }
@@ -268,11 +279,11 @@ namespace TelepathyIM
 
     void VoiceSession::CreateVideoStream()
     {
-        if (pending_audio_streams_ )
+        if (pending_video_streams_ )
             return;
 
-        pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeVideo);
-        connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
+        pending_video_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeVideo);
+        connect(pending_video_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnVideoStreamCreated(Tp::PendingOperation*) ));
     }
 
     void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
@@ -355,51 +366,80 @@ namespace TelepathyIM
 
     void VoiceSession::OnStreamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend ps)
     {
-        // todo: IMPLEMENT
+        QString type = "UNKNOWN";
+        if (stream->type() == Tp::MediaStreamTypeAudio)
+            type="AUDIO";
+        if (stream->type() == Tp::MediaStreamTypeVideo)
+            type="VIDEO";
+
+        QString log_message = type;
         if (direction == Tp::MediaStreamDirectionSend)
         {
-            LogDebug("Stream direction changed to: SEND");
+            log_message.append(" stream direction changed to: SEND");
 
         } else if (direction == Tp::MediaStreamDirectionReceive)
         {
-            LogDebug("Stream direction changed to: RECEIVE");
+            log_message.append(" stream direction changed to: RECEIVE");
 
         } else if (direction == (Tp::MediaStreamDirectionSend | Tp::MediaStreamDirectionReceive))
         {
-            LogDebug("Stream direction changed to: SEND & RECEIVE");
+            log_message.append(" stream direction changed to: SEND & RECEIVE");
         } else
         {
-            LogDebug("Stream direction changed to: NONE");
+            log_message.append(" stream direction changed to: NONE");
         }
+        LogDebug(log_message.toStdString());
     }
 
-    void VoiceSession::OnStreamStateChanged(const Tp::MediaStreamPtr &strean, Tp::MediaStreamState state)
+    void VoiceSession::OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state)
     {
-        // todo: IMPLEMENT
+        QString type = "UNKNOWN";
+        if (stream->type() == Tp::MediaStreamTypeAudio)
+            type="AUDIO";
+        if (stream->type() == Tp::MediaStreamTypeVideo)
+            type="VIDEO";
+
+        QString log_message = type;
+
         switch(state)
         {
         case Tp::MediaStreamStateDisconnected:
-            LogDebug("Stream state changed to: DISCONNECT");
+            log_message.append(" stream state changed to: DISCONNECT");
             break;
         case Tp::MediaStreamStateConnecting:
-            LogDebug("Stream state changed to: CONNECTING...");
+            log_message.append(" stream state changed to: CONNECTING...");
             break;
         case Tp::MediaStreamStateConnected:
-            LogDebug("Stream state changed to: CONNECTED");
+            log_message.append(" stream state changed to: CONNECTED");
             break;
         }
+        LogDebug(log_message.toStdString());
     }
 
     void VoiceSession::OnAudioStreamCreated(Tp::PendingOperation *op)
     {
         if (op->isError())
         {
-            QString error = "Cannot create audio stream: ";
+            QString error = "Cannot create AUDIO stream: ";
             error.append( op->errorMessage() );
             LogError(error.toStdString());
             return;
         }
         pending_audio_streams_ = 0;
+
+        // do nothing as OnStreamAdded signal will be emitted
+    }
+
+    void VoiceSession::OnVideoStreamCreated(Tp::PendingOperation *op)
+    {
+        if (op->isError())
+        {
+            QString error = "Cannot create VIDEO stream: ";
+            error.append( op->errorMessage() );
+            LogError(error.toStdString());
+            return;
+        }
+        pending_video_streams_ = 0;
 
         // do nothing as OnStreamAdded signal will be emitted
     }
@@ -412,6 +452,30 @@ namespace TelepathyIM
                 return stream;
         }
         return Tp::MediaStreamPtr();
+    }
+
+    Tp::MediaStreamPtr VoiceSession::GetVideoMediaStream()
+    {
+        Tp::MediaStreams streams = tp_channel_->streams();
+        foreach (const Tp::MediaStreamPtr &stream, streams) {
+            if (stream->type() == Tp::MediaStreamTypeVideo)
+                return stream;
+        }
+        return Tp::MediaStreamPtr();
+    }
+
+    Communication::VideoWidgetInterface* VoiceSession::GetRemoteVideo()
+    {
+        if (farsight_channel_)
+            return farsight_channel_->GetPreviewVideo();
+        return 0;
+    }
+
+    Communication::VideoWidgetInterface* VoiceSession::GetOwnVideo()
+    {
+        if (farsight_channel_)
+            return farsight_channel_->GetRemoteOutputVideo();
+        return 0;
     }
 
 } // end of namespace: TelepathyIM

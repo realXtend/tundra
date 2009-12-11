@@ -39,6 +39,9 @@ namespace TelepathyIM
 
         virtual void Reject();
 
+        virtual Communication::VideoWidgetInterface* GetRemoteVideo();
+        virtual Communication::VideoWidgetInterface* GetOwnVideo();
+
         //virtual void EnableAudioSending(bool value);
         //virtual void EnableVideoSending(bool value);
 
@@ -47,8 +50,9 @@ namespace TelepathyIM
         void CreateAudioStream();
         void CreateVideoStream();
         QString GetReadon() { return reason_; };
-        Tp::MediaStreamPtr GetAudioMediaStream();
-        Tp::MediaStreamPtr GetVideoMediaStream(); // video
+
+        Tp::MediaStreamPtr GetAudioMediaStream(); // todo: make objects for audio and video streams
+        Tp::MediaStreamPtr GetVideoMediaStream(); 
         
 
 		State state_;
@@ -56,7 +60,8 @@ namespace TelepathyIM
         FarsightChannel* farsight_channel_;
 
         Tp::PendingMediaStreams *pending_audio_streams_;
-//        Tp::MediaStreamPtr audio_stream_;
+        Tp::PendingMediaStreams *pending_video_streams_;
+
         Tp::ContactPtr tp_contact_;
         QString reason_;      
         VoiceSessionParticipantVector participants_;
@@ -73,6 +78,8 @@ namespace TelepathyIM
         void OnStreamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend ps);
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
         void OnAudioStreamCreated(Tp::PendingOperation *op);
+        void OnVideoStreamCreated(Tp::PendingOperation *op);
+
     signals:
 		void Ready(VoiceSession* session);
     };

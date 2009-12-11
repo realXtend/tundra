@@ -11,7 +11,7 @@
 
 namespace TelepathyIM
 {
-    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent) : QWidget(parent), bus_((GstBus *) gst_object_ref(bus)), overlay_(0), sink_(0)
+    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent) : /* QWidget(parent) */ bus_((GstBus *) gst_object_ref(bus)), overlay_(0), sink_(0)
     {
         notifier_ = fs_element_added_notifier_new();
         g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
