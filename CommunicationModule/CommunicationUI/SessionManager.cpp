@@ -4,7 +4,6 @@
 #include "SessionManager.h"
 
 #include <QDebug>
-#include <QPixMap>
 #include <QInputDialog>
 
 namespace UiManagers

@@ -7,7 +7,7 @@
 #include "UiDefines.h"
 
 #include <QDebug>
-#include <QPixMap>
+#include <QPixmap>
 #include <QInputDialog>
 
 namespace UiHelpers
