@@ -52,6 +52,9 @@ namespace TelepathyIM
         //! @param value 0 to 1
         void SetAudioRecordVolume(const double value);
 
+        VideoWidget* GetPreviewVideo() { return video_preview_widget_; };
+        VideoWidget* GetRemoteOutputVideo() { return video_remote_output_widget_; };
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
 

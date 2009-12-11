@@ -16,7 +16,14 @@ namespace TelepathyIM
                                      audio_volume_(0),
                                      audio_resample_(0)
     {
+        try
+        {
         tf_channel_ = createFarsightChannel(channel);        
+        }
+        catch(...)
+        {
+
+        }
         if (!tf_channel_) {
             LogError("Unable to construct TfChannel");
             return;
@@ -255,7 +262,7 @@ namespace TelepathyIM
 
         switch (media_type) {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
-            element = self->audio_output_;
+            element = self->audio_bin_;
             g_object_ref(element);
             break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:

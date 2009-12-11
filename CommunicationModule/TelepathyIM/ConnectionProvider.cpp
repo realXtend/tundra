@@ -28,6 +28,12 @@ namespace TelepathyIM
         int argc=0;
         char **argv = NULL;
         gst_init(&argc, &argv);
+        guint major, minor, micro, nano;
+        gst_version (&major, &minor, &micro, &nano);
+        QString text;
+        text.sprintf("GStreamer version %i.%i.%i.%i initialized.", major, minor, micro, nano);
+        LogInfo(text.toStdString());
+
         g_main_loop_.start();
 
 #else
