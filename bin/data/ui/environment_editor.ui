@@ -552,6 +552,32 @@ QWidget#Form {
        <string>Apply</string>
       </property>
      </widget>
+     <widget class="QCheckBox" name="water_toggle_box">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>120</y>
+        <width>70</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>water</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="water_remove_label">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>90</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Remove water totally</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
