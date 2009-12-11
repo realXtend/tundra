@@ -16,6 +16,7 @@ namespace TelepathyIM
 	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
         state_ = STATE_RINGING_LOCAL;
+        emit StateChanged(state_);
 
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -25,6 +26,8 @@ namespace TelepathyIM
 	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0)
 	{
         state_ = STATE_RINGING_REMOTE;
+        emit StateChanged(state_);
+
         tp_contact_ = tp_contact;
 	    QVariantMap request;
 		request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
@@ -63,12 +66,8 @@ namespace TelepathyIM
         state_ = STATE_CLOSED;
         if ( !tp_channel_.isNull())
 		    Tp::PendingOperation* op = tp_channel_->requestClose();
+        emit StateChanged(state_);
 	}
-
-    //void VoiceSession::Accept()
-    //{
-    //    emit AcceptSignal();
-    //}
 
     void VoiceSession::Accept()
     {
@@ -118,6 +117,7 @@ namespace TelepathyIM
         tp_channel_->requestClose(); // reject
         state_ = STATE_CLOSED;
         reason_ = "User rejected incoming call.";
+        emit StateChanged(state_);
     }
 
 	void VoiceSession::OnOutgoingChannelCreated(Tp::PendingOperation *op)
@@ -128,6 +128,7 @@ namespace TelepathyIM
             reason_ = QString("Cannot create connection").append(op->errorMessage());
             LogError(reason_.toStdString());
             emit (Closed(this));
+            emit StateChanged(state_);
 			return;
 		}
 
@@ -151,6 +152,7 @@ namespace TelepathyIM
             LogError(message.toStdString());
             reason_ = message;
             emit (Closed(this));
+            emit StateChanged(state_);
 			return;
 		}
 
@@ -165,6 +167,7 @@ namespace TelepathyIM
 		if (op->isError())
 		{
 			state_ = STATE_ERROR;
+            emit StateChanged(state_);
 			return;
 		}
 		
@@ -192,10 +195,14 @@ namespace TelepathyIM
         if (op->isError())
         {
             state_ = STATE_ERROR;
-            LogError("Stream feature cannot become ready!");
+            QString error_message = "Stream feature cannot become ready!";
+            reason_ = error_message;
+            LogError(error_message.toStdString());
+            emit StateChanged(state_);
             return;
         }
         state_ = STATE_OPEN;
+
         connect(tp_channel_.data(), SIGNAL( streamAdded(const Tp::MediaStreamPtr &) ), SLOT( OnStreamAdded(const Tp::MediaStreamPtr &) ));
         connect(tp_channel_.data(), SIGNAL( streamRemoved(const Tp::MediaStreamPtr &) ), SLOT( OnStreamRemoved(const Tp::MediaStreamPtr &) ));
         connect(tp_channel_.data(), SIGNAL( streamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ),
@@ -257,6 +264,7 @@ namespace TelepathyIM
         //    UpdateStreamDirection(video_stream, true);
 
         emit ( Opened(this) );
+        emit StateChanged(state_);
     }
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
@@ -266,6 +274,7 @@ namespace TelepathyIM
         state_ = STATE_ERROR;
         reason_ = message;
         emit Closed(this);
+        emit StateChanged(state_);
     }
 
     void VoiceSession::CreateAudioStream()
@@ -300,6 +309,7 @@ namespace TelepathyIM
             state_ = STATE_CLOSED;
             tp_channel_->requestClose();
             emit Closed(this);
+            emit StateChanged(state_);
             break;
         }
     }
@@ -426,6 +436,7 @@ namespace TelepathyIM
             return;
         }
         pending_audio_streams_ = 0;
+        LogDebug("AUDIO stream created.");
 
         // do nothing as OnStreamAdded signal will be emitted
     }
@@ -440,6 +451,7 @@ namespace TelepathyIM
             return;
         }
         pending_video_streams_ = 0;
+        LogDebug("VIDEO stream created.");
 
         // do nothing as OnStreamAdded signal will be emitted
     }

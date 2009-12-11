@@ -226,6 +226,16 @@ namespace Communication
 	};
 	typedef std::vector<VoiceSessionParticipantInterface*> VoiceSessionParticipantVector;
 
+    /**
+     *  Video playback widget
+     *
+     */
+    class VideoWidgetInterface : public QWidget
+    {
+        //! @return true if video source is available. Otherwise return false
+        virtual bool VideoAvailable() = 0;
+    };
+
 	/**
 	 *  \NOTE This is interface is under construction
 	 *        More information about audio module planning is needed.
@@ -246,20 +256,19 @@ namespace Communication
 		virtual void Close() = 0;
         virtual void Accept() = 0;
         virtual void Reject() = 0;
+
+        virtual Communication::VideoWidgetInterface* GetRemoteVideo() = 0;
+        virtual Communication::VideoWidgetInterface* GetOwnVideo() = 0;
         
 	signals:
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);
 		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
-		void Opened(VoiceSessionInterface*);
-		void Closed(VoiceSessionInterface*);
+		void Opened(VoiceSessionInterface*);   // do we need this ?
+		void Closed(VoiceSessionInterface*);   // do we need this ?
         void StateChanged(Communication::VoiceSessionInterface::State state);
         // todo: Error signal?
 	};
 
-    class VideoWidgetInterface : public QWidget
-    {
-
-    };
 
     /**
      *  TODO...

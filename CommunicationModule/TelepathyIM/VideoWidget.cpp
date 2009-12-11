@@ -108,4 +108,12 @@ namespace TelepathyIM
             gst_x_overlay_expose(GST_X_OVERLAY(overlay_));
         }
     }
+
+    bool VideoWidget::VideoAvailable()
+    {
+        if (this->overlay_)
+            return true;
+        else
+            return false;
+    }
 }

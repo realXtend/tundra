@@ -20,6 +20,8 @@ namespace TelepathyIM
         VideoWidget(GstBus *bus, QWidget *parent = 0);
         virtual ~VideoWidget();
 
+        virtual bool VideoAvailable();
+
         GstElement *GetVideoSink() const;
         bool EventFilter(QEvent *ev);
 
