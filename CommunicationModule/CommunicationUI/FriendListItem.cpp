@@ -6,9 +6,9 @@
 
 namespace CommunicationUI
 {
-    FriendListItem::FriendListItem(QListWidget *parent, QString &id, QString &name, QString &status, QString &status_message)
+    FriendListItem::FriendListItem(QListWidget *parent_widget, QString id, QString name, QString status, QString status_message)
         : QObject(),
-          QListWidgetItem(parent),
+          QListWidgetItem(parent_widget),
           id_(id),
           name_(name),
           current_status_(status),
