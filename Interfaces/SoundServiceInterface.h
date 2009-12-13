@@ -44,6 +44,16 @@ namespace Foundation
          */     
         virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local = false, Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f), Core::sound_id_t channel = 0) = 0;
 
+        //! Play raw audio data from buffer
+        /*! \param buffer pointer to buffer where playable audio data is stored
+            \buffer_size Size of buffer
+            \sample_rate Sample rate of audio data
+            \sample_width sample widh of audio data in bits. Currently only 8 and 16 are supported values
+            \stereo If true then audio data is stero otherwise it's mono
+            \channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+        */
+        virtual Core::sound_id_t PlayAudioData(Core::u8* buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel = 0) = 0;
+
         //! Gets state of channel
         /*! \param id Channel id
             \return Current state (stopped, loading sound asset, playing)
