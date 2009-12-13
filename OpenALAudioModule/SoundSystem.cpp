@@ -188,6 +188,36 @@ namespace OpenALAudio
         return i->first;     
     }        
 
+    Core::sound_id_t SoundSystem::PlayAudioData(Core::u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel)
+    {
+        SoundPtr sound = SoundPtr(new OpenALAudio::Sound("audiobuffer"));
+        if (!sound)
+            return 0;
+
+        bool sample_width_16bit = true;
+        switch(sample_width)
+        {
+            case 8: sample_width_16bit = false; break;
+            case 16: sample_width_16bit = true; break;
+            default:
+                return 0; // todo: Write log entry
+        }
+        sound->LoadFromBuffer(buffer, buffer_size, sample_rate, sample_width_16bit, stereo);
+
+        SoundChannelMap::iterator i = channels_.find(channel);
+        if (i == channels_.end())
+        {
+            i = channels_.insert(
+                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+        }
+        
+        i->second->SetPositional(false);
+        i->second->Play(sound);
+         
+        return i->first;     
+    }
+
+
     void SoundSystem::StopSound(Core::sound_id_t id)
     {
         SoundChannelMap::iterator i = channels_.find(id);
