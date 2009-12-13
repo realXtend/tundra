@@ -751,7 +751,7 @@ class EditGUI(Component):
             #~ if self.SHORTCUTS.has_key((keycode, keymod)):
                 #~ self.SHORTCUTS[(keycode, keymod)]()
         
-    def on_inboundnetwork(self, id, name, callback):
+    def on_inboundnetwork(self, evid, name, callback):
         pass
         #print "editgui got an inbound network event:", id, name
 

@@ -86,6 +86,9 @@ namespace Scene
         /// An event that will let the enviroment module to know about water which is used. 
         static const Core::event_id_t EVENT_ENVIRONMENT_WATER = 0x12;
 
+        /// An event that will let mediaurl handling to know for what entity a mediaurl was set
+        static const Core::event_id_t EVENT_ENTITY_MEDIAURL_SET = 0x13; //REMOTE == from server
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {
