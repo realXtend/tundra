@@ -140,8 +140,10 @@ class ComponentRunner(Component):
         ##r.randomTest(id) #for testing whether the id gotten is the same after a circulation on the python, note: worked
 
     def GENERIC_MESSAGE(self, typename, data):
+        self.eventhandled = False
         #print "Circuits got Generic Message event:", data
         self.m.send(GenericMessage(typename, data), "on_genericmessage")
+        return self.eventhandled
                
     def exit(self):
         r.logInfo("Circuits manager stopping...")

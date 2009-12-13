@@ -830,6 +830,39 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
     }
 }
 
+PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
+{
+    char* uuidstr;
+    if(!PyArg_ParseTuple(args, "s", &uuidstr))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity by UUID failed, param should be a string.");
+        return NULL;
+    }
+
+	RexUUID ruuid = RexUUID();
+	ruuid.FromString(std::string(uuidstr));
+
+	RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        Scene::EntityPtr entptr = rexlogic_->GetPrimEntity(ruuid);
+        Py_RETURN_NONE;
+        return entity_create(entptr->GetId());
+        /*else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Entity found by UUID is not in default scene?");
+            return NULL;   
+        }*/
+    }
+    else
+    {
+        PyErr_SetString(PyExc_RuntimeError, "RexLogic module not there?");
+        return NULL;   
+    }
+}
+
+
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
 //experimental now, may replace the PyType in Entity.h used above
@@ -1457,6 +1490,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
+
+    {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
+    "Gets the entity with the given UUID."},
 
     {"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},

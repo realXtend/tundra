@@ -45,11 +45,13 @@ class MediaURLHandler(Component):
         if name == "RexMediaUrl":
             print "MediaURLHandler got data:", data
             objuuid, url, refreshrate = data
-            self.loadurl(url)
+            ent = r.getEntityByUUID(objuuid)
+            self.loadurl(ent, url)
               
     #def on_hide(self):
 
-    def loadurl(self, urlstring):
+    def loadurl(self, ent, urlstring):
+        print "Showing URL for entity:", ent, urlstring
         url = PythonQt.QtCore.QUrl(urlstring)
         self.wv.load(url)
 
