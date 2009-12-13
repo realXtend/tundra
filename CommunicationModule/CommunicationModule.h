@@ -36,6 +36,9 @@ namespace Communication
 	class COMMS_MODULE_API CommunicationModule : public QObject, public Foundation::ModuleInterfaceImpl
 	{
         Q_OBJECT
+
+		MODULE_LOGGING_FUNCTIONS
+		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } //! returns name of this module. Needed for logging.
 	public:
 		CommunicationModule(void);
 		virtual ~CommunicationModule(void);
@@ -51,10 +54,6 @@ namespace Communication
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
 
 	    bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
-
-		MODULE_LOGGING_FUNCTIONS
-		//! returns name of this module. Needed for logging.
-		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
 	protected:
 		// Run given test

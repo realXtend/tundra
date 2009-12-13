@@ -17,6 +17,7 @@ namespace TelepathyIM
 	 *  Uses Tp::StreamedMediaChannel for communicating with dbus    
      *
      *  TODO: audio/video in/out enabled variable setting is NOT COMPLETE YET!
+     *        * Check if audio/video capture/playback is possible and trow exections...
 	 */
 	class VoiceSession : public Communication::VoiceSessionInterface
 	{
@@ -57,6 +58,7 @@ namespace TelepathyIM
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();
         void CreateVideoStream();
+        void CreateFarsightChannel();
         QString GetReadon() { return reason_; };
 
         Tp::MediaStreamPtr GetAudioMediaStream(); // todo: make objects for audio and video streams

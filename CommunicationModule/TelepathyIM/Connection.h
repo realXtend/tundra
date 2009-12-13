@@ -101,9 +101,9 @@ namespace TelepathyIM
         //! Get presene status message of user
 		virtual QString GetPresenceMessage() { return presence_message_; };
 
-
 		//! Closes the connection
 		virtual void Close();
+
 	protected:
 		virtual void CreateTpConnection(const Communication::CredentialsInterface &credentials);
 		virtual ContactVector HandleAllKnownTpContacts();

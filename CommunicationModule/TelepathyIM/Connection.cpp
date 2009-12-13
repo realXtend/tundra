@@ -31,10 +31,6 @@ namespace TelepathyIM
 
 	Connection::~Connection()
 	{
-		if (!tp_connection_.isNull())
-			Tp::PendingOperation* op = tp_connection_->requestDisconnect();
-		 // we do NOT connect the signal because the connection object doesn't exist when signal is emitted
-
 		for (ChatSessionVector::iterator i = private_chat_sessions_.begin(); i != private_chat_sessions_.end(); ++i)
 		{
 			(*i)->Close();
@@ -48,6 +44,13 @@ namespace TelepathyIM
 			SAFE_DELETE(*i);
 		}
 		public_chat_sessions_.clear();
+
+        for (VoiceSessionVector::iterator i = voice_sessions_.begin(); i != voice_sessions_.end(); ++i)
+        {
+            VoiceSession* session = *i;
+            SAFE_DELETE(session);
+        }
+        voice_sessions_.clear();
 
 		for (FriendRequestVector::iterator i = received_friend_requests_.begin(); i != received_friend_requests_.end(); ++i)
 		{
@@ -66,6 +69,10 @@ namespace TelepathyIM
 			SAFE_DELETE(*i);
 		}
 		contacts_.clear();
+
+		if (!tp_connection_.isNull())
+			Tp::PendingOperation* op = tp_connection_->requestDisconnect();
+		 // we do NOT connect the signal because the connection object doesn't exist when signal is emitted
 	}
 	
 	QString Connection::GetName() const
