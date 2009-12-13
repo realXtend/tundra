@@ -8,8 +8,9 @@
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <telepathy-farsight/channel.h>
 #include <Foundation.h>
+#include <ServiceInterface.h>
 #include "VideoWidget.h"
-
+#include <SoundChannel.h>
 
 namespace TelepathyIM
 {
@@ -30,20 +31,16 @@ namespace TelepathyIM
 
     public:
         enum Status {
-        StatusDisconnected = 0,
-        StatusConnecting = 1,
-        StatusConnected = 2
-        };    
+            StatusDisconnected = 0,
+            StatusConnecting = 1,
+            StatusConnected = 2 };    
 
         FarsightChannel(const Tp::StreamedMediaChannelPtr &channel, 
                         const QString &audioSrc, 
                         const QString &audioSink, 
-                        const QString &videoSrc = NULL);
+                        const QString &videoSrc = "");
         ~FarsightChannel();
 
-      //  VideoWidget *videoPreview() const;
-      //  VideoWidget *videoWidget() const;
-        
         FarsightChannel::Status GetStatus() const;
 
         //! @param value 0 to 1
@@ -57,6 +54,10 @@ namespace TelepathyIM
 
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
+
+    public:
+        bool audio_out_linked_; // todo setter
+        bool video_out_linked_; // todo setter
 
     private:
 
@@ -78,6 +79,8 @@ namespace TelepathyIM
         static gboolean onRequestResource(TfStream *stream,
                 guint direction, gpointer data);
 
+        static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
+
         Tp::StreamedMediaChannelPtr channel_;
         Status status_;
         //GValue volume_;
@@ -92,17 +95,17 @@ namespace TelepathyIM
         GstElement *audio_output_;
         GstElement *video_input_;
         GstElement *video_tee_;
+        GstElement *fake_audio_output_;
         
         // audio modification elements
         GstElement *audio_resample_;
         GstElement *audio_volume_;
 
         // bins
-        GstElement *audio_bin_;
-        GstElement *video_bin_;
+        GstElement *audio_playback_bin_;
+        GstElement *video_input_bin_;
         
-        GstPad  *audio_ghost_;
-
+        GstPad  *audio_playback_bin_sink_;
         
         VideoWidget *video_preview_widget_;
         VideoWidget *video_remote_output_widget_;

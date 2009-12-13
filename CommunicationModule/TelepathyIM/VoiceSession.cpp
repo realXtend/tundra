@@ -79,31 +79,8 @@ namespace TelepathyIM
 
         tp_channel_->acceptCall();
 
-        try
-        {
-            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
-            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
-        }
-        catch(Core::Exception &e) 
-        {
-            QString message = QString("Cannot create FarsightChannel object - ").append(e.what());
-            LogError(message.toStdString());
-            state_ = STATE_ERROR;
-            emit StateChanged(state_);
-            return;
-        }
+        CreateFarsightChannel();
 
-	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
-             SIGNAL( finished(Tp::PendingOperation*) ),
-             SLOT( OnStreamFeatureReady(Tp::PendingOperation*) ));
-
-        connect(tp_channel_.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
-
-        connect(farsight_channel_,
-            SIGNAL(statusChanged(TelepathyIM::FarsightChannel::Status)),
-            SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)));
     }
 
     void VoiceSession::Reject()
@@ -182,7 +159,28 @@ namespace TelepathyIM
 		tp_contact_ = cm->lookupContactByHandle(tp_channel_->targetHandle());
         QString id = tp_contact_->id();
 
-        farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");
+        CreateFarsightChannel();
+
+        state_ = STATE_RINGING_REMOTE;
+        emit StateChanged(state_);
+	}
+
+    void VoiceSession::CreateFarsightChannel()
+    {
+        try
+        {
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
+            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
+        }
+        catch(Core::Exception &e) 
+        {
+            QString message = QString("Cannot create FarsightChannel object - ").append(e.what());
+            reason_ = message;
+            LogError(message.toStdString());
+            state_ = STATE_ERROR;
+            emit StateChanged(state_);
+            return;
+        }
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -195,10 +193,7 @@ namespace TelepathyIM
         connect(farsight_channel_,
             SIGNAL(statusChanged(FarsightChannel::Status)),
             SLOT(OnFarsightChannelStatusChanged(FarsightChannel::Status)));
-
-        state_ = STATE_RINGING_REMOTE;
-        emit StateChanged(state_);
-	}
+    }
 
     void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)
     {

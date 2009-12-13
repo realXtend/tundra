@@ -63,6 +63,8 @@ namespace Communication
 		//! Handle events
 		virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
+        virtual Foundation::Framework* GetFramework() { return framework_; };
+
 	protected:
 		ConnectionProviderVector GetConnectionProviders(const QString &protocol) const;
 
