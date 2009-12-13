@@ -3,8 +3,8 @@ import circuits
 
 import time
 
-#user, pwd, server = "Test User", "test", "localhost:9000"
-user, pwd, server = "d d", "d", "world.evocativi.com:8002"
+user, pwd, server = "Test User", "test", "localhost:9000"
+#user, pwd, server = "d d", "d", "world.evocativi.com:8002"
 
 
 class TestRunner(circuits.Component):
@@ -31,17 +31,19 @@ class TestRunner(circuits.Component):
         self.timer_started = time.time()
 
     def elapsed(self, n):
-        return (time.time() - self.timer_started) < n
+        return (time.time() - self.timer_started) > n
             
 
 class TestLoginLogoutExit(TestRunner):
-    wait_time = 10
+    wait_time = 30
 
     def run(self):
         yield "login"
         self.timer_start()
         r.startLoginOpensim(user, pwd, server)
+        print "ELAPSED:", self.elapsed(self.wait_time)
         while not self.elapsed(self.wait_time):
+            print "X",
             yield None
 
         yield "logging out"

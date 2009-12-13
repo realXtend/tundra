@@ -186,7 +186,20 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         msg->SkipToFirstVariableByName("Text");
         prim.HoveringText = msg->ReadString(); 
         msg->SkipToNextVariable();      // TextColor
+        
+        // read mediaurl, and send an event if it was changed
+        std::string prevMediaUrl = prim.MediaUrl;
         prim.MediaUrl = msg->ReadString();
+        //RexLogicModule::LogInfo("MediaURL: " + prim.MediaUrl);
+        if (prim.MediaUrl.compare(prevMediaUrl) != 0)
+        {
+            RexLogicModule::LogInfo("MediaURL changed: " + prim.MediaUrl);
+            Scene::Events::EntityEventData event_data;
+            event_data.entity = entity;
+            Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_MEDIAURL_SET, &event_data);
+        }
+
         msg->SkipToNextVariable();      // PSBlock
 
         // If there are extra params, handle them.
@@ -250,6 +263,8 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
 bool Primitive::HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data)
 {
     /// \todo tucofixme
+    RexLogicModule::LogInfo("MediaURL GM received"); // + prim.MediaUrl);
+            
     return false;
 }
 

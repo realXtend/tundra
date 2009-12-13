@@ -26,6 +26,7 @@ class EntityUpdate(Event): pass
 class Exit(Event): pass
 class LoginInfo(Event): pass
 class InboundNetwork(Event): pass
+class GenericMessage(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -47,7 +48,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -115,6 +116,9 @@ class ComponentRunner(Component):
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         self.m.send(MouseClick(mb_click, self.mouseinfo, self.callback), "on_mouseclick")
         return self.eventhandled
+
+    def SCENE_EVENT(self, evid, entid):
+        self.m.send(EntityUpdate(evid, entid), "on_scene")
         
     def ENTITY_UPDATED(self, id):
         #print "Entity updated!", id
@@ -134,7 +138,10 @@ class ComponentRunner(Component):
         self.m.send(InboundNetwork(id, name, self.callback), "on_inboundnetwork")
         return self.eventhandled
         ##r.randomTest(id) #for testing whether the id gotten is the same after a circulation on the python, note: worked
-        
+
+    def GENERIC_MESSAGE(self, typename, data):
+        #print "Circuits got Generic Message event:", data
+        self.m.send(GenericMessage(typename, data), "on_genericmessage")
                
     def exit(self):
         r.logInfo("Circuits manager stopping...")

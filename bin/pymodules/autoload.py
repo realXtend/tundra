@@ -109,7 +109,7 @@ modules = [
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     editgui.EditGUI,
-    #mediaurlhandler.mediaurlhandler.MediaURLHandler,
+    mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,

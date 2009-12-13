@@ -235,7 +235,7 @@ namespace PythonScript
         const Foundation::EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
         for(Foundation::EventManager::EventCategoryMap::const_iterator iter = categories.begin();
             iter != categories.end(); ++iter)
-        {
+        
             std::stringstream ss;
             ss << iter->first << " (id:" << iter->second << ")";
 
@@ -345,12 +345,11 @@ namespace PythonScript
         }
         else if (category_id == scene_event_category_)
         {
-
             /*
              only handles local modifications so far, needs a network refactorin of entity update events
              to get inbound network entity updates workin
             */
-            if (event_id == Scene::Events::EVENT_ENTITY_UPDATED)
+            if (event_id == Scene::Events::EVENT_ENTITY_UPDATED) //XXX remove this and handle with the new generic thing below?
             {
                 //LogInfo("Entity updated.");
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
@@ -358,9 +357,15 @@ namespace PythonScript
                 if (ent_id != 0)
                     value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
             }
-
 			//todo: add EVENT_ENTITY_DELETED so that e.g. editgui can keep on track in collaborative editing when objs it keeps refs disappear
-            
+
+            else
+            {
+                Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+                unsigned int ent_id = edata->localID;
+                if (ent_id != 0)
+                    value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "I", ent_id);
+            }            
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
         {
@@ -378,27 +383,76 @@ namespace PythonScript
         /* got a crash with this now during login, when the viewer was also getting asset data etc.
            disabling the direct reading of network data here now to be on the safe side,
            this has always behaved correctly till now though (since march). --antont june 12th */
-        
+
 		else if (category_id == inboundCategoryID_)
         {
 			ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
 			ProtocolUtilities::NetMsgID msgID = event_data->messageID;
-			//ProtocolUtilities::NetInMessage *msg = event_data->message;
+			ProtocolUtilities::NetInMessage *msg = event_data->message;
 			const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
-			std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
+			//std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
 
 			//Core::Vector3df data = event_data->message->GetData();
             //assert(info);
 			const std::string str = info->name;
 			unsigned int id = info->id;
 
-			//testing if the unsigned int actually is the same NetMsgID, in this case RexNetMsgAgentAlertMessage == 0xffff0087
+            //testing if the unsigned int actually is the same NetMsgID, in this case RexNetMsgAgentAlertMessage == 0xffff0087
 			//if (id == 0xff09) //RexNetMsgObjectProperties == 0xff09
 			//	LogInfo("golly... it worked");
 
-			value = PyObject_CallMethod(pmmInstance, "INBOUND_NETWORK", "Is", id, str.c_str());//, msgID, msg);
+            if (id == RexNetMsgGenericMessage)
+            {
+                PyObject *stringlist = PyList_New(0);
+                if (!stringlist)
+                    return false;
 
-			/*
+                msg->ResetReading();
+                msg->SkipToNextVariable(); // AgentId
+                msg->SkipToNextVariable(); // SessionId
+                msg->SkipToNextVariable(); // TransactionId
+
+                std::string cxxmsgname = msg->ReadString();
+
+                msg->ResetReading();
+                msg->SkipToFirstVariableByName("Parameter");
+
+                // Variable block begins
+                size_t instance_count = msg->ReadCurrentBlockInstanceCount();
+                size_t read_instances = 0;
+
+                // Calculate full data size
+                size_t fulldatasize = msg->GetDataSize();
+                size_t bytes_read = msg->BytesRead();
+                fulldatasize -= bytes_read;
+
+                // Allocate memory block
+                std::vector<Core::u8> fulldata;
+                fulldata.resize(fulldatasize);
+                int offset = 0;
+
+                // Read the generic message parameter data.
+                while((msg->BytesRead() < msg->GetDataSize()) && (read_instances < instance_count))
+                {
+                    std::string cxxs = msg->ReadString();
+                    PyObject *pys = PyString_FromStringAndSize(cxxs.c_str(), cxxs.size());
+                    if (!pys) 
+                    {
+                        //Py_DECREF(stringlist);
+                        return false;
+                    }
+                    PyList_Append(stringlist, pys);
+                    Py_DECREF(pys);
+                }
+
+                value = PyObject_CallMethod(pmmInstance, "GENERIC_MESSAGE", "sO", cxxmsgname.c_str(), stringlist);
+            }
+            /*else
+            {
+    			value = PyObject_CallMethod(pmmInstance, "INBOUND_NETWORK", "Is", id, str.c_str());//, msgID, msg);
+            }*/
+			
+            /*
             std::stringstream ss;
             ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
             //LogInfo(ss.str());
