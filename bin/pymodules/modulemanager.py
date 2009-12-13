@@ -1,5 +1,7 @@
 import rexviewer as r
 
+#XXX make all these return False
+
 class ModuleManager:
     #was not calling update to not confuse with the eventhandlers
     def run(self, elapsedtime):
@@ -34,9 +36,12 @@ class ModuleManager:
     def LOGIN_INFO(self, *args):
         pass
         #print "Login updated", args
-    def INBOUND_NETWORK(self, id, name):
+    def INBOUND_NETWORK(self, evid, name):
         pass
         #print "Manager got a NETWORK_IN event", id, name
+
+    def GENERIC_MESSAGE(self, typename, data):
+        pass
         
     def exit(self):
         print "exiting module manager"

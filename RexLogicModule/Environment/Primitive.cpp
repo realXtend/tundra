@@ -263,7 +263,8 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
 bool Primitive::HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data)
 {
     /// \todo tucofixme
-    RexLogicModule::LogInfo("MediaURL GM received"); // + prim.MediaUrl);
+    //RexLogicModule::LogInfo("MediaURL GM received"); // + prim.MediaUrl);
+    //handled now in pymodules/mediaurlhandler/
             
     return false;
 }
