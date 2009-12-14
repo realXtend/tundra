@@ -846,14 +846,18 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
-        Scene::EntityPtr entptr = rexlogic_->GetPrimEntity(ruuid);
-        Py_RETURN_NONE;
-        return entity_create(entptr->GetId());
-        /*else
+        //PythonScript::self()->LogInfo("Getting prim with UUID:" + ruuid.ToString());
+        Scene::EntityPtr entity = rexlogic_->GetPrimEntity(ruuid);
+        if (entity)
         {
-            PyErr_SetString(PyExc_RuntimeError, "Entity found by UUID is not in default scene?");
-            return NULL;   
-        }*/
+            return entity_create(entity->GetId());
+        }
+        else
+        {
+            //PyErr_SetString(PyExc_RuntimeError, "Entity found by UUID is not in default scene?");
+            //return NULL;   
+            Py_RETURN_NONE; //not there yet, when still loading?
+        }
     }
     else
     {
@@ -862,6 +866,68 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
     }
 }
 
+PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
+{
+    char* uuidstr;
+    if(!PyArg_ParseTuple(args, "s", &uuidstr))
+    {
+        PyErr_SetString(PyExc_ValueError, "Getting an entity by UUID failed, param should be a string.");
+        return NULL;
+    }
+
+	RexUUID textureuuid = RexUUID();
+	textureuuid.FromString(std::string(uuidstr));
+
+    RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+    Scene::ScenePtr scene = PythonScript::GetScene();        
+    if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
+        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
+        return NULL;   
+    }
+
+    for(Scene::SceneManager::iterator iter = scene->begin();
+        iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+
+        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        if (!primentity) continue;
+
+        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());            
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+        {
+            Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (!mesh) continue;
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            // If don't have the actual mesh entity yet, no use trying to set texture
+            if (!meshptr->GetEntity()) continue;
+            
+            RexLogic::MaterialMap::const_iterator i = prim.Materials.begin();
+            while (i != prim.Materials.end())
+            {
+                Core::uint idx = i->first;
+                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(textureuuid.ToString()) == 0))
+                {
+                    // Use a legacy material with the same name as the texture, created automatically by renderer
+                    //meshptr->SetMaterial(idx, res->GetId());
+                    std::stringstream ss;
+                    ss << "Entity with given texture id found: ";
+                    ss << textureuuid.ToString();
+                    ss << " - ";
+                    ss << primentity->GetId();
+                    ss << " / ";
+                    ss << idx;
+                    PythonScript::self()->LogInfo(ss.str());
+                }
+                ++i;
+            }
+        }
+    }
+
+    Py_RETURN_NONE;
+}
 
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
@@ -1598,6 +1664,9 @@ static PyMethodDef EmbMethods[] = {
 	
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
+
+    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
+    "Finds all entities with material indices which are using the given texture"},
 
 	{NULL, NULL, 0, NULL}
 };

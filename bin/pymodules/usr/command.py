@@ -684,7 +684,7 @@ if 0: #updateflag checks, duplicate tests
     x, y, z = e.pos
     ws.SendObjectDuplicatePacket(e.id, e.updateflags, 1, 1, 1)
     
-if 1:
+if 0: #proxywidget signal connecting
     #~ from PythonQt.QtUiTools import QUiLoader
     #~ from PythonQt.QtCore import QFile
     #~ #prop = r.getUiWidgetProperty()
@@ -710,6 +710,17 @@ if 1:
     def whee(boo):
         print boo
     r.c.proxywidget.connect('Visible(bool)', whee)
+
+if 0: #get entity by (prim) uuid
+    #uuid = "cac0a9bf-2ee3-427a-bf2b-5a2f17cb3155"
+    e = r.getEntityByUUID(uuid)
+    print e, "by uuid", uuid
+
+if 0: #search where a given texture is used
+    #uuid = "cac0a9bf-2ee3-427a-bf2b-5a2f17cb3155" #antont local fishworld screen
+    #uuid = "3edf2f27-411e-4a80-af8d-a422c014532e" #prim school project test display
+    uuid = 'a07893e6-3631-4ee0-b9a4-1a4e07eed5be' #mesh
+    print r.getEntityMatindicesWithTexture(uuid)
     
 if 0:
     #print r.c, dir(r.c)
@@ -721,5 +732,3 @@ if 0:
     for item in channels:
         for handler in r.manager._getHandlers(item):
             print handler.channels#dir(handler)
-    
-    
