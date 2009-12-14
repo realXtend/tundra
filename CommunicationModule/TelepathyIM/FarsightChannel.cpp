@@ -125,9 +125,6 @@ namespace TelepathyIM
             
             video_remote_output_widget_ = new VideoWidget(bus_);
             video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
-
-            //video_preview_widget_->show();
-            //video_remote_output_widget_->show();
         }
         // can empty pipeline be put to playing when video is not used?, lets try anyway
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
@@ -147,10 +144,14 @@ namespace TelepathyIM
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;                
-
-        unsigned long long offset = buffer->offset;
-        if (offset == 0xFFFFFFFFFFFFFFFF) // offset not set
+        
+        int offset;
+        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
             offset = 0;
+        else
+            offset = ~(buffer->offset+1);
+
+
         // todo: Get actual adio caps and pass them to soundS
         self->audio_playback_channel_ = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, 8000, 16, false, self->audio_playback_channel_);
         //if (sound_id == 0)

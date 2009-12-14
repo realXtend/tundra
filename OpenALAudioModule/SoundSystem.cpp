@@ -61,6 +61,8 @@ namespace OpenALAudio
            
         alcMakeContextCurrent(context_);
         initialized_ = true;
+
+        mutex.initialize();
     }
 
     void SoundSystem::Uninitialize()
@@ -196,7 +198,13 @@ namespace OpenALAudio
 
     Core::sound_id_t SoundSystem::PlayAudioData(Core::u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel)
     {
-        mutex.lock();
+        if (!mutex.try_lock())
+        {
+            int i = (int)((buffer_size*8000 / sample_rate) / sample_width);
+            std::string s_int = boost::lexical_cast<std::string>(i);
+            OpenALAudioModule::LogDebug("Dropped " + s_int + " ms");
+            return 0;
+        }
 
         SoundPtr sound = SoundPtr(new OpenALAudio::Sound("audiobuffer"));
         if (!sound)
