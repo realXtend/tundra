@@ -17,7 +17,8 @@ namespace TelepathyIM
                                      audio_resample_(0),
                                      audio_in_src_pad_(0),
                                      video_in_src_pad_(0),
-                                     audio_playback_channel_(0)
+                                     audio_playback_channel_(0),
+                                     audio_stream_in_clock_rate_(0)
     {
         try
         {
@@ -151,11 +152,7 @@ namespace TelepathyIM
         else
             offset = ~(buffer->offset+1);
 
-
-        // todo: Get actual adio caps and pass them to soundS
-        self->audio_playback_channel_ = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, 8000, 16, false, self->audio_playback_channel_);
-        //if (sound_id == 0)
-        //    LogError("Cannot playback audio data.");
+        self->audio_playback_channel_ = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, self->audio_stream_in_clock_rate_, 16, false, self->audio_playback_channel_);
     }
 
     FarsightChannel::~FarsightChannel()
@@ -295,6 +292,7 @@ namespace TelepathyIM
     {           
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
+        self->audio_stream_in_clock_rate_ = clock_rate;
         gint channel_count = codec->channels;
 
         guint media_type;
