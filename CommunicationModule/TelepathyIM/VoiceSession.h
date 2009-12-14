@@ -35,7 +35,11 @@ namespace TelepathyIM
 
 		//! @return all known participants of the chat session inlcuding the user
 		virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
+        virtual Communication::VideoWidgetInterface* GetRemoteVideo();
+        virtual Communication::VideoWidgetInterface* GetOwnVideo();
 
+    public slots:
+        //! Close the session
 		virtual void Close();
 
         //! Accept incoming session
@@ -43,9 +47,6 @@ namespace TelepathyIM
 
         //! Reject incoming session
         virtual void Reject();
-
-        virtual Communication::VideoWidgetInterface* GetRemoteVideo();
-        virtual Communication::VideoWidgetInterface* GetOwnVideo();
 
         virtual void SetAudioOutEnabled(bool value);
         virtual void SetVideoOutEnabled(bool value);
