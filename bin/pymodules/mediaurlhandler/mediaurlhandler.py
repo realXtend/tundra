@@ -32,7 +32,8 @@ class MediaURLHandler(Component):
         uism.AddProxyWidget(self.proxywidget)
 
     def on_scene(self, evid, entid):
-        print "Scene event in mediaurlhandler:", evid, entid
+        pass
+        #print "Scene event in mediaurlhandler:", evid, entid
 
     #def on_inboundnetwork(self, evid, name, callback):
     #    pass

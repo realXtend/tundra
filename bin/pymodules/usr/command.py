@@ -710,3 +710,16 @@ if 1:
     def whee(boo):
         print boo
     r.c.proxywidget.connect('Visible(bool)', whee)
+    
+if 0:
+    #print r.c, dir(r.c)
+    print r.manager
+    print dir(r.manager)
+    
+    channels = r.manager.channels
+    #print channels
+    for item in channels:
+        for handler in r.manager._getHandlers(item):
+            print handler.channels#dir(handler)
+    
+    
