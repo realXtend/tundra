@@ -134,7 +134,12 @@ namespace TelepathyIM
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!framework)
+            return;
+        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        if (!service_manager)
+            return;
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;                
 
@@ -333,6 +338,7 @@ namespace TelepathyIM
         pad = gst_element_get_static_pad(element, "sink");
         if (gst_pad_is_linked(pad))
             gst_pad_unlink(src, pad);
+        gst_pad_link(src, pad);
         gst_element_set_state(element, GST_STATE_PLAYING);
         
         self->status_ = StatusConnected;
@@ -355,6 +361,11 @@ namespace TelepathyIM
     {
         LogInfo("CommunicationModule: resource request");
         return TRUE;
+    }
+
+    void FarsightChannel::SetAudioSourceLocation(Core::Vector3df location)
+    {
+
     }
 
 } // end of namespace: TelepathyIM
