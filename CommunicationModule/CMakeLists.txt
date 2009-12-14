@@ -39,7 +39,6 @@ configure_telepathy_glib ()
 configure_telepathy_farsight ()
 configure_farsight2 ()
 configure_dbus_glib ()
-configure_openal ()
 
 # Define target name and output directory
 init_target (CommunicationModule OUTPUT modules/core)
@@ -82,7 +81,6 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_package (OPENAL) 
 use_modules (CommunicationModule Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
@@ -100,7 +98,6 @@ link_package (CURL)
 link_package (XMLRPC)
 link_package (GSTREAMER)
 link_package (FARSIGHT2)
-link_package (OPENAL)
 link_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
 
 # Copy XML files from source directory to target directory
