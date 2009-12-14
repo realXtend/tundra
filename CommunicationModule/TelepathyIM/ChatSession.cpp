@@ -121,6 +121,9 @@ namespace TelepathyIM
 
 	ChatSessionParticipant* ChatSession::GetParticipant(Tp::ContactPtr contact)
 	{
+        if (!contact)
+            return 0;
+
 		for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
 		{
 			if ( (*i)->GetID().compare( contact->id() ) == 0)

@@ -142,10 +142,10 @@ namespace TelepathyIM
         if (!framework)
             return;
         Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager)
+        if (!service_manager.get())
             return;
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem)
+        if (!soundsystem.get())
             return;                
 
         unsigned long long offset = buffer->offset;

@@ -49,6 +49,7 @@ namespace CommunicationUI
     private:
         void InitializeSelf();
         QSize CleanSelf();
+        bool connecting_;
 
         Ui::LoginWidget *login_ui_;
         Ui::LoadingWidget *loading_ui_;

@@ -1,6 +1,9 @@
 #include <StableHeaders.h>
-#include "CommunicationModule.h"
 #include <RexLogicModule.h>
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+
+#include "CommunicationModule.h"
 #include "OpensimIM/ConnectionProvider.h"
 #include "TelepathyIM/ConnectionProvider.h"
 
@@ -9,8 +12,8 @@ namespace Communication
 
 	CommunicationModule::CommunicationModule(void) 
         : ModuleInterfaceImpl("CommunicationModule"), 
-          qt_ui_(0), opensim_ui_(0), 
-          master_test_(0), 
+          im_ui_(0), 
+          opensim_chat_ui_(0),
           communication_service_(0), 
           test_(0), 
           event_category_networkstate_(0), 
@@ -71,9 +74,8 @@ namespace Communication
 
 	void CommunicationModule::Uninitialize()
 	{
-        SAFE_DELETE(master_test_);
-		SAFE_DELETE(qt_ui_);
-		SAFE_DELETE(opensim_ui_);
+        SAFE_DELETE(im_ui_);
+		SAFE_DELETE(opensim_chat_ui_);
         SAFE_DELETE(test_);
 
         CommunicationService::CleanUp();
@@ -100,14 +102,15 @@ namespace Communication
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
                     //! TODO: Currently we can have only one world_chat ui but this
                     //!       should be changed to 1:1 relation between "WorldChatWidget" - "WorldConnectionWidget"
-                    SAFE_DELETE(opensim_ui_);
-                    opensim_ui_ = new CommunicationUI::OpenSimChat(framework_, client_params);
+                    SAFE_DELETE(opensim_chat_ui_);
+                    opensim_chat_ui_ = new CommunicationUI::OpenSimChatWidget(client_params);
+                    AddWidgetToUi("World Chat");
                 }
             }
 
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
-               SAFE_DELETE(opensim_ui_);
+               SAFE_DELETE(opensim_chat_ui_);
             }
         }
 
@@ -122,10 +125,11 @@ namespace Communication
     {
         if (protocol.compare("jabber") == 0)
         {
-            if (!qt_ui_)
+            if (!im_ui_)
             {
-                master_test_ = new CommunicationUI::MasterWidget(framework_);
-                //qt_ui_ = new CommunicationUI::QtGUI(framework_);
+                im_ui_ = new CommunicationUI::MasterWidget(framework_);
+                //im_ui_->show();
+                AddWidgetToUi("IM");
             }
             return;
         }
@@ -135,7 +139,7 @@ namespace Communication
     {
         if (protocol.compare("jabber") == 0)
         {
-            SAFE_DELETE(qt_ui_);
+            SAFE_DELETE(im_ui_);
             return;
         }
     }
@@ -146,6 +150,24 @@ namespace Communication
 
     void CommunicationModule::OnConnectionClosed(Communication::ConnectionInterface* connection)
     {
+    }
+
+    void CommunicationModule::AddWidgetToUi(const QString &name)
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+        {
+            if (name == "World Chat")
+            {
+                UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, opensim_chat_ui_->size());
+                opensim_chat_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(opensim_chat_ui_, widget_properties);
+            }
+            else if (name == "IM")
+            {
+                UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, im_ui_->size());
+                im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(im_ui_, widget_properties);
+            }
+        }
     }
 
 }

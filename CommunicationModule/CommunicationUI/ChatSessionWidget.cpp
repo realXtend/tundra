@@ -30,6 +30,8 @@ namespace CommunicationUI
 
     void ChatSessionWidget::MessageReceived(const Communication::ChatMessageInterface &message)
     {
+        if (message.GetTimeStamp().toString() == 0 || message.GetOriginator() == 0 || message.GetText() == 0)
+            return;
         QString html("<span style='color:#828282;'>[");
         html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(message.GetTimeStamp()));
 		html.append("]</span> <span style='color:#2133F0;'>");

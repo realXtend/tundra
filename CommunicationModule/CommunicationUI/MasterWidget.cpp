@@ -23,11 +23,11 @@ namespace CommunicationUI
           session_manager_(new UiManagers::SessionManager(this)),
           login_ui_(new Ui::LoginWidget),
           loading_ui_(new Ui::LoadingWidget),
-          session_manager_ui_(new Ui::SessionManagerWidget)
+          session_manager_ui_(new Ui::SessionManagerWidget),
+          connecting_(false)
     {
         ChangeContext();
         InitializeSelf();
-        show();
     }
 
     MasterWidget::~MasterWidget()
@@ -49,6 +49,7 @@ namespace CommunicationUI
         {
             case UiDefines::UiStates::Disconnected:
             {
+                connecting_ = false;
                 login_ui_->setupUi(this);
 
                 config_helper_->SetPreviousData(login_ui_, login_helper_->GetPreviousCredentials());
@@ -62,12 +63,14 @@ namespace CommunicationUI
             }
             case UiDefines::UiStates::Connecting:
             {
+                connecting_ = true;
                 loading_ui_->setupUi(this);
                 connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
                 break;
             }
             case UiDefines::UiStates::Connected:
             {
+                connecting_ = false;
                 config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
                 session_manager_ui_->setupUi(this);
 
@@ -77,8 +80,15 @@ namespace CommunicationUI
             }
             case UiDefines::UiStates::Exit:
             {
-                destroy();
-                break;
+                connecting_ = false;
+                SAFE_DELETE(login_helper_);
+                SAFE_DELETE(config_helper_);
+                SAFE_DELETE(session_manager_);
+                SAFE_DELETE(login_ui_);
+                SAFE_DELETE(loading_ui_);
+                SAFE_DELETE(session_manager_ui_);
+                close();
+                return;
             }
         }
 
@@ -104,8 +114,39 @@ namespace CommunicationUI
     QSize MasterWidget::CleanSelf()
     {
         setObjectName("");
-        foreach(QObject *child, children())
-            SAFE_DELETE(child);
+        //foreach(QObject *child, children())
+        //    SAFE_DELETE(child);
+
+        switch (ui_state_)
+        {
+            case UiDefines::UiStates::Disconnected:
+            {
+                if (connecting_)
+                    SAFE_DELETE(login_ui_->verticalLayout_2);
+                break;
+            }
+            case UiDefines::UiStates::Connecting:
+            {
+                SAFE_DELETE(login_ui_->verticalLayout_2);
+                break;
+            }
+            case UiDefines::UiStates::Connected:
+            {
+                SAFE_DELETE(loading_ui_->verticalLayout_2);
+                break;
+            }
+            case UiDefines::UiStates::Exit:
+            {
+                SAFE_DELETE(login_helper_);
+                SAFE_DELETE(config_helper_);
+                SAFE_DELETE(session_manager_);
+                SAFE_DELETE(login_ui_);
+                SAFE_DELETE(loading_ui_);
+                SAFE_DELETE(session_manager_ui_);
+                break;
+            }
+        }
+
         return size();
     }
 }

@@ -53,7 +53,7 @@ namespace UiManagers
 
         void Hide()     { parent_->hide(); }
         void SignOut()  { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
-        void Exit()     { friend_list_widget_->close(); im_connection_->Close(); emit StateChange(UiDefines::UiStates::Exit); }
+        void Exit();
 
         void StatusAvailable()    { emit StatusChange(QString("available")); }
         void StatusChatty()       { emit StatusChange(QString("chat"));      }
@@ -62,7 +62,9 @@ namespace UiManagers
         void StatusBusy()         { emit StatusChange(QString("dnd"));       }
         void StatusHidden()       { emit StatusChange(QString("hidden"));    }
 
-        void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); }
+        void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); } 
+
+        void JoinChatRoom();
 
         void ChatSessionReceived(Communication::ChatSessionInterface& chat_session);
         void VideoSessionReceived(Communication::VoiceSessionInterface& voice_session);

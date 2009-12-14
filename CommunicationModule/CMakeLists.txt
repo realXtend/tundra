@@ -81,7 +81,7 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_modules (CommunicationModule Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
+use_modules (CommunicationModule Core Foundation Interfaces RexCommon UiModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -98,7 +98,7 @@ link_package (CURL)
 link_package (XMLRPC)
 link_package (GSTREAMER)
 link_package (FARSIGHT2)
-link_modules (Core Foundation Interfaces RexCommon QtModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
+link_modules (Core Foundation Interfaces RexCommon UiModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OpenALAudioModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -87,9 +87,9 @@ namespace TelepathyIM
 		connections_.push_back(connection);
 
 		//! @todo FIX THESE
-		connect(connection, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(Communication::ConnectionInterface&) ));
-		connect(connection, SIGNAL( ConnectionClosed(Communication::ConnectionInterface&) ), SLOT( OnConnectionClosed(Communication::ConnectionInterface&) ));
-		connect(connection, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnConnectionError(Communication::ConnectionInterface&) ));
+		//connect(connection, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( OnConnectionReady(Communication::ConnectionInterface&) ));
+		//connect(connection, SIGNAL( ConnectionClosed(Communication::ConnectionInterface&) ), SLOT( OnConnectionClosed(Communication::ConnectionInterface&) ));
+		//connect(connection, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( OnConnectionError(Communication::ConnectionInterface&) ));
 
 		return connection;
 	}
@@ -209,6 +209,7 @@ namespace TelepathyIM
 	void ConnectionProvider::OnDBusDaemonStdout()
 	{
         QString output = QString(dbus_daemon_->readAllStandardOutput());
+        output = output.midRef(0, 1000).toString();
         LogDebug(QString("DBus daemon: ").append(output).toStdString());
 	}
 
