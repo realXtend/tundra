@@ -269,6 +269,13 @@ namespace Communication
         virtual void Close() = 0;
         virtual void Accept() = 0;
         virtual void Reject() = 0;
+
+        virtual void SetAudioOutEnabled(bool value) = 0;
+        virtual void SetVideoOutEnabled(bool value) = 0;
+        virtual bool GetAudioInEnabled() = 0;
+        virtual bool GetVideoInEnabled() = 0;
+        virtual bool GetAudioOutEnabled() = 0;
+        virtual bool GetVideoOutEnabled() = 0;
         
 	signals:
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);

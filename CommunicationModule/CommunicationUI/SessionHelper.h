@@ -69,7 +69,7 @@ namespace UiHelpers
         QString my_name_;
         bool welcome_tab_destroyed;
 
-        QMap<QString, QPair<CommunicationUI::ChatSessionWidget *, Communication::ChatSessionInterface *>> chat_sessions_pointers_map_;
+        QMap<QString, QPair<CommunicationUI::ChatSessionWidget *, Communication::ChatSessionInterface *> > chat_sessions_pointers_map_;
         //QMap<QString, QPair<CommunicationUI::VideoSessionWidget *, Communication::VoiceSessionInterface *>> video_sessions_pointers_map_;
 
     signals:

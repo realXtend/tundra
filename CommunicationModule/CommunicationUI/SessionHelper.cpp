@@ -8,6 +8,7 @@
 #include "UiDefines.h"
 
 #include <QDebug>
+#include <QPair>
 #include <QPixmap>
 #include <QInputDialog>
 
@@ -165,6 +166,11 @@ namespace UiHelpers
         TabWidgetStateCheck();
 
         CommunicationUI::VideoSessionWidget *video_session_tab = new CommunicationUI::VideoSessionWidget(main_parent_, video_session, my_name_, chat_friends_name);
+
+        QPair<WId, WId> video_widget_ids = QPair<WId, WId>();
+        video_widget_ids.first = video_session_tab->local_video_->winId();
+        video_widget_ids.second = video_session_tab->remote_video_->winId();
+
         int index = session_manager_ui_->sessionsTabWidget->addTab(video_session_tab, QIcon(":images/iconChat.png"), chat_friends_name);
         session_manager_ui_->sessionsTabWidget->setCurrentIndex(index);
     }

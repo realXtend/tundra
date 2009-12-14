@@ -4,6 +4,7 @@
 #define incl_Communication_VideoSessionWidget_h
 
 #include "ui_VideoSessionWidget.h"
+#include "ui_VideoSessionControlsWidget.h"
 #include "interface.h"
 
 namespace CommunicationUI
@@ -17,11 +18,18 @@ namespace CommunicationUI
         VideoSessionWidget(QWidget *parent, Communication::VoiceSessionInterface *video_session, QString &my_name, QString &his_name);
         virtual ~VideoSessionWidget();
 
+        QWidget *local_video_;
+        QWidget *remote_video_;
+
     private:
         Ui::VideoSessionWidget video_session_ui_;
+        Ui::VideoSessionControlsWidget controls_local_ui_;
+        Ui::VideoSessionControlsWidget controls_remote_ui_;
         Communication::VoiceSessionInterface *video_session_;
         
-        QWidget *confirmation_widget_;
+        QWidget *internal_widget_;
+        QWidget *controls_local_widget_;
+        QWidget *controls_remote_widget_;
         QVBoxLayout *internal_v_layout_;
         QHBoxLayout *internal_h_layout_;
         QString my_name_; 
@@ -29,6 +37,12 @@ namespace CommunicationUI
 
     public slots:
         void SessionStateChanged(Communication::VoiceSessionInterface::State new_state);
+        void LocalVideoStateChange(int state);
+        void UpdateLocalVideoControls(bool state);
+        void LocalAudioStateChange(int state);
+        void UpdateLocalAudioControls(bool state);
+        void UpdateRemoteVideoControls(bool state);
+        void UpdateRemoteAudioControls(bool state);
 
     private slots:
         void ShowConfirmationWidget();
