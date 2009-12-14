@@ -53,6 +53,8 @@ namespace TelepathyIM
         VideoWidget* GetRemoteOutputVideo() { return video_remote_output_widget_; };
         virtual void SetAudioSourceLocation(Core::Vector3df location);
 
+        Core::sound_id_t audio_playback_channel_;
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
 
@@ -113,6 +115,11 @@ namespace TelepathyIM
 
         GstElement *video_preview_element_;
         GstElement *video_remote_output_element_;
+
+        GstPad *audio_in_src_pad_;
+        GstPad *video_in_src_pad_;
+
+//        Core::sound_id_t audio_playback_channel_;
     };
 
 } // end of namespace: TelepathyIM

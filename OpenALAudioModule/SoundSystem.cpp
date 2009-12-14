@@ -208,11 +208,15 @@ namespace OpenALAudio
         SoundChannelMap::iterator i = channels_.find(channel);
         if (i == channels_.end())
         {
+            SoundChannel* s = new SoundChannel();
+            if (!s)
+                return 0;
             i = channels_.insert(
-                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
         }
+        else
+            return 0;
         
-        i->second->SetPositional(false);
         i->second->Play(sound);
          
         return i->first;     

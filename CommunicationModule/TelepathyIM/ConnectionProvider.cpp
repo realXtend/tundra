@@ -64,7 +64,7 @@ namespace TelepathyIM
 		{
             Connection* connection = *i; 
 			//! @todo Check that there is enough time to actual close the connection to servers
-			connection->Close(); // <--- CRASH HERE when multiple connections
+			connection->Close(); // <--- CRASH HERE when login is failed
             SAFE_DELETE(connection);
 		}
 		connections_.clear();

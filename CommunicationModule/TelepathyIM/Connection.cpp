@@ -31,6 +31,7 @@ namespace TelepathyIM
 
 	Connection::~Connection()
 	{
+        // todo: disconnect any signals left
 		for (ChatSessionVector::iterator i = private_chat_sessions_.begin(); i != private_chat_sessions_.end(); ++i)
 		{
 			(*i)->Close();
@@ -237,7 +238,7 @@ namespace TelepathyIM
 			return; // nothing to close
 
 		Tp::PendingOperation* op = tp_connection_->requestDisconnect();
-		connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnConnectionClosed(Tp::PendingOperation*) ));
+		//connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnConnectionClosed(Tp::PendingOperation*) ));
 	}
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
