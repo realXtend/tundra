@@ -280,6 +280,10 @@ macro (configure_openal)
         NAMES OpenAL openal
         COMPONENTS al OpenAL32
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenAL ${ENV_NAALI_DEP_PATH}/OpenAL/libs/Win32)
+        # Force include dir on MSVC
+        if (MSVC)
+  		   set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
+        endif ()
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
 
