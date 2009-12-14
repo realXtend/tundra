@@ -15,8 +15,6 @@ namespace TelepathyIM
                                      audio_output_(0), video_input_(0), video_tee_(0), 
                                      audio_volume_(0),
                                      audio_resample_(0),
-                                     audio_out_linked_(false),
-                                     video_out_linked_(false),
                                      audio_in_src_pad_(0),
                                      video_in_src_pad_(0),
                                      audio_playback_channel_(0)
@@ -66,6 +64,9 @@ namespace TelepathyIM
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
         if (audio_resample_ == 0)
             throw Core::Exception("Cannot create GStreamer audio resample element.");
+
+        // todo: Audio caps for audio playback
+        //audio_caps = 
 
         //audio_volume_  = gst_element_factory_make("volume", NULL);
 
@@ -289,7 +290,7 @@ namespace TelepathyIM
     }
 
     void FarsightChannel::onSrcPadAdded(TfStream *stream,
-        GstPad *src, FsCodec *codec, FarsightChannel *self)
+        GstPad *src_pad, FsCodec *codec, FarsightChannel *self)
     {           
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
@@ -299,28 +300,24 @@ namespace TelepathyIM
 
         g_object_get(stream, "media-type", &media_type, NULL);
 
-        GstPad *pad;
-        GstElement *element = 0;
+        GstPad *output_pad;
+        GstElement *output_element = 0;
 
         bool sink_already_linked = false;
 
         switch (media_type)
         {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
-//            if (audio_in_src_pad_)
-//                gst_unlink(audio_in_src_pad_, 
-//            audio_in_src_pad_ = src;
-
-            // element = self->audio_playback_bin_;
-            element = self->fake_audio_output_; // fake audio sink
-            g_object_ref(element);
-            if (self->audio_out_linked_)
+            // output_element = self->audio_playback_bin_;
+            output_element = self->fake_audio_output_; // fake audio sink
+//            g_object_ref(output_element);
+              if (self->audio_in_src_pad_)
                 sink_already_linked = true;
             break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:
 //            video_in_src_pad_ = src;
-            element = self->video_remote_output_element_;
-            if (self->video_out_linked_)
+            output_element = self->video_remote_output_element_;
+            if (self->video_in_src_pad_)
                 sink_already_linked = true;
             break;
         default:
@@ -333,26 +330,42 @@ namespace TelepathyIM
         }
         else
         {
-            gst_bin_add(GST_BIN(self->pipeline_), element);
+            gst_bin_add(GST_BIN(self->pipeline_), output_element);
         }
-        pad = gst_element_get_static_pad(element, "sink");
-        if (gst_pad_is_linked(pad))
-            gst_pad_unlink(src, pad); // DOESN'T WORK  BECOUSE WRONK SRC ELEMENT
-        gst_pad_link(src, pad);
-        gst_element_set_state(element, GST_STATE_PLAYING);
-        
-        self->status_ = StatusConnected;
+
+        output_pad = gst_element_get_static_pad(output_element, "sink");
         switch (media_type)
         {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
-            self->audio_out_linked_ = true;
-            break;
+            if (self->audio_in_src_pad_)
+            {
+                gst_pad_unlink(self->audio_in_src_pad_, output_pad);
+                self->audio_in_src_pad_ = src_pad;
+            }
+                break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:
-            self->video_out_linked_ = true;
-            break;
-        default:
-            Q_ASSERT(false);
+            if (self->video_in_src_pad_)
+            {
+                gst_pad_unlink(self->video_in_src_pad_, output_pad);
+                self->video_in_src_pad_ = src_pad;
+            }
+                break;
         }
+        gst_pad_link(src_pad, output_pad);
+        gst_element_set_state(output_element, GST_STATE_PLAYING);
+        
+        self->status_ = StatusConnected;
+        //switch (media_type)
+        //{
+        //case TP_MEDIA_STREAM_TYPE_AUDIO:
+        //    self->audio_out_linked_ = true;
+        //    break;
+        //case TP_MEDIA_STREAM_TYPE_VIDEO:
+        //    self->video_out_linked_ = true;
+        //    break;
+        //default:
+        //    Q_ASSERT(false);
+        //}
 
         emit self->statusChanged(self->status_);
     }

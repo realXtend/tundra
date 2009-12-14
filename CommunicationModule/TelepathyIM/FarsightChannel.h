@@ -59,8 +59,10 @@ namespace TelepathyIM
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
 
     public:
-        bool audio_out_linked_; // todo setter
-        bool video_out_linked_; // todo setter
+        //bool audio_out_linked_; // todo setter
+        //bool video_out_linked_; // todo setter
+        GstPad *audio_in_src_pad_; // todo setter
+        GstPad *video_in_src_pad_; // todo setter
 
     private:
 
@@ -116,8 +118,6 @@ namespace TelepathyIM
         GstElement *video_preview_element_;
         GstElement *video_remote_output_element_;
 
-        GstPad *audio_in_src_pad_;
-        GstPad *video_in_src_pad_;
 
 //        Core::sound_id_t audio_playback_channel_;
     };
