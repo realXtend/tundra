@@ -49,6 +49,8 @@ namespace CommunicationUI
         UpdateRemoteAudioControls(video_session_->GetAudioInEnabled());
 
         // Connect signals
+        connect(video_session_ui_.closePushButton, SIGNAL( clicked() ),
+                this, SLOT( CloseSession() ));
         connect(video_session_, SIGNAL( StateChanged(Communication::VoiceSessionInterface::State) ),
                 this, SLOT( SessionStateChanged(Communication::VoiceSessionInterface::State) ));
         connect(video_session_, SIGNAL( VideoOutEnabledStateChanged(bool) ),
@@ -63,7 +65,7 @@ namespace CommunicationUI
 
     VideoSessionWidget::~VideoSessionWidget()
     {
-
+        SAFE_DELETE(internal_widget_);
     }
 
     void VideoSessionWidget::SessionStateChanged(Communication::VoiceSessionInterface::State new_state)
@@ -80,6 +82,7 @@ namespace CommunicationUI
                 video_session_ui_.statusLabel->setText("Closed");
                 break;
             case Communication::VoiceSessionInterface::STATE_ERROR:
+                video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.statusLabel->setText("Failed");
                 break;
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
@@ -204,7 +207,7 @@ namespace CommunicationUI
         sending_label->setAlignment(Qt::AlignCenter);
         sending_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_local_->addWidget(sending_label);
-        internal_v_layout_local_->addWidget(video_session_->GetOwnVideo());
+        internal_v_layout_local_->addWidget((QWidget *)(video_session_->GetOwnVideo()));
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
@@ -214,7 +217,7 @@ namespace CommunicationUI
         receiving_label->setAlignment(Qt::AlignCenter);
         receiving_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_remote_->addWidget(receiving_label);
-        internal_v_layout_remote_->addWidget(video_session_->GetRemoteVideo());
+        internal_v_layout_remote_->addWidget((QWidget *)(video_session_->GetRemoteVideo()));
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
@@ -239,5 +242,11 @@ namespace CommunicationUI
                 this, SLOT( LocalVideoStateChange(int) ));
         connect(controls_local_ui_.audioCheckBox, SIGNAL( stateChanged(int) ),
                 this, SLOT( LocalAudioStateChange(int) ));
+    }
+
+    void VideoSessionWidget::CloseSession()
+    {
+        video_session_->Close();
+        emit Closed(his_name_);
     }
 }

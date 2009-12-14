@@ -47,6 +47,10 @@ namespace CommunicationUI
     private slots:
         void ShowConfirmationWidget();
         void ShowVideoWidgets();
+        void CloseSession();
+
+    signals:
+        void Closed(const QString &);
     };
 }
 

@@ -121,6 +121,9 @@ namespace TelepathyIM
             
             video_remote_output_widget_ = new VideoWidget(bus_);
             video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
+
+            //video_preview_widget_->show();
+            //video_remote_output_widget_->show();
         }
         // can empty pipeline be put to playing when video is not used?, lets try anyway
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);

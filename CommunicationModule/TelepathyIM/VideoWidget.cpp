@@ -7,11 +7,16 @@
 #include <QPainter>
 #include <QThread>
 #include <QVariant>
+#include <QObject>
 #include <gst/interfaces/xoverlay.h>
 
 namespace TelepathyIM
 {
-    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent) : /* QWidget(parent) */ bus_((GstBus *) gst_object_ref(bus)), overlay_(0), sink_(0)
+    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent) 
+        : Communication::VideoWidgetInterface(parent), 
+          bus_((GstBus *) gst_object_ref(bus)), 
+          overlay_(0), 
+          sink_(0)
     {
         notifier_ = fs_element_added_notifier_new();
         g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
@@ -25,11 +30,11 @@ namespace TelepathyIM
 
         g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
 
-        QPalette palette;
-        palette.setColor(QPalette::Background, Qt::black);
-        setPalette(palette);
-        setAutoFillBackground(true);
-        window_id_ = winId();
+        //QPalette palette;
+        //palette.setColor(QPalette::Background, Qt::black);
+        //setPalette(palette);
+        //setAutoFillBackground(true);
+        window_id_ = this->winId();
     }
 
     VideoWidget::~VideoWidget()
@@ -43,7 +48,10 @@ namespace TelepathyIM
         if (!self->overlay_ && GST_IS_X_OVERLAY(element))
         {
             self->overlay_ = element;
-            QMetaObject::invokeMethod(self, "WindowExposed", Qt::QueuedConnection);
+
+            QObject *obj = dynamic_cast<QObject *>(self);
+            QMetaObject::invokeMethod(obj, "SetOverlay", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(obj, "WindowExposed", Qt::QueuedConnection);
         }
 
         if (g_object_class_find_property(G_OBJECT_GET_CLASS(element), "force-aspect-ratio"))
@@ -68,31 +76,25 @@ namespace TelepathyIM
 
         if (gst_structure_has_name(s, "prepare-xwindow-id") && self->overlay_)
         {
-            QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
+            QObject *obj = dynamic_cast<QObject *>(self);
+            QMetaObject::invokeMethod(obj, "SetOverlay", Qt::QueuedConnection);
         }
     }
 
-    GstElement* VideoWidget::GetVideoSink() const
+    void VideoWidget::showEvent(QShowEvent *showEvent)
     {
-        return sink_;
-    }
+        //setAttribute(Qt::WA_NoSystemBackground, true);
+        //setAttribute(Qt::WA_PaintOnScreen, true);
+        QWidget::showEvent(showEvent);
 
-    bool VideoWidget::EventFilter(QEvent *ev)
-    {
-        if (ev->type() == QEvent::Show)
-        {
-            setAttribute(Qt::WA_NoSystemBackground, true);
-            setAttribute(Qt::WA_PaintOnScreen, true);
-            SetOverlay();
-        }
-        return false;
+        SetOverlay();
     }
 
     void VideoWidget::SetOverlay()
     {
         if (overlay_ && GST_IS_X_OVERLAY(overlay_))
         {
-//            WId windowId = winId();
+            //WId windowId = winId();
             QApplication::syncX();
             gst_x_overlay_set_xwindow_id( GST_X_OVERLAY(overlay_), (gulong) window_id_);
         }

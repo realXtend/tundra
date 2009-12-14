@@ -22,7 +22,6 @@ namespace UiManagers
 
     SessionManager::~SessionManager()
     {
-        SAFE_DELETE(menu_bar_); // <--- CRASH at shutdown
         SAFE_DELETE(session_helper_);
         SAFE_DELETE(friend_list_widget_);
         parent_ = 0;

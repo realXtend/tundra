@@ -119,12 +119,15 @@ namespace CommunicationUI
 
     void FriendListWidget::StartVideoSession()
     {
-        Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
-        if (contact)
+        if (!session_helper_->DoesVideoTabExist(clicked_item_->GetID()))
         {
-            Communication::VoiceSessionInterface *video_session = im_connection_->OpenVoiceSession(*contact);
-            QString id = contact->GetID();
-            emit NewVideoSessionStarted(video_session, id);
+            Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
+            if (contact)
+            {
+                Communication::VoiceSessionInterface *video_session = im_connection_->OpenVoiceSession(*contact);
+                QString id = contact->GetID();
+                emit NewVideoSessionStarted(video_session, id);
+            }
         }
     }
 
