@@ -525,6 +525,8 @@ void Primitive::HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t*
     // from the asset provider and bind the new materials to this prim.
     HandleDrawType(entityid);
     HandlePrimScale(entityid);
+    // Handle sound parameters
+    HandleAmbientSound(entityid);
 }
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
@@ -1322,6 +1324,82 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     }
 }
 
+
+EC_AttachedSound& Primitive::GetOrCreateAttachedSound(Scene::EntityPtr entity)
+{
+    // Create attachedsound component into the entity, if doesn't exist already
+    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
+    if (!attachedsoundptr)
+        entity->AddEntityComponent(attachedsoundptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_AttachedSound::NameStatic()));    
+    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
+
+    return attachedsound;
+}    
+    
+void Primitive::HandleAmbientSound(Core::entity_id_t entityid)
+{    
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
+        return;
+        
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    RexTypes::RexUUID sounduuid(prim.SoundID);
+
+    if (prim.SoundID.empty() || (RexTypes::RexUUID::IsValid(prim.SoundID) && sounduuid.IsNull()))
+    {
+        // If sound ID is empty or null, stop any previous sound
+        Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
+        if (attachedsoundptr)    
+        {
+            EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
+            attachedsound.RemoveSound(EC_AttachedSound::RexAmbientSound);
+        }
+    }
+    else
+    {        
+        EC_AttachedSound& attachedsound = GetOrCreateAttachedSound(entity); 
+        
+        // If not already playing the same sound, start it now
+        bool same = false;
+        const std::vector<Core::sound_id_t>& sounds = attachedsound.GetSounds();
+        Core::sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
+        if (rex_ambient_sound)
+        {
+            if (soundsystem->GetSoundName(rex_ambient_sound) == prim.SoundID)
+                same = true;
+        }
+        if (!same)
+        {
+            // Get initial position of sound from the placeable (will be updated later if the entity moves)
+            Core::Vector3df position(0.0f, 0.0f, 0.0f);
+            Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+            if (placeableptr)
+            {
+                OgreRenderer::EC_OgrePlaceable &placeable = 
+                    *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
+                position = placeable.GetPosition();
+            }        
+            rex_ambient_sound = soundsystem->PlaySound3D(prim.SoundID, false, position);
+            // The ambient sounds will always loop
+            soundsystem->SetLooped(rex_ambient_sound, true);
+            
+            // Now add the sound to entity
+            attachedsound.AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
+        }
+        
+        // Adjust the range & gain parameters
+        if (rex_ambient_sound)
+        {
+            soundsystem->SetRange(rex_ambient_sound, 0.0f, prim.SoundRadius, 2.0f);
+            soundsystem->SetGain(rex_ambient_sound, prim.SoundVolume);
+        }
+    }
+}
+
 bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData* data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
@@ -1341,14 +1419,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     if (!soundsystem)
         return false;
         
-    // Create attachedsound component into the entity, if doesn't exist already
-    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
-    if (!attachedsoundptr)
-        entity->AddEntityComponent(attachedsoundptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_AttachedSound::NameStatic()));    
-    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
-    
-    // Remove/stop previous attached sounds
-    attachedsound.RemoveAllSounds();
+    EC_AttachedSound& attachedsound = GetOrCreateAttachedSound(entity);
     
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Core::Vector3df position(0.0f, 0.0f, 0.0f);
@@ -1367,7 +1438,9 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
         soundsystem->SetLooped(new_sound, true);
     
     // Attach sound that the position will be updated / sound will be stopped if entity destroyed
-    attachedsound.AddSound(new_sound);
+    // Note that because we use the OpenSimAttachedSound sound slot, any previous sound in that slot
+    // will be stopped.
+    attachedsound.AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
     
     return false;
 }

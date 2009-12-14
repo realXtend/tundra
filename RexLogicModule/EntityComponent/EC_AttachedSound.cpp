@@ -9,7 +9,9 @@ namespace RexLogic
 {
     EC_AttachedSound::EC_AttachedSound(Foundation::ModuleInterface *module) : Foundation::ComponentInterface(module->GetFramework())
 	{
-        framework_ = module->GetFramework();        
+        framework_ = module->GetFramework(); 
+        
+        InitSoundVector();  
 	}
 
     EC_AttachedSound::~EC_AttachedSound()
@@ -24,13 +26,13 @@ namespace RexLogic
             return;
             	
 	    // Check if any of the sounds have stopped, remove from list in that case
-	    std::vector<Core::sound_id_t>::iterator i = sounds_.begin();
-	    while (i != sounds_.end())
+	    for (Core::uint i = 0; i < sounds_.size(); ++i)
 	    {
-	        if (soundsystem->GetSoundState(*i) == Foundation::SoundServiceInterface::Stopped)
-	            i = sounds_.erase(i);
-	        else
-	            ++i;
+	        if (sounds_[i])
+	        {
+	            if (soundsystem->GetSoundState(sounds_[i]) == Foundation::SoundServiceInterface::Stopped)
+	                sounds_[i] = 0;
+	        }
 	    }
 	}
 	
@@ -41,46 +43,94 @@ namespace RexLogic
             return;
             
         for (Core::uint i = 0; i < sounds_.size(); ++i)
-            soundsystem->SetPosition(sounds_[i], position);
+        {
+            if (sounds_[i])
+                soundsystem->SetPosition(sounds_[i], position);
+        }
 	}
 	
 	void EC_AttachedSound::RemoveSound(Core::sound_id_t sound)
     {
+        if (sound == 0)
+            return;
+                
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-
-
-        std::vector<Core::sound_id_t>::iterator i = sounds_.begin();
-        while (i != sounds_.end())
+      
+        for (Core::uint i = 0; i < sounds_.size(); ++i)
         {
-            if ((*i) == sound)
+            if (sounds_[i] == sound)
             {
                 if (soundsystem)
-                    soundsystem->StopSound((*i));
-                sounds_.erase(i);
-                break;
+                    soundsystem->StopSound(sounds_[i]);
+                sounds_[i] = 0;
             }
-            
-            ++i;           
         }
     }
     
+    void EC_AttachedSound::RemoveSound(SoundSlot slot)
+    {
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+
+        Core::uint i = (Core::uint)slot;
+        if (i < (Core::uint)Other)
+        {
+            if (sounds_[i])
+            {
+                if (soundsystem)
+                    soundsystem->StopSound(sounds_[i]);
+                sounds_[i] = 0;
+            }
+        }            
+    }
+         
     void EC_AttachedSound::RemoveAllSounds()
     {
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
  
         if (soundsystem)
         {    
-            for (Core::uint i = 0; i < sounds_.size(); ++i)      
-                soundsystem->StopSound(sounds_[i]);
+            for (Core::uint i = 0; i < sounds_.size(); ++i)    
+            {
+                if (sounds_[i])
+                    soundsystem->StopSound(sounds_[i]);
+            }
         }        
-        sounds_.clear();        
+        
+        InitSoundVector(); 
     }
     
-    void EC_AttachedSound::AddSound(Core::sound_id_t sound)
+    void EC_AttachedSound::InitSoundVector()
+    {
+        // Have always room for the opensim & rex-style ambient sounds 
+        sounds_.clear();
+        sounds_.resize((Core::uint)Other);    
+        sounds_[OpenSimAttachedSound] = 0;
+        sounds_[RexAmbientSound] = 0;
+    }   
+    
+    void EC_AttachedSound::AddSound(Core::sound_id_t sound, SoundSlot slot)
     {
         if (sound == 0)
             return;
+                        
+        if (slot != Other)
+        {
+            // Remove previous sound from slot first
+            RemoveSound(slot);
+            sounds_[slot] = sound;
+        }
+        else        
+        {
+            for (Core::uint i = (Core::uint)Other; i < sounds_.size(); ++i)
+            {
+                if (sounds_[i] == 0)
+                {
+                    sounds_[i] = sound;
+                    return;
+                }
+            }
             
-        sounds_.push_back(sound);
+            sounds_.push_back(sound);
+        }
     }
 }
