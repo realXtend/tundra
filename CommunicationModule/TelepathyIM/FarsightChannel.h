@@ -9,8 +9,8 @@
 #include <telepathy-farsight/channel.h>
 #include <Foundation.h>
 #include <ServiceInterface.h>
+#include <SoundServiceInterface.h>
 #include "VideoWidget.h"
-#include <SoundChannel.h>
 
 namespace TelepathyIM
 {
