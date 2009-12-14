@@ -2,8 +2,8 @@
 #ifndef incl_OpenALAudio_Sound_h
 #define incl_OpenALAudio_Sound_h
 
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 namespace OpenALAudio
 {
