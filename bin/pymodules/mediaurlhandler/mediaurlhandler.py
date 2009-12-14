@@ -31,9 +31,9 @@ class MediaURLHandler(Component):
         #print widget, dir(widget)
         uism.AddProxyWidget(self.proxywidget)
 
-    def on_scene(self, evid, entid):
-        pass
-        #print "Scene event in mediaurlhandler:", evid, entid
+    #def on_scene(self, evid, entid):
+    #    pass
+    #    print "Scene event in mediaurlhandler:", evid, entid
 
     #def on_inboundnetwork(self, evid, name, callback):
     #    pass
@@ -55,7 +55,3 @@ class MediaURLHandler(Component):
         print "Showing URL for entity:", ent, urlstring
         url = PythonQt.QtCore.QUrl(urlstring)
         self.wv.load(url)
-
-
-        
-        
