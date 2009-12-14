@@ -44,11 +44,12 @@ class ComponentRunner(Component):
         self.eventhandled = False
         r.restart = False
         self.start()
+        r.manager = self
         
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         

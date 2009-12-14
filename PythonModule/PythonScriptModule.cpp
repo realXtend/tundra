@@ -362,9 +362,9 @@ namespace PythonScript
             else
             {
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
-                unsigned int ent_id = edata->localID;
+                unsigned int ent_id = edata->localID;	
                 if (ent_id != 0)
-                    value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "I", ent_id);
+                    value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "iI", event_id, ent_id);
             }            
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
@@ -913,13 +913,14 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
 	std::string meshname;
 	const char* c_text;
-
-	if(!PyArg_ParseTuple(value, "s", &c_text))
+	float prio = 0;
+	//PyObject_Print(value, stdout, 0);
+	if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
 	{
         PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
         return NULL;
 	}
-	
+
 	meshname = std::string(c_text);
 
     Scene::ScenePtr scene = PythonScript::GetScene();        
@@ -942,7 +943,10 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 	Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
     if (placeable)
     {
+
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+		if (prio != 0)
+			ogrepos.SetSelectPriority(prio);
 		OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
 		ogremesh.SetPlaceable(placeable, entity.get());
 		ogremesh.SetMesh(meshname, true);
@@ -1751,7 +1755,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }       
-
+		//std::cout << placeable->GetSelectPriority() << std::endl;
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
@@ -1899,7 +1903,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
         return PyString_FromString(retstr.c_str());
     }*/
-
+	//PyObject_Print(value, stdout, 0);
+	//std::cout << "\n" << std::endl;
     //else 
     if (s_name.compare("pos") == 0)
     {
@@ -1907,10 +1912,12 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
         float x, y, z;
-		
-		int parsing;
+		x = 0;
+		y = 0;
+		z = 0;
 
-		parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
+		//int parsing;
+		//parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
 		/*
 		PyObject* pos;
 		if(!parsing) {
@@ -1922,17 +1929,17 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 			}
 		}
 		*/
-        if(!parsing)
-        {
+        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
+        {	
             //std::cout << "...parse error" << std::endl;
-            PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
+            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
             return -1;
         }
 		
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;
+            return -1;
         }  
 
         // Set the new values.
@@ -1960,16 +1967,19 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     else if (s_name.compare("scale") == 0)
     {
         float x, y, z;
+		x = 0;
+		y = 0;
+		z = 0;
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
         {
-            PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
-            return NULL;   
+            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
+            return -1;   
         }
 
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
+            return -1;   
         }  
         // Set the new values.
         placeable->SetScale(Core::Vector3df(x, y, z));
@@ -1988,7 +1998,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
+            return -1;   
         }          
         // Set the new values.
         placeable->SetOrientation(Core::Quaternion(x, y, z, w));
@@ -2019,14 +2029,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             else //xxx
             {
                 PyErr_SetString(PyExc_ValueError, "overlay not found."); //XXX change the exception
-                return NULL;   
+                return -1;   
             }
         
         }
         else
         {
             PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
-            return NULL;
+            return -1;
         }
         
         //if(!PyArg_ParseTuple(value, "s", c_text))
@@ -2049,7 +2059,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 			if (!prim)
 			{
 				PyErr_SetString(PyExc_AttributeError, "prim not found.");
-				return NULL;   
+				return -1;   
 			}  
 
             prim->MeshID = text;
@@ -2076,7 +2086,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         else
         {
             PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
-            return NULL;
+            return -1;
         }
 	}
 	
