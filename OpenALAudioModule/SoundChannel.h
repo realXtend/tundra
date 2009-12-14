@@ -2,9 +2,6 @@
 #ifndef incl_OpenALAudio_SoundChannel_h
 #define incl_OpenALAudio_SoundChannel_h
 
-#include <al.h>
-#include <alc.h>
-
 #include "SoundServiceInterface.h"
 #include "Sound.h"
 

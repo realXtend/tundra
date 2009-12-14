@@ -6,8 +6,8 @@
 #include "Sound.h"
 #include "SoundChannel.h"
 
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 namespace Foundation
 {
