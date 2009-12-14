@@ -182,6 +182,7 @@ namespace OpenALAudio
                 std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
         }
         
+        i->second->SetPositional(true);        
         i->second->SetPosition(position);
         i->second->Play(sound);            
                 

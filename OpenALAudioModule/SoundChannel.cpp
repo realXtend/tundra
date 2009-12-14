@@ -124,7 +124,6 @@ namespace OpenALAudio
     
     void SoundChannel::SetPosition(const Core::Vector3df& position)
     {
-        positional_ = true;
         position_ = position;
         
         SetPositionAndMode();
