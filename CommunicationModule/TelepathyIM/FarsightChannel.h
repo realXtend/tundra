@@ -51,6 +51,7 @@ namespace TelepathyIM
 
         VideoWidget* GetPreviewVideo() { return video_preview_widget_; };
         VideoWidget* GetRemoteOutputVideo() { return video_remote_output_widget_; };
+        virtual void SetAudioSourceLocation(Core::Vector3df location);
 
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);

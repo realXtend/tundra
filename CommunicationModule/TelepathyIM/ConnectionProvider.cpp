@@ -57,14 +57,14 @@ namespace TelepathyIM
         g_main_loop_.terminate(); // even more evil hack. Thread should exit by it's own
 #endif
 	}
-
+               
 	void ConnectionProvider::DeleteConnections()
 	{
 		for (ConnectionVector::iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-            Connection* connection = *i;
+            Connection* connection = *i; 
 			//! @todo Check that there is enough time to actual close the connection to servers
-			connection->Close();
+			connection->Close(); // <--- CRASH HERE when multiple connections
             SAFE_DELETE(connection);
 		}
 		connections_.clear();
