@@ -124,7 +124,7 @@ namespace CommunicationUI
         {
             Communication::VoiceSessionInterface *video_session = im_connection_->OpenVoiceSession(*contact);
             QString id = contact->GetID();
-            emit NewVideoSessionStarted(video_session, contact->GetID());
+            emit NewVideoSessionStarted(video_session, id);
         }
     }
 
