@@ -234,8 +234,9 @@ namespace Communication
      */
     class VideoWidgetInterface : public QWidget
     {
-        Q_OBJECT
+    
     public:
+        VideoWidgetInterface(QWidget *parent) : QWidget(parent) {}
         //! @return true if video source is available. Otherwise return false
         virtual bool VideoAvailable() = 0;
 

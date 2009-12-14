@@ -15,27 +15,30 @@ namespace TelepathyIM
      */
     class VideoWidget : public Communication::VideoWidgetInterface
     {
-        Q_OBJECT
+
+    Q_OBJECT
+    
     public: 
         VideoWidget(GstBus *bus, QWidget *parent = 0);
         virtual ~VideoWidget();
 
+        //! Getters
         virtual bool VideoAvailable();
+        GstElement *GetVideoSink() const { return sink_; }
 
+        //! Setters
         virtual void SetParentWidget(QWidget &parent);
 
-        GstElement *GetVideoSink() const;
-        bool EventFilter(QEvent *ev);
+        //! Glib callbacks
+        static void OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self);
+        static void OnSyncMessage(GstBus *bus, GstMessage *message, VideoWidget *self);
+    
+    protected:
+        void showEvent(QShowEvent *showEvent);
 
-
-
-    private Q_SLOTS:
+    private slots:
         void SetOverlay();
         void WindowExposed();
-
-    static void OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self);
-
-    static void OnSyncMessage(GstBus *bus, GstMessage *message, VideoWidget *self);
 
     private:
         GstBus *bus_;

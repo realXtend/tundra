@@ -7,6 +7,7 @@
 #include "ui_SessionManagerWidget.h"
 
 #include "ChatSessionWidget.h"
+#include "VideoSessionWidget.h"
 
 #include <QObject>
 #include <QMap>
@@ -49,11 +50,13 @@ namespace UiHelpers
 
         //! Checkers
         bool DoesChatTabExist(const QString &chat_friends_name);
-        //bool DoesVideoTabExist(const QString &video_friends_name);
-        void TabWidgetStateCheck();
+        bool DoesVideoTabExist(const QString &video_friends_name);
+        void TabWidgetPreStateCheck();
+        void TabWidgetPostStateCheck();
 
         //! Doers
-        void CloseTab(const QString &chat_friends_name);
+        void CloseChatTab(const QString &chat_friends_name);
+        void CloseVideoTab(const QString &chat_friends_name);
         void CreateNewChatSessionWidget(Communication::ChatSessionInterface *chat_session, QString &chat_friends_name);
         void CreateNewVideoSessionWidget(Communication::VoiceSessionInterface *video_session, QString &chat_friends_name);
 
@@ -70,7 +73,7 @@ namespace UiHelpers
         bool welcome_tab_destroyed;
 
         QMap<QString, QPair<CommunicationUI::ChatSessionWidget *, Communication::ChatSessionInterface *> > chat_sessions_pointers_map_;
-        //QMap<QString, QPair<CommunicationUI::VideoSessionWidget *, Communication::VoiceSessionInterface *>> video_sessions_pointers_map_;
+        QMap<QString, QPair<CommunicationUI::VideoSessionWidget *, Communication::VoiceSessionInterface *> > video_sessions_pointers_map_;
 
     signals:
         void ChangeMenuBarStatus(const QString &);
