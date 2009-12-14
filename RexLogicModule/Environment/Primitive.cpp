@@ -1394,7 +1394,17 @@ void Primitive::HandleAmbientSound(Core::entity_id_t entityid)
         // Adjust the range & gain parameters
         if (rex_ambient_sound)
         {
-            soundsystem->SetRange(rex_ambient_sound, 0.0f, prim.SoundRadius, 2.0f);
+            // Set positionality depending on the radius
+            if (prim.SoundRadius > 0.0)
+            {
+                soundsystem->SetPositional(rex_ambient_sound, true);
+                soundsystem->SetRange(rex_ambient_sound, 0.0f, prim.SoundRadius, 2.0f);
+            }
+            else
+            {
+                soundsystem->SetPositional(rex_ambient_sound, false);
+            }
+         
             soundsystem->SetGain(rex_ambient_sound, prim.SoundVolume);
         }
     }

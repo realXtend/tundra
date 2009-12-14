@@ -22,7 +22,7 @@ namespace OpenALAudio
         void SetPositional(bool enable);
         //! Set looped state
         void SetLooped(bool enable);
-        //! Set position. Also sets positional = true
+        //! Set position
         void SetPosition(const Core::Vector3df& pos);        
         //! Set pitch.
         void SetPitch(Core::Real pitch);
