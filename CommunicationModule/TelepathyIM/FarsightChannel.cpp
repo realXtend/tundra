@@ -16,7 +16,10 @@ namespace TelepathyIM
                                      audio_volume_(0),
                                      audio_resample_(0),
                                      audio_out_linked_(false),
-                                     video_out_linked_(false)
+                                     video_out_linked_(false),
+                                     audio_in_src_pad_(0),
+                                     video_in_src_pad_(0),
+                                     audio_playback_channel_(0)
     {
         try
         {
@@ -133,6 +136,7 @@ namespace TelepathyIM
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
+        FarsightChannel* self = (FarsightChannel*)user_data;
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
             return;
@@ -146,21 +150,10 @@ namespace TelepathyIM
         unsigned long long offset = buffer->offset;
         if (offset == 0xFFFFFFFFFFFFFFFF) // offset not set
             offset = 0;
-//        static Core::u8 audio_buffer[10000];
-        //for (int i=offset; i < buffer->size; i++)
-        //    audio_buffer[i-offset] = buffer->data[i];
-//        Core::sound_id_t sound_id = soundsystem->PlayAudioData(audio_buffer, buffer->size-offset, 8000, 16, false);
         // todo: Get actual adio caps and pass them to soundS
-        Core::sound_id_t sound_id = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, 8000, 16, false);
-        if (sound_id == 0)
-            LogError("Cannot playback audio data.");
-
-        //OpenALAudio::Sound* sound = new OpenALAudio::Sound("");
-        //sound->LoadFromBuffer(audio_buffer, buffer->size-offset, 8000, true, false);
-        //FarsightChannel* self = (FarsightChannel*)user_data;
-        //self->sound_channel_.Play(OpenALAudio::SoundPtr(sound));
-        //const Core::Vector3df listener_pos(0,0,0);
-        //self->sound_channel_.Update(listener_pos);
+        self->audio_playback_channel_ = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, 8000, 16, false, self->audio_playback_channel_);
+        //if (sound_id == 0)
+        //    LogError("Cannot playback audio data.");
     }
 
     FarsightChannel::~FarsightChannel()
@@ -299,7 +292,9 @@ namespace TelepathyIM
         GstPad *src, FsCodec *codec, FarsightChannel *self)
     {           
         // todo: Check if source pad is already linked!
-  //      codec->channels;
+        gint clock_rate = codec->clock_rate;
+        gint channel_count = codec->channels;
+
         guint media_type;
 
         g_object_get(stream, "media-type", &media_type, NULL);
@@ -312,6 +307,10 @@ namespace TelepathyIM
         switch (media_type)
         {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
+//            if (audio_in_src_pad_)
+//                gst_unlink(audio_in_src_pad_, 
+//            audio_in_src_pad_ = src;
+
             // element = self->audio_playback_bin_;
             element = self->fake_audio_output_; // fake audio sink
             g_object_ref(element);
@@ -319,6 +318,7 @@ namespace TelepathyIM
                 sink_already_linked = true;
             break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:
+//            video_in_src_pad_ = src;
             element = self->video_remote_output_element_;
             if (self->video_out_linked_)
                 sink_already_linked = true;
@@ -337,7 +337,7 @@ namespace TelepathyIM
         }
         pad = gst_element_get_static_pad(element, "sink");
         if (gst_pad_is_linked(pad))
-            gst_pad_unlink(src, pad);
+            gst_pad_unlink(src, pad); // DOESN'T WORK  BECOUSE WRONK SRC ELEMENT
         gst_pad_link(src, pad);
         gst_element_set_state(element, GST_STATE_PLAYING);
         

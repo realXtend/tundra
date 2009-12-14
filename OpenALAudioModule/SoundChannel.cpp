@@ -60,9 +60,10 @@ namespace OpenALAudio
     }
     
     void SoundChannel::Play(SoundPtr sound)
-    {        
+    {   
+        // todo: use critical section?
         Stop();
-               
+        
         sound_ = sound;        
         if (!sound_)
             return;
