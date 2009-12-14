@@ -60,11 +60,8 @@ namespace UiManagers
         menu_bar_ = new QMenuBar(main_parent_);
         
         // STATUS menu
-        QMenu *file_menu = new QMenu("Status", main_parent_);
-        
-        // STATUS -> CHANGE STATUS menu
-        QMenu *status_menu = new QMenu("Change Status", main_parent_);
-        
+        QMenu *status_menu = new QMenu("Status", main_parent_);
+       
         status_menu->addAction("Set Status Message", session_helper_, SLOT( SetStatusMessage() ));
         status_menu->addSeparator();
         available_status = status_menu->addAction("Available", this, SLOT( StatusAvailable() ));
@@ -96,15 +93,22 @@ namespace UiManagers
         status_group->addAction(hidden_status);
         available_status->setChecked(true);
 
-        // STATUS content
-        file_menu->addMenu(status_menu);
-        file_menu->addAction("Sign out", this, SLOT( SignOut() ));
-        file_menu->addSeparator();
+        status_menu->addSeparator();
+        status_menu->addAction("Sign out", this, SLOT( SignOut() ));
+
+        // FILE MENU
+        QMenu *file_menu = new QMenu("File", main_parent_);
         file_menu->addAction("Hide", this, SLOT( Hide() ));
         file_menu->addAction("Exit", this, SLOT( Exit() ));
         
+        // JOIN MENU
+        QMenu *join_menu = new QMenu("Join", main_parent_);
+        QAction *join_chat_room = join_menu->addAction("Chat Room", this, SLOT( JoinChatRoom() ));
+        join_chat_room->setIcon(QIcon(":/images/iconUsers.png"));
+        
         menu_bar_->addMenu(file_menu);
-        menu_bar_->addSeparator();
+        menu_bar_->addMenu(status_menu);
+        menu_bar_->addMenu(join_menu);
         menu_bar_->addAction("Show Friend List", this, SLOT( ToggleShowFriendList() ));
 
         connect(this, SIGNAL( StatusChange(const QString&) ), 
@@ -154,5 +158,23 @@ namespace UiManagers
     {
         QString friends_name = session_helper_->GetVideoInviteSendersName(video_session.GetParticipants());
         session_helper_->CreateNewVideoSessionWidget(static_cast<Communication::VoiceSessionInterface *>(&video_session), friends_name);
+    }
+
+    void SessionManager::JoinChatRoom()
+    {
+        bool ok = false;
+        QString chat_room_name = QInputDialog::getText(0, "Join Chat Room", "Give chat room name (usually room@conference.server)", QLineEdit::Normal, "", &ok);
+        if (ok)
+        {
+            Communication::ChatSessionInterface *chat_session = im_connection_->OpenChatSession(chat_room_name);
+            session_helper_->CreateNewChatSessionWidget(chat_session, chat_room_name);
+        }
+    }
+
+    void SessionManager::Exit()
+    {
+        friend_list_widget_->close(); 
+        im_connection_->Close(); 
+        emit StateChange(UiDefines::UiStates::Exit);
     }
 }

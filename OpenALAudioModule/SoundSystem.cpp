@@ -9,6 +9,8 @@
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
 
+#include <boost/thread/mutex.hpp>
+
 namespace OpenALAudio
 {
     const Core::uint DEFAULT_SOUND_CACHE_SIZE = 32 * 1024 * 1024;
@@ -112,7 +114,8 @@ namespace OpenALAudio
     }    
     
     void SoundSystem::Update(Core::f64 frametime)
-    {        
+    {   
+        mutex.lock();
         std::vector<SoundChannelMap::iterator> channels_to_delete;
 
         // Update listener position/orientation to sound device
@@ -136,7 +139,9 @@ namespace OpenALAudio
         // Remove stopped channels
         for (Core::uint j = 0; j < channels_to_delete.size(); ++j)
             channels_.erase(channels_to_delete[j]);   
-           
+        
+        mutex.unlock();
+        
         // Age the sound cache
         UpdateCache(frametime);      
     }
@@ -191,6 +196,8 @@ namespace OpenALAudio
 
     Core::sound_id_t SoundSystem::PlayAudioData(Core::u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel)
     {
+        mutex.lock();
+
         SoundPtr sound = SoundPtr(new OpenALAudio::Sound("audiobuffer"));
         if (!sound)
             return 0;
@@ -211,15 +218,16 @@ namespace OpenALAudio
             SoundChannel* s = new SoundChannel();
             if (!s)
                 return 0;
-            i = channels_.insert(
-                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
+            i = channels_.insert(std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
         }
-        else
-            return 0;
         
+        if (!i->second.get())
+            return 0;
         i->second->Play(sound);
-         
-        return i->first;     
+        
+        Core::sound_id_t this_channel_id =  i->first;
+        mutex.unlock();
+        return this_channel_id;     
     }
 
 
@@ -359,6 +367,7 @@ namespace OpenALAudio
     
     void SoundSystem::UpdateCache(Core::f64 frametime)
     {
+
         update_time_ += frametime;
         if (update_time_ < CACHE_CHECK_INTERVAL)
             return;

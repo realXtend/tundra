@@ -2,6 +2,7 @@
   <qresource prefix="images" >
     <file alias="labelContacts.png" >../../bin/data/ui/images/communications_labelContacts.png</file>
     <file alias="labelChat.png" >../../bin/data/ui/images/communications_labelChat.png</file>
+	<file alias="labelWorldChat.png" >../../bin/data/ui/images/communications_labelWorldChat.png</file>
 	
 	<file alias="iconPen.png" >../../bin/data/ui/images/communications_iconPen.png</file>
     <file alias="iconGreen.png" >../../bin/data/ui/images/communications_iconGreen.png</file>

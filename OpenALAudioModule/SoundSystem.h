@@ -173,6 +173,8 @@ namespace OpenALAudio
         Core::Vector3df listener_position_;
         //! Listener orientation
         Core::Quaternion listener_orientation_;
+
+        boost::mutex mutex;
     };
 
     typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;

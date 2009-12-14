@@ -30,11 +30,11 @@ namespace TelepathyIM
 
         g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
 
-        //QPalette palette;
-        //palette.setColor(QPalette::Background, Qt::black);
-        //setPalette(palette);
-        //setAutoFillBackground(true);
-        window_id_ = this->winId();
+        QPalette palette;
+        palette.setColor(QPalette::Background, Qt::black);
+        setPalette(palette);
+        setAutoFillBackground(true);
+        window_id_ = winId();
     }
 
     VideoWidget::~VideoWidget()

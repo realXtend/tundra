@@ -10,14 +10,18 @@
 #include "CommunicationService.h"
 
 #include "CommunicationUI/MasterWidget.h"
-#include "CommunicationUI/QtGUI.h"
-#include "CommunicationUI/OpenSimChat.h"
+#include "CommunicationUI/OpenSimChatWidget.h"
 
 #include "Test.h"
 
 namespace ProtocolUtilities
 {
     class ProtocolModuleInterface;
+}
+
+namespace UiServices
+{
+    class UiProxyWidget;
 }
 
 namespace Communication
@@ -35,11 +39,15 @@ namespace Communication
 	 */
 	class COMMS_MODULE_API CommunicationModule : public QObject, public Foundation::ModuleInterfaceImpl
 	{
-        Q_OBJECT
 
+    Q_OBJECT
+
+	public:
+        //! Logging
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } //! returns name of this module. Needed for logging.
-	public:
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
+
 		CommunicationModule(void);
 		virtual ~CommunicationModule(void);
 
@@ -50,24 +58,28 @@ namespace Communication
 		void Uninitialize();
 
 		void Update(Core::f64 frametime);
-		
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
-
 	    bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
 		// Run given test
 		Console::CommandResult Test(const Core::StringVector &params);
 
-        CommunicationUI::MasterWidget *master_test_;
-		CommunicationUI::QtGUI* qt_ui_;
-		CommunicationUI::OpenSimChat* opensim_ui_;
+        CommunicationUI::MasterWidget* im_ui_;
+        CommunicationUI::OpenSimChatWidget* opensim_chat_ui_;
+
+        UiServices::UiProxyWidget *im_ui_proxy_widget_;
+        UiServices::UiProxyWidget *opensim_chat_proxy_widget_;
+
 		CommunicationServiceInterface* communication_service_;
 		CommunicationTest::Test* test_;
 
 		// Event category IDs
 		Core::event_category_id_t event_category_networkstate_;
         Core::event_category_id_t event_category_framework_;
+
+    private:
+        void AddWidgetToUi(const QString &name);
+
     private slots:
         void OnNewProtocol(QString &protocol);
         void OnProtocolSupportEnded(QString &protocol);
