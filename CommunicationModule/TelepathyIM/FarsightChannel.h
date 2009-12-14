@@ -54,6 +54,7 @@ namespace TelepathyIM
         virtual void SetAudioSourceLocation(Core::Vector3df location);
 
         Core::sound_id_t audio_playback_channel_;
+        int audio_stream_in_clock_rate_;
 
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
