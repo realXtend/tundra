@@ -10,6 +10,7 @@ namespace RexLogic
 {
     class RexLogicModule;
     class EC_OpenSimPrim;
+    class EC_AttachedSound;
 
     class Primitive
     {
@@ -58,6 +59,12 @@ namespace RexLogic
         
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(Core::entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
+        
+        //! handles changes in rex ambient sound parameters.
+        void HandleAmbientSound(Core::entity_id_t entityid);
+        
+        //! creates or gets EC_AttachedSound component to entity
+        EC_AttachedSound& GetOrCreateAttachedSound(Scene::EntityPtr entity);
         
         //! handles changes in drawtype (mesh/prim). also handles particle scripts.
         //! @param entityid Entity id.

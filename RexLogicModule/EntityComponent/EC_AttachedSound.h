@@ -14,26 +14,45 @@ namespace RexLogic
         To be useful, the entity also needs the EC_OgrePlaceable component.
      */
     class EC_AttachedSound : public Foundation::ComponentInterface
-	{
+	{	    
 		DECLARE_EC(EC_AttachedSound);
 	public:
+
+	    //! Sound slot definitions. 
+	    /*! When a new sound is added to either OpenSimAttachedSound or RexAmbientSound slot, the previous will be killed.
+	        "Other" slot on the other hand allows as many sounds to be added as desired
+	     */
+	    enum SoundSlot
+	    {
+	        OpenSimAttachedSound = 0,
+	        RexAmbientSound,
+	        Other
+	    };
+
 		virtual ~EC_AttachedSound();
 		
 		//! Add sound to entity. 
-		/*! \param sound Sound tag from SoundServiceInterface
+		/*! \param sound Channel id from SoundServiceInterface
+		    \param slot Sound slot definition
 		 */
-		void AddSound(Core::sound_id_t sound);
-		//! Stop and remove sound from entity.
-		/*! \param sound Sound tag from SoundServiceInterface
+		void AddSound(Core::sound_id_t sound, SoundSlot slot = Other);
+
+		//! Stop and remove sound from entity by channel id
+		/*! \param sound Channel id from SoundServiceInterface
 		 */
 		void RemoveSound(Core::sound_id_t sound);
+
+		//! Stop and remove sound from entity by sound slot
+		/*! \param slot Sound slot definition, only OpenSimAttachedSound or RexAmbientSound will have effect
+		 */
+		void RemoveSound(SoundSlot slot);
 		
 		//! Stop and remove all sounds from entity.
 		/*! Also called automatically upon destruction of this EntityComponent.
 		 */
 		void RemoveAllSounds();
 
-        //! Get sound tags of currently playing sounds.
+        //! Get channel ids of currently playing sounds. Note that some may be zero (stopped)
 		const std::vector<Core::sound_id_t>& GetSounds() const { return sounds_; }
 		
 		//! Performs per-frame update, if necessary. Called from RexLogicModule.
@@ -44,6 +63,9 @@ namespace RexLogic
 		
 	private:
 		EC_AttachedSound(Foundation::ModuleInterface *module);
+		
+		//! Init sound slot vector
+		void InitSoundVector();
 		
 		Foundation::Framework* framework_;
 		
