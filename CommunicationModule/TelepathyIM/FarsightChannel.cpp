@@ -2,7 +2,7 @@
 
 #include "FarsightChannel.h"
 #include <TelepathyQt4/Farsight/Channel>
-#include <CommunicationService.h>
+
 
 namespace TelepathyIM
 {
@@ -11,162 +11,38 @@ namespace TelepathyIM
                                      const QString &audio_sink_name, 
                                      const QString &video_src_name) 
                                      : QObject(0),
-                                     channel_(0), tf_channel_(0), bus_(0), pipeline_(0), audio_input_(0), 
-                                     audio_output_(0), video_input_(0), video_tee_(0), 
+                                     channel_(channel),
+                                     tf_channel_(0),
+                                     bus_(0),
+                                     pipeline_(0),
+                                     audio_input_(0), 
+                                     //audio_output_(0),
+                                     video_input_(0),
+                                     video_tee_(0), 
                                      audio_volume_(0),
                                      audio_resample_(0),
                                      audio_in_src_pad_(0),
                                      video_in_src_pad_(0),
-                                     audio_playback_channel_(0),
                                      audio_stream_in_clock_rate_(0),
                                      audio_capsfilter_(0),
                                      audio_convert_(0)
     {
-        try
-        {
-            tf_channel_ = createFarsightChannel(channel);        
-        }
-        catch(...)
-        {
-            throw Core::Exception("Cannot create TfChannel object!");
-        }
-        if (!tf_channel_)
-        {
-            LogError("Unable to construct TfChannel");
-            return;
-        }
-
-        ConnectTfChannelEvents();
-        
-        //g_value_init (&volume_, G_TYPE_DOUBLE);
-        pipeline_ = gst_pipeline_new(NULL);
-        if (pipeline_ == 0)
-            throw Core::Exception("Cannot create GStreamer pipeline.");
-        bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
-        if (bus_ == 0)
-            throw Core::Exception("Cannot create GStreamer bus.");
-
-        audio_input_ = setUpElement(audio_src_name);
-        if (audio_input_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio input element.");
-
-        audio_output_ = setUpElement(audio_sink_name);
-        if (audio_output_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio output element.");
-
-        fake_audio_output_ = setUpElement("fakesink");
-        if (fake_audio_output_ == 0)
-            throw Core::Exception("Cannot create GStreamer fake audio output element.");
-        else
-        {
-            g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
-            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", (gboolean)true, this);
-        }
-        
-        // audio modifications
-        audio_resample_ = gst_element_factory_make("audioresample", NULL);
-        if (audio_resample_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio resample element.");
-
-        audio_capsfilter_ = gst_element_factory_make("capsfilter", NULL);
-        GstCaps *audio_caps = gst_caps_new_simple("audio/x-raw-int",
-            "channels", G_TYPE_INT, 1,
-            "width", G_TYPE_INT, 16,
-            "depth", G_TYPE_INT, 16,
-            "rate", G_TYPE_INT, 48000,
-            "signed", G_TYPE_BOOLEAN, false,
-            "endianess", G_TYPE_INT, 1234,
-            NULL);
-        g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
-
-        audio_convert_ = gst_element_factory_make("audioconvert", NULL);
-        if (audio_convert_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio convert element.");
-
-        //audio_volume_  = gst_element_factory_make("volume", NULL);
-
-        audio_playback_bin_ = gst_bin_new("audio-output-bin");
-        if (audio_playback_bin_ == 0)
-            throw Core::Exception("Cannot create GStreamer bin for audio playback.");
-
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_convert_, audio_resample_, audio_capsfilter_, audio_output_, NULL);
-        gst_element_link_many(audio_convert_, audio_resample_,audio_capsfilter_, audio_output_, NULL);
-        // todo: Check for errors
-
-        // add ghost pad to audio_bin_
-        GstPad *sink = gst_element_get_static_pad(audio_convert_, "sink");
-        audio_playback_bin_sink_ = gst_ghost_pad_new("sink", sink);
-        gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_);
-        gst_object_unref(G_OBJECT(sink));
-        gst_object_ref(audio_playback_bin_);
-        gst_object_sink(audio_playback_bin_);
+        CreateTfChannel();
+        CreatePipeline();
+        CreateAudioInputElement(audio_src_name);
+        CreateAudioPlaybackElement(audio_sink_name);
 
         GstElement *video_src;
         
         if( video_src_name.length() != 0)
         {
-            // create video elems,
-            video_input_bin_ = gst_bin_new("video-input-bin");
-            
-            GstElement *scale = gst_element_factory_make("videoscale", NULL);
-            GstElement *rate = gst_element_factory_make("videorate", NULL);
-            GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
-            GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
-            GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
-                    "width", G_TYPE_INT, 320,
-                    "height", G_TYPE_INT, 240,
-                    NULL);
-            g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
-
-            video_src = setUpElement(video_src_name);
-            gst_bin_add_many(GST_BIN(video_input_bin_), video_src, scale, rate, colorspace, capsfilter, NULL);
-            gst_element_link_many(video_src, scale, rate, colorspace, capsfilter, NULL);
-            GstPad *src = gst_element_get_static_pad(capsfilter, "src");
-            GstPad *ghost = gst_ghost_pad_new("src", src);
-            Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
-            gst_object_unref(G_OBJECT(src));
-            gst_object_ref(video_input_bin_);
-            gst_object_sink(video_input_bin_);
-
-            video_tee_ = setUpElement("tee");
-            gst_object_ref(video_tee_);
-            gst_object_sink(video_tee_);
-
-            video_preview_widget_ = new VideoWidget(bus_);
-            video_preview_element_ = video_preview_widget_->GetVideoSink();
-            
-            gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, video_preview_element_, NULL);
-            gst_element_link_many(video_input_bin_, video_tee_, video_preview_element_, NULL);
-            
-            video_remote_output_widget_ = new VideoWidget(bus_);
-            video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
+            CreateVideoOutputElements();
+            CreateVideoInputElement(video_src_name);
         }
-        // can empty pipeline be put to playing when video is not used?, lets try anyway
+
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
         status_ = StatusConnecting;
         emit statusChanged(status_);
-    }
-
-    void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
-    {
-        FarsightChannel* self = (FarsightChannel*)user_data;
-        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
-        if (!framework)
-            return;
-        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager.get())
-            return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;                
-        
-        int offset;
-        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
-            offset = 0;
-        else
-            offset = ~(buffer->offset+1);
-
-        self->audio_playback_channel_ = soundsystem->PlayAudioData(buffer->data + offset, buffer->size - offset, self->audio_stream_in_clock_rate_, 16, false, self->audio_playback_channel_);
     }
 
     FarsightChannel::~FarsightChannel()
@@ -188,18 +64,162 @@ namespace TelepathyIM
             g_object_unref(audio_input_);
             audio_input_ = 0;
         }
-        if (audio_output_) {
-            g_object_unref(audio_output_);
-            audio_output_ = 0;
-        }
+        //if (audio_output_) {
+        //    g_object_unref(audio_output_);
+        //    audio_output_ = 0;
+        //}
     }
 
-    void FarsightChannel::ConnectTfChannelEvents()
+
+    void FarsightChannel::CreateTfChannel()
     {
+        try
+        {
+            tf_channel_ = createFarsightChannel(channel_);        
+        }
+        catch(...)
+        {
+            throw Core::Exception("Cannot create TfChannel object!");
+        }
+        if (!tf_channel_)
+        {
+            LogError("Unable to construct TfChannel");
+            return;
+        }
+
         /* Set up the telepathy farsight channel */
         g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
         g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
         g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
+    }
+
+    void FarsightChannel::CreatePipeline()
+    {
+        pipeline_ = gst_pipeline_new(NULL);
+        if (pipeline_ == 0)
+            throw Core::Exception("Cannot create GStreamer pipeline.");
+        bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
+        if (bus_ == 0)
+            throw Core::Exception("Cannot create GStreamer bus.");
+    }
+
+    void FarsightChannel::CreateAudioInputElement(const QString & name)
+    {
+        audio_input_ = setUpElement(name);
+        if (audio_input_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio input element.");
+    }
+
+
+    void FarsightChannel::CreateAudioPlaybackElement(const QString &audio_sink_name)
+    {
+        audio_playback_bin_ = gst_bin_new("audio-output-bin");
+        if (audio_playback_bin_ == 0)
+            throw Core::Exception("Cannot create GStreamer bin for audio playback.");
+
+        fake_audio_output_ = setUpElement("fakesink");
+        if (fake_audio_output_ == 0)
+            throw Core::Exception("Cannot create GStreamer fake audio output element.");
+        else
+        {
+            g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
+            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", (gboolean)true, this);
+        }
+        // We use fake audio sink for now
+        audio_output_ = setUpElement(audio_sink_name);
+        if (audio_output_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio output element.");
+
+        // audio modifications
+        audio_resample_ = gst_element_factory_make("audioresample", NULL);
+        if (audio_resample_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio resample element.");
+
+        audio_capsfilter_ = gst_element_factory_make("capsfilter", NULL);
+        GstCaps *audio_caps = gst_caps_new_simple("audio/x-raw-int",
+            "channels", G_TYPE_INT, 1,
+            "width", G_TYPE_INT, 16,
+            "depth", G_TYPE_INT, 16,
+            "rate", G_TYPE_INT, 48000,
+            "signed", G_TYPE_BOOLEAN, false,
+            "endianess", G_TYPE_INT, 1234,
+            NULL);
+        g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
+
+        audio_convert_ = gst_element_factory_make("audioconvert", NULL);
+        if (audio_convert_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio convert element.");
+
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_convert_, audio_resample_, fake_audio_output_, NULL);
+        gst_element_link_many(audio_convert_, audio_resample_, fake_audio_output_, NULL);
+
+        // add ghost pad to audio_bin_
+        GstPad *sink = gst_element_get_static_pad(audio_convert_, "sink");
+        audio_playback_bin_sink_ = gst_ghost_pad_new("sink", sink);
+        gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_);
+        gst_object_unref(G_OBJECT(sink));
+        gst_object_ref(audio_playback_bin_);
+        gst_object_sink(audio_playback_bin_);
+    }
+
+    void FarsightChannel::CreateVideoInputElement(const QString &video_src_name)
+    {
+        video_input_bin_ = gst_bin_new("video-input-bin");
+        
+        GstElement *scale = gst_element_factory_make("videoscale", NULL);
+        GstElement *rate = gst_element_factory_make("videorate", NULL);
+        GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
+        GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
+        GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
+                "width", G_TYPE_INT, 320,
+                "height", G_TYPE_INT, 240,
+                NULL);
+        g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
+
+        video_input_ = setUpElement(video_src_name);
+        gst_bin_add_many(GST_BIN(video_input_bin_), video_input_, scale, rate, colorspace, capsfilter, NULL);
+        gst_element_link_many(video_input_, scale, rate, colorspace, capsfilter, NULL);
+        GstPad *src = gst_element_get_static_pad(capsfilter, "src");
+        GstPad *ghost = gst_ghost_pad_new("src", src);
+        Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
+        gst_object_unref(G_OBJECT(src));
+        gst_object_ref(video_input_bin_);
+        gst_object_sink(video_input_bin_);
+
+        video_tee_ = setUpElement("tee");
+        gst_object_ref(video_tee_);
+        gst_object_sink(video_tee_);
+
+        gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, video_preview_element_, NULL);
+        gst_element_link_many(video_input_bin_, video_tee_, video_preview_element_, NULL);
+    }
+
+    void FarsightChannel::CreateVideoOutputElements()
+    {
+        video_preview_widget_ = new VideoWidget(bus_);
+        video_preview_element_ = video_preview_widget_->GetVideoSink();
+
+        video_remote_output_widget_ = new VideoWidget(bus_);
+        video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
+    }
+
+
+    void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
+    {
+        FarsightChannel* self = (FarsightChannel*)user_data;
+        
+        int offset;
+        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
+            offset = 0;
+        else
+            offset = (~buffer->offset)+1;
+
+        emit self->AudioPlaybackBufferReady(buffer->data + offset, buffer->size - offset);
+    }
+
+
+    void FarsightChannel::ConnectTfChannelEvents()
+    {
     }
 
     GstElement* FarsightChannel::setUpElement(QString elemName)
@@ -219,7 +239,8 @@ namespace TelepathyIM
     
     void FarsightChannel::SetAudioPlaybackVolume(const double value)
     {
-        if(value<0||value>1){
+        if(value<0||value>1)
+        {
             LogError("Trying to set volume out of range");
             return;
         }
@@ -240,7 +261,8 @@ namespace TelepathyIM
     // Link bus events to tf_channel_
     gboolean FarsightChannel::busWatch(GstBus *bus, GstMessage *message, FarsightChannel *self)
     {
-        try {
+        try
+        {
             if(self->tf_channel_ == NULL) 
             {
                 LogWarning("CommunicationModule: receiving bus message when tf_channel_ is NULL");
@@ -248,30 +270,27 @@ namespace TelepathyIM
             }
             tf_channel_bus_message(self->tf_channel_, message);
             return TRUE;
-        } catch(...){
+        } catch(...)
+        {
             LogWarning("CommunicationModule: passing gstreamer bus message to telepathy-farsight failed");
             return FALSE;
         }
     }
 
-    void FarsightChannel::onClosed(TfChannel *tfChannel,
-        FarsightChannel *self)
+    void FarsightChannel::onClosed(TfChannel *tfChannel, FarsightChannel *self)
     {
         self->status_ = StatusDisconnected;
         emit self->statusChanged(self->status_);
     }
 
-    void FarsightChannel::onSessionCreated(TfChannel *tfChannel,
-        FsConference *conference, FsParticipant *participant,
-            FarsightChannel *self)
+    void FarsightChannel::onSessionCreated(TfChannel *tfChannel, FsConference *conference, FsParticipant *participant, FarsightChannel *self)
     {
         gst_bus_add_watch(self->bus_, (GstBusFunc) &FarsightChannel::busWatch, self);
         gst_bin_add(GST_BIN(self->pipeline_), GST_ELEMENT(conference));
         gst_element_set_state(GST_ELEMENT(conference), GST_STATE_PLAYING);
     }
 
-    void FarsightChannel::onStreamCreated(TfChannel *tfChannel,
-        TfStream *stream, FarsightChannel *self)
+    void FarsightChannel::onStreamCreated(TfChannel *tfChannel, TfStream *stream, FarsightChannel *self)
     {
         guint media_type;
         GstPad *sink;
@@ -283,7 +302,8 @@ namespace TelepathyIM
 
         GstPad *pad;
 
-        switch (media_type) {
+        switch (media_type)
+        {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
             gst_bin_add(GST_BIN(self->pipeline_), self->audio_input_);
             gst_element_set_state(self->audio_input_, GST_STATE_PLAYING);
@@ -301,8 +321,7 @@ namespace TelepathyIM
         gst_object_unref(sink);
     }
 
-    void FarsightChannel::onSrcPadAdded(TfStream *stream,
-        GstPad *src_pad, FsCodec *codec, FarsightChannel *self)
+    void FarsightChannel::onSrcPadAdded(TfStream *stream, GstPad *src_pad, FsCodec *codec, FarsightChannel *self)
     {           
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
@@ -321,9 +340,9 @@ namespace TelepathyIM
         switch (media_type)
         {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
-            // output_element = self->audio_playback_bin_;
-            output_element = self->fake_audio_output_; // fake audio sink
-//            g_object_ref(output_element);
+             output_element = self->audio_playback_bin_;
+//            output_element = self->fake_audio_output_; // fake audio sink
+//            g_object_ref(output_element); // do we need this
               if (self->audio_in_src_pad_)
                 sink_already_linked = true;
             break;
@@ -366,20 +385,8 @@ namespace TelepathyIM
         }
         gst_pad_link(src_pad, output_pad);
         gst_element_set_state(output_element, GST_STATE_PLAYING);
-        
-        self->status_ = StatusConnected;
-        //switch (media_type)
-        //{
-        //case TP_MEDIA_STREAM_TYPE_AUDIO:
-        //    self->audio_out_linked_ = true;
-        //    break;
-        //case TP_MEDIA_STREAM_TYPE_VIDEO:
-        //    self->video_out_linked_ = true;
-        //    break;
-        //default:
-        //    Q_ASSERT(false);
-        //}
 
+        self->status_ = StatusConnected;
         emit self->statusChanged(self->status_);
     }
 
@@ -388,10 +395,4 @@ namespace TelepathyIM
         LogInfo("CommunicationModule: resource request");
         return TRUE;
     }
-
-    void FarsightChannel::SetAudioSourceLocation(Core::Vector3df location)
-    {
-
-    }
-
 } // end of namespace: TelepathyIM

@@ -291,10 +291,10 @@ namespace TelepathyIM
         }
 
 		Tp::Features features;
-		features.insert(Tp::Connection::FeatureSimplePresence);
+//  	features.insert(Tp::Connection::FeatureSimplePresence);
 		features.insert(Tp::Connection::FeatureRoster);
 		features.insert(Tp::Connection::FeatureSelfContact);
-		features.insert(Tp::Connection::FeatureCore);
+//		features.insert(Tp::Connection::FeatureCore);
 		if ( !tp_connection_->isReady(features) )
 		{
 			LogDebug("Establishing connection to IM server. Waiting for these features:");
@@ -321,6 +321,7 @@ namespace TelepathyIM
 				Tp::ChannelMediaCapabilityAudio |
 				Tp::ChannelMediaCapabilityVideo |
                 Tp::ChannelMediaCapabilityNATTraversalSTUN |
+//                Tp::ChannelMediaCapabilityNATTraversalICEUDP | // added 15.12.2009 mattiku
                 Tp::ChannelMediaCapabilityNATTraversalGTalkP2P
 			};
         
@@ -347,10 +348,10 @@ namespace TelepathyIM
 		}
         
      	Tp::Features features;
-		features.insert(Tp::Connection::FeatureSimplePresence);
+//		features.insert(Tp::Connection::FeatureSimplePresence);
 		features.insert(Tp::Connection::FeatureRoster);
 		features.insert(Tp::Connection::FeatureSelfContact);
-        features.insert(Tp::Connection::FeatureCore);
+//        features.insert(Tp::Connection::FeatureCore);
         if (!tp_connection_->isReady(features))
         {
             state_ = STATE_ERROR;
