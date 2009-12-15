@@ -143,7 +143,7 @@ namespace RexTypes
         uint8_t b = bytes[idx++];
         uint8_t a = bytes[idx++];
         
-        return Core::Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+        return Core::Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
     
     Core::Color ReadColorFromBytesInverted(const uint8_t* bytes, int& idx)
@@ -153,7 +153,7 @@ namespace RexTypes
         uint8_t b = 255 - bytes[idx++];
         uint8_t a = 255 - bytes[idx++];
         
-        return Core::Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+        return Core::Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
         
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx)
