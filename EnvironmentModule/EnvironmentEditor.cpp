@@ -210,36 +210,99 @@ namespace Environment
 
         QPushButton* water_apply_button = editor_widget_->findChild<QPushButton *>("water_apply_button");
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
-        
-        if ( water_apply_button != 0 && water_height_box != 0 )
+        QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
+
+        if ( water_apply_button != 0 && water_height_box != 0 && water_toggle_box != 0 )
         {
             water_height_box->setMinimum(0.0);
-            QObject::connect(water_apply_button, SIGNAL(clicked()), this, SLOT(UpdateWaterGeometry()));
+            QObject::connect(water_apply_button, SIGNAL(clicked()), this, SLOT(UpdateWaterHeight()));
             
             if ( water_.get() != 0)
             {
                 // Initialize
                 double height = water_->GetWaterHeight();
-                
-                // Case if some reason water is not yet created. 
-                if ( height < 0 )
-                    height = 0.0;
-                
                 water_height_box->setValue(height);
-                
+                water_toggle_box->setChecked(true);
+                // If water is created after, this connection must be made!
                 QObject::connect(water_.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
+                // Idea here is that if for some reason server removes water it state is updated to editor correctly.
+                QObject::connect(water_.get(), SIGNAL(WaterRemoved()), this, SLOT(ToggleWaterCheckButton()));
+                QObject::connect(water_.get(), SIGNAL(WaterCreated()), this, SLOT(ToggleWaterCheckButton()));
+              
             }
+            else
+            {
+                // Water is not created adjust a initial values
+                water_toggle_box->setChecked(false);
+                water_height_box->setValue(0.0);
+            }
+            QObject::connect(water_toggle_box, SIGNAL(stateChanged(int)), this, SLOT(UpdateWaterGeometry(int)));
             
         }
 
     }
 
-    void EnvironmentEditor::UpdateWaterGeometry()
+    void EnvironmentEditor::UpdateWaterHeight()
     {
+        // Sanity check: if water is totally disabled do not update it. 
+        QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
+
+        if (water_toggle_box != 0 && water_toggle_box->isChecked())
+            return;
+
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         if ( water_.get() != 0 && water_height_box != 0)
             water_->SetWaterHeight(static_cast<float>(water_height_box->value())); 
      }
+
+    void EnvironmentEditor::UpdateWaterGeometry(int state)
+    {
+        QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
+        
+        switch ( state )
+        {
+        case Qt::Checked:
+            {
+                if ( water_height_box != 0 && water_.get() != 0 )
+                    water_->CreateWaterGeometry(static_cast<float>(water_height_box->value()));
+                else if ( water_.get() != 0)
+                    water_->CreateWaterGeometry();
+                
+                break;
+            }
+        case Qt::Unchecked:
+            {
+                if ( water_.get() != 0)
+                    water_->RemoveWaterGeometry();
+                 break;
+            }
+        default:
+            break;
+
+        }
+      
+
+    }
+
+
+    void EnvironmentEditor::ToggleWaterCheckButton()
+    {
+        QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
+        
+
+        // Dirty way to check that what is state of water. 
+        
+        if ( water_.get() != 0 && water_toggle_box != 0)
+        {
+        
+            if ( water_->GetWaterEntity().expired())
+                water_toggle_box->setChecked(false); 
+            else
+              water_toggle_box->setChecked(true);
+        }
+       
+            
+    }
 
     void EnvironmentEditor::LineEditReturnPressed()
     {

@@ -93,7 +93,8 @@ namespace Environment
         //! Get a new terrain texture from rexlogic.
         void UpdateTerrain();
 
-        void UpdateWaterGeometry();
+        void UpdateWaterGeometry(int state);
+        void UpdateWaterHeight();
 
         //! Called when qMouseEvent event is generated.
         void HandleMouseEvent(QMouseEvent *ev);
@@ -112,6 +113,9 @@ namespace Environment
 
         //! Called when apply button have been pressed
         void ApplyButtonPressed();
+
+        //! Adjust Water check button.
+        void ToggleWaterCheckButton();
 
     private:
         Q_DISABLE_COPY(EnvironmentEditor);

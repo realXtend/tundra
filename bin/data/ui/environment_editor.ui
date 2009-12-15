@@ -575,7 +575,7 @@ QWidget#Form {
        </rect>
       </property>
       <property name="text">
-       <string>Remove water totally</string>
+       <string>Enable water</string>
       </property>
      </widget>
     </widget>
