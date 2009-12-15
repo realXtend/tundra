@@ -84,7 +84,6 @@ namespace Environment
 
         void SetTerrainTextureID();
 
-
         static const int cHeightmapImageWidth  = 256;
         static const int cHeightmapImageHeight = 256;
         static const int cNumberOfTerrainTextures = 4;
@@ -95,6 +94,8 @@ namespace Environment
 
         void UpdateWaterGeometry(int state);
         void UpdateWaterHeight();
+
+        void UpdateTerrainTextureRanges();
 
         //! Called when qMouseEvent event is generated.
         void HandleMouseEvent(QMouseEvent *ev);
@@ -113,6 +114,9 @@ namespace Environment
 
         //! Called when apply button have been pressed
         void ApplyButtonPressed();
+
+        //! Called when user change some of the height values.
+        void HeightValueChanged(double height);
 
         //! Adjust Water check button.
         void ToggleWaterCheckButton();

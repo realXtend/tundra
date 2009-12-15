@@ -698,6 +698,88 @@ void WorldStream::SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush,
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index)
+{
+    if (!connected_)
+        return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgEstateOwnerMessage);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // MethodData
+    /*QString method = "textureheights";
+    QByteArray bytearray = method.toUtf8();*/
+    std::string method = "texturedetail";
+    m->AddBuffer(method.size() + 1, (uint8_t*)method.c_str());
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // texture detail id
+    m->SetVariableBlockCount(1);
+    std::string data = QString("%1").arg(texture_index).toStdString() + " " + new_texture_id;
+    m->AddBuffer(data.size() + 1, (uint8_t*)data.c_str());
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendTextureHeightsMessage(Core::Real start_height, Core::Real height_range, Core::uint corner)
+{
+    if (!connected_)
+        return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgEstateOwnerMessage);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // MethodData
+    /*QString method = "textureheights";
+    QByteArray bytearray = method.toUtf8();*/
+    std::string method = "textureheights";
+    m->AddBuffer(method.size() + 1, (uint8_t*)method.c_str());
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // HeightData
+    m->SetVariableBlockCount(1);
+    // Convert all number parameters into one string parameter that will be send into the server.
+    std::string data = QString("%1").arg(corner).toStdString() + " " + QString("%1").arg(start_height).toStdString() + " " + QString("%1").arg(height_range).toStdString();
+    m->AddBuffer(data.size() + 1, (uint8_t*)data.c_str());
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendTextureCommitMessage()
+{
+    if (!connected_)
+        return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgEstateOwnerMessage);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    m->AddUUID(RexUUID::CreateRandom());
+
+    // MethodData
+    /*QString method = "textureheights";
+    QByteArray bytearray = method.toUtf8();*/
+    std::string method = "texturecommit";
+    m->AddBuffer(method.size() + 1, (uint8_t*)method.c_str());
+    m->AddUUID(RexUUID::CreateRandom());
+
+    m->SetVariableBlockCount(0);
+
+    FinishMessageBuilding(m);
+}
+
 void WorldStream::SendCreateInventoryFolderPacket(
     const RexTypes::RexUUID &parent_id,
     const RexTypes::RexUUID &folder_id,

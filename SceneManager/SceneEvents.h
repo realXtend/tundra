@@ -80,14 +80,8 @@ namespace Scene
         /// An action event that can be sent by anyone to create a new entity.
         static const Core::event_id_t EVENT_ENTITY_CREATE = 0x10;
 
-        /// An event that will let the environment module to know what are the terrain textures we want to use.
-        static const Core::event_id_t EVENT_ENVIRONMENT_TERRAIN_TEXTURE = 0x11;
-
-        /// An event that will let the enviroment module to know about water which is used. 
-        static const Core::event_id_t EVENT_ENVIRONMENT_WATER = 0x12;
-
         /// An event that will let mediaurl handling to know for what entity a mediaurl was set
-        static const Core::event_id_t EVENT_ENTITY_MEDIAURL_SET = 0x13; //REMOTE == from server
+        static const Core::event_id_t EVENT_ENTITY_MEDIAURL_SET = 0x11; //REMOTE == from server
 
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
@@ -220,10 +214,9 @@ namespace Scene
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECTED, "Entity Selected");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
 
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE, "Update terrain texture IDs");
-
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
                 event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");
+                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
             }
         }
     }

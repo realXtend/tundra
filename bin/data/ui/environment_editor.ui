@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>376</width>
-    <height>351</height>
+    <width>401</width>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,10 +25,10 @@ QWidget#Form {
   <widget class="QFrame" name="MainFrame">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>381</width>
-     <height>331</height>
+     <x>20</x>
+     <y>20</y>
+     <width>361</width>
+     <height>361</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -40,545 +40,627 @@ QWidget#Form {
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>360</width>
-      <height>311</height>
+      <x>0</x>
+      <y>0</y>
+      <width>361</width>
+      <height>361</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string/>
-    </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="tab">
-     <property name="styleSheet">
-      <string/>
-     </property>
-     <attribute name="title">
-      <string>Edit terrain</string>
-     </attribute>
-     <widget class="QPushButton" name="button_update">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>262</y>
-        <width>81</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Update</string>
-      </property>
-     </widget>
-     <widget class="QWidget" name="map_widget" native="true">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>256</width>
-        <height>256</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>CrossCursor</cursorShape>
-      </property>
-     </widget>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>10</y>
-        <width>81</width>
-        <height>88</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="brush_text">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="styleSheet">
+        <string/>
+       </property>
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <property name="styleSheet">
+         <string/>
+        </property>
+        <attribute name="title">
+         <string>Edit terrain</string>
+        </attribute>
+        <widget class="QPushButton" name="button_update">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>270</y>
+           <width>81</width>
+           <height>20</height>
+          </rect>
+         </property>
          <property name="text">
-          <string>Brush size</string>
+          <string>Update</string>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_small">
-         <property name="text">
-          <string>Small</string>
+        <widget class="QWidget" name="map_widget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>256</width>
+           <height>256</height>
+          </rect>
          </property>
-         <property name="checked">
+         <property name="cursor">
+          <cursorShape>CrossCursor</cursorShape>
+         </property>
+        </widget>
+        <widget class="QWidget" name="verticalLayoutWidget_2">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>10</y>
+           <width>81</width>
+           <height>88</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="brush_text">
+            <property name="text">
+             <string>Brush size</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_small">
+            <property name="text">
+             <string>Small</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_medium">
+            <property name="text">
+             <string>Medium</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_large">
+            <property name="text">
+             <string>Large</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="verticalLayoutWidget_3">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>100</y>
+           <width>81</width>
+           <height>171</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="action_text">
+            <property name="text">
+             <string>Action</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_flatten">
+            <property name="text">
+             <string>Flatten</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_raise">
+            <property name="text">
+             <string>Raise</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_lower">
+            <property name="text">
+             <string>Lower</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_smooth">
+            <property name="text">
+             <string>Smooth</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_roughen">
+            <property name="text">
+             <string>Roughen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_revert">
+            <property name="text">
+             <string>Revert</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Edit terrain texture</string>
+        </attribute>
+        <widget class="QLabel" name="terrain_texture_label_1">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>245</y>
+           <width>64</width>
+           <height>64</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="scaledContents">
           <bool>true</bool>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_medium">
-         <property name="text">
-          <string>Medium</string>
+         <property name="margin">
+          <number>0</number>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_large">
-         <property name="text">
-          <string>Large</string>
+        <widget class="QLabel" name="texture_label_5">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>310</y>
+           <width>51</width>
+           <height>16</height>
+          </rect>
          </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="verticalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>100</y>
-        <width>81</width>
-        <height>160</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="action_text">
-         <property name="text">
-          <string>Action</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_flatten">
-         <property name="text">
-          <string>Flatten</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_raise">
-         <property name="text">
-          <string>Raise</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_lower">
-         <property name="text">
-          <string>Lower</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_smooth">
-         <property name="text">
-          <string>Smooth</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_roughen">
-         <property name="text">
-          <string>Roughen</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rad_button_revert">
-         <property name="text">
-          <string>Revert</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>Edit terrain texture</string>
-     </attribute>
-     <widget class="QWidget" name="gridLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>251</width>
-        <height>176</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
-        <widget class="QLineEdit" name="texture_line_edit_1"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLineEdit" name="texture_line_edit_2"/>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLineEdit" name="texture_line_edit_3"/>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLineEdit" name="texture_line_edit_4"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="texture_label_1">
          <property name="text">
           <string>Texture 1</string>
          </property>
         </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="texture_label_2">
+        <widget class="QLabel" name="texture_label_6">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>310</y>
+           <width>51</width>
+           <height>16</height>
+          </rect>
+         </property>
          <property name="text">
           <string>Texture 2</string>
          </property>
         </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="texture_label_3">
+        <widget class="QLabel" name="terrain_texture_label_2">
+         <property name="geometry">
+          <rect>
+           <x>95</x>
+           <y>245</y>
+           <width>64</width>
+           <height>64</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_label_7">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>310</y>
+           <width>51</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Texture 4</string>
+         </property>
+         <property name="scaledContents">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="terrain_texture_label_4">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>245</y>
+           <width>64</width>
+           <height>64</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_label_8">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>310</y>
+           <width>51</width>
+           <height>16</height>
+          </rect>
+         </property>
          <property name="text">
           <string>Texture 3</string>
          </property>
         </widget>
-       </item>
-       <item row="6" column="0">
+        <widget class="QLabel" name="terrain_texture_label_3">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>245</y>
+           <width>64</width>
+           <height>64</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="apply_button_4">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>193</y>
+           <width>41</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="apply_button_1">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>33</y>
+           <width>41</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="apply_button_2">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>87</y>
+           <width>41</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="apply_button_3">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>140</y>
+           <width>41</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_label_3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>113</y>
+           <width>51</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Texture 3</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="texture_line_edit_1">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>33</y>
+           <width>211</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_label_1">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>6</y>
+           <width>51</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Texture 1</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="texture_line_edit_3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>140</y>
+           <width>211</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="texture_line_edit_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>87</y>
+           <width>211</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="texture_line_edit_4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>193</y>
+           <width>211</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_label_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>59</y>
+           <width>51</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Texture 2</string>
+         </property>
+        </widget>
         <widget class="QLabel" name="texture_label_4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>166</y>
+           <width>51</width>
+           <height>21</height>
+          </rect>
+         </property>
          <property name="text">
           <string>Texture 4</string>
          </property>
         </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QLabel" name="terrain_texture_label_1">
-      <property name="geometry">
-       <rect>
-        <x>15</x>
-        <y>190</y>
-        <width>64</width>
-        <height>64</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-      <property name="margin">
-       <number>0</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="texture_label_5">
-      <property name="geometry">
-       <rect>
-        <x>15</x>
-        <y>255</y>
-        <width>51</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Texture 1</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="texture_label_6">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>255</y>
-        <width>51</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Texture 2</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="terrain_texture_label_2">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>190</y>
-        <width>64</width>
-        <height>64</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="texture_label_7">
-      <property name="geometry">
-       <rect>
-        <x>275</x>
-        <y>255</y>
-        <width>51</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Texture 4</string>
-      </property>
-      <property name="scaledContents">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="terrain_texture_label_4">
-      <property name="geometry">
-       <rect>
-        <x>275</x>
-        <y>190</y>
-        <width>64</width>
-        <height>64</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="texture_label_8">
-      <property name="geometry">
-       <rect>
-        <x>185</x>
-        <y>255</y>
-        <width>51</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Texture 3</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="terrain_texture_label_3">
-      <property name="geometry">
-       <rect>
-        <x>185</x>
-        <y>190</y>
-        <width>64</width>
-        <height>64</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="browser_button_1">
-      <property name="geometry">
-       <rect>
-        <x>300</x>
-        <y>30</y>
-        <width>50</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>browser</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="browser_button_2">
-      <property name="geometry">
-       <rect>
-        <x>300</x>
-        <y>73</y>
-        <width>50</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Browser</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="browser_button_3">
-      <property name="geometry">
-       <rect>
-        <x>300</x>
-        <y>117</y>
-        <width>50</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Browser</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="browser_button_4">
-      <property name="geometry">
-       <rect>
-        <x>300</x>
-        <y>160</y>
-        <width>50</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Browser</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="apply_button_1">
-      <property name="geometry">
-       <rect>
-        <x>265</x>
-        <y>30</y>
-        <width>35</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Apply</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="apply_button_2">
-      <property name="geometry">
-       <rect>
-        <x>265</x>
-        <y>73</y>
-        <width>35</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Apply</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="apply_button_3">
-      <property name="geometry">
-       <rect>
-        <x>265</x>
-        <y>117</y>
-        <width>35</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Apply</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="apply_button_4">
-      <property name="geometry">
-       <rect>
-        <x>265</x>
-        <y>160</y>
-        <width>35</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Apply</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="edit_water">
-     <attribute name="title">
-      <string>Edit water</string>
-     </attribute>
-     <widget class="QDoubleSpinBox" name="water_height_doublespinbox">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>50</y>
-        <width>62</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>2</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="water_height_label">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>20</y>
-        <width>121</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Water height (meters)</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="water_apply_button">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>50</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Apply</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="water_toggle_box">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>120</y>
-        <width>70</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>water</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="water_remove_label">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>90</y>
-        <width>111</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Enable water</string>
-      </property>
-     </widget>
-    </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_1">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>33</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_2">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>87</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_3">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>140</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_4">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>193</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_1">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>60</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_2">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>112</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_3">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>166</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_4">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>220</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="texture_height_label_1">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>0</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Start Height / Range
+(meters)</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="edit_water">
+        <attribute name="title">
+         <string>Edit water</string>
+        </attribute>
+        <widget class="QDoubleSpinBox" name="water_height_doublespinbox">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>50</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>2</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="water_height_label">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>20</y>
+           <width>121</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Water height (meters)</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="water_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>50</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="water_remove_label">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>90</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Enable water</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="water_toggle_box">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>120</y>
+           <width>70</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>water</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
  </widget>

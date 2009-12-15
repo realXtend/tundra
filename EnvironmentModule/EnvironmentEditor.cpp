@@ -86,7 +86,6 @@ namespace Environment
 
                 // Set new image into the label.
                 label->setPixmap(QPixmap::fromImage(image));
-                //label->show();
             }
         }
     }
@@ -205,6 +204,27 @@ namespace Environment
         QObject::connect(line_edit_two, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_three, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+
+        // Double spin box signals
+        QDoubleSpinBox *double_spin_one = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_1");
+        QDoubleSpinBox *double_spin_two = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_2");
+        QDoubleSpinBox *double_spin_three = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_3");
+        QDoubleSpinBox *double_spin_four = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_4");
+
+        QObject::connect(double_spin_one, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_two, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_three, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_four, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+
+        double_spin_one = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_1");
+        double_spin_two = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_2");
+        double_spin_three = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_3");
+        double_spin_four = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_4");
+
+        QObject::connect(double_spin_one, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_two, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_three, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
+        QObject::connect(double_spin_four, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
     
         // Water editing button connections.
 
@@ -239,7 +259,6 @@ namespace Environment
             QObject::connect(water_toggle_box, SIGNAL(stateChanged(int)), this, SLOT(UpdateWaterGeometry(int)));
             
         }
-
     }
 
     void EnvironmentEditor::UpdateWaterHeight()
@@ -253,7 +272,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         if ( water_.get() != 0 && water_height_box != 0)
             water_->SetWaterHeight(static_cast<float>(water_height_box->value())); 
-     }
+    }
 
     void EnvironmentEditor::UpdateWaterGeometry(int state)
     {
@@ -284,7 +303,6 @@ namespace Environment
 
     }
 
-
     void EnvironmentEditor::ToggleWaterCheckButton()
     {
         QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
@@ -302,6 +320,29 @@ namespace Environment
         }
        
             
+    }
+
+    void EnvironmentEditor::UpdateTerrainTextureRanges()
+    {
+        if(!terrain_.get())
+            return;
+
+        for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+        {
+            Core::Real start_height_value = terrain_->GetTerrainTextureStartHeight(i);
+            Core::Real height_range_value = terrain_->GetTerrainTextureHeightRange(i);
+
+            QString start_height_name("Texture_height_doubleSpinBox_" + QString("%1").arg(i + 1));
+            QString height_range_name("Texture_height_range_doubleSpinBox_" + QString("%1").arg(i + 1));
+
+            QDoubleSpinBox *start_height_spin = editor_widget_->findChild<QDoubleSpinBox *>(start_height_name);
+            if(start_height_spin)
+                start_height_spin->setValue(start_height_value);
+
+            QDoubleSpinBox *height_range_spin = editor_widget_->findChild<QDoubleSpinBox *>(height_range_name);
+            if(height_range_spin)
+                height_range_spin->setValue(height_range_value);
+        }
     }
 
     void EnvironmentEditor::LineEditReturnPressed()
@@ -369,9 +410,24 @@ namespace Environment
                     terrain_->SetTerrainTextures(texture_id);
 
                     terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
+
+                    environment_module_->SendTextureDetailMessage(texture_id[button_number], button_number);
                 }
             }
         }
+
+
+        QString start_height("Texture_height_doubleSpinBox_" + QString("%1").arg(button_number + 1));
+        QString height_range("Texture_height_range_doubleSpinBox_" + QString("%1").arg(button_number + 1));
+        QDoubleSpinBox *start_height_spin = editor_widget_->findChild<QDoubleSpinBox*>(start_height);
+        QDoubleSpinBox *height_range_spin = editor_widget_->findChild<QDoubleSpinBox*>(height_range);
+        if(start_height_spin && height_range_spin)
+            environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
+    }
+
+    void EnvironmentEditor::HeightValueChanged(double height)
+    {
+        //environment_module_->SendTextureHeightMessage();
     }
 
     void EnvironmentEditor::UpdateTerrain()
@@ -485,70 +541,55 @@ namespace Environment
 
     void EnvironmentEditor::BrushSizeChanged()
     {
-        QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_small");
-        if(rad_button->isChecked())
+        const QRadioButton *sender = qobject_cast<QRadioButton *>(QObject::sender());
+        if(sender)
         {
-            brush_size_ = Small;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_medium");
-        if(rad_button->isChecked())
-        {
-            brush_size_ = Medium;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_large");
-        if(rad_button->isChecked())
-        {
-            brush_size_ = Large;
-            return;
+            std::string object_name = sender->objectName().toStdString();
+            if(object_name == "rad_button_small")
+            {
+                brush_size_ = Small;
+            }
+            else if(object_name == "rad_button_medium")
+            {
+                brush_size_ = Medium;
+            }
+            else if(object_name == "rad_button_large")
+            {
+                brush_size_ = Large;
+            }
         }
     }
 
     void EnvironmentEditor::PaintActionChanged()
     {
-        QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_flatten");
-        if(rad_button->isChecked())
+        const QRadioButton *sender = qobject_cast<QRadioButton *>(QObject::sender());
+        if(sender)
         {
-            action_ = Flatten;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_raise");
-        if(rad_button->isChecked())
-        {
-            action_ = Raise;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_lower");
-        if(rad_button->isChecked())
-        {
-            action_ = Lower;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_smooth");
-        if(rad_button->isChecked())
-        {
-            action_ = Smooth;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_roughen");
-        if(rad_button->isChecked())
-        {
-            action_ = Roughen;
-            return;
-        }
-
-        rad_button = editor_widget_->findChild<QRadioButton *>("rad_button_revert");
-        if(rad_button->isChecked())
-        {
-            action_ = Revert;
-            return;
+            std::string object_name = sender->objectName().toStdString();
+            if(object_name == "rad_button_flatten")
+            {
+                action_ = Flatten;
+            }
+            else if(object_name == "rad_button_raise")
+            {
+                action_ = Raise;
+            }
+            else if(object_name == "rad_button_lower")
+            {
+                action_ = Lower;
+            }
+            else if(object_name == "rad_button_smooth")
+            {
+                action_ = Smooth;
+            }
+            else if(object_name == "rad_button_roughen")
+            {
+                action_ = Roughen;
+            }
+            else if(object_name == "rad_button_revert")
+            {
+                action_ = Revert;
+            }
         }
     }
 
@@ -568,6 +609,9 @@ namespace Environment
             {
                 //Get terrain texture asset ids so that we can request those image resources.
                 RexTypes::RexAssetID terrain_id = terrain_->GetTerrainTextureID(i);
+
+                UpdateTerrainTextureRanges();
+
                 QString line_edit_name("texture_line_edit_" + QString("%1").arg(i + 1));
 
                 // Check if terrain texture hasn't changed for last time, if not we dont need to request a new texture resource and we can continue on next texture.
@@ -596,6 +640,7 @@ namespace Environment
                 if(!tex && tex->GetLevel() != 0)
                     return;
 
+                // \todo Image should be able to create from raw data pointer, right now cant.
                 //uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
                 QImage img = ConvertToQImage(*tex);//QImage::fromData(tex->GetData(), size);
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
@@ -616,8 +661,7 @@ namespace Environment
 
         if(img_width > 0 && img_height > 0 && img_components > 0)
         {
-            // For RGB32.
-            if(img_components == 3)
+            if(img_components == 3)// For RGB32
             {
                 image = QImage(QSize(img_width, img_height), QImage::Format_RGB32);
                 for(Core::uint height = 0; height < img_height; height++)
@@ -631,6 +675,23 @@ namespace Environment
                             color[comp] = data[index];
                         }
                         image.setPixel(width, height, qRgb(color[0], color[1], color[2]));
+                    }
+                }
+            }
+            else if(img_components == 4)// For ARGB32
+            {
+                image = QImage(QSize(img_width, img_height), QImage::Format_ARGB32);
+                for(Core::uint height = 0; height < img_height; height++)
+                {
+                    for(Core::uint width = 0; width < img_width; width++)
+                    {
+                        Core::u8 color[4];
+                        for(Core::uint comp = 0; comp < img_components; comp++)
+                        {
+                            Core::uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
+                            color[comp] = data[index];
+                        }
+                        image.setPixel(width, height, qRgba(color[0], color[1], color[2], color[3]));
                     }
                 }
             }
