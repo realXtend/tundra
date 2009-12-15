@@ -12,6 +12,8 @@
 
 namespace OgreRenderer
 {
+    void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec);
+
     OgreParticleResource::OgreParticleResource(const std::string& id) : 
         ResourceInterface(id)
     {
@@ -63,22 +65,7 @@ namespace OgreRenderer
                 // Skip empty lines & comments
                 if ((line.length()) && (line.substr(0, 2) != "//"))
                 {
-                    // Process opening/closing braces
-                    if (!ResourceHandler::ProcessBraces(line, brace_level))
-                    {
-                        // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
-                        if (brace_level == 0)
-                        {
-                            line = id_ + "_" + Core::ToString<size_t>(new_templates.size());
-                            new_templates.push_back(line);
-                            // New script compilers need this
-                            line = "particle_system " + line;
-                        }
-                        else
-                        {
-                            // Check for ColourImage, which is a risky affector and may easily crash if image can't be loaded
-                            if (line.substr(0, 8) == "affector")
-                            {
+                    // Split line to components
 			      std::vector<Ogre::String> line_vec;
 
 #if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
@@ -90,7 +77,28 @@ namespace OgreRenderer
 			      
 			      for (int i = 0; i < size; ++i)
 				line_vec[i] = vec[i];
-#endif                                
+#endif               
+
+                    // Check for vector parameters to be modified, so that particle scripts can be authored in typical Ogre coord system
+                    ModifyVectorParameter(line, line_vec);              
+
+                    // Process opening/closing braces
+                    if (!ResourceHandler::ProcessBraces(line, brace_level))
+                    {
+                    
+                        // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
+                        if (brace_level == 0)
+                        {
+                            line = id_ + "_" + Core::ToString<size_t>(new_templates.size());
+                            new_templates.push_back(line);
+                            // New script compilers need this
+                            line = "particle_system " + line;
+                        }
+                        else
+                        {
+                            // Check for ColourImage, which is a risky affector and may easily crash if image can't be loaded
+                            if (line_vec[0] == "affector")
+                            {   
                                if (line_vec.size() >= 2)
                                 {
                                     if (line_vec[1] == "ColourImage")
@@ -101,19 +109,8 @@ namespace OgreRenderer
                                 }
                             }
                             // Check for image/material definition
-                            else if (line.substr(0, 8) == "material")
-                            {
-			      std::vector<Ogre::String> line_vec;
-#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
-			      line_vec = Ogre::StringUtil::split(line, "\t ");
-#else 
-			      Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
-			      int size = vec.size();
-			      line_vec.resize(size);
-			      
-			      for (int i = 0; i < size; ++i)
-				line_vec[i] = vec[i];
-#endif                                         
+                            else if (line_vec[0] == "material")
+                            {             
                                 if (line_vec.size() >= 2)
                                 {
                                     std::string mat_name = line_vec[1];
@@ -224,5 +221,37 @@ namespace OgreRenderer
     bool OgreParticleResource::IsValid() const
     {
         return (templates_.size() > 0);
+    }
+    
+    void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec)
+    {
+        static const std::string modify_these[] = {"position", "direction", "force_vector", "common_direction", "common_up_vector", "plane_point", "plane_normal", ""};
+        
+        // Line should consist of the command & 3 values
+        if (line_vec.size() != 4)
+            return;
+        
+        for (Core::uint i = 0; modify_these[i].length(); ++i)
+        {
+            if (line_vec[0] == modify_these[i])
+            {   
+                try
+                {
+                    Core::Real x = Core::ParseString<Core::Real>(line_vec[1]);
+                    Core::Real y = Core::ParseString<Core::Real>(line_vec[2]);
+                    Core::Real z = Core::ParseString<Core::Real>(line_vec[3]);
+
+                    // For compatibility with old rex assets, the Z coord has to be reversed
+                    std::stringstream s;
+                    s << line_vec[0] << " " << x << " " << y << " " << -z;
+                    // Write back the modified string
+                    line = s.str();
+                }
+                catch (...)
+                {
+                }
+                return;
+            }        
+        }
     }
 }
