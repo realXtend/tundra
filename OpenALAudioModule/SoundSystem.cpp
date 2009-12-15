@@ -62,7 +62,6 @@ namespace OpenALAudio
         alcMakeContextCurrent(context_);
         initialized_ = true;
 
-        mutex.initialize();
     }
 
     void SoundSystem::Uninitialize()
