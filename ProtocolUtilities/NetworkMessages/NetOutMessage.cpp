@@ -246,6 +246,16 @@ namespace ProtocolUtilities
 		}
 	}*/
 
+    void NetOutMessage::AddString(const char* str)
+    {
+        AddBuffer(strlen(str) + 1, (uint8_t*)str);
+    }
+    
+    void NetOutMessage::AddString(const std::string& str)
+    {
+        AddBuffer(str.length() + 1, (uint8_t*)str.c_str());
+    }
+
 	void NetOutMessage::AddBuffer(size_t count, uint8_t *data)
 	{
 		const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];

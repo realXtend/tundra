@@ -220,13 +220,13 @@ namespace TelepathyIM
 		Tp::TextChannelPtr channel = Tp::TextChannelPtr(qobject_cast<Tp::TextChannel *>(pr->object()));
 		tp_text_channel_ = channel;
 
-		QStringList interfaces = tp_text_channel_->interfaces();
-		for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
-		{
-			QString line = "Text channel have interface: ";
-			line.append(*i);
-			LogDebug(line.toStdString());
-		}
+		//QStringList interfaces = tp_text_channel_->interfaces();
+		//for (QStringList::iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+		//{
+		//	QString line = "Text channel have interface: ";
+		//	line.append(*i);
+		//	LogDebug(line.toStdString());
+		//}
 
 //		Tp::ContactPtr initiator = tp_text_channel_->initiatorContact();
 

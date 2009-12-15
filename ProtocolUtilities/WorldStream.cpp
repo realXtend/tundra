@@ -567,7 +567,7 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
     for(size_t i = 0; i < name_info_list.size(); ++i)
     {
         m->AddU32(name_info_list[i].local_id_);
-        m->AddBuffer(name_info_list[i].name_.size(), (uint8_t*)name_info_list[i].name_.c_str());
+        m->AddString(name_info_list[i].name_);
     }
 }
 
@@ -611,7 +611,7 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
     for(size_t i = 0; i < description_info_list.size(); ++i)
     {
         m->AddU32(description_info_list[i].local_id_);
-        m->AddBuffer(description_info_list[i].description_.size(), (uint8_t*)description_info_list[i].description_.c_str());
+        m->AddString(description_info_list[i].description_);
     }
 }
 
@@ -718,8 +718,7 @@ void WorldStream::SendCreateInventoryFolderPacket(
     m->AddUUID(folder_id);
     m->AddUUID(parent_id);
     m->AddS8(type);
-    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
-    m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
+    m->AddString(name);
 
     FinishMessageBuilding(m);
 }
@@ -848,8 +847,7 @@ void WorldStream::SendMoveInventoryItemPacket(
     m->SetVariableBlockCount(1);
     m->AddUUID(item_id);
     m->AddUUID(folder_id);
-    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
-    m->AddBuffer(new_name.length() + 1, (uint8_t*)new_name.c_str());
+    m->AddString(new_name);
 
     FinishMessageBuilding(m);
 }
@@ -876,8 +874,7 @@ void WorldStream::SendCopyInventoryItemPacket(
     m->AddUUID(old_agent_id);
     m->AddUUID(old_item_id);
     m->AddUUID(new_folder_id);
-    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
-    m->AddBuffer(new_name.length() + 1, (uint8_t*)new_name.c_str());
+    m->AddString(new_name);
 
     FinishMessageBuilding(m);
 }
@@ -944,8 +941,7 @@ void WorldStream::SendUpdateInventoryFolderPacket(
     m->AddUUID(folder_id);
     m->AddUUID(parent_id);
     m->AddS8(type);
-    ///\todo if "+1" doesn't exist, last char vanishes from the name, eg. "3D Models" -> "3D Model".
-    m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
+    m->AddString(name);
 
     FinishMessageBuilding(m);
 }
@@ -995,8 +991,8 @@ void WorldStream::SendUpdateInventoryItemPacket(
     m->AddU32(0);                       // Flags
     m->AddU8(0);                        // SaleType
     m->AddS32(0);                       // SalePrice
-    m->AddBuffer(name.length() + 1, (uint8_t*)name.c_str());
-    m->AddBuffer(description.length() + 1, (uint8_t*)description.c_str());
+    m->AddString(name);                 // Name 
+    m->AddString(description);          // Description
     m->AddS32(0);                       // CreationDAta
     m->AddU32(0);                       // CRC
 
@@ -1097,7 +1093,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const Core::Stri
     m->AddUUID(RexUUID::CreateRandom());
 
     // Method
-    m->AddBuffer(method.length()+1, (uint8_t*)method.c_str());
+    m->AddString(method);
 
     // Invoice ID
     m->AddUUID(RexUUID::CreateRandom());
@@ -1107,7 +1103,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const Core::Stri
 
     // Strings
     for(Core::uint i = 0; i < strings.size(); ++i)
-        m->AddBuffer(strings[i].length()+1, (uint8_t*)strings[i].c_str());
+        m->AddString(strings[i]);
 
     m->MarkReliable();
 
@@ -1135,7 +1131,7 @@ void WorldStream::SendGenericMessageBinary(
     m->AddUUID(RexUUID::CreateRandom());
 
     // Method
-    m->AddBuffer(method.length()+1, (uint8_t*)method.c_str());
+    m->AddString(method);
 
     // Invoice ID
     m->AddUUID(RexUUID::CreateRandom());
@@ -1157,7 +1153,7 @@ void WorldStream::SendGenericMessageBinary(
 
     // Strings
     for(Core::uint i = 0; i < strings.size(); ++i)
-        m->AddBuffer(strings[i].length()+1, (uint8_t*)strings[i].c_str());
+        m->AddString(strings[i]);
 
     // Binary strings
     size_t idx = 0;

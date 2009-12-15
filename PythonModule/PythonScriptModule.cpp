@@ -364,10 +364,14 @@ namespace PythonScript
 
             else
             {
-                Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
-                unsigned int ent_id = edata->localID;	
-                if (ent_id != 0)
-                    value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "iI", event_id, ent_id);
+                // Note: can't assume that all scene events will use this datatype!!!
+                Scene::Events::SceneEventData* edata = dynamic_cast<Scene::Events::SceneEventData *>(data);
+                if (edata)
+                {
+                    unsigned int ent_id = edata->localID;	
+                    if (ent_id != 0)
+                        value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "iI", event_id, ent_id);
+                }
             }            
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
