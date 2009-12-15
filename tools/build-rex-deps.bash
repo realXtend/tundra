@@ -37,7 +37,7 @@ if lsb_release -c | grep -q karmic; then
 	 build-essential g++ libglib libogre-dev libois-dev libceguiogre-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
-	sudo apt-get install 'libboost1.40.*-dev' 
+	sudo apt-get install 'libboost1.38.*-dev' 
 	
 fi
 
