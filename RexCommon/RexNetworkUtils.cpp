@@ -1,7 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
-
 #ifndef unix
 #include <float.h>
 #else
@@ -9,97 +7,11 @@
 #endif
 
 #include "RexNetworkUtils.h"
-#include "RexLogicModule.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
 
-// Ogre renderer -specific.
-#include <OgreManualObject.h>
-#include <OgreSceneManager.h>
-#include <OgreMaterialManager.h>
-#include "EC_OgrePlaceable.h"
-#include "Renderer.h"
-
-namespace RexLogic
+namespace RexTypes
 {    
-    /// Creates a bounding box (consisting of lines) into the Ogre scene hierarchy. This function will be removed or refactored later on, once proper material system is present. -jj.
-    //Ogre::ManualObject *DebugCreateOgreBoundingBox(
-    //    Foundation::ModuleInterface *module,
-    //    Foundation::ComponentInterfacePtr ogrePlaceable,
-    //    const std::string &materialName,
-    //    Core::Vector3df scale)
-    //{
-    //    OgreRenderer::EC_OgrePlaceable &component = dynamic_cast<OgreRenderer::EC_OgrePlaceable&>(*ogrePlaceable.get());
-    //    boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>
-    //        (Foundation::Service::ST_Renderer).lock();
-    //    if (!renderer)
-    //        return 0;
-
-    //    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-
-    //    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
-    //    manual->begin(materialName, Ogre::RenderOperation::OT_LINE_LIST);
-
-    //    const Ogre::Vector3 v[8] = 
-    //    {
-    //        Ogre::Vector3(-0.5,-0.5,-0.5), // 0 ---
-    //        Ogre::Vector3(-0.5,-0.5, 0.5), // 1 --+
-    //        Ogre::Vector3(-0.5, 0.5,-0.5), // 2 -+-
-    //        Ogre::Vector3(-0.5, 0.5, 0.5), // 3 -++
-    //        Ogre::Vector3( 0.5,-0.5,-0.5), // 4 +--
-    //        Ogre::Vector3( 0.5,-0.5, 0.5), // 5 +-+
-    //        Ogre::Vector3( 0.5, 0.5,-0.5), // 6 ++-
-    //        Ogre::Vector3( 0.5, 0.5, 0.5), // 7 +++
-    //    };
-    //    
-    //    Ogre::Vector3 sv[8];
-    //    for (int i = 0; i < 8; ++i)
-    //    {
-    //        sv[i].x = v[i].x * scale.x;
-    //        sv[i].y = v[i].y * scale.y;
-    //        sv[i].z = v[i].z * scale.z;
-    //    }
-
-    //    manual->position(sv[0]);
-    //    manual->position(sv[1]);
-    //    manual->position(sv[0]);
-    //    manual->position(sv[2]);
-    //    manual->position(sv[0]);
-    //    manual->position(sv[4]);
-
-    //    manual->position(sv[1]);
-    //    manual->position(sv[3]);
-    //    manual->position(sv[1]);
-    //    manual->position(sv[5]);
-
-    //    manual->position(sv[2]);
-    //    manual->position(sv[6]);
-    //    manual->position(sv[2]);
-    //    manual->position(sv[3]);
-
-    //    manual->position(sv[3]);
-    //    manual->position(sv[7]);
-
-    //    manual->position(sv[4]);
-    //    manual->position(sv[5]);
-    //    manual->position(sv[4]);
-    //    manual->position(sv[6]);
-
-    //    manual->position(sv[5]);
-    //    manual->position(sv[7]);
-
-    //    manual->position(sv[6]);
-    //    manual->position(sv[7]);
-
-    //    manual->end();
-    //    manual->setDebugDisplayEnabled(true);
-    //   
-    //    Ogre::SceneNode *node = component.GetSceneNode();
-    //    node->attachObject(manual);
-    //    
-    //    return manual;
-    //}
-
     bool ParseBool(const std::string &value)
     {
         std::string testedvalue = value;
