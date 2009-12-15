@@ -21,7 +21,7 @@ const std::string &WorldStream::LoggerName = "WorldStream";
 WorldStream::WorldStream(Foundation::Framework *framework) :
     framework_(framework),
     connected_(false),
-    state_(ProtocolUtilities::Connection::STATE_DISCONNECTED),
+    state_(Connection::STATE_DISCONNECTED),
     simName_(""),
     serverAddress_(""),
     serverPort_(0),
@@ -32,7 +32,7 @@ WorldStream::WorldStream(Foundation::Framework *framework) :
     blockSerialNumber_(0)
 {
     clientParameters_.Reset();
-    SetCurrentProtocolType(ProtocolUtilities::NotSet);
+    SetCurrentProtocolType(NotSet);
 }
 
 WorldStream::~WorldStream()
@@ -94,7 +94,7 @@ bool WorldStream::CreateUdpConnection()
 
 void WorldStream::RequestLogout()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     SendLogoutRequestPacket();
@@ -120,10 +120,10 @@ void WorldStream::ForceServerDisconnect()
 
 void WorldStream::SendUseCircuitCodePacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUseCircuitCode);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUseCircuitCode);
     assert(m);
 
     m->AddU32(clientParameters_.circuitCode);
@@ -136,10 +136,10 @@ void WorldStream::SendUseCircuitCodePacket()
 
 void WorldStream::SendAgentWearablesRequestPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentWearablesRequest);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentWearablesRequest);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -151,10 +151,10 @@ void WorldStream::SendAgentWearablesRequestPacket()
 
 void WorldStream::SendCompleteAgentMovementPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgCompleteAgentMovement);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgCompleteAgentMovement);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -167,7 +167,7 @@ void WorldStream::SendCompleteAgentMovementPacket()
 
 void WorldStream::SendAgentThrottlePacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
     Core::Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting(
@@ -185,7 +185,7 @@ void WorldStream::SendAgentThrottlePacket()
     WriteFloatToBytes(max_bits_per_second * 0.26f, throttle_block, idx); // texture
     WriteFloatToBytes(max_bits_per_second * 0.25f, throttle_block, idx); // asset
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentThrottle);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentThrottle);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -209,10 +209,10 @@ void WorldStream::SendRexStartupPacket(const std::string& state)
 
 void WorldStream::SendLogoutRequestPacket()
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgLogoutRequest);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgLogoutRequest);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -225,10 +225,10 @@ void WorldStream::SendLogoutRequestPacket()
 
 void WorldStream::SendChatFromViewerPacket(const std::string &text)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgChatFromViewer);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgChatFromViewer);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -242,10 +242,10 @@ void WorldStream::SendChatFromViewerPacket(const std::string &text)
 
 void WorldStream::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgImprovedInstantMessage);
     assert(m);
 
     unsigned int parent_estate_id = 0; //! @todo Find out proper value
@@ -272,10 +272,10 @@ void WorldStream::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &targ
 
 void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
     assert(m);
 
     Vector3 scale(0.5f, 0.5f, 0.5f);
@@ -323,10 +323,10 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
 
 void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &force)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
     assert(m);
 
     // AgentData
@@ -343,10 +343,10 @@ void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &f
 
 void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelete);
     assert(m);
 
     // AgentData
@@ -374,10 +374,10 @@ void WorldStream::SendAgentUpdatePacket(
     uint32_t controlflags,
     uint8_t flags)
 {
-    if(!connected_)
+    if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentUpdate);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentUpdate);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -401,7 +401,7 @@ void WorldStream::SendObjectSelectPacket(const unsigned int object_id)
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
     assert(m);
 
     // AgentData
@@ -420,7 +420,7 @@ void WorldStream::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_i
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectSelect);
     assert(m);
 
     // AgentData
@@ -440,7 +440,7 @@ void WorldStream::SendObjectDeselectPacket(Core::entity_id_t object_id)
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
     assert(m);
 
     // AgentData
@@ -459,7 +459,7 @@ void WorldStream::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDeselect);
     assert(m);
 
     // AgentData
@@ -486,7 +486,7 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
     // Protocol does not seem to support sending all three
     
     // 1. Position & scale packet                             
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
     assert(m);
                 
     // AgentData
@@ -555,7 +555,7 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
     if (!name_info_list.size())
         return;
             
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectName);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectName);
     assert(m);
 
     // AgentData
@@ -576,7 +576,7 @@ void WorldStream::SendObjectGrabPacket(Core::entity_id_t object_id)
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectGrab);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectGrab);
     assert(m);
 
     // AgentData
@@ -599,7 +599,7 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
     if (!description_info_list.size())
         return;
             
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDescription);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDescription);
     assert(m);
 
     // AgentData
@@ -620,7 +620,7 @@ void WorldStream::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, Rex
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRegionHandshakeReply);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRegionHandshakeReply);
 
     m->AddUUID(agent_id);
     m->AddUUID(session_id); 
@@ -634,7 +634,7 @@ void WorldStream::SendAgentSetAppearancePacket()
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentSetAppearance);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentSetAppearance);
 
     // Agentdata
     m->AddUUID(clientParameters_.agentID);
@@ -674,7 +674,7 @@ void WorldStream::SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush,
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgModifyLand);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgModifyLand);
     assert(m);
 
     // AgentData
@@ -789,7 +789,7 @@ void WorldStream::SendCreateInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgCreateInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgCreateInventoryFolder);
     assert(m);
 
     // AgentData
@@ -813,7 +813,7 @@ void WorldStream::SendMoveInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryFolder);
     assert(m);
 
     // AgentData
@@ -838,7 +838,7 @@ void WorldStream::SendMoveInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryFolder);
     assert(m);
 
     // AgentData
@@ -866,7 +866,7 @@ void WorldStream::SendRemoveInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryFolder);
     assert(m);
 
     // AgentData
@@ -888,7 +888,7 @@ void WorldStream::SendRemoveInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryFolder);
     assert(m);
 
     // AgentData
@@ -917,7 +917,7 @@ void WorldStream::SendMoveInventoryItemPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMoveInventoryItem);
     assert(m);
 
     // AgentData
@@ -943,7 +943,7 @@ void WorldStream::SendCopyInventoryItemPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgCopyInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgCopyInventoryItem);
     assert(m);
 
     // AgentData
@@ -966,7 +966,7 @@ void WorldStream::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryItem);
     assert(m);
 
     // AgentData
@@ -986,7 +986,7 @@ void WorldStream::SendRemoveInventoryItemPacket(std::list<RexTypes::RexUUID> ite
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRemoveInventoryItem);
     assert(m);
 
     // AgentData
@@ -1011,7 +1011,7 @@ void WorldStream::SendUpdateInventoryFolderPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryFolder);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryFolder);
     assert(m);
 
     // AgentData
@@ -1039,7 +1039,7 @@ void WorldStream::SendUpdateInventoryItemPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryItem);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUpdateInventoryItem);
     assert(m);
 
     // TransactionID, new items only?
@@ -1091,7 +1091,7 @@ void WorldStream::SendFetchInventoryDescendentsPacket(
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgFetchInventoryDescendents);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgFetchInventoryDescendents);
     assert(m);
 
     // AgentData
@@ -1113,7 +1113,7 @@ void WorldStream::SendFetchInventoryDescendentsPacket(
 
 void WorldStream::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transaction_id, const RexTypes::RexUUID &folder_id)
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAcceptFriendship);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAcceptFriendship);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -1127,7 +1127,7 @@ void WorldStream::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transactio
 
 void WorldStream::SendDeclineFriendshipPacket(const RexTypes::RexUUID &transaction_id)
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgDeclineFriendship);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgDeclineFriendship);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -1139,7 +1139,7 @@ void WorldStream::SendDeclineFriendshipPacket(const RexTypes::RexUUID &transacti
 
 void WorldStream::SendFormFriendshipPacket(const RexTypes::RexUUID &dest_id)
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgFormFriendship);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgFormFriendship);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -1150,7 +1150,7 @@ void WorldStream::SendFormFriendshipPacket(const RexTypes::RexUUID &dest_id)
 
 void WorldStream::SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_id)
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgTerminateFriendship);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgTerminateFriendship);
     assert(m);
 
     m->AddUUID(clientParameters_.agentID);
@@ -1164,7 +1164,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const Core::Stri
     if (!connected_)
         return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
     assert(m);
 
     // AgentData
@@ -1202,7 +1202,7 @@ void WorldStream::SendGenericMessageBinary(
 
     const size_t max_string_size = 200;
     
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
     assert(m);
 
     // AgentData
@@ -1258,7 +1258,7 @@ void WorldStream::SendGenericMessageBinary(
 
 void WorldStream::SendAgentPausePacket()
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentPause);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentPause);
     assert(m);
 
     // AgentData
@@ -1271,7 +1271,7 @@ void WorldStream::SendAgentPausePacket()
 
 void WorldStream::SendAgentResumePacket()
 {
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentResume);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgAgentResume);
     assert(m);
 
     // AgentData
@@ -1282,29 +1282,29 @@ void WorldStream::SendAgentResumePacket()
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id)
+void WorldStream::SendObjectDeRezPacket(const Core::ulong &ent_id, const QString &trash_id)
 {
-	if(!connected_)
-		return;
+    if (!connected_)
+        return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgDeRezObject);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgDeRezObject);
     assert(m);
 
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-	m->AddUUID(RexUUID()); //group_id
-	
-	// ObjectData
-	m->AddU8(4); //trash ?
-	RexUUID ruuid = RexUUID();
-	ruuid.FromString(trash_id.toStdString());
-	m->AddUUID(ruuid);
-	m->AddUUID(RexUUID::CreateRandom()); //transaction_id
-	m->AddU8(1);
-	m->AddU8(1);
+    m->AddUUID(RexUUID()); //group_id
 
-	m->SetVariableBlockCount(1);
+    // ObjectData
+    m->AddU8(4); //trash ?
+    RexUUID ruuid = RexUUID();
+    ruuid.FromString(trash_id.toStdString());
+    m->AddUUID(ruuid);
+    m->AddUUID(RexUUID::CreateRandom()); //transaction_id
+    m->AddU8(1);
+    m->AddU8(1);
+
+    m->SetVariableBlockCount(1);
     m->AddU32(ent_id);
 
     FinishMessageBuilding(m);
@@ -1312,21 +1312,21 @@ void WorldStream::SendObjectDeRezPacket(const unsigned long ent_id, const QStrin
 
 void WorldStream::SendObjectUndoPacket(const QString &ent_id)
 {
-	if(!connected_)
-		return;
+    if (!connected_)
+        return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgUndo);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUndo);
     assert(m);
 
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-	m->AddUUID(RexUUID());      // GroupID
+    m->AddUUID(RexUUID());      // GroupID
 
-	// ObjectData
-	m->SetVariableBlockCount(1);
-	RexUUID ruuid = RexUUID();
-	ruuid.FromString(ent_id.toStdString());
+    // ObjectData
+    m->SetVariableBlockCount(1);
+    RexUUID ruuid = RexUUID();
+    ruuid.FromString(ent_id.toStdString());
     m->AddUUID(ruuid);
 
     FinishMessageBuilding(m);
@@ -1334,54 +1334,58 @@ void WorldStream::SendObjectUndoPacket(const QString &ent_id)
 
 void WorldStream::SendObjectRedoPacket(const QString &ent_id)
 {
-	if(!connected_)
-		return;
+    if (!connected_)
+        return;
 
-    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRedo);
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRedo);
     assert(m);
 
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-	m->AddUUID(RexUUID());      // GroupID
+    m->AddUUID(RexUUID());      // GroupID
 
-	// ObjectData
-	m->SetVariableBlockCount(1);
-	RexUUID ruuid = RexUUID();
-	ruuid.FromString(ent_id.toStdString());
+    // ObjectData
+    m->SetVariableBlockCount(1);
+    RexUUID ruuid = RexUUID();
+    ruuid.FromString(ent_id.toStdString());
     m->AddUUID(ruuid);
 
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset)
+void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags, const Core::Vector3df &offset)
 {
-	ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDuplicate);
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDuplicate);
     assert(m);
-	// AgentData
+
+    // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-	m->AddUUID(RexUUID());      // GroupID
+    m->AddUUID(RexUUID());      // GroupID
 
-	// SharedData
-	m->AddVector3(offset); //umm, prolly needs the location... offset
-	m->AddU32(flags);
-	m->SetVariableBlockCount(1);
-	m->AddU32(ent_id);
+    // SharedData
+    m->AddVector3(offset); //umm, prolly needs the location... offset
+    m->AddU32(flags);
+    m->SetVariableBlockCount(1);
+    m->AddU32(ent_id);
 
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z)
+void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags,
+    const float &offset_x, const float &offset_y, const float &offset_z)
 {
-	SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(offset_x, offset_y, offset_z));
+    SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(offset_x, offset_y, offset_z));
 }
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags)
+void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags)
 {
-	SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(0,0,0));
+    SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(0,0,0));
 }
-
 
 std::string WorldStream::GetCapability(const std::string &name)
 {
@@ -1395,11 +1399,11 @@ std::string WorldStream::GetCapability(const std::string &name)
     return protocolModule_->GetCapability(name);
 }
 
-volatile ProtocolUtilities::Connection::State WorldStream::GetConnectionState()
+volatile Connection::State WorldStream::GetConnectionState()
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())
-        return ProtocolUtilities::Connection::STATE_ENUM_COUNT;
+        return Connection::STATE_ENUM_COUNT;
 
     return protocolModule_->GetConnectionState();
 }
@@ -1408,17 +1412,17 @@ std::string WorldStream::GetConnectionErrorMessage()
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())
-        return std::string("Could not accuire current protocol module");
+        return std::string("Could not acquire current protocol module");
 
     return protocolModule_->GetConnectionErrorMessage();
 }
 
-void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType)
+void WorldStream::SetCurrentProtocolType(ProtocolType newType)
 {
     currentProtocolType_ = newType;
     switch(currentProtocolType_)
     {
-    case ProtocolUtilities::OpenSim:
+    case OpenSim:
     {
         netInterfaceTaiga_ = boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga>();
         netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
@@ -1427,7 +1431,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType
             LogError("Getting ProtocolModuleOpenSim network interface did not succeed");
         break;
     }
-    case ProtocolUtilities::Taiga:
+    case Taiga:
     {
         netInterfaceOpenSim_ = boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim>();
         netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>(Foundation::Module::MT_TaigaProtocol);
@@ -1436,7 +1440,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType
             LogError("Getting ProtocolModuleTaiga network interface did not succeed");
         break;
     }
-    case ProtocolUtilities::NotSet:
+    case NotSet:
     default:
         LogError("Setting ProtocolType to NotSet");
         protocolModule_.reset();
@@ -1444,31 +1448,31 @@ void WorldStream::SetCurrentProtocolType(ProtocolUtilities::ProtocolType newType
     }
 }
 
-boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule()
+boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule()
 {
     switch(currentProtocolType_)
     {
-    case ProtocolUtilities::OpenSim:
+    case OpenSim:
         return netInterfaceOpenSim_.lock();
-    case ProtocolUtilities::Taiga:
+    case Taiga:
         return netInterfaceTaiga_.lock();
-    case ProtocolUtilities::NotSet:
+    case NotSet:
     default:
-        return boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+        return boost::shared_ptr<ProtocolModuleInterface>();
     }
 }
 
-boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer()
+boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer()
 {
     switch(currentProtocolType_)
     {
-    case ProtocolUtilities::OpenSim:
+    case OpenSim:
         return netInterfaceOpenSim_;
-    case ProtocolUtilities::Taiga:
+    case Taiga:
         return netInterfaceTaiga_;
-    case ProtocolUtilities::NotSet:
+    case NotSet:
     default:
-        return boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface>();
+        return boost::weak_ptr<ProtocolModuleInterface>();
     }
 }
 
@@ -1512,7 +1516,7 @@ void WorldStream::SendLoginSuccessfullPackets()
     SendRexStartupPacket("started"); 
 }
 
-ProtocolUtilities::NetOutMessage *WorldStream::StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id)
+NetOutMessage *WorldStream::StartMessageBuilding(const NetMsgID &message_id)
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())
@@ -1524,7 +1528,7 @@ ProtocolUtilities::NetOutMessage *WorldStream::StartMessageBuilding(const Protoc
     return protocolModule_->StartMessageBuilding(message_id);
 }
 
-void WorldStream::FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg)
+void WorldStream::FinishMessageBuilding(NetOutMessage *msg)
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())

@@ -1,0 +1,26 @@
+material rex/DiffSpecmap
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			vertex_program_ref rex/DiffSpecmapVP
+			{
+			}
+			fragment_program_ref rex/DiffSpecmapFP
+			{
+				param_named specularPower float 8.0
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit specularMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}

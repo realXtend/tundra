@@ -16,7 +16,9 @@
 #include <QMap>
 #include <QPair>
 
+QT_BEGIN_NAMESPACE
 class QObject;
+QT_END_NAMESPACE
 
 namespace Foundation
 {

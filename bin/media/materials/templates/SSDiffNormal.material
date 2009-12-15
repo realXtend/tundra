@@ -1,0 +1,25 @@
+material rex/DiffNormal
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			vertex_program_ref rex/DiffNormalVP
+			{
+			}
+			fragment_program_ref rex/DiffNormalFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit normalMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}

@@ -21,7 +21,7 @@ namespace TaigaProtocol
 
 namespace ProtocolUtilities
 {
-    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 
     /// Connection type enumeration.
     enum ConnectionType
@@ -29,29 +29,29 @@ namespace ProtocolUtilities
         DirectConnection = 0,
         AuthenticationConnection
     };
-    
+
     /// Struct for object name update
     struct ObjectNameInfo
     {
         Core::entity_id_t local_id_;
         std::string name_;
     };
-    
+
     /// Struct for multipleobject update
     struct ObjectUpdateInfo
     {
         Core::entity_id_t local_id_;
         Core::Vector3df position_;
         Core::Quaternion orientation_;
-        Core::Vector3df scale_;        
+        Core::Vector3df scale_;
     };
-    
+
     /// Struct for description update
     struct ObjectDescriptionInfo
     {
         Core::entity_id_t local_id_;
-        std::string description_;       
-    };    
+        std::string description_;
+    };
 
     class WorldStream : public QObject
     {
@@ -391,10 +391,10 @@ namespace ProtocolUtilities
         std::string GetSimName() const { return simName_; }
 
         /// Set sim name
-        void SetSimName(const std::string &newSimName) { simName_ = newSimName; } 
+        void SetSimName(const std::string &newSimName) { simName_ = newSimName; }
 
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
-        ProtocolUtilities::ClientParameters GetInfo() const { return clientParameters_; }
+        ClientParameters GetInfo() const { return clientParameters_; }
 
         /// @return A capability by name
         /// @param name Name of the capability.
@@ -413,7 +413,7 @@ namespace ProtocolUtilities
         const bool &IsConnected() const { return connected_; }
 
         /// @return The state of the connection.
-        volatile ProtocolUtilities::Connection::State GetConnectionState();
+        volatile Connection::State GetConnectionState();
 
         /// @return Error message of the connection.
         std::string GetConnectionErrorMessage();
@@ -435,22 +435,25 @@ namespace ProtocolUtilities
         /// Unregisters the eventmanager from current Protocol Module
         void UnregisterCurrentProtocolModule();
 
-		/// sends the derez packet for the entity ent_id
-		void SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id);
+        /// sends the derez packet for the entity ent_id
+        void SendObjectDeRezPacket(const Core::ulong &ent_id, const QString &trash_id);
 
-		/// sends the undo packet for the entity ent_id
-		void SendObjectUndoPacket(const QString &ent_id);
-		
-		/// sends the redo packet for the entity ent_id
-		void SendObjectRedoPacket(const QString &ent_id);
-		
-		/// duplicate the object
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset);
-		/// same as above but takes the offset vector as three ints
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z);
-		/// without the offset, reverts to Vector.ZERO
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
-		
+        /// sends the undo packet for the entity ent_id
+        void SendObjectUndoPacket(const QString &ent_id);
+
+        /// sends the redo packet for the entity ent_id
+        void SendObjectRedoPacket(const QString &ent_id);
+
+        /// duplicate the object
+        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags, const Core::Vector3df &offset);
+
+        /// same as above but takes the offset vector as three ints
+        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags,
+            const float &offset_x, const float &offset_y, const float &offset_z);
+
+        /// without the offset, reverts to Vector.ZERO
+        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags);
+
     public:
         /// Name used for logging.
         static const std::string &LoggerName;
@@ -460,10 +463,10 @@ namespace ProtocolUtilities
         void SendLoginSuccessfullPackets();
 
         /// Convenience function to get the weak pointer when building messages.
-        ProtocolUtilities::NetOutMessage *StartMessageBuilding(const ProtocolUtilities::NetMsgID &message_id);
+        NetOutMessage *StartMessageBuilding(const NetMsgID &message_id);
 
         /// Convenience function to get the weak pointer when sending messages.
-        void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
+        void FinishMessageBuilding(NetOutMessage *msg);
 
         /// WriteFloatToBytes
         void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
@@ -478,10 +481,10 @@ namespace ProtocolUtilities
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> netInterfaceOpenSim_;
 
         /// Pointer to ModuleImplementation, used in ProtocolModule getter
-        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        boost::shared_ptr<ProtocolModuleInterface> protocolModule_;
 
         /// Server-spesific info for this client.
-        ProtocolUtilities::ClientParameters clientParameters_;
+        ClientParameters clientParameters_;
 
         /// Address of the sim we're connected.
         std::string serverAddress_;
@@ -508,13 +511,13 @@ namespace ProtocolUtilities
         std::string auth_server_address_;
 
         /// State of the connection procedure.
-        ProtocolUtilities::Connection::State state_;
+        Connection::State state_;
 
         /// State of the connection procedure thread.
-        ProtocolUtilities::ConnectionThreadState threadState_;
+        ConnectionThreadState threadState_;
 
         /// Current ProtocolModule type
-        ProtocolUtilities::ProtocolType currentProtocolType_;
+        ProtocolType currentProtocolType_;
 
         /// Block serial number used for AgentPause and AgentResume messages.
         uint32_t blockSerialNumber_;

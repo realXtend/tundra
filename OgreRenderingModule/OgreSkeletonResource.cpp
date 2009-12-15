@@ -8,12 +8,12 @@
 
 namespace OgreRenderer
 {
-    OgreSkeletonResource::OgreSkeletonResource(const std::string& id) : 
+    OgreSkeletonResource::OgreSkeletonResource(const std::string& id) :
         ResourceInterface(id)
     {
     }
 
-    OgreSkeletonResource::OgreSkeletonResource(const std::string& id, Foundation::AssetPtr source) : 
+    OgreSkeletonResource::OgreSkeletonResource(const std::string& id, Foundation::AssetPtr source) :
         ResourceInterface(id)
     {
         SetData(source);
@@ -36,7 +36,7 @@ namespace OgreRenderer
             OgreRenderingModule::LogError("Zero sized skeleton asset");
             return false;
         }
-        
+
         try
         {
             if (ogre_skeleton_.isNull())
@@ -67,17 +67,17 @@ namespace OgreRenderer
     }
 
     static const std::string type_name("OgreSkeleton");
-        
+
     const std::string& OgreSkeletonResource::GetType() const
     {
         return type_name;
     }
-    
+
     const std::string& OgreSkeletonResource::GetTypeStatic()
     {
         return type_name;
-    }    
-    
+    }
+
     void OgreSkeletonResource::RemoveSkeleton()
     {
         if (!ogre_skeleton_.isNull())
@@ -90,9 +90,9 @@ namespace OgreRenderer
                 Ogre::SkeletonManager::getSingleton().remove(skeleton_name);
             }
             catch (...) {}
-        }    
+        }
     }
-    
+
     bool OgreSkeletonResource::IsValid() const
     {
         return (!ogre_skeleton_.isNull());

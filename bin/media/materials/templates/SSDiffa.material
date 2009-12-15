@@ -1,0 +1,21 @@
+material rex/Diffa
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			vertex_program_ref rex/DiffaVP
+			{
+			}
+			fragment_program_ref rex/DiffaFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}

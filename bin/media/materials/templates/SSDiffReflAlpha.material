@@ -1,0 +1,29 @@
+material rex/DiffReflAlpha
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			scene_blend alpha_blend
+			depth_write off
+			
+			vertex_program_ref rex/DiffReflAlphaVP
+			{
+			}
+			fragment_program_ref rex/DiffReflAlphaFP
+			{
+				param_named opacity       float 0.5
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit reflectionMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}

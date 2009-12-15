@@ -1,0 +1,26 @@
+material rex/DiffSpecflatShadow
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			vertex_program_ref rex/DiffSpecflatShadowVP
+			{
+			}
+			fragment_program_ref rex/DiffSpecflatShadowFP
+			{
+				param_named specularPower float 8.0
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit shadowMap
+			{
+				content_type shadow
+			}
+		}
+	}
+}

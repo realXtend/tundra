@@ -1,0 +1,37 @@
+material rex/DiffSpecmapNormalOpa
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			scene_blend alpha_blend
+			depth_write off
+
+			vertex_program_ref rex/DiffSpecmapNormalOpaVP
+			{
+			}
+			fragment_program_ref rex/DiffSpecmapNormalOpaFP
+			{
+				param_named specularPower float 8.0
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit specularMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit normalMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit opacityMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}
