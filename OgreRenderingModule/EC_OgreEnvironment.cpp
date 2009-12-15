@@ -191,7 +191,11 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     // Set fogging
     Ogre::Camera *camera = renderer_->GetCurrentCamera();
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
-    Ogre::Entity *water = sceneManager->getEntity("WaterEntity");
+    Ogre::Entity* water = 0;
+    
+    if ( sceneManager->hasEntity("WaterEntity") )
+        water = sceneManager->getEntity("WaterEntity");
+              
     if (!water)
     {
         // No water entity. ///\todo Test. Prolly crashes here.

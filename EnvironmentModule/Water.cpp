@@ -26,60 +26,110 @@ namespace Environment
 {
 
 Water::Water(EnvironmentModule *owner) :
-    owner_(owner), waterComponent_(0)
+    owner_(owner), activeWaterComponent_(0)
 {
 }
 
 Water::~Water()
 {
     // Does not own.
-    waterComponent_ = 0;
+    activeWaterEntity_.reset();
+    activeWaterComponent_ = 0;
+    owner_ = 0;
 }
 
-void Water::FindCurrentlyActiveWater()
+Scene::EntityWeakPtr Water::GetActiveWater()
 {
     Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+
+    // Check that is current water entity still valid.
+
+    if ( !activeWaterEntity_.expired() )
+        if(scene->GetEntity(activeWaterEntity_.lock()->GetId()).get() != 0)
+            return activeWaterEntity_;
+
+    // Current is not valid so search new, takes first entity which has water 
+
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentInterfacePtr waterComponent = entity.GetComponent("EC_Water");
-        if (waterComponent.get())
-            cachedWaterEntity_ = scene->GetEntity(entity.GetId());
-    }
+        activeWaterComponent_ = static_cast<EC_Water*>(entity.GetComponent("EC_Water").get());
+        if (activeWaterComponent_ != 0)
+        {
+            activeWaterEntity_ = scene->GetEntity(entity.GetId());
+
+            if ( !activeWaterEntity_.expired())
+                return activeWaterEntity_;
+        }
+     }
+    
+    // There was any water entity so reset it to null state. 
+
+    activeWaterEntity_.reset();
+    activeWaterComponent_ = 0;
+    return Scene::EntityWeakPtr();
 }
 
 Scene::EntityWeakPtr Water::GetWaterEntity()
 {
-    return cachedWaterEntity_;
+    // Find currently active water entity
+    return GetActiveWater();
 }
 
-void Water::CreateWaterGeometry()
+void Water::CreateWaterGeometry(float height)
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    // Here we assume that there is only one water in one scene (and it is ocean). 
 
+    if ( !GetActiveWater().expired())
+        RemoveWaterGeometry();
+
+    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_Water"));
-    waterComponent_ = checked_static_cast<EC_Water*>(entity->GetComponent("EC_Water").get());
-    waterComponent_->SetWaterHeight(20.f);
+    activeWaterComponent_ = checked_static_cast<EC_Water*>(entity->GetComponent("EC_Water").get());
+    activeWaterComponent_->SetWaterHeight(height);
+    activeWaterEntity_ = entity;
 
-    cachedWaterEntity_ = entity;
+    emit WaterCreated();
+}
+
+void Water::RemoveWaterGeometry()
+{
+    // Adjust that we are removing correct water
+    if( GetActiveWater().expired())
+        return;
+    
+    // Remove component
+    if ( activeWaterComponent_ != 0)
+    {
+        Scene::EntityPtr entity = activeWaterEntity_.lock();
+        entity->RemoveEntityComponent(entity->GetComponent("EC_Water"));
+        activeWaterComponent_ = 0;
+    }
+
+    // Remove entity from scene
+    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    active_scene->RemoveEntity(activeWaterEntity_.lock()->GetId());
+    activeWaterEntity_.reset();
+
+    emit WaterRemoved();
 }
 
 void Water::SetWaterHeight(float height)
 {
-    if (waterComponent_ != 0)
+    if (activeWaterComponent_ != 0)
     {
-        waterComponent_->SetWaterHeight(height);
+        activeWaterComponent_->SetWaterHeight(height);
         emit HeightChanged(static_cast<double>(height));
     }
 }
 
 float Water::GetWaterHeight() const 
 {
-    float height = -1.0;
-    if (waterComponent_ != 0)
-        height = waterComponent_->GetWaterHeight();
+    float height = 0.0;
+    if (activeWaterComponent_ != 0)
+        height = activeWaterComponent_->GetWaterHeight();
 
     return height;
 }

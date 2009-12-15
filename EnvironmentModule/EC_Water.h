@@ -25,11 +25,14 @@ namespace Environment
         /// Sets the new water plane height.
         void SetWaterHeight(float height);
 
-        /// @return The currently active water plane height.
+        /// @return The currently active water plane height if water does not exist returns 0.0
         float GetWaterHeight() const;
+
 
     private:
         EC_Water(Foundation::ModuleInterface* module);
+  
+        void CreateOgreWaterObject();
 
         /// Just need to have this here to be able to destroy the Ogre data. ///\todo This pointer could theoretically dangle... 
         Foundation::ModuleInterface* owner_; 
@@ -39,8 +42,6 @@ namespace Environment
 
         Ogre::Entity *entity_;
 
-        //! Creates the water geometry and material.
-        void CreateOgreWaterObject();
     };
 }
 
