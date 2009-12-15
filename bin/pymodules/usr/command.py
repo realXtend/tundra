@@ -720,7 +720,7 @@ if 0: #search where a given texture is used
     #uuid = "cac0a9bf-2ee3-427a-bf2b-5a2f17cb3155" #antont local fishworld screen
     #uuid = "3edf2f27-411e-4a80-af8d-a422c014532e" #prim school project test display
     uuid = 'a07893e6-3631-4ee0-b9a4-1a4e07eed5be' #mesh
-    print r.getEntityMatindicesWithTexture(uuid)
+    #print applyUICanvasToSubmeshesWithTexture(canvas, uuid)
     
 if 0:
     #print r.c, dir(r.c)

@@ -74,6 +74,9 @@
 
 #include "propertyeditor.h"
 
+//now that binding uicanvases (from mediahandler webviews) to 3d objects is here
+#include "EC_UICanvas.h"
+
 namespace PythonScript
 {
     PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
@@ -866,20 +869,49 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
     }
 }
 
-PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
+//PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
+PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
+	PyObject* pyuicanvas;
     char* uuidstr;
-    if(!PyArg_ParseTuple(args, "s", &uuidstr))
+
+    if(!PyArg_ParseTuple(args, "Os", &pyuicanvas, &uuidstr))
     {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity by UUID failed, param should be a string.");
+        //PyErr_SetString(PyExc_ValueError, "Setting uicanvas to textures failed,.");
         return NULL;
     }
+
+	if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
+
+	PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
+
+	QObject* qobject_ptr = wrapped_uicanvas->_obj;
+    QtUI::UICanvas* canvas_ptr = (QtUI::UICanvas*) qobject_ptr; //XXX can this be checked, in case some other qobject was given in error?
+    boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
+
 
 	RexUUID textureuuid = RexUUID();
 	textureuuid.FromString(std::string(uuidstr));
 
+    //_ApplyUICanvasToSubmeshesWithTexture(uicanvas_ptr, textureuuid);
+
+//    Py_RETURN_NONE;
+//}
+
+//the impl for above - not py specific, should be in rexlogic or qtmodule or somewhere.
+//void _ApplyUICanvasToSubmeshesWithTexture(boost::shared_ptr<QtUI::UICanvas> canvas, RexUUID textureuuid)
+//{
+    
+    // Get RexLogic module
     RexLogic::RexLogicModule *rexlogicmodule_;
     rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+    // Get QtModule
+    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
+    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
 
     Scene::ScenePtr scene = PythonScript::GetScene();        
     if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
@@ -887,10 +919,14 @@ PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
         return NULL;   
     }
 
+    //which -- if any -- submeshes / mat indices should get the 3duicanvas applied.
+    std::vector<Core::uint> submeshes_; 
+
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
+        submeshes_.clear();
 
         Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
         if (!primentity) continue;
@@ -912,6 +948,9 @@ PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
                 {
                     // Use a legacy material with the same name as the texture, created automatically by renderer
                     //meshptr->SetMaterial(idx, res->GetId());
+
+                    submeshes_.push_back(idx);
+
                     std::stringstream ss;
                     ss << "Entity with given texture id found: ";
                     ss << textureuuid.ToString();
@@ -923,11 +962,20 @@ PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
                 }
                 ++i;
             }
+
+            if (submeshes_.size() > 0)
+            {
+                QtUI::EC_UICanvas* ec = dynamic_cast<QtUI::EC_UICanvas*>(qt_ui->CreateEC_UICanvasToEntity(&entity, canvas).get());
+                if (ec)
+                    ec->SetSubmeshes(submeshes_);
+            }
         }
     }
 
     Py_RETURN_NONE;
 }
+
+
 
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
@@ -1665,9 +1713,12 @@ static PyMethodDef EmbMethods[] = {
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
 
-    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
-    "Finds all entities with material indices which are using the given texture"},
+//    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
+//    "Finds all entities with material indices which are using the given texture"},
 
+    {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
+    "Applies a ui canvas to all the entity subfaces where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
+    
 	{NULL, NULL, 0, NULL}
 };
 
