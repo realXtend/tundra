@@ -16,6 +16,7 @@
 #include "SceneEvents.h"
 #include "SoundServiceInterface.h"
 #include "AssetServiceInterface.h"
+#include "GenericMessageUtils.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -175,12 +176,7 @@ bool NetworkEventHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEven
 bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData* data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
-
-    msg.SkipToNextVariable(); // AgentId
-    msg.SkipToNextVariable(); // SessionId
-    msg.SkipToNextVariable(); // TransactionId
-    std::string methodname = msg.ReadString();
+    std::string methodname = ProtocolUtilities::ParseGenericMessageMethod(msg);
 
     if (methodname == "RexMediaUrl")
         return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);

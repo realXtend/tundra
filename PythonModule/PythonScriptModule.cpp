@@ -40,6 +40,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "RexNetworkUtils.h"
+#include "GenericMessageUtils.h"
 
 #include "RexLogicModule.h" 
 //#include "Login/LoginUI.h" //in rexlogic
@@ -414,34 +415,12 @@ namespace PythonScript
                 if (!stringlist)
                     return false;
 
-                msg->ResetReading();
-                msg->SkipToNextVariable(); // AgentId
-                msg->SkipToNextVariable(); // SessionId
-                msg->SkipToNextVariable(); // TransactionId
+                std::string cxxmsgname = ProtocolUtilities::ParseGenericMessageMethod(*msg);
+                Core::StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*msg);
 
-                std::string cxxmsgname = msg->ReadString();
-
-                msg->ResetReading();
-                msg->SkipToFirstVariableByName("Parameter");
-
-                // Variable block begins
-                size_t instance_count = msg->ReadCurrentBlockInstanceCount();
-                size_t read_instances = 0;
-
-                // Calculate full data size
-                size_t fulldatasize = msg->GetDataSize();
-                size_t bytes_read = msg->BytesRead();
-                fulldatasize -= bytes_read;
-
-                // Allocate memory block
-                std::vector<Core::u8> fulldata;
-                fulldata.resize(fulldatasize);
-                int offset = 0;
-
-                // Read the generic message parameter data.
-                while((msg->BytesRead() < msg->GetDataSize()) && (read_instances < instance_count))
+                for (Core::uint i = 0; i < params.size(); ++i)
                 {
-                    std::string cxxs = msg->ReadString();
+                    std::string cxxs = params[i];
                     PyObject *pys = PyString_FromStringAndSize(cxxs.c_str(), cxxs.size());
                     if (!pys) 
                     {

@@ -20,6 +20,7 @@
 #include "Renderer.h"
 #include "ConversionUtils.h"
 #include "SceneManager.h"
+#include "GenericMessageUtils.h"
 
 #include "Poco/DOM/DOMParser.h"
 #include "Poco/DOM/Element.h"
@@ -299,21 +300,16 @@ namespace RexLogic
     
     bool Avatar::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
     {        
-        data->message->ResetReading();    
-        data->message->SkipToFirstVariableByName("Parameter");
-
-        // Variable block begins
-        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
-
+        Core::StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
         bool overrideappearance = false;
 
-        if (instance_count >= 2)
+        if (params.size() >= 2)
         {
-            std::string avataraddress = data->message->ReadString();
-            RexUUID avatarid(data->message->ReadString());
+            std::string avataraddress = params[0];
+            RexUUID avatarid(params[1]);
             
-            if (instance_count >= 3)
-                overrideappearance = ParseBool(data->message->ReadString());
+            if (params.size() >= 3)
+                overrideappearance = ParseBool(params[2]);
             
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
             if (entity)

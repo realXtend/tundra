@@ -453,7 +453,7 @@ namespace ProtocolUtilities
 
         /// without the offset, reverts to Vector.ZERO
         void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags);
-
+        
     public:
         /// Name used for logging.
         static const std::string &LoggerName;

@@ -20,6 +20,7 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
+#include "GenericMessageUtils.h"
 
 namespace Environment
 {
@@ -178,14 +179,9 @@ namespace Environment
             }
             else if (event_id == RexNetMsgGenericMessage)
             {
-               
                     ProtocolUtilities::NetInMessage &msg = *netdata->message;
-                    msg.ResetReading();
-
-                    msg.SkipToNextVariable(); // AgentId
-                    msg.SkipToNextVariable(); // SessionId
-                    msg.SkipToNextVariable(); // TransactionId
-                    std::string methodname = msg.ReadString();
+                    std::string methodname = ProtocolUtilities::ParseGenericMessageMethod(msg);
+                    
                     if( methodname == "RexSky" && sky_.get())
                         return GetSkyHandler()->HandleRexGM_RexSky(netdata);
                     else if ( methodname == "RexWaterHeight")
