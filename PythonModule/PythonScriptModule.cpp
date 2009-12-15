@@ -39,7 +39,7 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "RexNetworkUtils.h" //debugboundingbox in CreateEntity
+#include "RexNetworkUtils.h"
 
 #include "RexLogicModule.h" 
 //#include "Login/LoginUI.h" //in rexlogic
