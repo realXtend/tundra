@@ -7,6 +7,7 @@
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {
@@ -14,7 +15,7 @@ namespace RexLogic
     typedef std::map<std::string, std::string> AvatarAssetMap;
     
     //! Defines an asset for an avatar
-    class AvatarAsset
+    class REXLOGIC_MODULE_API AvatarAsset
     {
     public:
         //! Asset (human-readable) name
@@ -30,7 +31,7 @@ namespace RexLogic
     typedef std::vector<AvatarAsset> AvatarAssetVector;
     
     //! Defines a material for an avatar, with n textures
-    struct AvatarMaterial
+    struct REXLOGIC_MODULE_API AvatarMaterial
     {
         //! Material script asset
         AvatarAsset asset_;
@@ -45,20 +46,20 @@ namespace RexLogic
     typedef std::vector<AvatarMaterial> AvatarMaterialVector;
     
     //! Defines a transform for an avatar, attachment or bone
-    struct Transform
+    struct REXLOGIC_MODULE_API Transform
     {
         Core::Vector3df position_;
         Core::Quaternion orientation_;
         Core::Vector3df scale_;
         
-        Transform() : position_(0.0f, 0.0f, 0.0f),
+        Transform() : position_(Core::Vector3df::ZERO),
             scale_(1.0f, 1.0f, 1.0f)
         {
         }
     };
                 
     //! Defines an appearance modifier, possibly under control of a master modifier through position mapping
-    struct AppearanceModifier
+    struct REXLOGIC_MODULE_API AppearanceModifier
     {             
         enum ModifierType
         {
@@ -94,7 +95,7 @@ namespace RexLogic
     };  
             
     //! Defines a bone modifier
-    struct BoneModifier
+    struct REXLOGIC_MODULE_API BoneModifier
     {
         //! Possible modes for a bone modification
         enum BoneModifierMode
@@ -128,7 +129,7 @@ namespace RexLogic
     typedef std::vector<BoneModifier> BoneModifierVector;
     
     //! Defines a set of bone modifiers (also called a dynamic animation)
-    struct BoneModifierSet : public AppearanceModifier
+    struct REXLOGIC_MODULE_API BoneModifierSet : public AppearanceModifier
     {
         //! Individual bone modifiers
         BoneModifierVector modifiers_;
@@ -142,7 +143,7 @@ namespace RexLogic
     typedef std::vector<BoneModifierSet> BoneModifierSetVector;
     
     //! Defines a morph modifier
-    struct MorphModifier : public AppearanceModifier
+    struct REXLOGIC_MODULE_API MorphModifier : public AppearanceModifier
     {
         //! Name of morph animation
         std::string morph_name_;
@@ -156,7 +157,7 @@ namespace RexLogic
     typedef std::vector<MorphModifier> MorphModifierVector;
            
     //! Describes a modifier driven by a master modifier
-    struct SlaveModifier
+    struct REXLOGIC_MODULE_API SlaveModifier
     {
         //! Master value accumulation mode
         enum AccumulationMode
@@ -195,7 +196,7 @@ namespace RexLogic
     typedef std::vector<SlaveModifier> SlaveModifierVector;
                   
     //! Defines a master modifier that controls several appearance (slave) modifiers
-    struct MasterModifier
+    struct REXLOGIC_MODULE_API MasterModifier
     {
         //! Current position value (0.0 - 1.0)
         Core::Real value_;
@@ -210,7 +211,7 @@ namespace RexLogic
     typedef std::vector<MasterModifier> MasterModifierVector;
   
     //! Defines an animation for an avatar
-    struct AnimationDefinition
+    struct REXLOGIC_MODULE_API AnimationDefinition
     {
         //! Most likely a UUID
         std::string id_;
@@ -253,7 +254,7 @@ namespace RexLogic
     typedef std::map<std::string, std::string> AvatarPropertyMap;
     
     //! Defines an attachment for an avatar
-    struct AvatarAttachment
+    struct REXLOGIC_MODULE_API AvatarAttachment
     {
         //! Name of attachment
         std::string name_;
@@ -278,7 +279,7 @@ namespace RexLogic
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
 
     //! Entity component that stores an avatar's appearance parameters
-    class EC_AvatarAppearance : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AvatarAppearance : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_AvatarAppearance);
     public:

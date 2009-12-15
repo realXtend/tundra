@@ -29,17 +29,42 @@ namespace RexLogic
         {
             first_update = false;
             NoPositionDamping();
-            NoRotationDamping();
+            NoOrientationDamping();
         }
     }
     
-    void EC_NetworkPosition::NoPositionDamping()
+    void EC_NetworkPosition::SetPosition(const Core::Vector3df& position)
     {
-        damped_position_ = position_;
+        position_ = position;
+        NoPositionDamping();
+        NoVelocity();
     }
     
-    void EC_NetworkPosition::NoRotationDamping()
+    void EC_NetworkPosition::SetOrientation(const Core::Quaternion& orientation)
     {
-        damped_rotation_ = rotation_;
+        orientation_ = orientation;
+        NoOrientationDamping();
+        NoRotationVelocity();
+    }    
+    
+    void EC_NetworkPosition::NoPositionDamping()
+    {
+        damped_position_ = position_;     
+    }
+    
+    void EC_NetworkPosition::NoOrientationDamping()
+    {
+        damped_orientation_ = orientation_;
+    }
+    
+    void EC_NetworkPosition::NoVelocity()
+    {
+        velocity_ = Core::Vector3df::ZERO;
+        accel_ = Core::Vector3df::ZERO;
+    }
+    
+    void EC_NetworkPosition::NoRotationVelocity()
+    {
+        rotvel_ = Core::Vector3df::ZERO;
     }
 }

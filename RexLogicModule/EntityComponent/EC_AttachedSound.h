@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {
@@ -13,7 +14,7 @@ namespace RexLogic
         To use, first setup the sound usually using the sound service, then use AddSound()
         To be useful, the entity also needs the EC_OgrePlaceable component.
      */
-    class EC_AttachedSound : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AttachedSound : public Foundation::ComponentInterface
 	{	    
 		DECLARE_EC(EC_AttachedSound);
 	public:

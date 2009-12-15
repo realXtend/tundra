@@ -789,20 +789,20 @@ void RexLogicModule::UpdateObjects(Core::f64 frametime)
                     rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
                     rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
 
-                    netpos.rotation_ *= rot_quat1;
-                    netpos.rotation_ *= rot_quat2;
-                    netpos.rotation_ *= rot_quat3;
+                    netpos.orientation_ *= rot_quat1;
+                    netpos.orientation_ *= rot_quat2;
+                    netpos.orientation_ *= rot_quat3;
                 }
 
                 // Dampened (smooth) movement
                 if (netpos.damped_position_ != netpos.position_)
                     netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
 
-                if (netpos.damped_rotation_ != netpos.rotation_)
-                    netpos.damped_rotation_.slerp(netpos.rotation_, netpos.damped_rotation_, factor);
+                if (netpos.damped_orientation_ != netpos.orientation_)
+                    netpos.damped_orientation_.slerp(netpos.orientation_, netpos.damped_orientation_, factor);
 
                 ogrepos.SetPosition(netpos.damped_position_);
-                ogrepos.SetOrientation(netpos.damped_rotation_);
+                ogrepos.SetOrientation(netpos.damped_orientation_);
             }
         }
 

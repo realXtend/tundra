@@ -254,7 +254,7 @@ namespace RexLogic
                     EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
                     Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::Real)frametime + drag_yaw_) * rotation_sensitivity_);
-                    netpos->rotation_ = rotchange * netpos->rotation_;
+                    netpos->orientation_ = rotchange * netpos->orientation_;
                     netpos->Updated();
 
                     net_dirty_ = true;
@@ -282,7 +282,7 @@ namespace RexLogic
         if(avatarentity)
         {
             EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
-            return netpos.rotation_;
+            return netpos.orientation_;
         }
 
         return Core::Quaternion::IDENTITY;
@@ -332,14 +332,7 @@ namespace RexLogic
         EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
         //! \todo handle lookat to set initial avatar orientation
-        
-        netpos.position_ = position;
-        netpos.velocity_ = Core::Vector3Df::ZERO;
-        netpos.accel_ = Core::Vector3Df::ZERO;
-        
-        // Initial position within region, do not damp
-        netpos.NoPositionDamping();
-        netpos.NoRotationDamping();
+        netpos.SetPosition(position);
         netpos.Updated();    
     }    
 
@@ -375,7 +368,7 @@ namespace RexLogic
             if (IsAvatar(component))
             {
 				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
-				netpos->rotation_ = newrot * netpos->rotation_;
+				netpos->orientation_ = newrot * netpos->orientation_;
 				netpos->Updated();
 			}
 		}

@@ -7,11 +7,12 @@
 #include "Foundation.h"
 #include "RexUUID.h"
 #include "RexTypes.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {
     //! Material data structure
-    struct MaterialData
+    struct REXLOGIC_MODULE_API MaterialData
     {
         uint8_t Type;
         RexTypes::RexAssetID asset_id;
@@ -31,7 +32,7 @@ namespace RexLogic
 
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
-    class EC_OpenSimPrim : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_OpenSimPrim : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OpenSimPrim);
     public:

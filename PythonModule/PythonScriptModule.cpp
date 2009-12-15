@@ -2066,10 +2066,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         placeable->SetPosition(Core::Vector3df(x, y, z));
         if (networkpos)
         {
-            // Hard work to override the dead reckoning system...
-            networkpos->position_ = placeable->GetPosition();
-            networkpos->damped_position_ = networkpos->position_;
-            networkpos->velocity_ = Core::Vector3df(0,0,0);
+            // Override the dead reckoning system
+            networkpos->SetPosition(placeable->GetPosition());
         }
             
         //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
@@ -2124,10 +2122,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         placeable->SetOrientation(Core::Quaternion(x, y, z, w));
         if (networkpos)
         {
-            // Hard work to override the dead reckoning system...
-            networkpos->rotation_ = placeable->GetPosition();
-            networkpos->damped_rotation_ = networkpos->rotation_;
-            networkpos->rotvel_ = Core::Vector3df(0,0,0);
+            // Override the dead reckoning system
+            networkpos->SetOrientation(placeable->GetOrientation());
         }
                     
         return 0; //success.
