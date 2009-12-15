@@ -51,6 +51,7 @@ namespace Environment
 
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
+        bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
 
         /// @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler();
@@ -66,6 +67,14 @@ namespace Environment
 
         /// @return The water handler.
         WaterPtr GetWaterHandler();
+
+        void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index);
+
+        /// Change new terrain height value,
+        /// @Param start_height what height texture starts at (meters).
+        /// @Param height_range how many meters texture will go up from the texture_start_height 
+        /// @Param corner what texture height we want to change.
+        void SendTextureHeightMessage(Core::Real start_height, Core::Real height_range, Core::uint corner);
 
         /*! Modify land message Used to send a to server.
          *  @param x coordinate of terrain texture.
@@ -147,6 +156,8 @@ namespace Environment
         EnvironmentEditorPtr environment_editor_;
 
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+
+        bool waiting_for_reqioninfomessage_;
 
         /// Active scene ptr
         //Scene::ScenePtr activeScene_;

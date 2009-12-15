@@ -455,6 +455,27 @@ namespace
             RequestTerrainTextures();
     }
 
+    void Terrain::SetTerrainHeightValues(const Core::Real start_heights[num_terrain_textures], const Core::Real height_ranges[num_terrain_textures])
+    {
+        for(int i = 0; i < num_terrain_textures; ++i)
+        {
+            start_heights_[i] = start_heights[i];
+            height_ranges_[i] = height_ranges[i];
+        }
+    }
+
+    const Core::Real &Terrain::GetTerrainTextureStartHeight(int index) const
+    {
+        if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
+        return start_heights_[index];
+    }
+
+    const Core::Real &Terrain::GetTerrainTextureHeightRange(int index) const
+    {
+        if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
+        return height_ranges_[index];
+    }
+
     void Terrain::FindCurrentlyActiveTerrain()
     {
         //RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(owner_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());

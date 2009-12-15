@@ -202,6 +202,23 @@ namespace ProtocolUtilities
          */
         void SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height);
 
+        /** Send a new terrain texture that we want to use.
+         *  @Param new_texture_id id for asset resouce that we want to use as our terrain texture.
+         *  @Param texture_index switch texture we want to change currently supports 4 different textures. (0 = lowest and 3 = highest)
+         */
+        void SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index);
+
+        /** Sends EstateOwnerMessage that will inculde data of terrain texture height, range and corner.
+        /*  @Param start_height height value where texture start to show (meters).
+         *  @Param height_range how much up texture will go from the texture_start_height (meters)
+         *  @Param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE). Note! in Rex this variable will only tell what texture height values we are changing.
+         */
+        void SendTextureHeightsMessage(Core::Real start_height, Core::Real height_range, Core::uint corner);
+
+        /// Request new region information from the server(RegionHandshake is sented every client on that server)
+        /// ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures, terrain texture startheights/ranges and WaterHeight)
+        void SendTextureCommitMessage();
+
         /** Sends a packet which creates a new inventory folder.
          *  @param parent_id The parent folder UUID.
          *  @param folder_id UUID of the folder.

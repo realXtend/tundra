@@ -45,6 +45,8 @@ public:
     /// new resource requests to the asset handler if any of the textures have changed.
     void SetTerrainTextures(const RexTypes::RexAssetID textures[num_terrain_textures]);
 
+    void SetTerrainHeightValues(const Core::Real start_heights[num_terrain_textures], const Core::Real height_ranges[num_terrain_textures]);
+
     void RequestTerrainTextures();
 
     //! Looks through all the entities in RexLogic's currently active scene to find the Terrain
@@ -57,8 +59,12 @@ public:
     //! Called whenever a texture is loaded so it can be attached to the terrain.
     void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
-    //! Get terrain texture on terrain_textures array.
+    //! Get terrain texture ids.
     const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
+
+    const Core::Real &GetTerrainTextureStartHeight(int index) const;
+
+    const Core::Real &GetTerrainTextureHeightRange(int index) const;
 
 private:
     EnvironmentModule *owner_;
@@ -67,6 +73,10 @@ private:
 
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
     RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
+
+    //! lowest point where the fist texture is blended
+    Core::Real start_heights_[num_terrain_textures];
+    Core::Real height_ranges_[num_terrain_textures];
 
     Scene::EntityWeakPtr cachedTerrainEntity_;
 

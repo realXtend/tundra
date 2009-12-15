@@ -24,7 +24,8 @@
 namespace Environment
 {
     EnvironmentModule::EnvironmentModule() : 
-        ModuleInterfaceImpl(Foundation::Module::MT_Environment)
+        ModuleInterfaceImpl(Foundation::Module::MT_Environment),
+        waiting_for_reqioninfomessage_(false)
     {
 
     }
@@ -93,6 +94,8 @@ namespace Environment
         sky_.reset();
         environment_editor_.reset();
 
+        waiting_for_reqioninfomessage_ = false;
+
         LogInfo("System " + Name() + " uninitialized.");
     }
 
@@ -158,25 +161,6 @@ namespace Environment
                     if(environment_editor_.get())
                         environment_editor_->HandleResourceReady(res);
                 }
-            }
-        }
-        else if(category_id == scene_event_category_) // For scene related events.
-        {
-            if (event_id == Scene::Events::EVENT_ENVIRONMENT_TERRAIN_TEXTURE) // \todo this event should be removed and texture ids should be parered using modules own private service.
-            {
-                Scene::Events::TerrainTexturesEventData* texture_data = dynamic_cast<Scene::Events::TerrainTexturesEventData *>(data);
-                if (texture_data)
-                {
-                    if (terrain_.get())
-                        terrain_->SetTerrainTextures(texture_data->terrain);
-                }
-            }
-            else if ( event_id == Scene::Events::EVENT_ENVIRONMENT_WATER )
-            {
-                Scene::Events::WaterEventData* water_event_data = dynamic_cast<Scene::Events::WaterEventData* >(data);
-                if ( water_event_data != 0 && water_.get() != 0)
-                    water_->SetWaterHeight(water_event_data->height);
-                
             }
         }
         else if(category_id == network_in_event_category_) // For NetworkIn events
@@ -268,7 +252,21 @@ namespace Environment
                 if (environment_.get())
                     return environment_->HandleOSNE_SimulatorViewerTimeMessage(netdata);
             }
-           
+            else if (event_id == RexNetMsgRegionHandshake)
+            {
+                bool kill_event = HandleOSNE_RegionHandshake(netdata);
+                if (environment_editor_.get())
+                    environment_editor_->UpdateTerrainTextureRanges();
+                return kill_event;
+            }
+            else if(event_id == RexNetMsgRegionInfo)
+            {
+                if(waiting_for_reqioninfomessage_)
+                {
+                    currentWorldStream_->SendTextureCommitMessage();
+                    waiting_for_reqioninfomessage_ = false;
+                }
+            }
         }
         else if (category_id == network_state_event_category_) // For NetworkState category
         {
@@ -282,6 +280,54 @@ namespace Environment
                     CreateSky();
                 }
             }
+        }
+        return false;
+    }
+
+    bool EnvironmentModule::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
+    {
+        ProtocolUtilities::NetInMessage &msg = *data->message;
+        msg.ResetReading();
+
+        msg.SkipToNextVariable(); // RegionFlags U32
+        msg.SkipToNextVariable(); // SimAccess U8
+        msg.SkipToNextVariable(); // SimName
+        msg.SkipToNextVariable(); // SimOwner
+        msg.SkipToNextVariable(); // IsEstateManager
+
+        // Water height.
+        Core::Real water_height = msg.ReadF32();
+        if(water_.get())
+            water_->SetWaterHeight(water_height);
+
+        msg.SkipToNextVariable(); // BillableFactor
+        msg.SkipToNextVariable(); // CacheID
+        for(int i = 0; i < 4; ++i)
+            msg.SkipToNextVariable(); // TerrainBase0..3
+
+        // Terrain texture id
+        RexAssetID terrain[4];
+        terrain[0] = msg.ReadUUID().ToString();
+        terrain[1] = msg.ReadUUID().ToString();
+        terrain[2] = msg.ReadUUID().ToString();
+        terrain[3] = msg.ReadUUID().ToString();
+
+        Core::Real TerrainStartHeights[4];
+        TerrainStartHeights[0] = msg.ReadF32();
+        TerrainStartHeights[1] = msg.ReadF32();
+        TerrainStartHeights[2] = msg.ReadF32();
+        TerrainStartHeights[3] = msg.ReadF32();
+
+        Core::Real TerrainStartRanges[4];
+        TerrainStartRanges[0] = msg.ReadF32();
+        TerrainStartRanges[1] = msg.ReadF32();
+        TerrainStartRanges[2] = msg.ReadF32();
+        TerrainStartRanges[3] = msg.ReadF32();
+
+        if(terrain_.get())
+        {
+            terrain_->SetTerrainTextures(terrain);
+            terrain_->SetTerrainHeightValues(TerrainStartHeights, TerrainStartRanges);
         }
 
         return false;
@@ -326,6 +372,24 @@ namespace Environment
     {
         if(currentWorldStream_.get())
             currentWorldStream_->SendModifyLandPacket(x, y, brush, action, seconds, height);
+    }
+
+    void EnvironmentModule::SendTextureHeightMessage(Core::Real start_height, Core::Real height_range, Core::uint corner)
+    {
+        if(currentWorldStream_.get())
+        {
+            currentWorldStream_->SendTextureHeightsMessage(start_height, height_range, corner);
+            waiting_for_reqioninfomessage_ = true;
+        }
+    }
+
+    void EnvironmentModule::SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index)
+    {
+        if(currentWorldStream_.get())
+        {
+            currentWorldStream_->SendTextureDetail(new_texture_id, texture_index);
+            waiting_for_reqioninfomessage_ = true;
+        }
     }
 
     void EnvironmentModule::CreateTerrain()
