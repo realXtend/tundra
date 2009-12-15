@@ -47,6 +47,8 @@ else:
 OIS_KEY_ALT = 256
 OIS_KEY_M = 50
 OIS_KEY_S = 31
+OIS_KEY_R = 19
+OIS_KEY_ESC = 1
 
 DEV =False #if this is false, the canvas is added to the controlbar
 
@@ -75,7 +77,6 @@ def applymesh(ent, meshuuid):
 
 class EditGUI(Component):
     EVENTHANDLED = False
-    OIS_ESC = 1
     UIFILE = "pymodules/editgui/editobject.ui"
     
     MANIPULATE_NONE = 0
@@ -186,7 +187,7 @@ class EditGUI(Component):
         self.widget.setMesh.connect('clicked()', self.setMesh)
         self.widget.duplicate.connect('clicked()', self.duplicate)
         self.widget.undo.connect('clicked()', self.undo)
-        
+        self.widget.redo.connect('clicked()', self.redo)
         self.widget.move_button.connect('clicked()', self.manipulator_move)
         self.widget.scale_button.connect('clicked()', self.manipulator_scale)
         self.widget.rotate_button.connect('clicked()', self.manipulator_rotate)
@@ -205,7 +206,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -224,15 +225,30 @@ class EditGUI(Component):
         #~ self.modifying = False
         self.time = 0
         
-        self.SHORTCUTS = {
+        self.keypressed = False
+        
+        self.shortcuts = {
+            (OIS_KEY_ESC, 0): self.deselect,
             (OIS_KEY_M, OIS_KEY_ALT): self.manipulator_move,#"ALT+M", #move
             (OIS_KEY_S, OIS_KEY_ALT): self.manipulator_scale,#"ALT+S" #, #scale
-            #(OIS_KEY_R, ALT): "ALT+R" #rotate
+            #(OIS_KEY_R, ALT): self.manipulator_rotate #rotate
         }
         
         self.active = False
+        
+        self.canmove = False
     
     def manipulator_move(self):
+        if self.keypressed:
+            self.keypressed = False
+            if not self.widget.move_button.isChecked():
+                #print "not activated"
+                #print self.widget.move_button, dir(self.widget.move_button)
+                self.widget.move_button.setChecked(True)
+            else:
+                #print "activated"
+                self.widget.move_button.setChecked(False)
+
         if not self.widget.move_button.isChecked():
             self.hideArrows()
         else: #activated
@@ -246,6 +262,16 @@ class EditGUI(Component):
                 self.widget.move_button.setChecked(False)
         
     def manipulator_scale(self):
+        if self.keypressed:
+            self.keypressed = False
+            if not self.widget.scale_button.isChecked():
+                #print "not activated"
+                #print self.widget.move_button, dir(self.widget.move_button)
+                self.widget.scale_button.setChecked(True)
+            else:
+                #print "activated"
+                self.widget.scale_button.setChecked(False)
+
         if not self.widget.scale_button.isChecked():
             self.hideArrows()
         else: #activated
@@ -260,6 +286,16 @@ class EditGUI(Component):
                 self.manipulator_state = self.MANIPULATE_NONE
 
     def manipulator_rotate(self):
+        if self.keypressed:
+            self.keypressed = False
+            if not self.widget.rotate_button.isChecked():
+                #print "not activated"
+                #print self.widget.move_button, dir(self.widget.move_button)
+                self.widget.rotate_button.setChecked(True)
+            else:
+                #print "activated"
+                self.widget.rotate_button.setChecked(False)
+
         if not self.widget.rotate_button.isChecked():
             self.hideArrows()
         else: #activated
@@ -332,6 +368,7 @@ class EditGUI(Component):
                 self.update_selection()
             
     def changerot(self, i, v):
+        return
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
@@ -374,7 +411,19 @@ class EditGUI(Component):
             #self.sel = None
             self.update_guivals()
             self.modified = False
-        
+
+    def redo(self):
+        #print "redo clicked"
+        ent = self.sel
+        if ent is not None:
+            #print ent.uuid
+            #worldstream = r.getServerConnection()
+            self.worldstream.SendObjectRedoPacket(ent.uuid)
+            #self.hideArrows()
+            #self.sel = None
+            self.update_guivals()
+            self.modified = False
+            
     def duplicate(self):
         #print "duplicate clicked"
         ent = self.sel
@@ -445,6 +494,18 @@ class EditGUI(Component):
             
             self.update_selection()
     
+    def deselect(self):
+        if self.sel is not None:
+            self.sel = None
+            self.widget.label.text = "<none>"
+            self.hideArrows()
+            self.hideSelector()
+            self.prev_mouse_abs_x = 0
+            self.prev_mouse_abs_y = 0
+            self.canmove = False
+            self.arrow_grabbed_axis = None
+            self.arrow_grabbed = False
+        
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
         scale = list(self.sel.scale)
@@ -598,14 +659,19 @@ class EditGUI(Component):
                 
             if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
                 self.select(ent)
+                self.canmove = True
+            elif self.sel.id == ent.id:
+                self.canmove = True
         
         else:
-            self.sel = None
-            self.widget.label.text = "<none>"
-            self.hideArrows()
-            self.hideSelector()
-            self.prev_mouse_abs_x = 0
-            self.prev_mouse_abs_y = 0
+            #print "canmove:", self.canmove
+            self.canmove = False
+            #~ self.sel = None
+            #~ self.widget.label.text = "<none>"
+            #~ self.hideArrows()
+            #~ self.hideSelector()
+            #~ self.prev_mouse_abs_x = 0
+            #~ self.prev_mouse_abs_y = 0
             
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
@@ -630,8 +696,8 @@ class EditGUI(Component):
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
         #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
-        #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
         if self.active: #XXXnot self.canvas.IsHidden():
+            #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
             #print "Point!"
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
@@ -645,7 +711,8 @@ class EditGUI(Component):
 
         if self.active: #XXX not self.canvas.IsHidden():
             if self.left_button_down :
-                if self.sel is not None and self.sel_activated:
+                #print "on_mousemove + hold:", mouseinfo
+                if self.sel is not None and self.sel_activated and self.canmove:
                     self.dragging = True              
                     fov = r.getCameraFOV()
                     rightvec = Vector3(r.getCameraRight())
@@ -750,11 +817,12 @@ class EditGUI(Component):
                     
                     self.update_guivals()
    
-    #~ def on_keyup(self, keycode, keymod, callback):
-        #~ if not self.canvas.IsHidden():
-            #~ #print keycode, keymod
-            #~ if self.SHORTCUTS.has_key((keycode, keymod)):
-                #~ self.SHORTCUTS[(keycode, keymod)]()
+    def on_keyup(self, keycode, keymod, callback):
+        if self.active:
+            #print keycode, keymod
+            if self.shortcuts.has_key((keycode, keymod)):
+                self.keypressed = True
+                self.shortcuts[(keycode, keymod)]()
         
     def on_inboundnetwork(self, evid, name, callback):
         pass
@@ -788,8 +856,9 @@ class EditGUI(Component):
             except RuntimeError, e:
                 r.logDebug("on_hide: scene not found")
             else:
-                self.hideArrows()
-                self.hideSelector()
+                self.deselect()
+        else:
+            self.deselect()
             
     def update(self, time):
         #print "here", time

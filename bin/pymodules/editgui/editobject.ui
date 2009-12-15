@@ -309,7 +309,7 @@ border: 1px solid grey;</string>
      <widget class="QPushButton" name="setMesh">
       <property name="geometry">
        <rect>
-        <x>240</x>
+        <x>210</x>
         <y>180</y>
         <width>61</width>
         <height>21</height>
@@ -434,9 +434,9 @@ border: 1px solid grey;</string>
      <widget class="QPushButton" name="undo">
       <property name="geometry">
        <rect>
-        <x>320</x>
+        <x>340</x>
         <y>180</y>
-        <width>61</width>
+        <width>41</width>
         <height>21</height>
        </rect>
       </property>
@@ -446,6 +446,23 @@ border: 1px solid grey;</string>
       </property>
       <property name="text">
        <string>Undo</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="redo">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>180</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string>border-radius: 0px;
+border: 1px solid grey;</string>
+      </property>
+      <property name="text">
+       <string>Redo</string>
       </property>
      </widget>
     </widget>
