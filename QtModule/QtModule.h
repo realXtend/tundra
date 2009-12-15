@@ -62,6 +62,8 @@ namespace QtUI
         boost::weak_ptr<UICanvas> CreateCanvas(UICanvas::DisplayMode mode);
 
       
+        boost::weak_ptr<UICanvas> GetCanvas(const QString& id);
+
         /** 
          *  Deletes the canvas. 
          *  @param The ID of the canvas to be deleted. 
