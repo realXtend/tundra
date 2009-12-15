@@ -18,7 +18,9 @@ namespace TelepathyIM
                                      audio_in_src_pad_(0),
                                      video_in_src_pad_(0),
                                      audio_playback_channel_(0),
-                                     audio_stream_in_clock_rate_(0)
+                                     audio_stream_in_clock_rate_(0),
+                                     audio_capsfilter_(0),
+                                     audio_convert_(0)
     {
         try
         {
@@ -66,8 +68,20 @@ namespace TelepathyIM
         if (audio_resample_ == 0)
             throw Core::Exception("Cannot create GStreamer audio resample element.");
 
-        // todo: Audio caps for audio playback
-        //audio_caps = 
+        audio_capsfilter_ = gst_element_factory_make("capsfilter", NULL);
+        GstCaps *audio_caps = gst_caps_new_simple("audio/x-raw-int",
+            "channels", G_TYPE_INT, 1,
+            "width", G_TYPE_INT, 16,
+            "depth", G_TYPE_INT, 16,
+            "rate", G_TYPE_INT, 48000,
+            "signed", G_TYPE_BOOLEAN, false,
+            "endianess", G_TYPE_INT, 1234,
+            NULL);
+        g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
+
+        audio_convert_ = gst_element_factory_make("audioconvert", NULL);
+        if (audio_convert_ == 0)
+            throw Core::Exception("Cannot create GStreamer audio convert element.");
 
         //audio_volume_  = gst_element_factory_make("volume", NULL);
 
@@ -75,12 +89,12 @@ namespace TelepathyIM
         if (audio_playback_bin_ == 0)
             throw Core::Exception("Cannot create GStreamer bin for audio playback.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_output_, NULL);
-        gst_element_link_many(audio_resample_, audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_convert_, audio_resample_, audio_capsfilter_, audio_output_, NULL);
+        gst_element_link_many(audio_convert_, audio_resample_,audio_capsfilter_, audio_output_, NULL);
         // todo: Check for errors
 
         // add ghost pad to audio_bin_
-        GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
+        GstPad *sink = gst_element_get_static_pad(audio_convert_, "sink");
         audio_playback_bin_sink_ = gst_ghost_pad_new("sink", sink);
         gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_);
         gst_object_unref(G_OBJECT(sink));
