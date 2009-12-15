@@ -473,6 +473,13 @@ boost::weak_ptr<UICanvas> QtModule::CreateCanvas(UICanvas::DisplayMode mode)
     return canvas;
 }
 
+boost::weak_ptr<UICanvas> QtModule::GetCanvas(const QString& id)
+{
+    if ( controller_ != 0 )
+       return controller_->GetCanvasByID(id);
+    return boost::weak_ptr<UICanvas>();
+}
+
 Qt::KeyboardModifier QtModule::GetCurrentModifier(const boost::shared_ptr<Input::InputModuleOIS>& input) const
 {
     Qt::KeyboardModifier modifier = Qt::NoModifier;
