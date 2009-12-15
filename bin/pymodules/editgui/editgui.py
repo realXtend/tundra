@@ -131,6 +131,11 @@ class EditGUI(Component):
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
+        box = self.widget.findChild("QVBoxLayout")
+        if box is not None:
+            line = MeshAssetidEditline(self) 
+            box.addWidget(line)
+        
         #~ #print dir(ui)
         #~ meshassetedit = MeshAssetidEditline(self) #ui) #ui.MainFrame) - crashes :o
         #~ """<x>190</x>
@@ -184,7 +189,7 @@ class EditGUI(Component):
         
         self.widget.newObject.connect('clicked()', self.createObject)
         self.widget.deleteObject.connect('clicked()', self.deleteObject)
-        self.widget.setMesh.connect('clicked()', self.setMesh)
+        #self.widget.setMesh.connect('clicked()', self.setMesh)
         self.widget.duplicate.connect('clicked()', self.duplicate)
         self.widget.undo.connect('clicked()', self.undo)
         self.widget.redo.connect('clicked()', self.redo)
@@ -206,7 +211,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
