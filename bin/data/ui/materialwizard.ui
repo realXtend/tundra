@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>409</width>
-    <height>345</height>
+    <width>408</width>
+    <height>401</height>
    </rect>
   </property>
   <property name="styleSheet">
@@ -88,28 +88,31 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayoutDiff">
           <item>
-           <widget class="QLabel" name="labelDiffuse">
+           <widget class="QLabel" name="labelDiff">
             <property name="text">
              <string>Diffuse:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioDiffSolidColor">
+           <widget class="QRadioButton" name="radioDiffSolidParam">
             <property name="text">
              <string>solid color</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioDiffRgbTexture">
+           <widget class="QRadioButton" name="radioDiffRgbTexParam">
             <property name="text">
              <string>rgb texture</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBoxDiffModulate">
+           <widget class="QCheckBox" name="checkBoxDiffModulateParam">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>modulate diffuse with vertex color</string>
             </property>
@@ -135,21 +138,21 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioSpecNone">
+           <widget class="QRadioButton" name="radioSpecNoneParam">
             <property name="text">
              <string>none</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioSpecSolidColor">
+           <widget class="QRadioButton" name="radioSpecSolidParam">
             <property name="text">
              <string>solid color</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioSpecRgbTexture">
+           <widget class="QRadioButton" name="radioSpecRgbTexParam">
             <property name="text">
              <string>rgb texture</string>
             </property>
@@ -163,7 +166,7 @@
            <x>210</x>
            <y>120</y>
            <width>181</width>
-           <height>150</height>
+           <height>151</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayoutAplha">
@@ -175,28 +178,28 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioAlphaNone">
+           <widget class="QRadioButton" name="radioAlphaNoneParam">
             <property name="text">
              <string>none</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioAlphaSolid">
+           <widget class="QRadioButton" name="radioAlphaSolidParam">
             <property name="text">
              <string>solid (single) alpha value</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioAlphaSeparate">
+           <widget class="QRadioButton" name="radioAlphaSeparateParam">
             <property name="text">
              <string>separate grayscale texture</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioAplhaUseChanFromDiffMap">
+           <widget class="QRadioButton" name="radioAplhaUseChanFromDiffMapParam">
             <property name="text">
              <string>use the alpha channel from the 
 alpha layer of the diffuse map</string>
@@ -204,7 +207,7 @@ alpha layer of the diffuse map</string>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBoxSpecAlphaMasking">
+           <widget class="QCheckBox" name="checkBoxAlphaMaskingParam">
             <property name="text">
              <string>Alpha masking</string>
             </property>
@@ -230,42 +233,42 @@ alpha layer of the diffuse map</string>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkBoxShadowParam">
             <property name="text">
              <string>receives shadows</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_4">
+           <widget class="QCheckBox" name="checkBoxNormalParam">
             <property name="text">
              <string>normal mapping</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_3">
+           <widget class="QCheckBox" name="checkBoxLumParam">
             <property name="text">
              <string>luminance mapping</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_6">
+           <widget class="QCheckBox" name="checkBoxLightParam">
             <property name="text">
-             <string>lightmapping</string>
+             <string>light mapping</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_5">
+           <widget class="QCheckBox" name="checkBoxReflParam">
             <property name="text">
              <string>2D reflection mapping</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="checkBoxAnimParam">
             <property name="text">
              <string>Apply OGRE animation to UV set 0</string>
             </property>
@@ -273,11 +276,28 @@ alpha layer of the diffuse map</string>
           </item>
          </layout>
         </widget>
-        <zorder>verticalLayoutWidget</zorder>
-        <zorder>verticalLayoutWidget_2</zorder>
-        <zorder>verticalLayoutWidget_3</zorder>
-        <zorder>verticalLayoutWidget_4</zorder>
-        <zorder>labelAlpha</zorder>
+        <widget class="QWidget" name="horizontalLayoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>290</y>
+           <width>311</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="labelName">
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit"/>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
       <item>

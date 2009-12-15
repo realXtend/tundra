@@ -66,6 +66,8 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     scene_handler_(0),
     network_state_handler_(0),
     framework_handler_(0),
+    os_login_handler_(0),
+    taiga_login_handler_(0),
     login_ui_(0)
 {
 }
@@ -201,12 +203,12 @@ void RexLogicModule::PostInitialize()
         LogError("Unable to find event category for Inventory");
 
     // Asset events
-	eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
-	if (eventcategoryid != 0)
-		event_handlers_[eventcategoryid].push_back(
-			boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-	else
-		LogError("Unable to find event category for Asset");
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
+    if (eventcategoryid != 0)
+        event_handlers_[eventcategoryid].push_back(
+            boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
+    else
+        LogError("Unable to find event category for Asset");
     
     // Framework events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -216,9 +218,8 @@ void RexLogicModule::PostInitialize()
     else
         LogError("Unable to find event category for Framework");
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>
-        (Foundation::Service::ST_Renderer).lock();
-    if (renderer)
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (renderer.get())
     {
         Ogre::Camera *cam = renderer->GetCurrentCamera();
         cam->setPosition(-10, -10, -10);
@@ -227,10 +228,10 @@ void RexLogicModule::PostInitialize()
 
     send_input_state_ = true;
 
-	// Create the login window, give it the loginhandlers
+    // Create the login window, give it the loginhandlers
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
-	login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
+    login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
     main_panel_handler_->ConnectToLoginHandler();
 }
 
@@ -276,11 +277,6 @@ void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities:
         LogError("Unable to find event category for NetworkIn");
 }
 
-void RexLogicModule::SendModifyLandMessage(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height)
-{
-    GetServerConnection()->SendModifyLandPacket(x, y, brush, action, seconds, height);
-}
-
 void RexLogicModule::DeleteScene(const std::string &name)
 {
     if (!framework_->HasScene(name))
@@ -318,7 +314,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE (framework_handler_);
     SAFE_DELETE (os_login_handler_);
     SAFE_DELETE (taiga_login_handler_);
-	SAFE_DELETE (login_ui_);
+    SAFE_DELETE (login_ui_);
 
     LogInfo("Module " + Name() + " uninitialized.");
 }
@@ -326,8 +322,7 @@ void RexLogicModule::Uninitialize()
 #ifdef _DEBUG
 void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 {
-    OgreRenderer::RendererPtr renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(
-        Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
         return;
 
@@ -418,27 +413,27 @@ void RexLogicModule::Update(Core::f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (!renderer)
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
         return;
-    
-    Ogre::Camera *camera = renderer->GetCurrentCamera();        
+
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
     if (!camera)
         return;
 
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
-        return;                
-    
+        return;
+
     Ogre::Vector3 pos = camera->getPosition();
     Ogre::Quaternion orient = camera->getOrientation();
-    
+
     soundsystem->SetListener(
         Core::Vector3df(pos.x, pos.y, pos.z),
         Core::Quaternion(orient.x, orient.y, orient.z, orient.w)
     );
 }
-            
+
 // virtual
 bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
 {
@@ -516,8 +511,10 @@ Core::entity_id_t RexLogicModule::GetUserAvatarId()
 
 Core::Vector3df RexLogicModule::GetCameraUp()
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(
-        Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
+        return Core::Vector3df();
+
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 up = camera->getUp();
     return Core::Vector3df(up.x, up.y, up.z);
@@ -525,8 +522,10 @@ Core::Vector3df RexLogicModule::GetCameraUp()
 
 Core::Vector3df RexLogicModule::GetCameraRight()
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(
-        Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
+        return Core::Vector3df();
+
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 right = camera->getRight();
     return Core::Vector3df(right.x, right.y, right.z);
@@ -534,39 +533,52 @@ Core::Vector3df RexLogicModule::GetCameraRight()
 
 Core::Real RexLogicModule::GetCameraFOV()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
+        return 0;
+
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-	return (Core::Real)camera->getFOVy().valueRadians();
+    return (Core::Real)camera->getFOVy().valueRadians();
 }
 
 Core::Real RexLogicModule::GetCameraViewportWidth()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
+        return 0;
+
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-	Ogre::Viewport *viewport = camera->getViewport();
-	return viewport->getActualWidth();
+    Ogre::Viewport *viewport = camera->getViewport();
+    return viewport->getActualWidth();
 }
 
 Core::Real RexLogicModule::GetCameraViewportHeight()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    if (!renderer.get())
+        return 0;
+
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-	Ogre::Viewport *viewport = camera->getViewport();
-	return viewport->getActualHeight();
+    Ogre::Viewport *viewport = camera->getViewport();
+    return viewport->getActualHeight();
 }
 
 Core::Vector3df RexLogicModule::GetCameraPosition()
 {
-	boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetRendererPtr();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-	Ogre::Vector3 pos = camera->getPosition();
-	return Core::Vector3df(pos.x, pos.y, pos.z);;
+    Ogre::Vector3 pos = camera->getPosition();
+    return Core::Vector3df(pos.x, pos.y, pos.z);;
 }
-
 
 void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
 {
     GetPrimitiveHandler()->SendRexPrimData(entityid);
+}
+
+OgreRenderer::RendererPtr RexLogicModule::GetRendererPtr()
+{
+    return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
@@ -643,17 +655,17 @@ void RexLogicModule::SwitchCameraState()
     }
 }
 
-AvatarPtr RexLogicModule::GetAvatarHandler()
+AvatarPtr RexLogicModule::GetAvatarHandler() const
 {
     return avatar_;
 }
 
-AvatarEditorPtr RexLogicModule::GetAvatarEditor()
+AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 {
     return avatar_editor_;
 }
 
-PrimitivePtr RexLogicModule::GetPrimitiveHandler()
+PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 {
     return primitive_;
 }
@@ -668,7 +680,7 @@ void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
     activeScene_ = scene;
 }
 
-Scene::ScenePtr RexLogicModule::GetCurrentActiveScene()
+Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
 {
     return activeScene_;
 }

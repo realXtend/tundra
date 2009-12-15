@@ -1,0 +1,33 @@
+material rex/DiffNormalShadowLightmap
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			vertex_program_ref rex/DiffNormalShadowLightmapVP
+			{
+			}
+			fragment_program_ref rex/DiffNormalShadowLightmapFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit normalMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit lightMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit shadowMap
+			{
+				content_type shadow
+			}
+		}
+	}
+}

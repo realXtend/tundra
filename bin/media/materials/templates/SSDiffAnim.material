@@ -1,0 +1,24 @@
+material rex/DiffAnim
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			vertex_program_ref rex/DiffAnimVP
+			{
+				param_named_auto textureMatrix texture_matrix 0
+			}
+			fragment_program_ref rex/DiffAnimFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+				scroll_anim 1 1
+				rotate_anim 2
+			}
+		}
+	}
+}

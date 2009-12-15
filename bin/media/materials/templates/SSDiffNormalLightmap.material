@@ -1,0 +1,29 @@
+material rex/DiffNormalLightmap
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			vertex_program_ref rex/DiffNormalLightmapVP
+			{
+			}
+			fragment_program_ref rex/DiffNormalLightmapFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit normalMap
+			{
+				texture AddTextureNameHere
+			}
+			texture_unit lightMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}

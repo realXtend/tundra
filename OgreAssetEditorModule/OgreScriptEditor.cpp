@@ -250,9 +250,6 @@ void OgreScriptEditor::InitEditorWindow()
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
         mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "OGRE Script Editor", false));
     proxyWidget_->show();
-
-    ///\todo doesn't seem to do the trick.
-    //proxyWidget_->widget()->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
 void OgreScriptEditor::CreateTextEdit()

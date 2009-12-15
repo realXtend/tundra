@@ -1,0 +1,21 @@
+material rex/Diff
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			vertex_program_ref rex/DiffVP
+			{
+			}
+			fragment_program_ref rex/DiffFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture AddTextureNameHere
+			}
+		}
+	}
+}
