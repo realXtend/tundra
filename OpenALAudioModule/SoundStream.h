@@ -6,7 +6,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#define BUFFER_COUNT 10
+#define BUFFER_COUNT 25
 
 namespace OpenALAudio
 {
