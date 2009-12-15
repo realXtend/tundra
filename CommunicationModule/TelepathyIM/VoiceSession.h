@@ -5,11 +5,15 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/PendingReady>
+#include <Foundation.h>
+#include <ServiceInterface.h> // needed
+#include <SoundServiceInterface.h>
 
 #include "interface.h"
 #include "Contact.h"
 #include "FarsightChannel.h"
 #include "VoiceSessionParticipant.h"
+
 
 namespace TelepathyIM
 {
@@ -60,6 +64,8 @@ namespace TelepathyIM
         void CreateAudioStream();
         void CreateVideoStream();
         void CreateFarsightChannel();
+        void DeleteChannels();
+
         QString GetReadon() { return reason_; };
 
         Tp::MediaStreamPtr GetAudioMediaStream(); // todo: make objects for audio and video streams
@@ -81,6 +87,8 @@ namespace TelepathyIM
         bool audio_out_enabled_;
         bool video_out_enabled_;
 
+        Core::sound_id_t audio_playback_channel_;
+
 	protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
         void OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status);
@@ -94,6 +102,7 @@ namespace TelepathyIM
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
         void OnAudioStreamCreated(Tp::PendingOperation *op);
         void OnVideoStreamCreated(Tp::PendingOperation *op);
+        void OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
 
     signals:
 

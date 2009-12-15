@@ -8,8 +8,6 @@
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <telepathy-farsight/channel.h>
 #include <Foundation.h>
-#include <ServiceInterface.h>
-#include <SoundServiceInterface.h>
 #include "VideoWidget.h"
 
 namespace TelepathyIM
@@ -51,24 +49,34 @@ namespace TelepathyIM
 
         VideoWidget* GetPreviewVideo() { return video_preview_widget_; };
         VideoWidget* GetRemoteOutputVideo() { return video_remote_output_widget_; };
-        virtual void SetAudioSourceLocation(Core::Vector3df location);
 
-        Core::sound_id_t audio_playback_channel_;
-        int audio_stream_in_clock_rate_;
+        int audio_stream_in_clock_rate_; // todo getter
+
+//        void OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
 
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
+        void AudioStreamReceived();
+        void VideoStreamReceived();
+
+        //! When audio buffer is ready for playback
+        void AudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
 
     public:
-        //bool audio_out_linked_; // todo setter
-        //bool video_out_linked_; // todo setter
         GstPad *audio_in_src_pad_; // todo setter
         GstPad *video_in_src_pad_; // todo setter
 
     private:
 
         GstElement* setUpElement(QString elemName);
+
         void ConnectTfChannelEvents();
+        void CreatePipeline();
+        void CreateTfChannel();
+        void CreateAudioInputElement(const QString &name);
+        void CreateAudioPlaybackElement(const QString &audio_sink_name);
+        void CreateVideoInputElement(const QString &video_src_name);
+        void CreateVideoOutputElements();
 
         // G_CALLBACK's need static methods
         static gboolean busWatch(GstBus *bus,
@@ -120,9 +128,6 @@ namespace TelepathyIM
 
         GstElement *video_preview_element_;
         GstElement *video_remote_output_element_;
-
-
-//        Core::sound_id_t audio_playback_channel_;
     };
 
 } // end of namespace: TelepathyIM
