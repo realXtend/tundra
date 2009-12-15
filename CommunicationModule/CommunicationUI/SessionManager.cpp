@@ -24,7 +24,7 @@ namespace UiManagers
     {
         SAFE_DELETE(session_helper_);
         SAFE_DELETE(friend_list_widget_);
-        parent_ = 0;
+        main_parent_ = 0;
         session_manager_ui_ = 0;
         im_connection_ = 0;
     }

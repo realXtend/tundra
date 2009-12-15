@@ -24,7 +24,8 @@ namespace OpenALAudio
         next_channel_id_(0),
         sound_cache_size_(DEFAULT_SOUND_CACHE_SIZE),
         update_time_(0),
-        listener_position_(0.0, 0.0, 0.0)
+        listener_position_(0.0, 0.0, 0.0),
+        sound_stream_(0)
     {
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
@@ -197,44 +198,52 @@ namespace OpenALAudio
 
     Core::sound_id_t SoundSystem::PlayAudioData(Core::u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel)
     {
-        if (!mutex.try_lock())
-        {
-            int i = (int)((buffer_size*8000 / sample_rate) / sample_width);
-            std::string s_int = boost::lexical_cast<std::string>(i);
-            OpenALAudioModule::LogDebug("Dropped " + s_int + " ms");
-            return 0;
-        }
+        // TODO: Make a sound stream map so we can have multiple
+        // return id of this stream so you can call its FillBuffer again who ever gets it! 
+        if (!sound_stream_)
+            sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
 
-        SoundPtr sound = SoundPtr(new OpenALAudio::Sound("audiobuffer"));
-        if (!sound)
-            return 0;
+        sound_stream_->FillBuffer(buffer, buffer_size);
 
-        bool sample_width_16bit = true;
-        switch(sample_width)
-        {
-            case 8: sample_width_16bit = false; break;
-            case 16: sample_width_16bit = true; break;
-            default:
-                return 0; // todo: Write log entry
-        }
-        sound->LoadFromBuffer(buffer, buffer_size, sample_rate, sample_width_16bit, stereo);
+        return 0;
+        //if (!mutex.try_lock())
+        //{
+        //    int i = (int)((buffer_size*8000 / sample_rate) / sample_width);
+        //    std::string s_int = boost::lexical_cast<std::string>(i);
+        //    OpenALAudioModule::LogDebug("Dropped " + s_int + " ms");
+        //    return 0;
+        //}
 
-        SoundChannelMap::iterator i = channels_.find(channel);
-        if (i == channels_.end())
-        {
-            SoundChannel* s = new SoundChannel();
-            if (!s)
-                return 0;
-            i = channels_.insert(std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
-        }
-        
-        if (!i->second.get())
-            return 0;
-        i->second->Play(sound);
-        
-        Core::sound_id_t this_channel_id =  i->first;
-        mutex.unlock();
-        return this_channel_id;     
+        //SoundPtr sound = SoundPtr(new OpenALAudio::Sound("audiobuffer"));
+        //if (!sound)
+        //    return 0;
+
+        //bool sample_width_16bit = true;
+        //switch(sample_width)
+        //{
+        //    case 8: sample_width_16bit = false; break;
+        //    case 16: sample_width_16bit = true; break;
+        //    default:
+        //        return 0; // todo: Write log entry
+        //}
+        //sound->LoadFromBuffer(buffer, buffer_size, sample_rate, sample_width_16bit, stereo);
+
+        //SoundChannelMap::iterator i = channels_.find(channel);
+        //if (i == channels_.end())
+        //{
+        //    SoundChannel* s = new SoundChannel();
+        //    if (!s)
+        //        return 0;
+        //    i = channels_.insert(std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
+        //}
+        //
+        //if (!i->second.get())
+        //    return 0;
+        //i->second->Play(sound);
+        //
+        //Core::sound_id_t this_channel_id =  i->first;
+        //mutex.unlock();
+        //return this_channel_id;     
     }
 
 

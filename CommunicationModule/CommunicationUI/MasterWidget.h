@@ -62,6 +62,7 @@ namespace CommunicationUI
         UiManagers::SessionManager *session_manager_;
 
         QSize current_size_;
+        QStringList to_be_deleted_;
     };
 }
 

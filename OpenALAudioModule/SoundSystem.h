@@ -4,6 +4,7 @@
 
 #include "SoundServiceInterface.h"
 #include "Sound.h"
+#include "SoundStream.h"
 #include "SoundChannel.h"
 
 #include <AL/al.h>
@@ -173,6 +174,8 @@ namespace OpenALAudio
         Core::Vector3df listener_position_;
         //! Listener orientation
         Core::Quaternion listener_orientation_;
+
+        SoundStream *sound_stream_;
 
         boost::mutex mutex;
     };
