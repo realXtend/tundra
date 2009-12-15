@@ -247,7 +247,7 @@ namespace Environment
         // Sanity check: if water is totally disabled do not update it. 
         QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
 
-        if (water_toggle_box != 0 && water_toggle_box->isChecked())
+        if (water_toggle_box != 0 && !water_toggle_box->isChecked())
             return;
 
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
