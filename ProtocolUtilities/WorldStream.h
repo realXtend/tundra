@@ -423,7 +423,10 @@ namespace ProtocolUtilities
 
 		/// sends the undo packet for the entity ent_id
 		void SendObjectUndoPacket(const QString &ent_id);
-
+		
+		/// sends the redo packet for the entity ent_id
+		void SendObjectRedoPacket(const QString &ent_id);
+		
 		/// duplicate the object
 		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset);
 		/// same as above but takes the offset vector as three ints

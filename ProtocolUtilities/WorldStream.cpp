@@ -1254,6 +1254,28 @@ void WorldStream::SendObjectUndoPacket(const QString &ent_id)
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectRedoPacket(const QString &ent_id)
+{
+	if(!connected_)
+		return;
+
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgRedo);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+	m->AddUUID(RexUUID());      // GroupID
+
+	// ObjectData
+	m->SetVariableBlockCount(1);
+	RexUUID ruuid = RexUUID();
+	ruuid.FromString(ent_id.toStdString());
+    m->AddUUID(ruuid);
+
+    FinishMessageBuilding(m);
+}
+
 void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df offset)
 {
 	ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDuplicate);
