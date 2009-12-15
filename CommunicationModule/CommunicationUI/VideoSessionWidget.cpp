@@ -79,11 +79,11 @@ namespace CommunicationUI
                 video_session_ui_.statusLabel->setText("Open");
                 break;
             case Communication::VoiceSessionInterface::STATE_CLOSED:
-                video_session_ui_.statusLabel->setText("Closed");
+                video_session_ui_.statusLabel->setText("This coversation has been closed");
                 break;
             case Communication::VoiceSessionInterface::STATE_ERROR:
                 video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
-                video_session_ui_.statusLabel->setText("Failed");
+                video_session_ui_.statusLabel->setText("Connection failed");
                 break;
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
                 video_session_ui_.statusLabel->setText("Initializing...");

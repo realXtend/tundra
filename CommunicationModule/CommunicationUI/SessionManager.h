@@ -33,7 +33,6 @@ namespace UiManagers
         void Start(const QString &username, Communication::ConnectionInterface *im_connection);      
 
     private:
-        QWidget *main_parent_;
         QMenuBar *menu_bar_;
         QAction *available_status, *chatty_status, *away_status;
         QAction *extended_away_status, *busy_status, *hidden_status;
@@ -41,7 +40,7 @@ namespace UiManagers
         Ui::SessionManagerWidget            *session_manager_ui_;
         UiHelpers::SessionHelper            *session_helper_;
         Communication::ConnectionInterface  *im_connection_;
-        CommunicationUI::MasterWidget       *parent_;
+        CommunicationUI::MasterWidget       *main_parent_;
         CommunicationUI::FriendListWidget   *friend_list_widget_;
 
     public slots:
@@ -51,7 +50,7 @@ namespace UiManagers
         QMenuBar *ConstructMenuBar();
         void CreateFriendListWidget();
 
-        void Hide()     { parent_->hide(); }
+        void Hide()     { main_parent_->hide(); }
         void SignOut()  { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
         void Exit();
 
