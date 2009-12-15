@@ -58,6 +58,12 @@ namespace ProtocolUtilities
 
         /// Use to append a generic buffer of bytes into the stream. Use this to fill a VarBufferXX variable.
         void AddBuffer(size_t count, uint8_t *data);
+
+        /// Use to append a string (including the end zero) as a generic buffer of bytes into the stream.
+        void AddString(const char* str);
+
+        /// Use to append a string (including the end zero) as a generic buffer of bytes into the stream.
+        void AddString(const std::string& str);
         
         /// Check the type of the next variable that is expected to be present in the message.
         NetVariableType CheckNextVariable() const;
