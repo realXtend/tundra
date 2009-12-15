@@ -194,8 +194,7 @@ namespace Environment
             }
             else if (event_id == RexNetMsgGenericMessage)
             {
-                if (sky_.get())
-                {
+               
                     ProtocolUtilities::NetInMessage &msg = *netdata->message;
                     msg.ResetReading();
 
@@ -203,9 +202,66 @@ namespace Environment
                     msg.SkipToNextVariable(); // SessionId
                     msg.SkipToNextVariable(); // TransactionId
                     std::string methodname = msg.ReadString();
-                    if(methodname == "RexSky")
+                    if( methodname == "RexSky" && sky_.get())
                         return GetSkyHandler()->HandleRexGM_RexSky(netdata);
-                }
+                    else if ( methodname == "RexWaterHeight")
+                    {
+                        msg.ResetReading();
+                        msg.SkipToFirstVariableByName("Parameter");
+                        
+                        // Variable block begins, should have currently (at least) 1 instances.
+                        size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+                        if ( instance_count < 1 )
+                            return false;
+
+
+                        if ( water_.get() != 0 )
+                        {
+                            std::string message = msg.ReadString();
+                            // Convert to float. 
+                            try
+                            {
+                                float height = boost::lexical_cast<float>(message);
+                                water_->SetWaterHeight(height);
+
+                            } catch (boost::bad_lexical_cast&)
+                            {}
+                        }
+                            
+                    }
+                    else if ( methodname == "RexDrawWater")
+                    {
+                        msg.ResetReading();
+                        msg.SkipToFirstVariableByName("Parameter");
+                        
+                        // Variable block begins, should have currently (at least) 1 instances.
+                        size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+                        if ( instance_count < 1 )
+                            return false;
+
+                        std::string message = msg.ReadString();
+                        
+                        // Convert to boolean
+                        try
+                        {
+                            bool draw = boost::lexical_cast<bool>(message);
+                            if ( draw ) 
+                            {
+                                if ( water_.get() ) 
+                                    water_->CreateWaterGeometry();
+                                else
+                                    CreateWater();
+                               
+                            }
+                            else
+                            {
+                                water_->RemoveWaterGeometry();
+                            }
+                               
+                        } catch (boost::bad_lexical_cast&)
+                        {}
+                    }
+              
             }
             else if (event_id == RexNetMsgSimulatorViewerTimeMessage)
             {
