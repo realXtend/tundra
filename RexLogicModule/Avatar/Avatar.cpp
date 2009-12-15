@@ -231,7 +231,7 @@ namespace RexLogic
         if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
-            netpos.rotation_ = rotation;
+            netpos.orientation_ = rotation;
         }
                   
         //! \todo what to do with acceleration & rotation velocity? zero them currently
@@ -289,7 +289,7 @@ namespace RexLogic
         if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
-            netpos.rotation_ = rotation;
+            netpos.orientation_ = rotation;
         }
         
         netpos.Updated();

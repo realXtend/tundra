@@ -6,6 +6,7 @@
 #include "ComponentInterface.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {

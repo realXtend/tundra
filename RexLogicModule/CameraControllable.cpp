@@ -162,7 +162,7 @@ namespace RexLogic
             if (netpos && placeable)
             {
                 Core::Vector3df avatar_pos = placeable->GetPosition();
-                Core::Quaternion avatar_orientation = netpos->rotation_; 
+                Core::Quaternion avatar_orientation = netpos->orientation_; 
 
                 if (current_state_ == FirstPerson || current_state_ == ThirdPerson)
                 {

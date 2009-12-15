@@ -6,11 +6,12 @@
 #include "ComponentInterface.h"
 //#include "Foundation.h"
 #include "RexUUID.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {
     //! This component is present on all agents when connected to an OpenSim world. 
-    class EC_OpenSimPresence : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_OpenSimPresence : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_OpenSimPresence);
        

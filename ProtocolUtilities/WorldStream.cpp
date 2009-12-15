@@ -482,6 +482,10 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
     if (!update_info_list.size())
         return;
           
+    // Will actually send two packets: first one for position & scale, then one for rotation.
+    // Protocol does not seem to support sending all three
+    
+    // 1. Position & scale packet                             
     ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
     assert(m);
                 
@@ -508,19 +512,30 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         // Scale
         memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(update_info_list[i].scale_), sizeof(Vector3));
         offset += sizeof(Vector3);
-        
-        // Rotation todo.
     }
 
     // Add the data.
     m->AddBuffer(offset, data);
+    FinishMessageBuilding(m);
+    
+    // 2. Rotation packet                          
+    m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
+    assert(m);
+                
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
 
-    ///\todo Make this work!
-    /*for(size_t i = 0; i < update_info_list.size(); ++i)
+    // ObjectData
+    offset = 0;
+
+    m->SetVariableBlockCount(update_info_list.size());
+
+    for(size_t i = 0; i < update_info_list.size(); ++i)
     {
         m->AddU32(update_info_list[i].local_id_);
         m->AddU8(2);
-
+        
         // Rotation
         Vector3 val = Core::PackQuaternionToFloat3(update_info_list[i].orientation_);
         memcpy(&data[offset], &val, sizeof(Vector3));
@@ -528,9 +543,8 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
     }
 
     // Add the data.
-    m->AddBuffer(offset, data);*/
-
-    FinishMessageBuilding(m);
+    m->AddBuffer(offset, data);
+    FinishMessageBuilding(m);    
 }
 
 void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)

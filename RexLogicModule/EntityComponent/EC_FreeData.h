@@ -5,6 +5,7 @@
 
 #include "ComponentInterface.h"
 #include "Foundation.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {

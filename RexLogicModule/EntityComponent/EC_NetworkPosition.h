@@ -6,13 +6,14 @@
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
+#include "RexLogicModuleApi.h"
 
 namespace RexLogic
 {
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
     /*! Note that currently values are stored in Ogre format axes.
      */ 
-    class EC_NetworkPosition : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_NetworkPosition : public Foundation::ComponentInterface
     {
         DECLARE_EC(EC_NetworkPosition);
     public:
@@ -28,7 +29,7 @@ namespace RexLogic
         Core::Vector3df accel_;
         
         //! Orientation
-        Core::Quaternion rotation_;
+        Core::Quaternion orientation_;
         
         //! Rotational velocity;
         Core::Vector3df rotvel_;
@@ -43,7 +44,7 @@ namespace RexLogic
         Core::Vector3df damped_position_; 
         
         //! Damped orientation
-        Core::Quaternion damped_rotation_;
+        Core::Quaternion damped_orientation_;
         
         //! Whether update is first
         bool first_update;        
@@ -51,14 +52,26 @@ namespace RexLogic
         //! Finished an update
         void Updated();
         
-        //! Disable position damping, call after updating position
-        void NoPositionDamping();
-
-        //! Disable rotation damping, call after updating rotation
-        void NoRotationDamping();
-         
+        //! Set position forcibly, for example in editing tools
+        void SetPosition(const Core::Vector3df& position);
+        
+        //! Set orientation forcibly, for example in editing tools
+        void SetOrientation(const Core::Quaternion& orientation);
+                
     private:
         EC_NetworkPosition(Foundation::ModuleInterface* module);        
+
+        //! Disable position damping, called after setting position forcibly
+        void NoPositionDamping();
+
+        //! Disable orientation damping, called after setting orientation forcibly
+        void NoOrientationDamping();
+         
+        //! Disable acceleration/velocity, called after setting position forcibly
+        void NoVelocity();
+
+        //! Disable rotational , called after setting orientation forcibly
+        void NoRotationVelocity();
     };
 }
 

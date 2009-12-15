@@ -133,7 +133,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             // ofs 48 - angular velocity - 3 x float (3x4 bytes)
             // total 60 bytes
 
-            Core::Vector3Df vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]));
+            Core::Vector3df vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[0]));
             if (IsValidPositionVector(vec))
                 netpos.position_ = vec;
 
@@ -145,7 +145,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Acceleration as well - it's ok as they are quite similar.
                 netpos.accel_ = vec;
 
-            netpos.rotation_ = Core::OpenSimToOgreQuaternion(Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
+            netpos.orientation_ = Core::OpenSimToOgreQuaternion(Core::UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
             vec = Core::OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Core::Vector3df*>(&objectdatabytes[48]));
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Angular Velocity as well - it's ok as they are quite similar.
                 netpos.rotvel_ = vec;
@@ -239,7 +239,7 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
     if(!entity) return;
     EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-    Core::Vector3Df vec = GetProcessedVector(&bytes[i]);
+    Core::Vector3df vec = GetProcessedVector(&bytes[i]);
     if (IsValidPositionVector(vec))
         netpos.position_ = vec;
     i += sizeof(Core::Vector3df);
@@ -250,7 +250,7 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
     netpos.accel_ = GetProcessedVectorFromUint16(&bytes[i]); 
     i += 6;
 
-    netpos.rotation_ = GetProcessedQuaternion(&bytes[i]);
+    netpos.orientation_ = GetProcessedQuaternion(&bytes[i]);
     i += 8;
 
     netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
