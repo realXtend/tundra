@@ -732,3 +732,11 @@ if 0:
     for item in channels:
         for handler in r.manager._getHandlers(item):
             print handler.channels#dir(handler)
+            
+if 0:
+    import PythonQt
+    from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
+    box = r.c.widget.findChild("QVBoxLayout")
+    print box, dir(box), box.name
+    line = QLineEdit()
+    box.addWidget(line)
