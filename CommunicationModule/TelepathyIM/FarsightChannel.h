@@ -106,6 +106,8 @@ namespace TelepathyIM
         // audio modification elements
         GstElement *audio_resample_;
         GstElement *audio_volume_;
+        GstElement *audio_capsfilter_;
+        GstElement *audio_convert_;
 
         // bins
         GstElement *audio_playback_bin_;
