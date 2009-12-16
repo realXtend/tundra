@@ -37,6 +37,9 @@ namespace CommunicationUI
 
     public slots:
         void SessionStateChanged(Communication::VoiceSessionInterface::State new_state);
+        void AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state);
+        void VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state);
+
         void LocalVideoStateChange(int state);
         void UpdateLocalVideoControls(bool state);
         void LocalAudioStateChange(int state);

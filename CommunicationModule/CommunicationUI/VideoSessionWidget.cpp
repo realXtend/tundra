@@ -43,6 +43,8 @@ namespace CommunicationUI
 
         // Update widget states
         SessionStateChanged(video_session_->GetState());
+        AudioStreamStateChanged(video_session_->GetAudioStreamState());
+        VideoStreamStateChanged(video_session_->GetVideoStreamState());
         UpdateLocalVideoControls(video_session_->IsSendingVideoData());
         UpdateLocalAudioControls(video_session_->IsSendingAudioData());
         UpdateRemoteVideoControls(video_session_->IsReceivingVideoData());
@@ -53,14 +55,18 @@ namespace CommunicationUI
                 this, SLOT( CloseSession() ));
         connect(video_session_, SIGNAL( StateChanged(Communication::VoiceSessionInterface::State) ),
                 this, SLOT( SessionStateChanged(Communication::VoiceSessionInterface::State) ));
-        connect(video_session_, SIGNAL( VideoOutEnabledStateChanged(bool) ),
+        connect(video_session_, SIGNAL( SendingVideoData(bool) ),
                 this, SLOT( UpdateLocalVideoControls(bool) ));
-        connect(video_session_, SIGNAL( AudioOutEnabledStateChanged(bool) ),
+        connect(video_session_, SIGNAL( SendingAudioData(bool) ),
                 this, SLOT( UpdateLocalAudioControls(bool) ));
-        connect(video_session_, SIGNAL( VideoInEnabledStateChanged(bool) ),
+        connect(video_session_, SIGNAL( ReceivingVideoData(bool) ),
                 this, SLOT( UpdateRemoteVideoControls(bool) ));
-        connect(video_session_, SIGNAL( AudioInEnabledStateChanged(bool) ),
+        connect(video_session_, SIGNAL( ReceivingAudioData(bool) ),
                 this, SLOT( UpdateRemoteAudioControls(bool) ));
+        connect(video_session_, SIGNAL( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
+                this, SLOT( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
+        connect(video_session_, SIGNAL( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
+                this, SLOT( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
     }
 
     VideoSessionWidget::~VideoSessionWidget()
@@ -76,24 +82,56 @@ namespace CommunicationUI
         {
             case Communication::VoiceSessionInterface::STATE_OPEN:
                 ShowVideoWidgets();
-                video_session_ui_.statusLabel->setText("Open");
+                video_session_ui_.connectionStatus->setText("Open");
                 break;
             case Communication::VoiceSessionInterface::STATE_CLOSED:
-                video_session_ui_.statusLabel->setText("This coversation has been closed");
+                video_session_ui_.connectionStatus->setText("This coversation has been closed");
                 break;
             case Communication::VoiceSessionInterface::STATE_ERROR:
                 video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
-                video_session_ui_.statusLabel->setText("Connection failed");
+                video_session_ui_.connectionStatus->setText("Connection failed");
                 break;
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
-                video_session_ui_.statusLabel->setText("Initializing...");
+                video_session_ui_.connectionStatus->setText("Initializing...");
                 break;
             case Communication::VoiceSessionInterface::STATE_RINGING_LOCAL:
                 ShowConfirmationWidget();
-                video_session_ui_.statusLabel->setText("Waiting for your confirmation...");
+                video_session_ui_.connectionStatus->setText("Waiting for your confirmation...");
                 break;
             case Communication::VoiceSessionInterface::STATE_RINGING_REMOTE:
-                video_session_ui_.statusLabel->setText(QString("Waiting confirmation from %1").arg(his_name_));
+                video_session_ui_.connectionStatus->setText(QString("Waiting confirmation from %1").arg(his_name_));
+                break;
+        }
+    }
+
+    void VideoSessionWidget::AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state)
+    {
+        switch (new_state)
+        {
+            case Communication::VoiceSessionInterface::SS_CONNECTING:
+                video_session_ui_.audioStatus->setText("Connecting");
+                break;
+            case Communication::VoiceSessionInterface::SS_CONNECTED:
+                video_session_ui_.audioStatus->setText("Connected");
+                break;
+            case Communication::VoiceSessionInterface::SS_DISCONNECTED:
+                video_session_ui_.audioStatus->setText("Disconnected");
+                break;
+        }
+    }
+
+    void VideoSessionWidget::VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state)
+    {
+        switch (new_state)
+        {
+            case Communication::VoiceSessionInterface::SS_CONNECTING:
+                video_session_ui_.videoStatus->setText("Connecting");
+                break;
+            case Communication::VoiceSessionInterface::SS_CONNECTED:
+                video_session_ui_.videoStatus->setText("Connected");
+                break;
+            case Communication::VoiceSessionInterface::SS_DISCONNECTED:
+                video_session_ui_.videoStatus->setText("Disconnected");
                 break;
         }
     }

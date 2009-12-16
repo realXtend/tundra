@@ -327,10 +327,10 @@ namespace Communication
         void StateChanged(Communication::VoiceSessionInterface::State state);
 
         //!
-        void AudioStreamStateChanged(StreamState state);
+        void AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState state);
 
         //!
-        void VideoStreamStateChanged(StreamState state);
+        void VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState state);
 
         //! When audio data sending toggles
         void SendingAudioData(bool sending);
