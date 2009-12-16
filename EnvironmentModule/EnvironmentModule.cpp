@@ -20,7 +20,8 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
-#include "GenericMessageUtils.h"
+#include <GenericMessageUtils.h>
+#include <QVector>
 
 namespace Environment
 {
@@ -110,7 +111,7 @@ namespace Environment
         if((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
             if(environment_.get())
-                environment_->UpdateVisualEffects(frametime);
+                environment_->Update(frametime);
         }
 
     }
@@ -264,14 +265,18 @@ namespace Environment
                         if ( environment_ != 0)
                         {
                             // Adjust fog.
+                            QVector<float> color;
+                            color<<fogC_r<<fogC_g<<fogC_b;
+                            environment_->SetFog(fogStart, fogEnd, color); 
                         }
                     }
               
             }
             else if (event_id == RexNetMsgSimulatorViewerTimeMessage)
             {
-                if (environment_.get())
-                    return environment_->HandleOSNE_SimulatorViewerTimeMessage(netdata);
+                if (environment_!= 0)
+                    return environment_->DecodeSimulatorViewerTimeMessage(netdata);
+                                
             }
             else if (event_id == RexNetMsgRegionHandshake)
             {
@@ -443,7 +448,7 @@ namespace Environment
 
         sky_->FindCurrentlyActiveSky();
 
-        if (!GetEnvironmentHandler()->UseCaelum())
+        if (!GetEnvironmentHandler()->IsCaelum())
             sky_->CreateDefaultSky();
     }
 }
