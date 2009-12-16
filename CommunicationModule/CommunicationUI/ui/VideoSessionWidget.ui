@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>536</width>
+    <width>560</width>
     <height>213</height>
    </rect>
   </property>
@@ -83,7 +83,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="statusLabel">
+           <widget class="QLabel" name="connectionStatus">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -118,11 +118,26 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>15</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>75</weight>
               <bold>true</bold>
              </font>
+            </property>
+            <property name="styleSheet">
+             <string>color: rgb(0,0,0);</string>
             </property>
             <property name="text">
              <string>Audio:</string>
@@ -137,6 +152,21 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string>color: rgb(0,0,0);</string>
+            </property>
             <property name="text">
              <string>audiostate</string>
             </property>
@@ -150,11 +180,26 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>15</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>75</weight>
               <bold>true</bold>
              </font>
+            </property>
+            <property name="styleSheet">
+             <string>color: rgb(0,0,0);</string>
             </property>
             <property name="text">
              <string>Video:</string>
@@ -163,6 +208,27 @@
           </item>
           <item>
            <widget class="QLabel" name="videoStatus">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string>color: rgb(0,0,0);</string>
+            </property>
             <property name="text">
              <string>videostate</string>
             </property>
