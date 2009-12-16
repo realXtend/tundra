@@ -8,29 +8,42 @@
 
 namespace TelepathyIM
 {
-	Connection::Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials) : tp_connection_manager_(tp_connection_manager), name_("Gabble"), protocol_("jabber"), state_(STATE_INITIALIZING), friend_list_("friend list"), self_contact_(0)
+	Connection::Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials) : tp_connection_manager_(tp_connection_manager), name_("Gabble"), protocol_("jabber"), state_(STATE_INITIALIZING), friend_list_("friend list"), self_contact_(0), tp_pending_connection_(0)
 	{
 		CreateTpConnection(credentials);
 	}
 
-	void Connection::CreateTpConnection(const Communication::CredentialsInterface &credentials)
-	{
-		QVariantMap params;
-
-		params.insert("account", credentials.GetUserID());
-		params.insert("password", credentials.GetPassword());
-		params.insert("server", credentials.GetServer());
-		params.insert("port", QVariant( (unsigned int)credentials.GetPort() ));
-		
-		Tp::PendingConnection *pending_connection = tp_connection_manager_->requestConnection(credentials.GetProtocol(), params);
-		QObject::connect(pending_connection, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionCreated(Tp::PendingOperation *) ));
-
-		server_ = credentials.GetServer();
-		user_id_ = credentials.GetUserID();
-	}
-
 	Connection::~Connection()
 	{
+        Close();
+	}
+
+    void Connection::DeleteContacts()
+    {
+		for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+		{
+			SAFE_DELETE(*i);
+		}
+		contacts_.clear();
+    }
+
+    void Connection::DeleteFriendRequests()
+    {
+		for (FriendRequestVector::iterator i = received_friend_requests_.begin(); i != received_friend_requests_.end(); ++i)
+		{
+			SAFE_DELETE(*i);
+		}
+		received_friend_requests_.clear();
+
+		for (OutgoingFriendRequestVector::iterator i = sent_friend_requests_.begin(); i != sent_friend_requests_.end(); ++i)
+		{
+			SAFE_DELETE(*i);
+		}
+		sent_friend_requests_.clear();
+    }
+
+    void Connection::CloseSessions()
+    {
         // todo: disconnect any signals left
 		for (ChatSessionVector::iterator i = private_chat_sessions_.begin(); i != private_chat_sessions_.end(); ++i)
 		{
@@ -52,29 +65,24 @@ namespace TelepathyIM
             SAFE_DELETE(session);
         }
         voice_sessions_.clear();
+    }
 
-		for (FriendRequestVector::iterator i = received_friend_requests_.begin(); i != received_friend_requests_.end(); ++i)
-		{
-			SAFE_DELETE(*i);
-		}
-		received_friend_requests_.clear();
+    void Connection::CreateTpConnection(const Communication::CredentialsInterface &credentials)
+	{
+		QVariantMap params;
 
-		for (OutgoingFriendRequestVector::iterator i = sent_friend_requests_.begin(); i != sent_friend_requests_.end(); ++i)
-		{
-			SAFE_DELETE(*i);
-		}
-		sent_friend_requests_.clear();
+		params.insert("account", credentials.GetUserID());
+		params.insert("password", credentials.GetPassword());
+		params.insert("server", credentials.GetServer());
+		params.insert("port", QVariant( (unsigned int)credentials.GetPort() ));
+		
+		Tp::PendingConnection *pending_connection = tp_connection_manager_->requestConnection(credentials.GetProtocol(), params);
+		QObject::connect(pending_connection, SIGNAL( finished(Tp::PendingOperation *) ), SLOT( OnConnectionCreated(Tp::PendingOperation *) ));
 
-		for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
-		{
-			SAFE_DELETE(*i);
-		}
-		contacts_.clear();
-
-		if (!tp_connection_.isNull())
-			Tp::PendingOperation* op = tp_connection_->requestDisconnect();
-		 // we do NOT connect the signal because the connection object doesn't exist when signal is emitted
+		server_ = credentials.GetServer();
+		user_id_ = credentials.GetUserID();
 	}
+
 	
 	QString Connection::GetName() const
 	{
@@ -237,9 +245,32 @@ namespace TelepathyIM
 		if ( tp_connection_.isNull() )
 			return; // nothing to close
 
+        CloseSessions();
+        DeleteFriendRequests();
+        DeleteContacts();
+        DisconnectSignals();
+
 		Tp::PendingOperation* op = tp_connection_->requestDisconnect();
-		//connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnConnectionClosed(Tp::PendingOperation*) ));
+        tp_connection_.reset();
 	}
+
+    void Connection::DisconnectSignals()
+    {
+        // todo: Check that all signals are disconnected
+        disconnect(tp_connection_->requestConnect(),
+					     SIGNAL(finished(Tp::PendingOperation *)), this,
+						 SLOT(OnConnectionConnected(Tp::PendingOperation *)));
+
+		disconnect(tp_connection_.data(),
+			             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)), this,
+						 SLOT(OnConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+
+        if (tp_pending_connection_)
+            disconnect(tp_pending_connection_, SIGNAL(finished(Tp::PendingOperation *)), this, SLOT(OnConnectionReady(Tp::PendingOperation *)));
+
+        disconnect(tp_connection_.data(), SIGNAL( statusChanged(uint , uint) ), this, SLOT( OnConnectionStatusChanged(uint , uint ) ) );
+        disconnect(tp_connection_.data(), SIGNAL( selfHandleChanged(uint) ), this, SLOT( OnSelfHandleChanged(uint) ));
+    }
 
 	void Connection::OnConnectionCreated(Tp::PendingOperation *op)
 	{
@@ -307,7 +338,8 @@ namespace TelepathyIM
 			if ( !tp_connection_->isReady(Tp::Connection::FeatureCore) )
 				LogDebug("  * Core ");
 		}   
-        QObject::connect(tp_connection_->becomeReady(features),
+        tp_pending_connection_ = tp_connection_->becomeReady(features);
+        connect(tp_pending_connection_,
 		                 SIGNAL(finished(Tp::PendingOperation *)),
 				         SLOT(OnConnectionReady(Tp::PendingOperation *)));
 
@@ -339,6 +371,10 @@ namespace TelepathyIM
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
 	{
+        tp_pending_connection_ = 0;
+        if (state_ == STATE_CLOSED)
+            return;
+
 	    if (op->isError())
 		{
 			state_ = STATE_ERROR;
@@ -536,6 +572,9 @@ namespace TelepathyIM
 
 	void Connection::OnNewChannels(const Tp::ChannelDetailsList& channels)
 	{
+        if (state_ == STATE_CLOSED)
+            return;
+
 		foreach (const Tp::ChannelDetails &details, channels) 
 		{
 			QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
