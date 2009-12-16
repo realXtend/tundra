@@ -61,6 +61,14 @@ namespace Environment
     void EnvironmentModule::Initialize()
     {
         //environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
+
+        //initialize postprocess dialog
+        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+
+        postprocess_dialog_ = PostProcessWidgetPtr(new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors()));
+        postprocess_dialog_->AddHandler( &renderer->GetCompositionHandler() );
+        postprocess_dialog_->AddSelfToScene(this);
     }
 
     void EnvironmentModule::PostInitialize()
@@ -79,13 +87,7 @@ namespace Environment
         if (scene_event_category_ == 0)
             LogError("Failed to query \"Framework\" event category");
         
-        //initialize postprocess dialog
-        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-
-        postprocess_dialog_ = PostProcessWidgetPtr(new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors()));
-        postprocess_dialog_->AddHandler( &renderer->GetCompositionHandler() );
-        postprocess_dialog_->AddSelfToScene(this);
+        
 
     }
 
@@ -199,10 +201,26 @@ namespace Environment
                     if(methodname == "RexPostP")
                     {
                         boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-                        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-                        OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
-                        c_handler.ExecuteServersShaderRequest(ProtocolUtilities::ParseGenericMessageParameters(msg));
-
+                        if(rendering_module.get())
+                        {
+                            OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+                            OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
+                            Core::StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
+                            c_handler.ExecuteServersShaderRequest(vec);
+                            
+                            //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event
+                            if(postprocess_dialog_.get())
+                            {
+                                std::string effect_name = c_handler.MapNumberToEffectName(vec.at(0));
+                                bool enabled = true;
+                                if(vec.at(1) == "False")
+                                {
+                                    enabled = false;
+                                }
+                                postprocess_dialog_->EnableEffect(effect_name,enabled);
+                            }
+                        }
+                        
 
                     } else if( methodname == "RexSky" && sky_.get())
                         return GetSkyHandler()->HandleRexGM_RexSky(netdata);

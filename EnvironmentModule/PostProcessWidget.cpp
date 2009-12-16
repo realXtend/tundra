@@ -10,7 +10,7 @@
 
 namespace Environment
 {
-	PostProcessWidget::PostProcessWidget(std::vector<std::string> &effects)
+	PostProcessWidget::PostProcessWidget(std::vector<std::string> effects)
 	:QWidget(),
     handler_(0)
 
@@ -31,6 +31,24 @@ namespace Environment
 	{
         this->handler_ = handler;
 	}
+    void PostProcessWidget::EnableEffect(std::string& effect_name, bool enable)
+    {
+        for(int i=0; i<widget_.checkboxlayout->count(); i++)
+        {
+            try
+            {
+                NamedCheckBox* c_box = dynamic_cast<NamedCheckBox*> (widget_.checkboxlayout->itemAt(i)->widget());
+                if(c_box && c_box->objectName().toStdString() == effect_name)
+                {
+                    c_box->setChecked(enable);
+                    break;
+                }
+            } catch(...)
+            {
+                EnvironmentModule::LogDebug("Casting error: tried to cast to NamedCheckBox");
+            }
+        }
+    }
 
 	void PostProcessWidget::handleSelection(bool checked, std::string name)
 	{
@@ -46,6 +64,7 @@ namespace Environment
 	{
 		for(int i=0; i< effects.size();i++)
 		{
+            
 			std::string effect_name = effects.at(i);
 			NamedCheckBox* c_box = new NamedCheckBox(effect_name.c_str(), this);
 			c_box->setObjectName(effect_name.c_str());
