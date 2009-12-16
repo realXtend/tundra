@@ -623,8 +623,8 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
-    KeyStateListener *Framework::GetKeyState () const
+    void Framework::AddUIViewListener (QObject *listener) 
     {
-        return engine_->GetKeyState();
+        engine_->AddUIViewListener (listener);
     }
 }
