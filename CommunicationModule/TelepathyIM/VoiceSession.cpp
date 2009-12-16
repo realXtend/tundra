@@ -605,7 +605,7 @@ namespace TelepathyIM
     {
         Tp::MediaStreamPtr stream = GetAudioMediaStream();
         if (!stream)
-            return StreamState::SS_DISCONNECTED;
+            return Communication::VoiceSessionInterface::SS_DISCONNECTED;
         switch( stream->state() )
         {
         case Tp::MediaStreamStateDisconnected:
@@ -615,13 +615,14 @@ namespace TelepathyIM
         case Tp::MediaStreamStateConnected:
             return Communication::VoiceSessionInterface::SS_CONNECTED;
         }
+        return Communication::VoiceSessionInterface::SS_DISCONNECTED;
     }
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetVideoStreamState() const
     {
         Tp::MediaStreamPtr stream = GetVideoMediaStream();
         if (!stream)
-            return StreamState::SS_DISCONNECTED;
+            return Communication::VoiceSessionInterface::SS_DISCONNECTED;
         switch( stream->state() )
         {
         case Tp::MediaStreamStateDisconnected:
@@ -631,6 +632,7 @@ namespace TelepathyIM
         case Tp::MediaStreamStateConnected:
             return Communication::VoiceSessionInterface::SS_CONNECTED;
         }
+        return Communication::VoiceSessionInterface::SS_DISCONNECTED;
     }
 
     bool VoiceSession::IsSendingAudioData() const
