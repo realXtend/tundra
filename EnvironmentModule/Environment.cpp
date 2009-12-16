@@ -16,7 +16,7 @@ Environment::Environment(EnvironmentModule *owner) :
     owner_(owner), 
     activeEnvComponent_(0), 
     activeEnvEntity_(Scene::EntityWeakPtr()), 
-    time_initialized_(false),
+    time_override_(false),
     usecSinceStart_(0),
     secPerDay_(0),
     secPerYear_(0),
@@ -78,9 +78,6 @@ void Environment::CreateEnvironment()
     activeEnvEntity_ = entity;
 }
 
-///\todo Remove this when Caelum is working ok.
-//bool test = true;
-
 bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
@@ -107,15 +104,9 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     //    (component.get());
 //    env.SetSunDirection(-sunDirection_);
 
-    /** \note
-     *  It's not necessary to update the environment time every time SimulatorViewerTimeMessage is received
-     *  (about every tenth second that is) because the Caleum system has its own perception of time. But let's
-     *  do it anyways for now.
-     */
-    if (!time_initialized_ && activeEnvComponent_ != 0)
+    if (!time_override_ && activeEnvComponent_ != 0)
     {
         activeEnvComponent_->SetTime(usecSinceStart_);
-        time_initialized_ = true;
     }
 
     return false;
