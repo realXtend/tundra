@@ -67,7 +67,7 @@ namespace UiHelpers
 
 	    try
         {
-            SAFE_DELETE(im_connection_);
+            im_connection_ = 0; // CommunicationService will delete this
             im_connection_ = communication_service_->OpenConnection(credentials);
         }
         catch (Core::Exception &e) { /* e.what() for error */ }
