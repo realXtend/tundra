@@ -157,7 +157,7 @@ namespace TelepathyIM
             "channels", G_TYPE_INT, 1,
             "width", G_TYPE_INT, 16,
 //            "depth", G_TYPE_INT, 16,
-            "rate", G_TYPE_INT, 8000,
+            "rate", G_TYPE_INT, 16000,
 //            "signed", G_TYPE_BOOLEAN, false,
 //            "endianess", G_TYPE_INT, 1234,
             NULL);

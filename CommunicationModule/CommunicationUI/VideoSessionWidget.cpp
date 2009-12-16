@@ -19,10 +19,13 @@ namespace CommunicationUI
           internal_widget_(0),
           internal_v_layout_(0),
           internal_h_layout_(0),
-          local_video_(new QWidget),
-          remote_video_(new QWidget),
+          internal_v_layout_local_(0),
+          internal_v_layout_remote_(0),
+          local_video_(0),
+          remote_video_(0),
           controls_local_widget_(new QWidget(this)),
           controls_remote_widget_(new QWidget(this))
+
     {
         // Init all ui elements
         video_session_ui_.setupUi(this);
@@ -37,10 +40,6 @@ namespace CommunicationUI
         controls_remote_ui_.videoCheckBox->setEnabled(false);
         controls_remote_widget_->hide();
         
-        // These do nothing yet
-        local_video_->hide();
-        remote_video_->hide();
-
         // Update widget states
         SessionStateChanged(video_session_->GetState());
         AudioStreamStateChanged(video_session_->GetAudioStreamState());
@@ -50,11 +49,17 @@ namespace CommunicationUI
         UpdateRemoteVideoControls(video_session_->IsReceivingVideoData());
         UpdateRemoteAudioControls(video_session_->IsReceivingAudioData());
 
-        // Connect signals
+        // CLOSE TAB
         connect(video_session_ui_.closePushButton, SIGNAL( clicked() ),
                 this, SLOT( CloseSession() ));
+        // CONNECTION AND STREAM STATES
         connect(video_session_, SIGNAL( StateChanged(Communication::VoiceSessionInterface::State) ),
                 this, SLOT( SessionStateChanged(Communication::VoiceSessionInterface::State) ));
+        connect(video_session_, SIGNAL( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
+                this, SLOT( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
+        connect(video_session_, SIGNAL( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
+                this, SLOT( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
+        // AUDIO / VIDEO STATES
         connect(video_session_, SIGNAL( SendingVideoData(bool) ),
                 this, SLOT( UpdateLocalVideoControls(bool) ));
         connect(video_session_, SIGNAL( SendingAudioData(bool) ),
@@ -63,14 +68,14 @@ namespace CommunicationUI
                 this, SLOT( UpdateRemoteVideoControls(bool) ));
         connect(video_session_, SIGNAL( ReceivingAudioData(bool) ),
                 this, SLOT( UpdateRemoteAudioControls(bool) ));
-        connect(video_session_, SIGNAL( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
-                this, SLOT( AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
-        connect(video_session_, SIGNAL( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ),
-                this, SLOT( VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState) ));
     }
 
     VideoSessionWidget::~VideoSessionWidget()
     {
+        if (internal_v_layout_local_ && local_video_)
+            internal_v_layout_local_->removeWidget(local_video_);
+        if (internal_v_layout_remote_ && remote_video_)
+            internal_v_layout_remote_->removeWidget(remote_video_);
         SAFE_DELETE(internal_widget_);
     }
 
@@ -235,27 +240,29 @@ namespace CommunicationUI
         // Init widgets
         internal_widget_ = new QWidget();
         internal_h_layout_ = new QHBoxLayout(internal_widget_);
-        QVBoxLayout *internal_v_layout_local_ = new QVBoxLayout();
-        QVBoxLayout *internal_v_layout_remote_ = new QVBoxLayout();
+        internal_v_layout_local_ = new QVBoxLayout();
+        internal_v_layout_remote_ = new QVBoxLayout();
 
         // Local video and controls
+        local_video_ = (QWidget *)(video_session_->GetLocallyCapturedVideo());
         controls_local_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QLabel *sending_label = new QLabel("Sending", this);
         sending_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sending_label->setAlignment(Qt::AlignCenter);
         sending_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_local_->addWidget(sending_label);
-        internal_v_layout_local_->addWidget((QWidget *)(video_session_->GetLocallyCapturedVideo()));
+        internal_v_layout_local_->addWidget(local_video_);
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
+        remote_video_ = (QWidget *)(video_session_->GetReceivedVideo());
         controls_remote_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QLabel *receiving_label = new QLabel("Receiving", this);
         receiving_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         receiving_label->setAlignment(Qt::AlignCenter);
         receiving_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_remote_->addWidget(receiving_label);
-        internal_v_layout_remote_->addWidget((QWidget *)(video_session_->GetReceivedVideo()));
+        internal_v_layout_remote_->addWidget(remote_video_);
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
