@@ -349,6 +349,8 @@ namespace OgreRenderer
 
         ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
         ray_query_->setSortByDistance(true); 
+
+        c_handler_.Initialize(framework_ ,viewport);
     }
 
     size_t Renderer::GetWindowHandle() const

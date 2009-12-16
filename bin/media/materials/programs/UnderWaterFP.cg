@@ -1,0 +1,14 @@
+sampler RT : register(s0);
+sampler NormalMap : register(s1);
+
+float4 main_ps(float2 iTexCoord : TEXCOORD0, float2 iNormal: TEXCOORD1,
+	uniform float timer,
+	uniform float speedX,
+	uniform float speedY,
+	uniform float normalStr) : COLOR
+{
+	float speed_x = timer * speedX;
+	float speed_y = timer * speedY;
+	float4 normalmap = tex2D(NormalMap, float2(iNormal.x + speed_x, iNormal.y + speed_y));
+	return tex2D(RT, iTexCoord + normalmap.xy * normalStr - normalStr/2); 
+}

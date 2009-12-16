@@ -112,6 +112,7 @@ namespace OgreRenderer
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
+        
 
         renderer_->PostInitialize();
     }
@@ -125,6 +126,7 @@ namespace OgreRenderer
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
             return false;
+        
 
         if (category_id == asset_event_category_)
         {

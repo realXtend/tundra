@@ -11,6 +11,7 @@
 
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
+#include "CompositionHandler.h"
 
 namespace Foundation
 {
@@ -168,6 +169,9 @@ namespace OgreRenderer
          */
         void AddResourceDirectory(const std::string& directory);
 
+        //! returns the composition handler responsible of the post-processing effects
+        CompositionHandler& GetCompositionHandler(){ return c_handler_; }
+
     private:
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
@@ -244,6 +248,9 @@ namespace OgreRenderer
 
         //! Ogre World View
         QOgreWorldView *q_ogre_world_view_;
+
+        //! handler for post-processing effects
+		CompositionHandler c_handler_;
     };
 }
 
