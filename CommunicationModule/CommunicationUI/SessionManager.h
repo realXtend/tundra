@@ -50,10 +50,8 @@ namespace UiManagers
         QMenuBar *ConstructMenuBar();
         void CreateFriendListWidget();
 
-        void Hide()     { main_parent_->hide(); }
-        void SignOut()  { im_connection_->Close(); emit StateChange(UiDefines::UiStates::Disconnected); }
-        void Exit();
-
+        void SignOut();
+        void Hide()               { main_parent_->hide(); friend_list_widget_->hide(); }
         void StatusAvailable()    { emit StatusChange(QString("available")); }
         void StatusChatty()       { emit StatusChange(QString("chat"));      }
         void StatusAway()         { emit StatusChange(QString("away"));      }
@@ -62,7 +60,6 @@ namespace UiManagers
         void StatusHidden()       { emit StatusChange(QString("hidden"));    }
 
         void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); } 
-
         void JoinChatRoom();
 
         void ChatSessionReceived(Communication::ChatSessionInterface& chat_session);

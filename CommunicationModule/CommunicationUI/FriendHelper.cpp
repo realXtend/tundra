@@ -4,11 +4,14 @@
 #include "FriendHelper.h"
 #include "FriendListItem.h"
 
+#include <QLabel>
+
 namespace UiHelpers
 {
     FriendHelper::FriendHelper()
-        : QObject(0),
-          friend_list_ui_(0)
+        : QObject(),
+          friend_list_ui_(0),
+          request_manager_widget_(0)
     {
 
     }
@@ -20,12 +23,100 @@ namespace UiHelpers
 
     void FriendHelper::NewFriendRequest(Communication::FriendRequestInterface &friend_request)
     {
+        Communication::FriendRequestInterface *friend_request_ptr = dynamic_cast<Communication::FriendRequestInterface *>(&friend_request);
+        if (friend_request_ptr)
+        {
+            pending_friend_requests_[friend_request.GetOriginatorID()] = friend_request_ptr;
+            
+            QString info_string;
+            int pending_count = pending_friend_requests_.count();
+            if (pending_count == 1)
+                info_string = "new friend request";
+            else
+                info_string = "new friend requests";
 
+            friend_list_ui_->pendingRequestsButton->setText(QString("%1 %2").arg(QString::number(pending_friend_requests_.count()), info_string));
+            friend_list_ui_->friendRequestFrame->show();
+        }
+    }
+
+    void FriendHelper::ShowRequestManagerWidget()
+    {
+        SAFE_DELETE(request_manager_widget_);
+        request_manager_widget_ = new QWidget();
+        request_manager_ui_.setupUi(request_manager_widget_);
+
+        int row = 0;
+        foreach (Communication::FriendRequestInterface *friend_request , pending_friend_requests_.values())
+        {
+            QLabel *id = new QLabel(friend_request->GetOriginatorID(), request_manager_widget_);
+            QPushButton *accept_button = new QPushButton("Accept", request_manager_widget_);
+            QPushButton *reject_button = new QPushButton("Reject", request_manager_widget_);
+
+            request_manager_ui_.gridLayout->addWidget(id, row, 0);
+            request_manager_ui_.gridLayout->addWidget(accept_button, row, 1);
+            request_manager_ui_.gridLayout->addWidget(reject_button, row, 2);
+
+
+            // For friend request
+            connect(accept_button, SIGNAL( clicked() ), friend_request, SLOT( Accept() ));
+            connect(reject_button, SIGNAL( clicked() ), friend_request, SLOT( Reject() ));
+            // Hide all elements if clicked
+            // Kind of ugly but works, otherwise we would need to keep a container for storing all the widgets with row count
+            // so we could remove them from the layout in CheckPendingRequestList
+            connect(accept_button, SIGNAL( clicked() ), id, SLOT( hide() ));
+            connect(accept_button, SIGNAL( clicked() ), accept_button, SLOT( hide() ));
+            connect(accept_button, SIGNAL( clicked() ), reject_button, SLOT( hide() ));
+            connect(reject_button, SIGNAL( clicked() ), id, SLOT( hide() ));
+            connect(reject_button, SIGNAL( clicked() ), accept_button, SLOT( hide() ));
+            connect(reject_button, SIGNAL( clicked() ), reject_button, SLOT( hide() ));
+            // For removing the request from list
+            connect(accept_button, SIGNAL( clicked() ), this, SLOT( CheckPendingRequestList() ));
+            connect(reject_button, SIGNAL( clicked() ), this, SLOT( CheckPendingRequestList() ));
+
+            row++;
+        }
+
+        request_manager_widget_->show();
+    }
+
+    void FriendHelper::CheckPendingRequestList()
+    {
+        foreach (Communication::FriendRequestInterface *friend_request , pending_friend_requests_.values())
+        {
+             Communication::FriendRequestInterface::State state = friend_request->GetState();
+             switch (state)
+             {
+                case Communication::FriendRequestInterface::STATE_ACCEPTED:
+                case Communication::FriendRequestInterface::STATE_REJECTED:
+                {
+                    pending_friend_requests_.remove(pending_friend_requests_.key(friend_request));
+                    break;
+                }
+             }
+        }
+
+        QString info_string;
+        int pending_count = pending_friend_requests_.count();
+        if (pending_count == 1)
+            info_string = "new friend request";
+        else
+            info_string = "new friend requests";
+
+        friend_list_ui_->pendingRequestsButton->setText(QString("%1 %2").arg(QString::number(pending_friend_requests_.count()), info_string));
+        friend_list_ui_->friendRequestFrame->show();
+
+        if (pending_friend_requests_.empty())
+        {
+            request_manager_widget_->close();
+            friend_list_ui_->friendRequestFrame->hide();
+        }
     }
 
     void FriendHelper::OnNewContact(const Communication::ContactInterface &contact)
     {
-        //contacts_map_[contact.GetID()] = (Communication::ContactInterface *)&contact;
+        //Communication::ContactInterface *contact_ptr = dynamic_cast<Communication::ContactInterface *>(&contact);
+        //contacts_map_[contact.GetID()] = contact_ptr;
 
         CommunicationUI::FriendListItem *list_item = 
             new CommunicationUI::FriendListItem(friend_list_ui_->friendListWidget,

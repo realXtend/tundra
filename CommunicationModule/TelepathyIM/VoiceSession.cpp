@@ -13,7 +13,15 @@
 namespace TelepathyIM
 {
 	
-	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel): state_(STATE_INITIALIZING), tp_channel_(tp_channel), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0), audio_playback_channel_(0)
+	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel)
+        : state_(STATE_INITIALIZING), 
+        tp_channel_(tp_channel), 
+        pending_audio_streams_(0), 
+        farsight_channel_(0), 
+        pending_video_streams_(0), 
+        audio_playback_channel_(0),
+        stream_buffer_(new QByteArray),
+        ms_buffer_size_(0)
 	{
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -580,25 +588,38 @@ namespace TelepathyIM
     }
 
     void VoiceSession::OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size)
-    {
-        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
-        if (!framework)
-            return;
-        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager.get())
-            return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;                
-
-        int rate = 8000; // fix this
-        if (farsight_channel_)
-            rate = farsight_channel_->audio_stream_in_clock_rate_;
-
-        int sample_width = 16; // fix this
+    {       
         bool stereo = false; // fix this
+        int sample_width = 16; // fix this
+        int rate = 8000; // fix this
 
-        audio_playback_channel_ = soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, audio_playback_channel_);
+        if (farsight_channel_)
+            rate = farsight_channel_->audio_stream_in_clock_rate_; 
+
+        //if (ms_buffer_size_ <= 60)
+        //{
+        //    const char* const_data = (const char *)buffer;
+        //    stream_buffer_->append(const_data, buffer_size);
+        //    int ms_added = (int)(((buffer_size*1000*8) / rate) / sample_width);
+        //    ms_buffer_size_ += ms_added;
+        //}
+        //else
+        //{
+            Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
+            if (!framework)
+                return;
+            Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+            if (!service_manager.get())
+                return;
+            boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+            if (!soundsystem.get())
+                return;     
+
+            /*Core::u8 *data = (unsigned char *)stream_buffer_->data();*/
+            soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
+            //stream_buffer_->clear();
+            //ms_buffer_size_ = 0;
+        //}
     }
 
 

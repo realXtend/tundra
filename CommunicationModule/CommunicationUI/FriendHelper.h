@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "ui_FriendListWidget.h"
+#include "ui_RequestManagerWidget.h"
 
 #include <QObject>
 #include <QMap>
@@ -34,11 +35,19 @@ namespace UiHelpers
         void OnNewContact(const Communication::ContactInterface& contact);
         void OnContactRemoved(const Communication::ContactInterface& contact);
 
+        void ShowRequestManagerWidget();
         void UpdateFriendList(QMap<QString, Communication::ContactInterface*> contacts_map);
+
+    private slots:
+        void CheckPendingRequestList();
 
     private:
         Ui::FrienListWidget *friend_list_ui_;
+        Ui::RequestManagerWidget request_manager_ui_;
+
+        QWidget *request_manager_widget_;
         QMap<QString, Communication::ContactInterface*> contacts_map_;
+        QMap<QString, Communication::FriendRequestInterface*> pending_friend_requests_;
 
     };
 }

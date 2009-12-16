@@ -22,26 +22,31 @@ namespace UiHelpers
     void ConfigHelper::ReadLoginData(Ui::LoginWidget *login_ui)
     {
         QString value, configKey;
-        QString server, username;
+        QString server, username, password;
 		QString configGroup("InstantMessagingLogin");
 
 		configKey = QString("username");
 		username = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
         configKey = QString("server");
 		server = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+		configKey = QString("password");
+		password = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
 		
         if (!username.isNull() && !username.isEmpty())
             login_ui->usernameLineEdit->setText(username);
         if (!server.isNull() && !server.isEmpty())
             login_ui->serverLineEdit->setText(server);
+        if (!password.isNull() && !password.isEmpty())
+            login_ui->passwordLineEdit->setText(password);
     }
 
     void ConfigHelper::SetPreviousData(Ui::LoginWidget *login_ui, QMap<QString,QString> data_map)
     {
-        if (!data_map["username"].isEmpty() && !data_map["server"].isEmpty())
+        if (!data_map["username"].isEmpty() && !data_map["server"].isEmpty() && !data_map["password"].isEmpty())
         {
             login_ui->usernameLineEdit->setText(data_map["username"]);
             login_ui->serverLineEdit->setText(data_map["server"]);
+            login_ui->passwordLineEdit->setText(data_map["password"]);
         }
     }
 
@@ -49,6 +54,7 @@ namespace UiHelpers
     {
         framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("server"), data_map["server"].toStdString());
         framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("username"), data_map["username"].toStdString());
+        framework_->GetConfigManager()->SetSetting<std::string>(std::string("InstantMessagingLogin"), std::string("password"), data_map["password"].toStdString());
         framework_->GetConfigManager()->Export();
     }
 }

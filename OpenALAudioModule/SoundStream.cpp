@@ -38,6 +38,17 @@ namespace OpenALAudio
 
         alSourcef(source_, AL_GAIN, 1.0f);
         alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0);
+
+        // Add empty buffers to source
+        //for (int buffer_count = 0; buffer_count<BUFFER_COUNT; ++buffer_count)
+        //{
+        //    Core::u8 *temp = new Core::u8[10];
+        //    for (int char_index = 0; char_index<10; ++char_index)
+        //        temp[char_index] = 0;
+        //    alBufferData(buffers_[buffer_count], format_, temp, 10, frequency_);
+        //}
+        //alSourceQueueBuffers(source_, BUFFER_COUNT, buffers_);
+        //Play();
     }
 
     SoundStream::~SoundStream()
@@ -73,7 +84,7 @@ namespace OpenALAudio
             AddBuffer(data, size);
             int test = BUFFER_COUNT - counter_;
             // Start playback when after some buffers have already been filled
-            if (!IsPlaying() && BUFFER_COUNT - counter_ < BUFFER_COUNT / 2)
+            if (!IsPlaying() && counter_ == 10)
                 Play();
         }
         else

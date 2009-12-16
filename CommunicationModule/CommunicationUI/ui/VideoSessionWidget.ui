@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>581</width>
-    <height>235</height>
+    <width>536</width>
+    <height>213</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,7 @@
            <number>10</number>
           </property>
           <item>
-           <widget class="QLabel" name="statusTitleLabel">
+           <widget class="QLabel" name="connectionStatusTitle">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -75,7 +75,7 @@
              <string>color: rgb(0,0,0);</string>
             </property>
             <property name="text">
-             <string>Connection State:</string>
+             <string>Connection:</string>
             </property>
             <property name="indent">
              <number>6</number>
@@ -106,7 +106,65 @@
              <string>color: rgb(0,0,0);</string>
             </property>
             <property name="text">
-             <string>state</string>
+             <string>connectionstate</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="audioStatusTitle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Audio:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="audioStatus">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>audiostate</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="videoStatusTitle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Video:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="videoStatus">
+            <property name="text">
+             <string>videostate</string>
             </property>
            </widget>
           </item>

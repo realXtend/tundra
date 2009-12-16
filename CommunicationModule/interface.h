@@ -378,6 +378,8 @@ namespace Communication
 		virtual QString GetOriginatorName() const = 0;
 		virtual QString GetOriginatorID() const = 0;
 		virtual State GetState() const = 0;
+
+    public slots:
 		virtual void Accept() = 0;
 		virtual void Reject() = 0;
 
@@ -481,6 +483,9 @@ namespace Communication
 
         //! Get presene status message of user
 		virtual QString GetPresenceMessage() = 0;
+
+        //! Check and emit all pending friend requests
+        virtual void CheckPendingFriendRequests() = 0;
 
         //! Closes the connection
 		virtual void Close() = 0;

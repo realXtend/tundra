@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Communications</string>
+   <string>IM</string>
   </property>
   <layout class="QVBoxLayout" name="mainVerticalLayout">
    <property name="spacing">

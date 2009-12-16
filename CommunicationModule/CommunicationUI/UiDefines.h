@@ -71,7 +71,8 @@ namespace UiDefines
 		        icon = QIcon(":/images/iconGreen.png");
 	        else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("hidden"), Qt::CaseInsensitive) == 0 ||
-                      QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 )
+                      QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 ||
+                      QString::compare(status_code, QString(""), Qt::CaseInsensitive) == 0 )
 		        icon = QIcon(":/images/iconGrey.png");
 	        else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
 		        icon = QIcon(":/images/iconYellow.png");
@@ -91,7 +92,8 @@ namespace UiDefines
 		        path = ":/images/iconGreen.png";
 	        else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("hidden"), Qt::CaseInsensitive) == 0 ||
-                      QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 )
+                      QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 ||
+                      QString::compare(status_code, QString(""), Qt::CaseInsensitive) == 0 )
 		        path = ":/images/iconGrey.png";
 	        else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
 		        path = ":/images/iconYellow.png";

@@ -120,6 +120,10 @@ namespace OpensimIM
 
         //! Get presene status message of user
 		virtual QString GetPresenceMessage() { return ""; };
+
+        //! Check and emit all pending friend requests
+        /// No need for implementation in OpenSim Connection, only used in TelepathyIM::Connection
+        virtual void CheckPendingFriendRequests() {}
 	
 	protected:
 		//! Add console commands: 

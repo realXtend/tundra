@@ -15,10 +15,13 @@ namespace CommunicationUI
           current_status_message_(status_message)
     {
         setIcon(UiDefines::PresenceStatus::GetIconForStatusCode(GetStatus()));
-        if (GetStatusMessage().isEmpty())
-            setText(name_);
+
+        QString status_string;
+        if (current_status_message_.isEmpty() || current_status_message_.isNull())
+            status_string = name_;
         else
-            setText(name_.append("\n%1").arg(GetStatusMessage()));
+            status_string = name_ + "\n" + current_status_message_;
+        setText(status_string);
     }
 
     FriendListItem::~FriendListItem()
@@ -36,11 +39,14 @@ namespace CommunicationUI
 
         if (new_message != GetStatusMessage())
         {
-            SetStatusMessage(new_message);
-            if (GetStatusMessage().isEmpty())
-                setText(name_);
+            QString status_string;
+            if (new_message.isEmpty() || new_message.isNull())
+                status_string = name_;
             else
-                setText(name_.append("\n%1").arg(GetStatusMessage()));
+                status_string = name_ + "\n" + new_message;
+            
+            SetStatusMessage(new_message);
+            setText(status_string);
         }
     }
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>LoginWidget</string>
+   <string>IM Login</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -77,7 +77,7 @@
           <item row="2" column="1">
            <widget class="QLineEdit" name="passwordLineEdit">
             <property name="text">
-             <string/>
+             <string></string>
             </property>
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
