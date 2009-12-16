@@ -25,7 +25,9 @@ namespace TelepathyIM
                                      video_in_src_pad_(0),
                                      audio_stream_in_clock_rate_(0),
                                      audio_capsfilter_(0),
-                                     audio_convert_(0)
+                                     audio_convert_(0),
+                                     video_preview_widget_(0),
+                                     video_remote_output_widget_(0)
     {
         CreateTfChannel();
         CreatePipeline();
