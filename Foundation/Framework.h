@@ -12,6 +12,7 @@
 class QApplication;
 class QGraphicsView;
 class QWidget;
+class QObject;
 
 namespace Poco
 {
@@ -206,8 +207,8 @@ namespace Foundation
         //! Set main UI View
         void SetUIView(std::auto_ptr <QGraphicsView> view);
 
-        //! Get the current keyboard state (which keys are pressed)
-        KeyStateListener *GetKeyState () const;
+        //! Add a event listener to the UI View
+        void AddUIViewListener (QObject *listener);
 
     private:
         //! Registers framework specific console commands

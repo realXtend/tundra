@@ -3,11 +3,12 @@
 #ifndef incl_RexLogicModule_h
 #define incl_RexLogicModule_h
 
-#include <Foundation.h>
+#include "Foundation.h"
 #include "ModuleInterface.h"
 #include "RexLogicModuleApi.h"
-
-#include <WorldStream.h>
+#include "WorldStream.h"
+#include "KeyState.h"
+#include "KeyBindings.h"
 
 namespace CoreUi
 {
@@ -278,6 +279,18 @@ namespace RexLogic
 
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
+
+        //! Keyboard State Listener
+        KeyStateListener *key_state_listener_;
+
+        //! First Person key bindings
+        FirstPersonBindings first_person_bindings_;
+
+        //! Third Person key bindings
+        ThirdPersonBindings third_person_bindings_;
+
+        //! First Person key bindings
+        FreeCameraBindings free_camera_bindings_;
     };
 }
 
