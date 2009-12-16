@@ -21,22 +21,31 @@ Environment::~Environment()
 {
 }
 
-void Environment::FindCurrentlyActiveEnvironment()
+Scene::EntityWeakPtr Environment::FindActiveEnvironment()
 {
     Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+
+    // Check that is current environment entity still valid.
+
+    if ( !activeEnvironmentEntity_.expired() )
+        if(scene->GetEntity(activeEnvironmentEntity_.lock()->GetId()).get() != 0)
+            return activeEnvironmentEntity_;
+
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
         Foundation::ComponentInterfacePtr envComponent = entity.GetComponent("EC_OgreEnvironment");
         if (envComponent.get())
-            cachedEnvironmentEntity_ = scene->GetEntity(entity.GetId());
+            activeEnvironmentEntity_ = scene->GetEntity(entity.GetId());
     }
+
+    return Scene::EntityWeakPtr();
 }
 
 Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
 {
-    return cachedEnvironmentEntity_;
+    return FindActiveEnvironment();
 }
 
 void Environment::CreateEnvironment()
@@ -45,13 +54,13 @@ void Environment::CreateEnvironment()
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
 
-    cachedEnvironmentEntity_ = entity;
+    activeEnvironmentEntity_ = entity;
 }
 
 ///\todo Remove this when Caelum is working ok.
 bool test = true;
 
-bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
+bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
@@ -64,7 +73,7 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::Netwo
     sunPhase_ = msg.ReadF32();
     sunAngVelocity_ = msg.ReadVector3();
 
-    FindCurrentlyActiveEnvironment();
+    FindActiveEnvironment();
     Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
     if (!component)
         return false;
@@ -89,17 +98,22 @@ bool Environment::HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::Netwo
     return false;
 }
 
-void Environment::UpdateVisualEffects(Core::f64 frametime)
+void Environment::SetFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
-    FindCurrentlyActiveEnvironment();
+
+}
+
+void Environment::Update(Core::f64 frametime)
+{
+    FindActiveEnvironment();
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
     env.UpdateVisualEffects(frametime);
 }
 
-bool Environment::UseCaelum()
+bool Environment::IsCaelum()
 {
-    FindCurrentlyActiveEnvironment();
+    FindActiveEnvironment();
     OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
         (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
     return env.IsCaleumUsed();

@@ -5,7 +5,9 @@
 #ifndef incl_RexLogicModule_Environment_h
 #define incl_RexLogicModule_Environment_h
 
-#include "RexTypes.h"
+#include <Foundation.h>
+#include <RexTypes.h>
+#include <QObject>
 #include "EnvironmentModuleApi.h"
 
 namespace ProtocolUtilities
@@ -15,44 +17,68 @@ namespace ProtocolUtilities
 
 namespace Environment
 {
-    class ENVIRONMENT_MODULE_API Environment
-    {
-    public:
-        /// Default constructor.
-        /// @param owner The owner module.
-        Environment(EnvironmentModule *owner);
+    class EnvironmentModule;
 
-        /// Default destructor.
+    class ENVIRONMENT_MODULE_API Environment : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        
+        /** 
+         * Overloaded constructor.
+         * @param owner The owner module.
+         **/
+        Environment(EnvironmentModule *owner);
         virtual ~Environment();
 
-        /// Looks through all the entities in RexLogic's currently active scene to find the Water
-        /// entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
-        void FindCurrentlyActiveEnvironment();
-
-        /// @return The scene entity that represents the terrain in the currently active world.        
+        /**
+         * @return The scene entity that represents the environment in the currently active world.        
+         **/
         Scene::EntityWeakPtr GetEnvironmentEntity();
 
-        /// Creates the environment EC.
+        /**
+         * Creates the environment EC to current active scene and adjust it using default parameters.
+         **/
         void CreateEnvironment();
 
-        /// Handles the "SimulatorViewerTimeMessage" packet.
-        /// @param data The network event data pointer.
-        bool HandleOSNE_SimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
+        /**
+         * Handles the "SimulatorViewerTimeMessage" packet.
+         * @param data The network event data pointer.
+         **/
+        bool DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
-        /// Updates the visual effects (fog, skybox etc).
-        void UpdateVisualEffects(Core::f64 frametime);
+        /** 
+         * Sets a fog for current active environment
+         * @param fogStart distance in world unit at which linear fog start ot encroach. 
+         * @param fogEnd distance in world units at which linear fog becomes completely opaque.
+         * @param color the colour of the fog. 
+         **/
+        void SetFog(float fogStart, float fogEnd, const QVector<float>& color);
+ 
+        /**
+         * Updates the visual effects (fog, skybox etc).
+         **/
+        void Update(Core::f64 frametime);
 
-        /// @return True if we use Caelum.
-        bool UseCaelum();
+        /**
+         * @return true if caelum library is used.
+         **/
+        bool IsCaelum();
 
     private:
+       
+        /// Looks through all the entities in RexLogic's currently active scene to find the Water
+        /// entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
+        Scene::EntityWeakPtr FindActiveEnvironment();
+
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
         /// Weak pointer to the entity which has the environment component.
-        Scene::EntityWeakPtr cachedEnvironmentEntity_;
+        Scene::EntityWeakPtr activeEnvironmentEntity_;
 
-        /// Pointer to the RexLogicModule which owns this class.
+        /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
         /// Server's perception of time (UNIX EPOCH).
