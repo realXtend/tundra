@@ -34,4 +34,5 @@ del build\pymodules\lib\webdav\acp\*.pyc
 del build\pymodules\usr\*.pyc
 del build\pymodules\webdavinventory\*.pyc
 del build\pymodules\webserver\*.pyc
+del build\pymodules\mediaurlhandler\*.pyc
 del build\pymodules\DLLs\*_d.pyd
