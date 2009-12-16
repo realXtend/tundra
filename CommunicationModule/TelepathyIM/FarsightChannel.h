@@ -121,7 +121,7 @@ namespace TelepathyIM
         GstElement *audio_playback_bin_;
         GstElement *video_input_bin_;
         
-        GstPad  *audio_playback_bin_sink_;
+        GstPad  *audio_playback_bin_sink_pad_;
         
         VideoWidget *video_preview_widget_;
         VideoWidget *video_remote_output_widget_;

@@ -56,8 +56,20 @@ namespace TelepathyIM
     void VoiceSession::DeleteChannels()
     {
         // todo: check stream closes
+        //if (pending_audio_streams_)
+        //    disconnect(
         pending_audio_streams_ = 0;
+        //if (pending_video_streams_)
+        //    disconnect(
         pending_video_streams_ = 0;
+
+        Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
+        if (audio_stream)
+            audio_stream->requestDirection(false, false);
+        Tp::MediaStreamPtr video_stream = GetVideoMediaStream();
+        if (video_stream)
+            audio_stream->requestDirection(false, false);
+        
         if (farsight_channel_)
             SAFE_DELETE(farsight_channel_);
 

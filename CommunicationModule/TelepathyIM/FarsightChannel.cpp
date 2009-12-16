@@ -47,7 +47,14 @@ namespace TelepathyIM
 
     FarsightChannel::~FarsightChannel()
     {
-        // TODO: Proper cleanup with unref
+        // delete widgets
+        if (video_preview_widget_)
+            SAFE_DELETE(video_preview_widget_);
+
+        if (video_remote_output_widget_)
+            SAFE_DELETE(video_remote_output_widget_);
+
+        // TODO: CHECK Proper cleanup with unref
         if (tf_channel_) {
             g_object_unref(tf_channel_);
             tf_channel_ = 0;
@@ -57,6 +64,12 @@ namespace TelepathyIM
             bus_ = 0;
         }
         gst_element_set_state(pipeline_, GST_STATE_NULL);
+
+        if (video_input_bin_)
+        {
+            g_object_unref(video_input_bin_);
+            video_input_bin_ = 0;
+        }
         if (pipeline_) {
             g_object_unref(pipeline_);
             pipeline_ = 0;
@@ -163,8 +176,8 @@ namespace TelepathyIM
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
-        audio_playback_bin_sink_ = gst_ghost_pad_new("sink", sink);
-        gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_);
+        audio_playback_bin_sink_pad_ = gst_ghost_pad_new("sink", sink);
+        gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_pad_);
         gst_object_unref(G_OBJECT(sink));
         gst_object_ref(audio_playback_bin_);
         gst_object_sink(audio_playback_bin_);
