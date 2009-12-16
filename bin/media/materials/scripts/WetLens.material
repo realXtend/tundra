@@ -1,0 +1,43 @@
+fragment_program Ogre/Compositor/WetLensFP cg
+{
+	source WetLensFP.cg
+	entry_point main_ps
+	profiles ps_2_0 arbfp1
+}
+
+material Ogre/Compositor/WetLens
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+
+			vertex_program_ref Ogre/Compositor/StdQuad_Tex2a_vp
+			{
+			}
+
+			fragment_program_ref Ogre/Compositor/WetLensFP
+			{
+				//Determines the strenght of the effect
+				param_named strength float 0.1
+				param_named animSpeed float 0.01
+				param_named_auto timer time
+			}
+
+			texture_unit RT
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear linear
+			}
+
+			texture_unit
+			{
+				tex_coord_set 1
+				texture wbump.jpg 2d
+				filtering linear linear linear
+			}
+		}
+	}
+}

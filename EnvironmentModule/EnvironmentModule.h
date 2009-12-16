@@ -14,6 +14,7 @@
 #include "EventDataInterface.h"
 #include "WorldStream.h"
 
+
 namespace Environment
 {
     class Terrain;
@@ -21,10 +22,12 @@ namespace Environment
     class Environment;
     class Sky;
     class EnvironmentEditor;
+    class PostProcessWidget;
 
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
     typedef boost::shared_ptr<EnvironmentEditor> EnvironmentEditorPtr;
+    typedef boost::shared_ptr<PostProcessWidget> PostProcessWidgetPtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
@@ -154,6 +157,9 @@ namespace Environment
 
         /// Terrain editor pointer.
         EnvironmentEditorPtr environment_editor_;
+
+        /// PostProcess dialog pointer
+        PostProcessWidgetPtr postprocess_dialog_;
 
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 

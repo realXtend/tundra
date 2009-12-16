@@ -1,0 +1,14 @@
+sampler RT : register(s0);
+sampler Normals : register(s1);
+
+float4 main_ps(float2 ImageTexCoord : TEXCOORD0, float2 NormalTexCoord : TEXCOORD1,
+	uniform float strength,
+	uniform float animSpeed,
+	uniform float timer) : COLOR
+{
+	float2 displace = tex2D(Normals, float2(NormalTexCoord.x, NormalTexCoord.y+timer*animSpeed)).xy;
+	displace = displace*strength;
+	
+	float4 finalColor = tex2D(RT, ImageTexCoord+displace);
+	return finalColor;
+}

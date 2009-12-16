@@ -1,0 +1,45 @@
+fragment_program Ogre/Compositor/UnderWaterFP cg
+{
+	source UnderWaterFP.cg
+	entry_point main_ps
+	profiles ps_2_0 arbfp1
+}
+
+material Ogre/Compositor/UnderWater
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+
+			vertex_program_ref Ogre/Compositor/StdQuad_Tex2a_vp
+			{
+			}
+
+			fragment_program_ref Ogre/Compositor/UnderWaterFP
+			{
+				param_named_auto timer time
+				// how fast normalmap is moving
+				param_named speedX float 0.1
+				param_named speedY float 0.1
+				// good value range is 0.0 - 1.0
+				param_named normalStr float 0.02
+			}
+
+			texture_unit RT
+			{
+                		tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear linear
+			}
+
+			texture_unit
+			{
+				tex_coord_set 1
+				texture UnderWaterNormal.tga 2d
+				filtering linear linear linear
+			}
+		}
+	}
+}

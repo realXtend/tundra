@@ -1,3 +1,11 @@
+# Macro for mocfolder
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
+###########################################################
+
 # Define target name and output directory
 init_target (OgreRenderingModule OUTPUT modules/core)
 
@@ -6,7 +14,11 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES QOgreUIView.h)
+#file (GLOB UI_FILES ui/*.ui)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+# Qt4 Moc files to subgroup "CMake Moc"
+MocFolder ()
 
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
@@ -42,7 +54,7 @@ if (HYDRAX)
 	use_package (HYDRAX)
 endif (HYDRAX)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
