@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
-    <height>390</height>
+    <width>330</width>
+    <height>385</height>
    </rect>
   </property>
   <property name="styleSheet">
@@ -39,9 +39,9 @@ QFrame#MainFrame {
        <number>0</number>
       </property>
       <item>
-       <widget class="QWidget" name="panel_appearance" native="true">
+       <widget class="QTabWidget" name="tab_appearance">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -49,8 +49,11 @@ QFrame#MainFrame {
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>110</height>
+          <height>0</height>
          </size>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
         </property>
        </widget>
       </item>
@@ -80,7 +83,7 @@ QFrame#MainFrame {
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -92,7 +95,7 @@ QFrame#MainFrame {
          <enum>Qt::ScrollBarAlwaysOn</enum>
         </property>
         <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOn</enum>
+         <enum>Qt::ScrollBarAlwaysOff</enum>
         </property>
         <property name="widgetResizable">
          <bool>false</bool>
@@ -147,7 +150,7 @@ QFrame#MainFrame {
       <item>
        <widget class="QScrollArea" name="scroll_attachments">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -156,7 +159,7 @@ QFrame#MainFrame {
          <enum>Qt::ScrollBarAlwaysOn</enum>
         </property>
         <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOn</enum>
+         <enum>Qt::ScrollBarAlwaysOff</enum>
         </property>
         <property name="widgetResizable">
          <bool>false</bool>

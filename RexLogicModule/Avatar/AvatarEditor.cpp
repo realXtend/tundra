@@ -72,20 +72,22 @@ namespace RexLogic
         avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor"));
    
         // Set scrollbar steps on controls
-        QScrollArea* scroll = avatar_widget_->findChild<QScrollArea*>("scroll_attachments");
-        if (scroll)
-        {
-            scroll->verticalScrollBar()->setSingleStep(20);
-            scroll->verticalScrollBar()->setPageStep(40);
-            QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
-        }
-        scroll = avatar_widget_->findChild<QScrollArea*>("scroll_materials");
-        if (scroll)
-        {
-            scroll->verticalScrollBar()->setSingleStep(20);
-            scroll->verticalScrollBar()->setPageStep(40);
-            QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
-        }
+        // Currently commented out to show clipping bugs better
+        
+        //QScrollArea* scroll = avatar_widget_->findChild<QScrollArea*>("scroll_attachments");
+        //if (scroll)
+        //{
+        //    scroll->verticalScrollBar()->setSingleStep(20);
+        //    scroll->verticalScrollBar()->setPageStep(40);
+        //    QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
+        //}
+        //scroll = avatar_widget_->findChild<QScrollArea*>("scroll_materials");
+        //if (scroll)
+        //{
+        //    scroll->verticalScrollBar()->setSingleStep(20);
+        //    scroll->verticalScrollBar()->setPageStep(40);
+        //    QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
+        //}
    
 	    // Add to control bar
 		/*qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));*/
@@ -128,10 +130,9 @@ namespace RexLogic
         if (!avatar_widget_)
             return;
                                 
-        QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");
-        QWidget* appearance_panel = avatar_widget_->findChild<QWidget *>("panel_appearance");        
+        QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");  
         QWidget* attachment_panel = avatar_widget_->findChild<QWidget *>("panel_attachments");        
-        if (!mat_panel || !appearance_panel || !attachment_panel)    
+        if (!mat_panel || !attachment_panel)    
             return;
                 
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
@@ -142,8 +143,8 @@ namespace RexLogic
             return;
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
-        int width = 308;
-        int tab_width = 302;
+        int width = 308-10;
+        int tab_width = 302-10;
         int itemheight = 20;
         
         // Materials
@@ -198,11 +199,18 @@ namespace RexLogic
             label->show();
         }             
         
-        // Modifiers
-        ClearPanel(appearance_panel);        
-        QTabWidget* tabs = new QTabWidget(appearance_panel);
-        tabs->resize(appearance_panel->size());
-        tabs->show();
+        // Modifiers  
+        QTabWidget* tabs = avatar_widget_->findChild<QTabWidget *>("tab_appearance");   
+        if (!tabs)
+            return;  
+        for (;;)
+        {
+            QWidget* tab = tabs->widget(0);
+            if (!tab)
+                break;
+            tabs->removeTab(0);
+            delete tab;
+        }
           
         const MasterModifierVector& master_modifiers = appearance.GetMasterModifiers();      
         // If no master modifiers, show the individual morph/bone controls
@@ -477,11 +485,12 @@ namespace RexLogic
                
         QScrollArea* tab_scroll = new QScrollArea();
         QWidget* tab_panel = new QWidget();
-        tab_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        
         tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        tab_scroll->verticalScrollBar()->setSingleStep(20);
-        tab_scroll->verticalScrollBar()->setPageStep(20);
-        QObject::connect(tab_scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));        
+        // Currently commented out to show clipping bugs better
+        // tab_scroll->verticalScrollBar()->setSingleStep(20);
+        // tab_scroll->verticalScrollBar()->setPageStep(20);
+        // QObject::connect(tab_scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));     
         tab_scroll->setWidgetResizable(false);
         tab_scroll->resize(tabs->contentsRect().size());            
         tab_scroll->setWidget(tab_panel);    
