@@ -99,7 +99,8 @@ namespace TelepathyIM
 		Communication::ConnectionVector v;
 		for (ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			v.push_back(*i);
+            Connection* connection = *i;
+			v.push_back(connection);
 		}
 		return v;
 	}

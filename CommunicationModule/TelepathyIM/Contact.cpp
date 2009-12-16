@@ -2,7 +2,9 @@
 
 #include "StableHeaders.h"
 
+#include <QSet>
 #include "Contact.h"
+
 
 namespace TelepathyIM
 {
@@ -46,7 +48,11 @@ namespace TelepathyIM
 
 	void Contact::SetName(const QString& name)
 	{
+        if (!tp_contact_)
+            return;
+        
 		//! @todo IMPLEMENT
+        //! This feature have not been implemented on telepathy-qt4 yet
 	}
 
 	QString Contact::GetPresenceStatus() const
@@ -77,6 +83,8 @@ namespace TelepathyIM
             emit PresenceSubscriptionCanceled(this);
         }
     }
+
+
 
 } // end of namespace: TelepathyIM
 	
