@@ -294,7 +294,7 @@ alpha layer of the diffuse map</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="lineEditName"/>
           </item>
          </layout>
         </widget>

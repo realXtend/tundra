@@ -25,7 +25,6 @@ namespace Inventory
 {
     class InventoryWindow;
     class AbstractInventoryDataModel;
-
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
 
     class InventoryModule : public Foundation::ModuleInterfaceImpl
