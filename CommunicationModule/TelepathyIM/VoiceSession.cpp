@@ -88,6 +88,7 @@ namespace TelepathyIM
 
 	void VoiceSession::Close()
 	{
+        // TODO: CRASH SOMETIMES (THREAD PROBLEM)
         state_ = STATE_CLOSED;
         DeleteChannels();
         emit StateChanged(state_);

@@ -112,9 +112,14 @@ namespace TelepathyIM
 		virtual ContactVector HandleAllKnownTpContacts();
 		virtual Contact* GetContact(Tp::ContactPtr tp_contact);
         virtual void AddContact(Contact* contact);
+        virtual void DeleteContacts();
+        virtual void DeleteFriendRequests();
+        virtual void CloseSessions();
+        virtual void DisconnectSignals();
 
 		Tp::ConnectionManagerPtr &tp_connection_manager_;
 		Tp::ConnectionPtr tp_connection_;
+        Tp::PendingReady* tp_pending_connection_;
 
 		State state_;
 		QString name_;

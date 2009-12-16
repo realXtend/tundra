@@ -141,10 +141,10 @@ namespace TelepathyIM
         GstCaps *audio_caps = gst_caps_new_simple("audio/x-raw-int",
             "channels", G_TYPE_INT, 1,
             "width", G_TYPE_INT, 16,
-            "depth", G_TYPE_INT, 16,
-            "rate", G_TYPE_INT, 16000,
-            "signed", G_TYPE_BOOLEAN, false,
-            "endianess", G_TYPE_INT, 1234,
+//            "depth", G_TYPE_INT, 16,
+            "rate", G_TYPE_INT, 8000,
+//            "signed", G_TYPE_BOOLEAN, false,
+//            "endianess", G_TYPE_INT, 1234,
             NULL);
         g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
 
@@ -152,8 +152,14 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
-        gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        if (!ok)
+        {
+            QString error_message = "Cannot link elements for audio playback bin.";
+            LogError(error_message.toStdString());
+            throw Core::Exception(error_message.toStdString().c_str());
+        }
 
         // add ghost pad to audio_bin_
         GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
@@ -211,11 +217,18 @@ namespace TelepathyIM
         FarsightChannel* self = (FarsightChannel*)user_data;
         
         int offset;
-        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
-            offset = 0;
-        else
-            offset = (~buffer->offset)+1;
+        //if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
+        //    offset = 0;
+        //else
+        //    offset = (~GST_BUFFER_OFFSET(buffer))+1; // Two's complement
 
+        //int offset_end;
+        //if(!GST_BUFFER_OFFSET_END_IS_VALID(buffer))
+        //    offset_end = buffer->size-1;
+        //else
+        //    offset_end = (~GST_BUFFER_OFFSET_END(buffer))+1; // Two's complement
+        
+        offset = 0;
         emit self->AudioPlaybackBufferReady(buffer->data + offset, buffer->size - offset);
     }
 
