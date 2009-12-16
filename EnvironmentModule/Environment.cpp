@@ -5,20 +5,33 @@
 #include "StableHeaders.h"
 #include "EnvironmentModule.h"
 #include "Environment.h"
-#include "Foundation.h"
-#include "EC_OgreEnvironment.h"
-#include "SceneManager.h"
-#include "NetworkEvents.h"
+#include <EC_OgreEnvironment.h>
+#include <SceneManager.h>
+#include <NetworkEvents.h>
 
 namespace Environment
 {
 
-Environment::Environment(EnvironmentModule *owner) : owner_(owner)
-{
-}
+Environment::Environment(EnvironmentModule *owner) : 
+    owner_(owner), 
+    activeEnvComponent_(0), 
+    activeEnvEntity_(Scene::EntityWeakPtr()), 
+    time_initialized_(false),
+    usecSinceStart_(0),
+    secPerDay_(0),
+    secPerYear_(0),
+    sunDirection_(RexTypes::Vector3()),
+    sunPhase_(0.0),
+    sunAngVelocity_(RexTypes::Vector3())
+{}
 
 Environment::~Environment()
 {
+    // Does not own.
+    activeEnvEntity_.reset();
+    activeEnvComponent_ = 0;
+    owner_ = 0;
+
 }
 
 Scene::EntityWeakPtr Environment::FindActiveEnvironment()
@@ -27,18 +40,22 @@ Scene::EntityWeakPtr Environment::FindActiveEnvironment()
 
     // Check that is current environment entity still valid.
 
-    if ( !activeEnvironmentEntity_.expired() )
-        if(scene->GetEntity(activeEnvironmentEntity_.lock()->GetId()).get() != 0)
-            return activeEnvironmentEntity_;
+    if ( !activeEnvEntity_.expired() )
+        if(scene->GetEntity(activeEnvEntity_.lock()->GetId()).get() != 0)
+            return activeEnvEntity_;
 
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentInterfacePtr envComponent = entity.GetComponent("EC_OgreEnvironment");
-        if (envComponent.get())
-            activeEnvironmentEntity_ = scene->GetEntity(entity.GetId());
-    }
+        activeEnvComponent_ = static_cast<OgreRenderer::EC_OgreEnvironment*>(entity.GetComponent("EC_OgreEnvironment").get());
+        if (activeEnvComponent_ != 0)
+        {
+            activeEnvEntity_ = scene->GetEntity(entity.GetId());
+            if ( !activeEnvEntity_.expired())
+                return activeEnvEntity_;
+        }
+     }
 
     return Scene::EntityWeakPtr();
 }
@@ -50,15 +67,19 @@ Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
 
 void Environment::CreateEnvironment()
 {
+    FindActiveEnvironment();
+    if ( !activeEnvEntity_.expired())
+        return;
+
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
-
-    activeEnvironmentEntity_ = entity;
+    activeEnvComponent_ = static_cast<OgreRenderer::EC_OgreEnvironment*>(entity->GetComponent("EC_OgreEnvironment").get()); 
+    activeEnvEntity_ = entity;
 }
 
 ///\todo Remove this when Caelum is working ok.
-bool test = true;
+//bool test = true;
 
 bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
@@ -74,14 +95,16 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     sunAngVelocity_ = msg.ReadVector3();
 
     FindActiveEnvironment();
-    Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
-    if (!component)
+    
+    //Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
+    
+    if (activeEnvEntity_.expired())
         return false;
 
     // Update the sunlight direction and angle velocity.
     ///\note Not needed anymore as we use Caleum now.
-    OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
-        (component.get());
+    //OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
+    //    (component.get());
 //    env.SetSunDirection(-sunDirection_);
 
     /** \note
@@ -89,10 +112,10 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
      *  (about every tenth second that is) because the Caleum system has its own perception of time. But let's
      *  do it anyways for now.
      */
-    if (test)
+    if (!time_initialized_ && activeEnvComponent_ != 0)
     {
-        env.SetTime(usecSinceStart_);
-        test = false;
+        activeEnvComponent_->SetTime(usecSinceStart_);
+        time_initialized_ = true;
     }
 
     return false;
