@@ -430,6 +430,7 @@ namespace TelepathyIM
         {
         case Tp::MediaStreamTypeAudio:
             emit SendingAudioData(stream->sending());
+            emit ReceivingAudioData(stream->receiving());
             if (stream->localSendingRequested())
             {
                 LogDebug("Audio send requested.");
@@ -438,6 +439,7 @@ namespace TelepathyIM
             break;
         case Tp::MediaStreamTypeVideo:
             emit SendingVideoData(stream->sending());
+            emit ReceivingVideoData(stream->receiving());
             if (stream->localSendingRequested())
             {
                 LogDebug("Video send requested.");
@@ -606,8 +608,8 @@ namespace TelepathyIM
         int sample_width = 16; // fix this
         int rate = 8000; // fix this
 
-        if (farsight_channel_)
-            rate = farsight_channel_->audio_stream_in_clock_rate_; 
+        //if (farsight_channel_)
+        //    rate = farsight_channel_->audio_stream_in_clock_rate_; 
 
         //if (ms_buffer_size_ <= 60)
         //{
