@@ -52,8 +52,6 @@ namespace TelepathyIM
 
         int audio_stream_in_clock_rate_; // todo getter
 
-//        void OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
-
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
         void AudioStreamReceived();
@@ -65,6 +63,7 @@ namespace TelepathyIM
     public:
         GstPad *audio_in_src_pad_; // todo setter
         GstPad *video_in_src_pad_; // todo setter
+        Status status_; // todo setter
 
     private:
 
@@ -96,7 +95,7 @@ namespace TelepathyIM
         static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
         Tp::StreamedMediaChannelPtr channel_;
-        Status status_;
+        
         //GValue volume_;
         GValue input_volume_;
         TfChannel *tf_channel_; // telepathy-farsight channel, that this class basically wraps
