@@ -9,7 +9,7 @@
 #include <RexTypes.h>
 #include <QObject>
 #include "EnvironmentModuleApi.h"
-//#include <EC_OgreEnvironment.h>
+
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
@@ -56,13 +56,37 @@ namespace Environment
         bool DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
         /** 
-         * Sets a fog for current active environment
+         * Sets a water fog for current active environment.
          * @param fogStart distance in world unit at which linear fog start ot encroach. 
          * @param fogEnd distance in world units at which linear fog becomes completely opaque.
          * @param color the colour of the fog. 
          **/
-        void SetFog(float fogStart, float fogEnd, const QVector<float>& color);
+        void SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color);
  
+        /** 
+         * Sets a ground fog for current active environment.
+         * @param fogStart distance in world unit at which linear fog start ot encroach. 
+         * @param fogEnd distance in world units at which linear fog becomes completely opaque.
+         * @param color the colour of the fog. 
+         **/
+
+        void SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
+
+        /**
+         * Enables or disables fog color override. 
+         * @param enabled boolean defines state of override.
+         **/
+         
+        void SetFogColorOverride(bool enabled);
+        
+        /**
+         * Returns information is fog color controlled by user or caelum.
+         * @return true if it is fog color is controlled by user, else false.
+         **/
+        
+        bool GetFogColorOverride();
+
+
         /**
          * Updates the visual effects (fog, skybox etc).
          **/
@@ -74,8 +98,13 @@ namespace Environment
         bool IsCaelum();
 
         //! Set server time override
-        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
+        void SetTimeOverride(bool enabled) { time_override_ = enabled; }      
+     
+    signals:
         
+         void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
+         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
+
     private:
        
         /// Looks through all the entities in RexLogic's currently active scene to find the Water
