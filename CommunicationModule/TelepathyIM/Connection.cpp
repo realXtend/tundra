@@ -291,10 +291,10 @@ namespace TelepathyIM
         }
 
 		Tp::Features features;
-//  	features.insert(Tp::Connection::FeatureSimplePresence);
+      	features.insert(Tp::Connection::FeatureSimplePresence);
 		features.insert(Tp::Connection::FeatureRoster);
 		features.insert(Tp::Connection::FeatureSelfContact);
-//		features.insert(Tp::Connection::FeatureCore);
+		features.insert(Tp::Connection::FeatureCore);
 		if ( !tp_connection_->isReady(features) )
 		{
 			LogDebug("Establishing connection to IM server. Waiting for these features:");
@@ -348,10 +348,10 @@ namespace TelepathyIM
 		}
         
      	Tp::Features features;
-//		features.insert(Tp::Connection::FeatureSimplePresence);
+		features.insert(Tp::Connection::FeatureSimplePresence);
 		features.insert(Tp::Connection::FeatureRoster);
 		features.insert(Tp::Connection::FeatureSelfContact);
-//        features.insert(Tp::Connection::FeatureCore);
+        features.insert(Tp::Connection::FeatureCore);
         if (!tp_connection_->isReady(features))
         {
             state_ = STATE_ERROR;
@@ -432,6 +432,24 @@ namespace TelepathyIM
 			case Tp::Contact::PresenceStateNo:
                 // The user doesn't subscribe presence status of this contact
 
+              		switch ( tp_contact->publishState() )
+					{
+					case Tp::Contact::PresenceStateAsk:
+                        //! Open situation, we do nothing
+                        {
+					    FriendRequest* request = new FriendRequest(tp_contact);
+					    received_friend_requests_.push_back(request);
+					    emit FriendRequestReceived(*request);
+                        }
+                        break;
+					case Tp::Contact::PresenceStateYes:
+                        //! Contact have published the presence status 
+                        break;
+					case Tp::Contact::PresenceStateNo:
+                        //! Contact have denied to publish presence status
+                        break;
+                    }
+
 				break;
 
 			case Tp::Contact::PresenceStateYes:
@@ -455,6 +473,12 @@ namespace TelepathyIM
                         Contact* contact = GetContact(tp_contact);
                         if (contact == 0)
                         {
+                            //QSet<Tp::Contact::Feature> features;
+                            //features << Tp::Contact::FeatureAlias;
+                            //features << Tp::Contact::FeatureAvatarToken;
+                            //features << Tp::Contact::FeatureSimplePresence;
+                            
+
                             contact = new Contact(tp_contact);
                             new_contacts.push_back(contact);
                         }

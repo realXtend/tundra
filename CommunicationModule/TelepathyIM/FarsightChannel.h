@@ -106,7 +106,7 @@ namespace TelepathyIM
 
         // adjustable on init
         GstElement *audio_input_;
-        GstElement *audio_output_;
+//        GstElement *audio_output_;
         GstElement *video_input_;
         GstElement *video_tee_;
         GstElement *fake_audio_output_;

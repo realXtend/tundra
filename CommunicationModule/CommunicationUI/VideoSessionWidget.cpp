@@ -43,10 +43,10 @@ namespace CommunicationUI
 
         // Update widget states
         SessionStateChanged(video_session_->GetState());
-        UpdateLocalVideoControls(video_session_->GetVideoOutEnabled());
-        UpdateLocalAudioControls(video_session_->GetAudioOutEnabled());
-        UpdateRemoteVideoControls(video_session_->GetVideoInEnabled());
-        UpdateRemoteAudioControls(video_session_->GetAudioInEnabled());
+        UpdateLocalVideoControls(video_session_->IsSendingVideoData());
+        UpdateLocalAudioControls(video_session_->IsSendingAudioData());
+        UpdateRemoteVideoControls(video_session_->IsReceivingVideoData());
+        UpdateRemoteAudioControls(video_session_->IsReceivingAudioData());
 
         // Connect signals
         connect(video_session_ui_.closePushButton, SIGNAL( clicked() ),
@@ -105,7 +105,7 @@ namespace CommunicationUI
             enabled = true;
         else if (state == Qt::Unchecked)
             enabled = false;   
-        video_session_->SetVideoOutEnabled(enabled);
+        video_session_->SendVideoData(enabled);
         UpdateLocalVideoControls(enabled);
     }
 
@@ -125,7 +125,7 @@ namespace CommunicationUI
             enabled = true;
         else if (state == Qt::Unchecked)
             enabled = false;
-        video_session_->SetAudioOutEnabled(enabled);
+        video_session_->SendAudioData(enabled);
         UpdateLocalAudioControls(enabled);
     }
 
@@ -207,7 +207,7 @@ namespace CommunicationUI
         sending_label->setAlignment(Qt::AlignCenter);
         sending_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_local_->addWidget(sending_label);
-        internal_v_layout_local_->addWidget((QWidget *)(video_session_->GetOwnVideo()));
+        internal_v_layout_local_->addWidget((QWidget *)(video_session_->GetLocallyCapturedVideo()));
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
@@ -217,7 +217,7 @@ namespace CommunicationUI
         receiving_label->setAlignment(Qt::AlignCenter);
         receiving_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_remote_->addWidget(receiving_label);
-        internal_v_layout_remote_->addWidget((QWidget *)(video_session_->GetRemoteVideo()));
+        internal_v_layout_remote_->addWidget((QWidget *)(video_session_->GetReceivedVideo()));
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
