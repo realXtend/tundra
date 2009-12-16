@@ -186,7 +186,6 @@ namespace TelepathyIM
         try
         {
             farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
-            connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(Core::u8*, int)), SLOT( OnAudioPlaybackBufferReady(Core::u8* , int ) ) );
             //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
         }
         catch(Core::Exception &e) 
@@ -198,6 +197,8 @@ namespace TelepathyIM
             emit StateChanged(state_);
             return;
         }
+
+        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(Core::u8*, int)), SLOT( OnAudioPlaybackBufferReady(Core::u8* , int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),

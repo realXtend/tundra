@@ -103,8 +103,9 @@ namespace Communication
 		ConnectionVector connections;
 		for (ConnectionVector::const_iterator i = connections_.begin(); i != connections_.end(); ++i)
 		{
-			if ( (*i)->GetProtocol().compare( protocol ) == 0 )
-				connections.push_back( *i );
+            ConnectionInterface* connection = *i;
+			if ( connection->GetProtocol().compare( protocol ) == 0 )
+				connections.push_back( connection );
 		}
 		return connections;
 	}
@@ -114,9 +115,10 @@ namespace Communication
 		ConnectionProviderVector providers;
 		for (ConnectionProviderVector::const_iterator i = connection_providers_.begin(); i != connection_providers_.end(); ++i)
 		{
-			QStringList protocols = (*i)->GetSupportedProtocols();
+            ConnectionProviderInterface* connection = *i;
+			QStringList protocols = connection->GetSupportedProtocols();
 			if ( protocols.contains(protocol) )
-				providers.push_back(*i);
+				providers.push_back(connection);
 		}
 		return providers;
 	}
