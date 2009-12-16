@@ -654,7 +654,8 @@ void RexLogicModule::SwitchCameraState()
     if (camera_state_ == CS_Follow)
     {
         camera_state_ = CS_Free;
-        key_state_listener_->SetKeyBindings(free_camera_bindings_.map);
+        // INFO: to enable KeyStateListener uncomment this
+        //key_state_listener_->SetKeyBindings(free_camera_bindings_.map);
 
         Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
@@ -662,7 +663,8 @@ void RexLogicModule::SwitchCameraState()
     else
     {
         camera_state_ = CS_Follow;
-        key_state_listener_->SetKeyBindings(third_person_bindings_.map);
+        // INFO: to enable KeyStateListener uncomment this
+        //key_state_listener_->SetKeyBindings(third_person_bindings_.map);
 
         Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
