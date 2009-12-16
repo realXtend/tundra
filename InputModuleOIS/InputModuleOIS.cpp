@@ -105,23 +105,23 @@ namespace Input
 #endif
 
         // throws exception if fails, not handled since it should be rather fatal
-        input_manager_ = OIS::InputManager::createInputSystem( pl );
+        //input_manager_ = OIS::InputManager::createInputSystem( pl );
 
-        keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
-        keyboard_->setEventCallback(this);
-        LogInfo("Keyboard input initialized.");
+        //keyboard_ = static_cast<OIS::Keyboard*>(input_manager_->createInputObject( OIS::OISKeyboard, false ));
+        //keyboard_->setEventCallback(this);
+        //LogInfo("Keyboard input initialized.");
    
-        mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
-        LogInfo("Mouse input initialized.");
-        try
-        {
-            joy_ = static_cast<OIS::JoyStick*>(input_manager_->createInputObject( OIS::OISJoyStick, false ));
-            LogInfo("Joystick / gamepad input initialized.");
-        }
-        catch(...)
-        {
-            LogInfo("Joystick / gamepad not found.");
-        }
+        //mouse_ = static_cast<OIS::Mouse*>(input_manager_->createInputObject( OIS::OISMouse, false ));
+        //LogInfo("Mouse input initialized.");
+        //try
+        //{
+        //    joy_ = static_cast<OIS::JoyStick*>(input_manager_->createInputObject( OIS::OISJoyStick, false ));
+        //    LogInfo("Joystick / gamepad input initialized.");
+        //}
+        //catch(...)
+        //{
+        //    LogInfo("Joystick / gamepad not found.");
+        //}
 
         // set window default width / height. Should be updated when window size changes
         WindowResized(renderer->GetWindowWidth(), renderer->GetWindowHeight());
@@ -140,17 +140,17 @@ namespace Input
         LogInfo("Total JoySticks: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
         
         //List all devices
-        OIS::DeviceList list = input_manager_->listFreeDevices();
-        for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
-        LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
+        //OIS::DeviceList list = input_manager_->listFreeDevices();
+        //for( OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
+        //LogInfo("\tDevice: " + std::string(DeviceType[i->first]) + " Vendor: " + i->second);
 #endif
 
-        for (int i=0 ; i<256 ; ++i)
-        {
-            key_states_[i] = false;
-        }
+        //for (int i=0 ; i<256 ; ++i)
+        //{
+        //    key_states_[i] = false;
+        //}
 
-        LogInfo("Module " + Name() + " initialized.");
+        //LogInfo("Module " + Name() + " initialized.");
     }
 
     // virtual 
@@ -178,9 +178,9 @@ namespace Input
 
             if( keyboard_ && mouse_ )
             {
-                keyboard_->capture();
-                mouse_->capture();
-                if ( joy_ ) joy_->capture();
+                //keyboard_->capture();
+                //mouse_->capture();
+                //if ( joy_ ) joy_->capture();
 
                 const OIS::MouseState &ms = mouse_->getMouseState();
                 if (ms.Z.rel != 0)
