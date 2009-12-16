@@ -255,7 +255,11 @@ namespace Communication
 	{
 		Q_OBJECT
 	public:
+        //! State of voice session instance
 		enum State { STATE_INITIALIZING, STATE_RINGING_LOCAL, STATE_RINGING_REMOTE, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
+
+        //! State of audio or video stream in voice session instance
+        enum StreamState { SS_DISCONNECTED, SS_CONNECTING, SS_CONNECTED };
 
 		//! @return State of the session
 		virtual State GetState() const = 0;
@@ -263,27 +267,83 @@ namespace Communication
 		//! @return all known participants of the chat session inlcuding the user
 		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
 
-        virtual Communication::VideoWidgetInterface* GetRemoteVideo() = 0;
-        virtual Communication::VideoWidgetInterface* GetOwnVideo() = 0;
+        //! /return widget for playback incoming video stream. Return 0 if widget doesn't exist.
+        virtual Communication::VideoWidgetInterface* GetReceivedVideo() = 0;
+
+        //! /return widget for playback local captured video stream. Return 0 if widget doesn't exist.
+        virtual Communication::VideoWidgetInterface* GetLocallyCapturedVideo() = 0;
 
     public slots:
+
+        //! Closes the session and all streams associated to it.
         virtual void Close() = 0;
+
+        //! Accpet incoming session request.
+        //! If session state is not STATE_RINGING_LOCAL then does nothing
         virtual void Accept() = 0;
+
+        //! Rejects incoming session reqeust.
+        //! If session state is not STATE_RINGING_LOCAL then does nothing
         virtual void Reject() = 0;
 
-        virtual void SetAudioOutEnabled(bool value) = 0;
-        virtual void SetVideoOutEnabled(bool value) = 0;
-        virtual bool GetAudioInEnabled() = 0;
-        virtual bool GetVideoInEnabled() = 0;
-        virtual bool GetAudioOutEnabled() = 0;
-        virtual bool GetVideoOutEnabled() = 0;
+        //! /return state of audio stream
+        virtual StreamState GetAudioStreamState() const = 0;
+
+        //! /return state of video stream
+        virtual StreamState GetVideoStreamState() const = 0;
+
+        //! /return true if session is sending audio data to audio steam return false if not.
+        virtual bool IsSendingAudioData() const = 0;
+
+        //! /return true if session is sending video data to video steam return false if not.
+        virtual bool IsSendingVideoData() const = 0;
+
+        //! /return true if session is receiving audio data from audio steam return false if not.
+        virtual bool IsReceivingAudioData() const = 0;
+
+        //! /return true if session is receiving video data from video steam return false if not.
+        virtual bool IsReceivingVideoData() const = 0;
+
+        //! Enable audio data sending. If audio stream is not created then this create it.
+        virtual void SendAudioData(bool send) = 0;
+
+        //! Enable video data sending. If video stream is not created then this create it.
+        virtual void SendVideoData(bool send) = 0;
         
 	signals:
+        //!
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);
+
+        //!
 		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
+
+        //!
 		void Opened(VoiceSessionInterface*);   // do we need this ?
+
+        //!
 		void Closed(VoiceSessionInterface*);   // do we need this ?
+
+        //!
         void StateChanged(Communication::VoiceSessionInterface::State state);
+
+        //!
+        void AudioStreamStateChanged(StreamState state);
+
+        //!
+        void VideoStreamStateChanged(StreamState state);
+
+        //! When audio data sending toggles
+        void SendingAudioData(bool sending);
+
+        //! When video data sending toggles
+        void SendingVideoData(bool sending);
+
+        //! When audio data receiving toggles
+        void ReceivingAudioData(bool sending);
+
+        //! When video data receiving toggles
+        void ReceivingVideoData(bool sending);
+
         // todo: Error signal?
 	};
 

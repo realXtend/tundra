@@ -125,10 +125,11 @@ namespace TelepathyIM
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
             g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", (gboolean)true, this);
         }
+        //return;
         // We use fake audio sink for now
-        audio_output_ = setUpElement(audio_sink_name);
-        if (audio_output_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio output element.");
+        //audio_output_ = setUpElement(audio_sink_name);
+        //if (audio_output_ == 0)
+        //    throw Core::Exception("Cannot create GStreamer audio output element.");
 
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
@@ -140,7 +141,7 @@ namespace TelepathyIM
             "channels", G_TYPE_INT, 1,
             "width", G_TYPE_INT, 16,
             "depth", G_TYPE_INT, 16,
-            "rate", G_TYPE_INT, 48000,
+            "rate", G_TYPE_INT, 16000,
             "signed", G_TYPE_BOOLEAN, false,
             "endianess", G_TYPE_INT, 1234,
             NULL);
@@ -150,11 +151,11 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_convert_, audio_resample_, fake_audio_output_, NULL);
-        gst_element_link_many(audio_convert_, audio_resample_, fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
+        gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
 
         // add ghost pad to audio_bin_
-        GstPad *sink = gst_element_get_static_pad(audio_convert_, "sink");
+        GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
         audio_playback_bin_sink_ = gst_ghost_pad_new("sink", sink);
         gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_);
         gst_object_unref(G_OBJECT(sink));
@@ -341,13 +342,11 @@ namespace TelepathyIM
         {
         case TP_MEDIA_STREAM_TYPE_AUDIO:
              output_element = self->audio_playback_bin_;
-//            output_element = self->fake_audio_output_; // fake audio sink
 //            g_object_ref(output_element); // do we need this
               if (self->audio_in_src_pad_)
                 sink_already_linked = true;
             break;
         case TP_MEDIA_STREAM_TYPE_VIDEO:
-//            video_in_src_pad_ = src;
             output_element = self->video_remote_output_element_;
             if (self->video_in_src_pad_)
                 sink_already_linked = true;
