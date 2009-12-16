@@ -104,8 +104,8 @@ namespace Environment
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];
 
-        /// Just need to have this here to be able to destroy the terrain nodes. ///\todo This pointer could theoretically dangle... 
-        Foundation::ModuleInterface* owner_; 
+        /// Just need to have this here to be able to destroy the terrain nodes.
+        Foundation::Framework* framework_; 
     };
 }
 
