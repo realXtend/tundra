@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>337</width>
-    <height>159</height>
+    <height>160</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,16 +47,6 @@
         </item>
         <item>
          <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="serverLabel">
-            <property name="text">
-             <string>Server</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="serverLineEdit"/>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="usernameLabel">
             <property name="text">
@@ -77,10 +67,20 @@
           <item row="2" column="1">
            <widget class="QLineEdit" name="passwordLineEdit">
             <property name="text">
-             <string></string>
+             <string/>
             </property>
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="serverLineEdit"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="serverLabel">
+            <property name="text">
+             <string>Server</string>
             </property>
            </widget>
           </item>

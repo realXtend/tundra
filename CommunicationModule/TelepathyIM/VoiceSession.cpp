@@ -606,7 +606,7 @@ namespace TelepathyIM
     {       
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
-        int rate = 8000; // fix this
+        int rate = 16000; // fix this
 
         //if (farsight_channel_)
         //    rate = farsight_channel_->audio_stream_in_clock_rate_; 

@@ -31,6 +31,8 @@ namespace CommunicationUI
         QWidget *controls_local_widget_;
         QWidget *controls_remote_widget_;
         QVBoxLayout *internal_v_layout_;
+        QVBoxLayout *internal_v_layout_local_;
+        QVBoxLayout *internal_v_layout_remote_;
         QHBoxLayout *internal_h_layout_;
         QString my_name_; 
         QString his_name_;
