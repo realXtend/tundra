@@ -17,7 +17,8 @@ namespace UiHelpers
           im_connection_(0),
           error_message_(""),
           username_(""),
-          server_("")
+          server_(""),
+          password_("")
     {
 
     }
@@ -34,6 +35,7 @@ namespace UiHelpers
         QMap<QString, QString> data_map;
         data_map["username"] = username_;
         data_map["server"] = server_;
+        data_map["password"] = password_;
         return data_map;
     }
 
@@ -43,6 +45,7 @@ namespace UiHelpers
 
         username_ = login_ui_->usernameLineEdit->text();
         server_ = login_ui_->serverLineEdit->text();
+        password_ = login_ui_->passwordLineEdit->text();
 
         // Username validation
         if (!username_.contains("@"))
@@ -59,7 +62,7 @@ namespace UiHelpers
         Communication::Credentials credentials;
         credentials.SetProtocol("jabber");
         credentials.SetUserID(username_);
-        credentials.SetPassword(login_ui_->passwordLineEdit->text());
+        credentials.SetPassword(password_);
         credentials.SetServer(server_url.host());
         credentials.SetPort(server_url.port());
 

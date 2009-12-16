@@ -128,8 +128,8 @@ namespace Communication
             if (!im_ui_)
             {
                 im_ui_ = new CommunicationUI::MasterWidget(framework_);
-                //im_ui_->show();
-                AddWidgetToUi("IM");
+                im_ui_->show();
+                //AddWidgetToUi("IM");
             }
             return;
         }

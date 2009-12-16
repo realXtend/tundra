@@ -55,6 +55,7 @@ namespace UiHelpers
         void TabWidgetPostStateCheck();
 
         //! Doers
+        void SendFriendRequest();
         void CloseChatTab(const QString &chat_friends_name);
         void CloseVideoTab(const QString &chat_friends_name);
         void CreateNewChatSessionWidget(Communication::ChatSessionInterface *chat_session, QString &chat_friends_name);

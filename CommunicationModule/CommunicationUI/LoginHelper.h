@@ -46,6 +46,7 @@ namespace UiHelpers
         QString error_message_;
         QString username_;
         QString server_;
+        QString password_;
 
     signals:
         void StateChange(UiDefines::UiStates::ConnectionState);

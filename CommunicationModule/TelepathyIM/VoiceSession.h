@@ -114,6 +114,10 @@ namespace TelepathyIM
         void OnVideoStreamCreated(Tp::PendingOperation *op);
         void OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
 
+    private:
+        QByteArray *stream_buffer_;
+        int ms_buffer_size_;
+
     signals:
 
         // When incoming session is ready for accecpt/reject

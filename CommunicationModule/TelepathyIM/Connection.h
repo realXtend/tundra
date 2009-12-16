@@ -101,6 +101,9 @@ namespace TelepathyIM
         //! Get presene status message of user
 		virtual QString GetPresenceMessage() { return presence_message_; };
 
+        //! Check and emit all pending friend requests
+        virtual void CheckPendingFriendRequests();
+
 		//! Closes the connection
 		virtual void Close();
 
@@ -121,6 +124,8 @@ namespace TelepathyIM
 		QString reason_;
 		QString presence_status_;
 		QString presence_message_;
+        QList<FriendRequest*> pending_friend_requests_;
+
 		ContactGroup friend_list_;
 		ContactVector contacts_;
 		Contact* self_contact_;

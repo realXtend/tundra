@@ -99,7 +99,6 @@ namespace UiManagers
         // FILE MENU
         QMenu *file_menu = new QMenu("File", main_parent_);
         file_menu->addAction("Hide", this, SLOT( Hide() ));
-        file_menu->addAction("Exit", this, SLOT( Exit() ));
         
         // JOIN MENU
         QMenu *join_menu = new QMenu("Join", main_parent_);
@@ -110,7 +109,10 @@ namespace UiManagers
         menu_bar_->addMenu(status_menu);
         menu_bar_->addMenu(join_menu);
         menu_bar_->addAction("Show Friend List", this, SLOT( ToggleShowFriendList() ));
+        QAction *add_new_friend = menu_bar_->addAction("Add New Friend");
 
+        connect(add_new_friend, SIGNAL( triggered() ),
+                session_helper_, SLOT( SendFriendRequest() ));
         connect(this, SIGNAL( StatusChange(const QString&) ), 
                 session_helper_, SLOT( SetMyStatus(const QString&) ));
         connect(session_helper_, SIGNAL( ChangeMenuBarStatus(const QString &) ), 
@@ -171,10 +173,11 @@ namespace UiManagers
         }
     }
 
-    void SessionManager::Exit()
+    void SessionManager::SignOut()
     {
+        im_connection_->Close();                    
         friend_list_widget_->close(); 
-        im_connection_->Close(); 
-        emit StateChange(UiDefines::UiStates::Exit);
+        SAFE_DELETE(friend_list_widget_);
+        emit StateChange(UiDefines::UiStates::Disconnected);
     }
 }

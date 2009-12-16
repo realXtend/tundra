@@ -439,6 +439,7 @@ namespace TelepathyIM
                         {
 					    FriendRequest* request = new FriendRequest(tp_contact);
 					    received_friend_requests_.push_back(request);
+                        pending_friend_requests_.append(request);
 					    emit FriendRequestReceived(*request);
                         }
                         break;
@@ -522,7 +523,6 @@ namespace TelepathyIM
 
 					// User have not yet made the decision to accept or reject presence subscription 
 					// So we create a FriendRequest obeject
-
 					FriendRequest* request = new FriendRequest(tp_contact);
 					received_friend_requests_.push_back(request);
 					emit FriendRequestReceived(*request);
@@ -716,6 +716,13 @@ namespace TelepathyIM
     void Connection::OnSelfHandleChanged(uint handle) 
     {
         // TODO: IMPLEMENT
+    }
+
+    void Connection::CheckPendingFriendRequests()
+    {
+        foreach (FriendRequest *request, pending_friend_requests_)
+            emit FriendRequestReceived(*request);
+        pending_friend_requests_.clear();
     }
 
 } // end of namespace: TelepathyIM

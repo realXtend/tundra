@@ -34,6 +34,8 @@ namespace CommunicationUI
                 friend_helper_, SLOT( OnNewContact(const Communication::ContactInterface&) ));
         connect(im_connection_, SIGNAL( ContactRemoved(const Communication::ContactInterface&) ), 
                 friend_helper_, SLOT( OnContactRemoved(const Communication::ContactInterface&) ));
+
+        im_connection_->CheckPendingFriendRequests();
     }
 
     FriendListWidget::~FriendListWidget()
@@ -54,6 +56,12 @@ namespace CommunicationUI
         }
 
         friend_helper_->UpdateFriendList(contacts_map_);
+
+        friend_list_ui_->friendRequestFrame->hide();
+        friend_list_ui_->pendingRequestsButton->setIcon(QIcon(":/images/iconEnvelopePlus.png"));
+
+        connect(friend_list_ui_->pendingRequestsButton, SIGNAL( clicked() ),
+                friend_helper_, SLOT( ShowRequestManagerWidget() ));
     }
 
     void FriendListWidget::InitializeStatusEditor()

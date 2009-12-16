@@ -15,8 +15,9 @@
     <file alias="iconRemove.png" >../../bin/data/ui/images/communications_iconRemove.png</file>
 	<file alias="iconUsers.png" >../../bin/data/ui/images/communications_iconUsers.png</file>
 	<file alias="iconRename.png" >../../bin/data/ui/images/communications_iconRename.png</file>
+    <file alias="iconEnvelopePlus.png" >../../bin/data/ui/images/communications_iconEnvelopePlus.png</file>
 	
-	<file alias="iconChat.png" >../../bin/data/ui/images/communications_iconChat.png</file>
+    <file alias="iconChat.png" >../../bin/data/ui/images/communications_iconChat.png</file>
 	<file alias="iconPhone.png" >../../bin/data/ui/images/communications_iconPhone.png</file>
 	<file alias="iconVideo.png" >../../bin/data/ui/images/communications_iconVideo.png</file>
 
