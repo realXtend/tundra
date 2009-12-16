@@ -264,8 +264,8 @@ material Ogre/Compositor/BloomBlend_waterworld
 
 		fragment_program_ref Bloom2_ps
 		{
-			param_named OriginalImageWeight float 1.4
-			param_named BlurWeight float 1.3
+			param_named OriginalImageWeight float 1.3
+			param_named BlurWeight float 1.0
 		}
 		//vertex_program_ref Blur_vs
 		//	{

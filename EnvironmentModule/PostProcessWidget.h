@@ -23,13 +23,15 @@ namespace Environment
 	{
 		Q_OBJECT
 	public:
-		PostProcessWidget(std::vector<std::string> &effects);
+		PostProcessWidget(std::vector<std::string> effects);
         //! Widget adds itself to the scene
         void AddSelfToScene(EnvironmentModule *env_module);
         //! Adds handler to handle the postprocess requests. Note that this class doesn't own the handler and is not responsible for deleting it
         void AddHandler(OgreRenderer::CompositionHandler* handler);
         //! Add effect names that will be shown in dialog with radiobuttons
 		void AddEffects(std::vector<std::string> &effects);
+        //! Set effectbutton checked/unchecked. Used if effects are turned on/off from somewhere else
+        void EnableEffect(std::string& effect_name, bool enable);
 		virtual ~PostProcessWidget(void);
 
 	public slots:
