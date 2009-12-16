@@ -542,6 +542,8 @@ namespace TelepathyIM
 
     Tp::MediaStreamPtr VoiceSession::GetAudioMediaStream() const
     {
+        if (!tp_channel_)
+            return Tp::MediaStreamPtr();
         Tp::MediaStreams streams = tp_channel_->streams();
         foreach (const Tp::MediaStreamPtr &stream, streams) {
             if (stream->type() == Tp::MediaStreamTypeAudio)
@@ -552,6 +554,8 @@ namespace TelepathyIM
 
     Tp::MediaStreamPtr VoiceSession::GetVideoMediaStream() const
     {
+        if (!tp_channel_)
+            return Tp::MediaStreamPtr();
         Tp::MediaStreams streams = tp_channel_->streams();
         foreach (const Tp::MediaStreamPtr &stream, streams) {
             if (stream->type() == Tp::MediaStreamTypeVideo)
