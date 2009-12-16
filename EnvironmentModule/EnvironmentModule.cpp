@@ -241,6 +241,31 @@ namespace Environment
                         } catch (boost::bad_lexical_cast&)
                         {}
                     }
+                    else if ( methodname == "RexFog" )
+                    {
+                        Core::StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
+                        if ( parameters.size() < 5)
+                            return false;
+
+                        float fogStart = 0.0, fogEnd = 0.0, fogC_r = 0.0, fogC_g = 0.0, fogC_b = 0.0;
+
+                        try
+                        {
+                            fogStart = boost::lexical_cast<float>(parameters[0]);
+                            fogEnd = boost::lexical_cast<float>(parameters[1]);
+                            fogC_r = boost::lexical_cast<float>(parameters[2]);
+                            fogC_g = boost::lexical_cast<float>(parameters[3]);
+                            fogC_b = boost::lexical_cast<float>(parameters[4]);
+
+                        } catch ( boost::bad_lexical_cast&)
+                        {
+                            return false;
+                        }
+                        if ( environment_ != 0)
+                        {
+                            // Adjust fog.
+                        }
+                    }
               
             }
             else if (event_id == RexNetMsgSimulatorViewerTimeMessage)
