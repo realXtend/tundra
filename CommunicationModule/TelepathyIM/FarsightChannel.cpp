@@ -47,6 +47,7 @@ namespace TelepathyIM
 
     FarsightChannel::~FarsightChannel()
     {
+        // TODO: Proper cleanup with unref
         if (tf_channel_) {
             g_object_unref(tf_channel_);
             tf_channel_ = 0;

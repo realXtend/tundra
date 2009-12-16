@@ -605,11 +605,11 @@ namespace TelepathyIM
         switch( stream->state() )
         {
         case Tp::MediaStreamStateDisconnected:
-            return StreamState::SS_DISCONNECTED;
+            return Communication::VoiceSessionInterface::SS_DISCONNECTED;
         case Tp::MediaStreamStateConnecting:
-            return StreamState::SS_CONNECTING;
+            return Communication::VoiceSessionInterface::SS_CONNECTING;
         case Tp::MediaStreamStateConnected:
-            return StreamState::SS_CONNECTED;
+            return Communication::VoiceSessionInterface::SS_CONNECTED;
         }
     }
 
@@ -621,11 +621,11 @@ namespace TelepathyIM
         switch( stream->state() )
         {
         case Tp::MediaStreamStateDisconnected:
-            return StreamState::SS_DISCONNECTED;
+            return Communication::VoiceSessionInterface::SS_DISCONNECTED;
         case Tp::MediaStreamStateConnecting:
-            return StreamState::SS_CONNECTING;
+            return Communication::VoiceSessionInterface::SS_CONNECTING;
         case Tp::MediaStreamStateConnected:
-            return StreamState::SS_CONNECTED;
+            return Communication::VoiceSessionInterface::SS_CONNECTED;
         }
     }
 
