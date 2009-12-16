@@ -10,12 +10,9 @@ namespace Environment
 {
     EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module)
     :Foundation::ComponentInterface(module->GetFramework()),
-    owner_(module)
+    framework_(module->GetFramework())
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
-            <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (renderer)
-            Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        assert(framework_);    
     }
 
     EC_Terrain::~EC_Terrain()
@@ -25,9 +22,9 @@ namespace Environment
 
     void EC_Terrain::Destroy()
     {
-        assert(owner_);
+        assert(framework_);
 
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
             <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
             return;

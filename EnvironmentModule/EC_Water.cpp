@@ -10,14 +10,18 @@ namespace Environment
 {
     EC_Water::EC_Water(Foundation::ModuleInterface* module)
     :Foundation::ComponentInterface(module->GetFramework()),
-    owner_(module), scene_node_(0), entity_(0)
+    framework_(module->GetFramework()), scene_node_(0), entity_(0)
     {
+        assert(framework_);
+            
         CreateOgreWaterObject();
     }
 
     EC_Water::~EC_Water()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
+        assert(framework_);
+            
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
             <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
             return;
@@ -37,7 +41,7 @@ namespace Environment
         
         entity_ = 0;
         scene_node_ = 0;
-        owner_ = 0;
+        framework_ = 0;
     }
 
     void EC_Water::SetWaterHeight(float height)
@@ -57,7 +61,7 @@ namespace Environment
 
     void EC_Water::CreateOgreWaterObject()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
             <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
