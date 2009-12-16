@@ -2,8 +2,6 @@
 
 #include "StableHeaders.h"
 #include "UiModule.h"
-
-#include "UiSceneManager.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
@@ -19,7 +17,6 @@ UiModule::UiModule() :
     event_query_categories_(QStringList()),
     ui_scene_manager_(0)
 {
-
 }
 
 UiModule::~UiModule()

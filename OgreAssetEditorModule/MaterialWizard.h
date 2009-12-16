@@ -104,12 +104,12 @@ namespace OgreAssetEditor
         /// Closes the material wizard.
         void Cancel();
 
+        /// Activates and deactivates widgets according to the current selection.
+        void RefreshWidgets();
+
     private:
         /// Initializes the UI.
         void InitWindow();
-
-        /// Activates and deactivates widgets according to the current selection.
-        void RefreshWidgets();
 
         /// Framework pointer.
         Foundation::Framework *framework_;

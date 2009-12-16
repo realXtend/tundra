@@ -14,13 +14,13 @@
 #include <boost/shared_ptr.hpp>
 
 #include <QObject>
+#include <QTableWidget>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
 class QLineEdit;
 class QWidget;
 class QTextEdit;
-class QTableWidget;
 QT_END_NAMESPACE
 
 namespace UiServices
@@ -38,6 +38,38 @@ namespace Foundation
 namespace OgreAssetEditor
 {
     class OgreMaterialProperties;
+
+    /// PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
+    class PropertyTableWidget : public QTableWidget
+    {
+        friend class OgreScriptEditor;
+    public:
+        /// Default constuctor.
+        /// @param parent Parent widget.
+        explicit PropertyTableWidget(QWidget *parent = 0);
+
+        /// Constuctor.
+        /// @param rows Number of rows.
+        /// @param columns Number of columns.
+        /// @param parent Parent widget.
+        PropertyTableWidget(int rows, int columns, QWidget *parent = 0);
+
+        /// Destructor.
+        ~PropertyTableWidget();
+
+    protected:
+        /// QTableWidget overrides.
+        QStringList mimeTypes() const;
+        bool dropMimeData (int row, int column, const QMimeData *data, Qt::DropAction action);
+        Qt::DropActions supportedDropActions() const;
+
+    private:
+        /// Convenience function for initializing the widget.
+        void InitWidget();
+
+        /// Convenience function for post-initializing after the view is populated.
+        void PostInit();
+    };
 
     class OgreScriptEditor : public QObject
     {
@@ -112,7 +144,8 @@ namespace OgreAssetEditor
         QTextEdit *textEdit_;
 
         /// Table widget for editing material properties.
-        QTableWidget *propertyTable_;
+        //QTableWidget 
+        PropertyTableWidget *propertyTable_;
 
         /// Asset type.
         const RexTypes::asset_type_t assetType_;

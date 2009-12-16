@@ -4,15 +4,15 @@
 #include "LoginContainer.h"
 #include "WebLoginWidget.h"
 #include "ClassicLoginWidget.h"
+#include "UiModule.h"
+#include "UiSceneManager.h"
+#include "UiProxyWidget.h"
+#include "UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
 #include <QHash>
 #include <QMessageBox>
-
-#include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 namespace CoreUi
 {
@@ -131,7 +131,7 @@ void LoginContainer::InitLoginUI(RexLogic::OpenSimLoginHandler *os_login_handler
         web_login_widget_ = new WebLoginWidget(this, taiga_login_handler);
         tabWidget_->addTab(classic_login_widget_, "Login");
         tabWidget_->addTab(web_login_widget_, "Web Login");
-                  
+
         login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToCurrentScene(login_widget_, UiServices::UiWidgetProperties("Login", true));
         login_is_in_progress_ = false;
 

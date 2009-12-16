@@ -37,11 +37,11 @@ namespace UiServices
         bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
 
         /*************** UiModule Services ***************/
- 
+
         /*  UiSceneManager will give you a QObject derived class that will give you all
          *  the UI related services like adding your own QWidgets into the 2D scene 
          */
-        UiServices::UiSceneManager *GetSceneManager() { return ui_scene_manager_; }
+        UiServices::UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
 
         /*************** Logging ***************/
 

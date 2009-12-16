@@ -26,11 +26,111 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QTableWidget>
-#include <QBrush>
 #include <QColor>
 
 namespace OgreAssetEditor
 {
+
+/*************** PropertyTableWidget ***************/
+
+PropertyTableWidget::PropertyTableWidget(QWidget *parent) :
+    QTableWidget(parent)
+{
+    InitWidget();
+}
+
+PropertyTableWidget::PropertyTableWidget(int rows, int columns, QWidget *parent) :
+    QTableWidget(rows, columns, parent)
+{
+    InitWidget();
+}
+
+PropertyTableWidget::~PropertyTableWidget()
+{
+}
+
+QStringList PropertyTableWidget::mimeTypes() const
+{
+    QStringList types;
+    types << "application/vnd.inventory.item";
+    return types;
+}
+
+void PropertyTableWidget::InitWidget()
+{
+    // Set up drop functionality.
+    setAcceptDrops(true);
+    setDragEnabled(false);
+    setDragDropMode(QAbstractItemView::DropOnly);
+    viewport()->setAcceptDrops(true);
+    setDropIndicatorShown(true);
+    setDragDropOverwriteMode(true);
+
+    // Set up headers and size.
+    setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
+    verticalHeader()->setVisible(false);
+    resizeColumnToContents(0);
+    horizontalHeader()->setStretchLastSection(true);
+    horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+}
+
+void PropertyTableWidget::PostInit()
+{
+    //resize(parent()->size());
+    resizeColumnToContents(0);
+    horizontalHeader()->setStretchLastSection(true);
+    horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    //setParent(editorWidget_);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ///\todo Take size from table, not from widget.
+    //editorWidget_->resize(propertyTable_->size());
+    //parentWidget()->resize(size());
+    resize(parentWidget()->size());
+    show();
+
+//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
+//  if (layout)
+//      layout->addWidget(propertyTable_);
+
+//  QGridLayout *layout = new QGridLayout;
+//  layout->addWidget(table, 0, 0);
+//  setLayout(layout);
+}
+
+bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action)
+{
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    if (!data->hasFormat("application/vnd.inventory.item"))
+        return false;
+
+    QByteArray encodedData = data->data("application/vnd.inventory.item");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+    QString id;
+    while(!stream.atEnd())
+    {
+        stream >> id;
+        std::cout << "id" << id.toStdString() << std::endl;
+    }
+
+    QTableWidgetItem *item = this->item(row, column);
+    if (item->flags() & Qt::ItemIsDropEnabled)
+        item->setData(Qt::DisplayRole, id);
+    else
+        return false;
+
+    return true;
+}
+
+Qt::DropActions PropertyTableWidget::supportedDropActions() const
+{
+    return /*Qt::MoveAction | */Qt::CopyAction;
+}
+
+/*************** OgreScriptEditor ***************/
 
 OgreScriptEditor::OgreScriptEditor(
     Foundation::Framework *framework,
@@ -50,9 +150,7 @@ OgreScriptEditor::OgreScriptEditor(
     materialProperties_(0)
 {
     InitEditorWindow();
-
     lineEditName_->setText(name_);
-
     buttonSaveAs_->setEnabled(false);
 }
 
@@ -272,9 +370,7 @@ void OgreScriptEditor::CreatePropertyEditor()
     PropertyMap propMap = materialProperties_->GetPropertyMap();
     PropertyMapIter it(propMap);
 
-    propertyTable_ = new QTableWidget(propMap.size(), 3);
-    propertyTable_->setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
-    propertyTable_->verticalHeader()->setVisible(false);
+    propertyTable_ = new PropertyTableWidget(propMap.size(), 3, editorWidget_);
 
     int row = 0;
     while(it.hasNext())
@@ -282,21 +378,25 @@ void OgreScriptEditor::CreatePropertyEditor()
         it.next();
         QMap<QString, QVariant> typeValuePair = it.value().toMap();
 
-        // Property name
+        // Property name, set non-editable.
         QTableWidgetItem *nameItem = new QTableWidgetItem(it.key());
         nameItem->setFlags(Qt::ItemIsEnabled);
 
-        // Property type
+        // Property type, set non-editable.
         QTableWidgetItem *typeItem = new QTableWidgetItem(typeValuePair.begin().key());
         typeItem->setFlags(Qt::ItemIsEnabled);
 
-        ///\todo Drag&drop support for texture uuid cells.
-        /*if (propertyItem->text().indexOf(" TU") != -1)
-        {
-        }*/
-
         // Property value
         QTableWidgetItem *valueItem = new QTableWidgetItem;
+
+        // Disable drop support for non-texture properties.
+        if (nameItem->text().indexOf(" TU") == -1)
+        {
+            Qt::ItemFlags flags = valueItem->flags();
+            flags &= ~Qt::ItemIsDropEnabled;
+            valueItem->setFlags(flags);
+        }
+
         valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
         valueItem->setBackgroundColor(QColor(81, 255, 81));
 
@@ -306,23 +406,7 @@ void OgreScriptEditor::CreatePropertyEditor()
         ++row;
     }
 
-    propertyTable_->resizeColumnToContents(0);
-    propertyTable_->horizontalHeader()->setStretchLastSection(true);
-    propertyTable_->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    propertyTable_->setParent(editorWidget_);
-    propertyTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    ///\todo Take size from table, not from widget.
-    //editorWidget_->resize(propertyTable_->size());
-    propertyTable_->resize(editorWidget_->size());
-    propertyTable_->show();
-
-//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-//  if (layout)
-//      layout->addWidget(propertyTable_);
-
-//  QGridLayout *layout = new QGridLayout;
-//  layout->addWidget(table, 0, 0);
-//  setLayout(layout);
+    propertyTable_->PostInit();
 
     QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
 }

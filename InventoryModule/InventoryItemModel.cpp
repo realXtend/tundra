@@ -164,6 +164,12 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
         if (index.isValid())
         {
             AbstractInventoryItem *item = GetItem(index);
+            /*
+            if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+                stream << "asset";
+            if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+                stream << "folder";
+            */
             stream << item->GetID();
 
 /*
@@ -205,7 +211,8 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QList<AbstractInventoryItem *> itemList;
     while(!stream.atEnd())
     {
-        QString id;
+        QString id, type;
+        stream >> type;
         stream >> id;
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
