@@ -9,6 +9,8 @@
 #include <SceneManager.h>
 #include <NetworkEvents.h>
 
+#include <QVector>
+
 namespace Environment
 {
 
@@ -56,7 +58,7 @@ Scene::EntityWeakPtr Environment::FindActiveEnvironment()
                 return activeEnvEntity_;
         }
      }
-
+    activeEnvComponent_ = 0;
     return Scene::EntityWeakPtr();
 }
 
@@ -92,9 +94,7 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     sunAngVelocity_ = msg.ReadVector3();
 
     FindActiveEnvironment();
-    
-    //Foundation::ComponentPtr component = GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment");
-    
+   
     if (activeEnvEntity_.expired())
         return false;
 
@@ -102,7 +102,7 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     ///\note Not needed anymore as we use Caleum now.
     //OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
     //    (component.get());
-//    env.SetSunDirection(-sunDirection_);
+    //env.SetSunDirection(-sunDirection_);
 
     if (!time_override_ && activeEnvComponent_ != 0)
     {
@@ -112,25 +112,67 @@ bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     return false;
 }
 
-void Environment::SetFog(float fogStart, float fogEnd, const QVector<float>& color)
+void Environment::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+    {   
+        activeEnvComponent_->SetWaterFogStart(fogStart);
+        activeEnvComponent_->SetWaterFogEnd(fogEnd);
+        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+        activeEnvComponent_->SetWaterFogColor(fogColour); 
+        emit WaterFogAdjusted(fogStart, fogEnd, color);
+    }
 
+   
+}
+
+void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
+{
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+    {   
+        activeEnvComponent_->SetGroundFogStart(fogStart);
+        activeEnvComponent_->SetGroundFogEnd(fogEnd);
+        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+        activeEnvComponent_->SetGroundFogColor(fogColour); 
+        emit GroundFogAdjusted(fogStart, fogEnd, color);
+    }
+}
+
+void Environment::SetFogColorOverride(bool enabled)
+{
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+        activeEnvComponent_->SetFogColorOverride(enabled);
+    
+}
+
+bool Environment::GetFogColorOverride() 
+{
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+        return activeEnvComponent_->GetFogColorOverride();
+
+    return false;
 }
 
 void Environment::Update(Core::f64 frametime)
 {
     FindActiveEnvironment();
-    OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
-        (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
-    env.UpdateVisualEffects(frametime);
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->UpdateVisualEffects(frametime);
+
 }
 
 bool Environment::IsCaelum()
 {
     FindActiveEnvironment();
-    OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
-        (GetEnvironmentEntity().lock()->GetComponent("EC_OgreEnvironment").get());
-    return env.IsCaleumUsed();
+    if (activeEnvComponent_ != 0)
+        return activeEnvComponent_->IsCaleumUsed();
+    
+    return false;
+
 }
 
 }

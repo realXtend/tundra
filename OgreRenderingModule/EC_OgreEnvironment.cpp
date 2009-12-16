@@ -51,7 +51,8 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     fogColor_(),
     waterFogColor_(0.2f, 0.4f, 0.35f),
     cameraNearClip_(0.5f),
-    cameraFarClip_(500.f)
+    cameraFarClip_(500.f), 
+    fog_color_override_(false)
 {
 #ifdef CAELUM
     InitCaelum();
@@ -185,7 +186,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
     float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
     float relDayTime = fmod(julDay, 1);
     Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
-    fogColor_ = caelumSystem_->getGroundFog()->getColour();
+    
+    if ( !fog_color_override_)
+        fogColor_ = caelumSystem_->getGroundFog()->getColour();
 #endif
 
     // Set fogging

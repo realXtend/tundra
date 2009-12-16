@@ -116,6 +116,27 @@ namespace OgreRenderer
         /// @return Is the Hydrax system used or not.
         bool IsHydraxUsed() const { return useHydrax_; }
 
+        void SetGroundFogStart(float fogStart) { fogStart_ = fogStart; }
+        float GetGroundFogStart() const { return fogStart_; }
+        
+        void SetGroundFogEnd(float fogEnd) { fogEnd_ = fogEnd; }
+        float GetGroundFogEnd() const { return fogEnd_; }
+        
+        void SetGroundFogColor(const Ogre::ColourValue& color) { fogColor_ = color; }
+        Ogre::ColourValue GetGroundFogColor() const { return fogColor_; }
+
+        void SetWaterFogStart(float fogStart) { waterFogStart_ = fogStart; }
+        float GetWaterFogStart() const { return waterFogStart_; }
+        
+        void SetWaterFogEnd(float fogEnd) { waterFogEnd_ = fogEnd; }
+        float GetWaterFogEnd() const { return waterFogEnd_; }
+        
+        void SetWaterFogColor(const Ogre::ColourValue& color) { waterFogColor_ = color; }
+        Ogre::ColourValue GetWaterFogColor() const { return waterFogColor_; }
+
+        void SetFogColorOverride(bool on) { fog_color_override_ = on; }
+        bool GetFogColorOverride() const { return fog_color_override_; }
+
     private:
         /// Constructor.
         /// \param module Renderer module.
@@ -205,12 +226,15 @@ namespace OgreRenderer
 
         /// Bit mask of Caelum components we use.
         int caelumComponents_;
+        /// Is fog color defined by caelum or user.
+        bool fog_color_override_;
 
 #ifdef HYDRAX
         Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
 #endif
+   
     };
 }
 
