@@ -9,11 +9,18 @@
 #include <RexTypes.h>
 #include <QObject>
 #include "EnvironmentModuleApi.h"
-
+//#include <EC_OgreEnvironment.h>
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
 }
+
+
+namespace OgreRenderer
+{
+    class EC_OgreEnvironment;
+}
+
 
 namespace Environment
 {
@@ -75,11 +82,16 @@ namespace Environment
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
-        /// Weak pointer to the entity which has the environment component.
-        Scene::EntityWeakPtr activeEnvironmentEntity_;
-
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
+      
+        OgreRenderer::EC_OgreEnvironment* activeEnvComponent_;
+
+        /// Weak pointer to the entity which has the environment component.
+        Scene::EntityWeakPtr activeEnvEntity_;
+
+        /// Initialize caelum time just once. 
+        bool time_initialized_;
 
         /// Server's perception of time (UNIX EPOCH).
         time_t usecSinceStart_;
