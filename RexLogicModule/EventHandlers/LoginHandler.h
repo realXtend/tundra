@@ -6,16 +6,13 @@
 #include <boost/weak_ptr.hpp>
 
 #include <QObject>
+#include <QUrl>
+#include <QMap>
 #include <QWebFrame>
 
 namespace Foundation
 {
     class Framework;
-}
-
-namespace RexLogic
-{
-    class RexLogicModule;
 }
 
 namespace TaigaProtocol
@@ -38,75 +35,72 @@ namespace ProtocolUtilities
 
 namespace RexLogic
 {
-	class AbstractLoginHandler : public QObject
-	{
-	
-	Q_OBJECT
+    class RexLogicModule;
 
-	public:
-		AbstractLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
-		virtual void InstantiateWorldSession() = 0;
-		virtual QUrl ValidateServerUrl(QString urlString);
+    class AbstractLoginHandler : public QObject
+    {
+        Q_OBJECT
 
-		ProtocolUtilities::LoginCredentialsInterface *credentials_;
-		QUrl server_entry_point_url_;
+    public:
+        AbstractLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
+        virtual void InstantiateWorldSession() = 0;
+        virtual QUrl ValidateServerUrl(QString urlString);
 
-		/// Pointer to Framework
-		Foundation::Framework *framework_;
-        /// Pointerto RexLogicModule
-		RexLogicModule *rex_logic_module_;
+        ProtocolUtilities::LoginCredentialsInterface *credentials_;
+        QUrl server_entry_point_url_;
+
+        /// Pointer to Framework
+        Foundation::Framework *framework_;
+
+        /// Pointer to RexLogicModule
+        RexLogicModule *rex_logic_module_;
 
     public slots:
         void Logout();
         void Quit();
 
-	signals:
+    signals:
         void LoginStarted();
-
     };
 
-	class OpenSimLoginHandler : public AbstractLoginHandler
-	{
+    class OpenSimLoginHandler : public AbstractLoginHandler
+    {
+        Q_OBJECT
 
-	Q_OBJECT
+    public:
+        OpenSimLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
+        virtual ~OpenSimLoginHandler();
+        void InstantiateWorldSession();
 
-	public:
-		OpenSimLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
-		virtual ~OpenSimLoginHandler();
-		void InstantiateWorldSession();
+    public slots:
+        void ProcessOpenSimLogin(QMap<QString, QString> map);
+        void ProcessRealXtendLogin(QMap<QString, QString> map);
 
-	public slots:
-		void ProcessOpenSimLogin(QMap<QString,QString> map);
-		void ProcessRealXtendLogin(QMap<QString,QString> map);
-
-	private:
-		//! Pointer to the opensim network interface.
+    private:
+        //! Pointer to the opensim network interface.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> protocol_module_opensim_;
-		OpenSimProtocol::OpenSimWorldSession *opensim_world_session_;
-		OpenSimProtocol::RealXtendWorldSession *realxtend_world_session_;
+        OpenSimProtocol::OpenSimWorldSession *opensim_world_session_;
+        OpenSimProtocol::RealXtendWorldSession *realxtend_world_session_;
+    };
 
-	};
+    class TaigaLoginHandler : public AbstractLoginHandler
+    {
+        Q_OBJECT
 
-	class TaigaLoginHandler : public AbstractLoginHandler
-	{
+    public:
+        TaigaLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
+        virtual ~TaigaLoginHandler();
+        void InstantiateWorldSession();
 
-	Q_OBJECT
+    public slots:
+        void ProcessCommandParameterLogin(QString &entry_point_url);
+        void ProcessWebLogin(QWebFrame *web_frame);
 
-	public:
-		TaigaLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
-		virtual ~TaigaLoginHandler();
-		void InstantiateWorldSession();
-
-	public slots:
-		void ProcessCommandParameterLogin(QString &entry_point_url);
-		void ProcessWebLogin(QWebFrame *web_frame);
-
-	private:
+    private:
         //! Pointer to the taiga network interface.
-		boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> protocol_module_taiga_;
-		TaigaProtocol::TaigaWorldSession *taiga_world_session_;
-	};
-
+        boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> protocol_module_taiga_;
+        TaigaProtocol::TaigaWorldSession *taiga_world_session_;
+    };
 }
 
 #endif //incl_RexLogic_LoginHandler_h

@@ -17,8 +17,7 @@ namespace CoreUi
 {
     class InworldLoginDialog : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         InworldLoginDialog(Foundation::Framework *framework);
@@ -30,11 +29,11 @@ namespace CoreUi
         QDialog *inworld_login_widget_;
         
         QRadioButton *radiobutton_opensim_;
-		QRadioButton *radiobutton_realxtend_;
+        QRadioButton *radiobutton_realxtend_;
         
         QLineEdit *line_edit_auth_address_;
-		QLineEdit *line_edit_username_;
-		QLineEdit *line_edit_password_;
+        QLineEdit *line_edit_username_;
+        QLineEdit *line_edit_password_;
 
         QLabel *label_auth_address_;
         QLabel *status_message_label_;

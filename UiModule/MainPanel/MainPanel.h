@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_MainPanelControls_h
-#define incl_UiModule_MainPanelControls_h
+#ifndef incl_UiModule_MainPanel_h
+#define incl_UiModule_MainPanel_h
 
 #include "Foundation.h"
 #include "UiProxyWidget.h"
@@ -15,17 +15,16 @@
 
 namespace CoreUi
 {
-	class MainPanel : public QObject
-	{
+    class MainPanel : public QObject
+    {
+        Q_OBJECT
 
-	Q_OBJECT
+    public:
+        MainPanel(Foundation::Framework *framework);
+        virtual ~MainPanel();
 
-	public:
-		MainPanel(Foundation::Framework *framework);
-		virtual ~MainPanel();
-
-		//! Adds a widget to the ControlBar
-		/// @param UiProxyWidget
+        //! Adds a widget to the ControlBar
+        /// @param UiProxyWidget
         /// @param Widget name
         void AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name);
 
@@ -35,13 +34,13 @@ namespace CoreUi
         QPushButton *logout_button;
         QPushButton *quit_button;
 
-	private:
-		//! Init internal widgets
-		void initialize_();
+    private:
+        //! Init internal widgets
+        void initialize_();
         void InitBookmarks();
 
-		QWidget *panel_widget_;
-		QHBoxLayout *layout_;
+        QWidget *panel_widget_;
+        QHBoxLayout *layout_;
         QList<UiServices::UiProxyWidget *> all_proxy_widgets_;
 
         //! Navigation frame of this widget and its elements
@@ -67,7 +66,7 @@ namespace CoreUi
     signals:
         void CommandLoginOpenSim(QString &, QString &, QString &);
         void CommandLoginRealxtend(QString &, QString &, QString &, QString &);
-	};
+    };
 }
 
 #endif // incl_UiModule_MainPanelControls_h

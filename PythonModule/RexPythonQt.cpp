@@ -6,7 +6,7 @@
 //#include "UiProxyWidget.h"
 
 //#include <QGroupBox> //just for testing addObject
-//#include <QtUiTools> //for .ui loading in testing
+//#include <QUiLoader> //for .ui loading in testing
 
 //#include "QtModule.h"
 //#include "UICanvas.h"
@@ -21,7 +21,7 @@ namespace PythonScript
         // init PythonQt, but not Python 'cause PythonScriptModule has already done that.
         PythonQt::init(PythonQt::DoNotInitializePython);
         PythonQt_QtAll::init();
-		//PythonQt::self()->registerClass(&UiServices::UiProxyWidget::staticMetaObject);
+        //PythonQt::self()->registerClass(&UiServices::UiProxyWidget::staticMetaObject);
         PythonQt::self()->registerClass(&UiServices::UiWidgetProperties::staticMetaObject);
         // get the __main__ python module
         //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
