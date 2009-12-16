@@ -8,9 +8,6 @@
 #include "UiModuleApi.h"
 #include "UiSceneManager.h"
 
-#include <QtCore>
-#include <QtGui>
-
 namespace OgreRenderer
 {
     class QOgreUIView;
@@ -27,14 +24,11 @@ namespace UiServices
 
     class UI_MODULE_API UiModule : public Foundation::ModuleInterfaceImpl
     {
-
     public:
-
         UiModule();
         ~UiModule();
 
         /*************** ModuleInterfaceImpl ***************/
-
         void Load();
         void Unload();
         void Initialize();
@@ -54,6 +48,7 @@ namespace UiServices
         MODULE_LOGGING_FUNCTIONS;
         //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+
         //! Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_UiServices;
 
@@ -73,9 +68,7 @@ namespace UiServices
 
         //! UiSceneManager
         UiSceneManager *ui_scene_manager_;
-
     };
-
 }
 
 #endif // incl_UiModule_UiModule_h

@@ -20,18 +20,16 @@ namespace UiServices
 
     class UI_MODULE_API UiWidgetProperties : public QObject
     {
-
-    Q_OBJECT
-    Q_PROPERTY(QSize my_size_ READ getSize WRITE setSize)
-    Q_PROPERTY(QPointF position_ READ getPosition WRITE setPosition)
-    Q_PROPERTY(Qt::WindowFlags window_type_ READ getWindowStyle WRITE setWindowStyle)
-    Q_PROPERTY(QString widget_name_ READ getWidgetName WRITE setWidgetName)
-    Q_PROPERTY(bool show_at_toolbar_ READ isShownAtToolbar WRITE setShowAtToolbar)
-    Q_PROPERTY(bool fullscreen_ READ isFullscreen WRITE setFullscreen)
-    Q_PROPERTY(AnimationType animation_type_ READ getAnimationType WRITE setAnimationType)
+        Q_OBJECT
+        Q_PROPERTY(QSize my_size_ READ getSize WRITE setSize)
+        Q_PROPERTY(QPointF position_ READ getPosition WRITE setPosition)
+        Q_PROPERTY(Qt::WindowFlags window_type_ READ getWindowStyle WRITE setWindowStyle)
+        Q_PROPERTY(QString widget_name_ READ getWidgetName WRITE setWidgetName)
+        Q_PROPERTY(bool show_at_toolbar_ READ isShownAtToolbar WRITE setShowAtToolbar)
+        Q_PROPERTY(bool fullscreen_ READ isFullscreen WRITE setFullscreen)
+        Q_PROPERTY(AnimationType animation_type_ READ getAnimationType WRITE setAnimationType)
 
     public:
-
         //! Constructors
         /*
          * Do not use fullsceen = true if you know what you are doing. Normal module widgets are not fullscreen_ and will have qt made dialog frames around them.
