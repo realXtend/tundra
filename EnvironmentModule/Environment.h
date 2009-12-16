@@ -73,6 +73,9 @@ namespace Environment
          **/
         bool IsCaelum();
 
+        //! Set server time override
+        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
+        
     private:
        
         /// Looks through all the entities in RexLogic's currently active scene to find the Water
@@ -90,8 +93,8 @@ namespace Environment
         /// Weak pointer to the entity which has the environment component.
         Scene::EntityWeakPtr activeEnvEntity_;
 
-        /// Initialize caelum time just once. 
-        bool time_initialized_;
+        /// Time override, default false
+        bool time_override_;
 
         /// Server's perception of time (UNIX EPOCH).
         time_t usecSinceStart_;
