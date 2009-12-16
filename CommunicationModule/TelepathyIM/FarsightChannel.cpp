@@ -50,11 +50,11 @@ namespace TelepathyIM
     FarsightChannel::~FarsightChannel()
     {
         // delete widgets
-        if (video_preview_widget_)
-            SAFE_DELETE(video_preview_widget_);
+        //if (video_preview_widget_)
+        //    SAFE_DELETE(video_preview_widget_);
 
-        if (video_remote_output_widget_)
-            SAFE_DELETE(video_remote_output_widget_);
+        //if (video_remote_output_widget_)
+        //    SAFE_DELETE(video_remote_output_widget_);
 
         // TODO: CHECK Proper cleanup with unref
         if (tf_channel_) {
@@ -158,7 +158,7 @@ namespace TelepathyIM
             "width", G_TYPE_INT, 16,
 //            "depth", G_TYPE_INT, 16,
             "rate", G_TYPE_INT, 16000,
-//            "signed", G_TYPE_BOOLEAN, false,
+            "signed", G_TYPE_BOOLEAN, true,
 //            "endianess", G_TYPE_INT, 1234,
             NULL);
         g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
@@ -167,8 +167,10 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
-        gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_,  fake_audio_output_, NULL);
+        gboolean ok = gst_element_link_many(audio_resample_,  fake_audio_output_, NULL);
+        //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         if (!ok)
         {
             QString error_message = "Cannot link elements for audio playback bin.";

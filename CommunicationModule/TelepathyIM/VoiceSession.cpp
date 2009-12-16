@@ -400,7 +400,11 @@ namespace TelepathyIM
             LogDebug("Added VIDEO STREAM");
         }
 
-        UpdateStreamDirection(stream, true);
+        if (stream->type() == Tp::MediaStreamTypeAudio)
+            UpdateStreamDirection(stream, true);
+        else
+            UpdateStreamDirection(stream, stream->direction());
+
         OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
         OnStreamStateChanged(stream, stream->state());
 

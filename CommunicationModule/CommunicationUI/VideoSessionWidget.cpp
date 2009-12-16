@@ -72,6 +72,7 @@ namespace CommunicationUI
 
     VideoSessionWidget::~VideoSessionWidget()
     {
+        // CRASH HERE after session close
         if (internal_v_layout_local_ && local_video_)
             internal_v_layout_local_->removeWidget(local_video_);
         if (internal_v_layout_remote_ && remote_video_)
