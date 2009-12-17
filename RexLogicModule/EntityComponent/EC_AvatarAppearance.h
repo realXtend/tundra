@@ -3,6 +3,7 @@
 #ifndef incl_RexLogic_EC_AvatarAppearance_h
 #define incl_RexLogic_EC_AvatarAppearance_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "ResourceInterface.h"
 #include "RexTypes.h"
@@ -281,6 +282,8 @@ namespace RexLogic
     //! Entity component that stores an avatar's appearance parameters
     class REXLOGIC_MODULE_API EC_AvatarAppearance : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_AvatarAppearance);
     public:
         virtual ~EC_AvatarAppearance();

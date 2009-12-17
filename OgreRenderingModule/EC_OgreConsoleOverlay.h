@@ -3,9 +3,9 @@
 #ifndef incl_OgreRenderer_EC_OgreConsoleOverlay_h
 #define incl_OgreRenderer_EC_OgreConsoleOverlay_h
 
-
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
+
 
 namespace Ogre
 {
@@ -39,6 +39,8 @@ namespace OgreRenderer
      */
     class EC_OgreConsoleOverlay : public EC_OgreConsoleOverlayInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreConsoleOverlay);
     private:
         //! constructor

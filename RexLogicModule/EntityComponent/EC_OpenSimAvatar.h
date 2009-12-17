@@ -3,6 +3,7 @@
 #ifndef incl_EC_OpenSimAvatar_h
 #define incl_EC_OpenSimAvatar_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
@@ -14,6 +15,8 @@ namespace RexLogic
     //! OpenSim world. 
     class REXLOGIC_MODULE_API EC_OpenSimAvatar : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_OpenSimAvatar);
        
     public:

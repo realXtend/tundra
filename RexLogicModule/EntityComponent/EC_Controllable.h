@@ -3,6 +3,7 @@
 #ifndef incl_RexLogic_EC_Controllable_h
 #define incl_RexLogic_EC_Controllable_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
@@ -30,6 +31,8 @@ namespace RexLogic
     */
     class EC_Controllable : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_Controllable);
     public:
         virtual ~EC_Controllable() {}

@@ -3,8 +3,8 @@
 #ifndef incl_EC_TerrainPatch_h
 #define incl_EC_TerrainPatch_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "RexUUID.h"
 
 namespace Ogre
@@ -17,6 +17,8 @@ namespace Environment
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
     class EC_Terrain : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_Terrain);
     public:
         virtual ~EC_Terrain();

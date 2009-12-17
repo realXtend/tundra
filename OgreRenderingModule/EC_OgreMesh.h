@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderer_EC_OgreMesh_h
 #define incl_OgreRenderer_EC_OgreMesh_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "OgreModuleApi.h"
 
 namespace Ogre
@@ -28,6 +28,8 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreMesh);
     public:
         virtual ~EC_OgreMesh();
