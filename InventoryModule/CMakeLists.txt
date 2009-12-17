@@ -38,7 +38,7 @@ use_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtiliti
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities QtModule UiModule HttpUtilities)
+link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities QtModule UiModule HttpUtilities TextureDecoderModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
