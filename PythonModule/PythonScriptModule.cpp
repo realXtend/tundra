@@ -899,9 +899,9 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
     //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
     boost::shared_ptr<QtUI::UICanvas> canvas;
-    QList<boost::shared_ptr<QtUI::UICanvas>> canvases;
+    QList<boost::shared_ptr<QtUI::UICanvas> > canvases;
     canvases = qt_ui->GetCanvases();
-    QList<boost::shared_ptr<QtUI::UICanvas>>::const_iterator i;
+    QList<boost::shared_ptr<QtUI::UICanvas> >::const_iterator i;
     for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
     {
         boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
@@ -1098,9 +1098,9 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
     //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
     boost::shared_ptr<QtUI::UICanvas> canvas;
-    QList<boost::shared_ptr<QtUI::UICanvas>> canvases;
+    QList<boost::shared_ptr<QtUI::UICanvas> > canvases;
     canvases = qt_ui->GetCanvases();
-    QList<boost::shared_ptr<QtUI::UICanvas>>::const_iterator i;
+    QList<boost::shared_ptr<QtUI::UICanvas> >::const_iterator i;
     for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
     {
         boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
