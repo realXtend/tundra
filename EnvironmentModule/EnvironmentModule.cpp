@@ -350,6 +350,13 @@ namespace Environment
                     CreateSky();
                 }
             }
+            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+            {
+                if(postprocess_dialog_.get())
+                {
+                    postprocess_dialog_->DisableAllEffects();
+                }
+            }
         }
         return false;
     }

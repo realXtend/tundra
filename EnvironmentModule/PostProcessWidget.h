@@ -32,6 +32,8 @@ namespace Environment
 		void AddEffects(std::vector<std::string> &effects);
         //! Set effectbutton checked/unchecked. Used if effects are turned on/off from somewhere else
         void EnableEffect(std::string& effect_name, bool enable);
+        //! Disables all effects
+        void DisableAllEffects();
 		virtual ~PostProcessWidget(void);
 
 	public slots:
