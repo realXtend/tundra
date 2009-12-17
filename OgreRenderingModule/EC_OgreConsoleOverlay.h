@@ -31,7 +31,7 @@ namespace OgreRenderer
         virtual void SetVisible(bool visible) = 0;
         virtual bool IsVisible() const = 0;
         virtual bool IsActive() const = 0;
-        virtual void Update(Core::f64 frametime) = 0;
+        virtual void Update(f64 frametime) = 0;
     };
     
     //! Ogre overlay for debug console
@@ -81,7 +81,7 @@ namespace OgreRenderer
         bool IsActive() const { return active_; }
 
         //! visual effects
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         
     private:
         //! Create the Ogre overlay
@@ -97,10 +97,10 @@ namespace OgreRenderer
         Ogre::Overlay *overlay_;
 
         //! Height of the console overlay
-        const Core::Real height_;
+        const Real height_;
 
         //! font height
-        const Core::Real char_height_;
+        const Real char_height_;
 
         //! is the console visible
         bool visible_;
@@ -112,13 +112,13 @@ namespace OgreRenderer
         const size_t max_visible_lines_;
 
         //! mutex for the console
-        Core::Mutex mutex_;
+        Mutex mutex_;
 
         //! console position for animation
-        Core::Real position_;
+        Real position_;
 
         //! animation speed
-        const Core::Real speed_;
+        const Real speed_;
 
         //! the renderer, need reference to check if renderer is still alive
         boost::weak_ptr<Renderer> renderer_;

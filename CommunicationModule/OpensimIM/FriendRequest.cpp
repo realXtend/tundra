@@ -31,16 +31,16 @@ namespace OpensimIM
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
-			throw Core::Exception("Cannot accept Opensim friend request, RexLogicModule is not found");
+			throw Exception("Cannot accept Opensim friend request, RexLogicModule is not found");
 		RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
 
 		if ( connection == NULL )
-			throw Core::Exception("Cannot accept Opensim friend request rex server connection is not found");
+			throw Exception("Cannot accept Opensim friend request rex server connection is not found");
 
 		if ( !connection->IsConnected() )
-			throw Core::Exception("Cannot accept Opensim friend request, rex server connection is not established");
+			throw Exception("Cannot accept Opensim friend request, rex server connection is not established");
 
-		connection->SendAcceptFriendshipPacket(RexTypes::RexUUID( friend_id_.toStdString() ), RexTypes::RexUUID( calling_card_folder_id_.toStdString() ));
+		connection->SendAcceptFriendshipPacket(RexUUID( friend_id_.toStdString() ), RexUUID( calling_card_folder_id_.toStdString() ));
 
 		//! @todo Update contact list
 
@@ -53,16 +53,16 @@ namespace OpensimIM
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
-			throw Core::Exception("Cannot reject Opensim friend request, RexLogicModule is not found");
+			throw Exception("Cannot reject Opensim friend request, RexLogicModule is not found");
 		RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
 
 		if ( connection == NULL )
-			throw Core::Exception("Cannot reject Opensim friend request rex server connection is not found");
+			throw Exception("Cannot reject Opensim friend request rex server connection is not found");
 
 		if ( !connection->IsConnected() )
-			throw Core::Exception("Cannot reject Opensim friend request, rex server connection is not established");
+			throw Exception("Cannot reject Opensim friend request, rex server connection is not established");
 
-		connection->SendDeclineFriendshipPacket(RexTypes::RexUUID( friend_id_.toStdString() ) );
+		connection->SendDeclineFriendshipPacket(RexUUID( friend_id_.toStdString() ) );
 		state_ = STATE_REJECTED;
 		emit FriendRequestRejected(this);
 	}

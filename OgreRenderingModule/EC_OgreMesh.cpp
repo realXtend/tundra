@@ -54,22 +54,22 @@ namespace OgreRenderer
         AttachEntity();
     }
     
-    void EC_OgreMesh::SetAdjustPosition(const Core::Vector3df& position)
+    void EC_OgreMesh::SetAdjustPosition(const Vector3df& position)
     {
         adjustment_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
     }
 
-    void EC_OgreMesh::SetAdjustOrientation(const Core::Quaternion& orientation)
+    void EC_OgreMesh::SetAdjustOrientation(const Quaternion& orientation)
     {
         adjustment_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }
     
-    void EC_OgreMesh::SetAdjustScale(const Core::Vector3df& scale)
+    void EC_OgreMesh::SetAdjustScale(const Vector3df& scale)
     {
         adjustment_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
     }
     
-    void EC_OgreMesh::SetAttachmentPosition(Core::uint index, const Core::Vector3df& position)
+    void EC_OgreMesh::SetAttachmentPosition(uint index, const Vector3df& position)
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
             return;
@@ -77,7 +77,7 @@ namespace OgreRenderer
         attachment_nodes_[index]->setPosition(Ogre::Vector3(position.x, position.y, position.z));
     }
 
-    void EC_OgreMesh::SetAttachmentOrientation(Core::uint index, const Core::Quaternion& orientation)
+    void EC_OgreMesh::SetAttachmentOrientation(uint index, const Quaternion& orientation)
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
             return;
@@ -85,7 +85,7 @@ namespace OgreRenderer
         attachment_nodes_[index]->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }
     
-    void EC_OgreMesh::SetAttachmentScale(Core::uint index, const Core::Vector3df& scale)
+    void EC_OgreMesh::SetAttachmentScale(uint index, const Vector3df& scale)
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
             return;
@@ -93,49 +93,49 @@ namespace OgreRenderer
         attachment_nodes_[index]->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
     }
     
-    Core::Vector3df EC_OgreMesh::GetAdjustPosition() const
+    Vector3df EC_OgreMesh::GetAdjustPosition() const
     {
         const Ogre::Vector3& pos = adjustment_node_->getPosition();
-        return Core::Vector3df(pos.x, pos.y, pos.z);
+        return Vector3df(pos.x, pos.y, pos.z);
     }
     
-    Core::Quaternion EC_OgreMesh::GetAdjustOrientation() const
+    Quaternion EC_OgreMesh::GetAdjustOrientation() const
     {
         const Ogre::Quaternion& orientation = adjustment_node_->getOrientation();
-        return Core::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+        return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }     
     
-    Core::Vector3df EC_OgreMesh::GetAdjustScale() const
+    Vector3df EC_OgreMesh::GetAdjustScale() const
     {
         const Ogre::Vector3& scale = adjustment_node_->getScale();
-        return Core::Vector3df(scale.x, scale.y, scale.z);
+        return Vector3df(scale.x, scale.y, scale.z);
     }
     
-    Core::Vector3df EC_OgreMesh::GetAttachmentPosition(Core::uint index) const
+    Vector3df EC_OgreMesh::GetAttachmentPosition(uint index) const
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-            return Core::Vector3df(0.0f, 0.0f, 0.0f);
+            return Vector3df(0.0f, 0.0f, 0.0f);
             
         const Ogre::Vector3& pos = attachment_nodes_[index]->getPosition();
-        return Core::Vector3df(pos.x, pos.y, pos.z);
+        return Vector3df(pos.x, pos.y, pos.z);
     }
     
-    Core::Quaternion EC_OgreMesh::GetAttachmentOrientation(Core::uint index) const
+    Quaternion EC_OgreMesh::GetAttachmentOrientation(uint index) const
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-            return Core::Quaternion();
+            return Quaternion();
             
         const Ogre::Quaternion& orientation = attachment_nodes_[index]->getOrientation();
-        return Core::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+        return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }     
     
-    Core::Vector3df EC_OgreMesh::GetAttachmentScale(Core::uint index) const
+    Vector3df EC_OgreMesh::GetAttachmentScale(uint index) const
     {
         if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-            return Core::Vector3df(1.0f, 1.0f, 1.0f);
+            return Vector3df(1.0f, 1.0f, 1.0f);
             
         const Ogre::Vector3& scale = attachment_nodes_[index]->getScale();
-        return Core::Vector3df(scale.x, scale.y, scale.z);
+        return Vector3df(scale.x, scale.y, scale.z);
     }
     
     void EC_OgreMesh::SetDrawDistance(float draw_distance)
@@ -143,7 +143,7 @@ namespace OgreRenderer
         draw_distance_ = draw_distance;
         if (entity_)
             entity_->setRenderingDistance(draw_distance_);
-        for (Core::uint i = 0; i < attachment_entities_.size(); ++i)
+        for (uint i = 0; i < attachment_entities_.size(); ++i)
         {
             if (attachment_entities_[i])
                 attachment_entities_[i]->setRenderingDistance(draw_distance_);
@@ -263,7 +263,7 @@ namespace OgreRenderer
         }
     }
     
-    bool EC_OgreMesh::SetAttachmentMesh(Core::uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
+    bool EC_OgreMesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
     {
         if (!entity_)
         {
@@ -280,7 +280,7 @@ namespace OgreRenderer
         {
             attachment_entities_.resize(newsize);
             attachment_nodes_.resize(newsize);
-            for (Core::uint i = oldsize; i < newsize; ++i)
+            for (uint i = oldsize; i < newsize; ++i)
             {
                 attachment_entities_[i] = 0;
                 attachment_nodes_[i] = 0;
@@ -360,7 +360,7 @@ namespace OgreRenderer
         return true;
     }
     
-    void EC_OgreMesh::RemoveAttachmentMesh(Core::uint index)
+    void EC_OgreMesh::RemoveAttachmentMesh(uint index)
     {
         if (!entity_)
             return;
@@ -401,20 +401,20 @@ namespace OgreRenderer
     
     void EC_OgreMesh::RemoveAllAttachments()
     {
-        for (Core::uint i = 0; i < attachment_entities_.size(); ++i)
+        for (uint i = 0; i < attachment_entities_.size(); ++i)
             RemoveAttachmentMesh(i);
         attachment_entities_.clear();
         attachment_nodes_.clear();
     }
     
-    bool EC_OgreMesh::SetMaterial(Core::uint index, const std::string& material_name)
+    bool EC_OgreMesh::SetMaterial(uint index, const std::string& material_name)
     {
         if (!entity_)
             return false;
         
         if (index >= entity_->getNumSubEntities())
         {
-            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + Core::ToString<Core::uint>(index));
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
             return false;
         }
         
@@ -431,7 +431,7 @@ namespace OgreRenderer
         return true;
     }
     
-    bool EC_OgreMesh::SetAttachmentMaterial(Core::uint index, Core::uint submesh_index, const std::string& material_name)
+    bool EC_OgreMesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
     {
         if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
         {
@@ -441,7 +441,7 @@ namespace OgreRenderer
         
         if (submesh_index >= attachment_entities_[index]->getNumSubEntities())
         {
-            OgreRenderingModule::LogError("Could not set material " + material_name + " on attachment: illegal submesh index " + Core::ToString<Core::uint>(submesh_index));
+            OgreRenderingModule::LogError("Could not set material " + material_name + " on attachment: illegal submesh index " + ToString<uint>(submesh_index));
             return false;
         }
         
@@ -465,14 +465,14 @@ namespace OgreRenderer
         if (entity_)
             entity_->setCastShadows(cast_shadows_);
         //! \todo might want to disable shadows for some attachments
-        for (Core::uint i = 0; i < attachment_entities_.size(); ++i)
+        for (uint i = 0; i < attachment_entities_.size(); ++i)
         {
             if (attachment_entities_[i])
                 attachment_entities_[i]->setCastShadows(cast_shadows_);
         }
     }
        
-    Core::uint EC_OgreMesh::GetNumMaterials() const
+    uint EC_OgreMesh::GetNumMaterials() const
     {
         if (!entity_)
             return 0;
@@ -480,7 +480,7 @@ namespace OgreRenderer
         return entity_->getNumSubEntities();
     }
     
-    Core::uint EC_OgreMesh::GetAttachmentNumMaterials(Core::uint index) const
+    uint EC_OgreMesh::GetAttachmentNumMaterials(uint index) const
     {
         if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
             return 0;
@@ -488,7 +488,7 @@ namespace OgreRenderer
         return attachment_entities_[index]->getNumSubEntities();
     }
     
-    const std::string& EC_OgreMesh::GetMaterialName(Core::uint index) const
+    const std::string& EC_OgreMesh::GetMaterialName(uint index) const
     {
         const static std::string empty;
         
@@ -501,7 +501,7 @@ namespace OgreRenderer
         return entity_->getSubEntity(index)->getMaterialName();
     }
     
-    const std::string& EC_OgreMesh::GetAttachmentMaterialName(Core::uint index, Core::uint submesh_index) const
+    const std::string& EC_OgreMesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
     {
         const static std::string empty;
         
@@ -513,7 +513,7 @@ namespace OgreRenderer
         return attachment_entities_[index]->getSubEntity(submesh_index)->getMaterialName();
     }
     
-    bool EC_OgreMesh::HasAttachmentMesh(Core::uint index) const
+    bool EC_OgreMesh::HasAttachmentMesh(uint index) const
     {
         if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
             return false;
@@ -521,7 +521,7 @@ namespace OgreRenderer
         return true;
     }
     
-    Ogre::Entity* EC_OgreMesh::GetAttachmentEntity(Core::uint index) const
+    Ogre::Entity* EC_OgreMesh::GetAttachmentEntity(uint index) const
     {
         if (index >= attachment_entities_.size())
             return 0;
@@ -538,12 +538,12 @@ namespace OgreRenderer
             return entity_->getMesh()->getName();
     }
     
-    void EC_OgreMesh::GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max) const
+    void EC_OgreMesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     {
         if (!entity_)
         {
-            min = Core::Vector3df(0.0, 0.0, 0.0);
-            max = Core::Vector3df(0.0, 0.0, 0.0);
+            min = Vector3df(0.0, 0.0, 0.0);
+            max = Vector3df(0.0, 0.0, 0.0);
             return;
         }
      
@@ -551,8 +551,8 @@ namespace OgreRenderer
         const Ogre::Vector3& bboxmin = bbox.getMinimum();
         const Ogre::Vector3& bboxmax = bbox.getMaximum();
         
-        min = Core::Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
-        max = Core::Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+        min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
+        max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
     }
     
     void EC_OgreMesh::DetachEntity()

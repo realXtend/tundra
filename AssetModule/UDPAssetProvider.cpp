@@ -17,7 +17,7 @@ using namespace RexTypes;
 
 namespace Asset
 {
-    const Core::Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
+    const Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
         
     UDPAssetProvider::UDPAssetProvider(Foundation::Framework* framework) :
         framework_(framework)
@@ -50,7 +50,7 @@ namespace Asset
         return RexUUID::IsValid(asset_id);
     }
     
-    bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
+    bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
         if (!IsValidId(asset_id))
             return false;
@@ -80,7 +80,7 @@ namespace Asset
         return (transfer != 0);
     }
     
-    Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
+    Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         UDPAssetTransfer* transfer = GetTransfer(asset_id);
             
@@ -109,7 +109,7 @@ namespace Asset
 			AssetModule::LogWarning("Could not accuire handle to current protocol module");
 	}
     
-    bool UDPAssetProvider::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)    
+    bool UDPAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)    
     {
         UDPAssetTransfer* transfer = GetTransfer(asset_id);
             
@@ -125,7 +125,7 @@ namespace Asset
         return false;
     }
     
-    void UDPAssetProvider::Update(Core::f64 frametime)
+    void UDPAssetProvider::Update(f64 frametime)
     {          
         // Get network interface
         boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net = protocolModule_.lock();
@@ -176,7 +176,7 @@ namespace Asset
         asset_transfers_.clear();
     }       
 
-    void UDPAssetProvider::HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime)
+    void UDPAssetProvider::HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime)
     {
         UDPAssetTransferMap::iterator i = texture_transfers_.begin();
         std::vector<RexUUID> erase_tex;       
@@ -223,7 +223,7 @@ namespace Asset
             texture_transfers_.erase(erase_tex[j]);
     }
 
-    void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime)
+    void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime)
     {        
         UDPAssetTransferMap::iterator i = asset_transfers_.begin();
         std::vector<RexUUID> erase_asset;   
@@ -277,7 +277,7 @@ namespace Asset
     }    
     
     void UDPAssetProvider::RequestTexture(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, 
-        const RexUUID& asset_id, const Core::RequestTagVector& tags)
+        const RexUUID& asset_id, const RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
         std::string asset_id_str = asset_id.ToString();
@@ -315,7 +315,7 @@ namespace Asset
     }
     
     void UDPAssetProvider::RequestOtherAsset(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
-        const RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags)
+        const RexUUID& asset_id, uint asset_type, const RequestTagVector& tags)
     {
         // If request already exists, just append the new tag(s)
         std::string asset_id_str = asset_id.ToString();
@@ -345,7 +345,7 @@ namespace Asset
         m->AddS32(RexAS_Asset); // Asset source type
         m->AddF32(100.0); // Download priority
         
-        Core::u8 asset_info[20]; // Asset info block with UUID and type
+        u8 asset_info[20]; // Asset info block with UUID and type
         memcpy(&asset_info[0], &asset_id.data, 16);
         memcpy(&asset_info[16], &asset_type, 4);
         m->AddBuffer(20, asset_info);
@@ -407,15 +407,15 @@ namespace Asset
         
         UDPAssetTransfer& transfer = i->second;
         
-        Core::u8 codec = msg->ReadU8();
-        Core::u32 size = msg->ReadU32();
-        Core::u16 packets = msg->ReadU16();
+        u8 codec = msg->ReadU8();
+        u32 size = msg->ReadU32();
+        u16 packets = msg->ReadU16();
         
         transfer.SetSize(size);
         
-        //Core::uint data_size; 
+        //uint data_size; 
         size_t data_size;
-	const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
+	const u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(0, data, data_size);
                 
         SendAssetProgress(transfer);
@@ -439,11 +439,11 @@ namespace Asset
         
         UDPAssetTransfer& transfer = i->second;
         
-        Core::u16 packet_index = msg->ReadU16();
+        u16 packet_index = msg->ReadU16();
         
-        //Core::uint data_size; 
+        //uint data_size; 
         size_t data_size;
-	const Core::u8* data = msg->ReadBuffer(&data_size); // ImageData block
+	const u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(packet_index, data, data_size);
       
         SendAssetProgress(transfer);
@@ -486,14 +486,14 @@ namespace Asset
         
         UDPAssetTransfer& transfer = i->second;
         
-        Core::s32 channel_type = msg->ReadS32();
-        Core::s32 target_type = msg->ReadS32();
-        Core::s32 status = msg->ReadS32();
-        Core::s32 size = msg->ReadS32();
+        s32 channel_type = msg->ReadS32();
+        s32 target_type = msg->ReadS32();
+        s32 status = msg->ReadS32();
+        s32 size = msg->ReadS32();
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + ToString<s32>(status));
             asset_transfers_.erase(i);
             return;
         }
@@ -522,13 +522,13 @@ namespace Asset
         
         UDPAssetTransfer& transfer = i->second;
         
-        Core::s32 channel_type = msg->ReadS32();
-        Core::s32 packet_index = msg->ReadS32();
-        Core::s32 status = msg->ReadS32();
+        s32 channel_type = msg->ReadS32();
+        s32 packet_index = msg->ReadS32();
+        s32 status = msg->ReadS32();
         
         if ((status != RexTS_Ok) && (status != RexTS_Done))
         {
-            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + Core::ToString<Core::s32>(status));
+            AssetModule::LogDebug("Transfer for asset " + transfer.GetAssetId() + " canceled with code " + ToString<s32>(status));
 
             // Send transfer canceled event
             SendAssetCanceled(transfer);
@@ -537,9 +537,9 @@ namespace Asset
             return;
         }
         
-        //Core::uint data_size; 
+        //uint data_size; 
         size_t data_size;
-	const Core::u8* data = msg->ReadBuffer(&data_size); // Data block
+	const u8* data = msg->ReadBuffer(&data_size); // Data block
         transfer.ReceiveData(packet_index, data, data_size);
         
         SendAssetProgress(transfer);
@@ -621,8 +621,8 @@ namespace Asset
             
             // Send asset ready event for each request tag
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            const Core::RequestTagVector& tags = transfer.GetTags();
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            const RequestTagVector& tags = transfer.GetTags();
+            for (uint i = 0; i < tags.size(); ++i)
             {          
                 Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
                 event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);                

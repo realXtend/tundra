@@ -101,7 +101,7 @@ namespace OgreRenderer
         //! Remove specified compositor effect from viewport
 		void RemoveCompositorFromViewport( std::string  const &compositor, Ogre::Viewport *vp);
         //! translates the message (RexPostP) 
-        void ExecuteServersShaderRequest( Core::StringVector const &parameters);
+        void ExecuteServersShaderRequest( StringVector const &parameters);
         //! Returns list of available post-processing effects
         std::vector<std::string>& GetAvailableCompositors();
 

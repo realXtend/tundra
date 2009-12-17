@@ -49,11 +49,11 @@ namespace RexLogic
     //! Defines a transform for an avatar, attachment or bone
     struct REXLOGIC_MODULE_API Transform
     {
-        Core::Vector3df position_;
-        Core::Quaternion orientation_;
-        Core::Vector3df scale_;
+        Vector3df position_;
+        Quaternion orientation_;
+        Vector3df scale_;
         
-        Transform() : position_(Core::Vector3df::ZERO),
+        Transform() : position_(Vector3df::ZERO),
             scale_(1.0f, 1.0f, 1.0f)
         {
         }
@@ -76,15 +76,15 @@ namespace RexLogic
         //! Manual state. If true, master modifiers have no effect
         bool manual_;
         //! Modifier influence value (0.0 - 1.0)
-        Core::Real value_;
+        Real value_;
 
         //! Sum of data accumulated so far
-        Core::Real sum_;
+        Real sum_;
         //! Number of samples accumulated
         int samples_;
 
         void ResetAccumulation();
-        void AccumulateValue(Core::Real value, bool use_average);
+        void AccumulateValue(Real value, bool use_average);
                 
         AppearanceModifier(ModifierType type = Undefined) : 
             manual_(false),
@@ -169,8 +169,8 @@ namespace RexLogic
         //! Defines a point in master-slaver modifier value mapping
         struct ValueMapping
         {
-            Core::Real master_;
-            Core::Real slave_;
+            Real master_;
+            Real slave_;
             
             bool operator < (const ValueMapping &rhs) const
             {
@@ -178,7 +178,7 @@ namespace RexLogic
             }
         };
 
-        Core::Real GetMappedValue(Core::Real master_value);
+        Real GetMappedValue(Real master_value);
         
         //! Value accumulation mode
         AccumulationMode mode_;
@@ -200,7 +200,7 @@ namespace RexLogic
     struct REXLOGIC_MODULE_API MasterModifier
     {
         //! Current position value (0.0 - 1.0)
-        Core::Real value_;
+        Real value_;
         //! Name
         std::string name_;
         //! Category description
@@ -229,13 +229,13 @@ namespace RexLogic
         //! Always restart animation when it starts playing?
         bool always_restart_;
         //! Blend-in period in seconds
-        Core::Real fadein_;
+        Real fadein_;
         //! Blend-out period in seconds
-        Core::Real fadeout_;
+        Real fadeout_;
         //! Speed modification (1.0 original)
-        Core::Real speedfactor_;
+        Real speedfactor_;
         //! Weight modification (1.0 full)
-        Core::Real weightfactor_;
+        Real weightfactor_;
         
         AnimationDefinition() :
             looped_(true),
@@ -250,7 +250,7 @@ namespace RexLogic
         }
     };
     
-    typedef std::map<RexTypes::RexUUID, AnimationDefinition> AnimationDefinitionMap;
+    typedef std::map<RexUUID, AnimationDefinition> AnimationDefinitionMap;
     
     typedef std::map<std::string, std::string> AvatarPropertyMap;
     
@@ -272,7 +272,7 @@ namespace RexLogic
         //! Base bone of attachment. Empty if attached directly to avatar scene node
         std::string bone_name_;
         //! Polygons indices to hide from avatar when using this attachment
-        std::vector<Core::uint> vertices_to_hide_;
+        std::vector<uint> vertices_to_hide_;
     };
     
     typedef std::vector<AvatarAttachment> AvatarAttachmentVector;
@@ -298,8 +298,8 @@ namespace RexLogic
         void SetAttachments(const AvatarAttachmentVector& attachments);
         void SetTransform(const Transform& transform);
         void SetProperty(const std::string& name, const std::string& value);
-        void SetMasterModifierValue(const std::string& name, Core::Real value);
-        void SetModifierValue(const std::string& name, AppearanceModifier::ModifierType, Core::Real value);
+        void SetMasterModifierValue(const std::string& name, Real value);
+        void SetModifierValue(const std::string& name, AppearanceModifier::ModifierType, Real value);
         void ClearProperties();
         void Clear();
         

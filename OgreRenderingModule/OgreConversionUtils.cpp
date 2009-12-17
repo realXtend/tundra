@@ -9,22 +9,22 @@
 namespace OgreRenderer
 {
 
-Ogre::ColourValue ToOgreColor(const Core::Color& color)
+Ogre::ColourValue ToOgreColor(const Color& color)
 {
 	return Ogre::ColourValue(color.r, color.g, color.b, color.a);
 }
 
-Core::Color ToCoreColor(const Ogre::ColourValue& ogreColour)
+Color ToCoreColor(const Ogre::ColourValue& ogreColour)
 {
-   return Core::Color(ogreColour.r, ogreColour.g, ogreColour.b, ogreColour.a);
+   return Color(ogreColour.r, ogreColour.g, ogreColour.b, ogreColour.a);
 }
 
-Ogre::Vector3 ToOgreVector3(const Core::Vector3df &vector)
+Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
 {
     return Ogre::Vector3(vector.x, vector.y, vector.z);
 }
 
-Ogre::Quaternion ToOgreQuaternion(const Core::Quaternion &quat)
+Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 {
     return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
 }

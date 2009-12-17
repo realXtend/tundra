@@ -213,7 +213,7 @@ namespace OgreRenderer
         
         if (!rendersystem)
         {
-            throw Core::Exception("Could not find Ogre rendersystem.");
+            throw Exception("Could not find Ogre rendersystem.");
         }
 
         // GTK's pango/cairo/whatever's font rendering doesn't work if the floating point mode is not set to strict.
@@ -259,7 +259,7 @@ namespace OgreRenderer
         }
         else
         {
-            throw Core::Exception("Could not create Ogre rendering window");
+            throw Exception("Could not create Ogre rendering window");
         }
 
         OgreRenderingModule::LogDebug("\n"); 
@@ -298,7 +298,7 @@ namespace OgreRenderer
             }
         }
         
-        for (Core::uint i = 0; i < plugins.size(); ++i)
+        for (uint i = 0; i < plugins.size(); ++i)
         {
             try
             {
@@ -393,12 +393,12 @@ namespace OgreRenderer
         log_listener_->UnsubscribeListener(listener);
     }
     
-    void Renderer::Update(Core::f64 frametime)
+    void Renderer::Update(f64 frametime)
     {
         Ogre::WindowEventUtilities::messagePump();
     }
     
-    void Renderer::Resize(Core::uint width, Core::uint height)
+    void Renderer::Resize(uint width, uint height)
     {
         if (renderwindow_)
         {
@@ -468,12 +468,12 @@ OLD OGRE RENDER FUNCTION
 
     }
 
-    Core::uint GetSubmeshFromIndexRange(Core::uint index, const std::vector<Core::uint>& submeshstartindex)
+    uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)
     {
-        for (Core::uint i = 0; i < submeshstartindex.size(); ++i)
+        for (uint i = 0; i < submeshstartindex.size(); ++i)
         {
-            Core::uint start = submeshstartindex[i];
-            Core::uint end;
+            uint start = submeshstartindex[i];
+            uint end;
             if (i < submeshstartindex.size() - 1)
                 end = submeshstartindex[i+1];
             else
@@ -489,8 +489,8 @@ OLD OGRE RENDER FUNCTION
     void GetMeshInformation(Ogre::Entity *entity,
                                     std::vector<Ogre::Vector3>& vertices,
                                     std::vector<Ogre::Vector2>& texcoords,
-                                    std::vector<Core::uint>& indices,
-                                    std::vector<Core::uint>& submeshstartindex,                                  
+                                    std::vector<uint>& indices,
+                                    std::vector<uint>& submeshstartindex,                                  
                                     const Ogre::Vector3 &position,
                                     const Ogre::Quaternion &orient,
                                     const Ogre::Vector3 &scale)
@@ -628,14 +628,14 @@ OLD OGRE RENDER FUNCTION
             {
                 for ( size_t k = 0; k < numTris*3; ++k)
                 {
-                    indices[index_offset++] = pLong[k] + static_cast<Core::uint>(offset);
+                    indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
                 }
             }
             else
             {
                 for ( size_t k = 0; k < numTris*3; ++k)
                 {
-                    indices[index_offset++] = static_cast<Core::uint>(pShort[k]) +
+                    indices[index_offset++] = static_cast<uint>(pShort[k]) +
                         static_cast<unsigned long>(offset);
                 }
             }
@@ -645,7 +645,7 @@ OLD OGRE RENDER FUNCTION
         }
     } 
     
-    Ogre::Vector2 FindUVs(const Ogre::Ray& ray, float distance, const std::vector<Ogre::Vector3>& vertices, const std::vector<Ogre::Vector2>& texcoords, const std::vector<Core::uint> indices, Core::uint foundindex)
+    Ogre::Vector2 FindUVs(const Ogre::Ray& ray, float distance, const std::vector<Ogre::Vector3>& vertices, const std::vector<Ogre::Vector2>& texcoords, const std::vector<uint> indices, uint foundindex)
     {
         Ogre::Vector3 point = ray.getPoint(distance);
          
@@ -676,8 +676,8 @@ OLD OGRE RENDER FUNCTION
         result.entity_ = 0; 
         if (!initialized_) return result;
 
-        Core::Real screenx = x / (Core::Real)renderwindow_->getWidth();
-        Core::Real screeny = y / (Core::Real)renderwindow_->getHeight();
+        Real screenx = x / (Real)renderwindow_->getWidth();
+        Real screeny = y / (Real)renderwindow_->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
         ray_query_->setRay(ray);
@@ -723,8 +723,8 @@ OLD OGRE RENDER FUNCTION
 
         std::vector<Ogre::Vector3> vertices;
         std::vector<Ogre::Vector2> texcoords;
-        std::vector<Core::uint> indices;
-        std::vector<Core::uint> submeshstartindex;
+        std::vector<uint> indices;
+        std::vector<uint> submeshstartindex;
 
         for (size_t i = 0; i < results.size(); ++i)
         {
@@ -780,7 +780,7 @@ OLD OGRE RENDER FUNCTION
                             ogre_entity->getParentNode()->_getDerivedScale());
         
                 // test for hitting individual triangles on the mesh
-                for (Core::uint j = 0; j < indices.size(); j += 3)
+                for (uint j = 0; j < indices.size(); j += 3)
                 {
                     // check for a hit against this triangle
                     std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
@@ -799,7 +799,7 @@ OLD OGRE RENDER FUNCTION
                                 Ogre::Vector3 point = ray.getPoint(closest_distance);
                                 
                                 result.entity_ = entity;
-                                result.pos_ = Core::Vector3df(point.x, point.y, point.z);
+                                result.pos_ = Vector3df(point.x, point.y, point.z);
                                 result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
                                 result.u_ = uv.x;
                                 result.v_ = uv.y;                
@@ -822,7 +822,7 @@ OLD OGRE RENDER FUNCTION
                         Ogre::Vector3 point = ray.getPoint(closest_distance);
                         
                         result.entity_ = entity;
-                        result.pos_ = Core::Vector3df(point.x, point.y, point.z);
+                        result.pos_ = Vector3df(point.x, point.y, point.z);
                         result.submesh_ = 0;
                         result.u_ = 0.0f;
                         result.v_ = 0.0f;
@@ -836,7 +836,7 @@ OLD OGRE RENDER FUNCTION
     
     std::string Renderer::GetUniqueObjectName()
     {
-        return "obj" + Core::ToString<Core::uint>(object_id_++);
+        return "obj" + ToString<uint>(object_id_++);
     }
 
     ResourcePtr Renderer::GetResource(const std::string& id, const std::string& type)
@@ -844,7 +844,7 @@ OLD OGRE RENDER FUNCTION
         return resource_handler_->GetResource(id, type);
     }
     
-    Core::request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)   
+    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)   
     {
         return resource_handler_->RequestResource(id, type);
     }
@@ -867,7 +867,7 @@ OLD OGRE RENDER FUNCTION
 	void Renderer::AddResourceDirectory(const std::string& directory)
 	{       
         // Check to not add the same directory more than once
-        for (Core::uint i = 0; i < added_resource_directories_.size(); ++i)
+        for (uint i = 0; i < added_resource_directories_.size(); ++i)
         {
             if (added_resource_directories_[i] == directory)
                 return;
@@ -875,12 +875,12 @@ OLD OGRE RENDER FUNCTION
         
         Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
 
-        std::string groupname = "grp" + Core::ToString<Core::uint>(group_id_++);
+        std::string groupname = "grp" + ToString<uint>(group_id_++);
         
         // Check if resource group already exists (should not)        
         bool exists = false;
         Ogre::StringVector groups = resgrpmgr.getResourceGroups();
-        for (Core::uint i = 0; i < groups.size(); ++i)
+        for (uint i = 0; i < groups.size(); ++i)
         {
             if (groups[i] == groupname)
             {

@@ -11,27 +11,27 @@ namespace TextureDecoder
     {
     public:
         TextureResource(const std::string& id);
-        TextureResource(const std::string& id, Core::uint width, Core::uint height, Core::uint components);
+        TextureResource(const std::string& id, uint width, uint height, uint components);
         virtual ~TextureResource();
 
         virtual bool IsValid() const;
-        virtual Core::uint GetWidth() const { return width_; }
-        virtual Core::uint GetHeight() const { return height_; }
-        virtual Core::uint GetComponents() const { return components_; }
+        virtual uint GetWidth() const { return width_; }
+        virtual uint GetHeight() const { return height_; }
+        virtual uint GetComponents() const { return components_; }
         virtual int GetLevel() const { return level_; }
-        virtual Core::u8* GetData() { return &data_[0]; }
+        virtual u8* GetData() { return &data_[0]; }
         virtual const std::string& GetType() const;
         static const std::string& GetTypeStatic();
 
-        void SetSize(Core::uint width, Core::uint height, Core::uint components);
+        void SetSize(uint width, uint height, uint components);
         void SetLevel(int level) { level_ = level; }
 
     private:
-        Core::uint width_;
-        Core::uint height_;
-        Core::uint components_;
+        uint width_;
+        uint height_;
+        uint components_;
         int level_;
-        std::vector<Core::u8> data_;
+        std::vector<u8> data_;
     };
 }
 

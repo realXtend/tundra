@@ -34,7 +34,7 @@ void AssetUploader::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_strea
     currentWorldStream_ = world_stream;
 }
 
-void AssetUploader::UploadFiles(Core::StringList &filenames)
+void AssetUploader::UploadFiles(StringList &filenames)
 {
     CreateRexInventoryFolders();
 
@@ -50,12 +50,12 @@ void AssetUploader::UploadFiles(Core::StringList &filenames)
         SetUploadCapability(upload_url);
     }
 
-    Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames));
+    Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames));
 }
 
 void AssetUploader::UploadFiles(QStringList &filenames)
 {
-    Core::StringList files;
+    StringList files;
     for(QStringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
         files.push_back(it->toStdString());
 
@@ -78,7 +78,7 @@ void AssetUploader::UploadBuffers(QStringList &filenames, QVector<QVector<uchar>
         SetUploadCapability(upload_url);
     }
 
-    Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadBuffers, this, filenames, buffers));
+    Thread thread(boost::bind(&AssetUploader::ThreadedUploadBuffers, this, filenames, buffers));
 }
 
 /*
@@ -87,7 +87,7 @@ bool AssetUploader::UploadFile(
     const std::string &filename,
     const std::string &name,
     const std::string &description,
-    const RexTypes::RexUUID &folder_id)
+    const RexUUID &folder_id)
 {
     using namespace OpenSimProtocol;
 
@@ -127,7 +127,7 @@ bool AssetUploader::UploadFile(
     else
         folder_id = folder->id;
 
-    Core::Thread thread(boost::bind(&AssetUploader::ThreadedUploadFile, this, asset_type, filename, name, description, folder_id));
+    Thread thread(boost::bind(&AssetUploader::ThreadedUploadFile, this, asset_type, filename, name, description, folder_id));
     return true;
 }
 */
@@ -137,7 +137,7 @@ bool AssetUploader::UploadBuffer(
     const std::string& filename,
     const std::string& name,
     const std::string& description,
-    const RexTypes::RexUUID& folder_id,
+    const RexUUID& folder_id,
     const QVector<uchar>& buffer)
 {
     if (uploadCapability_ == "")
@@ -164,7 +164,7 @@ bool AssetUploader::UploadBuffer(
         return false;
     }
 
-    std::vector<Core::u8> response;
+    std::vector<u8> response;
     response = request.GetResponseData();
 
     if (response.size() == 0)
@@ -205,7 +205,7 @@ bool AssetUploader::UploadBuffer(
             return false;
         }
 
-        std::vector<Core::u8> encoded_buffer;
+        std::vector<u8> encoded_buffer;
         
         bool success = J2k::J2kEncode(image, encoded_buffer, false);
         if (!success)
@@ -258,14 +258,14 @@ bool AssetUploader::UploadBuffer(
     // Note: sent as delayed, to be thread-safe
     
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category != 0)
     {
         boost::shared_ptr<Inventory::InventoryItemEventData> asset_data(new Inventory::InventoryItemEventData(Inventory::IIT_Asset));
         
-        asset_data->id = RexTypes::RexUUID(inventory_id);
+        asset_data->id = RexUUID(inventory_id);
         asset_data->parentId = folder_id;
-        asset_data->assetId = RexTypes::RexUUID(asset_id);
+        asset_data->assetId = RexUUID(asset_id);
         asset_data->assetType = asset_type;
         asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
         asset_data->name = name;
@@ -285,7 +285,7 @@ bool AssetUploader::UploadFile(
     const std::string &filename,
     const std::string &name,
     const std::string &description,
-    const RexTypes::RexUUID &folder_id)
+    const RexUUID &folder_id)
 {
     if (!HasUploadCapability())
     {
@@ -343,11 +343,11 @@ std::string AssetUploader::CreateNameFromFilename(std::string filename)
     return name;
 }
 
-void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
+void AssetUploader::ThreadedUploadFiles(StringList filenames)
 {
     // Iterate trought every asset.
     int asset_count = 0;
-    for(Core::StringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
+    for(StringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
     {
         std::string filename = *it;
         RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
@@ -366,7 +366,7 @@ void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
         std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
+        RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
         if (folder_id.IsNull())
         {
             InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -377,7 +377,7 @@ void AssetUploader::ThreadedUploadFiles(Core::StringList filenames)
             ++asset_count;
     }
 
-    InventoryModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
+    InventoryModule::LogInfo("Multiupload:" + ToString(asset_count) + " assets succesfully uploaded.");
 }
 
 void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers)
@@ -412,7 +412,7 @@ void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector
         std::string name = CreateNameFromFilename(filename);
         std::string description = "(No Description)";
 
-        RexTypes::RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
+        RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
         if (folder_id.IsNull())
         {
             InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
@@ -426,7 +426,7 @@ void AssetUploader::ThreadedUploadBuffers(QStringList filenames, QVector<QVector
         ++it2;
     }
 
-    InventoryModule::LogInfo("Multiupload:" + Core::ToString(asset_count) + " assets succesfully uploaded.");
+    InventoryModule::LogInfo("Multiupload:" + ToString(asset_count) + " assets succesfully uploaded.");
 }
 
 std::string AssetUploader::CreateNewFileAgentInventoryXML(

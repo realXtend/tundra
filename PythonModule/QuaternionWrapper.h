@@ -5,8 +5,6 @@
 #include <QObject>
 #include "Core.h"
 
-using Core::Quaternion;
-using Core::Vector3df;
 namespace PythonScript {
    
 	class QuaternionWrapper : public QObject

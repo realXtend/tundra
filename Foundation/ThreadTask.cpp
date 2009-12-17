@@ -43,7 +43,7 @@ namespace Foundation
             }
             else
             {
-                Core::MutexLock lock(request_mutex_);
+                MutexLock lock(request_mutex_);
                 requests_.push_back(request);
             }
             request_condition_.notify_one();
@@ -71,7 +71,7 @@ namespace Foundation
     
     bool ThreadTask::WaitForRequests()
     {
-        Core::ScopedLock lock(request_mutex_);
+        ScopedLock lock(request_mutex_);
         while (requests_.empty() && keep_running_)
         {
             request_condition_.wait(lock);
@@ -84,7 +84,7 @@ namespace Foundation
     {
         ThreadTaskRequestPtr request;
         
-        Core::MutexLock lock(request_mutex_);
+        MutexLock lock(request_mutex_);
         if (!requests_.empty())
         {
             request = *requests_.begin();
@@ -98,7 +98,7 @@ namespace Foundation
     {
         if (result)
         {
-            Core::MutexLock lock(result_mutex_);
+            MutexLock lock(result_mutex_);
             result->task_description_ = task_description_;
             result_ = result;
         }

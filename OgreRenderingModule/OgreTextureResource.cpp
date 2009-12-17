@@ -69,7 +69,7 @@ namespace OgreRenderer
             break;
 
         default:
-            OgreRenderingModule::LogError("Illegal number of components in texture: " + Core::ToString<Core::uint>(source->GetComponents()));
+            OgreRenderingModule::LogError("Illegal number of components in texture: " + ToString<uint>(source->GetComponents()));
             return false; 
         }
 

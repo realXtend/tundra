@@ -28,7 +28,7 @@ namespace Console
         virtual ~ConsoleServiceInterface() {}
 
         //! add time
-        virtual void Update(Core::f64 frametime) {}
+        virtual void Update(f64 frametime) {}
 
         //! Prints text to the console.
         /*! The text will be split to multiple lines to fit. '\n' should be used for line breaks.
@@ -51,9 +51,9 @@ namespace Console
         virtual bool IsActive() const = 0;
 
         //! event for key press
-        virtual bool HandleKeyDown(int code, Core::uint text) = 0;
+        virtual bool HandleKeyDown(int code, uint text) = 0;
         //! event for key released
-        virtual bool HandleKeyUp(int code, Core::uint text) = 0;
+        virtual bool HandleKeyUp(int code, uint text) = 0;
     };
 
     //! smart pointer for console services. \ingroup DebugConsole_group

@@ -58,13 +58,13 @@ namespace OgreRenderer
         static const std::string& GetTypeStatic();
 
         //! returns original texture names
-        const Core::StringVector& GetOriginalTextureNames() const { return original_textures_; }
+        const StringVector& GetOriginalTextureNames() const { return original_textures_; }
         
     private:
         Ogre::MaterialPtr ogre_material_;
         
         //! Original materials
-        Core::StringVector original_textures_;
+        StringVector original_textures_;
         
         //! Deinitializes the material and frees all Ogre-side structures as well.
         void RemoveMaterial();

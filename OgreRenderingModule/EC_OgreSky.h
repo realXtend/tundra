@@ -122,7 +122,7 @@ namespace OgreRenderer
          *  @return true if successful
          *  @todo use material/texture asset reference when asset system exists
          */
-        bool SetSkyBox(const std::string& material_name, Core::Real distance);
+        bool SetSkyBox(const std::string& material_name, Real distance);
         
         /// Sets the sky material.
         /// @param material_name Material name.
@@ -159,7 +159,7 @@ namespace OgreRenderer
         SkyType type_;
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
-    //    RexTypes::RexUUID skyboxTexturesIds_[SKYBOX_IND_COUNT];
+    //    RexUUID skyboxTexturesIds_[SKYBOX_IND_COUNT];
         
         /// Generic sky parameters common to all sky types.
         SkyParameters genericSkyParameters;

@@ -20,13 +20,13 @@ namespace Foundation
         //! Entity that was hit, null if none
         Scene::Entity* entity_;
         //! World coordinates of hit position
-        Core::Vector3df pos_;
+        Vector3df pos_;
         //! Submesh index in entity, starting from 0
-        Core::uint submesh_;
+        uint submesh_;
         //! U coord in entity. 0 if no texture mapping
-        Core::Real u_;
+        Real u_;
         //! V coord in entity. 0 if no texture mapping
-        Core::Real v_;
+        Real v_;
     };
     
     //! Render service interface.
@@ -55,7 +55,7 @@ namespace Foundation
         /*! \param width New window width
             \param height New window height
          */
-        virtual void Resize(Core::uint width, Core::uint height) = 0;
+        virtual void Resize(uint width, uint height) = 0;
         //! Returns render window handle, or 0 if no window is opened
         virtual size_t GetWindowHandle() const = 0;
         //! Returns render window width, or 0 if no window is opened
@@ -81,7 +81,7 @@ namespace Foundation
             \param type Resource type
             \return Request tag, or 0 if request could not be queued
          */        
-        virtual Core::request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;   
+        virtual request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;   
         
         //! Removes a renderer-specific resource
         /*! \param id Resource id

@@ -40,15 +40,15 @@
 
 #include <Ogre.h>
 
-static const Core::Real FIXED_HEIGHT_OFFSET = -0.87f;
-static const Core::Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
-static const Core::uint XMLRPC_ASSET_HASH_LENGTH = 28;
+static const Real FIXED_HEIGHT_OFFSET = -0.87f;
+static const Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
+static const uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
 { 
     std::string ReplaceSpaces(const std::string& orig_str)
     {
-        return Core::ReplaceChar(orig_str, ' ', '_');
+        return ReplaceChar(orig_str, ' ', '_');
     }
         
     AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
@@ -64,7 +64,7 @@ namespace RexLogic
     {
     }
 
-    void AvatarAppearance::Update(Core::f64 frametime)
+    void AvatarAppearance::Update(f64 frametime)
     {
         ProcessAppearanceDownloads();
         ProcessAvatarExport();
@@ -92,7 +92,7 @@ namespace RexLogic
         //! \todo once we get webdav urls, see that they don't contain that string. Possibly check for right index in path
         if (appearance_address.find("/avatar/") == std::string::npos)
         {
-            RexLogicModule::LogDebug("Inventory based avatar address received for avatar entity " + Core::ToString<int>(entity->GetId()) + ": " +
+            RexLogicModule::LogDebug("Inventory based avatar address received for avatar entity " + ToString<int>(entity->GetId()) + ": " +
                 appearance_address);
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
                 rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
@@ -101,7 +101,7 @@ namespace RexLogic
                 RexLogicModule::LogError("Could not get asset service");
                 return;
             }      
-            Core::request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
+            request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
             // Remember the request
             if (tag)
                 avatar_appearance_tags_[tag] = entity->GetId();            
@@ -200,7 +200,7 @@ namespace RexLogic
                 // Add all pose animations
                 Ogre::MeshPtr mesh = entity->getMesh();
                 size_t numanims = mesh->getNumAnimations();
-                for (Core::uint i = 0; i < numanims; ++i)
+                for (uint i = 0; i < numanims; ++i)
                 {
                     Ogre::Animation* anim = mesh->getAnimation(i);
                     Ogre::Animation::VertexTrackIterator it = anim->getVertexTrackIterator();
@@ -307,14 +307,14 @@ namespace RexLogic
                         if (overlay)
                         {
                             OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-                            name_overlay.SetOffset(Core::Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
+                            name_overlay.SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
                         }
                     }
                 }
             }
         }
 
-        mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
+        mesh.SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
     }
     
     void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
@@ -326,13 +326,13 @@ namespace RexLogic
         bool need_mesh_clone = false;
         
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();
-        std::set<Core::uint> vertices_to_hide;
-        for (Core::uint i = 0; i < attachments.size(); ++i)
+        std::set<uint> vertices_to_hide;
+        for (uint i = 0; i < attachments.size(); ++i)
         {
             if (attachments[i].vertices_to_hide_.size())
             {
                 need_mesh_clone = true;
-                for (Core::uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
+                for (uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
                     vertices_to_hide.insert(attachments[i].vertices_to_hide_[j]);
             }
         }
@@ -346,7 +346,7 @@ namespace RexLogic
             HideVertices(mesh.GetEntity(), vertices_to_hide);
         
         AvatarMaterialVector materials = appearance.GetMaterials();
-        for (Core::uint i = 0; i < materials.size(); ++i)
+        for (uint i = 0; i < materials.size(); ++i)
         {
             mesh.SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
         }
@@ -355,11 +355,11 @@ namespace RexLogic
         appearance.SetMaterials(materials);
         
         // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
-        Core::Quaternion adjust(Core::PI/2, 0, -Core::PI/2);
+        Quaternion adjust(PI/2, 0, -PI/2);
         mesh.SetAdjustOrientation(adjust);
         // Position approximately within the bounding box
         // Will be overridden by bone-based height adjust, if available
-        mesh.SetAdjustPosition(Core::Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
+        mesh.SetAdjustPosition(Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
         mesh.SetCastShadows(true);
         
         Scene::Events::EntityEventData event_data;
@@ -377,12 +377,12 @@ namespace RexLogic
         
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();
         
-        for (Core::uint i = 0; i < attachments.size(); ++i)
+        for (uint i = 0; i < attachments.size(); ++i)
         {
             // Setup attachment meshes
             mesh.SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
             // Setup attachment mesh materials
-            for (Core::uint j = 0; j < attachments[i].materials_.size(); ++j)
+            for (uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
                 mesh.SetAttachmentMaterial(i, j, attachments[i].materials_[j].asset_.GetLocalOrResourceName());
             }
@@ -405,7 +405,7 @@ namespace RexLogic
             return;
             
         const MorphModifierVector& morphs = appearance.GetMorphModifiers();
-        for (Core::uint i = 0; i < morphs.size(); ++i)
+        for (uint i = 0; i < morphs.size(); ++i)
         {
             if (anims->hasAnimationState(morphs[i].morph_name_))
             {
@@ -421,7 +421,7 @@ namespace RexLogic
                 anim->setEnabled(timePos > 0.0f);
                 
                 // Also set position in attachment entities, if have the same morph
-                for (Core::uint j = 0; j < mesh.GetNumAttachments(); ++j)
+                for (uint j = 0; j < mesh.GetNumAttachments(); ++j)
                 {
                     Ogre::Entity* attachment = mesh.GetAttachmentEntity(j);
                     if (!attachment)
@@ -447,9 +447,9 @@ namespace RexLogic
         ResetBones(entity);
         
         const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
-        for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+        for (uint i = 0; i < bone_modifiers.size(); ++i)
         {
-            for (Core::uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
+            for (uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
             {
                 ApplyBoneModifier(entity, bone_modifiers[i].modifiers_[j], bone_modifiers[i].value_);
             }
@@ -473,7 +473,7 @@ namespace RexLogic
         if (skeleton->getNumBones() != orig_skeleton->getNumBones())
             return;
         
-        for (Core::uint i = 0; i < orig_skeleton->getNumBones(); ++i)
+        for (uint i = 0; i < orig_skeleton->getNumBones(); ++i)
         {
             Ogre::Bone* bone = skeleton->getBone(i);
             Ogre::Bone* orig_bone = orig_skeleton->getBone(i);
@@ -485,7 +485,7 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Core::Real value)
+    void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Real value)
     {
         OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
         EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
@@ -558,12 +558,12 @@ namespace RexLogic
         
         // Translation
         {
-            Core::Real sx = modifier.start_.position_.x;
-            Core::Real sy = modifier.start_.position_.y;
-            Core::Real sz = modifier.start_.position_.z;
-            Core::Real ex = modifier.end_.position_.x;
-            Core::Real ey = modifier.end_.position_.y;
-            Core::Real ez = modifier.end_.position_.z;
+            Real sx = modifier.start_.position_.x;
+            Real sy = modifier.start_.position_.y;
+            Real sz = modifier.start_.position_.z;
+            Real ex = modifier.end_.position_.x;
+            Real ey = modifier.end_.position_.y;
+            Real ez = modifier.end_.position_.z;
             
             Ogre::Vector3 trans, base;
             trans = bone->getInitialPosition();
@@ -590,12 +590,12 @@ namespace RexLogic
         // Scale
         {
             Ogre::Vector3 scale = bone->getInitialScale();
-            Core::Real sx = modifier.start_.scale_.x;
-            Core::Real sy = modifier.start_.scale_.y;
-            Core::Real sz = modifier.start_.scale_.z;
-            Core::Real ex = modifier.end_.scale_.x;
-            Core::Real ey = modifier.end_.scale_.y;
-            Core::Real ez = modifier.end_.scale_.z;
+            Real sx = modifier.start_.scale_.x;
+            Real sy = modifier.start_.scale_.y;
+            Real sz = modifier.start_.scale_.z;
+            Real ex = modifier.end_.scale_.x;
+            Real ey = modifier.end_.scale_.y;
+            Real ez = modifier.end_.scale_.z;
             
             if (sx != 1 || ex != 1)
                 scale.x = sx * (1.0 - value) + ex * value;
@@ -656,7 +656,7 @@ namespace RexLogic
         return skeleton->getBone(bone_name);
     }
     
-    void AvatarAppearance::HideVertices(Ogre::Entity* entity, std::set<Core::uint> vertices_to_hide)
+    void AvatarAppearance::HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
     {
         if (!entity)
             return;
@@ -664,7 +664,7 @@ namespace RexLogic
         if (mesh.isNull())
             return;
         
-        for (Core::uint m = 0; m < 1; ++m)
+        for (uint m = 0; m < 1; ++m)
         {
             // Under current system, it seems vertices should only be hidden from first submesh
             Ogre::SubMesh *submesh = mesh->getSubMesh(m);
@@ -675,7 +675,7 @@ namespace RexLogic
             unsigned short* pIdx = reinterpret_cast<unsigned short*>(lIdx);
             bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 
-            for (Core::uint n = 0; n < data->indexCount; n += 3)
+            for (uint n = 0; n < data->indexCount; n += 3)
             {
                 if (!use32bitindexes)
                 {
@@ -719,7 +719,7 @@ namespace RexLogic
     void AvatarAppearance::ProcessAppearanceDownloads()
     {
         // Check download results
-        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
+        std::map<entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
         while (i != appearance_downloaders_.end())
         {
             bool done = false;
@@ -736,7 +736,7 @@ namespace RexLogic
                             ProcessAppearanceDownload(entity, &result->data_[0], result->data_.size());
                     }
                     else
-                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + Core::ToString<int>(i->first) + ": " + result->reason_);
+                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + ToString<int>(i->first) + ": " + result->reason_);
                     
                     done = true;
                 }
@@ -749,7 +749,7 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
+    void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size)
     {       
         if (!entity)
             return;
@@ -774,25 +774,25 @@ namespace RexLogic
         
         const AvatarAssetMap& assets = appearance.GetAssetMap(); 
                 
-        Core::uint pending_requests = RequestAvatarResources(entity, assets, true);
+        uint pending_requests = RequestAvatarResources(entity, assets, true);
         
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
     }
         
-    Core::uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode)
+    uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode)
     {
         // Erase any old pending requests for this avatar, they are no longer interesting
-        std::vector<std::map<Core::request_tag_t, Core::entity_id_t>::iterator> tags_to_remove;
-        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_resource_tags_.begin();
+        std::vector<std::map<request_tag_t, entity_id_t>::iterator> tags_to_remove;
+        std::map<request_tag_t, entity_id_t>::iterator i = avatar_resource_tags_.begin();
         while (i != avatar_resource_tags_.end())
         {
             if (i->second == entity->GetId())
                 tags_to_remove.push_back(i);
             ++i;
         }
-        for (Core::uint j = 0; j < tags_to_remove.size(); ++j)
+        for (uint j = 0; j < tags_to_remove.size(); ++j)
         {
             avatar_resource_tags_.erase(tags_to_remove[j]);
         } 
@@ -806,13 +806,13 @@ namespace RexLogic
             return 0;
         }    
     
-        Core::RequestTagVector tags;
+        RequestTagVector tags;
         AvatarAssetMap::const_iterator k = assets.begin();
-        Core::uint pending_requests = 0;        
+        uint pending_requests = 0;        
         while (k != assets.end())
         {
             std::string resource_id = k->second;
-            Core::request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, inventorymode));
+            request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, inventorymode));
             if (tag)
             {
                 tags.push_back(tag);
@@ -827,7 +827,7 @@ namespace RexLogic
     }
     
     
-    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const Core::u8* data, Core::uint size)
+    void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const u8* data, uint size)
     {        
         if (!entity)
             return;
@@ -856,8 +856,8 @@ namespace RexLogic
         std::string& appearance_str = i->second;
 
         // Return to original format by substituting to < >
-        Core::ReplaceSubstringInplace(appearance_str, "&lt;", "<");
-        Core::ReplaceSubstringInplace(appearance_str, "&gt;", ">");
+        ReplaceSubstringInplace(appearance_str, "&lt;", "<");
+        ReplaceSubstringInplace(appearance_str, "&gt;", ">");
         
         QDomDocument avatar_doc("Avatar");
         avatar_doc.setContent(QString::fromStdString(appearance_str));
@@ -887,14 +887,14 @@ namespace RexLogic
         
         appearance.SetAssetMap(assets);
 
-        Core::uint pending_requests = RequestAvatarResources(entity, assets);
+        uint pending_requests = RequestAvatarResources(entity, assets);
         
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
     }
     
-    bool AvatarAppearance::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (!event_id == Resource::Events::RESOURCE_READY)
             return false;
@@ -902,13 +902,13 @@ namespace RexLogic
         Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
         if (!event_data)
             return false;
-        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_resource_tags_.find(event_data->tag_);
+        std::map<request_tag_t, entity_id_t>::iterator i = avatar_resource_tags_.find(event_data->tag_);
         if (i == avatar_resource_tags_.end())
             return false;
            
         // Now we know it is our request, can erase it and don't need to propagate this event      
         RexLogicModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
-        Core::entity_id_t id = i->second;
+        entity_id_t id = i->second;
         avatar_resource_tags_.erase(i);
         if (avatar_pending_requests_[id])
             avatar_pending_requests_[id]--;
@@ -932,19 +932,19 @@ namespace RexLogic
         return true;
     }
     
-    bool AvatarAppearance::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id != Asset::Events::ASSET_READY)
             return false;
             
         Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
         // See that tag matches
-        std::map<Core::request_tag_t, Core::entity_id_t>::iterator i = avatar_appearance_tags_.find(event_data->tag_);
+        std::map<request_tag_t, entity_id_t>::iterator i = avatar_appearance_tags_.find(event_data->tag_);
         if (i == avatar_appearance_tags_.end())
             return false;
             
         // Now we know it is our request, can erase it and don't need to propagate this event
-        Core::entity_id_t id = i->second;
+        entity_id_t id = i->second;
         avatar_appearance_tags_.erase(i);
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
         if (!entity)
@@ -957,7 +957,7 @@ namespace RexLogic
         return true;
     }
     
-    bool AvatarAppearance::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {
@@ -973,7 +973,7 @@ namespace RexLogic
                         if (conn)
                         {
                             RexLogicModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
-                            Core::StringVector strings;
+                            StringVector strings;
                             std::string method = "RexSetAppearance";
                             strings.push_back(conn->GetInfo().agentID.ToString());
                             strings.push_back(event_data->assetId.ToString());
@@ -1056,7 +1056,7 @@ namespace RexLogic
                 materials.clear();
                 skeleton = AvatarAsset();
                 skeleton.name_ = ogremesh->getSkeletonName();
-                for (Core::uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
                 {
                     Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                     AvatarMaterial attach_newmat;
@@ -1070,10 +1070,10 @@ namespace RexLogic
         FixupResource(skeleton, asset_map, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
         
         // Fix avatar mesh materials
-        for (Core::uint i = 0; i < materials.size(); ++i)
+        for (uint i = 0; i < materials.size(); ++i)
             FixupMaterial(materials[i], asset_map);
         // Fix attachment meshes & their materials
-        for (Core::uint i = 0; i < attachments.size(); ++i)
+        for (uint i = 0; i < attachments.size(); ++i)
         {
             FixupResource(attachments[i].mesh_, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
             
@@ -1082,10 +1082,10 @@ namespace RexLogic
                 OgreRenderer::OgreMeshResource* mesh_res = dynamic_cast<OgreRenderer::OgreMeshResource*>(attachments[i].mesh_.resource_.get());
                 if (mesh_res)
                 {
-                    const Core::StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
+                    const StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
                     attachments[i].materials_.clear();
 
-                    for (Core::uint j = 0; j < attach_matnames.size(); ++j)
+                    for (uint j = 0; j < attach_matnames.size(); ++j)
                     {
                         AvatarMaterial attach_newmat;
                         attach_newmat.asset_.name_ = attach_matnames[j];
@@ -1101,7 +1101,7 @@ namespace RexLogic
                 if (!ogremesh.isNull())
                 {
                     attachments[i].materials_.clear();
-                    for (Core::uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                    for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
                     {
                         Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                         AvatarMaterial attach_newmat;
@@ -1215,10 +1215,10 @@ namespace RexLogic
         if (!mat_res)
             return;
             
-        const Core::StringVector& orig_textures = mat_res->GetOriginalTextureNames();
+        const StringVector& orig_textures = mat_res->GetOriginalTextureNames();
         if (mat.textures_.size() < orig_textures.size())
             mat.textures_.resize(orig_textures.size());
-        for (Core::uint i = 0; i < mat.textures_.size(); ++i)
+        for (uint i = 0; i < mat.textures_.size(); ++i)
         {
             if (!mat.textures_[i].resource_)
             {
@@ -1276,13 +1276,13 @@ namespace RexLogic
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
         while (i != inv_export_request_->assets_.end())
         {
-            QVector<Core::u8> data_buffer;
+            QVector<u8> data_buffer;
             data_buffer.resize(i->second.data_.size());
             memcpy(&data_buffer[0], &i->second.data_[0], i->second.data_.size());
                         
             // Slashes in filenames cause problems. Replace. The exact format of the filename should not
             // matter (never used to reference the asset), as long as the asset type is deduced correctly
-            event_data.filenames.push_back(QString::fromStdString(Core::ReplaceChar(i->first, '/', '_')));
+            event_data.filenames.push_back(QString::fromStdString(ReplaceChar(i->first, '/', '_')));
             event_data.buffers.push_back(data_buffer);
             ++i;
         }
@@ -1315,7 +1315,7 @@ namespace RexLogic
         LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, temp_appearance, true);
         std::string avatar_export_str = avatar_export.toString().toStdString();
 
-        QVector<Core::u8> data_buffer;
+        QVector<u8> data_buffer;
         data_buffer.resize(avatar_export_str.length());
         memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
         
@@ -1386,17 +1386,17 @@ namespace RexLogic
 
         RexLogicModule::LogDebug("Getting materials for export");        
         AvatarMaterialVector materials = appearance.GetMaterials();
-        for (Core::uint i = 0; i < materials.size(); ++i)
+        for (uint i = 0; i < materials.size(); ++i)
         {
             GetAvatarMaterialForExport(request, materials[i], inventorymode);
         }
         
         RexLogicModule::LogDebug("Getting attachments for export");
         AvatarAttachmentVector attachments = appearance.GetAttachments();
-        for (Core::uint i = 0; i < attachments.size(); ++i)
+        for (uint i = 0; i < attachments.size(); ++i)
         {
             GetAvatarAssetForExport(request, attachments[i].mesh_);
-            for (Core::uint j = 0; j < attachments[i].materials_.size(); ++j)
+            for (uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
                 GetAvatarMaterialForExport(request, attachments[i].materials_[j]);
             }
@@ -1469,7 +1469,7 @@ namespace RexLogic
                 Ogre::Pass *pass = passIter.getNext();
                 
                 Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
-                Core::uint index = 0;
+                uint index = 0;
                 
                 while(texIter.hasMoreElements())
                 {
@@ -1491,8 +1491,8 @@ namespace RexLogic
         std::string mat_string = serializer.getQueuedAsString();
         // Rename the exported material to the original name, so that we don't get lots of duplicates
         // to the storage with only the name changed
-        std::string new_mat_name = Core::ReplaceSubstring(export_name, ".material", "");
-        Core::ReplaceSubstringInplace(mat_string, "material " + clone->getName(), "material " + new_mat_name);
+        std::string new_mat_name = ReplaceSubstring(export_name, ".material", "");
+        ReplaceSubstringInplace(mat_string, "material " + clone->getName(), "material " + new_mat_name);
         
         if (request->assets_.find(export_name) == request->assets_.end())
         {
@@ -1536,7 +1536,7 @@ namespace RexLogic
         catch (...) {}
         
         // Export textures used by material
-        for (Core::uint i = 0; i < material.textures_.size(); ++i)
+        for (uint i = 0; i < material.textures_.size(); ++i)
             GetAvatarAssetForExport(request, material.textures_[i], true);
             
         return true;
@@ -1602,7 +1602,7 @@ namespace RexLogic
             try
             {
                 Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(asset.name_);
-                Core::uint size = data->size();
+                uint size = data->size();
                 if (size)
                 {
                     new_export_asset.data_.resize(size);
@@ -1658,7 +1658,7 @@ namespace RexLogic
                     if (conn)
                     {                    
                         std::string method = "RexAppearance";
-                        Core::StringVector strings;
+                        StringVector strings;
                         conn->SendGenericMessage(method, strings);
                     }
                 }
@@ -1742,7 +1742,7 @@ namespace RexLogic
         {
             RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
 
-            mesh.name_ = Core::ReplaceSubstring(leafname, ".xml", ".mesh");
+            mesh.name_ = ReplaceSubstring(leafname, ".xml", ".mesh");
             appearance.SetMesh(mesh);
         }      
         
@@ -1764,7 +1764,7 @@ namespace RexLogic
         mesh.name_ = leafname;
         appearance.SetMesh(mesh);
         
-        std::string xmlname = Core::ReplaceSubstring(filename, ".mesh", ".xml");       
+        std::string xmlname = ReplaceSubstring(filename, ".mesh", ".xml");       
         
         // Now optionally read parameters from an xml file that perhaps exists, but it's not fatal if it's not found           
         QFile file(filename.c_str());
@@ -1798,7 +1798,7 @@ namespace RexLogic
         renderer->AddResourceDirectory(dirname);
     }    
     
-    bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename)
+    bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, uint index, const std::string& filename)
     {
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();

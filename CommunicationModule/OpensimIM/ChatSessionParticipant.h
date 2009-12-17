@@ -38,7 +38,7 @@ namespace OpensimIM
 		QString name_;
 		QString uuid_;
 		Contact* contact_;
-		//RexTypes::RexUUID uuid_;
+		//RexUUID uuid_;
 	};
 	typedef std::vector<ChatSessionParticipant*> ChatSessionParticipantVector;
 

@@ -13,7 +13,7 @@ namespace Communication
 	CommunicationService::CommunicationService(Foundation::Framework* framework) : framework_(framework)
 	{
 		if (framework_ == NULL)
-			throw Core::Exception("Cannot create communication service object, framework pointer is missing."); 
+			throw Exception("Cannot create communication service object, framework pointer is missing."); 
 
         event_category_networkinin_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
 	}
@@ -45,7 +45,7 @@ namespace Communication
 	CommunicationServiceInterface* CommunicationService::GetInstance()
 	{
 		if (CommunicationService::instance_ == 0)
-			throw Core::Exception("CommunicationService is not initialized properly.");
+			throw Exception("CommunicationService is not initialized properly.");
 		return CommunicationService::instance_;
 	}
 
@@ -80,7 +80,7 @@ namespace Communication
 		ConnectionProviderVector providers = GetConnectionProviders(protocol);
 		if (providers.size() == 0)
 		{
-			throw Core::Exception("Cannot open connection, protocol is not supported");
+			throw Exception("Cannot open connection, protocol is not supported");
 		}
 		Communication::ConnectionInterface* connection = providers[0]->OpenConnection(credentials);
 		return connection;
@@ -123,7 +123,7 @@ namespace Communication
 		return providers;
 	}
 
-	bool CommunicationService::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+	bool CommunicationService::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 	{
         event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
         event_category_networkinin_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");

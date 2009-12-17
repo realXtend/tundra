@@ -66,7 +66,7 @@ namespace OgreRenderer
         virtual Foundation::RaycastResult Raycast(int x, int y);
 
         //! Resizes the window
-        virtual void Resize(Core::uint width, Core::uint height);
+        virtual void Resize(uint width, uint height);
 
         //! Renders the screen
         virtual void Render();
@@ -100,7 +100,7 @@ namespace OgreRenderer
             \param type Resource type
             \return Request tag, or 0 if request could not be queued
          */        
-        virtual Core::request_tag_t RequestResource(const std::string& id, const std::string& type);   
+        virtual request_tag_t RequestResource(const std::string& id, const std::string& type);   
         
         //! Removes a renderer-specific resource
         /*! \param id Resource id
@@ -117,7 +117,7 @@ namespace OgreRenderer
         void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
 
         //! set handle for the main window. This is for the top level window.
-        void SetMainWindowHandle(Core::uint hndl) { main_window_handle_ = hndl; }
+        void SetMainWindowHandle(uint hndl) { main_window_handle_ = hndl; }
 
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
@@ -159,7 +159,7 @@ namespace OgreRenderer
         //! Performs update. Called by OgreRenderingModule
         /*! Pumps Ogre window events.
          */
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
 
 		//! Takes a screenshot and saves it to a file.
 		void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
@@ -214,19 +214,19 @@ namespace OgreRenderer
         ResourceHandlerPtr resource_handler_;
         
         //! Renderer event category
-        Core::event_category_id_t renderercategory_id_;
+        event_category_id_t renderercategory_id_;
 
         //! Counter for unique name creation
-        Core::uint object_id_;
+        uint object_id_;
 
         //! Counter for unique resource group creation
-        Core::uint group_id_;
+        uint group_id_;
 
         //! External window parameter, to be used when embedding the renderwindow
         std::string external_window_parameter_;
 
         //! handle for the main window
-        Core::uint main_window_handle_;
+        uint main_window_handle_;
 
         //! filename for the Ogre3D configuration file
         std::string config_filename_;
@@ -241,7 +241,7 @@ namespace OgreRenderer
         std::string window_title_;
         
         //! added resource directories
-        Core::StringVector added_resource_directories_;
+        StringVector added_resource_directories_;
 
         //! Ogre UI View Widget, inherits QGraphicsView
         QOgreUIView *q_ogre_ui_view_;

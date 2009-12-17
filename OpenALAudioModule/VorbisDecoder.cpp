@@ -13,7 +13,7 @@ namespace OpenALAudio
     class OggMemDataSource
     {
     public:
-        OggMemDataSource(Core::u8* data, Core::uint size) :
+        OggMemDataSource(u8* data, uint size) :
             data_(data),
             size_(size),
             position_(0)    
@@ -22,7 +22,7 @@ namespace OpenALAudio
             
         size_t Read(void* ptr, size_t size)
         {
-            Core::uint max_read = size_ - position_;
+            uint max_read = size_ - position_;
             if (size > max_read) size = max_read;
             if (size)
             {
@@ -52,7 +52,7 @@ namespace OpenALAudio
              
             if ((new_pos < 0) || (new_pos > size_))
                 return -1;
-            position_ = (Core::uint)new_pos;
+            position_ = (uint)new_pos;
             return 0;
         }
         
@@ -62,9 +62,9 @@ namespace OpenALAudio
         }            
             
     private:
-        Core::u8* data_;
-        Core::uint size_;
-        Core::uint position_;        
+        u8* data_;
+        uint size_;
+        uint position_;        
     };
 
     size_t OggReadCallback(void* ptr, size_t size, size_t nmemb, void* datasource)
@@ -156,7 +156,7 @@ namespace OpenALAudio
             return;
         }
  
-        Core::uint decoded_bytes = 0;        
+        uint decoded_bytes = 0;        
         for (;;)
         {
             result->buffer_.resize(decoded_bytes + MAX_DECODE_SIZE);

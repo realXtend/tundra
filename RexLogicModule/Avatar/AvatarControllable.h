@@ -38,37 +38,37 @@ namespace RexLogic
         ~AvatarControllable() {}
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Action event handler for handling controllable events
-        bool HandleActionEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Add time to avatar control simulation for all controllable avatars
-        void AddTime(Core::f64 frametime);
+        void AddTime(f64 frametime);
 
 		//! Sets the yaw of the avatar, experimental for py api
-		void SetYaw(Core::Real newyaw);
+		void SetYaw(Real newyaw);
 		//! Sets the rotation of the avatar, experimental for py api
-		void SetRotation(Core::Quaternion newrot);
+		void SetRotation(Quaternion newrot);
 
         //! Agent movement complete (network) event handling
         void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);
 
     private:
         //! Returns avatar entity rotation
-        const Core::Quaternion &GetBodyRotation() const;
+        const Quaternion &GetBodyRotation() const;
 
         ////! Sets rotation for the avatar entity
-        //void SetBodyRotation(const Core::Quaternion &rotation);
+        //void SetBodyRotation(const Quaternion &rotation);
 
         //! sends avatar movement packet to server immediatelly
-        void SendMovementToServer(Core::uint controlflags);
+        void SendMovementToServer(uint controlflags);
 
         //! sends avatar movement packet to server only if one is scheduled currently
-        void SendScheduledMovementToServer(Core::uint controlflags);
+        void SendScheduledMovementToServer(uint controlflags);
 
         //! Returns true if controllable component is of type avatar (CT_AVATAR)
         /*!
@@ -84,7 +84,7 @@ namespace RexLogic
         typedef std::map<int, RexTypes::ControlFlags> ActionControlFlagMap;
 
         //! convenient cached value for action event category
-        Core::event_category_id_t action_event_category_;
+        event_category_id_t action_event_category_;
 
         //! Entity this controller controls
         Scene::EntityWeakPtr entity_;
@@ -108,7 +108,7 @@ namespace RexLogic
         WorldStreamConnectionPtr connection_;
 
         //! default speed for avatar rotation
-        Core::Real rotation_sensitivity_;
+        Real rotation_sensitivity_;
 
         //! First or third person mode
         State current_state_;
@@ -117,13 +117,13 @@ namespace RexLogic
         bool net_dirty_;
 
         //! mouse look yaw
-        Core::Real drag_yaw_;
+        Real drag_yaw_;
 
         //! interval in seconds how often updates are send to server
-        Core::Real net_updateinterval_;
+        Real net_updateinterval_;
 
         //! Tracks time between network updates
-        Core::Real net_movementupdatetime_;
+        Real net_movementupdatetime_;
 
         Foundation::Framework *framework_;
     };

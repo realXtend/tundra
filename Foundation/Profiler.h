@@ -262,10 +262,10 @@ namespace Foundation
         }
 
         //! Number of times this profile has been called during the execution of the program
-        Core::ulong num_called_total_;
+        ulong num_called_total_;
 
         //! Number of times this profile was called during last frame
-        Core::ulong num_called_;
+        ulong num_called_;
 
         //! Total time spend in this profile during the execution of the program
         double total_;
@@ -280,7 +280,7 @@ namespace Foundation
         double elapsed_max_;
 
     private:
-        Core::ulong num_called_current_;
+        ulong num_called_current_;
         double elapsed_current_;
         double elapsed_min_current_;
         double elapsed_max_current_;
@@ -401,7 +401,7 @@ namespace Foundation
         //! container for all the root profile nodes for each thread.
         std::list<ProfilerNodeTree*> thread_root_nodes_;
 
-        Core::Mutex mutex_;
+        Mutex mutex_;
     };
 
     //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope

@@ -233,7 +233,7 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
         OgreRenderingModule::LogError("Invalid material name!");
 }
 
-void EC_OgreMovableTextOverlay::SetOffset(const Core::Vector3df& offset)
+void EC_OgreMovableTextOverlay::SetOffset(const Vector3df& offset)
 {
     if (!node_)
         return;
@@ -241,7 +241,7 @@ void EC_OgreMovableTextOverlay::SetOffset(const Core::Vector3df& offset)
     node_->setPosition(ToOgreVector3(offset));
 }
 
-void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
+void EC_OgreMovableTextOverlay::CreateOverlay(const Vector3df& offset)
 {
     if (renderer_.expired())
         return;
@@ -285,7 +285,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Core::Vector3df& offset)
     text_element_->setParameter("char_height", font_->getParameter("size"));
 //        text_element_->setCharHeight(0.035f);
     text_element_->setParameter("horz_align", "left");
-    fontColor_ = Core::Color(0, 0, 0, 1);
+    fontColor_ = Color(0, 0, 0, 1);
     text_element_->setColour(Ogre::ColourValue::Black);
     container_->addChild(text_element_);
 

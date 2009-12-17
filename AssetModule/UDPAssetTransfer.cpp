@@ -23,13 +23,13 @@ namespace Asset
         return received_ >= size_;
     }
     
-    Core::uint UDPAssetTransfer::GetReceivedContinuous() const
+    uint UDPAssetTransfer::GetReceivedContinuous() const
     {
-        Core::uint size = 0;
+        uint size = 0;
         
         DataPacketMap::const_iterator i = data_packets_.begin();
         
-        Core::uint expected_index = 0;
+        uint expected_index = 0;
       
         while (i != data_packets_.end())
         {
@@ -45,7 +45,7 @@ namespace Asset
         return size;
     }
     
-    void UDPAssetTransfer::ReceiveData(Core::uint packet_index, const Core::u8* data, Core::uint size)
+    void UDPAssetTransfer::ReceiveData(uint packet_index, const u8* data, uint size)
     {
         time_ = 0.0;
         
@@ -63,15 +63,15 @@ namespace Asset
         }
         else
         {
-            AssetModule::LogDebug("Already received asset data packet index " + Core::ToString<Core::uint>(packet_index));
+            AssetModule::LogDebug("Already received asset data packet index " + ToString<uint>(packet_index));
         }
     }
     
-    void UDPAssetTransfer::AssembleData(Core::u8* buffer) const
+    void UDPAssetTransfer::AssembleData(u8* buffer) const
     {
         DataPacketMap::const_iterator i = data_packets_.begin();
         
-        Core::uint expected_index = 0;
+        uint expected_index = 0;
       
         while (i != data_packets_.end())
         {

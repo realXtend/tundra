@@ -28,16 +28,16 @@ namespace TextureDecoder
         /*! \param asset_id asset ID of texture
             \return request tag, will be used in eventual RESOURCE_READY event
          */
-        virtual Core::request_tag_t RequestTexture(const std::string& asset_id);
+        virtual request_tag_t RequestTexture(const std::string& asset_id);
         
         //! Updates texture requests. Called by TextureDecoderModule
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
 
         //! Handles an asset event. Called by TextureDecoderModule
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         
         //! Handles a thread task event. Called by TextureDecoderModule
-        bool HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         
     private:
         //! Updates a texture request
@@ -51,7 +51,7 @@ namespace TextureDecoder
         Foundation::Framework* framework_;
                 
         //! Resource event category
-        Core::event_category_id_t resource_event_category_;
+        event_category_id_t resource_event_category_;
 
         //! Ongoing texture requests
         TextureRequestMap requests_;

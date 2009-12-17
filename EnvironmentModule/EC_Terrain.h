@@ -80,7 +80,7 @@ namespace Environment
         /// @param xinside horizontal position within patch
         /// @param yinside vertical position within patch
         /// @return normal
-        Core::Vector3df CalculateNormal(int x, int y, int xinside, int yinside);
+        Vector3df CalculateNormal(int x, int y, int xinside, int yinside);
         
         /// @return True if all the patches of the terrain are loaded.
         bool AllPatchesLoaded() const

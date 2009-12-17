@@ -14,13 +14,13 @@
 
 /**
  * NetMessageException is exception type which is throwed in cases if you use NetMessage interface and a problem arises.
- * @see Core::Exception
+ * @see Exception
  */
  
-class NetMessageException : public Core::Exception
+class NetMessageException : public Exception
 {
 public:
-    NetMessageException() : Core::Exception(), strMessage_(""), type_(ET_None) {}
+    NetMessageException() : Exception(), strMessage_(""), type_(ET_None) {}
     virtual ~NetMessageException() throw () {} 
     
     /// Enumeration of the exception types.
@@ -38,13 +38,13 @@ public:
      * Override constructor. 
      * @param message is error message. 
      */
-    explicit NetMessageException(const std::string& message) : Core::Exception(), strMessage_(message), type_(ET_None) {}
+    explicit NetMessageException(const std::string& message) : Exception(), strMessage_(message), type_(ET_None) {}
 
     /**
      * Override constructor. 
      * @param type Exception type enum. 
      */
-    explicit NetMessageException(ExceptionType type) : Core::Exception(), type_(type) {}
+    explicit NetMessageException(ExceptionType type) : Exception(), type_(type) {}
     
     /**
      * Returns error message for caller. 

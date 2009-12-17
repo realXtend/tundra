@@ -206,7 +206,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
 
     std::string asset_reference_id = asset->GetAssetReference().toStdString();
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
-    Core::request_tag_t tag = 0;
+    request_tag_t tag = 0;
 
     asset_type_t asset_type = asset->GetAssetType();
     switch(asset_type)
@@ -262,7 +262,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
 
     // Send InventoryItemOpen event.
     EventManagerPtr event_mgr = framework_->GetEventManager();
-    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category == 0)
         return false;
 
@@ -334,7 +334,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             boost::shared_ptr<TextureServiceInterface> texture_service =
                 service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
 
-            Core::request_tag_t tag = texture_service->RequestTexture(id);
+            request_tag_t tag = texture_service->RequestTexture(id);
             if (tag)
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
         }
@@ -353,7 +353,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
                 service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
-            Core::request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
+            request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag)
             {
                 downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
@@ -391,7 +391,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
 
     Resource::Events::ResourceReady* resourceReady = checked_static_cast<Resource::Events::ResourceReady *>(data);
     RexTypes::asset_type_t asset_type = RexAT_Texture;
-    Core::request_tag_t tag = resourceReady->tag_;
+    request_tag_t tag = resourceReady->tag_;
 //    QString asset_id = resourceReady->id_.c_str();
 
     AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
@@ -431,7 +431,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
 void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDataInterface *data)
 {
     Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-    Core::request_tag_t tag = assetReady->tag_;
+    request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 //    QString asset_id = assetReady->asset_->GetId().c_str();
 
@@ -478,7 +478,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
 void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInterface *data)
 {
     Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-    Core::request_tag_t tag = assetReady->tag_;
+    request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
     AssetRequestMap::iterator i = openRequests_.find(qMakePair(tag, asset_type));
@@ -489,7 +489,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
 
     // Send InventoryItemDownloaded event.
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    Core::event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+    event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category == 0)
         return;
 

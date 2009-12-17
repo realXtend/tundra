@@ -37,9 +37,9 @@ namespace Console
         virtual void PostInitialize();
         virtual void Uninitialize();
 
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
         //! returns framework

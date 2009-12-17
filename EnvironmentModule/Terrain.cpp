@@ -96,7 +96,7 @@ namespace
             for(int x = 0; x+1 < patchSize; ++x)
             {
                 // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
-                // see Core::OpenSimToOgreCoordinateAxes.
+                // see OpenSimToOgreCoordinateAxes.
 //                Ogre::Vector3 a = patchOrigin + Ogre::Vector3(vertexSpacingY * y,     heightScale * patch.heightData[y*patchSize+x], vertexSpacingX * x);
 //                Ogre::Vector3 b = patchOrigin + Ogre::Vector3(vertexSpacingY * y, heightScale * patch.heightData[y*patchSize+x+1], vertexSpacingX * (x+1));
 //                Ogre::Vector3 c = patchOrigin + Ogre::Vector3(vertexSpacingY * (y+1),     heightScale * patch.heightData[(y+1)*patchSize+x], vertexSpacingX * x);
@@ -181,7 +181,7 @@ namespace
                     (patch.y + 1 >= terrain.cNumPatchesPerEdge && y == patchSize))
                     continue;
                 // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
-                // see Core::OpenSimToOgreCoordinateAxes.
+                // see OpenSimToOgreCoordinateAxes.
                 Ogre::Vector3 pos;
 // Ogre:                pos.x = vertexSpacingY * y;
 // Ogre:                pos.z = vertexSpacingX * x;
@@ -409,7 +409,7 @@ namespace
         PROFILE(HandleOSNE_LayerData);
 
         ProtocolUtilities::NetInMessage &msg = *data->message;
-        Core::u8 layerID = msg.ReadU8();
+        u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
         ProtocolUtilities::BitStream bits(packedData, sizeBytes);
@@ -455,7 +455,7 @@ namespace
             RequestTerrainTextures();
     }
 
-    void Terrain::SetTerrainHeightValues(const Core::Real start_heights[num_terrain_textures], const Core::Real height_ranges[num_terrain_textures])
+    void Terrain::SetTerrainHeightValues(const Real start_heights[num_terrain_textures], const Real height_ranges[num_terrain_textures])
     {
         for(int i = 0; i < num_terrain_textures; ++i)
         {
@@ -464,13 +464,13 @@ namespace
         }
     }
 
-    const Core::Real &Terrain::GetTerrainTextureStartHeight(int index) const
+    const Real &Terrain::GetTerrainTextureStartHeight(int index) const
     {
         if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
         return start_heights_[index];
     }
 
-    const Core::Real &Terrain::GetTerrainTextureHeightRange(int index) const
+    const Real &Terrain::GetTerrainTextureHeightRange(int index) const
     {
         if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
         return height_ranges_[index];

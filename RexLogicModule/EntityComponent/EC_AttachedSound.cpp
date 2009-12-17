@@ -19,14 +19,14 @@ namespace RexLogic
 	    RemoveAllSounds();        
 	}
 	
-	void EC_AttachedSound::Update(Core::f64 frametime)
+	void EC_AttachedSound::Update(f64 frametime)
 	{
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
             	
 	    // Check if any of the sounds have stopped, remove from list in that case
-	    for (Core::uint i = 0; i < sounds_.size(); ++i)
+	    for (uint i = 0; i < sounds_.size(); ++i)
 	    {
 	        if (sounds_[i])
 	        {
@@ -36,27 +36,27 @@ namespace RexLogic
 	    }
 	}
 	
-	void EC_AttachedSound::SetPosition(Core::Vector3df position)
+	void EC_AttachedSound::SetPosition(Vector3df position)
 	{
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
             
-        for (Core::uint i = 0; i < sounds_.size(); ++i)
+        for (uint i = 0; i < sounds_.size(); ++i)
         {
             if (sounds_[i])
                 soundsystem->SetPosition(sounds_[i], position);
         }
 	}
 	
-	void EC_AttachedSound::RemoveSound(Core::sound_id_t sound)
+	void EC_AttachedSound::RemoveSound(sound_id_t sound)
     {
         if (sound == 0)
             return;
                 
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
       
-        for (Core::uint i = 0; i < sounds_.size(); ++i)
+        for (uint i = 0; i < sounds_.size(); ++i)
         {
             if (sounds_[i] == sound)
             {
@@ -71,8 +71,8 @@ namespace RexLogic
     {
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
 
-        Core::uint i = (Core::uint)slot;
-        if (i < (Core::uint)Other)
+        uint i = (uint)slot;
+        if (i < (uint)Other)
         {
             if (sounds_[i])
             {
@@ -89,7 +89,7 @@ namespace RexLogic
  
         if (soundsystem)
         {    
-            for (Core::uint i = 0; i < sounds_.size(); ++i)    
+            for (uint i = 0; i < sounds_.size(); ++i)    
             {
                 if (sounds_[i])
                     soundsystem->StopSound(sounds_[i]);
@@ -103,12 +103,12 @@ namespace RexLogic
     {
         // Have always room for the opensim & rex-style ambient sounds 
         sounds_.clear();
-        sounds_.resize((Core::uint)Other);    
+        sounds_.resize((uint)Other);    
         sounds_[OpenSimAttachedSound] = 0;
         sounds_[RexAmbientSound] = 0;
     }   
     
-    void EC_AttachedSound::AddSound(Core::sound_id_t sound, SoundSlot slot)
+    void EC_AttachedSound::AddSound(sound_id_t sound, SoundSlot slot)
     {
         if (sound == 0)
             return;
@@ -121,7 +121,7 @@ namespace RexLogic
         }
         else        
         {
-            for (Core::uint i = (Core::uint)Other; i < sounds_.size(); ++i)
+            for (uint i = (uint)Other; i < sounds_.size(); ++i)
             {
                 if (sounds_[i] == 0)
                 {

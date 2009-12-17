@@ -17,7 +17,7 @@ namespace RexLogic
 
 void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest, const std::vector<Scene::EntityPtr>& src)
 {
-    for (Core::uint i = 0; i < src.size(); ++i)
+    for (uint i = 0; i < src.size(); ++i)
     {        
         if (!src[i]) 
             continue;
@@ -51,7 +51,7 @@ SceneEventHandler::~SceneEventHandler()
 {
 }
 
-bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);
 
@@ -95,7 +95,7 @@ bool SceneEventHandler::HandleSceneEvent(Core::event_id_t event_id, Foundation::
     return false;
 }
 
-void SceneEventHandler::HandleEntityDeletedEvent(Core::event_id_t entityid)
+void SceneEventHandler::HandleEntityDeletedEvent(event_id_t entityid)
 {
 }
 

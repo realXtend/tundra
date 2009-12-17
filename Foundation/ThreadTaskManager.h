@@ -59,14 +59,14 @@ namespace Foundation
             \return a non-zero request tag if request could be fulfilled, zero if not
             Note: currently simply the first matching ThreadTask will be used; there is no load balancing
          */
-        Core::request_tag_t AddRequest(const std::string& task_description, ThreadTaskRequestPtr request);
+        request_tag_t AddRequest(const std::string& task_description, ThreadTaskRequestPtr request);
         
         //! Template version of adding request. Perfoms dynamic_pointer_cast to ThreadTaskRequest from specified class.
         /*! \param task_description Task description
             \param request Task request
             \return a non-zero request tag if request could be fulfilled, zero if not
          */
-        template <class T> Core::request_tag_t AddRequest(const std::string& task_description, boost::shared_ptr<T> request)
+        template <class T> request_tag_t AddRequest(const std::string& task_description, boost::shared_ptr<T> request)
         {
             return AddRequest(task_description, boost::dynamic_pointer_cast<ThreadTaskRequest>(request));
         }
@@ -83,10 +83,10 @@ namespace Foundation
         std::vector<ThreadTaskResultPtr> GetResults(const std::string& task_description);
         
         //! Gets amount of results in queue
-        Core::uint GetNumResults();
+        uint GetNumResults();
         
         //! Gets amount of results in queue for certain task type
-        Core::uint GetNumResults(const std::string& task_description);
+        uint GetNumResults(const std::string& task_description);
         
     private:
         //! Queues a result. Called from ThreadTask work thread.
@@ -101,7 +101,7 @@ namespace Foundation
         std::list<ThreadTaskResultPtr> results_;
         
         //! Result queue mutex
-        Core::Mutex result_mutex_;
+        Mutex result_mutex_;
         
         //! Framework
         Framework* framework_;

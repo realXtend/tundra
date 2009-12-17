@@ -77,7 +77,7 @@ namespace OpenSimProtocol
             framework_->GetModuleManager()->GetModule<ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
         if (modulePointerToThis.lock().get())
         {
-            Core::event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
+            event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
             Foundation::NetworkingRegisteredEvent event_data(modulePointerToThis);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
             LogInfo("System " + Name() + " sending NetworkingRegisteredEvent event");
@@ -100,7 +100,7 @@ namespace OpenSimProtocol
 	}
 
 	// virtual
-	void ProtocolModuleOpenSim::Update(Core::f64 frametime)
+	void ProtocolModuleOpenSim::Update(f64 frametime)
 	{
 		{
 			PROFILE(ProtocolModuleOpenSim_Update);
@@ -159,7 +159,7 @@ namespace OpenSimProtocol
             eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
 
 		    // Request capabilities from the server.
-		    Core::Thread thread(boost::bind(&ProtocolModuleOpenSim::RequestCapabilities, this, GetClientParameters().seedCapabilities));
+		    Thread thread(boost::bind(&ProtocolModuleOpenSim::RequestCapabilities, this, GetClientParameters().seedCapabilities));
 		    return true;
         }
         else
@@ -266,7 +266,7 @@ namespace OpenSimProtocol
 			return;
 		}
 		
-		std::vector<Core::u8> response = request.GetResponseData();
+		std::vector<u8> response = request.GetResponseData();
 		if (response.size() == 0)
 		{
 			LogError("Size of the response data to \"SEED\" capabilities message was zero.");

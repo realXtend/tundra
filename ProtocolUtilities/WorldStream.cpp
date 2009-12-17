@@ -170,12 +170,12 @@ void WorldStream::SendAgentThrottlePacket()
     if (!connected_)
         return;
 
-    Core::Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting(
+    Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "max_bits_per_second", 1000000.0f);
 
     int idx = 0;
-    static const size_t size = 7 * sizeof(Core::Real);
-    Core::u8 throttle_block[size];
+    static const size_t size = 7 * sizeof(Real);
+    u8 throttle_block[size];
 
     WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // resend
     WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // land
@@ -200,7 +200,7 @@ void WorldStream::SendAgentThrottlePacket()
 
 void WorldStream::SendRexStartupPacket(const std::string& state)
 {
-    Core::StringVector strings;
+    StringVector strings;
 
     strings.push_back(clientParameters_.agentID.ToString());
     strings.push_back(state);
@@ -240,7 +240,7 @@ void WorldStream::SendChatFromViewerPacket(const std::string &text)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &target, const std::string &text)
+void WorldStream::SendImprovedInstantMessagePacket(const RexUUID &target, const std::string &text)
 {
     if (!connected_)
         return;
@@ -261,7 +261,7 @@ void WorldStream::SendImprovedInstantMessagePacket(const RexTypes::RexUUID &targ
     m->AddVector3(RexTypes::Vector3());//! @todo Find out proper value
     m->AddU8(0);//! @todo Find out proper value
     m->AddU8(0); // dialog type
-    m->AddUUID(RexTypes::RexUUID());
+    m->AddUUID(RexUUID());
     m->AddU32(time_stamp); // TODO: Timestamp
     m->AddBuffer( strlen(from_name.c_str()), (uint8_t*)(from_name.c_str()) );
     m->AddBuffer( strlen(text.c_str()), (uint8_t*)(text.c_str()) );
@@ -279,7 +279,7 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
     assert(m);
 
     Vector3 scale(0.5f, 0.5f, 0.5f);
-    Core::Quaternion rotation(0, 0, 0, 1);
+    Quaternion rotation(0, 0, 0, 1);
 
     // AgentData
     m->AddUUID(clientParameters_.agentID);
@@ -363,8 +363,8 @@ void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_l
 }
 
 void WorldStream::SendAgentUpdatePacket(
-    Core::Quaternion bodyrot,
-    Core::Quaternion headrot,
+    Quaternion bodyrot,
+    Quaternion headrot,
     uint8_t state,
     RexTypes::Vector3 camcenter,
     RexTypes::Vector3 camataxis,
@@ -382,8 +382,8 @@ void WorldStream::SendAgentUpdatePacket(
 
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-    m->AddQuaternion(Core::OgreToOpenSimQuaternion(bodyrot));
-    m->AddQuaternion(Core::OgreToOpenSimQuaternion(headrot));
+    m->AddQuaternion(OgreToOpenSimQuaternion(bodyrot));
+    m->AddQuaternion(OgreToOpenSimQuaternion(headrot));
     m->AddU8(state);
     m->AddVector3(camcenter);
     m->AddVector3(camataxis);
@@ -410,12 +410,12 @@ void WorldStream::SendObjectSelectPacket(const unsigned int object_id)
 
     // ObjectData
     m->SetVariableBlockCount(1);
-    m->AddU32((Core::entity_id_t)object_id);
+    m->AddU32((entity_id_t)object_id);
 
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_id_list)
+void WorldStream::SendObjectSelectPacket(std::vector<entity_id_t> object_id_list)
 {
     if (!connected_)
         return;
@@ -435,7 +435,7 @@ void WorldStream::SendObjectSelectPacket(std::vector<Core::entity_id_t> object_i
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeselectPacket(Core::entity_id_t object_id)
+void WorldStream::SendObjectDeselectPacket(entity_id_t object_id)
 {
     if (!connected_)
         return;
@@ -454,7 +454,7 @@ void WorldStream::SendObjectDeselectPacket(Core::entity_id_t object_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeselectPacket(std::vector<Core::entity_id_t> object_id_list)
+void WorldStream::SendObjectDeselectPacket(std::vector<entity_id_t> object_id_list)
 {
     if (!connected_)
         return;
@@ -506,11 +506,11 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(13);
 
         // Position
-        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(update_info_list[i].position_), sizeof(Vector3));
+        memcpy(&data[offset], &OgreToOpenSimCoordinateAxes(update_info_list[i].position_), sizeof(Vector3));
         offset += sizeof(Vector3);
 
         // Scale
-        memcpy(&data[offset], &Core::OgreToOpenSimCoordinateAxes(update_info_list[i].scale_), sizeof(Vector3));
+        memcpy(&data[offset], &OgreToOpenSimCoordinateAxes(update_info_list[i].scale_), sizeof(Vector3));
         offset += sizeof(Vector3);
     }
 
@@ -537,7 +537,7 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(2);
         
         // Rotation
-        Vector3 val = Core::PackQuaternionToFloat3(update_info_list[i].orientation_);
+        Vector3 val = PackQuaternionToFloat3(update_info_list[i].orientation_);
         memcpy(&data[offset], &val, sizeof(Vector3));
         offset += sizeof(Vector3);
     }
@@ -571,7 +571,7 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
     }
 }
 
-void WorldStream::SendObjectGrabPacket(Core::entity_id_t object_id)
+void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
 {
     if (!connected_)
         return;
@@ -615,7 +615,7 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
     }
 }
 
-void WorldStream::SendRegionHandshakeReplyPacket(RexTypes::RexUUID agent_id, RexTypes::RexUUID session_id, uint32_t flags)
+void WorldStream::SendRegionHandshakeReplyPacket(RexUUID agent_id, RexUUID session_id, uint32_t flags)
 {
     if (!connected_)
         return;
@@ -669,7 +669,7 @@ void WorldStream::SendAgentSetAppearancePacket()
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height)
+void WorldStream::SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height)
 {
     if (!connected_)
         return;
@@ -698,7 +698,7 @@ void WorldStream::SendModifyLandPacket(Core::f32 x, Core::f32 y, Core::u8 brush,
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index)
+void WorldStream::SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, uint texture_index)
 {
     if (!connected_)
         return;
@@ -726,7 +726,7 @@ void WorldStream::SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, 
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendTextureHeightsMessage(Core::Real start_height, Core::Real height_range, Core::uint corner)
+void WorldStream::SendTextureHeightsMessage(Real start_height, Real height_range, uint corner)
 {
     if (!connected_)
         return;
@@ -781,8 +781,8 @@ void WorldStream::SendTextureCommitMessage()
 }
 
 void WorldStream::SendCreateInventoryFolderPacket(
-    const RexTypes::RexUUID &parent_id,
-    const RexTypes::RexUUID &folder_id,
+    const RexUUID &parent_id,
+    const RexUUID &folder_id,
     const RexTypes::asset_type_t &type,
     const std::string &name)
 {
@@ -806,8 +806,8 @@ void WorldStream::SendCreateInventoryFolderPacket(
 }
 
 void WorldStream::SendMoveInventoryFolderPacket(
-    const RexTypes::RexUUID &folder_id,
-    const RexTypes::RexUUID &parent_id,
+    const RexUUID &folder_id,
+    const RexUUID &parent_id,
     const bool &re_timestamp)
 {
     if (!connected_)
@@ -861,7 +861,7 @@ void WorldStream::SendMoveInventoryFolderPacket(
 */
 
 void WorldStream::SendRemoveInventoryFolderPacket(
-    const RexTypes::RexUUID &folder_id)
+    const RexUUID &folder_id)
 {
     if (!connected_)
         return;
@@ -909,8 +909,8 @@ void WorldStream::SendRemoveInventoryFolderPacket(
 */
 
 void WorldStream::SendMoveInventoryItemPacket(
-    const RexTypes::RexUUID &item_id,
-    const RexTypes::RexUUID &folder_id,
+    const RexUUID &item_id,
+    const RexUUID &folder_id,
     const std::string &new_name,
     const bool &re_timestamp)
 {
@@ -935,9 +935,9 @@ void WorldStream::SendMoveInventoryItemPacket(
 }
 
 void WorldStream::SendCopyInventoryItemPacket(
-    const RexTypes::RexUUID &old_agent_id,
-    const RexTypes::RexUUID &old_item_id,
-    const RexTypes::RexUUID &new_folder_id,
+    const RexUUID &old_agent_id,
+    const RexUUID &old_item_id,
+    const RexUUID &new_folder_id,
     const std::string &new_name)
 {
     if (!connected_)
@@ -961,7 +961,7 @@ void WorldStream::SendCopyInventoryItemPacket(
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id)
+void WorldStream::SendRemoveInventoryItemPacket(const RexUUID &item_id)
 {
     if (!connected_)
         return;
@@ -981,7 +981,7 @@ void WorldStream::SendRemoveInventoryItemPacket(const RexTypes::RexUUID &item_id
 }
 
 ///\todo Test this function.
-void WorldStream::SendRemoveInventoryItemPacket(std::list<RexTypes::RexUUID> item_id_list)
+void WorldStream::SendRemoveInventoryItemPacket(std::list<RexUUID> item_id_list)
 {
     if (!connected_)
         return;
@@ -995,7 +995,7 @@ void WorldStream::SendRemoveInventoryItemPacket(std::list<RexTypes::RexUUID> ite
 
     // InventoryData, variable
     m->SetVariableBlockCount(item_id_list.size());
-    std::list<RexTypes::RexUUID>::iterator it;
+    std::list<RexUUID>::iterator it;
     for(it = item_id_list.begin(); it != item_id_list.end(); ++it)
         m->AddUUID(*it);
 
@@ -1003,8 +1003,8 @@ void WorldStream::SendRemoveInventoryItemPacket(std::list<RexTypes::RexUUID> ite
 }
 
 void WorldStream::SendUpdateInventoryFolderPacket(
-    const RexTypes::RexUUID &folder_id,
-    const RexTypes::RexUUID &parent_id,
+    const RexUUID &folder_id,
+    const RexUUID &parent_id,
     const int8_t &type,
     const std::string &name)
 {
@@ -1029,8 +1029,8 @@ void WorldStream::SendUpdateInventoryFolderPacket(
 }
 
 void WorldStream::SendUpdateInventoryItemPacket(
-    const RexTypes::RexUUID item_id,
-    const RexTypes::RexUUID folder_id,
+    const RexUUID item_id,
+    const RexUUID folder_id,
     const RexTypes::asset_type_t &asset_type,
     const RexTypes::inventory_type_t &inventory_type,
     const std::string &name,
@@ -1043,7 +1043,7 @@ void WorldStream::SendUpdateInventoryItemPacket(
     assert(m);
 
     // TransactionID, new items only?
-    RexTypes::RexUUID transaction_id;
+    RexUUID transaction_id;
 
     // AgentData
     m->AddUUID(clientParameters_.agentID);
@@ -1055,9 +1055,9 @@ void WorldStream::SendUpdateInventoryItemPacket(
     m->AddUUID(item_id);
     m->AddUUID(folder_id);
     m->AddU32(0);                       // CallbackID
-    m->AddUUID(RexTypes::RexUUID());    // CreatorID
-    m->AddUUID(RexTypes::RexUUID());    // OwnerID
-    m->AddUUID(RexTypes::RexUUID());    // GroupID
+    m->AddUUID(RexUUID());    // CreatorID
+    m->AddUUID(RexUUID());    // OwnerID
+    m->AddUUID(RexUUID());    // GroupID
 
     // Permissions-related:
     m->AddU32(0);                       //BaseMask
@@ -1082,8 +1082,8 @@ void WorldStream::SendUpdateInventoryItemPacket(
 }
 
 void WorldStream::SendFetchInventoryDescendentsPacket(
-    const RexTypes::RexUUID &folder_id,
-    const RexTypes::RexUUID &owner_id,
+    const RexUUID &folder_id,
+    const RexUUID &owner_id,
     const int32_t &sort_order,
     const bool &fetch_folders,
     const bool &fetch_items)
@@ -1111,7 +1111,7 @@ void WorldStream::SendFetchInventoryDescendentsPacket(
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transaction_id, const RexTypes::RexUUID &folder_id)
+void WorldStream::SendAcceptFriendshipPacket(const RexUUID &transaction_id, const RexUUID &folder_id)
 {
     NetOutMessage *m = StartMessageBuilding(RexNetMsgAcceptFriendship);
     assert(m);
@@ -1125,7 +1125,7 @@ void WorldStream::SendAcceptFriendshipPacket(const RexTypes::RexUUID &transactio
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendDeclineFriendshipPacket(const RexTypes::RexUUID &transaction_id)
+void WorldStream::SendDeclineFriendshipPacket(const RexUUID &transaction_id)
 {
     NetOutMessage *m = StartMessageBuilding(RexNetMsgDeclineFriendship);
     assert(m);
@@ -1137,7 +1137,7 @@ void WorldStream::SendDeclineFriendshipPacket(const RexTypes::RexUUID &transacti
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendFormFriendshipPacket(const RexTypes::RexUUID &dest_id)
+void WorldStream::SendFormFriendshipPacket(const RexUUID &dest_id)
 {
     NetOutMessage *m = StartMessageBuilding(RexNetMsgFormFriendship);
     assert(m);
@@ -1148,7 +1148,7 @@ void WorldStream::SendFormFriendshipPacket(const RexTypes::RexUUID &dest_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_id)
+void WorldStream::SendTerminateFriendshipPacket(const RexUUID &other_id)
 {
     NetOutMessage *m = StartMessageBuilding(RexNetMsgTerminateFriendship);
     assert(m);
@@ -1159,7 +1159,7 @@ void WorldStream::SendTerminateFriendshipPacket(const RexTypes::RexUUID &other_i
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendGenericMessage(const std::string& method, const Core::StringVector& strings)
+void WorldStream::SendGenericMessage(const std::string& method, const StringVector& strings)
 {
     if (!connected_)
         return;
@@ -1184,7 +1184,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const Core::Stri
     m->SetVariableBlockCount(strings.size());
 
     // Strings
-    for(Core::uint i = 0; i < strings.size(); ++i)
+    for(uint i = 0; i < strings.size(); ++i)
         m->AddString(strings[i]);
 
     m->MarkReliable();
@@ -1194,7 +1194,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const Core::Stri
 
 void WorldStream::SendGenericMessageBinary(
     const std::string& method,
-    const Core::StringVector& strings,
+    const StringVector& strings,
     const std::vector<uint8_t>& binary)
 {
     if (!connected_)
@@ -1234,13 +1234,13 @@ void WorldStream::SendGenericMessageBinary(
     m->SetVariableBlockCount(strings.size() + binarystrings);
 
     // Strings
-    for(Core::uint i = 0; i < strings.size(); ++i)
+    for(uint i = 0; i < strings.size(); ++i)
         m->AddString(strings[i]);
 
     // Binary strings
     size_t idx = 0;
     count = binary.size();   
-    for(Core::uint i = 0; i < binarystrings; ++i)
+    for(uint i = 0; i < binarystrings; ++i)
     {
         size_t size = count;
         if (size > max_string_size)
@@ -1355,7 +1355,7 @@ void WorldStream::SendObjectRedoPacket(const QString &ent_id)
 }
 
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df &offset)
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Vector3df &offset)
 {
     if (!connected_)
         return;
@@ -1380,12 +1380,12 @@ void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const un
 void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags,
     const float offset_x, const float offset_y, const float offset_z)
 {
-    SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(offset_x, offset_y, offset_z));
+    SendObjectDuplicatePacket(ent_id, flags, Vector3df(offset_x, offset_y, offset_z));
 }
 
 void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags)
 {
-    SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(0,0,0));
+    SendObjectDuplicatePacket(ent_id, flags, Vector3df(0,0,0));
 }
 
 std::string WorldStream::GetCapability(const std::string &name)

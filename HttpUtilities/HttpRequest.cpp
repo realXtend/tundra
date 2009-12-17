@@ -9,7 +9,7 @@ namespace HttpUtilities
 {
 
     // Writer callback for cURL.
-    size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<Core::u8>* buffer)
+    size_t WriteCallback(char *data, size_t size, size_t nmemb, std::vector<u8>* buffer)
     {  
         if (buffer)
         {
@@ -39,7 +39,7 @@ namespace HttpUtilities
             url_ = url;
     }
     
-    void HttpRequest::SetTimeout(Core::Real seconds)
+    void HttpRequest::SetTimeout(Real seconds)
     {
         if (seconds < 0.0f)
             seconds = 0.0f;
@@ -51,7 +51,7 @@ namespace HttpUtilities
         method_ = method;
     }
     
-    void HttpRequest::SetRequestData(const std::string& content_type, const std::vector<Core::u8>& data)
+    void HttpRequest::SetRequestData(const std::string& content_type, const std::vector<u8>& data)
     {
         request_data_ = data;
         content_type_ = content_type;
@@ -62,7 +62,7 @@ namespace HttpUtilities
         if (!data)
             return;
         
-        Core::uint size = strlen(data);
+        uint size = strlen(data);
         request_data_.resize(size);
         memcpy(&request_data_[0], data, size);
         
@@ -71,7 +71,7 @@ namespace HttpUtilities
     
     void HttpRequest::SetRequestData(const std::string& content_type, const std::string& data)
     {
-        Core::uint size = data.length();
+        uint size = data.length();
         request_data_.resize(size);
         memcpy(&request_data_[0], data.c_str(), size);
         

@@ -73,7 +73,7 @@ namespace OgreRenderer
         return effect_name;
     }
 
-    void CompositionHandler::ExecuteServersShaderRequest( Core::StringVector const &parameters)
+    void CompositionHandler::ExecuteServersShaderRequest( StringVector const &parameters)
     {
         std::string effect_number = parameters.at(0);
         std::string enable = parameters.at(1);

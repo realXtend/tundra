@@ -116,7 +116,7 @@ namespace Environment
         LogInfo("System " + Name() + " uninitialized.");
     }
 
-    void EnvironmentModule::Update(Core::f64 frametime)
+    void EnvironmentModule::Update(f64 frametime)
     {
         // HACK Initialize editor_widget_ in correct time. 
 
@@ -131,7 +131,7 @@ namespace Environment
 
     }
 
-    bool EnvironmentModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if(category_id == framework_evet_category_)
         {
@@ -205,7 +205,7 @@ namespace Environment
                         {
                             OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
                             OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
-                            Core::StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
+                            StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
                             //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
                             //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
                             //button is checked
@@ -288,7 +288,7 @@ namespace Environment
                          * @todo Someone needs to add more parameters to this package so that we can make ground fog also,
                          */
                         
-                        Core::StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
+                        StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
                         if ( parameters.size() < 5)
                             return false;
 
@@ -373,7 +373,7 @@ namespace Environment
         msg.SkipToNextVariable(); // IsEstateManager
 
         // Water height.
-        Core::Real water_height = msg.ReadF32();
+        Real water_height = msg.ReadF32();
         if(water_.get())
             water_->SetWaterHeight(water_height);
 
@@ -389,13 +389,13 @@ namespace Environment
         terrain[2] = msg.ReadUUID().ToString();
         terrain[3] = msg.ReadUUID().ToString();
 
-        Core::Real TerrainStartHeights[4];
+        Real TerrainStartHeights[4];
         TerrainStartHeights[0] = msg.ReadF32();
         TerrainStartHeights[1] = msg.ReadF32();
         TerrainStartHeights[2] = msg.ReadF32();
         TerrainStartHeights[3] = msg.ReadF32();
 
-        Core::Real TerrainStartRanges[4];
+        Real TerrainStartRanges[4];
         TerrainStartRanges[0] = msg.ReadF32();
         TerrainStartRanges[1] = msg.ReadF32();
         TerrainStartRanges[2] = msg.ReadF32();
@@ -445,13 +445,13 @@ namespace Environment
         return water_;
     }
 
-    void EnvironmentModule::SendModifyLandMessage(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height)
+    void EnvironmentModule::SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height)
     {
         if(currentWorldStream_.get())
             currentWorldStream_->SendModifyLandPacket(x, y, brush, action, seconds, height);
     }
 
-    void EnvironmentModule::SendTextureHeightMessage(Core::Real start_height, Core::Real height_range, Core::uint corner)
+    void EnvironmentModule::SendTextureHeightMessage(Real start_height, Real height_range, uint corner)
     {
         if(currentWorldStream_.get())
         {
@@ -460,7 +460,7 @@ namespace Environment
         }
     }
 
-    void EnvironmentModule::SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index)
+    void EnvironmentModule::SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index)
     {
         if(currentWorldStream_.get())
         {

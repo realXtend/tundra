@@ -52,9 +52,9 @@ namespace RexLogic
         master_modifiers_ = modifiers;
         
         // Sort the mappings to ascending master position for correct interpolation
-        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
+        for (uint i = 0; i < master_modifiers_.size(); ++i)
         {
-            for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+            for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
             {
                 std::sort(master_modifiers_[i].modifiers_[j].mapping_.begin(), master_modifiers_[i].modifiers_[j].mapping_.end());
             }
@@ -83,17 +83,17 @@ namespace RexLogic
         properties_[name] = value;
     }
         
-    void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, Core::Real value)
+    void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, Real value)
     {
         if (value < 0.0) value = 0.0;
         if (value > 1.0) value = 1.0;
         
-        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
+        for (uint i = 0; i < master_modifiers_.size(); ++i)
         {
             if (master_modifiers_[i].name_ == name)
             {
                 master_modifiers_[i].value_ = value;
-                for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+                for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
                 {
                     AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);                
                     if (mod)
@@ -105,7 +105,7 @@ namespace RexLogic
         }                 
     }
     
-    void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceModifier::ModifierType type, Core::Real value)
+    void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceModifier::ModifierType type, Real value)
     {
         if (value < 0.0) value = 0.0;
         if (value > 1.0) value = 1.0;
@@ -120,15 +120,15 @@ namespace RexLogic
     
     void EC_AvatarAppearance::CalculateMasterModifiers()
     {
-        for (Core::uint i = 0; i < morph_modifiers_.size(); ++i)
+        for (uint i = 0; i < morph_modifiers_.size(); ++i)
             morph_modifiers_[i].ResetAccumulation();
 
-        for (Core::uint i = 0; i < bone_modifiers_.size(); ++i)
+        for (uint i = 0; i < bone_modifiers_.size(); ++i)
             bone_modifiers_[i].ResetAccumulation();
 
-        for (Core::uint i = 0; i < master_modifiers_.size(); ++i)
+        for (uint i = 0; i < master_modifiers_.size(); ++i)
         {
-            for (Core::uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+            for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
             {
                 AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);
                 if (mod)
@@ -143,12 +143,12 @@ namespace RexLogic
     
     AppearanceModifier* EC_AvatarAppearance::FindModifier(const std::string& name, AppearanceModifier::ModifierType type)
     {
-        for (Core::uint i = 0; i < morph_modifiers_.size(); ++i)
+        for (uint i = 0; i < morph_modifiers_.size(); ++i)
         {
             if ((morph_modifiers_[i].name_ == name) && (morph_modifiers_[i].type_ == type))
                 return &morph_modifiers_[i];
         }
-        for (Core::uint i = 0; i < bone_modifiers_.size(); ++i)
+        for (uint i = 0; i < bone_modifiers_.size(); ++i)
         {
             if ((bone_modifiers_[i].name_ == name) && (bone_modifiers_[i].type_ == type))
                 return &bone_modifiers_[i];
@@ -217,7 +217,7 @@ namespace RexLogic
         samples_ = 0;
     }
     
-    void AppearanceModifier::AccumulateValue(Core::Real value, bool use_average)
+    void AppearanceModifier::AccumulateValue(Real value, bool use_average)
     {
         sum_ += value;
         samples_++;
@@ -239,7 +239,7 @@ namespace RexLogic
         }            
     }
                 
-    Core::Real SlaveModifier::GetMappedValue(Core::Real master_value)
+    Real SlaveModifier::GetMappedValue(Real master_value)
     {
         // If no positions to interpolate, map master slider directly to modifier pos
         if (mapping_.size() < 2)
@@ -250,7 +250,7 @@ namespace RexLogic
         // Find out the minimum/maximum range of supported master positions
         float min_value = 1.0f;
         float max_value = 0.0f;
-        Core::uint i;
+        uint i;
         
         for (i = 0; i < mapping_.size(); ++i)
         {

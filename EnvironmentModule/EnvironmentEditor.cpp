@@ -438,10 +438,10 @@ namespace Environment
         if(!terrain_.get())
             return;
 
-        for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+        for(uint i = 0; i < cNumberOfTerrainTextures; i++)
         {
-            Core::Real start_height_value = terrain_->GetTerrainTextureStartHeight(i);
-            Core::Real height_range_value = terrain_->GetTerrainTextureHeightRange(i);
+            Real start_height_value = terrain_->GetTerrainTextureStartHeight(i);
+            Real height_range_value = terrain_->GetTerrainTextureHeightRange(i);
 
             QString start_height_name("Texture_height_doubleSpinBox_" + QString("%1").arg(i + 1));
             QString height_range_name("Texture_height_range_doubleSpinBox_" + QString("%1").arg(i + 1));
@@ -480,7 +480,7 @@ namespace Environment
                 {
                     terrain_texture_id_list_[line_edit_number] = sender->text().toStdString();
                     RexTypes::RexAssetID texture_id[cNumberOfTerrainTextures];
-                    for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+                    for(uint i = 0; i < cNumberOfTerrainTextures; i++)
                         texture_id[i] = terrain_texture_id_list_[i];
                     terrain_->SetTerrainTextures(texture_id);
 
@@ -516,7 +516,7 @@ namespace Environment
                 {
                     terrain_texture_id_list_[button_number] = line_edit->text().toStdString();
                     RexTypes::RexAssetID texture_id[cNumberOfTerrainTextures];
-                    for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+                    for(uint i = 0; i < cNumberOfTerrainTextures; i++)
                         texture_id[i] = terrain_texture_id_list_[i];
                     terrain_->SetTerrainTextures(texture_id);
 
@@ -716,7 +716,7 @@ namespace Environment
                 return;
 
             QLineEdit *line_edit = 0;
-            for(Core::uint i = 0; i < cNumberOfTerrainTextures; i++)
+            for(uint i = 0; i < cNumberOfTerrainTextures; i++)
             {
                 //Get terrain texture asset ids so that we can request those image resources.
                 RexTypes::RexAssetID terrain_id = terrain_->GetTerrainTextureID(i);
@@ -743,7 +743,7 @@ namespace Environment
 
     void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
     {
-        for(Core::uint index = 0; index < terrain_texture_requests_.size(); index++)
+        for(uint index = 0; index < terrain_texture_requests_.size(); index++)
         {
             if(terrain_texture_requests_[index] == res->tag_)
             {
@@ -763,11 +763,11 @@ namespace Environment
 
     QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
-        Core::uint img_width        = tex.GetWidth(); 
-        Core::uint img_height       = tex.GetHeight(); 
-        Core::uint img_components   = tex.GetComponents();
-        Core::u8 *data              = tex.GetData();
-        Core::uint img_width_step   = img_width * img_components;
+        uint img_width        = tex.GetWidth(); 
+        uint img_height       = tex.GetHeight(); 
+        uint img_components   = tex.GetComponents();
+        u8 *data              = tex.GetData();
+        uint img_width_step   = img_width * img_components;
         QImage image;
 
         if(img_width > 0 && img_height > 0 && img_components > 0)
@@ -775,14 +775,14 @@ namespace Environment
             if(img_components == 3)// For RGB32
             {
                 image = QImage(QSize(img_width, img_height), QImage::Format_RGB32);
-                for(Core::uint height = 0; height < img_height; height++)
+                for(uint height = 0; height < img_height; height++)
                 {
-                    for(Core::uint width = 0; width < img_width; width++)
+                    for(uint width = 0; width < img_width; width++)
                     {
-                        Core::u8 color[3];
-                        for(Core::uint comp = 0; comp < img_components; comp++)
+                        u8 color[3];
+                        for(uint comp = 0; comp < img_components; comp++)
                         {
-                            Core::uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
+                            uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
                             color[comp] = data[index];
                         }
                         image.setPixel(width, height, qRgb(color[0], color[1], color[2]));
@@ -792,14 +792,14 @@ namespace Environment
             else if(img_components == 4)// For ARGB32
             {
                 image = QImage(QSize(img_width, img_height), QImage::Format_ARGB32);
-                for(Core::uint height = 0; height < img_height; height++)
+                for(uint height = 0; height < img_height; height++)
                 {
-                    for(Core::uint width = 0; width < img_width; width++)
+                    for(uint width = 0; width < img_width; width++)
                     {
-                        Core::u8 color[4];
-                        for(Core::uint comp = 0; comp < img_components; comp++)
+                        u8 color[4];
+                        for(uint comp = 0; comp < img_components; comp++)
                         {
-                            Core::uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
+                            uint index = (height % img_height) * (img_width_step) + ((width * img_components) % (img_width_step)) + comp;
                             color[comp] = data[index];
                         }
                         image.setPixel(width, height, qRgba(color[0], color[1], color[2], color[3]));
@@ -811,7 +811,7 @@ namespace Environment
         return image;
     }
 
-    Core::request_tag_t EnvironmentEditor::RequestTerrainTexture(Core::uint index)
+    request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)
     {
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 

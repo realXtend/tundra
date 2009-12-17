@@ -38,12 +38,12 @@ namespace RexLogic
 		/*! \param sound Channel id from SoundServiceInterface
 		    \param slot Sound slot definition
 		 */
-		void AddSound(Core::sound_id_t sound, SoundSlot slot = Other);
+		void AddSound(sound_id_t sound, SoundSlot slot = Other);
 
 		//! Stop and remove sound from entity by channel id
 		/*! \param sound Channel id from SoundServiceInterface
 		 */
-		void RemoveSound(Core::sound_id_t sound);
+		void RemoveSound(sound_id_t sound);
 
 		//! Stop and remove sound from entity by sound slot
 		/*! \param slot Sound slot definition, only OpenSimAttachedSound or RexAmbientSound will have effect
@@ -56,13 +56,13 @@ namespace RexLogic
 		void RemoveAllSounds();
 
         //! Get channel ids of currently playing sounds. Note that some may be zero (stopped)
-		const std::vector<Core::sound_id_t>& GetSounds() const { return sounds_; }
+		const std::vector<sound_id_t>& GetSounds() const { return sounds_; }
 		
 		//! Performs per-frame update, if necessary. Called from RexLogicModule.
-		void Update(Core::f64 frametime);	
+		void Update(f64 frametime);	
 			
 		//! Syncs position. Called from RexLogicModule.
-		void SetPosition(const Core::Vector3df position);				
+		void SetPosition(const Vector3df position);				
 		
 	private:
 		EC_AttachedSound(Foundation::ModuleInterface *module);
@@ -73,7 +73,7 @@ namespace RexLogic
 		Foundation::Framework* framework_;
 		
 		//! Vector of current attached sounds
-		std::vector<Core::sound_id_t> sounds_;
+		std::vector<sound_id_t> sounds_;
 	};
 }
 

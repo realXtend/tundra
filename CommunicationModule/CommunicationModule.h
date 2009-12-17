@@ -57,12 +57,12 @@ namespace Communication
 		void PostInitialize();
 		void Uninitialize();
 
-		void Update(Core::f64 frametime);
-	    bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+		void Update(f64 frametime);
+	    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
 	protected:
 		// Run given test
-		Console::CommandResult Test(const Core::StringVector &params);
+		Console::CommandResult Test(const StringVector &params);
 
         CommunicationUI::MasterWidget* im_ui_;
         CommunicationUI::OpenSimChatWidget* opensim_chat_ui_;
@@ -74,8 +74,8 @@ namespace Communication
 		CommunicationTest::Test* test_;
 
 		// Event category IDs
-		Core::event_category_id_t event_category_networkstate_;
-        Core::event_category_id_t event_category_framework_;
+		event_category_id_t event_category_networkstate_;
+        event_category_id_t event_category_framework_;
 
     private:
         void AddWidgetToUi(const QString &name);

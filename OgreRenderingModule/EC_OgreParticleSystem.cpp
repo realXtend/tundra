@@ -71,7 +71,7 @@ namespace OgreRenderer
         return false;
     }
     
-    Ogre::ParticleSystem* EC_OgreParticleSystem::GetParticleSystem(Core::uint index) const
+    Ogre::ParticleSystem* EC_OgreParticleSystem::GetParticleSystem(uint index) const
     {
        if (index >= systems_.size())
             return 0;
@@ -79,7 +79,7 @@ namespace OgreRenderer
         return systems_[index];
     }
     
-    const std::string& EC_OgreParticleSystem::GetParticleSystemName(Core::uint index) const
+    const std::string& EC_OgreParticleSystem::GetParticleSystemName(uint index) const
     {
         static const std::string empty;
         if (index >= system_names_.size())
@@ -88,7 +88,7 @@ namespace OgreRenderer
         return system_names_[index];
     }
     
-    bool EC_OgreParticleSystem::RemoveParticleSystem(Core::uint index)
+    bool EC_OgreParticleSystem::RemoveParticleSystem(uint index)
     {
         if (index >= systems_.size())
             return false;
@@ -107,7 +107,7 @@ namespace OgreRenderer
     {
         Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
         
-        for (Core::uint i = 0; i < systems_.size(); ++i)
+        for (uint i = 0; i < systems_.size(); ++i)
         {
             adjustment_node_->detachObject(systems_[i]);
             scene_mgr->destroyParticleSystem(systems_[i]);
@@ -117,43 +117,43 @@ namespace OgreRenderer
         system_names_.clear();
     }
     
-    void EC_OgreParticleSystem::SetAdjustPosition(const Core::Vector3df& position)
+    void EC_OgreParticleSystem::SetAdjustPosition(const Vector3df& position)
     {
         adjustment_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
     }
 
-    void EC_OgreParticleSystem::SetAdjustOrientation(const Core::Quaternion& orientation)
+    void EC_OgreParticleSystem::SetAdjustOrientation(const Quaternion& orientation)
     {
         adjustment_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }   
     
-    void EC_OgreParticleSystem::SetAdjustScale(const Core::Vector3df& scale)
+    void EC_OgreParticleSystem::SetAdjustScale(const Vector3df& scale)
     {
         adjustment_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
     }
     
-    Core::Vector3df EC_OgreParticleSystem::GetAdjustPosition() const
+    Vector3df EC_OgreParticleSystem::GetAdjustPosition() const
     {
         const Ogre::Vector3& pos = adjustment_node_->getPosition();
-        return Core::Vector3df(pos.x, pos.y, pos.z);
+        return Vector3df(pos.x, pos.y, pos.z);
     }
     
-    Core::Quaternion EC_OgreParticleSystem::GetAdjustOrientation() const
+    Quaternion EC_OgreParticleSystem::GetAdjustOrientation() const
     {
         const Ogre::Quaternion& orientation = adjustment_node_->getOrientation();
-        return Core::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+        return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }     
     
-    Core::Vector3df EC_OgreParticleSystem::GetAdjustScale() const
+    Vector3df EC_OgreParticleSystem::GetAdjustScale() const
     {
         const Ogre::Vector3& scale = adjustment_node_->getScale();
-        return Core::Vector3df(scale.x, scale.y, scale.z);
+        return Vector3df(scale.x, scale.y, scale.z);
     }
     
     void EC_OgreParticleSystem::SetDrawDistance(float draw_distance)
     {
         draw_distance_ = draw_distance;
-        for (Core::uint i = 0; i < systems_.size(); ++i)
+        for (uint i = 0; i < systems_.size(); ++i)
         {
             systems_[i]->setRenderingDistance(draw_distance_);
         }

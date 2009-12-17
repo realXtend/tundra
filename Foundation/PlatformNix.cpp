@@ -13,7 +13,7 @@ namespace Foundation
         char *ppath = 0;
         ppath = getenv("HOME");
         if (ppath == 0)
-            throw Core::Exception("Failed to get HOME environment variable.");
+            throw Exception("Failed to get HOME environment variable.");
 
         std::string path(ppath);
         return path + "/." + framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name");
@@ -25,7 +25,7 @@ namespace Foundation
 
         std::string path = GetApplicationDataDirectory();
 
-        return (Core::ToWString(path));
+        return (ToWString(path));
     }
 
     std::string PlatformNix::GetUserDocumentsDirectory()

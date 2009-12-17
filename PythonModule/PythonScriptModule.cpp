@@ -217,8 +217,8 @@ namespace PythonScript
         Foundation::EventManager::EventMap::const_iterator cat_iter = evmap.find(inputeventcategoryid);
         if (cat_iter != evmap.end())
         {
-            std::map<Core::event_id_t, std::string> evs = cat_iter->second;
-            for (std::map<Core::event_id_t, std::string>::iterator ev_iter = evs.begin();
+            std::map<event_id_t, std::string> evs = cat_iter->second;
+            for (std::map<event_id_t, std::string>::iterator ev_iter = evs.begin();
                 ev_iter != evs.end(); ++ev_iter)
             {
                 /*std::stringstream ss;
@@ -279,8 +279,8 @@ namespace PythonScript
     }
 
     bool PythonScriptModule::HandleEvent(
-        Core::event_category_id_t category_id,
-        Core::event_id_t event_id, 
+        event_category_id_t category_id,
+        event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {    
         PyObject* value = NULL;
@@ -403,7 +403,7 @@ namespace PythonScript
             const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
             //std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
 
-            //Core::Vector3df data = event_data->message->GetData();
+            //Vector3df data = event_data->message->GetData();
             //assert(info);
             const std::string str = info->name;
             unsigned int id = info->id;
@@ -419,9 +419,9 @@ namespace PythonScript
                     return false;
 
                 std::string cxxmsgname = ProtocolUtilities::ParseGenericMessageMethod(*msg);
-                Core::StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*msg);
+                StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*msg);
 
-                for (Core::uint i = 0; i < params.size(); ++i)
+                for (uint i = 0; i < params.size(); ++i)
                 {
                     std::string cxxs = params[i];
                     PyObject *pys = PyString_FromStringAndSize(cxxs.c_str(), cxxs.size());
@@ -443,7 +443,7 @@ namespace PythonScript
             
             /*
             std::stringstream ss;
-            ss << info->name << " received, " << Core::ToString(msg->GetDataSize()) << " bytes.";
+            ss << info->name << " received, " << ToString(msg->GetDataSize()) << " bytes.";
             //LogInfo(ss.str());
 
             switch(msgID)
@@ -457,7 +457,7 @@ namespace PythonScript
                 msg->SkipToFirstVariableByName("Message");
                 std::string message = (const char *)msg->ReadBuffer(&bytes_read);
                 
-                //ss << "[" << Core::GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+                //ss << "[" << GetLocalTimeString() << "] " << name << ": " << message << std::endl;
                 //LogInfo(ss.str());
                 //WriteToChatWindow(ss.str());
                 //can readbuffer ever return null? should be checked if yes. XXX
@@ -485,7 +485,7 @@ namespace PythonScript
         return false;
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleRunString(const Core::StringVector &params)
+    Console::CommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)
         {            
@@ -503,7 +503,7 @@ namespace PythonScript
 
     //void PythonScriptModule::x()
     //{
-    //    Core::Vector3df v1 = Core::Vector3df();
+    //    Vector3df v1 = Vector3df();
     //    using Core;
     //    v2 = Vector3df();
     //    
@@ -516,7 +516,7 @@ namespace PythonScript
     //    rexlogic_->GetServerConnection()->IsConnected();
     //    rexlogic_->GetCameraControllable()->GetPitch();
     //    
-    //    Core::Real newyaw = 0.1;
+    //    Real newyaw = 0.1;
     //    //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //    rexlogic_->SetAvatarYaw(newyaw);
     //    //rexlogic_->GetAvatarControllable()->AddTime(0.1);
@@ -525,7 +525,7 @@ namespace PythonScript
     //    //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
     //}
 
-    Console::CommandResult PythonScriptModule::ConsoleRunFile(const Core::StringVector &params)
+    Console::CommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
     {        
         if (params.size() != 1)
         {            
@@ -539,7 +539,7 @@ namespace PythonScript
         }
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleReset(const Core::StringVector &params)
+    Console::CommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
     {
         //engine_->Reset();
         Uninitialize(); //does also engine_->Uninitialize();
@@ -571,7 +571,7 @@ namespace PythonScript
     }
     
     // virtual
-    void PythonScriptModule::Update(Core::f64 frametime)
+    void PythonScriptModule::Update(f64 frametime)
     {
         //XXX remove when/as the core has the fps limitter
         //engine_->RunString("import time; time.sleep(0.01);"); //a hack to save cpu now.
@@ -659,7 +659,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 
     rexlogic_->GetServerConnection()->SendChatFromViewerPacket(msg);
     //rexlogic_->GetServerConnection()->IsConnected();
-    //Core::Real newyaw = 0.1;
+    //Real newyaw = 0.1;
     //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //rexlogic_->GetCameraControllable()->GetPitch();
     //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
@@ -679,7 +679,7 @@ static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
         return NULL;
     }
     std::cout << "Sending newrot..." << std::endl;
-    Core::Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
+    Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
     rexlogic_->SetAvatarRotation(newrot);
 
     Py_RETURN_NONE;
@@ -755,8 +755,8 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     std::cout << "PySendEvent" << std::endl;
     unsigned int event_id_int;//, ent_id_int = 0;
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    //Core::entity_id_t ent_id;
-    Core::event_id_t event_id;
+    //entity_id_t ent_id;
+    event_id_t event_id;
 
     if(!PyArg_ParseTuple(args, "i", &event_id_int))//, &ent_id_int))
     {
@@ -764,9 +764,9 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
         return NULL;   
     }
     
-    //ent_id = (Core::entity_id_t) ent_id_int;
-    event_id = (Core::event_id_t) event_id_int;
-    Core::event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+    //ent_id = (entity_id_t) ent_id_int;
+    event_id = (event_id_t) event_id_int;
+    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
     if (event_id == Input::Events::SWITCH_CAMERA_STATE) 
     {
         std::cout << "switch camera state gotten!" << std::endl;
@@ -783,7 +783,7 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
 PyObject* GetEntity(PyObject *self, PyObject *args)
 {
     unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+    entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
@@ -791,7 +791,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
         return NULL;   
     }
 
-    ent_id = (Core::entity_id_t) ent_id_int;
+    ent_id = (entity_id_t) ent_id_int;
 
     Scene::ScenePtr scene = PythonScript::GetScene();
 
@@ -906,7 +906,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 
     //which -- if any -- submeshes / mat indices should get the 3duicanvas applied.
-    std::vector<Core::uint> submeshes_; 
+    std::vector<uint> submeshes_; 
 
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
@@ -929,7 +929,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             RexLogic::MaterialMap::const_iterator i = prim.Materials.begin();
             while (i != prim.Materials.end())
             {
-                Core::uint idx = i->first;
+                uint idx = i->first;
                 if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(textureuuid.ToString()) == 0))
                 {
                     // Use a legacy material with the same name as the texture, created automatically by renderer
@@ -970,7 +970,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 /*PyObject* GetQEntity(PyObject *self, PyObject *args)
 {
     unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+    entity_id_t ent_id;
     const Scene::EntityPtr entityptr;
     const Scene::Entity entity;
 
@@ -980,7 +980,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
         return NULL;   
     }
 
-    ent_id = (Core::entity_id_t) ent_id_int;
+    ent_id = (entity_id_t) ent_id_int;
 
     Scene::ScenePtr scene = PythonScript::GetScene();
 
@@ -1029,9 +1029,9 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         return NULL;   
     }
 
-    Core::entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
+    entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
 
-    Core::StringVector defaultcomponents;
+    StringVector defaultcomponents;
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
     //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
     defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
@@ -1070,14 +1070,14 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 //XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
 PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Core::Real newyaw, newpitch;
+    Real newyaw, newpitch;
     float y, p;
     if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
         PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
         return NULL;
     }
-    newyaw = (Core::Real) y;
-    newpitch = (Core::Real) p;
+    newyaw = (Real) y;
+    newpitch = (Real) p;
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     RexLogic::RexLogicModule *rexlogic_;
@@ -1086,7 +1086,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
         //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
-        //cam->AddTime((Core::Real) 0.1);
+        //cam->AddTime((Real) 0.1);
         //cam->SetPitch(p); //have a linking prob with this
         rexlogic_->SetCameraYawPitch(y, p);
     }
@@ -1108,7 +1108,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 
 PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Core::Real yaw, pitch;
+    Real yaw, pitch;
 
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
@@ -1150,14 +1150,14 @@ PyObject* PyLogDebug(PyObject *self, PyObject *args)
 }
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
-    Core::Real newyaw;
+    Real newyaw;
 
     float y;
     if(!PyArg_ParseTuple(args, "f", &y)) {
         PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
         return NULL;
     }
-    newyaw = (Core::Real) y;
+    newyaw = (Real) y;
 
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
@@ -1168,7 +1168,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
         //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
         //boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
         //avc->SetYaw(newyaw);
-        //Core::f64 t = (Core::f64) 0.01;
+        //f64 t = (f64) 0.01;
         //avc->AddTime(t);
         //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
         rexlogic_->SetAvatarYaw(newyaw);
@@ -1318,7 +1318,7 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
             return NULL;   
         }
 
-        rexlogic_->GetServerConnection()->SendObjectAddPacket(Core::Vector3df(start_x, start_y, start_z));
+        rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
     }
     Py_RETURN_NONE;
 }
@@ -1336,7 +1336,7 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
     }*/
 
     unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+    entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
@@ -1344,7 +1344,7 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
         return NULL;   
     }
 
-    ent_id = (Core::entity_id_t) ent_id_int;
+    ent_id = (entity_id_t) ent_id_int;
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1360,7 +1360,7 @@ PyObject* DeleteObject(PyObject *self, PyObject *args)
     RexLogic::RexLogicModule *rexlogic_;
 
     unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+    entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
@@ -1368,7 +1368,7 @@ PyObject* DeleteObject(PyObject *self, PyObject *args)
         return NULL;   
     }
 
-    ent_id = (Core::entity_id_t) ent_id_int;
+    ent_id = (entity_id_t) ent_id_int;
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1395,7 +1395,7 @@ PyObject* GetUserAvatarId(PyObject* self)
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
-        Core::entity_id_t id = rexlogic_->GetUserAvatarId();
+        entity_id_t id = rexlogic_->GetUserAvatarId();
         return Py_BuildValue("I", id);
     }
 
@@ -1404,7 +1404,7 @@ PyObject* GetUserAvatarId(PyObject* self)
 
 PyObject* GetCameraUp(PyObject *self) 
 {
-    Core::Vector3df up;
+    Vector3df up;
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1417,7 +1417,7 @@ PyObject* GetCameraUp(PyObject *self)
 
 PyObject* GetCameraRight(PyObject *self) 
 {
-    Core::Vector3df right;
+    Vector3df right;
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1442,7 +1442,7 @@ PyObject* GetCameraFOV(PyObject *self)
 
 PyObject* GetCameraPosition(PyObject *self) 
 {
-    Core::Vector3df pos;
+    Vector3df pos;
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1474,7 +1474,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogInfo("NetworkUpdate");
     unsigned int ent_id_int;
-    Core::entity_id_t ent_id;
+    entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
@@ -1482,7 +1482,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
         return NULL;   
     }
 
-    ent_id = (Core::entity_id_t) ent_id_int;
+    ent_id = (entity_id_t) ent_id_int;
     
     Scene::ScenePtr scene = PythonScript::GetScene();
     if (!scene)
@@ -1595,7 +1595,7 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
 	prim->map["three"] = 3;
 	
 	prim->setName("This is a Name!");
-	RexTypes::RexUUID uuid = RexTypes::RexUUID::CreateRandom();
+	RexUUID uuid = RexUUID::CreateRandom();
 	//QString qstr(uuid.ToString());
 	//QVariant(
 	prim->setUUID(QString(uuid.ToString().c_str()));
@@ -1775,7 +1775,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
     //entity_ptrs map usage
     /* this crashes now in boost, 
        void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-    std::map<Core::entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+    std::map<entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
     Scene::EntityPtr entity = ep_iter->second;
     fix.. */
 
@@ -1889,9 +1889,9 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
-        Core::Vector3df pos = placeable->GetPosition();
+        Vector3df pos = placeable->GetPosition();
         //RexTypes::Vector3 scale = ogre_pos->GetScale();
-        //RexTypes::Vector3 rot = Core::PackQuaternionToFloat3(ogre_pos->GetOrientation());
+        //RexTypes::Vector3 rot = PackQuaternionToFloat3(ogre_pos->GetOrientation());
         /* .. i guess best to wrap the Rex Vector and other types soon,
            the pyrr irrlicht binding project does it for these using swig,
            https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
@@ -1905,7 +1905,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }     
-        Core::Vector3df scale = placeable->GetScale();
+        Vector3df scale = placeable->GetScale();
 
         return Py_BuildValue("fff", scale.x, scale.y, scale.z);
     }
@@ -1918,7 +1918,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             return NULL;   
         }         
         
-        Core::Quaternion orient = placeable->GetOrientation();
+        Quaternion orient = placeable->GetOrientation();
         return Py_BuildValue("ffff", orient.x, orient.y, orient.z, orient.w);
     }
 
@@ -1946,7 +1946,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         if (meshptr)
         {
             OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
-            Core::Vector3df min, max;
+            Vector3df min, max;
 
             cobj.GetBoundingBox(min, max);
 
@@ -1958,7 +1958,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             if (meshptr) 
             {
                 OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-                Core::Vector3df min, max;
+                Vector3df min, max;
 
                 mesh.GetBoundingBox(min, max);
 
@@ -1993,7 +1993,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     //entity_ptrs map usage
     /* this crashes now in boost, 
        void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-    std::map<Core::entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
+    std::map<entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
     Scene::EntityPtr entity = ep_iter->second;
     fix.. */
 
@@ -2073,15 +2073,15 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         }  
 
         // Set the new values.
-        placeable->SetPosition(Core::Vector3df(x, y, z));
+        placeable->SetPosition(Vector3df(x, y, z));
         if (networkpos)
         {
             // Override the dead reckoning system
             networkpos->SetPosition(placeable->GetPosition());
         }
             
-        //ogre_pos->SetScale(Core::OpenSimToOgreCoordinateAxes(scale));
-        //ogre_pos->SetOrientation(Core::OpenSimToOgreQuaternion(quat));
+        //ogre_pos->SetScale(OpenSimToOgreCoordinateAxes(scale));
+        //ogre_pos->SetOrientation(OpenSimToOgreQuaternion(quat));
         /* .. i guess best to wrap the Rex Vector and other types soon,
            the pyrr irrlicht binding project does it for these using swig,
            https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
@@ -2110,7 +2110,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             return -1;   
         }  
         // Set the new values.
-        placeable->SetScale(Core::Vector3df(x, y, z));
+        placeable->SetScale(Vector3df(x, y, z));
  
         return 0; //success.
     }
@@ -2129,7 +2129,7 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
             return -1;   
         }          
         // Set the new values.
-        placeable->SetOrientation(Core::Quaternion(x, y, z, w));
+        placeable->SetOrientation(Quaternion(x, y, z, w));
         if (networkpos)
         {
             // Override the dead reckoning system

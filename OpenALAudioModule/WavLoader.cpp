@@ -6,30 +6,30 @@
  
 namespace OpenALAudio
 {
-    void ReadBytes(Core::u8* dest, Core::u8* src, Core::uint& index, Core::uint size)
+    void ReadBytes(u8* dest, u8* src, uint& index, uint size)
     {
         memcpy(dest, &src[index], size);
         index += size;
     }
     
-    Core::u8 ReadU8(Core::u8* src, Core::uint& index)
+    u8 ReadU8(u8* src, uint& index)
     {
-        Core::u8 ret = src[index];
-        index += sizeof(Core::u8);
+        u8 ret = src[index];
+        index += sizeof(u8);
         return ret;
     }
 
-    Core::u16 ReadU16(Core::u8* src, Core::uint& index)
+    u16 ReadU16(u8* src, uint& index)
     {
-        Core::u16 ret = *((Core::u16*)(&src[index]));
-        index += sizeof(Core::u16);
+        u16 ret = *((u16*)(&src[index]));
+        index += sizeof(u16);
         return ret;
     }
     
-    Core::u32 ReadU32(Core::u8* src, Core::uint& index)
+    u32 ReadU32(u8* src, uint& index)
     {
-        Core::u32 ret = *((Core::u32*)(&src[index]));
-        index += sizeof(Core::u32);
+        u32 ret = *((u32*)(&src[index]));
+        index += sizeof(u32);
         return ret;
     }    
 
@@ -43,7 +43,7 @@ namespace OpenALAudio
             return false;
         }
 
-        std::vector<Core::u8> buffer;
+        std::vector<u8> buffer;
         std::filebuf *pbuf = file.rdbuf();
         size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
         buffer.resize(size);
@@ -54,12 +54,12 @@ namespace OpenALAudio
         return LoadFromBuffer(sound, &buffer[0], size);
     }
      
-    bool WavLoader::LoadFromBuffer(Sound* sound, Core::u8* data, Core::uint size)
+    bool WavLoader::LoadFromBuffer(Sound* sound, u8* data, uint size)
     {        
-        Core::uint index = 0;
+        uint index = 0;
         
         if (index >= size) return false;
-        Core::u8 riff_text[4];
+        u8 riff_text[4];
         ReadBytes(riff_text, data, index, 4);
         if (memcmp(riff_text, "RIFF", 4))
         {
@@ -67,9 +67,9 @@ namespace OpenALAudio
             return false;
         }
         if (index >= size) return false;
-        Core::uint total_size = ReadU32(data, index);
+        uint total_size = ReadU32(data, index);
 
-        Core::u8 wave_text[4];        
+        u8 wave_text[4];        
         ReadBytes(wave_text, data, index, 4);
         if (memcmp(wave_text, "WAVE", 4))
         {
@@ -85,9 +85,9 @@ namespace OpenALAudio
                 OpenALAudioModule::LogError("No fmt chunk in WAV data");
                 return false;
             }
-            Core::u8 chunk_text[4]; 
+            u8 chunk_text[4]; 
             ReadBytes(chunk_text, data, index, 4);
-            Core::uint chunk_size = ReadU32(data, index);
+            uint chunk_size = ReadU32(data, index);
             if (!memcmp(chunk_text, "fmt ", 4))
                 break;
             if (!chunk_size) return false;
@@ -95,12 +95,12 @@ namespace OpenALAudio
         }
         
         if (index >= size) return false;
-        Core::u16 format = ReadU16(data, index);
-        Core::u16 channels = ReadU16(data, index);
-        Core::uint frequency = ReadU32(data, index);
-        Core::uint avgbytes = ReadU32(data, index);
-        Core::uint blockalign = ReadU16(data, index);
-        Core::u16 bits = ReadU16(data, index);
+        u16 format = ReadU16(data, index);
+        u16 channels = ReadU16(data, index);
+        uint frequency = ReadU32(data, index);
+        uint avgbytes = ReadU32(data, index);
+        uint blockalign = ReadU16(data, index);
+        u16 bits = ReadU16(data, index);
         
         if (format != 1)
         {
@@ -119,7 +119,7 @@ namespace OpenALAudio
         }
                                 
         // Search for the data chunk
-        Core::uint data_length = 0;
+        uint data_length = 0;
         for (;;)
         {
             if (index >= size)
@@ -127,7 +127,7 @@ namespace OpenALAudio
                 OpenALAudioModule::LogError("No data chunk in WAV data");
                 return false;
             }
-            Core::u8 chunk_text[4]; 
+            u8 chunk_text[4]; 
             ReadBytes(chunk_text, data, index, 4);
             data_length = ReadU32(data, index);
             if (!memcmp(chunk_text, "data", 4))

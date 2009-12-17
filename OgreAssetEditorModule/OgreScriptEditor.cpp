@@ -206,7 +206,7 @@ void OgreScriptEditor::Close()
 void OgreScriptEditor::SaveAs()
 {
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    Core::event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
+    event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
     if (event_cat == 0)
     {
         OgreAssetEditorModule::LogError("Could not query event category \"Inventory\".");
@@ -240,7 +240,7 @@ void OgreScriptEditor::SaveAs()
     // Create event data.
     Inventory::InventoryUploadBufferEventData event_data;
 
-    QVector<Core::u8> data_buffer;
+    QVector<u8> data_buffer;
     data_buffer.resize(script.size());
     memcpy(&data_buffer[0], script.toStdString().c_str(), script.size());
 

@@ -14,7 +14,7 @@
 namespace RexLogic
 {
 
-    bool FrameworkEventHandler::HandleFrameworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool FrameworkEventHandler::HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Foundation::PROGRAM_OPTIONS)
         {

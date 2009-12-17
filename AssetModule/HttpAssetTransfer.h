@@ -37,28 +37,28 @@ namespace Asset
             \param data Pointer to data
             \param size Size of data packet
          */
-        void ReceiveData(const Core::u8* data, Core::uint size);
+        void ReceiveData(const u8* data, uint size);
 
         //! Receives an asset metadata 
         /*! Also resets elapsed time
             \param data Pointer to data
             \param size Size of data packet
          */
-		void ReceiveMetadata(const Core::u8* data, Core::uint size);
+		void ReceiveMetadata(const u8* data, uint size);
         
         //! Assembles continuous asset data to a buffer
         /*! Call GetReceivedContinuous() (or GetReceived() if you know the transfer is complete)
             first to know how big the buffer must be
             \param buffer Pointer to buffer that will receive data
          */
-        void AssembleData(Core::u8* buffer) const;
+        void AssembleData(u8* buffer) const;
         
         //! Assembles continuous asset metadata to a buffer
         /*! Call GetReceivedMetadata() if you know the transfer is complete
             first to know how big the buffer must be
             \param buffer Pointer to buffer that will receive data
          */
-        void AssembleMetadata(Core::u8* buffer) const;
+        void AssembleMetadata(u8* buffer) const;
 
 		//! Sets asset ID
         /*! \param asset_id Asset id
@@ -75,48 +75,48 @@ namespace Asset
         //! Sets asset type
         /*! \param asset_type Asset type
          */
-        void SetAssetType(Core::uint asset_type) { asset_type_ = asset_type; }
+        void SetAssetType(uint asset_type) { asset_type_ = asset_type; }
         
         //! Adds elapsed time
         /*! \param delta_time Amount of time to add
          */
-        void AddTime(Core::f64 delta_time) { time_ += delta_time; }
+        void AddTime(f64 delta_time) { time_ += delta_time; }
         
         //! Resets elapsed time
         void ResetTime() { time_ = 0.0; }
         
         //! Inserts a request tag
-        void InsertTag(Core::request_tag_t tag) { tags_.push_back(tag); }
+        void InsertTag(request_tag_t tag) { tags_.push_back(tag); }
         
         //! Inserts several request tags
-        void InsertTags(const Core::RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
+        void InsertTags(const RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
         
         //! Clears request tags
         void ClearTags() { tags_.clear(); } 
              
         //! Returns associated request tags
-        const Core::RequestTagVector& GetTags() const { return tags_; }
+        const RequestTagVector& GetTags() const { return tags_; }
                           
         //! Returns asset ID
         const std::string& GetAssetId() const { return asset_id_; }
         
         //! Returns asset type
-        Core::uint GetAssetType() const { return asset_type_; }
+        uint GetAssetType() const { return asset_type_; }
 
         //! Returns expected asset size, 0 if unknown
-		Core::uint GetSize() const; 
+		uint GetSize() const; 
         
         //! Returns total size of data received so far
-		Core::uint GetReceived() const { return received_data_.size(); }
+		uint GetReceived() const { return received_data_.size(); }
         
         //! Returns asset metadata as string
 		std::string GetAssetMetadata();
 
 		//! Returns total size of continuous data from the asset beginning received so far
-        Core::uint GetReceivedContinuous() const;
+        uint GetReceivedContinuous() const;
         
         //! Returns elapsed time since last packet
-        Core::f64 GetTime() const { return time_; }
+        f64 GetTime() const { return time_; }
                         
         //! Returns whether transfer is finished (all bytes received)
         bool Ready() const;
@@ -131,7 +131,7 @@ namespace Asset
 		//! /bug Current implementatation read always fixed amount of bytes (BUFFER_SIZE) and blocks while reading those bytes.
 		//!      Hostile server can stop viewer main loop using this security hole
 		//!      We have to change this so that we only read available bytes.
-		void Update(Core::f64 frametime);
+		void Update(f64 frametime);
 
 		//! Send http POST request to store asset to asset service
 		void SendHttpPostAssetRequest(const std::string &host, const std::string &json_data);        
@@ -145,7 +145,7 @@ namespace Asset
 		void SendHttpGetAssetRequest(const std::string &resource_uri);
 
 		//! Downloaded binary data of asset
-		typedef std::vector<Core::u8> DataVector;
+		typedef std::vector<u8> DataVector;
         
         //! Asset ID
         std::string asset_id_; 
@@ -157,13 +157,13 @@ namespace Asset
 		std::string asset_metadata_uri_;
         
         //! Asset type
-        Core::uint asset_type_;
+        uint asset_type_;
         
         ////! Expected http response data size
-        Core::uint response_size_;
+        uint response_size_;
 
 		//! Received bytes
-        Core::uint received_count_;
+        uint received_count_;
         
         //! Received data
 		DataVector received_data_;
@@ -172,10 +172,10 @@ namespace Asset
 		DataVector received_metadata_;
         
         //! Elapsed time since last packet
-        Core::f64 time_;
+        f64 time_;
         
         //! List of request tags associated with this transfer
-        Core::RequestTagVector tags_;
+        RequestTagVector tags_;
 
 		//! Http session from asset fetch
 		Poco::Net::HTTPClientSession http_session_;
@@ -190,7 +190,7 @@ namespace Asset
 		bool failed_;
 
 		//! response stream read buffer
-		const Core::u8 *buffer_;
+		const u8 *buffer_;
 
 		//! true if asset metadata was successfully fetched from server
 		bool metadata_fetched_;

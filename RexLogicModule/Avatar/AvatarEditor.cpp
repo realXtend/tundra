@@ -152,10 +152,10 @@ namespace RexLogic
         const AvatarMaterialVector& materials = appearance.GetMaterials();                
         mat_panel->resize(width, itemheight * (materials.size() + 1));
         
-        for (Core::uint y = 0; y < materials.size(); ++y)
+        for (uint y = 0; y < materials.size(); ++y)
         {            
             QPushButton* button = new QPushButton("Change", mat_panel);
-            button->setObjectName(QString::fromStdString(Core::ToString<int>(y))); // Material index
+            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
             button->resize(50, 20);
             button->move(width - 50, y*itemheight);  
             button->show();          
@@ -177,10 +177,10 @@ namespace RexLogic
         const AvatarAttachmentVector& attachments = appearance.GetAttachments();                
         attachment_panel->resize(width, itemheight * (attachments.size() + 1));
         
-        for (Core::uint y = 0; y < attachments.size(); ++y)
+        for (uint y = 0; y < attachments.size(); ++y)
         {            
             QPushButton* button = new QPushButton("Remove", attachment_panel);
-            button->setObjectName(QString::fromStdString(Core::ToString<int>(y))); // Attachment index
+            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Attachment index
             button->resize(50, 20);
             button->move(width - 50, y*itemheight);  
             button->show();          
@@ -226,7 +226,7 @@ namespace RexLogic
             morph_panel->resize(tab_width, itemheight * (morph_modifiers.size() + 1));
             bone_panel->resize(tab_width, itemheight * (bone_modifiers.size() + 1));
                                                       
-            for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+            for (uint i = 0; i < bone_modifiers.size(); ++i)
             {
                 QScrollBar* slider = new QScrollBar(Qt::Horizontal, bone_panel);
                 slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
@@ -246,7 +246,7 @@ namespace RexLogic
                 label->show();
             }            
           
-            for (Core::uint i = 0; i < morph_modifiers.size(); ++i)
+            for (uint i = 0; i < morph_modifiers.size(); ++i)
             {
                 QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
                 slider->setObjectName(QString::fromStdString(morph_modifiers[i].name_));
@@ -269,9 +269,9 @@ namespace RexLogic
         // Otherwise show only the master modifier controls
         else
         {
-            std::map<std::string, Core::uint> item_count;
+            std::map<std::string, uint> item_count;
 
-            for (Core::uint i = 0; i < master_modifiers.size(); ++i)
+            for (uint i = 0; i < master_modifiers.size(); ++i)
             {
                 std::string category_name = master_modifiers[i].category_;
                 
@@ -411,7 +411,7 @@ namespace RexLogic
             return;
         
         std::string index_str = button->objectName().toStdString();
-        Core::uint index = Core::ParseString<Core::uint>(index_str);
+        uint index = ParseString<uint>(index_str);
         
         const std::string filter = "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;Ogre material (*.material)";
         std::string filename = GetOpenFileName(filter, "Choose texture or material");          
@@ -433,7 +433,7 @@ namespace RexLogic
             return;
         
         std::string index_str = button->objectName().toStdString();
-        Core::uint index = Core::ParseString<Core::uint>(index_str);    
+        uint index = ParseString<uint>(index_str);    
         
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
@@ -471,7 +471,7 @@ namespace RexLogic
     
     QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)
     {
-        for (Core::uint i = 0; i < tabs->count(); ++i)
+        for (uint i = 0; i < tabs->count(); ++i)
         {
             if (tabs->tabText(i).toStdString() == name)
             {

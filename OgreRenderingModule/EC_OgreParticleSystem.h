@@ -54,26 +54,26 @@ namespace OgreRenderer
         bool AddParticleSystem(const std::string& system_name);
         
         //! Gets particle system count
-        Core::uint GetNumParticleSystems() const { return (Core::uint)systems_.size(); }
+        uint GetNumParticleSystems() const { return (uint)systems_.size(); }
         
         //! Gets particle system by index
         /*! \param index index
             \return particle system, or 0 if index out of bounds
          */
-        Ogre::ParticleSystem* GetParticleSystem(Core::uint index) const;
+        Ogre::ParticleSystem* GetParticleSystem(uint index) const;
         
         //! Returns particle system name by index
         /*! \param index index
             \return name, or empty if index out of bounds
          */
-        const std::string& GetParticleSystemName(Core::uint index) const;
+        const std::string& GetParticleSystemName(uint index) const;
         
         //! Removes a particle system by índex
         /*! Note: indexes change after the removal, because null systems are never retained in the internal particle system list
             \param index index
             \return true if successful
          */
-        bool RemoveParticleSystem(Core::uint index);
+        bool RemoveParticleSystem(uint index);
         
         //! Removes all particle systems
         void RemoveParticleSystems();
@@ -81,24 +81,24 @@ namespace OgreRenderer
         //! sets adjustment (offset) position
         /*! \param position new position
          */
-        void SetAdjustPosition(const Core::Vector3df& position);
+        void SetAdjustPosition(const Vector3df& position);
         
         //! sets adjustment orientation
         /*! \param orientation new orientation
          */
-        void SetAdjustOrientation(const Core::Quaternion& orientation);
+        void SetAdjustOrientation(const Quaternion& orientation);
                 
         //! sets adjustment scale
         /*! \param position new scale
          */
-        void SetAdjustScale(const Core::Vector3df& scale);
+        void SetAdjustScale(const Vector3df& scale);
         
         //! returns adjustment position
-        Core::Vector3df GetAdjustPosition() const;
+        Vector3df GetAdjustPosition() const;
         //! returns adjustment orientation
-        Core::Quaternion GetAdjustOrientation() const;
+        Quaternion GetAdjustOrientation() const;
         //! returns adjustment scale
-        Core::Vector3df GetAdjustScale() const;
+        Vector3df GetAdjustScale() const;
         
         //! returns draw distance
         float GetDrawDistance() const { return draw_distance_; }
@@ -125,7 +125,7 @@ namespace OgreRenderer
         std::vector<Ogre::ParticleSystem*> systems_;
         
         //! Particle system names, need to keep track manually because Ogre does not store them
-        Core::StringVector system_names_;
+        StringVector system_names_;
         
         //! Adjustment scene node (scaling/offset/orientation modifications)
         Ogre::SceneNode* adjustment_node_;

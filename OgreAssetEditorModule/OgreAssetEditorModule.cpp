@@ -87,13 +87,13 @@ void OgreAssetEditorModule::Uninitialize()
     LogInfo("System " + Name() + " uninitialized.");
 }
 
-void OgreAssetEditorModule::Update(Core::f64 frametime)
+void OgreAssetEditorModule::Update(f64 frametime)
 {
 }
 
 bool OgreAssetEditorModule::HandleEvent(
-    Core::event_category_id_t category_id,
-    Core::event_id_t event_id,
+    event_category_id_t category_id,
+    event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
     if (category_id == inventoryEventCategory_)

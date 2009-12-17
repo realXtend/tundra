@@ -28,10 +28,10 @@ namespace Foundation
         virtual const std::string& GetType() const = 0;
         
         //! Returns asset data size
-        virtual Core::uint GetSize() const = 0;
+        virtual uint GetSize() const = 0;
         
         //! Returns asset data
-        virtual const Core::u8* GetData() const = 0;
+        virtual const u8* GetData() const = 0;
 
 		//! Returns asset metadata
 		virtual AssetMetadataInterface* GetMetadata() const = 0;

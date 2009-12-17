@@ -33,7 +33,7 @@ namespace Foundation
         //! shortcut for application name, returns wide string
         static std::wstring NameW()
         {
-            return Core::ToWString(Name());
+            return ToWString(Name());
         }
 
         //! shortcut for application version string
@@ -51,7 +51,7 @@ namespace Foundation
         //! shortcut for application version string, returns wide string
         static std::wstring VersionW()
         {
-            return Core::ToWString(Version());
+            return ToWString(Version());
         }
 
     private:

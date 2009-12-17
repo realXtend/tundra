@@ -15,7 +15,7 @@ namespace TextureDecoder
     {
     }
 
-    TextureResource::TextureResource(const std::string& id, Core::uint width, Core::uint height, Core::uint components) : 
+    TextureResource::TextureResource(const std::string& id, uint width, uint height, uint components) : 
         TextureInterface(id),
         width_(width),
         height_(height),
@@ -29,7 +29,7 @@ namespace TextureDecoder
     {
     }
 
-    void TextureResource::SetSize(Core::uint width, Core::uint height, Core::uint components)
+    void TextureResource::SetSize(uint width, uint height, uint components)
     {
         width_ = width;
         height_ = height;

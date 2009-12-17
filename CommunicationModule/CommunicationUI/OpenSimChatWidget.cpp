@@ -17,7 +17,7 @@ namespace CommunicationUI
 			InitCommunicationConnections();
 			Communication::CommunicationModule::LogInfo("OpenSim WorldChat >> Startup successful");
 		}
-		catch (Core::Exception e)
+		catch (Exception e)
 		{
 			QString msg( QString("Initialisations threw an exteption: %1").arg(e.what()));
 			Communication::CommunicationModule::LogInfo(msg.toStdString());
@@ -49,12 +49,12 @@ namespace CommunicationUI
 					OnOpensimUdpConnectionReady(*opensimConnection_);
 					break;
 				case Communication::ConnectionInterface::STATE_ERROR:
-					throw Core::Exception("OpenSim chat connection is in a error state, canoot continue");
+					throw Exception("OpenSim chat connection is in a error state, canoot continue");
 					break;
 			}
 		}
 		else
-			throw Core::Exception("Cannot get CommunicationService object");
+			throw Exception("Cannot get CommunicationService object");
 	}
 
 	void OpenSimChatWidget::OnOpensimUdpConnectionReady(Communication::ConnectionInterface& connection)
@@ -64,7 +64,7 @@ namespace CommunicationUI
 			publicChat_ = connection.OpenChatSession("0"); // public chat channel 0
 			ConnectSlotsToChatSession();
 		}
-		catch (Core::Exception &e)
+		catch (Exception &e)
 		{
 			QString message = QString("Could not open world chat due to: ").append(e.what());
             Communication::CommunicationModule::LogError(message.toStdString());

@@ -104,14 +104,14 @@ namespace OgreRenderer
             entity_->setCastShadows(enabled);
     }
     
-    bool EC_OgreCustomObject::SetMaterial(Core::uint index, const std::string& material_name)
+    bool EC_OgreCustomObject::SetMaterial(uint index, const std::string& material_name)
     {
         if (!entity_)
             return false;
         
         if (index >= entity_->getNumSubEntities())
         {
-            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + Core::ToString<Core::uint>(index));
+            OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
             return false;
         }
         
@@ -128,7 +128,7 @@ namespace OgreRenderer
         return true;
     }
     
-    Core::uint EC_OgreCustomObject::GetNumMaterials() const
+    uint EC_OgreCustomObject::GetNumMaterials() const
     {
         if (!entity_)
             return 0;
@@ -136,7 +136,7 @@ namespace OgreRenderer
         return entity_->getNumSubEntities();
     }
     
-    const std::string& EC_OgreCustomObject::GetMaterialName(Core::uint index) const
+    const std::string& EC_OgreCustomObject::GetMaterialName(uint index) const
     {
         const static std::string empty;
         
@@ -189,12 +189,12 @@ namespace OgreRenderer
         }
     }
 
-	void EC_OgreCustomObject::GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max) const
+	void EC_OgreCustomObject::GetBoundingBox(Vector3df& min, Vector3df& max) const
 	{
         if (!entity_)
         {
-            min = Core::Vector3df(0.0, 0.0, 0.0);
-            max = Core::Vector3df(0.0, 0.0, 0.0);
+            min = Vector3df(0.0, 0.0, 0.0);
+            max = Vector3df(0.0, 0.0, 0.0);
             return;
         }
      
@@ -202,7 +202,7 @@ namespace OgreRenderer
         const Ogre::Vector3& bboxmin = bbox.getMinimum();
         const Ogre::Vector3& bboxmax = bbox.getMaximum();
         
-        min = Core::Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
-        max = Core::Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+        min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
+        max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
 	}
 }

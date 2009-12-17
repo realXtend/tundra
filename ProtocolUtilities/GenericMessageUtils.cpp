@@ -17,12 +17,12 @@ std::string ParseGenericMessageMethod(ProtocolUtilities::NetInMessage& message)
     return methodname;
 }
 
-Core::StringVector ParseGenericMessageParameters(ProtocolUtilities::NetInMessage& message)
+StringVector ParseGenericMessageParameters(ProtocolUtilities::NetInMessage& message)
 {
     message.ResetReading();
     message.SkipToFirstVariableByName("Parameter");
 
-    Core::StringVector ret;
+    StringVector ret;
     
     // Variable block begins
     size_t instance_count = message.ReadCurrentBlockInstanceCount();

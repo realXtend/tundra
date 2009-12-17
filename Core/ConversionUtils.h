@@ -8,25 +8,22 @@
 #include "Quaternion.h"
 #include "Vector3D.h"    
 
-namespace Core
-{
-    /// Transforms a vector from OpenSim coordinate system to the coordinate
-    /// system we're using in Ogre. OpenSim uses a right-handed system where
-    /// Z is up, whereas with Ogre we use a RH system where Y is up.
-    Core::Vector3df OpenSimToOgreCoordinateAxes(const Core::Vector3df &pos);
+/// Transforms a vector from OpenSim coordinate system to the coordinate
+/// system we're using in Ogre. OpenSim uses a right-handed system where
+/// Z is up, whereas with Ogre we use a RH system where Y is up.
+Vector3df OpenSimToOgreCoordinateAxes(const Vector3df &pos);
 
-    /// Transforms a quaternion from OpenSim coordinate system to the coordinate
-    /// system we're using in Ogre. @see Core::Vector3df OpenSimToOgreCoordinateAxes(const Core::Vector3df &pos);
-    Core::Quaternion OpenSimToOgreQuaternion(const Core::Quaternion &quat);
+/// Transforms a quaternion from OpenSim coordinate system to the coordinate
+/// system we're using in Ogre. @see Vector3df OpenSimToOgreCoordinateAxes(const Vector3df &pos);
+Quaternion OpenSimToOgreQuaternion(const Quaternion &quat);
 
 
-    /// Transforms a vector from Ogre coordinate system to the coordinate
-    /// system we're using in Opensim.
-    Core::Vector3df OgreToOpenSimCoordinateAxes(const Core::Vector3df &pos);
+/// Transforms a vector from Ogre coordinate system to the coordinate
+/// system we're using in Opensim.
+Vector3df OgreToOpenSimCoordinateAxes(const Vector3df &pos);
 
-    /// Transforms a quaternion from Ogre coordinate system to the coordinate
-    /// system we're using in OpenSim.
-    Core::Quaternion OgreToOpenSimQuaternion(const Core::Quaternion &quat);
-}
+/// Transforms a quaternion from Ogre coordinate system to the coordinate
+/// system we're using in OpenSim.
+Quaternion OgreToOpenSimQuaternion(const Quaternion &quat);
 
 #endif

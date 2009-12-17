@@ -158,7 +158,7 @@ void RexLogicModule::Initialize()
 void RexLogicModule::PostInitialize()
 {
     // Input events.
-    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+    event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
     if (eventcategoryid != 0)
     {
         event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -247,7 +247,7 @@ void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities:
 {
     // NetworkState events
     LogicEventHandlerMap::iterator i;
-    Core::event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+    event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
     if (eventcategoryid != 0)
     {
         i = event_handlers_.find(eventcategoryid);
@@ -356,7 +356,7 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 #endif
 
 // virtual
-void RexLogicModule::Update(Core::f64 frametime)
+void RexLogicModule::Update(f64 frametime)
 {
     {
         PROFILE(RexLogicModule_Update);
@@ -399,7 +399,7 @@ void RexLogicModule::Update(Core::f64 frametime)
             send_input_state_ = false;
 
             // can't send events during initalization, so workaround
-            Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
             else
@@ -441,13 +441,13 @@ void RexLogicModule::UpdateSoundListener()
     Ogre::Quaternion orient = camera->getOrientation();
 
     soundsystem->SetListener(
-        Core::Vector3df(pos.x, pos.y, pos.z),
-        Core::Quaternion(orient.x, orient.y, orient.z, orient.w)
+        Vector3df(pos.x, pos.y, pos.z),
+        Quaternion(orient.x, orient.y, orient.z, orient.w)
     );
 }
 
 // virtual
-bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     PROFILE(RexLogicModule_HandleEvent);
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
@@ -462,7 +462,7 @@ bool RexLogicModule::HandleEvent(Core::event_category_id_t category_id, Core::ev
     return false;
 }
 
-bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
     avatar_->HandleResourceEvent(event_id, data);
@@ -472,13 +472,13 @@ bool RexLogicModule::HandleResourceEvent(Core::event_id_t event_id, Foundation::
     return false;
 }
 
-bool RexLogicModule::HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleInventoryEvent(event_id, data);
 }
 
-bool RexLogicModule::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
@@ -498,62 +498,62 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(Core::Real newyaw)
+void RexLogicModule::SetAvatarYaw(Real newyaw)
 {
     avatar_controllable_->SetYaw(newyaw);
 }
 
-void RexLogicModule::SetAvatarRotation(Core::Quaternion newrot)
+void RexLogicModule::SetAvatarRotation(Quaternion newrot)
 {
     std::cout << "RexLogicModule::SetAvatarRotation" << std::endl;
     avatar_controllable_->SetRotation(newrot);
 }
 
-void RexLogicModule::SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch)
+void RexLogicModule::SetCameraYawPitch(Real newyaw, Real newpitch)
 {
     camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
 
-Core::entity_id_t RexLogicModule::GetUserAvatarId()
+entity_id_t RexLogicModule::GetUserAvatarId()
 {
     RexLogic::AvatarPtr avatarPtr = GetAvatarHandler();
     Scene::EntityPtr entity = avatarPtr->GetUserAvatar();
     return entity->GetId();
 }
 
-Core::Vector3df RexLogicModule::GetCameraUp()
+Vector3df RexLogicModule::GetCameraUp()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
-        return Core::Vector3df();
+        return Vector3df();
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 up = camera->getUp();
-    return Core::Vector3df(up.x, up.y, up.z);
+    return Vector3df(up.x, up.y, up.z);
 }
 
-Core::Vector3df RexLogicModule::GetCameraRight()
+Vector3df RexLogicModule::GetCameraRight()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
-        return Core::Vector3df();
+        return Vector3df();
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 right = camera->getRight();
-    return Core::Vector3df(right.x, right.y, right.z);
+    return Vector3df(right.x, right.y, right.z);
 }
 
-Core::Real RexLogicModule::GetCameraFOV()
+Real RexLogicModule::GetCameraFOV()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
         return 0;
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-    return (Core::Real)camera->getFOVy().valueRadians();
+    return (Real)camera->getFOVy().valueRadians();
 }
 
-Core::Real RexLogicModule::GetCameraViewportWidth()
+Real RexLogicModule::GetCameraViewportWidth()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
@@ -564,7 +564,7 @@ Core::Real RexLogicModule::GetCameraViewportWidth()
     return viewport->getActualWidth();
 }
 
-Core::Real RexLogicModule::GetCameraViewportHeight()
+Real RexLogicModule::GetCameraViewportHeight()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
@@ -575,15 +575,15 @@ Core::Real RexLogicModule::GetCameraViewportHeight()
     return viewport->getActualHeight();
 }
 
-Core::Vector3df RexLogicModule::GetCameraPosition()
+Vector3df RexLogicModule::GetCameraPosition()
 {
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Vector3 pos = camera->getPosition();
-    return Core::Vector3df(pos.x, pos.y, pos.z);;
+    return Vector3df(pos.x, pos.y, pos.z);;
 }
 
-void RexLogicModule::SendRexPrimData(Core::entity_id_t entityid)
+void RexLogicModule::SendRexPrimData(entity_id_t entityid)
 {
     GetPrimitiveHandler()->SendRexPrimData(entityid);
 }
@@ -593,7 +593,7 @@ OgreRenderer::RendererPtr RexLogicModule::GetRendererPtr()
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &params)
+Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 {
     std::string name = "Test User";
     std::string passwd = "test";
@@ -625,7 +625,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const Core::StringVector &pa
     return Console::ResultFailure("Cannot login from console no more");
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogout(const Core::StringVector &params)
+Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 {
     if (world_stream_->IsConnected())
     {
@@ -642,9 +642,9 @@ void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword,
     login_ui_->StartParameterLoginOpenSim(qfirstAndLast, qpassword, qserverAddressWithPort);
 }
 
-Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const Core::StringVector &params)
+Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
-    Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+    event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
@@ -657,7 +657,7 @@ void RexLogicModule::SwitchCameraState()
         // INFO: to enable KeyStateListener uncomment this
         //key_state_listener_->SetKeyBindings(free_camera_bindings_.map);
 
-        Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
     }
     else
@@ -666,7 +666,7 @@ void RexLogicModule::SwitchCameraState()
         // INFO: to enable KeyStateListener uncomment this
         //key_state_listener_->SetKeyBindings(third_person_bindings_.map);
 
-        Core::event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
     }
 }
@@ -714,7 +714,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     activeScene_ = framework_->CreateScene(name);
     framework_->SetDefaultWorldScene(activeScene_);
 
-    Core::event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
+    event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
     if (scene_event_category == 0)
         LogError("Failed to query \"Framework\" event category");
 
@@ -732,7 +732,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     return GetCurrentActiveScene();
 }
 
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent)
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent)
 {
     if (!activeScene_)
         return Scene::EntityPtr();
@@ -762,7 +762,7 @@ Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
         return GetAvatarEntity(iter->second);
 }
 
-void RexLogicModule::RegisterFullId(const RexUUID &fullid, Core::entity_id_t entityid)
+void RexLogicModule::RegisterFullId(const RexUUID &fullid, entity_id_t entityid)
 {
     UUIDs_[fullid] = entityid;
 }
@@ -774,17 +774,17 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
         UUIDs_.erase(iter);
 }
 
-void RexLogicModule::UpdateObjects(Core::f64 frametime)
+void RexLogicModule::UpdateObjects(f64 frametime)
 {
     //! \todo probably should not be directly in RexLogicModule
     if (!activeScene_)
         return;
 
     // Damping interpolation factor, dependent on frame time
-    Core::Real factor = pow(2.0, -frametime * movement_damping_constant_);
+    Real factor = pow(2.0, -frametime * movement_damping_constant_);
     if (factor < 0.0) factor = 0.0;
     if (factor > 1.0) factor = 1.0;
-    Core::Real rev_factor = 1.0 - factor;
+    Real rev_factor = 1.0 - factor;
 
     for(Scene::SceneManager::iterator iter = activeScene_->begin();
         iter != activeScene_->end(); ++iter)
@@ -809,13 +809,13 @@ void RexLogicModule::UpdateObjects(Core::f64 frametime)
                 // Interpolate rotation
                 if (netpos.rotvel_.getLengthSQ() > 0.001)
                 {
-                    Core::Quaternion rot_quat1;
-                    Core::Quaternion rot_quat2;
-                    Core::Quaternion rot_quat3;
+                    Quaternion rot_quat1;
+                    Quaternion rot_quat2;
+                    Quaternion rot_quat3;
 
-                    rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Core::Vector3df(1,0,0));
-                    rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Core::Vector3df(0,1,0));
-                    rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Core::Vector3df(0,0,1));
+                    rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Vector3df(1,0,0));
+                    rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Vector3df(0,1,0));
+                    rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Vector3df(0,0,1));
 
                     netpos.orientation_ *= rot_quat1;
                     netpos.orientation_ *= rot_quat2;

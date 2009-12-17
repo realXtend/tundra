@@ -28,7 +28,7 @@ std::string QtUtils::GetOpenFileName(
     return filename.toStdString();
 }
 
-Core::StringList QtUtils::GetOpenFileNames(
+StringList QtUtils::GetOpenFileNames(
     const std::string &filter,
     const std::string &caption,
     const std::string &dir)
@@ -48,7 +48,7 @@ Core::StringList QtUtils::GetOpenFileNames(
     return filelist;
 }
 
-Core::StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
+StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
 {
     QString qfilter(
         "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"

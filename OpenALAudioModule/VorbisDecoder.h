@@ -13,7 +13,7 @@ namespace OpenALAudio
         //! Name/id of sound
         std::string name_;
         //! Vorbis datastream
-        std::vector<Core::u8> buffer_;
+        std::vector<u8> buffer_;
     };
     
     class VorbisDecodeResult : public Foundation::ThreadTaskResult
@@ -24,9 +24,9 @@ namespace OpenALAudio
         //! Decoded audio data buffer. Will always be 16bit signed
         /*! If decode failed, will be zero size
          */         
-        std::vector<Core::u8> buffer_;
+        std::vector<u8> buffer_;
         //! Frequency
-        Core::uint frequency_;
+        uint frequency_;
         //! Stereo flag
         bool stereo_;        
     };
@@ -50,7 +50,7 @@ namespace OpenALAudio
          */
         void PerformDecode(VorbisDecodeRequestPtr request);
         
-        Core::uint decodes_per_frame_;
+        uint decodes_per_frame_;
     };
 }
 #endif

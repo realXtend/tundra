@@ -127,13 +127,13 @@ namespace RexLogic
                 RexTypes::RexAssetID texture_id; 
                 RexTypes::RexAssetID prev_texture_id;
                 
-                Core::uint indices = 0;
+                uint indices = 0;
                 bool first_face = true;
                 
                 //! \bug: for boxes, up and down faces are swapped, judging from applying a different texture to all faces. Seems to be a PrimMesher issue.
                 for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
-                    Core::Color color = primitive.PrimDefaultColor;
+                    Color color = primitive.PrimDefaultColor;
                     ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
                     if (c != primitive.PrimColors.end())
                         color = c->second;
@@ -225,7 +225,7 @@ namespace RexLogic
                 RexLogicModule::LogError(std::string("Null manualobject passed to CreatePrimGeometry"));
             }
         }
-        catch (Core::Exception& e)
+        catch (Exception& e)
         {
             RexLogicModule::LogError(std::string("Exception while creating primitive geometry: ") + e.what());
         }

@@ -25,7 +25,7 @@ namespace RexLogic
     typedef std::map<uint8_t, RexTypes::RexAssetID> TextureMap;
 
     //! Map for holding prim face colors
-    typedef std::map<uint8_t, Core::Color> ColorMap;
+    typedef std::map<uint8_t, Color> ColorMap;
 
     //! Map for holding prim face material bytes
     typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
@@ -43,7 +43,7 @@ namespace RexLogic
         // !ID related
         uint64_t RegionHandle;
         uint32_t LocalId;
-        RexTypes::RexUUID FullId;
+        RexUUID FullId;
         uint32_t ParentId; 
 
         std::string ObjectName;
@@ -66,7 +66,7 @@ namespace RexLogic
         int32_t SelectPriority;
 
         //! Drawing related variables
-        Core::Vector3df Scale;
+        Vector3df Scale;
         uint8_t DrawType;
         bool IsVisible;
         bool CastShadows;
@@ -90,7 +90,7 @@ namespace RexLogic
         //! Primitive texture entry data
         RexTypes::RexAssetID PrimDefaultTextureID;
         TextureMap PrimTextures;
-        Core::Color PrimDefaultColor;
+        Color PrimDefaultColor;
         ColorMap PrimColors;
         uint8_t PrimDefaultMaterialType;
         MaterialTypeMap PrimMaterialTypes;

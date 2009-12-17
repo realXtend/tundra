@@ -80,29 +80,29 @@ EC_OpenSimPrim::~EC_OpenSimPrim()
 void EC_OpenSimPrim::PrintDebug()
 {
     RexLogicModule::LogInfo("*** EC_OpenSimPrim ***");
-    RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
-    RexLogicModule::LogInfo("RegionHandle:" + Core::ToString(RegionHandle));
-    RexLogicModule::LogInfo("LocalId:" + Core::ToString(LocalId));
+    RexLogicModule::LogInfo("LocalId:" + ToString(LocalId));
+    RexLogicModule::LogInfo("RegionHandle:" + ToString(RegionHandle));
+    RexLogicModule::LogInfo("LocalId:" + ToString(LocalId));
     RexLogicModule::LogInfo("FullId:" + FullId.ToString());
-    RexLogicModule::LogInfo("ParentId:" + Core::ToString(ParentId));
+    RexLogicModule::LogInfo("ParentId:" + ToString(ParentId));
 
     RexLogicModule::LogInfo("ObjectName:" + ObjectName);
     RexLogicModule::LogInfo("Description:" + Description);
     RexLogicModule::LogInfo("HoveringText:" + HoveringText);
     RexLogicModule::LogInfo("MediaUrl:" + MediaUrl);
     
-    RexLogicModule::LogInfo("Material:" + Core::ToString((Core::uint)Material));
-    RexLogicModule::LogInfo("ClickAction:" + Core::ToString((Core::uint)ClickAction));
-    RexLogicModule::LogInfo("UpdateFlags:" + Core::ToString(UpdateFlags));
+    RexLogicModule::LogInfo("Material:" + ToString((uint)Material));
+    RexLogicModule::LogInfo("ClickAction:" + ToString((uint)ClickAction));
+    RexLogicModule::LogInfo("UpdateFlags:" + ToString(UpdateFlags));
     
     RexLogicModule::LogInfo("ServerScriptClass:" + ServerScriptClass);
     RexLogicModule::LogInfo("CollisionMeshID:" + CollisionMeshID);
 
     RexLogicModule::LogInfo("SoundID:" + SoundID);
-    RexLogicModule::LogInfo("SoundVolume:" + Core::ToString(SoundVolume));
-    RexLogicModule::LogInfo("SoundRadius:" + Core::ToString(SoundRadius));
+    RexLogicModule::LogInfo("SoundVolume:" + ToString(SoundVolume));
+    RexLogicModule::LogInfo("SoundRadius:" + ToString(SoundRadius));
 
-    RexLogicModule::LogInfo("SelectPriority:" + Core::ToString(SelectPriority));
+    RexLogicModule::LogInfo("SelectPriority:" + ToString(SelectPriority));
 }
 
 } // namespace RexLogic

@@ -39,23 +39,23 @@ namespace RexLogic
         ~CameraControllable() {}
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Action event handler for handling controllable events
-        bool HandleActionEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! update camera simulation for all controllable cameras
-        void AddTime(Core::f64 frametime);
+        void AddTime(f64 frametime);
 
         //! returns camera pitch
-        Core::Real GetPitch() const { return firstperson_pitch_; }
-		void SetYawPitch(Core::Real newyaw, Core::Real newpitch); //experimental for py api
+        Real GetPitch() const { return firstperson_pitch_; }
+		void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
 
     private:
-        typedef std::map<int, Core::Vector3df> ActionTransMap;
+        typedef std::map<int, Vector3df> ActionTransMap;
 
         //! current camera state
         State current_state_;
@@ -64,48 +64,48 @@ namespace RexLogic
         Scene::EntityWeakPtr target_entity_;
 
         //! current camera distance from target
-        Core::Real camera_distance_;
+        Real camera_distance_;
 
         //! minimum camera distance from target
-        Core::Real camera_min_distance_;
+        Real camera_min_distance_;
 
         //! maximum camera distance from target
-        Core::Real camera_max_distance_;
+        Real camera_max_distance_;
 
         //! third person camera offset
-        Core::Vector3Df camera_offset_;
+        Vector3Df camera_offset_;
 
         //! first person camera offset
-        Core::Vector3df camera_offset_firstperson_;
+        Vector3df camera_offset_firstperson_;
 
         //! move speed
-        Core::Real sensitivity_;
+        Real sensitivity_;
 
         //! zoom speed
-        Core::Real zoom_sensitivity_;
+        Real zoom_sensitivity_;
 
         //! camera pitch when dragging
-        Core::Real firstperson_pitch_;
+        Real firstperson_pitch_;
 
         //! camera yaw when dragging
-        Core::Real firstperson_yaw_;
+        Real firstperson_yaw_;
 
         //! mouse look sensitivity
-        Core::Real firstperson_sensitivity_;
+        Real firstperson_sensitivity_;
 
         //! drag pitch
-        Core::Real drag_pitch_;
+        Real drag_pitch_;
 
         //! drag yaw
-        Core::Real drag_yaw_;
+        Real drag_yaw_;
 
         //! cached value for event category
-        Core::event_category_id_t action_event_category_;
+        event_category_id_t action_event_category_;
 
         //! translation in free look mode
-        Core::Vector3df free_translation_;
+        Vector3df free_translation_;
 
-        Core::Vector3df normalized_free_translation_;
+        Vector3df normalized_free_translation_;
 
         //! Action to translation map in free look mode
         ActionTransMap action_trans_;

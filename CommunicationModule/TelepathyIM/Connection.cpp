@@ -122,7 +122,7 @@ namespace TelepathyIM
 	QStringList Connection::GetPresenceStatusOptionsForContact() const
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		QStringList options;
 		Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
@@ -137,7 +137,7 @@ namespace TelepathyIM
 	QStringList Connection::GetPresenceStatusOptionsForUser() const
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		QStringList options;
 		Tp::SimpleStatusSpecMap map = tp_connection_->allowedPresenceStatuses();
@@ -154,7 +154,7 @@ namespace TelepathyIM
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const Communication::ContactInterface &contact)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
         //! todo check if there is already open chat session with given contact
         //! and return that
@@ -169,13 +169,13 @@ namespace TelepathyIM
 		//! @todo IMPLEMENT
         //! - Request Tp::Contact object from Tp::Connection
         //! - Create ChatSession object and return it
-		throw Core::Exception("NOT IMPLEMENTED");
+		throw Exception("NOT IMPLEMENTED");
 	}
 
 	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel_id)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		ChatSession* session = new ChatSession(channel_id, tp_connection_);
 		public_chat_sessions_.push_back(session);
@@ -201,7 +201,7 @@ namespace TelepathyIM
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 		OutgoingFriendRequest* request = new OutgoingFriendRequest(target, message, tp_connection_);
 		sent_friend_requests_.push_back(request);
 		connect(request, SIGNAL( Error(OutgoingFriendRequest*) ), SLOT( OnSendingFriendRequestError(OutgoingFriendRequest*) ));
@@ -210,7 +210,7 @@ namespace TelepathyIM
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		Communication::FriendRequestVector requests;
 		for (FriendRequestVector::const_iterator i = received_friend_requests_.begin(); i != received_friend_requests_.end(); ++i)
@@ -223,7 +223,7 @@ namespace TelepathyIM
 	void Connection::SetPresenceStatus(const QString &status)
 	{
 		if (state_ != STATE_OPEN )
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		presence_status_ = status;
 		Tp::PendingOperation* op = tp_connection_->setSelfPresence(presence_status_,presence_message_);
@@ -233,7 +233,7 @@ namespace TelepathyIM
 	void Connection::SetPresenceMessage(const QString &message)
 	{
 		if (state_ != STATE_OPEN )
-			throw Core::Exception("Connection is not open.");
+			throw Exception("Connection is not open.");
 
 		presence_message_ = message;
 		Tp::PendingOperation* op = tp_connection_->setSelfPresence(presence_status_,presence_message_);

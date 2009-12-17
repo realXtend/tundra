@@ -150,7 +150,7 @@ namespace Foundation
             Override in your own module if you want to perform synchronized update. Do not call.
             \param frametime elapsed time in seconds since last frame
         */
-        virtual void Update(Core::f64 frametime) = 0;
+        virtual void Update(f64 frametime) = 0;
 
         //! Receives an event
         /*! Should return true if the event was handled and is not to be propagated further
@@ -162,7 +162,7 @@ namespace Foundation
             \param event_id Id of the event
             \param data Event data, or 0 if no data passed.
          */
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) = 0;
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) = 0;
 
         //! Returns major version as string. Override only if module is not internal.
         virtual std::string VersionMajor() const = 0;
@@ -263,7 +263,7 @@ namespace Foundation
         virtual void PreInitialize() {}
         virtual void PostInitialize() {}
         
-        virtual void Update(Core::f64 frametime) {}
+        virtual void Update(f64 frametime) {}
 
         virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
         virtual Module::Type Type() const { return type_; }
@@ -274,7 +274,7 @@ namespace Foundation
             component_registrars_.push_back(registrar);
         }
         
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) { return false; }
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
 
         virtual Module::State State() const { return state_; }
 

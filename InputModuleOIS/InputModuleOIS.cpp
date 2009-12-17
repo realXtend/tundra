@@ -88,7 +88,7 @@ namespace Input
         }
 
         OIS::ParamList pl;
-        pl.insert(std::make_pair(std::string("WINDOW"), Core::ToString(window_handle)));
+        pl.insert(std::make_pair(std::string("WINDOW"), ToString(window_handle)));
 
 #if defined OIS_WIN32_PLATFORM
 //        pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_BACKGROUND" )));
@@ -137,9 +137,9 @@ namespace Input
 #if defined OIS_WIN32_PLATFORM
         LogInfo("Release Name: " + input_manager_->getVersionName());
         LogInfo("Manager: " + input_manager_->inputSystemName());
-        LogInfo("Total Keyboards: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISKeyboard)));
-        LogInfo("Total Mice: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISMouse)));
-        LogInfo("Total JoySticks: " + Core::ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
+        LogInfo("Total Keyboards: " + ToString(input_manager_->getNumberOfDevices(OIS::OISKeyboard)));
+        LogInfo("Total Mice: " + ToString(input_manager_->getNumberOfDevices(OIS::OISMouse)));
+        LogInfo("Total JoySticks: " + ToString(input_manager_->getNumberOfDevices(OIS::OISJoyStick)));
         
         //List all devices
         OIS::DeviceList list = input_manager_->listFreeDevices();
@@ -173,7 +173,7 @@ namespace Input
     }
 
     // virtual 
-    void InputModuleOIS::Update(Core::f64 frametime)
+    void InputModuleOIS::Update(f64 frametime)
     {
         {
             PROFILE(InputModuleOIS_Update);
@@ -239,7 +239,7 @@ namespace Input
                     // Restart the timer.
                     keyTimer_ = QTime();
                     keyTimer_.start();
-                    for (QList<QPair<int, Core::uint> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
+                    for (QList<QPair<int, uint> >::iterator iter = pressedKeys_.begin(); iter != pressedKeys_.end(); ++iter)
                     {
                         if ( keyboard_->isKeyDown(static_cast<OIS::KeyCode>((*iter).first)) )
                         {
@@ -263,7 +263,7 @@ namespace Input
     }
 
     // virtual
-    bool InputModuleOIS::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool InputModuleOIS::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         bool handled = false;
 
@@ -301,7 +301,7 @@ namespace Input
         return movement_;
     }
 
-    bool InputModuleOIS::IsEvent(Core::event_id_t input_event) const
+    bool InputModuleOIS::IsEvent(event_id_t input_event) const
     {
         //!\ This whole function is a bit wtf. This probably needs a better way to map from input events to KeyEventInfo struct. -cm
         {
@@ -372,7 +372,7 @@ namespace Input
         return mouse_->getMouseState().buttonDown(code);
     }
 
-    boost::optional<const Events::Movement&> InputModuleOIS::GetDraggedSliderInfo(Core::event_id_t dragged_event)
+    boost::optional<const Events::Movement&> InputModuleOIS::GetDraggedSliderInfo(event_id_t dragged_event)
     {
         SliderInfoVector &sliders = GetSliderInfo(input_state_);
         for (size_t i=0 ; i<sliders.size() ; ++i)
@@ -498,7 +498,7 @@ namespace Input
     }
 
     
-    void InputModuleOIS::RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
+    void InputModuleOIS::RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, event_id_t pressed_event, event_id_t released_event, int modifier)
     {
         assert (pressed_event + 1 == released_event);
 
@@ -525,7 +525,7 @@ namespace Input
             mod_str += " shift";
 
         if (keyboard_)
-            LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
+            LogDebug("Bound key " + keyboard_->getAsString(key) + " to event id: " + ToString(pressed_event) + " with modifiers:" + mod_str + ".");
 #endif
 
         KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
@@ -549,7 +549,7 @@ namespace Input
         }
     }
 
-    void InputModuleOIS::RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier)
+    void InputModuleOIS::RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID key, event_id_t pressed_event, event_id_t released_event, int modifier)
     {
         assert (pressed_event + 1 == released_event);
 
@@ -576,7 +576,7 @@ namespace Input
             mod_str += " shift";
 
         if (mouse_)
-            LogDebug("Bound a mouse button to event id: " + Core::ToString(pressed_event) + " with modifiers:" + mod_str + ".");
+            LogDebug("Bound a mouse button to event id: " + ToString(pressed_event) + " with modifiers:" + mod_str + ".");
 #endif
 
         KeyEventInfoMap::iterator key_vector = listened_keys_.find(state);
@@ -600,7 +600,7 @@ namespace Input
         }
     }
 
-    void InputModuleOIS::RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button, int modifier)
+    void InputModuleOIS::RegisterSliderEvent(Input::State state, Slider slider, event_id_t dragged_event, event_id_t stopped_event, int button, int modifier)
     {
         assert (dragged_event + 1 == stopped_event);
 

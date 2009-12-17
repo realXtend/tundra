@@ -14,7 +14,7 @@
 using namespace RexTypes;
 
 // Time in which to reauthenticate if export has lasted long, in seconds
-static const Core::Real REAUTHENTICATION_TIME = 60.0f;
+static const Real REAUTHENTICATION_TIME = 60.0f;
 
 namespace RexLogic
 {
@@ -48,8 +48,8 @@ namespace RexLogic
         }
         
         // Replace < > so that xmlrpc call doesn't get confused
-        Core::ReplaceSubstringInplace(request->avatar_xml_, "<", "&lt;");
-        Core::ReplaceSubstringInplace(request->avatar_xml_, ">", "&gt;");
+        ReplaceSubstringInplace(request->avatar_xml_, "<", "&lt;");
+        ReplaceSubstringInplace(request->avatar_xml_, ">", "&gt;");
         
         std::size_t pos = request->authserver_.rfind(":");
         if (pos != std::string::npos)
@@ -71,7 +71,7 @@ namespace RexLogic
         
         RexLogicModule::LogInfo("Authenticated for export");
         
-        std::string export_url = Core::ReplaceSubstring(avatar_url, "/avatar/", "/xmlrpc/");
+        std::string export_url = ReplaceSubstring(avatar_url, "/avatar/", "/xmlrpc/");
         
         try
         {
@@ -103,7 +103,7 @@ namespace RexLogic
                 reexport = true;
                 RexLogicModule::LogInfo("Exporting assets");
                 std::vector<std::string> items = call.GetVectorReply<std::string>("MissingItems");
-                for (Core::uint i = 0; i < items.size(); ++i)
+                for (uint i = 0; i < items.size(); ++i)
                 {
                     std::string name = items[i];
                     ExportAssetMap::const_iterator asset = request->assets_.find(name);
@@ -131,7 +131,7 @@ namespace RexLogic
                         asset_call.AddMember("itemname", name);
                         asset_call.AddMember("hashcode", asset->second.hash_);
                      
-                        RexLogicModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + Core::ToString<int>(asset->second.data_.size()));
+                        RexLogicModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + ToString<int>(asset->second.data_.size()));
                         
                         XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)(&asset->second.data_[0]), asset->second.data_.size());
                         

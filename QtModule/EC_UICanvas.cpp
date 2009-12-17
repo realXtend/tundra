@@ -66,7 +66,7 @@ namespace QtUI
         Refresh();
     }
    
-    void EC_UICanvas::SetSubmeshes(const std::vector<Core::uint>& submeshes)
+    void EC_UICanvas::SetSubmeshes(const std::vector<uint>& submeshes)
     {
         submeshes_ = submeshes;
         if (!submeshes_.size())
@@ -75,7 +75,7 @@ namespace QtUI
         Refresh();
     }
 
-    void EC_UICanvas::SetSubmeshes(Core::uint submesh)
+    void EC_UICanvas::SetSubmeshes(uint submesh)
     {
         submeshes_.clear();
         submeshes_.push_back(submesh);
@@ -113,7 +113,7 @@ namespace QtUI
             OgreRenderer::EC_OgreMesh &obj = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());                     
             
             original_materials_.resize(obj.GetNumMaterials());
-            for (Core::uint i = 0; i < obj.GetNumMaterials(); ++i)
+            for (uint i = 0; i < obj.GetNumMaterials(); ++i)
             {
                 // If this submesh does not have the UICanvas material yet, store the material for restoring later
                 {
@@ -124,7 +124,7 @@ namespace QtUI
                 
                 // Now see if this submesh should have the UICanvas material
                 bool set_uicanvas = false;
-                for (Core::uint j = 0; j < submeshes_.size(); ++j)
+                for (uint j = 0; j < submeshes_.size(); ++j)
                     if (submeshes_[j] == i) set_uicanvas = true;
                
                 if (set_uicanvas)
@@ -151,7 +151,7 @@ namespace QtUI
                 return;
                                   
             original_materials_.resize(obj.GetNumMaterials());
-            for (Core::uint i = 0; i < obj.GetNumMaterials(); ++i)
+            for (uint i = 0; i < obj.GetNumMaterials(); ++i)
             {
                 // If this submesh does not have the UICanvas material yet, store the material for restoring later
                 {
@@ -162,7 +162,7 @@ namespace QtUI
                 
                 // Now see if this submesh should have the UICanvas material
                 bool set_uicanvas = false;
-                for (Core::uint j = 0; j < submeshes_.size(); ++j)
+                for (uint j = 0; j < submeshes_.size(); ++j)
                     if (submeshes_[j] == i) set_uicanvas = true;
                
                 if (set_uicanvas)

@@ -58,7 +58,7 @@ namespace TelepathyIM
         void VideoStreamReceived();
 
         //! When audio buffer is ready for playback
-        void AudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
+        void AudioPlaybackBufferReady(u8* buffer, int buffer_size);
 
     public:
         GstPad *audio_in_src_pad_; // todo setter

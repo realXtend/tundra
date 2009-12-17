@@ -18,7 +18,7 @@ namespace OpensimIM
 		{
 			channel_id_ = id;
 			if ( channel_id_.compare("0") != 0 )
-				throw Core::Exception("Cannot create chat session, channel id now allowed"); 
+				throw Exception("Cannot create chat session, channel id now allowed"); 
 		}
 		else
 		{
@@ -60,26 +60,26 @@ namespace OpensimIM
 	void ChatSession::SendPrivateIMMessage(const QString &text)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Chat session is closed");
+			throw Exception("Chat session is closed");
 
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
-			throw Core::Exception("Cannot send IM message, RexLogicModule is not found");
+			throw Exception("Cannot send IM message, RexLogicModule is not found");
 		RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
 
 		if ( connection == NULL )
-			throw Core::Exception("Cannot send IM message, rex server connection is not found");
+			throw Exception("Cannot send IM message, rex server connection is not found");
 
 		if ( !connection->IsConnected() )
-			throw Core::Exception("Cannot send IM message, rex server connection is not established");
+			throw Exception("Cannot send IM message, rex server connection is not established");
 
 		ChatMessage* m = new ChatMessage(&self_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
 		for (ChatSessionParticipantVector::iterator i = participants_.begin(); i != participants_.end(); ++i)
 		{
-			connection->SendImprovedInstantMessagePacket(RexTypes::RexUUID( (*i)->GetID().toStdString() ), text.toStdString() );
+			connection->SendImprovedInstantMessagePacket(RexUUID( (*i)->GetID().toStdString() ), text.toStdString() );
 		}
 	}
 
@@ -88,14 +88,14 @@ namespace OpensimIM
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
-			throw Core::Exception("Cannot send text message, RexLogicModule is not found");
+			throw Exception("Cannot send text message, RexLogicModule is not found");
 		RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
 
 		if ( connection == NULL )
-			throw Core::Exception("Cannot send text message, rex server connection is not found");
+			throw Exception("Cannot send text message, rex server connection is not found");
 
 		if ( !connection->IsConnected() )
-			throw Core::Exception("Cannot send text message, rex server connection is not established");
+			throw Exception("Cannot send text message, rex server connection is not established");
 
 		ChatMessage* m = new ChatMessage(&self_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);

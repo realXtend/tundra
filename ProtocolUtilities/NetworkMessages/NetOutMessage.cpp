@@ -185,7 +185,7 @@ namespace ProtocolUtilities
 	    
 	}
 
-	void NetOutMessage::AddQuaternion(const Core::Quaternion &value)
+	void NetOutMessage::AddQuaternion(const Quaternion &value)
 	{
 		if (CheckNextVariable() != NetVarQuaternion)       
 		{
@@ -193,7 +193,7 @@ namespace ProtocolUtilities
 			return;
 		}
 	    
-		Vector3 val = Core::PackQuaternionToFloat3(value);
+		Vector3 val = PackQuaternionToFloat3(value);
 	    
 		AddBytesUnchecked(sizeof(float), &val.x);
 		AddBytesUnchecked(sizeof(float), &val.y);

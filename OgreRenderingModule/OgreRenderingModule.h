@@ -39,11 +39,11 @@ namespace OgreRenderer
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
         
         virtual bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id, 
+            event_category_id_t category_id,
+            event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
         //! returns renderer
@@ -55,7 +55,7 @@ namespace OgreRenderer
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         //! callback for console command
-        Console::CommandResult ConsoleStats(const Core::StringVector &params);
+        Console::CommandResult ConsoleStats(const StringVector &params);
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
 
@@ -64,16 +64,16 @@ namespace OgreRenderer
         RendererPtr renderer_;
 
         //! asset event category
-        Core::event_category_id_t asset_event_category_;
+        event_category_id_t asset_event_category_;
 
         //! resource event category
-        Core::event_category_id_t resource_event_category_;
+        event_category_id_t resource_event_category_;
 
         //! input event category
-        Core::event_category_id_t input_event_category_;
+        event_category_id_t input_event_category_;
 
         //! scene event category
-        Core::event_category_id_t scene_event_category_;
+        event_category_id_t scene_event_category_;
 
 
     };

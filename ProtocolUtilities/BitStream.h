@@ -27,7 +27,7 @@ namespace ProtocolUtilities
             \param count The number of bits to read, 0 <= count <= 32.
             \return The desired amount of bits packed in an u32, populating bits from the 
             least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
-        Core::u32 ReadBits(int count);
+        u32 ReadBits(int count);
 
         /// Reads a single bit from the stream and advances the current stream position.
         /// \return The next bit in the stream, or 0 if there are no bits left in the stream.
@@ -47,7 +47,7 @@ namespace ProtocolUtilities
 
     private:
         /// The actual data buffer, not owned by BitStream.
-        const Core::u8 *data_;
+        const u8 *data_;
 
         /// The number of total elements in the buffer.
         size_t num_elems_;

@@ -62,7 +62,7 @@ namespace Input
                 }
                 else
                 {
-                    throw Core::Exception("Failed to parse xml document.");
+                    throw Exception("Failed to parse xml document.");
                 }
             } catch (std::exception &e)
             {
@@ -76,7 +76,7 @@ namespace Input
     {
         node = node->firstChild();
         if (!node)
-            throw Core::Exception("Child node not found for root node.");
+            throw Exception("Child node not found for root node.");
 
         while (node)
         {
@@ -90,7 +90,7 @@ namespace Input
                 {
                     Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
                     if (attributes.isNull())
-                        throw Core::Exception("Missing attributes.");
+                        throw Exception("Missing attributes.");
 
                     Poco::XML::Attr* state_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("state"));
                     Poco::XML::Attr* event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("start_event"));
@@ -99,28 +99,28 @@ namespace Input
                     Poco::XML::Attr* key_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("key"));
 
                     if (!state_attr)
-                        throw Core::Exception("Missing attribute 'state'.");
+                        throw Exception("Missing attribute 'state'.");
                     if (!event_attr)
-                        throw Core::Exception("Missing attribute 'start_event'.");
+                        throw Exception("Missing attribute 'start_event'.");
                     if (!end_event_attr)
-                        throw Core::Exception("Missing attribute 'end_event'.");
+                        throw Exception("Missing attribute 'end_event'.");
                     if (!modifier_attr)
-                        throw Core::Exception("Missing attribute 'modifier'.");
+                        throw Exception("Missing attribute 'modifier'.");
                     if (!key_attr)
-                        throw Core::Exception("Missing attribute 'key'.");
+                        throw Exception("Missing attribute 'key'.");
 
-                    Input::State state = static_cast<Input::State>(Core::ParseString<int>(state_attr->getValue()));
-                    Core::event_id_t start_event_id = Core::ParseString<Core::event_id_t>(event_attr->getValue());
-                    Core::event_id_t end_event_id = Core::ParseString<Core::event_id_t>(end_event_attr->getValue());
-                    int modifier = Core::ParseString<int>(modifier_attr->getValue());
-                    int key = Core::ParseString<int>(key_attr->getValue());
+                    Input::State state = static_cast<Input::State>(ParseString<int>(state_attr->getValue()));
+                    event_id_t start_event_id = ParseString<event_id_t>(event_attr->getValue());
+                    event_id_t end_event_id = ParseString<event_id_t>(end_event_attr->getValue());
+                    int modifier = ParseString<int>(modifier_attr->getValue());
+                    int key = ParseString<int>(key_attr->getValue());
 
                     module_->RegisterUnbufferedKeyEvent(state, static_cast<OIS::KeyCode>(key), start_event_id, end_event_id, modifier);
                 } else if (current_node->nodeName() == "action_slider")
                 {
                     Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> attributes = current_node->attributes();
                     if (attributes.isNull())
-                        throw Core::Exception("Missing attributes.");
+                        throw Exception("Missing attributes.");
 
                     Poco::XML::Attr* state_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("state"));
                     Poco::XML::Attr* event_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("start_event"));
@@ -130,24 +130,24 @@ namespace Input
                     Poco::XML::Attr* type_attr = static_cast<Poco::XML::Attr*>(attributes->getNamedItem("type"));
 
                     if (!state_attr)
-                        throw Core::Exception("Missing attribute 'state'.");
+                        throw Exception("Missing attribute 'state'.");
                     if (!event_attr)
-                        throw Core::Exception("Missing attribute 'start_event'.");
+                        throw Exception("Missing attribute 'start_event'.");
                     if (!end_event_attr)
-                        throw Core::Exception("Missing attribute 'end_event'.");
+                        throw Exception("Missing attribute 'end_event'.");
                     if (!modifier_attr)
-                        throw Core::Exception("Missing attribute 'modifier'.");
+                        throw Exception("Missing attribute 'modifier'.");
                     if (!key_attr)
-                        throw Core::Exception("Missing attribute 'button'.");
+                        throw Exception("Missing attribute 'button'.");
                     if (!type_attr)
-                        throw Core::Exception("Missing attribute 'type'.");
+                        throw Exception("Missing attribute 'type'.");
 
-                    Input::State state = static_cast<Input::State>(Core::ParseString<int>(state_attr->getValue()));
-                    Core::event_id_t start_event_id = Core::ParseString<Core::event_id_t>(event_attr->getValue());
-                    Core::event_id_t end_event_id = Core::ParseString<Core::event_id_t>(end_event_attr->getValue());
-                    int modifier = Core::ParseString<int>(modifier_attr->getValue());
-                    int button = Core::ParseString<int>(key_attr->getValue());
-                    Input::Slider type = static_cast<Input::Slider>(Core::ParseString<int>(type_attr->getValue()));
+                    Input::State state = static_cast<Input::State>(ParseString<int>(state_attr->getValue()));
+                    event_id_t start_event_id = ParseString<event_id_t>(event_attr->getValue());
+                    event_id_t end_event_id = ParseString<event_id_t>(end_event_attr->getValue());
+                    int modifier = ParseString<int>(modifier_attr->getValue());
+                    int button = ParseString<int>(key_attr->getValue());
+                    Input::Slider type = static_cast<Input::Slider>(ParseString<int>(type_attr->getValue()));
 
                     module_->RegisterSliderEvent(state, type, start_event_id, end_event_id, button, modifier);
                 }
@@ -176,11 +176,11 @@ namespace Input
                   ++info )
                 {
                     Poco::XML::AttributesImpl attrs;
-                    attrs.addAttribute("", "", "state", "CDATA", Core::ToString(static_cast<int>(state->first)));
-                    attrs.addAttribute("", "", "start_event", "CDATA", Core::ToString(info->pressed_event_id_));
-                    attrs.addAttribute("", "", "end_event", "CDATA", Core::ToString(info->released_event_id_));
-	                attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
-                    attrs.addAttribute("", "", "key", "CDATA", Core::ToString(info->key_));
+                    attrs.addAttribute("", "", "state", "CDATA", ToString(static_cast<int>(state->first)));
+                    attrs.addAttribute("", "", "start_event", "CDATA", ToString(info->pressed_event_id_));
+                    attrs.addAttribute("", "", "end_event", "CDATA", ToString(info->released_event_id_));
+	                attrs.addAttribute("", "", "modifier", "CDATA", ToString(info->modifier_));
+                    attrs.addAttribute("", "", "key", "CDATA", ToString(info->key_));
 	                writer.emptyElement("", "", "action", attrs);
                 }
             }
@@ -197,12 +197,12 @@ namespace Input
                       ++info )
                 {
                     Poco::XML::AttributesImpl attrs;
-                    attrs.addAttribute("", "", "state", "CDATA", Core::ToString(static_cast<int>(state->first)));
-                    attrs.addAttribute("", "", "start_event", "CDATA", Core::ToString(info->dragged_event_));
-                    attrs.addAttribute("", "", "end_event", "CDATA", Core::ToString(info->stopped_event_));
-	                attrs.addAttribute("", "", "modifier", "CDATA", Core::ToString(info->modifier_));
-                    attrs.addAttribute("", "", "button", "CDATA", Core::ToString(info->button_));
-                    attrs.addAttribute("", "", "type", "CDATA", Core::ToString(info->slider_));
+                    attrs.addAttribute("", "", "state", "CDATA", ToString(static_cast<int>(state->first)));
+                    attrs.addAttribute("", "", "start_event", "CDATA", ToString(info->dragged_event_));
+                    attrs.addAttribute("", "", "end_event", "CDATA", ToString(info->stopped_event_));
+	                attrs.addAttribute("", "", "modifier", "CDATA", ToString(info->modifier_));
+                    attrs.addAttribute("", "", "button", "CDATA", ToString(info->button_));
+                    attrs.addAttribute("", "", "type", "CDATA", ToString(info->slider_));
 	                writer.emptyElement("", "", "action_slider", attrs);
                 }
             }

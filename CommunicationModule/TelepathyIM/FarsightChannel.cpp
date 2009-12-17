@@ -108,7 +108,7 @@ namespace TelepathyIM
         }
         catch(...)
         {
-            throw Core::Exception("Cannot create TfChannel object!");
+            throw Exception("Cannot create TfChannel object!");
         }
         if (!tf_channel_)
         {
@@ -126,17 +126,17 @@ namespace TelepathyIM
     {
         pipeline_ = gst_pipeline_new(NULL);
         if (pipeline_ == 0)
-            throw Core::Exception("Cannot create GStreamer pipeline.");
+            throw Exception("Cannot create GStreamer pipeline.");
         bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
         if (bus_ == 0)
-            throw Core::Exception("Cannot create GStreamer bus.");
+            throw Exception("Cannot create GStreamer bus.");
     }
 
     void FarsightChannel::CreateAudioInputElement(const QString & name)
     {
         audio_input_ = setUpElement(name);
         if (audio_input_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio input element.");
+            throw Exception("Cannot create GStreamer audio input element.");
     }
 
 
@@ -144,11 +144,11 @@ namespace TelepathyIM
     {
         audio_playback_bin_ = gst_bin_new("audio-output-bin");
         if (audio_playback_bin_ == 0)
-            throw Core::Exception("Cannot create GStreamer bin for audio playback.");
+            throw Exception("Cannot create GStreamer bin for audio playback.");
 
         fake_audio_output_ = setUpElement("fakesink");
         if (fake_audio_output_ == 0)
-            throw Core::Exception("Cannot create GStreamer fake audio output element.");
+            throw Exception("Cannot create GStreamer fake audio output element.");
         else
         {
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
@@ -158,12 +158,12 @@ namespace TelepathyIM
         // We use fake audio sink for now
         //audio_output_ = setUpElement(audio_sink_name);
         //if (audio_output_ == 0)
-        //    throw Core::Exception("Cannot create GStreamer audio output element.");
+        //    throw Exception("Cannot create GStreamer audio output element.");
 
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
         if (audio_resample_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio resample element.");
+            throw Exception("Cannot create GStreamer audio resample element.");
 
         audio_capsfilter_ = gst_element_factory_make("capsfilter", NULL);
         GstCaps *audio_caps = gst_caps_new_simple("audio/x-raw-int",
@@ -178,7 +178,7 @@ namespace TelepathyIM
 
         audio_convert_ = gst_element_factory_make("audioconvert", NULL);
         if (audio_convert_ == 0)
-            throw Core::Exception("Cannot create GStreamer audio convert element.");
+            throw Exception("Cannot create GStreamer audio convert element.");
 
 //        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
         //gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
@@ -188,7 +188,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot link elements for audio playback bin.";
             LogError(error_message.toStdString());
-            throw Core::Exception(error_message.toStdString().c_str());
+            throw Exception(error_message.toStdString().c_str());
         }
 
         // add ghost pad to audio_bin_

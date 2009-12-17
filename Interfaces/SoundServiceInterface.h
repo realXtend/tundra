@@ -25,7 +25,7 @@ namespace Foundation
         /*! \param position Position
             \param orientation Orientation as quaternion
          */
-        virtual void SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation) = 0;       
+        virtual void SetListener(const Vector3df& position, const Quaternion& orientation) = 0;       
         
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
@@ -33,7 +33,7 @@ namespace Foundation
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */           
-        virtual Core::sound_id_t PlaySound(const std::string& name, bool local = false, Core::sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound(const std::string& name, bool local = false, sound_id_t channel = 0) = 0;
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
@@ -42,7 +42,7 @@ namespace Foundation
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */     
-        virtual Core::sound_id_t PlaySound3D(const std::string& name, bool local = false, Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f), Core::sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound3D(const std::string& name, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
 
         //! Play raw audio data from buffer
         /*! \param buffer pointer to buffer where playable audio data is stored
@@ -54,57 +54,57 @@ namespace Foundation
 
             \TODO: Support multiple SoundStream with sound stream id
         */
-        virtual Core::sound_id_t PlayAudioData(Core::u8* buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlayAudioData(u8* buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, sound_id_t channel = 0) = 0;
 
         //! Gets state of channel
         /*! \param id Channel id
             \return Current state (stopped, loading sound asset, playing)
          */
-        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(Core::sound_id_t id) const = 0;
+        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(sound_id_t id) const = 0;
         
         //! Gets all non-stopped channels id's
-        virtual std::vector<Core::sound_id_t> GetActiveSounds() const = 0;
+        virtual std::vector<sound_id_t> GetActiveSounds() const = 0;
         
         //! Gets name of sound played/pending on channel
         /*! \param id Channel id
             \return Sound name, or empty if no sound
          */
-        virtual const std::string& GetSoundName(Core::sound_id_t id) const = 0;
+        virtual const std::string& GetSoundName(sound_id_t id) const = 0;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
          */
-        virtual void StopSound(Core::sound_id_t id) = 0;
+        virtual void StopSound(sound_id_t id) = 0;
         
         //! Adjusts pitch of channel
         /*! \param id Channel id
             \param pitch Pitch relative to sound's original pitch (1.0 = original)
          */
-        virtual void SetPitch(Core::sound_id_t id, Core::Real pitch) = 0;
+        virtual void SetPitch(sound_id_t id, Real pitch) = 0;
         
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
          */        
-        virtual void SetGain(Core::sound_id_t id, Core::Real gain) = 0;
+        virtual void SetGain(sound_id_t id, Real gain) = 0;
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
             \param looped Whether to loop
          */           
-        virtual void SetLooped(Core::sound_id_t id, bool looped) = 0;
+        virtual void SetLooped(sound_id_t id, bool looped) = 0;
         
         //! Adjusts positional status of channel
         /*! \param id Channel id
             \param positional Positional status
          */               
-        virtual void SetPositional(Core::sound_id_t id, bool positional) = 0;
+        virtual void SetPositional(sound_id_t id, bool positional) = 0;
         
         //! Sets position of channel
         /*! \param id Channel id
             \param position New position
          */   
-        virtual void SetPosition(Core::sound_id_t id, Core::Vector3df position) = 0;
+        virtual void SetPosition(sound_id_t id, Vector3df position) = 0;
         
         //! Adjusts range parameters of positional sound channel.
         /*! \param id Channel id
@@ -115,7 +115,7 @@ namespace Foundation
             If outer_radius is 0, there will be no attenuation (sound is always played at gain)
             Also, for non-positional channels the range parameters have no effect.
          */
-        virtual void SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff) = 0;
+        virtual void SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff) = 0;
 
         //! Sets position of channel
         /*! 
@@ -123,7 +123,7 @@ namespace Foundation
 
             \todo: Merge with exist SetPosition method
          */   
-        virtual void SetSoundStreamPosition(Core::Vector3df position) = 0;
+        virtual void SetSoundStreamPosition(Vector3df position) = 0;
 
     };
 }

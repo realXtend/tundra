@@ -113,7 +113,7 @@ namespace Environment
         /**
          * Updates the visual effects (fog, skybox etc).
          **/
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
 
         /**
          * @return true if caelum library is used.

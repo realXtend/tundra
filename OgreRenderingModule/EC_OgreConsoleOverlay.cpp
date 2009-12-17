@@ -117,7 +117,7 @@ bool EC_OgreConsoleOverlay::IsVisible() const
     return overlay_->isVisible();
 }
 
-void EC_OgreConsoleOverlay::Update(Core::f64 frametime)
+void EC_OgreConsoleOverlay::Update(f64 frametime)
 {
     if (renderer_.expired())
         return;

@@ -45,10 +45,10 @@ namespace OgreRenderer
         virtual const std::string& GetType() const;
         
         //! returns number of templates
-        Core::uint GetNumTemplates() const;
+        uint GetNumTemplates() const;
         
         //! returns template name by index
-        const std::string& GetTemplateName(Core::uint index) const;
+        const std::string& GetTemplateName(uint index) const;
 
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();
@@ -58,7 +58,7 @@ namespace OgreRenderer
         void RemoveTemplates();
         
         //! template names
-        Core::StringVector templates_;
+        StringVector templates_;
     };
 }
 

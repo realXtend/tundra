@@ -18,9 +18,9 @@ namespace RexLogic
         virtual ~InputEventHandler();
         
         //! handle an input event
-        bool HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
 
     private:
         Foundation::Framework *framework_;

@@ -33,10 +33,10 @@ namespace QtUI
         void SetCanvas(boost::shared_ptr<UICanvas> canvas);
    
         //! Sets in which submeshes to show the UICanvas.
-        void SetSubmeshes(const std::vector<Core::uint>& submeshes);
+        void SetSubmeshes(const std::vector<uint>& submeshes);
 
         //! Sets in which submeshes to show the UICanvas (just one submesh)         
-        void SetSubmeshes(Core::uint submesh);
+        void SetSubmeshes(uint submesh);
         
         //! Disables UICanvas from all submeshes. Also resets canvas referred to.
         void ClearSubmeshes();
@@ -54,7 +54,7 @@ namespace QtUI
         Scene::Entity* GetEntity() const { return entity_; }
         
         //! Returns submeshes to use
-        const std::vector<Core::uint>& GetSubmeshes() const { return submeshes_; }
+        const std::vector<uint>& GetSubmeshes() const { return submeshes_; }
         
     private:
         EC_UICanvas(Foundation::ModuleInterface* module);   
@@ -63,11 +63,11 @@ namespace QtUI
         
         Scene::Entity* entity_;
     
-        std::vector<Core::uint> submeshes_;
+        std::vector<uint> submeshes_;
         
         Ogre::MaterialPtr material_;
         
-        Core::StringVector original_materials_;
+        StringVector original_materials_;
         
     };
 }

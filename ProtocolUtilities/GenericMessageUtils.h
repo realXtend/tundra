@@ -11,7 +11,7 @@ namespace ProtocolUtilities
     std::string ParseGenericMessageMethod(NetInMessage& message);
     
     //! parse parameter list from generic message packet
-    Core::StringVector ParseGenericMessageParameters(NetInMessage& message);
+    StringVector ParseGenericMessageParameters(NetInMessage& message);
 }
 
 #endif 

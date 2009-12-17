@@ -53,12 +53,12 @@ namespace Console
         virtual void SetVisible(bool visible) {}
         virtual bool IsVisible() const { return true; }
         virtual bool IsActive() const {return true; }
-        virtual bool HandleKeyDown(int code, Core::uint text) { return false; }
-        virtual bool HandleKeyUp(int code, Core::uint text) { return false; }
+        virtual bool HandleKeyDown(int code, uint text) { return false; }
+        virtual bool HandleKeyUp(int code, uint text) { return false; }
     private:
 
         //! input thread
-        Core::Thread thread_;
+        Thread thread_;
 
         //! Handles input from native console
         NativeInput input_;

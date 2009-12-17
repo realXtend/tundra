@@ -11,17 +11,17 @@
 
 namespace OgreRenderer
 {
-    /// Converts Core::Color to Ogre::ColourValue.
-    Ogre::ColourValue OGRE_MODULE_API ToOgreColor(const Core::Color &color);
+    /// Converts Color to Ogre::ColourValue.
+    Ogre::ColourValue OGRE_MODULE_API ToOgreColor(const Color &color);
     
-    /// Converts Ogre::ColourValue to Core::Color.
-    Core::Color OGRE_MODULE_API ToCoreColor(const Ogre::ColourValue &ogreColour);
+    /// Converts Ogre::ColourValue to Color.
+    Color OGRE_MODULE_API ToCoreColor(const Ogre::ColourValue &ogreColour);
 
-    /// Converts Core::Vector3f to Ogre::Vector3.
-    Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const Core::Vector3df &vector);
+    /// Converts Vector3f to Ogre::Vector3.
+    Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const Vector3df &vector);
 
-    /// Converts Core::Quaternion to Ogre::Quaternion
-    Ogre::Quaternion OGRE_MODULE_API ToOgreQuaternion(const Core::Quaternion &quat);
+    /// Converts Quaternion to Ogre::Quaternion
+    Ogre::Quaternion OGRE_MODULE_API ToOgreQuaternion(const Quaternion &quat);
 }
 
 #endif

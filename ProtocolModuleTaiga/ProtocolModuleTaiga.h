@@ -46,7 +46,7 @@ namespace TaigaProtocol
         virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -138,7 +138,7 @@ namespace TaigaProtocol
         void ExtractCapabilitiesFromXml(std::string xml);
 
         /// Thread for the login process.
-        Core::Thread thread_;
+        Thread thread_;
 
         /// Object which handles the XML-RPC login procedure.
         TaigaLoginThread loginWorker_;
@@ -162,13 +162,13 @@ namespace TaigaProtocol
         Foundation::EventManagerPtr eventManager_;
 
         /// Network state event category.
-        Core::event_category_id_t networkStateEventCategory_;
+        event_category_id_t networkStateEventCategory_;
 
         /// Network event category for inbound messages.
-        Core::event_category_id_t networkEventInCategory_;
+        event_category_id_t networkEventInCategory_;
 
         /// Network event category for outbound messages.
-        Core::event_category_id_t networkEventOutCategory_;
+        event_category_id_t networkEventOutCategory_;
 
         /// Current connection client-spesific parameters.
         ProtocolUtilities::ClientParameters clientParameters_;

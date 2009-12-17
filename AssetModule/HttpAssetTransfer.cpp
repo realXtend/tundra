@@ -28,7 +28,7 @@ namespace Asset
 		data_fetched_(false),
 		fetching_metadata_(true)
     {
-		buffer_ = new Core::u8[BUFFER_SIZE];
+		buffer_ = new u8[BUFFER_SIZE];
     }
 
 	void HttpAssetTransfer::StartTransfer()
@@ -186,7 +186,7 @@ namespace Asset
 			return false;
     }
 
-	Core::uint HttpAssetTransfer::GetSize() const
+	uint HttpAssetTransfer::GetSize() const
 	{
 		if (!metadata_fetched_)
 			return 0;
@@ -194,12 +194,12 @@ namespace Asset
 			return response_size_;
 	}
     
-    Core::uint HttpAssetTransfer::GetReceivedContinuous() const
+    uint HttpAssetTransfer::GetReceivedContinuous() const
     {
 		return received_data_.size();
     }
     
-    void HttpAssetTransfer::ReceiveData(const Core::u8* data, Core::uint size)
+    void HttpAssetTransfer::ReceiveData(const u8* data, uint size)
     {
         time_ = 0.0;
         
@@ -215,7 +215,7 @@ namespace Asset
 		received_count_ += size;
     }
     
-    void HttpAssetTransfer::ReceiveMetadata(const Core::u8* data, Core::uint size)
+    void HttpAssetTransfer::ReceiveMetadata(const u8* data, uint size)
     {
         time_ = 0.0;
         
@@ -231,7 +231,7 @@ namespace Asset
         received_count_ += size;
     }
 
-	void HttpAssetTransfer::AssembleData(Core::u8* buffer) const
+	void HttpAssetTransfer::AssembleData(u8* buffer) const
     {
         memcpy(buffer, &received_data_[0], received_data_.size());
     }
@@ -243,7 +243,7 @@ namespace Asset
 		return metadata;
 	}
 
-	void HttpAssetTransfer::AssembleMetadata(Core::u8* buffer) const
+	void HttpAssetTransfer::AssembleMetadata(u8* buffer) const
     {
         memcpy(buffer, &received_metadata_[0], received_metadata_.size());
     }
@@ -253,7 +253,7 @@ namespace Asset
 		return failed_;
 	}
 
-	void HttpAssetTransfer::Update(Core::f64 frametime)
+	void HttpAssetTransfer::Update(f64 frametime)
 	{
 		int received = 0;
 

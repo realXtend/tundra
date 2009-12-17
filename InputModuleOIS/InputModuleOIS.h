@@ -81,8 +81,8 @@ namespace Input
                 );
         }
 
-        Core::event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
-        Core::event_id_t released_event_id_; //! event that is launched when the key is released
+        event_id_t pressed_event_id_; //! event that is launched when the key is pressed down
+        event_id_t released_event_id_; //! event that is launched when the key is released
         int key_; //! ois keycode
         QFlags<Modifier> modifier_; //! modifier key
         bool pressed_; //! is the key currently pressed down
@@ -102,8 +102,8 @@ namespace Input
                 );
         }
 
-        Core::event_id_t dragged_event_;
-        Core::event_id_t stopped_event_;
+        event_id_t dragged_event_;
+        event_id_t stopped_event_;
         Slider slider_;
         int button_;
         //! modifiers
@@ -144,16 +144,16 @@ namespace Input
         virtual void Initialize();
         virtual void Uninitialize();
 
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, 
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
         //! Returns if conditions for the event are true.
         /*! This is alternative method of handling input, instead of handling events,
             you can use this function to poll the state directly.
         */
-        bool IsEvent(Core::event_id_t input_event) const;
+        bool IsEvent(event_id_t input_event) const;
 
         //! returns true if key with specified keycode is currently held down. Internal use only!
         INPUTOIS_MODULE_API bool IsKeyDown(OIS::KeyCode keycode) const;
@@ -164,10 +164,10 @@ namespace Input
         //! returns slider movement info matching the specified event, but only if the slider is currently being dragged
         /*! If more than one slider matching the event is being dragged, one is chosen arbitrarily.
         */
-        INPUTOIS_MODULE_API boost::optional<const Events::Movement&> GetDraggedSliderInfo(Core::event_id_t dragged_event);
+        INPUTOIS_MODULE_API boost::optional<const Events::Movement&> GetDraggedSliderInfo(event_id_t dragged_event);
 
         //! returns true if slider corresponding to the event is dragged
-        //bool IsDragged(Core::event_id_t slider_event) const;
+        //bool IsDragged(event_id_t slider_event) const;
 
         //! Polls the current mouse state for both absolute and relative movement
         /*! Not thread safe. Internal use only!
@@ -187,7 +187,7 @@ namespace Input
             \param released_event event that is launched when key is released (launched once)
             \param modifier bit flag for modifier keys (ctrl, shift, alt). See OIS for the bit flag values.
         */
-        void RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
+        void RegisterUnbufferedKeyEvent(Input::State state, OIS::KeyCode key, event_id_t pressed_event, event_id_t released_event, int modifier = 0);
 
         //! add a mouse button for listening
         /*! Internal use only!
@@ -202,7 +202,7 @@ namespace Input
             \param released_event event that is launched when button is released (launched once)
             \param modifier bit flag for modifier keys (ctrl, shift, alt). See OIS for the bit flag values.
         */
-        void RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID button, Core::event_id_t pressed_event, Core::event_id_t released_event, int modifier = 0);
+        void RegisterMouseButtonEvent(Input::State state, OIS::MouseButtonID button, event_id_t pressed_event, event_id_t released_event, int modifier = 0);
 
         //! Register a slider input
         /*! Internal use only!
@@ -215,7 +215,7 @@ namespace Input
             \param dragged_event event for dragging the slider (launches as long as slider is dragged)
             \param stopped_event event that is launched when the slider is no longer dragged (launched once)
         */
-        void RegisterSliderEvent(Input::State state, Slider slider, Core::event_id_t dragged_event, Core::event_id_t stopped_event, int button = -1, int modifier = 0);
+        void RegisterSliderEvent(Input::State state, Slider slider, event_id_t dragged_event, event_id_t stopped_event, int button = -1, int modifier = 0);
 
         //! Set current input state
         INPUTOIS_MODULE_API void SetState(Input::State state);
@@ -271,7 +271,7 @@ namespace Input
         SliderInfoVector &GetSliderInfo(Input::State state);
 
         //! input event category
-        Core::event_category_id_t event_category_;
+        event_category_id_t event_category_;
 
         //! OIS objects
         OIS::InputManager *input_manager_;
@@ -302,12 +302,12 @@ namespace Input
 
         bool repeat_key_;
         int last_key_code_;
-        Core::uint last_key_text_;
+        uint last_key_text_;
 
         int multipleKeyLimit_;
         QTime keyTimer_;
 
-        QList<QPair<int, Core::uint> > pressedKeys_;
+        QList<QPair<int, uint> > pressedKeys_;
     };
 }
 #endif

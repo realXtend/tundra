@@ -17,7 +17,7 @@ namespace Asset
     class RexAsset : public Foundation::AssetInterface
     {
     public:
-        typedef std::vector<Core::u8> AssetDataVector;
+        typedef std::vector<u8> AssetDataVector;
         
         //! constructor
         RexAsset(const std::string& asset_id, const std::string& asset_type);
@@ -32,10 +32,10 @@ namespace Asset
         virtual const std::string& GetType() const { ResetAge(); return asset_type_; }
         
         //! returns asset data size
-        virtual Core::uint GetSize() const { ResetAge(); return data_.size(); }
+        virtual uint GetSize() const { ResetAge(); return data_.size(); }
         
         //! returns asset data
-        virtual const Core::u8* GetData() const { ResetAge(); return &data_[0]; }
+        virtual const u8* GetData() const { ResetAge(); return &data_[0]; }
         
         //! returns asset data vector, non-const. For internal use
         AssetDataVector& GetDataInternal() { ResetAge(); return data_; }
@@ -44,10 +44,10 @@ namespace Asset
 		virtual Foundation::AssetMetadataInterface* GetMetadata() const { ResetAge(); return (Foundation::AssetMetadataInterface*)&metadata_;}
 
         //! returns asset age (for caching)
-        Core::f64 GetAge() const { return age_; }
+        f64 GetAge() const { return age_; }
 
         //! adds age to asset
-        void AddAge(Core::f64 time) const { age_ += time; }
+        void AddAge(f64 time) const { age_ += time; }
         
         //! resets age of asset
         void ResetAge() const { age_ = 0.0; }
@@ -62,7 +62,7 @@ namespace Asset
 		//! asset metadata
 		RexAssetMetadata metadata_;
 		//! asset age
-		mutable Core::f64 age_;
+		mutable f64 age_;
     };
 
 }

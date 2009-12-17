@@ -120,13 +120,13 @@ void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPt
         LogInfo("System " + Name() + " subscribed to [NetworkIn]");
 }
 
-void InventoryModule::Update(Core::f64 frametime)
+void InventoryModule::Update(f64 frametime)
 {
 }
 
 bool InventoryModule::HandleEvent(
-    Core::event_category_id_t category_id,
-    Core::event_id_t event_id,
+    event_category_id_t category_id,
+    event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
     if (category_id == networkStateEventCategory_)
@@ -272,7 +272,7 @@ bool InventoryModule::HandleEvent(
     return false;
 }
 
-Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &params)
+Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 {
     using namespace RexTypes;
 
@@ -328,7 +328,7 @@ Console::CommandResult InventoryModule::UploadAsset(const Core::StringVector &pa
     return Console::ResultSuccess();
 }
 
-Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringVector &params)
+Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector &params)
 {
     if (!currentWorldStream_.get())
         return Console::ResultFailure("Not connected to server.");
@@ -345,7 +345,7 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const Core::StringV
 
     currentWorldStream_->SendAgentPausePacket();
 
-    Core::StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+    StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
     if (filenames.empty())
         return Console::ResultFailure("No files chosen.");
 

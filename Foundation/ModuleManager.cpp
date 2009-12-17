@@ -93,13 +93,13 @@ namespace Foundation
         PROFILE(ModuleManager_LoadAvailableModules);
 
         // Find all shared modules and load them
-        Core::StringVectorPtr files;
+        StringVectorPtr files;
         try
         {
             files = GetXmlFiles(DEFAULT_MODULES_PATH);
-        } catch (Core::Exception)
+        } catch (Exception)
         {
-            throw Core::Exception("Failed to load modules, modules directory not found."); // can be considered fatal
+            throw Exception("Failed to load modules, modules directory not found."); // can be considered fatal
         }
 
         for (size_t i = 0 ; i < files->size() ; ++i)
@@ -160,7 +160,7 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::UpdateModules(Core::f64 frametime)
+    void ModuleManager::UpdateModules(f64 frametime)
     {
         for (size_t i=0 ; i<modules_.size() ; ++i)
         {
@@ -183,11 +183,11 @@ namespace Foundation
         }
 
 
-        Core::StringVector current_modules;
+        StringVector current_modules;
         for (size_t i = 0 ; i < modules_.size() ; ++i)
             current_modules.push_back(modules_[i].entry_);
 
-        Core::StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
+        StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
         for (size_t i = 0 ; i < files->size() ; ++i)
         {
             fs::path path((*files)[i]);
@@ -275,7 +275,7 @@ namespace Foundation
         return false;
     }
 
-    void ModuleManager::LoadModule(const fs::path &path, const Core::StringVectorPtr &all_files)
+    void ModuleManager::LoadModule(const fs::path &path, const StringVectorPtr &all_files)
     {
         PROFILE(ModuleManager_LoadModule);
         assert (path.has_filename());
@@ -288,8 +288,8 @@ namespace Foundation
             fs::path modulePath(path);
             modulePath.replace_extension("");
 
-            Core::StringVector entries;
-            Core::StringVector dependencies;
+            StringVector entries;
+            StringVector dependencies;
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
             try
@@ -317,12 +317,12 @@ namespace Foundation
                 entries.push_back(modulePath.filename());
                 
             // Recurse to load dependencies (if any)
-            for ( Core::StringVector::const_iterator it = dependencies.begin() ; 
+            for ( StringVector::const_iterator it = dependencies.begin() ; 
               it != dependencies.end() ; ++it )
             {
                 bool found = false;
                 // Try to find the dependency from the all module paths list
-                for (Core::StringVector::const_iterator it2 = all_files->begin();
+                for (StringVector::const_iterator it2 = all_files->begin();
                     it2 != all_files->end(); ++it2)
                 {
                     if ((*it2).find((*it)) != std::string::npos)
@@ -342,7 +342,7 @@ namespace Foundation
         }
     }
 
-    void ModuleManager::LoadModule(const std::string &name, const Core::StringVector &entries)
+    void ModuleManager::LoadModule(const std::string &name, const StringVector &entries)
     {
         assert(name.empty() == false);
 
@@ -386,7 +386,7 @@ namespace Foundation
             }
         }
 
-        for (Core::StringVector::const_iterator it = entries.begin(); 
+        for (StringVector::const_iterator it = entries.begin(); 
                 it != entries.end(); 
                 ++it)
         {   
@@ -407,7 +407,7 @@ namespace Foundation
 
             if (library->cl_.findClass(*it) == 0)
             {
-                throw Core::Exception("Entry class not found from module");
+                throw Exception("Entry class not found from module");
             }
 
 
@@ -514,17 +514,17 @@ namespace Foundation
         return false;
     }
 
-    Core::StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
+    StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
     {
-        Core::StringVectorPtr files(new Core::StringVector);
+        StringVectorPtr files(new StringVector);
 
         // Find all xml files recursively
         //fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
         //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
-        //    throw Core::Exception("Path not found!"); // can be considered fatal
+        //    throw Exception("Path not found!"); // can be considered fatal
         fs::path rel_path(path);
         if ( !fs::exists( rel_path ) || !fs::is_directory( rel_path ))
-            throw Core::Exception("Path not found!"); // can be considered fatal
+            throw Exception("Path not found!"); // can be considered fatal
 
         fs::recursive_directory_iterator iter( rel_path );
         fs::recursive_directory_iterator end_iter;

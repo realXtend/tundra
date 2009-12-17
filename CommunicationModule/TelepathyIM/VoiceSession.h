@@ -68,7 +68,7 @@ namespace TelepathyIM
         virtual void SendVideoData(bool send);
 
         //! Update playback position for received audio
-        virtual void UpdateAudioSourcePosition(Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f) );
+        virtual void UpdateAudioSourcePosition(Vector3df position = Vector3df(0.0f, 0.0f, 0.0f) );
 
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
@@ -93,7 +93,7 @@ namespace TelepathyIM
         QString reason_;      
         VoiceSessionParticipantVector participants_;
 
-        Core::sound_id_t audio_playback_channel_;
+        sound_id_t audio_playback_channel_;
 
 	protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
@@ -108,7 +108,7 @@ namespace TelepathyIM
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
         void OnAudioStreamCreated(Tp::PendingOperation *op);
         void OnVideoStreamCreated(Tp::PendingOperation *op);
-        void OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size);
+        void OnAudioPlaybackBufferReady(u8* buffer, int buffer_size);
 
     private:
         QByteArray *stream_buffer_;

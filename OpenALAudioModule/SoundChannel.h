@@ -23,17 +23,17 @@ namespace OpenALAudio
         //! Set looped state
         void SetLooped(bool enable);
         //! Set position
-        void SetPosition(const Core::Vector3df& pos);        
+        void SetPosition(const Vector3df& pos);        
         //! Set pitch.
-        void SetPitch(Core::Real pitch);
+        void SetPitch(Real pitch);
         //! Set gain.
-        void SetGain(Core::Real gain);
+        void SetGain(Real gain);
         //! Set range parameters
-        void SetRange(Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff);        
+        void SetRange(Real inner_radius, Real outer_radius, Real rolloff);        
         //! Stop.
         void Stop();        
         //! Per-frame update with new listener position
-        void Update(const Core::Vector3df& listener_pos);
+        void Update(const Vector3df& listener_pos);
         //! Return current state of channel.
         Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
         //! Return name/id of sound that's playing, empty if nothing playing
@@ -45,7 +45,7 @@ namespace OpenALAudio
         //! Delete OpenAL source
         void DeleteSource();       
         //! Calculate attenuation from position, listener position & range parameters
-        void CalculateAttenuation(const Core::Vector3df& listener_pos);
+        void CalculateAttenuation(const Vector3df& listener_pos);
         //! Set positionality & position
         void SetPositionAndMode();
         //! Set gain, taking attenuation into account
@@ -58,23 +58,23 @@ namespace OpenALAudio
         //! Current sound being played
         SoundPtr sound_;
         //! Pitch
-        Core::Real pitch_;
+        Real pitch_;
         //! Gain
-        Core::Real gain_;
+        Real gain_;
         //! Inner radius
-        Core::Real inner_radius_;
+        Real inner_radius_;
         //! Outer radius
-        Core::Real outer_radius_;
+        Real outer_radius_;
         //! Rolloff power factor
-        Core::Real rolloff_;
+        Real rolloff_;
         //! Last calculated attenuation factor
-        Core::Real attenuation_;
+        Real attenuation_;
         //! Looped flag
         bool looped_;
         //! Positional flag
         bool positional_;
         //! Position
-        Core::Vector3df position_;
+        Vector3df position_;
         //! State 
         Foundation::SoundServiceInterface::SoundState state_;
     };

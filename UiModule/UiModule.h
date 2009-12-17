@@ -33,8 +33,8 @@ namespace UiServices
         void Unload();
         void Initialize();
         void Uninitialize();
-        void Update(Core::f64 frametime);
-        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        void Update(f64 frametime);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         /*************** UiModule Services ***************/
 
@@ -61,7 +61,7 @@ namespace UiServices
         QStringList event_query_categories_;
 
         //! Current subscribed category events
-        QMap<QString, Core::event_category_id_t> service_category_identifiers_;
+        QMap<QString, event_category_id_t> service_category_identifiers_;
 
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;

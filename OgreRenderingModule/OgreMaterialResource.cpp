@@ -54,11 +54,11 @@ namespace OgreRenderer
             return false;
         }
 
-        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<Core::u8 *>(source->GetData()), source->GetSize()));
+        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<u8 *>(source->GetData()), source->GetSize()));
 
         static int tempname_count = 0;
         tempname_count++;
-        std::string tempname = "TempMat" + Core::ToString<int>(tempname_count);
+        std::string tempname = "TempMat" + ToString<int>(tempname_count);
         
         try
         {
@@ -123,7 +123,7 @@ namespace OgreRenderer
             }
 
             std::string output_str = output.str();
-            Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((Core::u8 *)(&output_str[0]), output_str.size()));
+            Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((u8 *)(&output_str[0]), output_str.size()));
 
             matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             Ogre::MaterialPtr tempmat;

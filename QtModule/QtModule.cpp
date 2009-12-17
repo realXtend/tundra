@@ -68,7 +68,7 @@ void QtModule::Initialize()
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     
     if (!renderer)
-        throw Core::Exception("Error! Could not find renderer service!");
+        throw Exception("Error! Could not find renderer service!");
 
     controller_->SetParentWindowSize(QSize(renderer->GetWindowWidth(), renderer->GetWindowHeight()));
     
@@ -96,8 +96,8 @@ void QtModule::Uninitialize()
 	SAFE_DELETE(uicanvastestedit_);
 }
 
-bool QtModule::HandleEvent(Core::event_category_id_t category_id,
-    Core::event_id_t event_id, 
+bool QtModule::HandleEvent(event_category_id_t category_id,
+    event_id_t event_id, 
     Foundation::EventDataInterface* data)
 {
     ///\todo Currently OIS mouse is polled in Update(). Convert all input to come through here.
@@ -519,7 +519,7 @@ bool QtModule::RemoveCanvasFromControlBar(const QString& id)
 	return false;
 }
 
-void QtModule::Update(Core::f64 frametime)
+void QtModule::Update(f64 frametime)
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();

@@ -44,7 +44,7 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received) = 0;
+        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;
         
         //! Requests an asset download
         /*! Events will be sent when download progresses, and when asset is ready.
@@ -54,7 +54,7 @@ namespace Foundation
             \param asset_type Asset type
             \return non-zero request tag if download queued, 0 if not queued (no assetprovider could serve request) 
          */
-        virtual Core::request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type) = 0;
+        virtual request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Checks asset id for validity
         /*! \return true if asset id is valid
@@ -70,7 +70,7 @@ namespace Foundation
             \param received_continuous Variable to receive amount of continuous bytes received from the start
             \return true If asset was found either in cache or as a transfer in progress, and variables have been filled, false if not found
          */
-        virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous) = 0;
+        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous) = 0;
 
         //! Registers an asset provider
         /*! \param asset_provider Provider to register

@@ -14,13 +14,13 @@ namespace ProtocolUtilities
     class Buddy
     {
     public:
-        Buddy(RexTypes::RexUUID id, int rights_given, int rights_has);
-        virtual RexTypes::RexUUID GetID() const;
+        Buddy(RexUUID id, int rights_given, int rights_has);
+        virtual RexUUID GetID() const;
         virtual int GetRightsGiven() const;
         virtual int GetRightsHas() const;
 
     protected:
-        RexTypes::RexUUID id_;
+        RexUUID id_;
         int rights_given_;
         int rights_has_;
     };

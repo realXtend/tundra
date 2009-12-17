@@ -16,7 +16,7 @@ namespace RexLogic
         SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~SceneEventHandler();
         
-        bool HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         
     private:
         Foundation::Framework *framework_;
@@ -24,7 +24,7 @@ namespace RexLogic
         RexLogicModule *rexlogicmodule_;
         
         //! handle entity deleted event
-        void HandleEntityDeletedEvent(Core::event_id_t entityid);
+        void HandleEntityDeletedEvent(event_id_t entityid);
     };
 }
 

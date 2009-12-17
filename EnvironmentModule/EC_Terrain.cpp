@@ -57,15 +57,15 @@ namespace Environment
         return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
     }
     
-    Core::Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
+    Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
     {
         int px = x * cPatchSize + xinside;
         int py = y * cPatchSize + yinside;
         
-        int xNext = Core::clamp(px+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
-        int yNext = Core::clamp(py+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
-        int xPrev = Core::clamp(px-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
-        int yPrev = Core::clamp(py-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int xNext = clamp(px+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int yNext = clamp(py+1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int xPrev = clamp(px-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
+        int yPrev = clamp(py-1, 0, cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge - 1);
 
         float x_slope = GetPoint(xPrev, py) - GetPoint(xNext, py);
         if ((px <= 0) || (px >= cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge))
@@ -74,7 +74,7 @@ namespace Environment
         if ((py <= 0) || (py >= cNumPatchesPerEdge * Patch::cNumVerticesPerPatchEdge))
             y_slope *= 2;
         
-        Core::Vector3df normal(x_slope, y_slope, 2.0);
+        Vector3df normal(x_slope, y_slope, 2.0);
         normal.normalize();
         return normal;
     }

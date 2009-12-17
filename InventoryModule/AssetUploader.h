@@ -38,7 +38,7 @@ namespace Inventory
     public slots:
         /// Uploads multiple files using HTTP.
         /// @param filenames list of filenames.
-        void UploadFiles(Core::StringList &filenames);
+        void UploadFiles(StringList &filenames);
         void UploadFiles(QStringList &filenames);
 
         /// Uploads multiple assets using HTTP.
@@ -59,7 +59,7 @@ namespace Inventory
             const std::string &filename,
             const std::string &name,
             const std::string &description,
-            const RexTypes::RexUUID &folder_id);
+            const RexUUID &folder_id);
 
         /** Uploads a buffer using HTTP.
          *  @param asset_type_t Asset type.
@@ -75,7 +75,7 @@ namespace Inventory
             const std::string &filename,
             const std::string &name,
             const std::string &description,
-            const RexTypes::RexUUID &folder_id,
+            const RexUUID &folder_id,
             const QVector<uchar>& buffer);
 
         /// @return Does asset uploader have upload capability set.
@@ -100,14 +100,14 @@ namespace Inventory
             const std::string &filename,
             const std::string &name,
             const std::string &description,
-            const RexTypes::RexUUID &folder_id);
+            const RexUUID &folder_id);
         */
 
         /// Used by UploadFiles.
-        void ThreadedUploadFiles(Core::StringList filenames);
+        void ThreadedUploadFiles(StringList filenames);
 
         /// Used by UploadBuffers.
-        //void ThreadedUploadBuffers(Core::StringList filenames, std::vector<std::vector<Core::u8> > buffers);
+        //void ThreadedUploadBuffers(StringList filenames, std::vector<std::vector<u8> > buffers);
         void ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers);
 
         /// Creates NewFileAgentInventory XML message.

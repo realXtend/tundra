@@ -80,9 +80,9 @@ namespace Console
         const Foundation::ConfigurationManager &config = framework->GetDefaultConfig();
         cursor_blink_freq_ = config.DeclareSetting("DebugConsole", "cursor_blink_frequency", 0.5f);
                 
-        Core::f64 slow = config.DeclareSetting("DebugConsole", "key_repeat_slow", 0.5f);
-        Core::f64 fast = config.DeclareSetting("DebugConsole", "key_repeat_fast", 0.045f);
-        Core::f64 change = config.DeclareSetting("DebugConsole", "key_repeat_change", 0.5f);
+        f64 slow = config.DeclareSetting("DebugConsole", "key_repeat_slow", 0.5f);
+        f64 fast = config.DeclareSetting("DebugConsole", "key_repeat_fast", 0.045f);
+        f64 change = config.DeclareSetting("DebugConsole", "key_repeat_change", 0.5f);
         counter_.Reset(slow, fast, change);
     }
 
@@ -118,7 +118,7 @@ namespace Console
             renderer->SubscribeLogListener(log_listener_);
         
             if (framework->HasScene("Console"))
-                throw Core::Exception("Scene for console already exists."); // could be assert also
+                throw Exception("Scene for console already exists."); // could be assert also
 
             Scene::ScenePtr scene = framework->CreateScene("Console");
             Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
@@ -144,7 +144,7 @@ namespace Console
             return;
 
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
 
             // split text by line breaks
             std::string line;
@@ -173,7 +173,7 @@ namespace Console
     void OgreOverlay::Scroll(int rel)
     {   
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
             int lines = rel / scroll_line_size_;
             if (static_cast<int>(text_position_) + lines < 0)
                 lines = -(lines - (lines - static_cast<int>(text_position_)));
@@ -221,7 +221,7 @@ namespace Console
         return false;
     }
 
-    void OgreOverlay::Update(Core::f64 frametime)
+    void OgreOverlay::Update(f64 frametime)
     {
         if (console_overlay_)
         {
@@ -232,9 +232,9 @@ namespace Console
         bool update = false;
         bool repeat_key = false;
         int code = 0;
-        Core::uint text = 0;
+        uint text = 0;
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
             update = update_;
 
             if (current_key_ || current_code_)
@@ -274,7 +274,7 @@ namespace Console
             std::string prompt;
             size_t cursor_offset;
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
 
                 prompt = command_line_;
                 cursor_offset = cursor_offset_;
@@ -294,13 +294,13 @@ namespace Console
         }
     }
 
-    bool OgreOverlay::HandleKeyDown(int code, Core::uint text)
+    bool OgreOverlay::HandleKeyDown(int code, uint text)
     {
         bool result = HandleKey(code, text);
 
         if (result)
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
 
             update_ = true;
             current_code_ = code;
@@ -311,7 +311,7 @@ namespace Console
         return result;
     }
 
-    bool OgreOverlay::HandleKey(int code, Core::uint text)
+    bool OgreOverlay::HandleKey(int code, uint text)
     {
         bool result = true;
 
@@ -325,7 +325,7 @@ namespace Console
             break;
         case OIS::KC_UP:
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
 
                 if (command_history_pos_ != command_history_.begin())
                 {
@@ -337,9 +337,9 @@ namespace Console
             break;
         case OIS::KC_DOWN:
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
 
-                Core::StringList::const_iterator new_pos = command_history_pos_;
+                StringList::const_iterator new_pos = command_history_pos_;
                 if (new_pos != command_history_.end())
                     ++new_pos;
 
@@ -354,7 +354,7 @@ namespace Console
             break;
         case OIS::KC_BACK:
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ < command_line_.length())
                 {
                     command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_ - 1)  +  command_line_.substr(command_line_.length() - cursor_offset_, cursor_offset_);
@@ -363,7 +363,7 @@ namespace Console
             }
         case OIS::KC_DELETE:
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ != 0)
                 {
                     command_line_ = command_line_.substr(0, command_line_.length() - cursor_offset_)  +  command_line_.substr(command_line_.length() - cursor_offset_ + 1, cursor_offset_ - 1);
@@ -383,7 +383,7 @@ namespace Console
             {
                 std::string command_line;
                 {
-                    Core::MutexLock lock(mutex_);
+                    MutexLock lock(mutex_);
                     command_line = command_line_;
                     command_line_.clear();
                     text_position_ = 0;
@@ -406,7 +406,7 @@ namespace Console
 
         default:
             {
-                Core::MutexLock lock(mutex_);
+                MutexLock lock(mutex_);
                 result = AddCharacter(text, command_line_, cursor_offset_);
             }
             break;
@@ -415,9 +415,9 @@ namespace Console
         return result;
     }
 
-    bool OgreOverlay::HandleKeyUp(int code, Core::uint text)
+    bool OgreOverlay::HandleKeyUp(int code, uint text)
     {
-        Core::MutexLock lock(mutex_);
+        MutexLock lock(mutex_);
         bool result = (current_code_ != 0);
 
         current_key_ = 0;
@@ -431,25 +431,25 @@ namespace Console
         int offset_neg = -offset;
         if (offset_neg < 0)
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
             if (cursor_offset_ >= -offset_neg) cursor_offset_ += offset_neg;
         } else
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
             cursor_offset_ = std::min(cursor_offset_ + offset_neg, command_line_.length());
         }
     }
 
     void OgreOverlay::FormatPage(std::string &pageOut)
     {
-        Core::MutexLock lock(mutex_);
+        MutexLock lock(mutex_);
 
         //! \todo We could split long lines for nice word-wrap on the console, but problem is figuring out how long a line is.
         //!       Currently in the font used, not all characters are fixed-width (space...).
 
         std::string page;
         size_t num_lines = 0;
-        Core::StringList::const_iterator line = message_lines_.begin();
+        StringList::const_iterator line = message_lines_.begin();
 
         assert (message_lines_.size() >= text_position_);
 

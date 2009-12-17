@@ -9,7 +9,7 @@ namespace Foundation
     {
     }
 
-    void ServiceManager::RegisterService(Core::service_type_t type, const ServiceWeakPtr &service)
+    void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &service)
     {
         assert(service.expired() == false);
 
@@ -24,7 +24,7 @@ namespace Foundation
 
 #ifdef _DEBUG
         ServicePtr upped_service = service.lock();
-        Foundation::RootLogDebug("Registering service type " + Core::ToString(type) + " with usage count " + Core::ToString(upped_service.use_count()));
+        Foundation::RootLogDebug("Registering service type " + ToString(type) + " with usage count " + ToString(upped_service.use_count()));
         services_usage_[type] = upped_service.use_count();
 #endif
     }
@@ -41,7 +41,7 @@ namespace Foundation
             assert (iter->second.expired() == false);
             if (iter->second.lock().get() == upped_service.get())
             {
-                Foundation::RootLogDebug("Unregistering service type " + Core::ToString(iter->first));
+                Foundation::RootLogDebug("Unregistering service type " + ToString(iter->first));
 
 #ifdef _DEBUG
             if (upped_service.use_count() > services_usage_[iter->first]) // not efficient according to boost doc, so use only in debug
@@ -54,7 +54,7 @@ namespace Foundation
                 //!       modules. In that way when module gets unloaded, if one of it's services is still in use
                 //!       it could keep the module alive. This would take some refactoring of the module system
                 //!       thought. -cm
-                RootLogError("Unregistering a service type " + Core::ToString(iter->first) + " that is probably still in use!");
+                RootLogError("Unregistering a service type " + ToString(iter->first) + " that is probably still in use!");
             }
 #endif
 

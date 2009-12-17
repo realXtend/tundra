@@ -20,9 +20,6 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 
-namespace Core
-{
-
 //! Quaternion class for representing rotations.
 /** It provides cheap combinations and avoids gimbal locks.
 Also useful for interpolations. */
@@ -64,10 +61,10 @@ class Quaternion
 
         bool equals(const Quaternion other, const f32 tolerance = ROUNDING_ERROR_32 ) const
 		{
-			return Core::equals(x, other.x, tolerance) &&
-				Core::equals(y, other.y, tolerance) &&
-				Core::equals(z, other.z, tolerance) &&
-                Core::equals(w, other.w, tolerance);
+			return ::equals(x, other.x, tolerance) &&
+				::equals(y, other.y, tolerance) &&
+				::equals(z, other.z, tolerance) &&
+                ::equals(w, other.w, tolerance);
 		}
 
 		//! Assignment operator
@@ -104,7 +101,7 @@ class Quaternion
 		inline Quaternion& set(f32 xx, f32 yy, f32 zz);
 
 		//! Sets new Quaternion based on euler angles (radians)
-		inline Quaternion& set(const Core::Vector3df& vec);
+		inline Quaternion& set(const Vector3df& vec);
 
 		//! Normalizes the Quaternion
 		inline Quaternion& normalize();
@@ -133,7 +130,7 @@ class Quaternion
 		Quaternion& fromAngleAxis (f32 angle, const Vector3df& axis);
 
 		//! Fills an angle (radians) around an axis (unit vector)
-		void toAngleAxis (f32 &angle, Core::Vector3df& axis) const;
+		void toAngleAxis (f32 &angle, Vector3df& axis) const;
 
 		//! Output this Quaternion to an euler angle (radians)
 		void toEuler(Vector3df& euler) const;
@@ -309,7 +306,7 @@ inline Quaternion Quaternion::operator+(const Quaternion& b) const
 // Creates a matrix from this Quaternion
 inline Matrix4 Quaternion::getMatrix() const
 {
-	Core::Matrix4 m;
+	Matrix4 m;
 	getMatrix_transposed(m);
 	return m;
 }
@@ -414,7 +411,7 @@ inline Quaternion& Quaternion::set(f32 xx, f32 yy, f32 zz)
 }
 
 // sets new Quaternion based on euler angles
-inline Quaternion& Quaternion::set(const Core::Vector3df& vec)
+inline Quaternion& Quaternion::set(const Vector3df& vec)
 {
 	return set(vec.x, vec.y, vec.z);
 }
@@ -493,11 +490,11 @@ inline Quaternion& Quaternion::fromAngleAxis(f32 angle, const Vector3df& axis)
 }
 
 
-inline void Quaternion::toAngleAxis(f32 &angle, Core::Vector3df &axis) const
+inline void Quaternion::toAngleAxis(f32 &angle, Vector3df &axis) const
 {
 	const f32 scale = sqrtf(x*x + y*y + z*z);
 
-	if (Core::iszero(scale) || w > 1.0f || w < -1.0f)
+	if (iszero(scale) || w > 1.0f || w < -1.0f)
 	{
 		angle = 0.0f;
 		axis.x = 0.0f;
@@ -547,7 +544,7 @@ inline Vector3df Quaternion::operator* (const Vector3df& v) const
 }
 
 // set Quaternion to identity
-inline Core::Quaternion& Quaternion::makeIdentity()
+inline Quaternion& Quaternion::makeIdentity()
 {
 	w = 1.f;
 	x = 0.f;
@@ -556,7 +553,7 @@ inline Core::Quaternion& Quaternion::makeIdentity()
 	return *this;
 }
 
-inline Core::Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const Vector3df& to)
+inline Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const Vector3df& to)
 {
 	// Based on Stan Melax's article in Game Programming Gems
 	// Copy, since cannot modify local
@@ -583,8 +580,6 @@ inline Core::Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const
 	return *this;
 }
 
-
-} // end namespace Core
 
 #endif
 

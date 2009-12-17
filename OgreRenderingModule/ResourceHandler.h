@@ -25,16 +25,16 @@ namespace OgreRenderer
         Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);   
         
         //! Request a renderer-specific resource. Called by Renderer
-        Core::request_tag_t RequestResource(const std::string& id, const std::string& type);   
+        request_tag_t RequestResource(const std::string& id, const std::string& type);   
         
         //! Remove a renderer-specific resource. Called by Renderer
         void RemoveResource(const std::string& id, const std::string& type);
         
         //! Handles an asset system event. Called by OgreRenderingModule
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handles a resource event. Called by OgreRenderingModule
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         
         //! Internal method to parse braces from an Ogre script. Returns true if line contained open/close brace
         static bool ProcessBraces(const std::string& line, int& brace_level);
@@ -48,56 +48,56 @@ namespace OgreRenderer
             \param id Resource ID, same as asset ID
             \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
          */
-        Core::request_tag_t RequestTexture(const std::string& id);
+        request_tag_t RequestTexture(const std::string& id);
     
         //! Requests other asset than texture to be downloaded & decoded
         /*! A resource event (with the returned request tag) will be sent once download is finished
             \param id Resource ID, same as asset ID
             \return Request tag, 0 if asset ID invalid or asset system fatally non-existent
          */
-        Core::request_tag_t RequestOtherResource(const std::string& id, const std::string& type);
+        request_tag_t RequestOtherResource(const std::string& id, const std::string& type);
 
         //! Creates or updates a texture, based on a source raw texture resource
         /*! \param source Raw texture 
             \param tag Request tag from raw texture resource event
             \return true if successful
          */
-        bool UpdateTexture(Foundation::ResourcePtr source, Core::request_tag_t tag);
+        bool UpdateTexture(Foundation::ResourcePtr source, request_tag_t tag);
 
         //! Creates or updates a mesh, based on source asset data
         /*! \param source Asset
             \param tag Request tag from asset event
             \return true if successful
          */
-        bool UpdateMesh(Foundation::AssetPtr source, Core::request_tag_t tag); 
+        bool UpdateMesh(Foundation::AssetPtr source, request_tag_t tag); 
 
         //! Creates or updates a skeleton, based on source asset data
         /*! \param source Asset
             \param tag Request tag from asset event
             \return true if successful
          */
-        bool UpdateSkeleton(Foundation::AssetPtr source, Core::request_tag_t tag); 
+        bool UpdateSkeleton(Foundation::AssetPtr source, request_tag_t tag); 
 
         //! Creates or updates a material, based on source asset data
         /*! \param source The material asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateMaterial(Foundation::AssetPtr source, Core::request_tag_t tag);
+        bool UpdateMaterial(Foundation::AssetPtr source, request_tag_t tag);
 
         //! Creates or updates particle scripts, based on source asset data
         /*! \param source The particle script asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateParticles(Foundation::AssetPtr source, Core::request_tag_t tag);
+        bool UpdateParticles(Foundation::AssetPtr source, request_tag_t tag);
 
         //! Creates or updates image based texture, based on source asset data
         /*! \param source The image asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateImageTexture(Foundation::AssetPtr source, Core::request_tag_t tag);
+        bool UpdateImageTexture(Foundation::AssetPtr source, request_tag_t tag);
 
         //! Processes resource references of a resource once it has been loaded.
         /*! Adds references to outstanding list and makes requests as necessary.
@@ -107,28 +107,28 @@ namespace OgreRenderer
         void ProcessResourceReferences(Foundation::ResourcePtr resource);
         
         //! Processes resource ready for an outstanding reference
-        void ProcessReferenceReady(Foundation::ResourcePtr resource, Core::request_tag_t tag);
+        void ProcessReferenceReady(Foundation::ResourcePtr resource, request_tag_t tag);
         
         //! Gets number of outstanding (not yet loaded) references for resource
         unsigned GetNumOutstandingReferences(const std::string& id);
 
         //! resource event category
-        Core::event_category_id_t resource_event_category_;
+        event_category_id_t resource_event_category_;
                 
         //! Ogre resources
         Foundation::ResourceMap resources_;
 
         //! Expected request tags from other subsystems
-        std::set<Core::request_tag_t> expected_request_tags_;
+        std::set<request_tag_t> expected_request_tags_;
         
         //! Map of resource request tags by resource
-        std::map<std::string, Core::RequestTagVector> request_tags_;
+        std::map<std::string, RequestTagVector> request_tags_;
         
         //! Map of source asset types by renderer resource type
         std::map<std::string, std::string> source_types_;
         
         //! Map of reference request tags to resource id's
-        std::map<Core::request_tag_t, std::string> reference_request_tags_;
+        std::map<request_tag_t, std::string> reference_request_tags_;
         
         //! Map of outstanding reference requests per resource
         std::map<std::string, Foundation::ResourceReferenceVector> outstanding_references_;

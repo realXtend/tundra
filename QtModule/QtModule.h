@@ -40,15 +40,15 @@ namespace QtUI
         void Initialize();
         void PostInitialize();
         void Uninitialize();
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
 
         MODULE_LOGGING_FUNCTIONS;
 
         /// @return Module name. Needed for logging.
         static const std::string &NameStatic();
 
-        bool HandleEvent(Core::event_category_id_t category_id,
-            Core::event_id_t event_id, 
+        bool HandleEvent(event_category_id_t category_id,
+            event_id_t event_id, 
             Foundation::EventDataInterface* data);
           
         /** Creates a new empty UI canvas.
@@ -130,9 +130,9 @@ namespace QtUI
         boost::shared_ptr<UICanvas> GetCanvas(const Foundation::RaycastResult& result);
 
         // The event categories this module subscribes to.
-        Core::event_category_id_t input_event_category_;
-        Core::event_category_id_t renderer_event_category_;
-        Core::event_category_id_t scene_event_category_;
+        event_category_id_t input_event_category_;
+        event_category_id_t renderer_event_category_;
+        event_category_id_t scene_event_category_;
 
         bool mouse_left_button_down_;
         QPoint lastPos_;

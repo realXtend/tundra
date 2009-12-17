@@ -29,7 +29,7 @@ namespace J2k
     /// @param src_image
     /// @param outbuf
     /// @param reversible
-    bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool reversible);
+    bool J2kEncode(Ogre::Image &src_image, std::vector<u8> &outbuf, bool reversible);
 }
 
 #endif

@@ -54,7 +54,7 @@ public:
 
     void SetupCosines16()
     {
-        const float hposz = Core::PI * 0.5f / 16.0f;
+        const float hposz = PI * 0.5f / 16.0f;
 
         for (int u = 0; u < 16; u++)
             for (int n = 0; n < 16; n++)
@@ -123,13 +123,13 @@ TerrainPatchHeader DecodePatchHeader(ProtocolUtilities::BitStream &bits)
    if (header.quantWBits == cEndOfPatches)
        return header;
 
-   Core::u32 val = bits.ReadBits(32);
+   u32 val = bits.ReadBits(32);
    header.dcOffset = *reinterpret_cast<float*>(&val); // Apparently the height coordinate of the lowest patch.
    header.range = bits.ReadBits(16); // The difference between lowest and highest point on the patch.
-   Core::u32 patchIDs = bits.ReadBits(10);
+   u32 patchIDs = bits.ReadBits(10);
    header.x = patchIDs >> 5;
    header.y = patchIDs & 31;
-   header.wordBits = (Core::uint)((header.quantWBits & 0x0f) + 2); // This is a bit odd - apparently this field is not present in the header?
+   header.wordBits = (uint)((header.quantWBits & 0x0f) + 2); // This is a bit odd - apparently this field is not present in the header?
 
    return header;
 }
@@ -166,8 +166,8 @@ void DecodeTerrainPatch(int *patches, ProtocolUtilities::BitStream &bits, const 
         }
 
         bool signNegative = bits.ReadBit();
-        Core::u32 data = (Core::u32)bits.ReadBits(header.wordBits);
-        patches[i] = signNegative ? -(Core::s32)data : (Core::s32)data;
+        u32 data = (u32)bits.ReadBits(header.wordBits);
+        patches[i] = signNegative ? -(s32)data : (s32)data;
     }
 }
 

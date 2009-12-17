@@ -48,9 +48,9 @@ namespace OgreRenderer
         }
 
         // Detected template names
-        Core::StringVector new_templates;
+        StringVector new_templates;
             
-        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<Core::u8 *>(source->GetData()), source->GetSize()));
+        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(const_cast<u8 *>(source->GetData()), source->GetSize()));
         try
         {
             int brace_level = 0;
@@ -89,7 +89,7 @@ namespace OgreRenderer
                         // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                         if (brace_level == 0)
                         {
-                            line = id_ + "_" + Core::ToString<size_t>(new_templates.size());
+                            line = id_ + "_" + ToString<size_t>(new_templates.size());
                             new_templates.push_back(line);
                             // New script compilers need this
                             line = "particle_system " + line;
@@ -167,7 +167,7 @@ namespace OgreRenderer
         }
         
         // Check which templates actually succeeded
-        for (Core::uint i = 0; i < new_templates.size(); ++i)
+        for (uint i = 0; i < new_templates.size(); ++i)
         {
             if (Ogre::ParticleSystemManager::getSingleton().getTemplate(new_templates[i]))
             {
@@ -192,12 +192,12 @@ namespace OgreRenderer
         return type_name;
     }    
     
-    Core::uint OgreParticleResource::GetNumTemplates() const
+    uint OgreParticleResource::GetNumTemplates() const
     {
         return templates_.size();
     }
     
-    const std::string& OgreParticleResource::GetTemplateName(Core::uint index) const
+    const std::string& OgreParticleResource::GetTemplateName(uint index) const
     {
         static const std::string empty;
         if (index >= templates_.size())
@@ -231,15 +231,15 @@ namespace OgreRenderer
         if (line_vec.size() != 4)
             return;
         
-        for (Core::uint i = 0; modify_these[i].length(); ++i)
+        for (uint i = 0; modify_these[i].length(); ++i)
         {
             if (line_vec[0] == modify_these[i])
             {   
                 try
                 {
-                    Core::Real x = Core::ParseString<Core::Real>(line_vec[1]);
-                    Core::Real y = Core::ParseString<Core::Real>(line_vec[2]);
-                    Core::Real z = Core::ParseString<Core::Real>(line_vec[3]);
+                    Real x = ParseString<Real>(line_vec[1]);
+                    Real y = ParseString<Real>(line_vec[2]);
+                    Real z = ParseString<Real>(line_vec[3]);
 
                     // For compatibility with old rex assets, the Z coord has to be reversed
                     std::stringstream s;

@@ -119,8 +119,8 @@ namespace OgreRenderer
 
     // virtual
     bool OgreRenderingModule::HandleEvent(
-        Core::event_category_id_t category_id,
-        Core::event_id_t event_id, 
+        event_category_id_t category_id,
+        event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
@@ -190,7 +190,7 @@ namespace OgreRenderer
     }
     
     // virtual
-    void OgreRenderingModule::Update(Core::f64 frametime)
+    void OgreRenderingModule::Update(f64 frametime)
     {
         {
             PROFILE(OgreRenderingModule_Update);
@@ -199,7 +199,7 @@ namespace OgreRenderer
         RESETPROFILER;
     }
 
-    Console::CommandResult OgreRenderingModule::ConsoleStats(const Core::StringVector &params)
+    Console::CommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
     {
         if (renderer_)
         {
@@ -207,11 +207,11 @@ namespace OgreRenderer
             if (console)
             {
                 const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
-                console->Print("Average FPS: " + Core::ToString(stats.avgFPS));
-                console->Print("Worst FPS: " + Core::ToString(stats.worstFPS));
-                console->Print("Best FPS: " + Core::ToString(stats.bestFPS));
-                console->Print("Triangles: " + Core::ToString(stats.triangleCount));
-                console->Print("Batches: " + Core::ToString(stats.batchCount));
+                console->Print("Average FPS: " + ToString(stats.avgFPS));
+                console->Print("Worst FPS: " + ToString(stats.worstFPS));
+                console->Print("Best FPS: " + ToString(stats.bestFPS));
+                console->Print("Triangles: " + ToString(stats.triangleCount));
+                console->Print("Batches: " + ToString(stats.batchCount));
 
                 return Console::ResultSuccess();
             }
