@@ -297,6 +297,7 @@ namespace TelepathyIM
         Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
         Tp::MediaStreamPtr video_stream = GetVideoMediaStream();
 
+        // Create automatically audio stream and start sending audio data
         if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
         else
@@ -326,6 +327,11 @@ namespace TelepathyIM
         if (pending_audio_streams_ )
             return;
 
+        if (!tp_channel_)
+        {
+            LogError("Cannot create audio stream.");
+            return;
+        }
         pending_audio_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeAudio);
         connect(pending_audio_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnAudioStreamCreated(Tp::PendingOperation*) ));
     }
@@ -335,13 +341,19 @@ namespace TelepathyIM
         if (pending_video_streams_ )
             return;
 
+        if (!tp_channel_)
+        {
+            LogError("Cannot create audio stream.");
+            return;
+        }
         pending_video_streams_ = tp_channel_->requestStream(tp_contact_, Tp::MediaStreamTypeVideo);
         connect(pending_video_streams_, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnVideoStreamCreated(Tp::PendingOperation*) ));
     }
 
     void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
     {
-        switch (status) {
+        switch (status)
+        {
         case FarsightChannel::StatusConnecting:
             LogInfo("VoiceSession: FarsightChannel status = Connecting...");
             break;
@@ -418,11 +430,13 @@ namespace TelepathyIM
         if (stream->type() == Tp::MediaStreamTypeAudio)
         {
             LogDebug("Removed AUDIO STREAM");
+            emit AudioStreamStateChanged(SS_DISCONNECTED);
         }
 
         if (stream->type() == Tp::MediaStreamTypeVideo)
         {
             LogDebug("Removed VIDEO STREAM");
+            emit VideoStreamStateChanged(SS_DISCONNECTED);
         }
     }
 
@@ -612,8 +626,8 @@ namespace TelepathyIM
         int sample_width = 16; // fix this
         int rate = 16000; // fix this
 
-        //if (farsight_channel_)
-        //    rate = farsight_channel_->audio_stream_in_clock_rate_; 
+        if (farsight_channel_)
+            rate = farsight_channel_->audio_stream_in_clock_rate_; 
 
         //if (ms_buffer_size_ <= 60)
         //{

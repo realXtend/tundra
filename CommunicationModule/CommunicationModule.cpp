@@ -129,7 +129,7 @@ namespace Communication
             {
                 im_ui_ = new CommunicationUI::MasterWidget(framework_);
                 im_ui_->show();
-                //AddWidgetToUi("IM");
+              //  AddWidgetToUi("IM");
             }
             return;
         }
