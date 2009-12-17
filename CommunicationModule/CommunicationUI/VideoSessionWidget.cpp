@@ -73,10 +73,10 @@ namespace CommunicationUI
     VideoSessionWidget::~VideoSessionWidget()
     {
         // CRASH HERE after session close
-        if (internal_v_layout_local_ && local_video_)
-            internal_v_layout_local_->removeWidget(local_video_);
-        if (internal_v_layout_remote_ && remote_video_)
-            internal_v_layout_remote_->removeWidget(remote_video_);
+        //if (internal_v_layout_local_ && local_video_)
+        //    internal_v_layout_local_->removeWidget(local_video_);
+        //if (internal_v_layout_remote_ && remote_video_)
+        //    internal_v_layout_remote_->removeWidget(remote_video_);
         SAFE_DELETE(internal_widget_);
     }
 
@@ -252,7 +252,8 @@ namespace CommunicationUI
         sending_label->setAlignment(Qt::AlignCenter);
         sending_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_local_->addWidget(sending_label);
-        internal_v_layout_local_->addWidget(local_video_);
+        if (local_video_)
+            internal_v_layout_local_->addWidget(local_video_);
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
@@ -263,7 +264,8 @@ namespace CommunicationUI
         receiving_label->setAlignment(Qt::AlignCenter);
         receiving_label->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
         internal_v_layout_remote_->addWidget(receiving_label);
-        internal_v_layout_remote_->addWidget(remote_video_);
+        if (remote_video_)
+           internal_v_layout_remote_->addWidget(remote_video_);
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
