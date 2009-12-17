@@ -144,10 +144,17 @@ bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
         return false;
 
     if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
+    {
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
-            QSTR_TO_UUID(worldLibraryOwnerId_));
+            QSTR_TO_UUID(worldLibraryOwnerId_), 0, true, false);
+        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
+            QSTR_TO_UUID(worldLibraryOwnerId_), 0, false, true);
+    }
     else
-        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()));
+    {
+        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()), RexUUID(), 0, true, false);
+        currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()), RexUUID(), 0, false, true);
+    }
 
     return true;
 }

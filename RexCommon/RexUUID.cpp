@@ -79,21 +79,23 @@ RexUUID RexUUID::CreateRandom()
 
 bool RexUUID::IsValid(const char *str)
 {
-    if (!str) return false;
-        
+    ///\bug Crashes if the uuid is valid otherwise but is too long and has unvalid chars at the very end.
+    if (!str)
+        return false;
+
     int valid_nibbles = 0;
-            
+
     while (*str)
     {
         // If it looks anything like a url, can't be UUID
         if ((*str == '/') || (*str == ':'))
             return false;
-            
+
         if (CharToNibble(*str) <= 0xf)
-            valid_nibbles++;           
+            valid_nibbles++;
         str++;
-    } 
-    
+    }
+
     return (valid_nibbles == cSizeBytes * 2);
 }
 
@@ -111,7 +113,7 @@ void RexUUID::FromString(const char *str)
     }
     int curIndex = 0;
     for(int i = 0; i < cSizeBytes; ++i)
-	{
+    {
         if (curIndex >= strLen)
         {
             SetNull();
@@ -193,3 +195,5 @@ bool RexUUID::operator <(const RexUUID &rhs) const
 
     return false;
 }
+
+

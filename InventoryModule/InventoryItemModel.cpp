@@ -162,14 +162,21 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
     {
         if (index.isValid())
         {
+            QString info;
+            QString asset_type, asset_ref;
+
             AbstractInventoryItem *item = GetItem(index);
-/*
-            if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
-                stream << "asset";
-            if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-                stream << "folder";
-*/
-            stream << item->GetID();
+            InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
+            if (asset)
+            {
+                asset_type.append(QString("%1").arg(asset->GetAssetType()));
+                asset_ref = asset->GetAssetReference();
+            }
+            else
+                asset_type.append(QString("%1").arg(RexTypes::RexAT_None));
+
+            info.append(asset_type + ";" + item->GetID() + ";" + item->GetName() + ";" + asset_ref);
+            stream << info;
 /*
             InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
             if (folder)
@@ -209,8 +216,14 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QList<AbstractInventoryItem *> itemList;
     while(!stream.atEnd())
     {
-        QString id;
-        stream >> id;
+        // We're interested only in the item id's.
+        QString info;
+        stream >> info;
+        int idx1 = info.indexOf(";");
+        int idx2 = info.indexOf(";", idx1 + 1);
+        QString id = info.mid(idx1 + 1, idx2 - idx1 - 1);
+        if (!RexUUID::IsValid(id.toStdString()))
+            continue;
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
         itemList << item;
@@ -227,8 +240,10 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         }
     }
 
-    itemMoveFlag_ = true;
+    if (itemsToBeMoved_.size() == 0)
+        return false;
 
+    itemMoveFlag_ = true;
     return true;
 }
 

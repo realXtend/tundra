@@ -109,16 +109,47 @@ bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *dat
     QByteArray encodedData = data->data("application/vnd.inventory.item");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
-    QString id;
+    QString asset_id;
+    bool valid = false;
     while(!stream.atEnd())
     {
-        stream >> id;
-        std::cout << "id" << id.toStdString() << std::endl;
+        ///\todo Make convience function for parsing data.
+        QString asset_type, item_id, name;
+
+        QString info;
+        stream >> info;
+
+        int idx1 = info.indexOf(";");
+        asset_type = info.mid(0, idx1);
+        if (asset_type.toInt(&valid) != RexTypes::RexAT_Texture)
+            continue;
+
+        int idx2 = info.indexOf(";", idx1);
+        int idx3 = info.indexOf(";", idx2 + 1);
+        item_id = info.mid(idx2 + 1, idx3 - idx2 - 1);
+        if (!RexUUID::IsValid(item_id.toStdString()))
+            continue;
+
+        int idx4 = info.indexOf(";", idx3);
+        int idx5 = info.indexOf(";", idx4 + 1);
+        name = info.mid(idx4 + 1, idx5 - idx4 - 1);
+
+        int idx6 = info.indexOf(";", idx5);
+        int idx7 = info.indexOf(";", idx6 + 1);
+        asset_id = info.mid(idx6 + 1, idx7 - idx6 - 1);
+        if (!RexUUID::IsValid(asset_id.toStdString()))
+            continue;
     }
 
+    if (!valid || !RexUUID::IsValid(asset_id.toStdString()))
+        return false;
+
     QTableWidgetItem *item = this->item(row, column);
+    if (!item)
+        return false;
+
     if (item->flags() & Qt::ItemIsDropEnabled)
-        item->setData(Qt::DisplayRole, id);
+        item->setData(Qt::DisplayRole, asset_id);
     else
         return false;
 

@@ -49,12 +49,6 @@ void OgreAssetEditorModule::Initialize()
     // Get event manager.
     eventManager_ = framework_->GetEventManager();
 
-    // Register asset handlers
-//    assetHandlers_[RexTypes::RexAT_MaterialScript] = 0;
-
-//    assetHandlers_[RexTypes::RexAT_MaterialScript].push_back(boost::bind(
-//            &OgreScriptEditor::HandleAssetReadyEvent, object, _1, _2));
-
     LogInfo("System " + Name() + " initialized.");
 }
 

@@ -57,6 +57,7 @@ namespace OgreAssetEditor
         /// Destructor.
         ~PropertyTableWidget();
 
+        //
     protected:
         /// QTableWidget overrides.
         QStringList mimeTypes() const;
