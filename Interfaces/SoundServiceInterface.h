@@ -54,7 +54,7 @@ namespace Foundation
 
             \TODO: Support multiple SoundStream with sound stream id
         */
-        virtual sound_id_t PlayAudioData(u8* buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlayAudioData(u8 *buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, bool positional = false, sound_id_t channel = 0) = 0;
 
         //! Gets state of channel
         /*! \param id Channel id
