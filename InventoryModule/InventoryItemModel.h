@@ -94,9 +94,9 @@ namespace Inventory
         bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item,
             const QModelIndex &parent_index = QModelIndex());
 
-        /// 
+        /// Opens inventory item (e.g. opens a folder and shows its children or opens an asset for preview).
         /// @param index Model index.
-        /// @return 
+        /// @return True if the item could be opened, false otherwise.
         bool Open(const QModelIndex &index);
 
         /// @return Inventory data model pointer.
