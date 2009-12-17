@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file AbstractInventoryItem.h
- *  @brief Abstract inventory item. Subclass your inventory items from this class.
+ *  @file   AbstractInventoryItem.h
+ *  @brief  Abstract inventory item. Subclass your inventory items from this class.
+ *          If you create new type of item, remeber to add it to InventoryItemType enum.
  */
 
 #ifndef incl_InventoryModule_AbstractInventoryItem_h
@@ -44,29 +45,37 @@ namespace Inventory
 
         /// @return Name.
         QString GetName() const {return name_; }
+//        virtual QString GetName() const = 0;
 
         /// @param name New name.
         void SetName(const QString &name) { name_ = name; }
+//        virtual void SetName(const QString &name) = 0;
 
         /// @return ID.
         QString GetID() const { return id_; }
+//        virtual QString GetID() const = 0;
 
         /// @param id New ID.
         void SetID(const QString &id) { id_ = id; }
+//        virtual void SetID(const QString &id) = 0;
 
         /// @return Parent pointer.
         AbstractInventoryItem *GetParent() const { return parent_; }
+//        virtual AbstractInventoryItem *GetParent() const = 0;
 
         /// @param parent New parent pointer.
         void SetParent(AbstractInventoryItem *parent) { parent_ = parent; }
+//        virtual void SetParent(AbstractInventoryItem *parent) = 0;
 
         /// @return Is this item editable.
         bool IsEditable() const { return editable_; }
+//        virtual bool IsEditable() const = 0;
 
         /// @param editable Is this item editable.
         void SetEditable(const bool &editable) { editable_ = editable; }
+//        virtual void SetEditable(const bool &editable);
 
-        /// @return Type of the item (folder/asset).
+        /// @return Type of the item.
         virtual InventoryItemType GetItemType() const = 0;
 
         /// @return Is this item library asset.

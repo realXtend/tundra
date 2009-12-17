@@ -141,8 +141,7 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
 
 Qt::DropActions InventoryItemModel::supportedDropActions() const
 {
-    ///\todo: | QtCopyAction?
-    return Qt::MoveAction; 
+    return Qt::MoveAction| Qt::CopyAction;
 }
 
 QStringList InventoryItemModel::mimeTypes() const
@@ -164,14 +163,13 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
         if (index.isValid())
         {
             AbstractInventoryItem *item = GetItem(index);
-            /*
+/*
             if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
                 stream << "asset";
             if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
                 stream << "folder";
-            */
+*/
             stream << item->GetID();
-
 /*
             InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
             if (folder)
@@ -211,8 +209,7 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QList<AbstractInventoryItem *> itemList;
     while(!stream.atEnd())
     {
-        QString id, type;
-        stream >> type;
+        QString id;
         stream >> id;
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
@@ -223,7 +220,7 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
     foreach(AbstractInventoryItem *item, itemList)
     {
-        if (InsertExistingItem(beginRow, newParent, item))
+        if (InsertExistingItem(beginRow, newParent, item, parent))
         {
             ++beginRow;
             itemsToBeMoved_ << item->GetID();
@@ -284,7 +281,10 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
         int idx = itemsToBeMoved_.indexOf(childItem->GetID());
         if (idx != -1)
         {
-            removeRow = true;
+            // Do not remove library items from the model.
+            if (!childItem->IsLibraryItem())
+                removeRow = true;
+
             itemsToBeMoved_.remove(idx);
         }
     }
@@ -335,7 +335,7 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
     if (parentFolder->IsLibraryItem())
         return false;
 
-    beginInsertRows(parent, position, position /*+ rows - 1*/);
+    beginInsertRows(parent, position, position );
 
 #ifdef _DEBUG
     RexUUID id;
@@ -360,7 +360,8 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
     return true;
 }
 
-bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item)
+bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem *item,
+    const QModelIndex &parent_index)
 {
     if (new_parent == item->GetParent())
         return false;
@@ -369,7 +370,8 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
     if (!newParentFolder)
         return false;
 
-    //beginInsertRows(parent, position, position);
+    if (parent_index.isValid())
+        beginInsertRows(parent_index, parent_index.row(), parent_index.row());
 
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
@@ -424,7 +426,11 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
         }
     }
 
-    //endInsertRows();
+    if (parent_index.isValid())
+    {
+        endInsertRows();
+        fetchMore(parent_index);
+    }
 
     return true;
 }
