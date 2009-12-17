@@ -324,8 +324,9 @@ namespace Environment
                     fog_ground_end_distance->setMinimum(0.0);
 
                     QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
-
+                    fog_ground_start_distance->setMaximum(1000.0);
                     fog_ground_start_distance->setValue(environment_->GetGroundFogStartDistance());
+                    fog_ground_end_distance->setMaximum(1000.0);
                     fog_ground_end_distance->setValue(environment_->GetGroundFogEndDistance());
              }
 
@@ -356,8 +357,9 @@ namespace Environment
                     fog_water_end_distance->setMinimum(0.0);
 
                     QObject::connect(fog_water_distance_button, SIGNAL(clicked()), this, SLOT(SetWaterFogDistance()));
-
+                    fog_water_start_distance->setMaximum(1000.0);
                     fog_water_start_distance->setValue(environment_->GetWaterFogStartDistance());
+                    fog_water_end_distance->setMaximum(1000.0);
                     fog_water_end_distance->setValue(environment_->GetWaterFogEndDistance());
 
             }
