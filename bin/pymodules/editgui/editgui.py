@@ -61,9 +61,30 @@ class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
+        self.setAcceptDrops(True)
+
+    def accept(self, ev):
+        return ev.mimeData().hasFormat("application/vnd.inventory.item")
+
+    def dragEnterEvent(self, ev):
+        #print "Got meshid dragEnterEvent", ev
+        if self.accept(ev):
+            ev.acceptProposedAction()
+
+    def dragMoveEvent(self, ev):
+        #print "Got meshid dragMoveEvent", ev
+        if self.accept(ev):
+            ev.acceptProposedAction()
 
     def dropEvent(self, ev):
-    #    print "Got meshid_drop:", self, ev
+        print "Got meshid_drop:", self, ev
+        if not self.accept(ev):
+            return
+
+        data = ev.mimeData()
+        print dir(data)
+        ev.acceptProposedAction()
+        """
         text = ev.mimeData().text()
         r.logDebug("EDITGUI: Mesh asset id got drag drop: %s" % text)
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
@@ -73,6 +94,7 @@ class MeshAssetidEditline(QLineEdit):
             self.text = text
         else:
             self.text = "(no scene entity selected)"
+        """
 
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
@@ -490,7 +512,7 @@ class EditGUI(Component):
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
             self.sel_activated = False
-            self.worldstream.SendObjectSelectPacket(ent.id)
+            self.worldstream.SendObjectSelectPacket(ent.id) #XXX is this already sent on the c++ side, GRAB event or something? is needed to get objectproperties (which are not needed here for anything (yet))
             
             if not self.widgetList.has_key(str(self.sel.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
@@ -603,7 +625,10 @@ class EditGUI(Component):
             #scale = self.move_arrows.scale
             #print self.move_arrows.scale, self.move_arrows.pos
             self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-            self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            try:
+                self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            except ValueError: #fails now somehow for some weird reason
+                pass
         
         self.arrow_grabbed_axis = None
         self.arrow_grabbed = False

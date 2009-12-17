@@ -49,7 +49,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -121,11 +121,15 @@ class ComponentRunner(Component):
     def SCENE_EVENT(self, evid, entid):
         self.m.send(EntityUpdate(evid, entid), "on_scene")
         
-    def ENTITY_UPDATED(self, id):
-        #print "Entity updated!", id
+    def ENTITY_UPDATED(self, entid):
+        #print "Entity updated!", entid
         self.eventhandled = False
-        self.m.send(EntityUpdate(id, self.callback), "on_entityupdated")
+        self.m.send(EntityUpdate(entid, self.callback), "on_entityupdated")
         return self.eventhandled
+
+    def ENTITY_VISUALS_MODIFIED(self, entid):
+        self.m.send(EntityUpdate(entid), "on_entity_visuals_modified")
+        return False
 
     def LOGIN_INFO(self, *args): 
         #print "Login Info", args

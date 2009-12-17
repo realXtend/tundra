@@ -15,8 +15,10 @@
     #include <Python.h>
 #endif
 
+//#include "StableHeaders.h"
+#include "CoreStdIncludes.h"
+#include "Core.h"
 #include "Foundation.h"
-#include "StableHeaders.h"
 #include "ModuleInterface.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
@@ -44,8 +46,6 @@ namespace PythonScript
     // Category id for scene events - outside the module class 'cause entity_setattro wants this too
     static event_category_id_t scene_event_category_ ;
 
-
-    
     class PythonEngine;
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
@@ -152,6 +152,9 @@ namespace PythonScript
     static PythonScriptModule* self() { return pythonscriptmodule_; }
     static PythonScript::QtModuleWrapper *wrappedModule;
     static PythonScript::QtModuleWrapper* GetWrappedQtModule() { return wrappedModule; }
+
+    //the impl for this func - not py specific, should be in rexlogic or qtmodule or somewhere.
+    //void _ApplyUICanvasToSubmeshesWithTexture(QtUI::UICanvas* canvas, RexUUID textureuuid);
 }
 
 #endif
