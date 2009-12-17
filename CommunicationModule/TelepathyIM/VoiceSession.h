@@ -39,8 +39,10 @@ namespace TelepathyIM
 
 		//! @return all known participants of the chat session inlcuding the user
 		virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
-        virtual Communication::VideoWidgetInterface* GetReceivedVideo();
+
+        //! Getters for captured and received video widgets
         virtual Communication::VideoWidgetInterface* GetLocallyCapturedVideo();
+        virtual Communication::VideoWidgetInterface* GetReceivedVideo();
 
         virtual Communication::VoiceSessionInterface::StreamState GetAudioStreamState() const;
         virtual Communication::VoiceSessionInterface::StreamState GetVideoStreamState() const;

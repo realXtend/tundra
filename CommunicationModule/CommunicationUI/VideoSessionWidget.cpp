@@ -81,7 +81,11 @@ namespace CommunicationUI
     }
 
     void VideoSessionWidget::SessionStateChanged(Communication::VoiceSessionInterface::State new_state)
-    {    
+    {
+        if (internal_v_layout_local_ && local_video_)
+            internal_v_layout_local_->removeWidget(local_video_);
+        if (internal_v_layout_remote_ && remote_video_)
+            internal_v_layout_remote_->removeWidget(remote_video_);
         SAFE_DELETE(internal_widget_);
 
         switch (new_state)

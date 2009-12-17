@@ -47,8 +47,8 @@ namespace TelepathyIM
         //! @param value 0 to 1
         void SetAudioRecordVolume(const double value);
 
-        VideoWidget* GetPreviewVideo() { return video_preview_widget_; };
-        VideoWidget* GetRemoteOutputVideo() { return video_remote_output_widget_; };
+        VideoWidget* GetLocallyCapturedVideoWidget() { return locally_captured_video_widget_; };
+        VideoWidget* GetReceivedVideoWidget() { return received_video_widget_; };
 
         int audio_stream_in_clock_rate_; // todo getter
 
@@ -67,7 +67,7 @@ namespace TelepathyIM
 
     private:
 
-        GstElement* setUpElement(QString elemName);
+        GstElement* setUpElement(const QString &element_name);
 
         void ConnectTfChannelEvents();
         void CreatePipeline();
@@ -121,11 +121,11 @@ namespace TelepathyIM
         
         GstPad  *audio_playback_bin_sink_pad_;
         
-        VideoWidget *video_preview_widget_;
-        VideoWidget *video_remote_output_widget_;
+        VideoWidget *locally_captured_video_widget_;
+        VideoWidget *received_video_widget_;
 
-        GstElement *video_preview_element_;
-        GstElement *video_remote_output_element_;
+        GstElement *locally_captured_video_playback_element_;
+        GstElement *received_video_playback_element_;
     };
 
 } // end of namespace: TelepathyIM

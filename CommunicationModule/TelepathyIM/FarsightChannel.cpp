@@ -26,8 +26,8 @@ namespace TelepathyIM
                                      audio_stream_in_clock_rate_(0),
                                      audio_capsfilter_(0),
                                      audio_convert_(0),
-                                     video_preview_widget_(0),
-                                     video_remote_output_widget_(0)
+                                     locally_captured_video_widget_(0),
+                                     received_video_widget_(0)
     {
         CreateTfChannel();
         CreatePipeline();
@@ -50,11 +50,11 @@ namespace TelepathyIM
     FarsightChannel::~FarsightChannel()
     {
         // delete widgets
-        //if (video_preview_widget_)
-        //    SAFE_DELETE(video_preview_widget_);
+        //if (locally_captured_video_widget_)
+        //    SAFE_DELETE(locally_captured_video_widget_);
 
-        //if (video_remote_output_widget_)
-        //    SAFE_DELETE(video_remote_output_widget_);
+        //if (received_video_widget_)
+        //    SAFE_DELETE(received_video_widget_);
 
         // TODO: CHECK Proper cleanup with unref
         if (tf_channel_)
@@ -177,7 +177,7 @@ namespace TelepathyIM
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
         gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
-    //    gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
+        //gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
         //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         //if (!ok)
@@ -224,17 +224,17 @@ namespace TelepathyIM
         gst_object_ref(video_tee_);
         gst_object_sink(video_tee_);
 
-        gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, video_preview_element_, NULL);
-        gst_element_link_many(video_input_bin_, video_tee_, video_preview_element_, NULL);
+        gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
+        gst_element_link_many(video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
     }
 
     void FarsightChannel::CreateVideoOutputElements()
     {
-        video_preview_widget_ = new VideoWidget(bus_);
-        video_preview_element_ = video_preview_widget_->GetVideoSink();
+        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video");
+        locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
 
-        video_remote_output_widget_ = new VideoWidget(bus_);
-        video_remote_output_element_ = video_remote_output_widget_->GetVideoSink();
+        received_video_widget_ = new VideoWidget(bus_, 0, "received_video");
+        received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
     }
 
 
@@ -263,11 +263,9 @@ namespace TelepathyIM
     {
     }
 
-    GstElement* FarsightChannel::setUpElement(QString elemName)
+    GstElement* FarsightChannel::setUpElement(const QString &element_name)
     {
-        std::string tempElemName = elemName.toStdString();
-        const gchar* cStrElemName = tempElemName.c_str();
-        GstElement* element = gst_element_factory_make(cStrElemName, NULL);
+        GstElement* element = gst_element_factory_make(element_name.toStdString().c_str(), NULL);
         gst_object_ref(element);
         gst_object_sink(element);
         return element;
@@ -370,7 +368,6 @@ namespace TelepathyIM
         gint channel_count = codec->channels;
 
         guint media_type;
-
         g_object_get(stream, "media-type", &media_type, NULL);
 
         GstPad *output_pad;
@@ -380,19 +377,25 @@ namespace TelepathyIM
 
         switch (media_type)
         {
-        case TP_MEDIA_STREAM_TYPE_AUDIO:
-             output_element = self->audio_playback_bin_;
-//            g_object_ref(output_element); // do we need this
-              if (self->audio_in_src_pad_)
-                sink_already_linked = true;
-            break;
-        case TP_MEDIA_STREAM_TYPE_VIDEO:
-            output_element = self->video_remote_output_element_;
-            if (self->video_in_src_pad_)
-                sink_already_linked = true;
-            break;
-        default:
-            Q_ASSERT(false);
+            case TP_MEDIA_STREAM_TYPE_AUDIO:
+            {
+                output_element = self->audio_playback_bin_;
+                //g_object_ref(output_element); // do we need this
+                if (self->audio_in_src_pad_)
+                    sink_already_linked = true;
+                break;
+            }
+            case TP_MEDIA_STREAM_TYPE_VIDEO:
+            {
+                output_element = self->received_video_playback_element_;
+                if (self->video_in_src_pad_)
+                    sink_already_linked = true;
+                break;
+            }
+            default:
+            {
+                Q_ASSERT(false);
+            }
         }
 
         if (sink_already_linked)
@@ -407,20 +410,24 @@ namespace TelepathyIM
         output_pad = gst_element_get_static_pad(output_element, "sink");
         switch (media_type)
         {
-        case TP_MEDIA_STREAM_TYPE_AUDIO:
-            if (self->audio_in_src_pad_)
+            case TP_MEDIA_STREAM_TYPE_AUDIO:
             {
-                gst_pad_unlink(self->audio_in_src_pad_, output_pad);
-                self->audio_in_src_pad_ = src_pad;
-            }
+                if (self->audio_in_src_pad_)
+                {
+                    gst_pad_unlink(self->audio_in_src_pad_, output_pad);
+                    self->audio_in_src_pad_ = src_pad;
+                }
                 break;
-        case TP_MEDIA_STREAM_TYPE_VIDEO:
-            if (self->video_in_src_pad_)
+            }
+            case TP_MEDIA_STREAM_TYPE_VIDEO:
             {
-                gst_pad_unlink(self->video_in_src_pad_, output_pad);
-                self->video_in_src_pad_ = src_pad;
-            }
+                if (self->video_in_src_pad_)
+                {
+                    gst_pad_unlink(self->video_in_src_pad_, output_pad);
+                    self->video_in_src_pad_ = src_pad;
+                }
                 break;
+            }
         }
         gst_pad_link(src_pad, output_pad);
         gst_element_set_state(output_element, GST_STATE_PLAYING);

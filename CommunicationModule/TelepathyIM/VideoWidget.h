@@ -19,12 +19,12 @@ namespace TelepathyIM
     Q_OBJECT
     
     public: 
-        VideoWidget(GstBus *bus, QWidget *parent = 0);
+        VideoWidget(GstBus *bus, QWidget *parent = 0, const QString &name = QString("video_widget"));
         virtual ~VideoWidget();
 
         //! Getters
         virtual bool VideoAvailable();
-        GstElement *GetVideoSink() const { return sink_; }
+        GstElement *GetVideoPlaybackElement() const { return video_playback_element_; }
 
         //! Setters
         virtual void SetParentWidget(QWidget &parent);
@@ -41,11 +41,15 @@ namespace TelepathyIM
         void WindowExposed();
 
     private:
+        //! Gst Fs variables
         GstBus *bus_;
+        GstElement *video_playback_element_;
+        GstElement *video_overlay_;
         FsElementAddedNotifier *notifier_;
-        GstElement *sink_;
-        GstElement *overlay_;
+        
+        //! Qt variables
         WId window_id_; 
+        QString name_;
     };
 
 } // End of namespace: TelepathyIM
