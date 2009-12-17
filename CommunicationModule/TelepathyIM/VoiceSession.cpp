@@ -230,8 +230,8 @@ namespace TelepathyIM
             SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
         connect(farsight_channel_,
-            SIGNAL(statusChanged(FarsightChannel::Status)),
-            SLOT(OnFarsightChannelStatusChanged(FarsightChannel::Status)));
+            SIGNAL(statusChanged(TelepathyIM::FarsightChannel::Status)),
+            SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)));
     }
 
     void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)
@@ -609,14 +609,14 @@ namespace TelepathyIM
     Communication::VideoWidgetInterface* VoiceSession::GetReceivedVideo()
     {
         if (farsight_channel_)
-            return farsight_channel_->GetRemoteOutputVideo();
+            return farsight_channel_->GetReceivedVideoWidget();
         return 0;
     }
 
     Communication::VideoWidgetInterface* VoiceSession::GetLocallyCapturedVideo()
     {
         if (farsight_channel_)
-            return farsight_channel_->GetPreviewVideo();
+            return farsight_channel_->GetLocallyCapturedVideoWidget();
         return 0;
     }
 

@@ -9,6 +9,8 @@
 #include <QIcon>
 #include <QDateTime>
 
+#include <QDebug>
+
 namespace UiDefines
 {
     class UiStates : public QObject
@@ -80,7 +82,10 @@ namespace UiDefines
                       QString::compare(status_code, QString("dnd"), Qt::CaseInsensitive) == 0 )
 		        icon = QIcon(":/images/iconOrange.png");
 	        else
-		        icon = QIcon();
+            {
+                qDebug() << "Unknows status code: " << status_code << endl;
+		        icon = QIcon(":/images/iconGrey.png");
+            }
             return icon;
         }
 
@@ -101,7 +106,7 @@ namespace UiDefines
                       QString::compare(status_code, QString("dnd"), Qt::CaseInsensitive) == 0 )
 		        path = ":/images/iconOrange.png";
 	        else
-		        path = "";
+		        path = ":/images/iconGrey.png";
             return path;
         }
 
