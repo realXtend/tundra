@@ -251,7 +251,7 @@ float Environment::GetWaterFogStartDistance()
 {
     FindActiveEnvironment();
     if (activeEnvComponent_ != 0)
-        activeEnvComponent_->GetWaterFogStart();
+       return activeEnvComponent_->GetWaterFogStart();
     
      return 0.0;
 }
@@ -260,7 +260,7 @@ float Environment::GetWaterFogEndDistance()
 {
     FindActiveEnvironment();
     if (activeEnvComponent_ != 0)
-        activeEnvComponent_->GetWaterFogEnd();
+       return activeEnvComponent_->GetWaterFogEnd();
     
      return 0.0;
 }
@@ -269,7 +269,7 @@ float Environment::GetGroundFogStartDistance()
 {
     FindActiveEnvironment();
     if (activeEnvComponent_ != 0)
-        activeEnvComponent_->GetGroundFogStart();
+        return activeEnvComponent_->GetGroundFogStart();
     
     return 0.0;
 }
@@ -278,7 +278,7 @@ float Environment::GetGroundFogEndDistance()
 {
     FindActiveEnvironment();
     if (activeEnvComponent_ != 0)
-        activeEnvComponent_->GetGroundFogEnd();
+       return activeEnvComponent_->GetGroundFogEnd();
     
      return 0.0;
 }
