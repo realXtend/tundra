@@ -741,11 +741,11 @@ if 0:
     line = QLineEdit()
     box.addWidget(line)
 
-if 1:
-    #r.randomTest()
+if 0:
+    r.randomTest()
     #print qm, dir(qm)
-    print r.c.widget, r.c.proxywidget
-    pe = r.getPropertyEditor()
-    #print pe, pe.setObject, pe.show
-    pe.setObject(r.c.proxywidget)
-    pe.show()
+    #~ print r.c.widget, r.c.proxywidget
+    #~ pe = r.getPropertyEditor()
+    #~ #print pe, pe.setObject, pe.show
+    #~ pe.setObject(r.c.proxywidget)
+    #~ pe.show()

@@ -1594,6 +1594,11 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
 	prim->map["one"] = 1;
 	prim->map["three"] = 3;
 	
+	prim->setName("This is a Name!");
+	RexTypes::RexUUID uuid = RexTypes::RexUUID::CreateRandom();
+	//QString qstr(uuid.ToString());
+	//QVariant(
+	prim->setUUID(QString(uuid.ToString().c_str()));
 	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
 	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
 	pe->setObject(prim);
