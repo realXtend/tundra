@@ -20,9 +20,13 @@ namespace TelepathyIM
           bus_((GstBus *) gst_object_ref(bus)), 
           video_overlay_(0), 
           video_playback_element_(0),
-          name_(name)
+          video_bin_(0),
+          name_(name),
+          window_id_(0)
     {
-        qDebug() << "VideoWidget '" << name << "' INIT STARTED";
+        qDebug() << "VideoWidget " << name << " INIT STARTED";
+        setWindowTitle(name);
+
         gst_object_ref(bus_);
         gst_object_sink(bus_);
 
@@ -30,51 +34,73 @@ namespace TelepathyIM
         notifier_ = fs_element_added_notifier_new();
         g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
 
-        // Video sink init
+// UNIX -> autovideosink
+#ifdef Q_WS_X11
+        qt_x11_set_global_double_buffer(false);
+
+        video_playback_element_ = gst_element_factory_make("autovideosink", name.toStdString().c_str());
+        gst_object_ref(video_playback_element_);
+        gst_object_sink(video_playback_element_);
+
+        fs_element_added_notifier_add(notifier, GST_BIN(video_playback_element_));
+#endif
+
+// WINDOWS -> glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
+// With glimagesink on windows we need to add it to a new bin and make the proper connections to bin.
+// This is because gimagesink does not inherit GstBin and there for the GST_BIN() typecheck in fs_element_added_notifier_add will fail
+#ifdef Q_WS_WIN
         video_playback_element_ = gst_element_factory_make("glimagesink", name.toStdString().c_str());
         gst_object_ref(video_playback_element_);
         gst_object_sink(video_playback_element_);
 
-        //////////// NEW CODE START ////////////
-
         // Video bin init
-//        const QString video_bin_name = "video_bin_for_" + name;
-//        GstElement *video_bin = gst_bin_new(video_bin_name.toStdString().c_str());
-//        // Add playback element to video bin
-//        gst_bin_add(GST_BIN(video_bin), video_playback_element_);
-//        // Link to bin 
-////        gst_element_link(video_bin, video_playback_element_); // <-- MATTIKU CHECK PLEASE
-//
-//        // Pad inits
-//        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink"); // <-- MATTIKU CHECK PLEASE
-//        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad); // <-- MATTIKU CHECK PLEASE
-//        // Add bad to video bin
-//        gst_element_add_pad(video_bin, sink_ghost_pad); // <-- MATTIKU CHECK PLEASE
-//        gst_object_unref(G_OBJECT(static_sink_pad));
-//        gst_object_ref(video_bin);
-//        gst_object_sink(video_bin);
-//
-//
-//        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin)); // <-- THIS WORKS NOW BECAUSE VIDEO IS INSIDE A BIN ELEMENT
-//        
-        ///////////// NEW CODE END ////////////
+        const QString video_bin_name = "video_bin_for_" + name;
+        video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
 
-        fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
+        // Add playback element to video bin
+        gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
+
+        // Pad inits
+        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink"); // <-- MATTIKU CHECK PLEASE
+        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad); // <-- MATTIKU CHECK PLEASE
+
+        // Add bad to video bin
+        gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad); // <-- MATTIKU CHECK PLEASE
+        gst_object_unref(G_OBJECT(static_sink_pad));
+        gst_object_ref(video_bin_);
+        gst_object_sink(video_bin_);
+
+        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_)); // <-- THIS WORKS NOW BECAUSE VIDEO IS INSIDE A BIN ELEMENT
+#endif
         
         gst_bus_enable_sync_message_emission(bus_);
         g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
 
-        qDebug() << "VideoWidget '" << name << "' INIT COMPLETE";
+        qDebug() << "VideoWidget " << name << " INIT COMPLETE";
+
+        QPalette palette;
+        palette.setColor(QPalette::Background, Qt::white);
+        palette.setColor(QPalette::Window, Qt::white);
+        setPalette(palette);
+        setAutoFillBackground(true);
+        setAttribute(Qt::WA_NoSystemBackground, true);
+        setAttribute(Qt::WA_PaintOnScreen, true);
+        resize(322, 240);
+        setMinimumSize(322, 240);
     }
 
     VideoWidget::~VideoWidget()
     {
         g_object_unref(bus_);
         g_object_unref(video_playback_element_);
+        if (video_bin_)
+            g_object_unref(video_bin_);
     }
 
     void VideoWidget::OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self)
     {
+        // If element implements GST_X_OVERLAY interface, set local video_overlay_ to element
+        // If true element = the current video sink
         if (!self->video_overlay_ && GST_IS_X_OVERLAY(element))
         {
             qDebug() << self->name_ << " >> element-added CALLBACK >> Got overlay element, storing";
@@ -82,6 +108,8 @@ namespace TelepathyIM
             QMetaObject::invokeMethod(self, "WindowExposed", Qt::QueuedConnection);
         }
 
+        // If element has property force-aspect-ratio set it to true
+        // If true element = the current video sink
         if (g_object_class_find_property(G_OBJECT_GET_CLASS(element), "force-aspect-ratio"))
         {
             qDebug() << self->name_ << " >> element-added CALLBACK >> found 'force-aspect-ratio' from element";
@@ -91,12 +119,14 @@ namespace TelepathyIM
 
     void VideoWidget::OnSyncMessage(GstBus *bus, GstMessage *message, VideoWidget *self)
     {
+        // Return if we are not interested in the message content
         if (GST_MESSAGE_TYPE(message) != GST_MESSAGE_ELEMENT)
             return;
-
         if (GST_MESSAGE_SRC(message) != (GstObject *)self->video_overlay_)
             return;
 
+        // If message is about preparing xwindow id its from the current video sink
+        // and we want to set our own qt widget window id where we want to render video
         const GstStructure *s = gst_message_get_structure(message);
         if (gst_structure_has_name(s, "prepare-xwindow-id") && self->video_overlay_)
         {
@@ -107,29 +137,26 @@ namespace TelepathyIM
 
     void VideoWidget::showEvent(QShowEvent *showEvent)
     {
+        // Override showEvent so we can set QWidget attributes and set overlay
         qDebug() << name_ << " >> QWidget::showEvent() override called";
-        QPalette palette;
-        palette.setColor(QPalette::Background, QColor(0,255,0,125));
-        setPalette(palette);
-
-        setAutoFillBackground(true);
-        setAttribute(Qt::WA_NoSystemBackground, true);
-        setAttribute(Qt::WA_PaintOnScreen, true);
-
-        SetOverlay();
         QWidget::showEvent(showEvent);
+        SetOverlay();
     }
 
     void VideoWidget::SetOverlay()
     {
         if (video_overlay_ && GST_IS_X_OVERLAY(video_overlay_))
         {
+            // Get window id from this widget and set it for video sink
+            // so it renders to our widget id and does not open separate window (that is the default behaviour)
             qDebug() << name_ << " >> SetOverlay() called";
             window_id_ = winId();
             if (window_id_)
             {
-                qDebug() << name_ << " >> Window id se to " << window_id_ << " window_id_->unused = " << window_id_->unused;
-                QApplication::syncX();
+                qDebug() << name_ << " >> Window id set to " << window_id_;
+                #ifdef Q_WS_X11
+                    QApplication::syncX();
+                #endif
                 gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(video_overlay_), (gulong)window_id_);
             }
         }
@@ -140,25 +167,21 @@ namespace TelepathyIM
     {
         if (video_overlay_ && GST_IS_X_OVERLAY(video_overlay_))
         {
+            // Expose the overlay (some sort of update)
             qDebug() << name_ << " >> WindowExposed() called";
-            QApplication::syncX();
+            #ifdef Q_WS_X11
+                QApplication::syncX();
+            #endif
             gst_x_overlay_expose(GST_X_OVERLAY(video_overlay_));
         }
     }
 
     bool VideoWidget::VideoAvailable()
     {
-        if (this->video_overlay_)
+        if (video_overlay_)
             return true;
         else
             return false;
-    }
-
-    void VideoWidget::SetParentWidget(QWidget &parent)
-    {
-        // todo: IMPLEMENT
-        //window_id_ = parent.winId();
-        //SetOverlay();
     }
 
 }
