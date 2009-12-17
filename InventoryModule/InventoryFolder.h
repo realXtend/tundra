@@ -32,6 +32,21 @@ namespace Inventory
         /// Destructor.
         virtual ~InventoryFolder();
 
+        /// Get/set for the dirty flag.
+        bool IsDirty() const { return dirty_; }
+        void SetDirty(const bool &dirty) { dirty_ = dirty; }
+
+        /// Get/set for the libary asset flag.
+        bool IsLibraryItem() const { return libraryAsset_; }
+        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
+
+        /// @return Type of the item.
+        InventoryItemType GetItemType() const { return itemType_; }
+
+        /// Is this folder descendent of spesific folder.
+        /// @param searchFolder Folder to be investigated.
+        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
+
         /// Adds new child.
         /// @param child Child to be added.
         /// @return Pointer to the new child.
@@ -72,21 +87,6 @@ namespace Inventory
         /// @param searchId Search ID.
         /// @return Pointer to the requested item, or null if not found.
         AbstractInventoryItem *GetChildById(const QString &searchId);
-
-        /// Get/set for the dirty flag.
-        bool IsDirty() const { return dirty_; }
-        void SetDirty(const bool &dirty) { dirty_ = dirty; }
-
-        /// Get/set for the libary asset flag.
-        bool IsLibraryItem() const { return libraryAsset_; }
-        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
-
-        /// @return Type of the item.
-        InventoryItemType GetItemType() const { return itemType_; }
-
-        /// Is this folder descendent of spesific folder.
-        /// @param searchFolder Folder to be investigated.
-        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
 
         /// @return List of all the id's of the descendents of this folder.
         QList<QString> GetDescendentIds();

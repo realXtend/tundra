@@ -90,7 +90,9 @@ namespace Inventory
         /// @param position Position (row) in new parent destination index.
         /// @param new_parent New parent for the item.
         /// @param item Item to be moved.
-        bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item);
+        /// @param parent_index Parent item model index, if applicable.
+        bool InsertExistingItem(int position, AbstractInventoryItem *new_parent, AbstractInventoryItem* item,
+            const QModelIndex &parent_index = QModelIndex());
 
         /// 
         /// @param index Model index.
