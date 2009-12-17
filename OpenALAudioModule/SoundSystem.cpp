@@ -196,16 +196,23 @@ namespace OpenALAudio
         return i->first;     
     }        
 
-    sound_id_t SoundSystem::PlayAudioData(u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, sound_id_t channel)
+    sound_id_t SoundSystem::PlayAudioData(u8 *buffer, 
+                                          int buffer_size, 
+                                          int sample_rate, 
+                                          int sample_width, 
+                                          bool stereo, 
+                                          bool positional,
+                                          sound_id_t channel)
     {
         // TODO: Make a sound stream map so we can have multiple
         // return id of this stream so you can call its FillBuffer again who ever gets it! 
         if (!sound_stream_)
             sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
-
+        if (!positional)
+            sound_stream_->SetPosition(Vector3df(0.0f, 0.0f, 0.0f));
         sound_stream_->AddData(buffer, buffer_size);
-
         return 0;
+
         //if (!mutex.try_lock())
         //{
         //    int i = (int)((buffer_size*8000 / sample_rate) / sample_width);
