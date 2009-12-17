@@ -283,4 +283,139 @@ material Ogre/Compositor/HDR/ToneMapping
 	}
 }
 
+///
+///Strong HDR
+///
+
+
+// Downsample a 3x3 area and perform a brightness filter pass
+fragment_program Ogre/Compositor/HDR/downscale3x3brightpassStrongHLSL_fp hlsl
+{
+	source hdr.hlsl
+	entry_point downscale3x3brightpass_StrongHDR
+	target ps_2_0
+}
+fragment_program Ogre/Compositor/HDR/downscale3x3brightpassStrongGLSL_fp glsl
+{
+	source hdr_downscale3x3brightpassStrong.glsl
+	// re-use common functions
+	attach Ogre/Compositor/HDR/utils_fp
+	default_params
+	{
+		param_named inRTT int 0
+		param_named inLum int 1
+	}
+}
+fragment_program Ogre/Compositor/HDR/downscale3x3brightpassStrong_fp unified
+{
+	delegate Ogre/Compositor/HDR/downscale3x3brightpassStrongGLSL_fp
+	delegate Ogre/Compositor/HDR/downscale3x3brightpassStrongHLSL_fp
+	default_params
+	{
+	    param_named_auto texelSize inverse_texture_size 0
+	}
+}
+
+
+material Ogre/Compositor/HDR/Downsample3x3Brightpass_StrongHDR
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref Ogre/Compositor/StdQuad_vp
+			{
+			}
+			fragment_program_ref Ogre/Compositor/HDR/downscale3x3brightpassStrong_fp
+			{
+			}
+
+			// Scene 
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+			// Luminence 
+			texture_unit
+			{
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+
+
+// Perform final tone mapping
+fragment_program Ogre/Compositor/HDR/finaltonemappingStrongHLSL_fp hlsl
+{
+	source hdr.hlsl
+	entry_point finalToneMapping_StrongHDR
+	target ps_2_0
+}
+fragment_program Ogre/Compositor/HDR/finaltonemappingStrongGLSL_fp glsl
+{
+	source hdr_finalToneMappingStrong.glsl
+	// re-use common functions
+	attach Ogre/Compositor/HDR/utils_fp
+	default_params
+	{
+		param_named inRTT int 0
+		param_named inBloom int 1
+		param_named inLum int 2
+	}
+}
+fragment_program Ogre/Compositor/HDR/finaltonemappingStrong_fp unified
+{
+	delegate Ogre/Compositor/HDR/finaltonemappingStrongHLSL_fp
+	delegate Ogre/Compositor/HDR/finaltonemappingStrongGLSL_fp
+}
+
+
+
+
+
+material Ogre/Compositor/HDR/ToneMapping_StrongHDR
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref Ogre/Compositor/StdQuad_vp
+			{
+			}
+			fragment_program_ref Ogre/Compositor/HDR/finaltonemappingStrong_fp
+			{
+			}
+
+			// Scene 
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+			}
+			// Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			// Luminence 
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
 

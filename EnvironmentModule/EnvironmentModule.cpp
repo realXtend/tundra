@@ -206,9 +206,9 @@ namespace Environment
                             OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
                             OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
                             Core::StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
-                            c_handler.ExecuteServersShaderRequest(vec);
-                            
-                            //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event
+                            //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
+                            //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
+                            //button is checked
                             if(postprocess_dialog_.get())
                             {
                                 std::string effect_name = c_handler.MapNumberToEffectName(vec.at(0));

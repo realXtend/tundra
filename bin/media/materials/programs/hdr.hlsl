@@ -162,4 +162,75 @@ float4 finalToneMapping(
      	
 }
 
+/// Strong HDR
 
+/* Downsample a 3x3 area from main RTT and perform a brightness pass
+*/
+float4 downscale3x3brightpass_StrongHDR(
+	float2 uv : TEXCOORD0,
+	uniform float2 texelSize, // depends on size of source texture
+	uniform sampler2D inRTT : register(s0),
+	uniform sampler2D inLum : register(s1)
+    ) : COLOR
+{
+	
+    float4 accum = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float2 texOffset[9] = {
+		-1.0, -1.0,
+		 0.0, -1.0,
+		 1.0, -1.0,
+		-1.0,  0.0,
+		 0.0,  0.0,
+		 1.0,  0.0,
+		-1.0,  1.0,
+		 0.0,  1.0,
+		 1.0,  1.0
+	};
+
+	for( int i = 0; i < 9; i++ )
+    {
+        // Get colour from source
+        accum += tex2D(inRTT, uv + texelSize * texOffset[i]);
+    }
+    
+	// take average of 9 samples
+	accum *= 0.1111111111111111;
+
+    // Reduce bright and clamp
+    accum = max(float4(0.0f, 0.0f, 0.0f, 1.0f), accum - BRIGHT_LIMITER_STRONG_HDR);
+
+	// Sample the luminence texture
+	float4 lum = tex2D(inLum, float2(0.5f, 0.5f));
+	
+	// Tone map result
+	return toneMap(accum, lum.r);
+
+}
+
+
+/* Final scene composition, with tone mapping
+*/
+float4 finalToneMapping_StrongHDR(
+	float2 uv : TEXCOORD0,
+	uniform sampler2D inRTT : register(s0),
+	uniform sampler2D inBloom : register(s1),
+	uniform sampler2D inLum : register(s2)
+    ) : COLOR
+{
+	// Get main scene colour
+    float4 sceneCol = tex2D(inRTT, uv);
+
+	// Get luminence value
+	float4 lum = tex2D(inLum, float2(0.5f, 0.5f));
+
+	// tone map this
+	float4 toneMappedSceneCol = toneMap(sceneCol, lum.r);
+	
+	// Get bloom colour
+    float4 bloom = tex2D(inBloom, uv);
+
+	// Add scene & bloom
+	return float4((toneMappedSceneCol.rgb * (1.5 * toneMappedSceneCol.rgb)) + (bloom.rgb * bloom.rgb), 1.0);
+     	
+}

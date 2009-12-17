@@ -251,40 +251,6 @@ material Ogre/Compositor/BloomBlend2
     }
 }
 
-/// different values for waterworld
-material Ogre/Compositor/BloomBlend_waterworld
-{
-    technique
-    {
-        pass
-        {
-		cull_hardware none
-		cull_software none
-		depth_check off
-
-		fragment_program_ref Bloom2_ps
-		{
-			param_named OriginalImageWeight float 1.3
-			param_named BlurWeight float 1.0
-		}
-		//vertex_program_ref Blur_vs
-		//	{
-		//	}
-            texture_unit
-            {
-			tex_coord_set 0
-			tex_address_mode clamp
-			filtering none
-            }
-		texture_unit
-		{
-			tex_coord_set 0
-			tex_address_mode clamp
-			filtering trilinear
-		}
-        }
-    }
-}
 
 //High-pass Bright filter
 //First pass

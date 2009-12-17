@@ -10,7 +10,7 @@
 
 namespace Environment
 {
-	PostProcessWidget::PostProcessWidget(std::vector<std::string> effects)
+	PostProcessWidget::PostProcessWidget(std::vector<std::string> &effects)
 	:QWidget(),
     handler_(0)
 

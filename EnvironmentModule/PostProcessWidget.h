@@ -23,7 +23,7 @@ namespace Environment
 	{
 		Q_OBJECT
 	public:
-		PostProcessWidget(std::vector<std::string> effects);
+		PostProcessWidget(std::vector<std::string> &effects);
         //! Widget adds itself to the scene
         void AddSelfToScene(EnvironmentModule *env_module);
         //! Adds handler to handle the postprocess requests. Note that this class doesn't own the handler and is not responsible for deleting it
