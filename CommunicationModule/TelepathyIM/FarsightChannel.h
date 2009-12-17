@@ -94,7 +94,7 @@ namespace TelepathyIM
 
         static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
-        Tp::StreamedMediaChannelPtr channel_;
+        Tp::StreamedMediaChannelPtr tp_channel_;
         
         //GValue volume_;
         GValue input_volume_;
@@ -105,7 +105,6 @@ namespace TelepathyIM
 
         // adjustable on init
         GstElement *audio_input_;
-//        GstElement *audio_output_;
         GstElement *video_input_;
         GstElement *video_tee_;
         GstElement *fake_audio_output_;

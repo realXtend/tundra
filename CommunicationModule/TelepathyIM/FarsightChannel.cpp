@@ -11,7 +11,7 @@ namespace TelepathyIM
                                      const QString &audio_sink_name, 
                                      const QString &video_src_name) 
                                      : QObject(0),
-                                     channel_(channel),
+                                     tp_channel_(channel),
                                      tf_channel_(0),
                                      bus_(0),
                                      pipeline_(0),
@@ -57,8 +57,10 @@ namespace TelepathyIM
         //    SAFE_DELETE(video_remote_output_widget_);
 
         // TODO: CHECK Proper cleanup with unref
-        if (tf_channel_) {
-            g_object_unref(tf_channel_);
+        if (tf_channel_)
+        {
+            //g_signal_handler_disconnect(tf_channel_, handler_id);
+//            g_object_unref(tf_channel_);
             tf_channel_ = 0;
         }
         if (bus_) {
@@ -80,6 +82,12 @@ namespace TelepathyIM
             g_object_unref(audio_input_);
             audio_input_ = 0;
         }
+
+        if (audio_playback_bin_){
+            g_object_unref(audio_playback_bin_);
+            audio_playback_bin_ = 0;
+        }
+
         //if (audio_output_) {
         //    g_object_unref(audio_output_);
         //    audio_output_ = 0;
@@ -91,7 +99,7 @@ namespace TelepathyIM
     {
         try
         {
-            tf_channel_ = createFarsightChannel(channel_);        
+            tf_channel_ = createFarsightChannel(tp_channel_);        
         }
         catch(...)
         {
@@ -105,6 +113,7 @@ namespace TelepathyIM
 
         /* Set up the telepathy farsight channel */
         g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
+        
         g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
         g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
     }
@@ -167,19 +176,19 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_,  fake_audio_output_, NULL);
-        gboolean ok = gst_element_link_many(audio_resample_,  fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
+    //    gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
         //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
-        if (!ok)
-        {
-            QString error_message = "Cannot link elements for audio playback bin.";
-            LogError(error_message.toStdString());
-            throw Core::Exception(error_message.toStdString().c_str());
-        }
+        //if (!ok)
+        //{
+        //    QString error_message = "Cannot link elements for audio playback bin.";
+        //    LogError(error_message.toStdString());
+        //    throw Core::Exception(error_message.toStdString().c_str());
+        //}
 
         // add ghost pad to audio_bin_
-        GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
+        GstPad *sink = gst_element_get_static_pad(fake_audio_output_, "sink");
         audio_playback_bin_sink_pad_ = gst_ghost_pad_new("sink", sink);
         gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_pad_);
         gst_object_unref(G_OBJECT(sink));

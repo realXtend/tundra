@@ -436,6 +436,7 @@ namespace TelepathyIM
 
 	void Connection::OnTpConnectionStatusChanged(uint new_status, uint reason)
 	{
+        // todo: IMPLEMENT
 		switch (new_status)
 		{
 		case Tp::Connection::StatusConnected:
