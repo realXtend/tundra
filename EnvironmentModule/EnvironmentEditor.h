@@ -35,6 +35,7 @@ namespace Environment
     class Terrain;
     class EC_Terrain;
     class Water;
+    class Environment;
 
     typedef QPair<float, float> MinMaxValue;
 
@@ -121,6 +122,15 @@ namespace Environment
         //! Adjust Water check button.
         void ToggleWaterCheckButton();
 
+
+        void UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
+        void UpdateWaterFog(float fogStart, float fogEnd, const QVector<float>& color);
+        void SetGroundFog();
+        void SetWaterFog();
+        void SetGroundFogDistance();
+        void SetWaterFogDistance();
+        void ToggleFogOverride();
+
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 
@@ -160,6 +170,9 @@ namespace Environment
 
         //! Water information (geometry etc.)
         boost::shared_ptr<Water> water_;
+
+        //! Environment information.
+        boost::shared_ptr<Environment> environment_;
 
         //! Brush size (small, medium and large).
         BrushSize brush_size_;

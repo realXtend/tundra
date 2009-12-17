@@ -79,6 +79,20 @@ namespace Environment
          
         void SetFogColorOverride(bool enabled);
         
+        
+        void SetGroundFogColor(const QVector<float>& color);
+        
+        void SetWaterFogColor(const QVector<float>& color);
+
+        void SetGroundFogDistance(float fogStart, float fogEnd);
+
+        void SetWaterFogDistance(float fogStart, float fogEnd);
+
+        float GetWaterFogStartDistance();
+        float GetWaterFogEndDistance();
+        float GetGroundFogStartDistance();
+        float GetGroundFogEndDistance();
+
         /**
          * Returns information is fog color controlled by user or caelum.
          * @return true if it is fog color is controlled by user, else false.
@@ -86,6 +100,15 @@ namespace Environment
         
         bool GetFogColorOverride();
 
+        /**
+         * Returns current fog ground color. 
+         */
+        QVector<float> GetFogGroundColor();
+        
+        /** 
+         * Returns current fog water color.
+         **/
+        QVector<float> GetFogWaterColor();
 
         /**
          * Updates the visual effects (fog, skybox etc).
