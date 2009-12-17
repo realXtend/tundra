@@ -1,4 +1,5 @@
 #include <StableHeaders.h>
+#include <SceneEvents.h>
 #include <RexLogicModule.h>
 #include <UiModule.h>
 #include <UiProxyWidget.h>
@@ -31,7 +32,8 @@ namespace Communication
 	void CommunicationModule::Initialize() 
 	{
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-		LogInfo("Initialized.");
+        event_category_scene_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+		LogInfo("Initialized");
 	}
 
 	void CommunicationModule::PostInitialize()
@@ -113,11 +115,14 @@ namespace Communication
                SAFE_DELETE(opensim_chat_ui_);
             }
         }
+        else if (category_id == event_category_scene_ && event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY && im_ui_)
+        {
+            /*Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);*/
+            /*im_ui_->GetEventHandler()->UpdateAvatarPositions(event_data->entity_ptr_list);*/
+        }
 
         if (communication_service_)
             return dynamic_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
-
-
 		return false;
     }    
 
@@ -129,7 +134,7 @@ namespace Communication
             {
                 im_ui_ = new CommunicationUI::MasterWidget(framework_);
                 im_ui_->show();
-              //  AddWidgetToUi("IM");
+                //AddWidgetToUi("IM");
             }
             return;
         }

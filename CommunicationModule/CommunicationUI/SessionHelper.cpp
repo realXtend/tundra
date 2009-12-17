@@ -14,10 +14,11 @@
 
 namespace UiHelpers
 {
-    SessionHelper::SessionHelper(QWidget *main_parent, Communication::ConnectionInterface  *im_connection)
+    SessionHelper::SessionHelper(QWidget *main_parent, Communication::ConnectionInterface  *im_connection, CommunicationUI::EventHandler *event_handler)
         : QObject(),
           main_parent_(main_parent),
           im_connection_(im_connection),
+          event_handler_(event_handler),
           session_manager_ui_(0),
           friend_list_widget_(0),
           info_widget_(0),
@@ -212,11 +213,6 @@ namespace UiHelpers
         {
             // Add tab and connections
             CommunicationUI::VideoSessionWidget *video_session_tab = new CommunicationUI::VideoSessionWidget(main_parent_, video_session, my_name_, chat_friends_name);
-
-            //QPair<WId, WId> video_widget_ids = QPair<WId, WId>();
-            //video_widget_ids.first = video_session_tab->local_video_->winId();
-            //video_widget_ids.second = video_session_tab->remote_video_->winId();
-
             int index = session_manager_ui_->sessionsTabWidget->addTab(video_session_tab, QIcon(":images/iconVideo.png"), chat_friends_name);
             session_manager_ui_->sessionsTabWidget->setCurrentIndex(index);
             connect(video_session_tab, SIGNAL( Closed(const QString &) ), this, SLOT( CloseVideoTab(const QString &) ));
@@ -224,6 +220,9 @@ namespace UiHelpers
             // Store to local container
             video_sessions_pointers_map_[chat_friends_name].first = video_session_tab;
             video_sessions_pointers_map_[chat_friends_name].second = video_session;
+
+            connect(event_handler_, SIGNAL( AvatarPositionUpdated(Vector3df) ), video_session, SLOT( UpdateAudioSourcePosition(Vector3df) ));
+            connect(event_handler_, SIGNAL( TrackingAvatar(bool) ), video_session, SLOT( TrackingAvatar(bool) ));
         }
     }
 }

@@ -70,6 +70,9 @@ namespace TelepathyIM
         //! Update playback position for received audio
         virtual void UpdateAudioSourcePosition(Vector3df position = Vector3df(0.0f, 0.0f, 0.0f) );
 
+        //! Set if we want to use spatial voice with avatar tracking
+        virtual void TrackingAvatar(bool enabled);
+
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();
@@ -113,6 +116,7 @@ namespace TelepathyIM
     private:
         QByteArray *stream_buffer_;
         int ms_buffer_size_;
+        bool positional_voice_enabled_;
 
     signals:
 

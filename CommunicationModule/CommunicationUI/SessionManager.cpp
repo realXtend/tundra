@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QInputDialog>
+#include <QMessageBox>
 
 namespace UiManagers
 {
@@ -15,7 +16,8 @@ namespace UiManagers
           session_helper_(0),
           friend_list_widget_(0),
           im_connection_(0),
-          menu_bar_(0)
+          menu_bar_(0),
+          spatial_voice_manager_widget_(0)
     {
 
     }
@@ -29,12 +31,13 @@ namespace UiManagers
         im_connection_ = 0;
     }
 
-    void SessionManager::Start(const QString &username, Communication::ConnectionInterface *im_connection)
+    void SessionManager::Start(const QString &username, Communication::ConnectionInterface *im_connection, CommunicationUI::EventHandler *event_handler)
     {
         // Init internals
         assert(session_manager_ui_);
-        session_helper_ = new UiHelpers::SessionHelper(main_parent_, im_connection);
+        session_helper_ = new UiHelpers::SessionHelper(main_parent_, im_connection, event_handler);
         session_helper_->SetupManagerUi(session_manager_ui_);
+        event_handler_ = event_handler;
 
         im_connection_ = im_connection;
         im_connection_->SetPresenceStatus(session_helper_->GetPresenceStatus());
@@ -101,7 +104,8 @@ namespace UiManagers
         file_menu->addAction("Hide", this, SLOT( Hide() ));
         
         // JOIN MENU
-        QMenu *join_menu = new QMenu("Join", main_parent_);
+        QMenu *join_menu = new QMenu("Actions", main_parent_);
+        join_menu->addAction("Manage 3D Voice", this, SLOT( Show3DSoundManager() ));
         QAction *join_chat_room = join_menu->addAction("Chat Room", this, SLOT( JoinChatRoom() ));
         join_chat_room->setIcon(QIcon(":/images/iconUsers.png"));
         
@@ -179,5 +183,57 @@ namespace UiManagers
         friend_list_widget_->close(); 
         SAFE_DELETE(friend_list_widget_);
         emit StateChange(UiDefines::UiStates::Disconnected);
+    }
+
+    void SessionManager::Show3DSoundManager()
+    {
+        if (event_handler_)
+        {
+            avatar_map_ = event_handler_->GetAvatarList();
+            if (!avatar_map_.empty())
+            {
+                SAFE_DELETE(spatial_voice_manager_widget_);
+                spatial_voice_manager_widget_ = new QWidget(0);
+                spatial_voice_configure_ui_.setupUi(spatial_voice_manager_widget_);
+
+                foreach (QString name, avatar_map_.values())
+                    spatial_voice_configure_ui_.avatarsComboBox->addItem(name);
+
+                connect(spatial_voice_configure_ui_.updateAvatartPushButton, SIGNAL( clicked() ), SLOT( UpdateAvatarList() ));
+                connect(spatial_voice_configure_ui_.startTrackingPushButton, SIGNAL( clicked() ), SLOT( StartTrackingSelectedAvatar() ));
+                connect(spatial_voice_configure_ui_.stopTrackingPushButton, SIGNAL( clicked() ), SLOT( StopTrackingSelectedAvatar() ));
+
+                spatial_voice_manager_widget_->show();
+            }
+            else
+                QMessageBox::information(0, "Manager Error", "Could not update avatars from world, are you sure you are connected to a server?");
+        }
+    }
+
+    void SessionManager::UpdateAvatarList()
+    {
+        if (!spatial_voice_manager_widget_)
+            return;
+
+        avatar_map_ = event_handler_->GetAvatarList();
+        if (!avatar_map_.empty())
+        {
+            spatial_voice_configure_ui_.avatarsComboBox->clear();
+            foreach (QString name, avatar_map_.values())
+                spatial_voice_configure_ui_.avatarsComboBox->addItem(name);
+        }
+    }
+
+    void SessionManager::StartTrackingSelectedAvatar()
+    {
+        QString selected_avatar_name = spatial_voice_configure_ui_.avatarsComboBox->currentText();
+        QString avatar_id = avatar_map_.key(selected_avatar_name);
+        if (!avatar_id.isEmpty() || !avatar_id.isNull())
+            event_handler_->StartTrackingSelectedAvatar(avatar_id);
+    }
+
+    void SessionManager::StopTrackingSelectedAvatar()
+    {
+        event_handler_->StopTrackingSelectedAvatar();
     }
 }

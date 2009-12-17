@@ -83,9 +83,9 @@ namespace CommunicationUI
         {
             case Communication::VoiceSessionInterface::STATE_OPEN:
             {
-                QSpacerItem *spacer = dynamic_cast<QSpacerItem *>(video_session_ui_.mainVerticalLayout->takeAt(0)->widget());
-                if (spacer)
-                    delete spacer;
+                //QSpacerItem *spacer = dynamic_cast<QSpacerItem *>(video_session_ui_.mainVerticalLayout->takeAt(0)->widget());
+                //if (spacer)
+                //    delete spacer;
                 ShowVideoWidgets();
                 video_session_ui_.connectionStatus->setText("Open");
                 break;
@@ -97,13 +97,13 @@ namespace CommunicationUI
             }
             case Communication::VoiceSessionInterface::STATE_ERROR:
             {
-                video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+                //video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.connectionStatus->setText("Connection failed");
                 break;
             }
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
             {
-                video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+                //video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.connectionStatus->setText("Initializing...");
                 break;
             }

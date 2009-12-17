@@ -3,16 +3,16 @@
 
 #include <StableHeaders.h>
 #include <ModuleInterface.h>
-#include <QObject>
 #include <RexLogicModule.h>
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationService.h"
+#include "Test.h"
 
 #include "CommunicationUI/MasterWidget.h"
 #include "CommunicationUI/OpenSimChatWidget.h"
 
-#include "Test.h"
+#include <QObject>
 
 namespace ProtocolUtilities
 {
@@ -76,6 +76,7 @@ namespace Communication
 		// Event category IDs
 		event_category_id_t event_category_networkstate_;
         event_category_id_t event_category_framework_;
+        event_category_id_t event_category_scene_;
 
     private:
         void AddWidgetToUi(const QString &name);

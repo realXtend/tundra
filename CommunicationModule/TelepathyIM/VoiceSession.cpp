@@ -10,6 +10,8 @@
 #include "VoiceSession.h"
 #include <CommunicationService.h>
 
+#include <QDebug>
+
 namespace TelepathyIM
 {
 	
@@ -21,7 +23,8 @@ namespace TelepathyIM
         pending_video_streams_(0), 
         audio_playback_channel_(0),
         stream_buffer_(new QByteArray),
-        ms_buffer_size_(0)
+        ms_buffer_size_(0),
+        positional_voice_enabled_(false)
 	{
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -639,8 +642,8 @@ namespace TelepathyIM
         if (!soundsystem.get())
             return;     
 
-        UpdateAudioSourcePosition(); // TEST SPATIAL VOICE
-        soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
+
+        soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
     }
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetAudioStreamState() const
@@ -733,7 +736,7 @@ namespace TelepathyIM
                 CreateVideoStream();
     }
 
-    void VoiceSession::UpdateAudioSourcePosition(Vector3df position )
+    void VoiceSession::UpdateAudioSourcePosition(Vector3df position)
     {
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
@@ -743,10 +746,17 @@ namespace TelepathyIM
             return;
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
-            return;     
-        // TODO: IMPELEMNT
-
+            return;
         soundsystem->SetSoundStreamPosition(position);
+    }
+
+    void VoiceSession::TrackingAvatar(bool enabled)
+    {
+        if (enabled)
+            qDebug() << "Voice Session >> Spatial tracking enabled";
+        else
+            qDebug() << "Voice Session >> Spatial tracking disabled";
+        positional_voice_enabled_ = enabled;
     }
 
 } // end of namespace: TelepathyIM

@@ -6,6 +6,7 @@
 #include "LoginHelper.h"
 #include "ConfigHelper.h"
 #include "SessionManager.h"
+#include "EventHandler.h"
 
 #include "ui_LoginWidget.h"
 #include "ui_LoadingWidget.h"
@@ -23,7 +24,8 @@ namespace CommunicationUI
           session_manager_(new UiManagers::SessionManager(this)),
           login_ui_(new Ui::LoginWidget),
           loading_ui_(new Ui::LoadingWidget),
-          session_manager_ui_(new Ui::SessionManagerWidget),
+          session_manager_ui_(new Ui::SessionManagerWidget()),
+          event_handler_(new EventHandler(framework)),
           to_be_deleted_()
     {
         ChangeContext();
@@ -35,6 +37,7 @@ namespace CommunicationUI
         SAFE_DELETE(login_helper_);
         SAFE_DELETE(config_helper_);
         SAFE_DELETE(session_manager_);
+        SAFE_DELETE(event_handler_);
         SAFE_DELETE(login_ui_);
         SAFE_DELETE(loading_ui_);
         SAFE_DELETE(session_manager_ui_);
@@ -76,7 +79,7 @@ namespace CommunicationUI
                 to_be_deleted_ << "session_manager_ui_";
 
                 connect(session_manager_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
-                session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface());
+                session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface(), event_handler_);
                 break;
             }
             case UiDefines::UiStates::Exit:

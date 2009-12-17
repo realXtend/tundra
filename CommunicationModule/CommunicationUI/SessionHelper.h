@@ -9,6 +9,8 @@
 #include "ChatSessionWidget.h"
 #include "VideoSessionWidget.h"
 
+#include "EventHandler.h"
+
 #include <QObject>
 #include <QMap>
 #include <QPair>
@@ -29,7 +31,7 @@ namespace UiHelpers
     Q_PROPERTY(QString presence_status_ READ GetPresenceStatus)
 
     public:
-        SessionHelper(QWidget *main_parent, Communication::ConnectionInterface  *im_connection);
+        SessionHelper(QWidget *main_parent, Communication::ConnectionInterface *im_connection, CommunicationUI::EventHandler *event_handler);
         virtual ~SessionHelper();
 
         //! UI Setter
@@ -64,6 +66,7 @@ namespace UiHelpers
     private:
         Ui::SessionManagerWidget            *session_manager_ui_;
         CommunicationUI::FriendListWidget   *friend_list_widget_;
+        CommunicationUI::EventHandler       *event_handler_;
         Communication::ConnectionInterface  *im_connection_;
 
         QWidget *main_parent_;
