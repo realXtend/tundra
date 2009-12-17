@@ -62,6 +62,7 @@
 #include <QGroupBox> //just for testing addObject
 #include <QUiLoader> //for .ui loading in testing
 #include <QApplication>
+#include <QMap>
 #include "QtModule.h"
 #include "UICanvas.h"
 #include "UiWidgetProperties.h"
@@ -77,6 +78,8 @@
 
 //now that binding uicanvases (from mediahandler webviews) to 3d objects is here
 #include "EC_UICanvas.h"
+
+#include "QEC_Prim.h"
 
 namespace PythonScript
 {
@@ -1469,7 +1472,7 @@ PyObject* GetScreenSize(PyObject *self)
 
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
-    //PythonScript::self()->LogDebug("NetworkUpdate");
+    //PythonScript::self()->LogInfo("NetworkUpdate");
     unsigned int ent_id_int;
     Core::entity_id_t ent_id;
 
@@ -1564,7 +1567,11 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 */
 PyObject* RandomTest(PyObject* self, PyObject* args)
 {
+	/*
+	unsigned int starter;
+
     unsigned int starter;
+
     ProtocolUtilities::NetMsgID id;
 
     if(!PyArg_ParseTuple(args, "I", &starter))
@@ -1579,6 +1586,21 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
         PythonScript::self()->LogDebug("Test successfull!!");
 
     Py_RETURN_NONE;
+	*/
+	
+	//QMap<QString, int> *map = new QMap<QString, int>;
+	QEC_Prim* prim = new QEC_Prim();
+	
+	prim->map["one"] = 1;
+	prim->map["three"] = 3;
+	
+	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
+	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
+	pe->setObject(prim);
+	pe->show();
+	
+	//return PythonQt::self()->wrapQObject(*map);
+	Py_RETURN_NONE;
 }
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html

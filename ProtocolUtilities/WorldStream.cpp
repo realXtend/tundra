@@ -1282,7 +1282,7 @@ void WorldStream::SendAgentResumePacket()
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeRezPacket(const Core::ulong &ent_id, const QString &trash_id)
+void WorldStream::SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id)
 {
     if (!connected_)
         return;
@@ -1354,7 +1354,8 @@ void WorldStream::SendObjectRedoPacket(const QString &ent_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags, const Core::Vector3df &offset)
+
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df &offset)
 {
     if (!connected_)
         return;
@@ -1376,13 +1377,13 @@ void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Cor
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags,
-    const float &offset_x, const float &offset_y, const float &offset_z)
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags,
+    const float offset_x, const float offset_y, const float offset_z)
 {
     SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(offset_x, offset_y, offset_z));
 }
 
-void WorldStream::SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags)
+void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags)
 {
     SendObjectDuplicatePacket(ent_id, flags, Core::Vector3df(0,0,0));
 }

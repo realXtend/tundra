@@ -435,25 +435,23 @@ namespace ProtocolUtilities
         /// Unregisters the eventmanager from current Protocol Module
         void UnregisterCurrentProtocolModule();
 
-        /// sends the derez packet for the entity ent_id
-        void SendObjectDeRezPacket(const Core::ulong &ent_id, const QString &trash_id);
 
-        /// sends the undo packet for the entity ent_id
-        void SendObjectUndoPacket(const QString &ent_id);
+		/// sends the derez packet for the entity ent_id (have to use unsigned longs for PythonQt correctness...)
+		void SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id);
 
-        /// sends the redo packet for the entity ent_id
-        void SendObjectRedoPacket(const QString &ent_id);
-
-        /// duplicate the object
-        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags, const Core::Vector3df &offset);
-
-        /// same as above but takes the offset vector as three ints
-        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags,
-            const float &offset_x, const float &offset_y, const float &offset_z);
-
-        /// without the offset, reverts to Vector.ZERO
-        void SendObjectDuplicatePacket(const Core::ulong &ent_id, const Core::ulong &flags);
-        
+		/// sends the undo packet for the entity ent_id
+		void SendObjectUndoPacket(const QString &ent_id);
+		
+		/// sends the redo packet for the entity ent_id
+		void SendObjectRedoPacket(const QString &ent_id);
+		
+		/// duplicate the object (have to use unsigned longs for PythonQt correctness...)
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Core::Vector3df &offset);
+		/// same as above but takes the offset vector as three floats (have to use unsigned longs for PythonQt correctness...)
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z);
+		/// without the offset, reverts to Vector.ZERO (have to use unsigned longs for PythonQt correctness...)
+		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
+		
     public:
         /// Name used for logging.
         static const std::string &LoggerName;
