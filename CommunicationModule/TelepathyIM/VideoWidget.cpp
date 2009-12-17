@@ -13,6 +13,10 @@
 
 #include <gst/interfaces/xoverlay.h>
 
+#ifdef Q_WS_X11
+extern void qt_x11_set_global_double_buffer(bool);
+#endif
+
 namespace TelepathyIM
 {
     VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent, const QString &name) 
@@ -42,7 +46,7 @@ namespace TelepathyIM
         gst_object_ref(video_playback_element_);
         gst_object_sink(video_playback_element_);
 
-        fs_element_added_notifier_add(notifier, GST_BIN(video_playback_element_));
+        fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
 #endif
 
 // WINDOWS -> glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
