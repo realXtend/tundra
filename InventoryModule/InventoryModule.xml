@@ -4,4 +4,5 @@
     <dependency>RexLogicModule</dependency>
     <dependency>QtModule</dependency>
     <dependency>PythonScriptModule</dependency>
+    <dependency>TextureDecoderModule</dependency>
 </config>
