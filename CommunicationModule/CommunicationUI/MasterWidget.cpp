@@ -113,7 +113,10 @@ namespace CommunicationUI
             if (ui_class == "login_ui_")
                 SAFE_DELETE(login_ui_->verticalLayout_2);
             if (ui_class == "loading_ui_")
+            {
                 SAFE_DELETE(loading_ui_->verticalLayout_2);
+                SAFE_DELETE(loading_ui_->MainFrame);
+            }
             if (ui_class == "session_manager_ui_")
                 SAFE_DELETE(session_manager_ui_->mainVerticalLayout);
         }

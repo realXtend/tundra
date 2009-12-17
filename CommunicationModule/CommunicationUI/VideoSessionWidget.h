@@ -36,6 +36,8 @@ namespace CommunicationUI
         QHBoxLayout *internal_h_layout_;
         QString my_name_; 
         QString his_name_;
+        QLabel *local_status_label_;
+        QLabel *remote_status_label_;
 
     public slots:
         void SessionStateChanged(Communication::VoiceSessionInterface::State new_state);

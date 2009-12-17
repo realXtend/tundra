@@ -24,10 +24,7 @@ namespace TelepathyIM
 
         //! Getters
         virtual bool VideoAvailable();
-        GstElement *GetVideoPlaybackElement() const { return video_playback_element_; }
-
-        //! Setters
-        virtual void SetParentWidget(QWidget &parent);
+        GstElement *GetVideoPlaybackElement() const { if (video_bin_) return video_bin_; else return video_playback_element_; }
 
         //! Glib callbacks
         static void OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self);
@@ -43,6 +40,7 @@ namespace TelepathyIM
     private:
         //! Gst Fs variables
         GstBus *bus_;
+        GstElement *video_bin_;
         GstElement *video_playback_element_;
         GstElement *video_overlay_;
         FsElementAddedNotifier *notifier_;

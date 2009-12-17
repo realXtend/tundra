@@ -14,7 +14,8 @@
    <string>VideoSessionWidget</string>
   </property>
   <property name="styleSheet">
-   <string>QWidget#MainFrame {
+   <string>
+QWidget#MainFrame {
 	background-color: rgb(255, 255, 255);
 	color: rgb(0,0,0);
 }</string>

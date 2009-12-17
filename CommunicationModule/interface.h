@@ -239,9 +239,6 @@ namespace Communication
         VideoWidgetInterface(QWidget *parent) : QWidget(parent) {}
         //! @return true if video source is available. Otherwise return false
         virtual bool VideoAvailable() = 0;
-
-        //! TESTING: to force video playback inside widget 
-        virtual void SetParentWidget(QWidget &parent) = 0;
     };
 
 	/**
