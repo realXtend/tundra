@@ -203,7 +203,7 @@ namespace OpenALAudio
         if (!sound_stream_)
             sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
 
-        sound_stream_->FillBuffer(buffer, buffer_size);
+        sound_stream_->AddData(buffer, buffer_size);
 
         return 0;
         //if (!mutex.try_lock())

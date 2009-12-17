@@ -624,38 +624,24 @@ namespace TelepathyIM
     {       
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
-        int rate = 16000; // fix this
+        int rate = 16000; 
 
         if (farsight_channel_)
             rate = farsight_channel_->audio_stream_in_clock_rate_; 
 
-        //if (ms_buffer_size_ <= 60)
-        //{
-        //    const char* const_data = (const char *)buffer;
-        //    stream_buffer_->append(const_data, buffer_size);
-        //    int ms_added = (int)(((buffer_size*1000*8) / rate) / sample_width);
-        //    ms_buffer_size_ += ms_added;
-        //}
-        //else
-        //{
-            Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
-            if (!framework)
-                return;
-            Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-            if (!service_manager.get())
-                return;
-            boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-            if (!soundsystem.get())
-                return;     
+        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
+        if (!framework)
+            return;
+        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        if (!service_manager.get())
+            return;
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            return;     
 
-            /*u8 *data = (unsigned char *)stream_buffer_->data();*/
-            UpdateAudioSourcePosition(); // TEST SPATIAL VOICE
-            soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
-            //stream_buffer_->clear();
-            //ms_buffer_size_ = 0;
-        //}
+        UpdateAudioSourcePosition(); // TEST SPATIAL VOICE
+        soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
     }
-
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetAudioStreamState() const
     {
