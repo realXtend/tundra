@@ -37,6 +37,7 @@ static const float MIDDLE_GREY = 0.72f;
 static const float FUDGE = 0.001f;
 static const float L_WHITE = 1.5f;
 static const float4 BRIGHT_LIMITER = float4(0.6f, 0.6f, 0.6f, 0.0f);
+static const float4 BRIGHT_LIMITER_STRONG_HDR = float4(0.15f,0.15f,0.15f,0.0f);
 
 
 /** Tone mapping function 

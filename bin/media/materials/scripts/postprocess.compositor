@@ -113,25 +113,7 @@ compositor Bloom
     }
 }
 
-compositor WaterWorld_Bloom : Bloom
-{
-	technique 0
-	{
-		target_output
-		{
-			// Start with clear output
-            input none
-            // Draw a fullscreen quad
-            pass render_quad
-            {
-                // Renders a fullscreen quad with a material
-                material Ogre/Compositor/BloomBlend_waterworld
-                input 0 rt_output
-                input 1 rt0
-            }
-		}
-	}
-}
+
 
 compositor Glass
 {
@@ -517,6 +499,38 @@ compositor HDR
 
 }
 
+compositor "Strong HDR" : HDR
+{
+	technique
+	{
+		target rt_brightpass
+		{
+            input none
+            pass render_quad
+            {
+                // Downsample using a 3x3 filter, hi-pass and tone map
+                material Ogre/Compositor/HDR/Downsample3x3Brightpass_StrongHDR
+                input 0 rt_full
+		        input 1 rt_lum0
+				identifier 800
+            }
+		}
+		
+		
+		
+		target_output
+		{
+			input none
+			pass render_quad
+			{
+				material Ogre/Compositor/HDR/ToneMapping_StrongHDR
+				input 0 rt_full
+				input 1 rt_bloom0
+				input 2 rt_lum0
+			}
+		}
+	}
+}
 
 // Gaussian blur effect
 compositor "Gaussian Blur"

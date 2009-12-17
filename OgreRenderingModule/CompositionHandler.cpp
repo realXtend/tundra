@@ -4,72 +4,69 @@
 
 namespace OgreRenderer
 {
-	
-	
+
+
     CompositionHandler::CompositionHandler():
-		c_manager_(0),
-		default_vp(0),
-		framework_(0)
-	{
-		
+        c_manager_(0),
+        default_vp(0),
+        framework_(0)
+    {
         
-	}
+        
+    }
 
-	CompositionHandler::~CompositionHandler()
-	{
+    CompositionHandler::~CompositionHandler()
+    {
 
-	}
+    }
 
     std::vector<std::string>& CompositionHandler::GetAvailableCompositors()
-	{
-		
-		return postprocess_effects;
-	}
+    {
+        return postprocess_effects;
+    }
 
 
-	bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
-	{
-		
-		bool succesfull=false;
-		
-		framework_ = framework;
+    bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
+    {
+       bool succesfull=false;
+
+        framework_ = framework;
         
         postprocess_effects.push_back("Bloom");
-		postprocess_effects.push_back("UnderWater");
-		postprocess_effects.push_back("Glass");
-		postprocess_effects.push_back("B&W");
-		postprocess_effects.push_back("Embossed");
-		postprocess_effects.push_back("Sharpen Edges");
-		postprocess_effects.push_back("Invert");
-		postprocess_effects.push_back("Posterize");
-		postprocess_effects.push_back("Laplace");
-		postprocess_effects.push_back("Tiling");
-		postprocess_effects.push_back("HDR");
-		postprocess_effects.push_back("Gaussian Blur");
-		postprocess_effects.push_back("Radial Blur");
+        postprocess_effects.push_back("UnderWater");
+        postprocess_effects.push_back("Glass");
+        postprocess_effects.push_back("B&W");
+        postprocess_effects.push_back("Embossed");
+        postprocess_effects.push_back("Sharpen Edges");
+        postprocess_effects.push_back("Invert");
+        postprocess_effects.push_back("Posterize");
+        postprocess_effects.push_back("Laplace");
+        postprocess_effects.push_back("Tiling");
+        postprocess_effects.push_back("HDR");
+        postprocess_effects.push_back("Strong HDR");
+        postprocess_effects.push_back("Gaussian Blur");
+        postprocess_effects.push_back("Radial Blur");
         postprocess_effects.push_back("WetLens");
-        postprocess_effects.push_back("WaterWorld_Bloom");
         
 
-		
-		default_vp = vp;
+        default_vp = vp;
 
-		c_manager_ = Ogre::CompositorManager::getSingletonPtr();
+        c_manager_ = Ogre::CompositorManager::getSingletonPtr();
 
 
-		if(c_manager_!=0)
-		{
-			succesfull=true;
-		}
-		return succesfull;
-	}
+        if(c_manager_!=0)
+        {
+            succesfull=true;
+        }
+        return succesfull;
+    }
 
     std::string CompositionHandler::MapNumberToEffectName( std::string const &number)
     {
         std::string effect_name;
         if(number == "12")
         {
-            effect_name = "WaterWorld_Bloom";
+            effect_name = "Strong HDR";
         }else if(number == "4"){
             effect_name = "UnderWater";
         }
@@ -102,49 +99,51 @@ namespace OgreRenderer
         //4 (water)
     }
 
-	void CompositionHandler::RemoveCompositorFromViewport( std::string const &compositor, Ogre::Viewport *vp)
-	{
-		c_manager_->setCompositorEnabled(vp, compositor, false);
-		c_manager_->removeCompositor(vp, compositor);
-	}
+    void CompositionHandler::RemoveCompositorFromViewport( std::string const &compositor, Ogre::Viewport *vp)
+    {
+        c_manager_->setCompositorEnabled(vp, compositor, false);
+        c_manager_->removeCompositor(vp, compositor);
+    }
 
-	bool CompositionHandler::AddCompositorForViewport( std::string const &compositor,  Ogre::Viewport *vp, int position)
-	{
-		bool succesfull = false;
+    bool CompositionHandler::AddCompositorForViewport( std::string const &compositor,  Ogre::Viewport *vp, int position)
+    {
+        bool succesfull = false;
 
-		if(c_manager_!=0)
-		{   
+        if(c_manager_!=0)
+        {   
             //HDR must be first compositor in the chain
-            if(compositor == "HDR")
+            if(compositor == "HDR" || compositor == "Strong HDR")
             {
                 position = 0;
             }
-			Ogre::CompositorInstance* comp = c_manager_->addCompositor(vp, compositor, position);
-			if(comp!=NULL)
-			{
-                if(compositor == "HDR")
-			    {
-				    comp->addListener(&hdr_listener_);
-				    hdr_listener_.notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-				    hdr_listener_.notifyCompositor(comp);
+            Ogre::CompositorInstance* comp = c_manager_->addCompositor(vp, compositor, position);
+            if(comp!=NULL)
+            {
+                if(compositor == "HDR" || compositor == "Strong HDR")
+                {
+                    
+                    comp->addListener(&hdr_listener_);
+                    hdr_listener_.notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+                    hdr_listener_.notifyCompositor(comp);
 
-			    }
-			    else if(compositor == "Gaussian Blur")
-			        {
-				        comp->addListener(&gaussian_listener_);
-				        gaussian_listener_.notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-			        }
+                }
+                else if(compositor == "Gaussian Blur")
+                {
+                    comp->addListener(&gaussian_listener_);
+                    gaussian_listener_.notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+                }
+               
 
-				c_manager_->setCompositorEnabled(vp, compositor, true);
-				succesfull=true;
-			}
-		}
-		
-		if(!succesfull)
+                c_manager_->setCompositorEnabled(vp, compositor, true);
+                succesfull=true;
+            }
+        }
+        
+        if(!succesfull)
             OgreRenderingModule::LogWarning("Failed to enable effect: " + compositor);
 
-		return succesfull;
-	}
+        return succesfull;
+    }
 
 	bool CompositionHandler::AddCompositorForViewport( std::string const &compositor, int position)
 	{
