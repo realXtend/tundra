@@ -310,6 +310,9 @@ namespace Communication
         //! Update playback position for received audio
         virtual void UpdateAudioSourcePosition(Vector3df position = Vector3df(0.0f, 0.0f, 0.0f) ) = 0;
 
+        //! Set if we want to use spatial voice with avatar tracking
+        virtual void TrackingAvatar(bool enabled) = 0;
+
 	signals:
         //!
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);

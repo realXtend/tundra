@@ -6,6 +6,8 @@
 #include "Foundation.h"
 #include "UiDefines.h"
 
+#include "EventHandler.h"
+
 #include <QWidget>
 #include <QSize>
 
@@ -43,6 +45,7 @@ namespace CommunicationUI
         //! Getters and setters
         void setUiState(UiDefines::UiStates::ConnectionState state) { ui_state_ = state; }
         UiDefines::UiStates::ConnectionState uiState() { return ui_state_; }
+        EventHandler *GetEventHandler() { return event_handler_; }
 
         void ChangeContext(UiDefines::UiStates::ConnectionState new_state = UiDefines::UiStates::NoStateChange);
 
@@ -60,6 +63,8 @@ namespace CommunicationUI
         UiHelpers::LoginHelper *login_helper_;
         UiHelpers::ConfigHelper *config_helper_;
         UiManagers::SessionManager *session_manager_;
+
+        EventHandler *event_handler_;
 
         QSize current_size_;
         QStringList to_be_deleted_;

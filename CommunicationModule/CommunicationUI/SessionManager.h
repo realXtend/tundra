@@ -9,11 +9,15 @@
 #include "ChatSessionWidget.h"
 #include "UiDefines.h"
 
+#include "EventHandler.h"
+
 #include <QMenuBar>
 #include <QMenu>
 #include <QObject>
 
 #include "ui_SessionManagerWidget.h"
+#include "ui_SpatialVoiceConfigureWidget.h"
+
 #include "interface.h"
 
 namespace UiManagers
@@ -30,27 +34,37 @@ namespace UiManagers
         //! Setup ui
         void SetupUi(Ui::SessionManagerWidget *session_manager_ui) { SAFE_DELETE(session_manager_ui_); session_manager_ui_ = session_manager_ui; }
         //! Start the ui manager
-        void Start(const QString &username, Communication::ConnectionInterface *im_connection);      
+        void Start(const QString &username, Communication::ConnectionInterface *im_connection, CommunicationUI::EventHandler *event_handler);      
 
     private:
+        QWidget *spatial_voice_manager_widget_;
+        QMap<QString, QString> avatar_map_;
         QMenuBar *menu_bar_;
         QAction *available_status, *chatty_status, *away_status;
         QAction *extended_away_status, *busy_status, *hidden_status;
 
         Ui::SessionManagerWidget            *session_manager_ui_;
+        Ui::SpatialVoiceConfigureWidget     spatial_voice_configure_ui_;
+
         UiHelpers::SessionHelper            *session_helper_;
         Communication::ConnectionInterface  *im_connection_;
         CommunicationUI::MasterWidget       *main_parent_;
         CommunicationUI::FriendListWidget   *friend_list_widget_;
+        CommunicationUI::EventHandler       *event_handler_;
 
     public slots:
         void StatusChangedOutSideMenuBar(const QString &status_code);
+
+        void UpdateAvatarList();
+        void StartTrackingSelectedAvatar();
+        void StopTrackingSelectedAvatar();
 
     private slots:
         QMenuBar *ConstructMenuBar();
         void CreateFriendListWidget();
 
         void SignOut();
+        void Show3DSoundManager();
         void Hide()               { main_parent_->hide(); friend_list_widget_->hide(); }
         void StatusAvailable()    { emit StatusChange(QString("available")); }
         void StatusChatty()       { emit StatusChange(QString("chat"));      }
