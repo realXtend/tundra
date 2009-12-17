@@ -25,15 +25,15 @@ namespace PythonScript
 			//void setValue(QMap<int, QString> map) { map = map; }
 			QString getName() {return name;}
 			void setName(QString nuname) { name = nuname; }
-			RexUUID getUUID() {return uuid;}
-			void setUUID(RexUUID nuuuid) { uuid = nuuuid; }
+			QVariant getUUID() {return uuid;}
+			void setUUID(QVariant nuuuid) { uuid = nuuuid; }
 
         public slots:
 			QString about() { return "swoot";}
 
 		private:
 			QString name;
-			RexUUID uuid;
+			QVariant uuid;
 
 	};
 }
