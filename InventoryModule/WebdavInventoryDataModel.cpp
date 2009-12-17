@@ -292,14 +292,14 @@ void WebDavInventoryDataModel::UploadBuffer(const QString &filename, QByteArray&
 
 void WebDavInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
 {
-    for (Core::uint i = 0; i < filenames.size(); ++i)
+    for (uint i = 0; i < filenames.size(); ++i)
         UploadFile(filenames[i], parent_folder);
 }
 
 void WebDavInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
     AbstractInventoryItem *parent_folder)
 {
-    for (Core::uint i = 0; i < filenames.size(); ++i)
+    for (uint i = 0; i < filenames.size(); ++i)
     {
         QByteArray data((const char*)&buffers[i][0], buffers[i].size());
         UploadBuffer(filenames[i], data, parent_folder);

@@ -18,7 +18,7 @@
 
 namespace Asset
 {
-    const Core::Real XMLRPCAssetProvider::DEFAULT_ASSET_TIMEOUT = 10.0;
+    const Real XMLRPCAssetProvider::DEFAULT_ASSET_TIMEOUT = 10.0;
         
     XMLRPCAssetProvider::XMLRPCAssetProvider(Foundation::Framework* framework) :
         framework_(framework),
@@ -65,7 +65,7 @@ namespace Asset
         return true;
     }
     
-    bool XMLRPCAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
+    bool XMLRPCAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
         if (!IsValidId(asset_id))
             return false;
@@ -96,7 +96,7 @@ namespace Asset
             }
             HttpUtilities::HttpTaskRequestPtr new_http_request(new HttpUtilities::HttpTaskRequest);
             new_http_request->url_ = asset_id;
-            new_http_request->timeout_ = (Core::Real)asset_timeout_;
+            new_http_request->timeout_ = (Real)asset_timeout_;
             new_request.http_request_tag_ = manager_.AddRequest<HttpUtilities::HttpTaskRequest>(host, new_http_request);
             
             requests_[asset_id] = new_request;
@@ -112,13 +112,13 @@ namespace Asset
         return true;
     }
     
-    Foundation::AssetPtr XMLRPCAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
+    Foundation::AssetPtr XMLRPCAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         // Not supported
         return Foundation::AssetPtr();
     }
     
-    bool XMLRPCAssetProvider::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)    
+    bool XMLRPCAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)    
     {
         AssetRequestMap::iterator i = requests_.find(asset_id);
         if (i == requests_.end())
@@ -132,7 +132,7 @@ namespace Asset
         return true;
     }
     
-    void XMLRPCAssetProvider::Update(Core::f64 frametime)
+    void XMLRPCAssetProvider::Update(f64 frametime)
     {
         std::vector<Foundation::ThreadTaskResultPtr> results = manager_.GetResults();
         
@@ -165,7 +165,7 @@ namespace Asset
         }
         if (i == requests_.end())
         {
-            AssetModule::LogWarning("Unmatched XMLRPC asset http request tag " + Core::ToString<int>(result->tag_));
+            AssetModule::LogWarning("Unmatched XMLRPC asset http request tag " + ToString<int>(result->tag_));
             return;
         }
         
@@ -212,14 +212,14 @@ namespace Asset
                     data.push_back(c);
             }
             
-            AssetModule::LogDebug("XMLRPC asset " + request.asset_id_ + " encoded size: " + Core::ToString<Core::uint>(base64_data.str().length()) + 
-                " decoded size: " + Core::ToString<Core::uint>(data.size()));
+            AssetModule::LogDebug("XMLRPC asset " + request.asset_id_ + " encoded size: " + ToString<uint>(base64_data.str().length()) + 
+                " decoded size: " + ToString<uint>(data.size()));
             asset_service->StoreAsset(new_asset);
             
             // Send asset ready event for each request tag
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            const Core::RequestTagVector& tags = request.tags_;
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            const RequestTagVector& tags = request.tags_;
+            for (uint i = 0; i < tags.size(); ++i)
             {          
                 Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
                 event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);

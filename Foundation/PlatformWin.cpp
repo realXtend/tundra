@@ -33,7 +33,7 @@ namespace Foundation
 
             return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name");
         }
-        throw Core::Exception("Failed to access application data directory.");
+        throw Exception("Failed to access application data directory.");
     }
 
     std::wstring PlatformWin::GetApplicationDataDirectoryW()
@@ -46,9 +46,9 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + Core::ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
+            return std::wstring(cpath) + L"\\" + ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
         }
-        throw Core::Exception("Failed to access application data directory.");
+        throw Exception("Failed to access application data directory.");
     }
 
     std::string PlatformWin::GetUserDocumentsDirectory()
@@ -63,7 +63,7 @@ namespace Foundation
 
             return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name");
         }
-        throw Core::Exception("Failed to access user documents directory.");
+        throw Exception("Failed to access user documents directory.");
     }
 
 
@@ -77,9 +77,9 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + Core::ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
+            return std::wstring(cpath) + L"\\" + ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
         }
-        throw Core::Exception("Failed to access user documents directory.");
+        throw Exception("Failed to access user documents directory.");
     }
 }
 

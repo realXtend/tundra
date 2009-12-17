@@ -58,7 +58,7 @@ namespace OpenALAudio
 		LogInfo("Module " + Name() + " uninitialized.");
 	}
 
-    void OpenALAudioModule::Update(Core::f64 frametime)
+    void OpenALAudioModule::Update(f64 frametime)
 	{
         {
             PROFILE(OpenALAudioModule_Update);
@@ -68,7 +68,7 @@ namespace OpenALAudio
         RESETPROFILER;
 	}
 	
-    bool OpenALAudioModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (category_id == asset_event_category_)
         {

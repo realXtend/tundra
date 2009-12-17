@@ -19,7 +19,7 @@ namespace Communication
 	public:
 		//! Handle network event
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data) = 0;
-		virtual bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data) = 0;
+		virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data) = 0;
 	};
 
 	/**
@@ -61,7 +61,7 @@ namespace Communication
 		virtual ConnectionVector GetConnections(const QString &protocol) const;
 
 		//! Handle events
-		virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+		virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         virtual Foundation::Framework* GetFramework() { return framework_; };
 
@@ -76,8 +76,8 @@ namespace Communication
 		QStringList supported_protocols_;
 
 		//! category id for incoming messages
-		Core::event_category_id_t event_category_networkinin_;
-        Core::event_category_id_t event_category_networkstate_;
+		event_category_id_t event_category_networkinin_;
+        event_category_id_t event_category_networkstate_;
 	protected slots:
 		virtual void OnProtocolListUpdated(const QStringList& protocols);
 		virtual void OnConnectionOpened(Communication::ConnectionInterface*);

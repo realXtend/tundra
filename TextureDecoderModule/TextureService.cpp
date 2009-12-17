@@ -37,9 +37,9 @@ namespace TextureDecoder
     {
     }
 
-    Core::request_tag_t TextureService::RequestTexture(const std::string& asset_id)
+    request_tag_t TextureService::RequestTexture(const std::string& asset_id)
     {
-        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
     
         if (requests_.find(asset_id) != requests_.end())
         {
@@ -55,7 +55,7 @@ namespace TextureDecoder
         return tag;
     }
     
-    void TextureService::Update(Core::f64 frametime)
+    void TextureService::Update(f64 frametime)
     {
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
         if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
@@ -96,9 +96,9 @@ namespace TextureDecoder
             request.SetRequested(true);
         }
 
-        Core::uint size = 0;
-        Core::uint received = 0;
-        Core::uint received_continuous = 0;
+        uint size = 0;
+        uint received = 0;
+        uint received_continuous = 0;
              
         if (!asset_service->QueryAssetStatus(request.GetId(), size, received, received_continuous))
             return;
@@ -122,7 +122,7 @@ namespace TextureDecoder
         }
     }  
     
-    bool TextureService::HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureService::HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id != Task::Events::REQUEST_COMPLETED)
             return false;
@@ -138,14 +138,14 @@ namespace TextureDecoder
             if (result->texture_)
             {
                 TextureResource* texture = checked_static_cast<TextureResource*>(result->texture_.get());
-                TextureDecoderModule::LogDebug("Decoded texture w " + Core::ToString<Core::uint>(texture->GetWidth()) + " h " +
-                    Core::ToString<Core::uint>(texture->GetHeight()) + " level " + Core::ToString<int>(result->level_));
+                TextureDecoderModule::LogDebug("Decoded texture w " + ToString<uint>(texture->GetWidth()) + " h " +
+                    ToString<uint>(texture->GetHeight()) + " level " + ToString<int>(result->level_));
 
                 // Send resource ready event for each request tag in the request
-                const Core::RequestTagVector& tags = i->second.GetTags();
+                const RequestTagVector& tags = i->second.GetTags();
 
                 Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                for (Core::uint j = 0; j < tags.size(); ++j)
+                for (uint j = 0; j < tags.size(); ++j)
                 { 
                     Resource::Events::ResourceReady event_data(i->second.GetId(), result->texture_, tags[j]);
                     event_manager->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);    
@@ -160,7 +160,7 @@ namespace TextureDecoder
         return true;
     }
     
-    bool TextureService::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureService::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Asset::Events::ASSET_CANCELED)
         {
@@ -171,8 +171,8 @@ namespace TextureDecoder
                 TextureDecoderModule::LogDebug("Texture decode request " + i->second.GetId() + " canceled");
                 
                 // Send a RESOURCE_CANCELED event for each request that was made for this texture
-                const Core::RequestTagVector& tags = i->second.GetTags();
-                for (Core::uint j = 0; j < tags.size(); ++j)
+                const RequestTagVector& tags = i->second.GetTags();
+                for (uint j = 0; j < tags.size(); ++j)
                 {
                     Resource::Events::ResourceCanceled canceled_event_data(i->second.GetId(), tags[j]);
                     framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);

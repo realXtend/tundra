@@ -19,7 +19,7 @@ namespace OpenALAudio
         DeleteBuffer();
     }
     
-    bool Sound::LoadFromBuffer(Core::u8* data, Core::uint size, Core::uint frequency, bool sixteenbit, bool stereo)
+    bool Sound::LoadFromBuffer(u8* data, uint size, uint frequency, bool sixteenbit, bool stereo)
     {
         DeleteBuffer();
         

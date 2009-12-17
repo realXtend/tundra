@@ -57,7 +57,7 @@ namespace OgreRenderer
         //! sets diffuse color of light
         /*! \param color diffuse color value
          */
-        void SetColor(const Core::Color& color);
+        void SetColor(const Color& color);
 
         //! sets light attenuation parameters
         /*! \param range maximum range of light
@@ -71,7 +71,7 @@ namespace OgreRenderer
         /*! does not affect point lights
             \param direction light direction
          */
-        void SetDirection(const Core::Vector3df& direction);
+        void SetDirection(const Vector3df& direction);
         
         //! Whether the light casts shadows or not.
         //! @param enabled Whether the light casts shadows or not.

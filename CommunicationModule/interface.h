@@ -311,7 +311,7 @@ namespace Communication
         virtual void SendVideoData(bool send) = 0;
 
         //! Update playback position for received audio
-        virtual void UpdateAudioSourcePosition(Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f) ) = 0;
+        virtual void UpdateAudioSourcePosition(Vector3df position = Vector3df(0.0f, 0.0f, 0.0f) ) = 0;
 
 	signals:
         //!

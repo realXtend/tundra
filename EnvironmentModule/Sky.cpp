@@ -46,11 +46,11 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 
     //HACK split() returns vector-struct not a direct vector after verson 6
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1 
-    Core::StringVector images_type = Ogre::StringUtil::split(image_string);
-    Core::StringVector images = images_type;
+    StringVector images_type = Ogre::StringUtil::split(image_string);
+    StringVector images = images_type;
 #else
     Ogre::vector<Ogre::String>::type images_type = Ogre::StringUtil::split(image_string);
-    Core::StringVector images; 
+    StringVector images; 
     int size = images_type.size();
     images.resize(size);
     for(int i = 0; i < size; ++i)
@@ -58,7 +58,7 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 #endif
     //END HACK
 
-    //Core::StringVector images = boost::lexical_cast<Core::StringVector>(images_type);
+    //StringVector images = boost::lexical_cast<StringVector>(images_type);
 
     // 3rd instance contains the curvature parameter.
     float curvature = boost::lexical_cast<float>(msg.ReadString());

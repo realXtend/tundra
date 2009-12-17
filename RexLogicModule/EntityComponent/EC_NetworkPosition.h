@@ -23,31 +23,31 @@ namespace RexLogic
         virtual ~EC_NetworkPosition();
         
         //! Position
-        Core::Vector3df position_;
+        Vector3df position_;
         
         //! Velocity
-        Core::Vector3df velocity_;
+        Vector3df velocity_;
                
         //! Acceleration
-        Core::Vector3df accel_;
+        Vector3df accel_;
         
         //! Orientation
-        Core::Quaternion orientation_;
+        Quaternion orientation_;
         
         //! Rotational velocity;
-        Core::Vector3df rotvel_;
+        Vector3df rotvel_;
         
         //! Age of current update from network
-        Core::f64 time_since_update_;      
+        f64 time_since_update_;      
         
         //! Previous update interval
-        Core::f64 time_since_prev_update_;         
+        f64 time_since_prev_update_;         
         
         //! Damped position
-        Core::Vector3df damped_position_; 
+        Vector3df damped_position_; 
         
         //! Damped orientation
-        Core::Quaternion damped_orientation_;
+        Quaternion damped_orientation_;
         
         //! Whether update is first
         bool first_update;        
@@ -56,10 +56,10 @@ namespace RexLogic
         void Updated();
         
         //! Set position forcibly, for example in editing tools
-        void SetPosition(const Core::Vector3df& position);
+        void SetPosition(const Vector3df& position);
         
         //! Set orientation forcibly, for example in editing tools
-        void SetOrientation(const Core::Quaternion& orientation);
+        void SetOrientation(const Quaternion& orientation);
                 
     private:
         EC_NetworkPosition(Foundation::ModuleInterface* module);        

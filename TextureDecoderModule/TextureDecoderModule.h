@@ -27,7 +27,7 @@ namespace TextureDecoder
         virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
         virtual void PostInitialize();
         
         //! returns framework
@@ -40,17 +40,17 @@ namespace TextureDecoder
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_TextureDecoder;
 
-        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
         //! Texture service
         TextureServicePtr texture_service_;
         
         //! Asset event category
-        Core::event_category_id_t asset_event_category_;
+        event_category_id_t asset_event_category_;
         
         //! Task event category
-        Core::event_category_id_t task_event_category_;
+        event_category_id_t task_event_category_;
     };
 }
 

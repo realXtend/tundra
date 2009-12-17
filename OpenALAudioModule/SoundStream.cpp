@@ -8,7 +8,7 @@
 
 namespace OpenALAudio
 {
-    SoundStream::SoundStream(std::string stream_name, Core::uint frequency, int sample_width, bool stereo)
+    SoundStream::SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo)
         : name_(stream_name),
           frequency_(frequency),
           sample_width_(sample_width),
@@ -42,7 +42,7 @@ namespace OpenALAudio
         // Add empty buffers to source
         //for (int buffer_count = 0; buffer_count<BUFFER_COUNT; ++buffer_count)
         //{
-        //    Core::u8 *temp = new Core::u8[10];
+        //    u8 *temp = new u8[10];
         //    for (int char_index = 0; char_index<10; ++char_index)
         //        temp[char_index] = 0;
         //    alBufferData(buffers_[buffer_count], format_, temp, 10, frequency_);
@@ -69,7 +69,7 @@ namespace OpenALAudio
         OpenALAudioModule::LogDebug(">> Stream playback started");
     }
 
-    void SoundStream::AddBuffer(Core::u8 *data, Core::uint size)
+    void SoundStream::AddBuffer(u8 *data, uint size)
     {
         alBufferData(buffers_[counter_], format_, data, size, frequency_);
         alSourceQueueBuffers(source_, 1, &buffers_[counter_]);
@@ -77,7 +77,7 @@ namespace OpenALAudio
         counter_++;
     }
 
-    void SoundStream::FillBuffer(Core::u8 *data, Core::uint size)
+    void SoundStream::FillBuffer(u8 *data, uint size)
     {
         if (counter_ < BUFFER_COUNT)
         {
@@ -116,7 +116,7 @@ namespace OpenALAudio
         return (state == AL_PLAYING);
     }
 
-    void SoundStream::SetPosition(Core::Vector3df position)
+    void SoundStream::SetPosition(Vector3df position)
     {
         // TODO: IMPLEMENT
         if (source_)

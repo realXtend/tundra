@@ -148,7 +148,7 @@ namespace Inventory
         void DebugDumpInventoryFolderStructure();
 #endif
 
-        typedef QMap<QPair<Core::request_tag_t, RexTypes::asset_type_t>, QString> AssetRequestMap;
+        typedef QMap<QPair<request_tag_t, RexTypes::asset_type_t>, QString> AssetRequestMap;
 
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);

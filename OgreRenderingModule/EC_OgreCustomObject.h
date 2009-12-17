@@ -68,21 +68,21 @@ namespace OgreRenderer
             \param material_name material name
             \return true if successful
          */
-        bool SetMaterial(Core::uint index, const std::string& material_name);
+        bool SetMaterial(uint index, const std::string& material_name);
         
         //! gets number of materials (submeshes) in committed geometry
-        Core::uint GetNumMaterials() const;
+        uint GetNumMaterials() const;
         
         //! gets material name from committed geometry
         /*! \param index submesh index
             \return name if successful, empty if not committed / illegal index
          */
-        const std::string& GetMaterialName(Core::uint index) const;
+        const std::string& GetMaterialName(uint index) const;
                
         //! Returns true if geometry has been committed and mesh entity created
         bool IsCommitted() { return entity_ != 0; }
         
-		void GetBoundingBox(Core::Vector3df& min, Core::Vector3df& max) const;
+		void GetBoundingBox(Vector3df& min, Vector3df& max) const;
 
     private:
         //! constructor

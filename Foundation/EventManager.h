@@ -39,10 +39,10 @@ namespace Foundation
         //! Delayed event. Used internally by EventManager.
         struct DelayedEvent
         {
-            Core::event_category_id_t category_id_;
-            Core::event_id_t event_id_;
+            event_category_id_t category_id_;
+            event_id_t event_id_;
             EventDataPtr data_;
-            Core::f64 delay_;
+            f64 delay_;
         };
         
         EventManager(Framework *framework);
@@ -53,19 +53,19 @@ namespace Foundation
             \param name New event category name
             \return Non-zero id to event category
          */
-        Core::event_category_id_t RegisterEventCategory(const std::string& name);
+        event_category_id_t RegisterEventCategory(const std::string& name);
         
         //! Queries for an event category ID by name
         /*! \param name Event category name
             \return Non-zero id, or zero if event category not recognized
          */
-        Core::event_category_id_t QueryEventCategory(const std::string& name) const;
+        event_category_id_t QueryEventCategory(const std::string& name) const;
         
        //! Queries for an event category name by ID
         /*! \param category_id event category ID
             \return event category name, or empty string if event category not recognized
          */
-        const std::string& QueryEventCategoryName(Core::event_category_id_t category_id) const;
+        const std::string& QueryEventCategoryName(event_category_id_t category_id) const;
         
         //! Registers an event
         /*! Currently only for debugging purposes, not necessary to send the event in question
@@ -73,10 +73,10 @@ namespace Foundation
             \param event_id Event ID
             \param name Event name
          */
-        void RegisterEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, const std::string& name);
+        void RegisterEvent(event_category_id_t category_id, event_id_t event_id, const std::string& name);
         
         //! Queries an event name by category & event ID
-        void QueryEventName(Core::event_category_id_t category_id, Core::event_id_t event_id) const;
+        void QueryEventName(event_category_id_t category_id, event_id_t event_id) const;
          
         //! Sends an event
         /*! \param category_id Event category ID
@@ -84,7 +84,7 @@ namespace Foundation
             \param data Pointer to event data structure (event-specific), can be 0 if not needed
             \return true if event was handled by some event handler
          */
-        bool SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
+        bool SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
         
        //! Sends a delayed event
         /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
@@ -95,7 +95,7 @@ namespace Foundation
             \param data Shared pointer to event data structure (event-specific), can be 0 if not needed
             \param delay Delay in seconds until sending event, 0 to send during next framework update
          */
-        void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay = 0.0);
+        void SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay = 0.0);
 
         //! Template version of sending a delayed event. Will perform dynamic_pointer_cast from specified type to EventDataPtr
         /*! \param category_id Event category ID
@@ -103,7 +103,7 @@ namespace Foundation
             \param data Shared pointer to event data structure (event-specific), can be 0 if not needed
             \param delay Delay in seconds until sending event, 0 to send during next framework update
          */
-        template <class T> void SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, boost::shared_ptr<T> data, Core::f64 delay = 0.0)
+        template <class T> void SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, boost::shared_ptr<T> data, f64 delay = 0.0)
         {
             SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataInterface>(data), delay);
         }
@@ -137,16 +137,16 @@ namespace Foundation
         //! Processes delayed events. Called by the framework.
         /*! \param frametime Time since last frame
          */ 
-        void ProcessDelayedEvents(Core::f64 frametime);
+        void ProcessDelayedEvents(f64 frametime);
         
         //! Loads event subscriber tree from an XML file
         /*! \param filename Path/filename of XML file
          */
         void LoadEventSubscriberTree(const std::string& filename);
 
-        typedef std::map<std::string, Core::event_category_id_t> EventCategoryMap;
+        typedef std::map<std::string, event_category_id_t> EventCategoryMap;
 
-        typedef std::map<Core::event_category_id_t, std::map<Core::event_id_t, std::string > > EventMap;
+        typedef std::map<event_category_id_t, std::map<event_id_t, std::string > > EventMap;
 
         //! Returns event category map
         const EventCategoryMap &GetEventCategoryMap() const { return event_category_map_; }
@@ -158,7 +158,7 @@ namespace Foundation
         /*! By having a global source for the tags there is no risk for collisions between
             different modules/subsystems.
          */
-        Core::request_tag_t GetNextRequestTag();
+        request_tag_t GetNextRequestTag();
         
     private:
         //! Validates event subscriber tree when modules have been loaded/unloaded
@@ -185,7 +185,7 @@ namespace Foundation
             \param data Pointer to event data structure (event-specific)
             \return true if event handled and further nodes should not be processed
          */
-        bool SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const;
+        bool SendEvent(EventSubscriber* node, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
         
         //! Populates subscriber tree from xml elements
         /*! \param node Pointer to xml element
@@ -194,10 +194,10 @@ namespace Foundation
         void BuildTreeFromNode(QDomElement& elem, const std::string parent_name);
 
         //! Next event category ID that will be assigned
-        Core::event_category_id_t next_category_id_;
+        event_category_id_t next_category_id_;
         
         //! Next free request tag to be used
-        Core::request_tag_t next_request_tag_;
+        request_tag_t next_request_tag_;
                 
         //! Map for assigned event category id's
         EventCategoryMap event_category_map_;
@@ -214,7 +214,7 @@ namespace Foundation
         DelayedEventVector delayed_events_;
         
         //! Mutex for new delayed events
-        Core::Mutex delayed_events_mutex_;
+        Mutex delayed_events_mutex_;
                 
         //! Framework
         Framework *framework_;

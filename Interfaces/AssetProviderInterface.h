@@ -52,7 +52,7 @@ namespace Foundation
             \param tag Asset request tag, allocated by AssetService. To be sent back along with ASSET_READY event
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag) = 0;
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag) = 0;
         
         //! Returns whether a certain asset is already being downloaded
         /*! \param asset_id Asset ID
@@ -69,7 +69,7 @@ namespace Foundation
             \param received_continuous Variable to receive amount of continuous bytes received from the start
             \return true If transfer in progress, and variables have been filled, false if transfer not found
          */
-        virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous) = 0;       
+        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous) = 0;       
         
         //! Gets incomplete asset data from a transfer in progress
         /*! If transfer not in progress or not enough bytes received, should return empty pointer.
@@ -79,7 +79,7 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received) = 0;   
+        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;   
         
 		//! Sets current protocolmodule
 		virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule) {};
@@ -89,7 +89,7 @@ namespace Foundation
             it does not need to be called manually.
             \param frametime Seconds since last frame
          */
-        virtual void Update(Core::f64 frametime) {};
+        virtual void Update(f64 frametime) {};
     };
 }
 

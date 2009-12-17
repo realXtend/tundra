@@ -150,7 +150,7 @@ namespace Foundation
         void UninitializeModules();
 
         //! perform synchronized update on all modules
-        void UpdateModules(Core::f64 frametime);
+        void UpdateModules(f64 frametime);
 
         //! Returns module by name
         /*!
@@ -271,20 +271,20 @@ namespace Foundation
             \param path path to module definition file (xml)
             \param all_files stringvector of all module definitions, so that dependencies can be processed
         */
-        void LoadModule(const fs::path &path, const Core::StringVectorPtr &all_files);
+        void LoadModule(const fs::path &path, const StringVectorPtr &all_files);
 
         //! loads module
         /*!
             \param moduleName path to the shared lib containing the modules
             \param entries name of the entry classes in the lib
         */
-        void LoadModule(const std::string &moduleName,  const Core::StringVector &entries);
+        void LoadModule(const std::string &moduleName,  const StringVector &entries);
 
         //! returns true if module is present
         bool HasModule(ModuleInterface *module) const;
 
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
-        Core::StringVectorPtr GetXmlFiles(const std::string &path);
+        StringVectorPtr GetXmlFiles(const std::string &path);
 
         const std::string DEFAULT_MODULES_PATH;
 

@@ -84,11 +84,11 @@ namespace Communication
 		LogInfo("Uninitialized.");   
 	}
 
-	void CommunicationModule::Update(Core::f64 frametime)
+	void CommunicationModule::Update(f64 frametime)
 	{
 	}
 
-    bool CommunicationModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CommunicationModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 

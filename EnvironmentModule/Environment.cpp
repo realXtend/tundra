@@ -187,7 +187,7 @@ QVector<float> Environment::GetFogWaterColor()
    
 }
 
-void Environment::Update(Core::f64 frametime)
+void Environment::Update(f64 frametime)
 {
     FindActiveEnvironment();
     if (activeEnvComponent_ != 0)

@@ -14,20 +14,20 @@ namespace Environment
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 struct TerrainPatchGroupHeader
 {
-    Core::u16 stride;
-    Core::u8 patchSize;
-    Core::u8 layerType;
+    u16 stride;
+    u8 patchSize;
+    u8 layerType;
 };
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
 struct TerrainPatchHeader
 {
-    Core::u8 quantWBits;
+    u8 quantWBits;
     float dcOffset;
-    Core::u16 range;
-    Core::u8 x;
-    Core::u8 y;
-    Core::uint wordBits; // Not present in the stream.
+    u16 range;
+    u8 x;
+    u8 y;
+    uint wordBits; // Not present in the stream.
 };
 
 /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs

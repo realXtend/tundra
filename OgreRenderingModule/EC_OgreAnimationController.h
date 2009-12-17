@@ -42,19 +42,19 @@ namespace OgreRenderer
             bool auto_stop_;
 
             //! Time in milliseconds it takes to fade in/out an animation completely
-            Core::Real fade_period_;
+            Real fade_period_;
             
             //! Weight of an animation in animation blending, maximum 1.0
-            Core::Real weight_;
+            Real weight_;
 
             //! Weight adjust
-            Core::Real weight_factor_;
+            Real weight_factor_;
 
             //! How an animation is sped up or slowed down, default 1.0 (original speed)
-            Core::Real speed_factor_;
+            Real speed_factor_;
 
             //! loop animation through num_repeats times, or loop if zero
-            Core::uint num_repeats_;
+            uint num_repeats_;
 
             //! current phase
             AnimationPhase phase_;
@@ -82,13 +82,13 @@ namespace OgreRenderer
         void SetMeshEntity(Foundation::ComponentPtr mesh_entity);
         
         //! Updates animation(s) by elapsed time
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         
         //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
-        bool EnableAnimation(const std::string& name, bool looped = true, Core::Real fadein = 0.0f);
+        bool EnableAnimation(const std::string& name, bool looped = true, Real fadein = 0.0f);
 	
         //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
-        bool EnableExclusiveAnimation(const std::string& name, bool looped, Core::Real fadein = 0.0f, Core::Real fadeout = 0.0f);
+        bool EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein = 0.0f, Real fadeout = 0.0f);
 
         //! Checks whether non-looping animation has finished
         /*! If looping, returns always false
@@ -100,28 +100,28 @@ namespace OgreRenderer
         bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
 
        //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
-        bool DisableAnimation(const std::string& name, Core::Real fadeout = 0.0f);
+        bool DisableAnimation(const std::string& name, Real fadeout = 0.0f);
 
         //! Disables all animations with the same fadeout period
-        void DisableAllAnimations(Core::Real fadeout = 0.0f);
+        void DisableAllAnimations(Real fadeout = 0.0f);
 
         //! Forwards animation to end, useful if animation is played in reverse
         void SetAnimationToEnd(const std::string& name);
 
         //! Sets relative speed of active animation. Once disabled, the speed is forgotten! Returns true if success (animation exists)
-        bool SetAnimationSpeed(const std::string& name, Core::Real speedfactor);
+        bool SetAnimationSpeed(const std::string& name, Real speedfactor);
 
         //! Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-        bool SetAnimationWeight(const std::string& name, Core::Real weight);
+        bool SetAnimationWeight(const std::string& name, Real weight);
 
         //! Sets time position of an active animation.
-        bool SetAnimationTimePosition(const std::string& name, Core::Real new_position);
+        bool SetAnimationTimePosition(const std::string& name, Real new_position);
 
         //! Sets autostop on animation
         bool SetAnimationAutoStop(const std::string& name, bool enable);
 
         //! Sets number of times the animation is repeated (0 = repeat indefinitely)
-        bool SetAnimationNumLoops(const std::string& name, Core::uint repeats);
+        bool SetAnimationNumLoops(const std::string& name, uint repeats);
         
         //! Returns all running animations
         const AnimationMap& GetRunningAnimations() const { return animations_; }

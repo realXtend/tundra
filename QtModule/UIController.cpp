@@ -114,7 +114,7 @@ void UIController::RemoveCanvas(const QString& id)
     }
 
     QString message = QString("QtModule: There does not exist a canvas with id ") + id + "!";
-    throw Core::Exception(message.toStdString().c_str()); 
+    throw Exception(message.toStdString().c_str()); 
 }
 
 boost::weak_ptr<UICanvas> UIController::CreateCanvas(UICanvas::DisplayMode mode)

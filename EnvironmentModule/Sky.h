@@ -86,13 +86,13 @@ namespace Environment
         bool skyEnabled_;
 
         /// Texture resource request tags for skybox.
-        Core::request_tag_t skyBoxTextureRequests_[skyBoxTextureCount];
+        request_tag_t skyBoxTextureRequests_[skyBoxTextureCount];
 
         /// Texture resource request tag for skydome.
-        Core::request_tag_t skyDomeTextureRequest_;
+        request_tag_t skyDomeTextureRequest_;
 
         /// Texture resource request tag for skyplane.
-        Core::request_tag_t skyPlaneTextureRequest_;
+        request_tag_t skyPlaneTextureRequest_;
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID skyBoxTextures_[skyBoxTextureCount];

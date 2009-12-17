@@ -33,14 +33,14 @@ namespace RexLogic
         }
     }
     
-    void EC_NetworkPosition::SetPosition(const Core::Vector3df& position)
+    void EC_NetworkPosition::SetPosition(const Vector3df& position)
     {
         position_ = position;
         NoPositionDamping();
         NoVelocity();
     }
     
-    void EC_NetworkPosition::SetOrientation(const Core::Quaternion& orientation)
+    void EC_NetworkPosition::SetOrientation(const Quaternion& orientation)
     {
         orientation_ = orientation;
         NoOrientationDamping();
@@ -59,12 +59,12 @@ namespace RexLogic
     
     void EC_NetworkPosition::NoVelocity()
     {
-        velocity_ = Core::Vector3df::ZERO;
-        accel_ = Core::Vector3df::ZERO;
+        velocity_ = Vector3df::ZERO;
+        accel_ = Vector3df::ZERO;
     }
     
     void EC_NetworkPosition::NoRotationVelocity()
     {
-        rotvel_ = Core::Vector3df::ZERO;
+        rotvel_ = Vector3df::ZERO;
     }
 }

@@ -19,7 +19,7 @@ namespace Foundation
         //! Request tag. Assigned when queuing the request & returned to caller.
         /*! Note: assigned by a ThreadTaskManager, not by ThreadTask itself
          */
-        Core::request_tag_t tag_;
+        request_tag_t tag_;
     };
 
     typedef boost::shared_ptr<ThreadTaskRequest> ThreadTaskRequestPtr;
@@ -29,7 +29,7 @@ namespace Foundation
     {
     public:
         //! Request tag. Should be copied from the request to match the result to request
-        Core::request_tag_t tag_;
+        request_tag_t tag_;
         
         //! Task description (which kind of task produced the result)
         std::string task_description_;
@@ -162,15 +162,15 @@ namespace Foundation
         //! Task description
         std::string task_description_;
         //! Mutex for request queue
-        Core::Mutex request_mutex_;
+        Mutex request_mutex_;
         //! Mutex for result
-        Core::Mutex result_mutex_;
+        Mutex result_mutex_;
         //! Condition for request queue
-        Core::Condition request_condition_;
+        Condition request_condition_;
         //! Request queue
         std::list<ThreadTaskRequestPtr> requests_;
         //! Work thread
-        Core::Thread thread_;
+        Thread thread_;
         //! Final result, available when work finished
         ThreadTaskResultPtr result_;
         //! Thread task manager, collects queued results
@@ -192,7 +192,7 @@ namespace Task
     namespace Events
     {
         //! Sent when a work result has arrived. Uses the event data structure ThreadTaskResult and its subclasses
-        static const Core::event_id_t REQUEST_COMPLETED = 1;
+        static const event_id_t REQUEST_COMPLETED = 1;
     }
 }
 

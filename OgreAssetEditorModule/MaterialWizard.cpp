@@ -40,7 +40,7 @@ MaterialWizard::~MaterialWizard()
 void MaterialWizard::Create()
 {
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    Core::event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
+    event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
     if (event_cat == 0)
     {
         OgreAssetEditorModule::LogError("Could not query event category \"Inventory\".");

@@ -47,7 +47,7 @@ namespace Asset
             \return Pointer to asset, 0 if not found or not enough bytes
            
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);
         
         //! Checks asset id for validity
         /*! \return true if asset id is valid
@@ -62,7 +62,7 @@ namespace Asset
             \param asset_type Asset type
             \return non-zero request tag if download queued, 0 if not queued (no assetprovider could serve request) 
          */
-        virtual Core::request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type);
+        virtual request_tag_t RequestAsset(const std::string& asset_id, const std::string& asset_type);
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
@@ -73,7 +73,7 @@ namespace Asset
             \param received_continuous Variable to receive amount of continuous bytes received from the start
             \return true if asset was found either in cache or as a transfer in progress, and variables have been filled, false if not found
          */
-        virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous);
+        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
         
         //! Registers an asset provider
         /*! \param asset_provider Provider to register
@@ -96,11 +96,11 @@ namespace Asset
         /*! Calls update function of all registered asset providers, and of cache
             \param frametime Seconds since last frame
          */
-        void Update(Core::f64 frametime);            
+        void Update(f64 frametime);            
         
     private:      
         //! Gets new request tag
-        Core::request_tag_t GetNextTag();
+        request_tag_t GetNextTag();
         
         //! Gets asset from cache
         /*! \param asset_id Asset ID
@@ -111,7 +111,7 @@ namespace Asset
         Foundation::Framework* framework_;
                                 
         //! Asset event category
-        Core::event_category_id_t event_category_;
+        event_category_id_t event_category_;
                 
         //! Asset cache
         typedef boost::shared_ptr<AssetCache> AssetCachePtr;

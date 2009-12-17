@@ -31,7 +31,7 @@ namespace OgreRenderer
         mesh_entity_ = mesh_entity;
     }
     
-    void EC_OgreAnimationController::Update(Core::f64 frametime)
+    void EC_OgreAnimationController::Update(f64 frametime)
     {
         Ogre::Entity* entity = GetEntity();
         if (!entity) return;
@@ -127,7 +127,7 @@ namespace OgreRenderer
             }
         }
         
-        for (Core::uint i = 0; i < erase_list.size(); ++i)
+        for (uint i = 0; i < erase_list.size(); ++i)
         {
             animations_.erase(erase_list[i]);
         }
@@ -173,7 +173,7 @@ namespace OgreRenderer
     }
     
     //! Enable an exclusive animation (fades out all other animations of same priority with fadeOut parameter)
-    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Core::Real fadein, Core::Real fadeout)
+    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein, Real fadeout)
     {
         // Disable all other active animations
         AnimationMap::iterator i = animations_.begin();
@@ -193,7 +193,7 @@ namespace OgreRenderer
     }
 
     //! Enable an animation. Return false if the animation doesn't exist
-    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Core::Real fadein)
+    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Real fadein)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -284,7 +284,7 @@ namespace OgreRenderer
     }
 
     //! Set number of loops on animation
-    bool EC_OgreAnimationController::SetAnimationNumLoops(const std::string& name, Core::uint repeats)
+    bool EC_OgreAnimationController::SetAnimationNumLoops(const std::string& name, uint repeats)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -297,7 +297,7 @@ namespace OgreRenderer
     }
 
     //! Disable an animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Core::Real fadeout)
+    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Real fadeout)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -311,7 +311,7 @@ namespace OgreRenderer
     }
 
     //! Disable all animations. 
-    void EC_OgreAnimationController::DisableAllAnimations(Core::Real fadeout)
+    void EC_OgreAnimationController::DisableAllAnimations(Real fadeout)
     {
         AnimationMap::iterator i = animations_.begin();
         while (i != animations_.end())
@@ -336,7 +336,7 @@ namespace OgreRenderer
     }
 
     //! Change speedfactor of an active animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Core::Real speedfactor)
+    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Real speedfactor)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -349,7 +349,7 @@ namespace OgreRenderer
     }
 
     //! Change weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Core::Real weight)
+    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Real weight)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -362,7 +362,7 @@ namespace OgreRenderer
     }
 
     //! Change time position of an active animation. Return false if the animation doesn't exist or isn't active
-    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Core::Real newPosition)
+    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Real newPosition)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);

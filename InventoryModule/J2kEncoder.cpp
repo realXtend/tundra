@@ -52,7 +52,7 @@ int GetClosestPowerOfTwo(int value)
 }
 
 // Code adapted from LibOpenJpeg (http://www.openjpeg.org/index.php?menu=download), file image_to_j2k.c.
-bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool reversible)
+bool J2kEncode(Ogre::Image &src_image, std::vector<u8> &outbuf, bool reversible)
 {
     bool success;
     opj_cparameters_t parameters;   // compression parameters
@@ -74,8 +74,8 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<Core::u8> &outbuf, bool rever
     {
         int new_w = GetClosestPowerOfTwo(width);
         int new_h = GetClosestPowerOfTwo(height);
-        InventoryModule::LogInfo("Scaling image from " + Core::ToString<int>(width) + "x" + Core::ToString<int>(height) + " to " +
-            Core::ToString<int>(new_w) + "x" + Core::ToString<int>(new_h));
+        InventoryModule::LogInfo("Scaling image from " + ToString<int>(width) + "x" + ToString<int>(height) + " to " +
+            ToString<int>(new_w) + "x" + ToString<int>(new_h));
 
         // Uses bilinear filter
         src_image.resize(new_w, new_h);

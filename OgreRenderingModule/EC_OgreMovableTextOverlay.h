@@ -50,10 +50,10 @@ namespace OgreRenderer
 //        EC_OgreMovableTextOverlay &operator =(const EC_OgreTextOverlay &other) { assert (false); return *this; }
 
         //! Creates the Ogre overlay with a specified offset. Call first.
-        void CreateOverlay(const Core::Vector3df& offset);
+        void CreateOverlay(const Vector3df& offset);
 
         //! Adjust offset of overlay
-        void SetOffset(const Core::Vector3df& offset);
+        void SetOffset(const Vector3df& offset);
 
         //! Sets the placeable (scene node) which the overlay is meant to follow.
         void SetPlaceable(Foundation::ComponentPtr placeable);
@@ -66,7 +66,7 @@ namespace OgreRenderer
 
         //! Set the overlay text font color.
         //! @param color New color.
-        void SetFontColor(const Core::Color &color) { fontColor_ = color; }
+        void SetFontColor(const Color &color) { fontColor_ = color; }
 
         //! hide / show the overlay
         void SetVisible(bool visible);
@@ -142,10 +142,10 @@ namespace OgreRenderer
         Ogre::Vector2 textDim_;
 
         //! Color of the font.
-        Core::Color fontColor_;
+        Color fontColor_;
 
         //! Font height
-//        const Core::Real char_height_;
+//        const Real char_height_;
 
         //! Is the text visible
         bool visible_;

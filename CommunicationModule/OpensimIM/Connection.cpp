@@ -88,7 +88,7 @@ namespace OpensimIM
 	Communication::ContactGroupInterface& Connection::GetContacts()
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		return friend_list_;
 	}
@@ -96,7 +96,7 @@ namespace OpensimIM
 	QStringList Connection::GetPresenceStatusOptionsForContact() const
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		QStringList options;
 		//! Opensim provides just two online state options
@@ -108,7 +108,7 @@ namespace OpensimIM
 	QStringList Connection::GetPresenceStatusOptionsForUser() const
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		// In Opensim user cannot set the presence status 
 		QStringList options;
@@ -118,7 +118,7 @@ namespace OpensimIM
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const Communication::ContactInterface &contact)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		return OpenPrivateChatSession( contact.GetID() );
 	}
@@ -126,7 +126,7 @@ namespace OpensimIM
 	Communication::ChatSessionInterface* Connection::OpenPrivateChatSession(const QString &user_id)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		ChatSession* session = GetPrivateChatSession(user_id);
 		if (!session)
@@ -140,7 +140,7 @@ namespace OpensimIM
 	Communication::ChatSessionInterface* Connection::OpenChatSession(const QString &channel)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("The connection is closed.");
+			throw Exception("The connection is closed.");
 
 		for (ChatSessionVector::iterator i = public_chat_sessions_.begin(); i != public_chat_sessions_.end(); ++i)
 		{
@@ -166,27 +166,27 @@ namespace OpensimIM
 	void Connection::SendFriendRequest(const QString &target, const QString &message)
 	{
 		if (state_ != STATE_OPEN)
-			throw Core::Exception("Cannot send text message, the connection is closed.");
+			throw Exception("Cannot send text message, the connection is closed.");
 
 		RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
 		if (rexlogic_ == NULL)
-			throw Core::Exception("Cannot send text message, RexLogicModule is not found");
+			throw Exception("Cannot send text message, RexLogicModule is not found");
 		RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
 
 		if ( connection == NULL )
-			throw Core::Exception("Cannot send text message, rex server connection is not found");
+			throw Exception("Cannot send text message, rex server connection is not found");
 
 		if ( !connection->IsConnected() )
-			throw Core::Exception("Cannot send text message, rex server connection is not established");
+			throw Exception("Cannot send text message, rex server connection is not established");
 
-		connection->SendFormFriendshipPacket(RexTypes::RexUUID( target.toStdString() ));
+		connection->SendFormFriendshipPacket(RexUUID( target.toStdString() ));
 	}
 
     void Connection::RemoveContact(const Communication::ContactInterface &contact)
     {
         //! @todo IMPLEMENT
-        throw Core::Exception("Not implemented.");
+        throw Exception("Not implemented.");
     }
 
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
@@ -264,16 +264,16 @@ namespace OpensimIM
 		{
 			msg.ResetReading();
 
-			RexTypes::RexUUID agent_id = msg.ReadUUID();
-			RexTypes::RexUUID session_id = msg.ReadUUID();
+			RexUUID agent_id = msg.ReadUUID();
+			RexUUID session_id = msg.ReadUUID();
 			bool is_group_message = msg.ReadBool();
-			RexTypes::RexUUID to_agent_id = msg.ReadUUID();
+			RexUUID to_agent_id = msg.ReadUUID();
 			msg.SkipToNextVariable(); // ParentEstateID
-			RexTypes::RexUUID region_id = msg.ReadUUID();
+			RexUUID region_id = msg.ReadUUID();
 			RexTypes::Vector3 position = msg.ReadVector3();
 			int offline = msg.ReadU8();
 			int dialog_type = msg.ReadU8();
-			RexTypes::RexUUID id = msg.ReadUUID();
+			RexUUID id = msg.ReadUUID();
 			msg.SkipToNextVariable(); // Timestamp
 			std::string from_agent_name = msg.ReadString();
 			std::string message = msg.ReadString();
@@ -332,8 +332,8 @@ namespace OpensimIM
 			std::size_t size = 0;
 			const boost::uint8_t* buffer = msg.ReadBuffer(&size);
 			std::string from_name = std::string((char*)buffer);
-			RexTypes::RexUUID source = msg.ReadUUID();
-			RexTypes::RexUUID object_owner = msg.ReadUUID();
+			RexUUID source = msg.ReadUUID();
+			RexUUID object_owner = msg.ReadUUID();
 			ChatSourceType source_type = static_cast<ChatSourceType>( msg.ReadU8() );
 			ChatType chat_type = static_cast<ChatType>( msg.ReadU8() ); 
 			ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg.ReadU8() );

@@ -62,7 +62,7 @@ namespace TelepathyIM
 	void ChatSession::SendMessage(const QString &text)
 	{
 		if (state_ == STATE_CLOSED)
-			throw Core::Exception("Channel closed");
+			throw Exception("Channel closed");
 
         if (tp_text_channel_.isNull())
         {
@@ -281,7 +281,7 @@ namespace TelepathyIM
 				    QString note = QString("* Pending message received: ").append(i->text);
 				    LogDebug(note.toStdString());
 
-				    Core::uint type = i->messageType; //! @todo Check if we need value of this parameter
+				    uint type = i->messageType; //! @todo Check if we need value of this parameter
 					if (type != Tp::ChannelTextMessageTypeNormal)
 						continue;
 				    ChatSessionParticipant* originator = GetParticipant(i->sender);

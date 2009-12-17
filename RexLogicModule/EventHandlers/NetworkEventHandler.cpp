@@ -72,7 +72,7 @@ NetworkEventHandler::~NetworkEventHandler()
 
 }
 
-bool NetworkEventHandler::HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     PROFILE(NetworkEventHandler_HandleOpenSimNetworkEvent);
     ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
@@ -280,7 +280,7 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(ProtocolUtilities::Ne
 
         assert(rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
         rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(
-            Core::OpenSimToOgreCoordinateAxes(position), Core::OpenSimToOgreCoordinateAxes(lookat));
+            OpenSimToOgreCoordinateAxes(position), OpenSimToOgreCoordinateAxes(lookat));
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
         uint64_t regionhandle = msg.ReadU64();
@@ -374,7 +374,7 @@ bool NetworkEventHandler::HandleOSNE_InventoryDescendents(ProtocolUtilities::Net
     }
 
     Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
     msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
     msg.SkipToNextVariable();               //Version S32, version of the folder for caching
@@ -480,7 +480,7 @@ bool NetworkEventHandler::HandleOSNE_UpdateCreateInventoryItem(ProtocolUtilities
     msg.SkipToNextVariable(); // TransactionID, UUID
 
     Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    Core::event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
     // InventoryData, variable block.
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
@@ -553,21 +553,21 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     msg.ReadUUID(); // ObjectID
     msg.ReadUUID(); // ParentID
     msg.ReadU64(); // Regionhandle, todo handle
-    Core::Vector3df position = msg.ReadVector3(); // Position
-    Core::Real gain = msg.ReadF32(); // Gain
+    Vector3df position = msg.ReadVector3(); // Position
+    Real gain = msg.ReadF32(); // Gain
           
     // Because sound triggers are not supposed to stop the previous sound, like attached sounds do, 
     // it is easy to spam with 100's of sound trigger requests.
     // What we do now is that if we find the same sound playing "too many" times, we stop one of them
-    static const Core::uint MAX_SOUND_INSTANCE_COUNT = 4;
-    Core::uint same_sound_detected = 0;
-    Core::sound_id_t sound_to_stop = 0;    
+    static const uint MAX_SOUND_INSTANCE_COUNT = 4;
+    uint same_sound_detected = 0;
+    sound_id_t sound_to_stop = 0;    
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
         
-    std::vector<Core::sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
-    for (Core::uint i = 0; i < playing_sounds.size(); ++i)
+    std::vector<sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
+    for (uint i = 0; i < playing_sounds.size(); ++i)
     {
         if (soundsystem->GetSoundName(playing_sounds[i]) == asset_id)
         {
@@ -580,7 +580,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     if (same_sound_detected >= MAX_SOUND_INSTANCE_COUNT)
         soundsystem->StopSound(sound_to_stop);
         
-    Core::sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
     soundsystem->SetGain(new_sound, gain);
               
     return false;

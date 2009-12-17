@@ -28,13 +28,13 @@ namespace Foundation
             \param type type of the service
             \param service service to register
         */
-        void RegisterService(Core::service_type_t type, const ServiceWeakPtr &service);
+        void RegisterService(service_type_t type, const ServiceWeakPtr &service);
 
         //! Unregister the specified service. The service should be registered before unregistering.
         void UnregisterService(const ServiceWeakPtr &service);
 
         //! Returns un-casted service from service type
-        __inline ServiceWeakPtr GetService(Core::service_type_t type)
+        __inline ServiceWeakPtr GetService(service_type_t type)
         {
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
@@ -57,7 +57,7 @@ namespace Foundation
             \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
-        __inline boost::weak_ptr<T> GetService(Core::service_type_t type)
+        __inline boost::weak_ptr<T> GetService(service_type_t type)
         {
             ServicesMap::iterator it = services_.find(type);
             if (it == services_.end())
@@ -80,7 +80,7 @@ namespace Foundation
             \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
         */
         template <class T>
-        __inline const boost::weak_ptr<T> GetService(Core::service_type_t type) const
+        __inline const boost::weak_ptr<T> GetService(service_type_t type) const
         {
             ServicesMap::const_iterator it = services_.find(type);
             if (it == services_.end())
@@ -96,13 +96,13 @@ namespace Foundation
         }
 
         //! Returns true if service type is already registered, false otherwise
-        bool IsRegistered(Core::service_type_t type) const
+        bool IsRegistered(service_type_t type) const
         {
             return (services_.find(type) != services_.end());
         }
     private:
-        typedef std::map<Core::service_type_t, ServiceWeakPtr> ServicesMap;
-        typedef std::map<Core::service_type_t, int> ServicesUsageMap;
+        typedef std::map<service_type_t, ServiceWeakPtr> ServicesMap;
+        typedef std::map<service_type_t, int> ServicesUsageMap;
         
         //! parent framework
         Framework *framework_;

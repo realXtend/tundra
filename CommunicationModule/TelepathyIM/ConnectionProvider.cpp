@@ -80,7 +80,7 @@ namespace TelepathyIM
 		if (state_ != STATE_READY)
 		{
 			LogError("Cannot open IM connection because Telepathy IM connection provider is not ready.");
-			throw Core::Exception("Telepathy IM connection provider is not ready.");
+			throw Exception("Telepathy IM connection provider is not ready.");
 		}
 
 		Connection* connection = new Connection(tp_connection_manager_, credentials);
@@ -131,7 +131,7 @@ namespace TelepathyIM
 		if (!ok)
 		{
 			LogError("Cannot start dbus daemon process.");
-			throw Core::Exception("Cannot start up dbus daemon process.");
+			throw Exception("Cannot start up dbus daemon process.");
 		}
         LogDebug("DBus daemon is started.");
 

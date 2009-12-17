@@ -8,7 +8,6 @@
 
 #include "RexUUID.h"
 
-using RexTypes::RexUUID;
 namespace PythonScript 
 {
 	class QEC_Prim : public QObject

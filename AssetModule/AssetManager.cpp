@@ -50,9 +50,9 @@ namespace Asset
         return false; // No provider could identify ID as valid
     }
     
-    Core::request_tag_t AssetManager::RequestAsset(const std::string& asset_id, const std::string& asset_type)
+    request_tag_t AssetManager::RequestAsset(const std::string& asset_id, const std::string& asset_type)
     {
-        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
         
         Foundation::AssetPtr asset = GetFromCache(asset_id);
         if (asset)
@@ -77,7 +77,7 @@ namespace Asset
         return 0;
     }
     
-    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
+    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         if (!received)
             return Foundation::AssetPtr();
@@ -99,7 +99,7 @@ namespace Asset
         return Foundation::AssetPtr();
     }
     
-    bool AssetManager::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)
+    bool AssetManager::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
     {
         // See if any provider has ongoing transfer for this asset
         AssetProviderVector::iterator i = providers_.begin();
@@ -177,7 +177,7 @@ namespace Asset
         return false;
     }    
         
-    void AssetManager::Update(Core::f64 frametime)
+    void AssetManager::Update(f64 frametime)
     {
         // Update all providers
         AssetProviderVector::iterator i = providers_.begin();

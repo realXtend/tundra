@@ -73,7 +73,7 @@ namespace UiHelpers
             im_connection_ = 0; // CommunicationService will delete this
             im_connection_ = communication_service_->OpenConnection(credentials);
         }
-        catch (Core::Exception &e) { /* e.what() for error */ }
+        catch (Exception &e) { /* e.what() for error */ }
 
         connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
         connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));

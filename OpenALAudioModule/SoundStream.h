@@ -14,16 +14,16 @@ namespace OpenALAudio
     {
     
     public:
-        SoundStream(std::string stream_name, Core::uint frequency, int sample_width, bool stereo);
+        SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo);
         virtual ~SoundStream();
 
         void Release();
         void Play();
-        void AddBuffer(Core::u8 *data, Core::uint size);
-        void FillBuffer(Core::u8 *data, Core::uint size);
+        void AddBuffer(u8 *data, uint size);
+        void FillBuffer(u8 *data, uint size);
         bool IsPlaying();
 
-        void SetPosition(Core::Vector3df position);
+        void SetPosition(Vector3df position);
 
         
 
@@ -34,7 +34,7 @@ namespace OpenALAudio
 
         int current_buffer_;
         std::string name_;
-        Core::uint frequency_;
+        uint frequency_;
         int sample_width_;
         bool stereo_;
 

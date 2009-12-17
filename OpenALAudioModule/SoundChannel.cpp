@@ -6,10 +6,10 @@
 
 namespace OpenALAudio
 {
-    static const Core::Real MINIMUM_ROLLOFF = 0.1f;
-    static const Core::Real DEFAULT_ROLLOFF = 2.0f;
-    static const Core::Real DEFAULT_INNER_RADIUS = 1.0f;
-    static const Core::Real DEFAULT_OUTER_RADIUS = 50.0f;
+    static const Real MINIMUM_ROLLOFF = 0.1f;
+    static const Real DEFAULT_ROLLOFF = 2.0f;
+    static const Real DEFAULT_INNER_RADIUS = 1.0f;
+    static const Real DEFAULT_OUTER_RADIUS = 50.0f;
     
     SoundChannel::SoundChannel() :
         handle_(0),
@@ -31,7 +31,7 @@ namespace OpenALAudio
         DeleteSource();
     }
     
-    void SoundChannel::Update(const Core::Vector3df& listener_pos)
+    void SoundChannel::Update(const Vector3df& listener_pos)
     {   
         CalculateAttenuation(listener_pos);         
         SetAttenuatedGain();
@@ -122,7 +122,7 @@ namespace OpenALAudio
             return sound_->GetName();
     }
     
-    void SoundChannel::SetPosition(const Core::Vector3df& position)
+    void SoundChannel::SetPosition(const Vector3df& position)
     {
         position_ = position;
         
@@ -143,14 +143,14 @@ namespace OpenALAudio
             alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);
     }
     
-    void SoundChannel::SetPitch(Core::Real pitch)
+    void SoundChannel::SetPitch(Real pitch)
     {
         pitch_ = pitch;
         if (handle_)
             alSourcef(handle_, AL_PITCH, pitch_);        
     }
     
-    void SoundChannel::SetGain(Core::Real gain)
+    void SoundChannel::SetGain(Real gain)
     {
         if (gain < 0.0f) 
             gain = 0.0f;
@@ -160,7 +160,7 @@ namespace OpenALAudio
         gain_ = gain;          
     }
     
-    void SoundChannel::SetRange(Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff)
+    void SoundChannel::SetRange(Real inner_radius, Real outer_radius, Real rolloff)
     {
         if (rolloff < MINIMUM_ROLLOFF) 
             rolloff = MINIMUM_ROLLOFF;
@@ -194,7 +194,7 @@ namespace OpenALAudio
         }
     }
     
-    void SoundChannel::CalculateAttenuation(const Core::Vector3df& listener_pos)
+    void SoundChannel::CalculateAttenuation(const Vector3df& listener_pos)
     {
         if ((outer_radius_ == 0.0f) || (outer_radius_ <= inner_radius_))
         {
@@ -202,7 +202,7 @@ namespace OpenALAudio
             return;
         }
           
-        Core::Real distance = (position_ - listener_pos).getLength();
+        Real distance = (position_ - listener_pos).getLength();
         if (distance <= inner_radius_)
         {
             attenuation_ = 1.0f;

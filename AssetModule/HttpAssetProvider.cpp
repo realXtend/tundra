@@ -22,7 +22,7 @@ using namespace RexTypes;
 
 namespace Asset
 {
-	const Core::Real HttpAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
+	const Real HttpAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
 
 	HttpAssetProvider::HttpAssetProvider(Foundation::Framework* framework) : framework_(framework)
 	{
@@ -58,7 +58,7 @@ namespace Asset
             return true;
     }
 
-	bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag)
+	bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
 	{
 	    if (!IsValidId(asset_id))
 	        return false;
@@ -90,7 +90,7 @@ namespace Asset
 		return false;
     }
 
-	Foundation::AssetPtr HttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received)
+	Foundation::AssetPtr HttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         HttpAssetTransfer* transfer = GetTransfer(asset_id);
             
@@ -110,7 +110,7 @@ namespace Asset
         return Foundation::AssetPtr();
     }
 
-    bool HttpAssetProvider::QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous)    
+    bool HttpAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)    
     {
         HttpAssetTransfer* transfer = GetTransfer(asset_id);
             
@@ -126,7 +126,7 @@ namespace Asset
         return false;
     }
 
-	void HttpAssetProvider::Update(Core::f64 frametime)
+	void HttpAssetProvider::Update(f64 frametime)
 	{
 		HttpAssetTransferMap::iterator i = asset_transfers_.begin();
 		while (i != asset_transfers_.end())
@@ -229,8 +229,8 @@ namespace Asset
             
             // Send asset ready event for each request tag
             Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            const Core::RequestTagVector& tags = transfer.GetTags();
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            const RequestTagVector& tags = transfer.GetTags();
+            for (uint i = 0; i < tags.size(); ++i)
             {          
                 Events::AssetReady event_data(new_asset->GetId(), new_asset->GetType(), new_asset, tags[i]);
                 event_manager->SendEvent(event_category_, Events::ASSET_READY, &event_data);                

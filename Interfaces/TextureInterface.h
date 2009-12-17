@@ -23,13 +23,13 @@ namespace Foundation
         TextureInterface(const std::string& id) : ResourceInterface(id) {}
 
         //! returns width
-        virtual Core::uint GetWidth() const = 0;
+        virtual uint GetWidth() const = 0;
 
         //! returns height
-        virtual Core::uint GetHeight() const = 0;
+        virtual uint GetHeight() const = 0;
 
         //! returns number of components
-        virtual Core::uint GetComponents() const = 0;
+        virtual uint GetComponents() const = 0;
 
         //! returns quality level, -1 if not known
         virtual int GetLevel() const = 0;
@@ -37,7 +37,7 @@ namespace Foundation
         //! returns data
         /*! each pixel of each component should be encoded as a u8, so data size should be width * height * components
          */
-        virtual Core::u8* GetData() = 0;
+        virtual u8* GetData() = 0;
     };
 }
 

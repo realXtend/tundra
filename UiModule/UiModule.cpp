@@ -51,11 +51,11 @@ void UiModule::Uninitialize()
 {
 }
 
-void UiModule::Update(Core::f64 frametime)
+void UiModule::Update(f64 frametime)
 {
 }
 
-bool UiModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     QString category = service_category_identifiers_.keys().value(service_category_identifiers_.values().indexOf(category_id));
 

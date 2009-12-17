@@ -209,7 +209,7 @@ namespace TelepathyIM
             farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
             //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
         }
-        catch(Core::Exception &e) 
+        catch(Exception &e) 
         {
             QString message = QString("Cannot create FarsightChannel object - ").append(e.what());
             reason_ = message;
@@ -219,7 +219,7 @@ namespace TelepathyIM
             return;
         }
 
-        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(Core::u8*, int)), SLOT( OnAudioPlaybackBufferReady(Core::u8* , int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(u8*, int)), SLOT( OnAudioPlaybackBufferReady(u8* , int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -620,7 +620,7 @@ namespace TelepathyIM
         return 0;
     }
 
-    void VoiceSession::OnAudioPlaybackBufferReady(Core::u8* buffer, int buffer_size)
+    void VoiceSession::OnAudioPlaybackBufferReady(u8* buffer, int buffer_size)
     {       
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
@@ -648,7 +648,7 @@ namespace TelepathyIM
             if (!soundsystem.get())
                 return;     
 
-            /*Core::u8 *data = (unsigned char *)stream_buffer_->data();*/
+            /*u8 *data = (unsigned char *)stream_buffer_->data();*/
             UpdateAudioSourcePosition(); // TEST SPATIAL VOICE
             soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
             //stream_buffer_->clear();
@@ -747,7 +747,7 @@ namespace TelepathyIM
                 CreateVideoStream();
     }
 
-    void VoiceSession::UpdateAudioSourcePosition(Core::Vector3df position )
+    void VoiceSession::UpdateAudioSourcePosition(Vector3df position )
     {
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)

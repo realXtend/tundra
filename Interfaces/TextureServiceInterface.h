@@ -27,7 +27,7 @@ namespace Foundation
             \param asset_id texture ID, UUID for legacy UDP assets
             \return request tag, will be sent back along with RESOURCE_READY event
          */
-        virtual Core::request_tag_t RequestTexture(const std::string& asset_id) = 0;
+        virtual request_tag_t RequestTexture(const std::string& asset_id) = 0;
     };
 }
 

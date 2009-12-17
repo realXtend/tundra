@@ -40,19 +40,19 @@ namespace Console
         virtual ~CallbackInterface() {}
 
         //! Calls the function
-        virtual CommandResult operator()(const Core::StringVector &params) = 0;
+        virtual CommandResult operator()(const StringVector &params) = 0;
     };
     typedef boost::shared_ptr<CallbackInterface> CallbackPtr;
 
     //! typedef for static callback
-    typedef CommandResult (*StaticCallback)(const Core::StringVector&);
+    typedef CommandResult (*StaticCallback)(const StringVector&);
 
     //! functor for console command callback, member function callback
     template <typename T>
     class Callback : public CallbackInterface
     {
     public:
-        typedef CommandResult (T::*CallbackFunction)(const Core::StringVector&);
+        typedef CommandResult (T::*CallbackFunction)(const StringVector&);
 
         //! constructor taking object and member function pointer
         Callback(T *object, CallbackFunction function) : object_(object), function_(function) { }
@@ -77,7 +77,7 @@ namespace Console
         }
 
         //! Calls the function
-        virtual CommandResult operator()(const Core::StringVector &params)
+        virtual CommandResult operator()(const StringVector &params)
         {
             return (*object_.*function_)(params);
         }       
@@ -115,7 +115,7 @@ namespace Console
         }
 
         //! Calls the function
-        virtual CommandResult operator()(const Core::StringVector &params)
+        virtual CommandResult operator()(const StringVector &params)
         {
             return (*function_)(params);
         }       
@@ -192,7 +192,7 @@ namespace Console
         Each command is associated with C++ callback function, the function can be a static
         function or a member function, but it should have the signature:
 
-            CommandResult Foo(const Core::StringVector& parameters)
+            CommandResult Foo(const StringVector& parameters)
 
         where parameters contains parameters supplied with the command.
 
@@ -274,7 +274,7 @@ void MyClass::Update()
             \param name Name of the command to execute
             \param params Parameters to pass to the command
         */
-        virtual CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params) = 0;
+        virtual CommandResult ExecuteCommand(const std::string &name, const StringVector &params) = 0;
     };
 
     //! \ingroup DebugConsole_group

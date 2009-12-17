@@ -34,7 +34,7 @@ namespace HttpUtilities
         /*! \param content_type Content type string
             \param data Data
          */
-        void SetRequestData(const std::string& content_type, const std::vector<Core::u8>& data);
+        void SetRequestData(const std::string& content_type, const std::vector<u8>& data);
         
         //! Sets request data from a string
         /*! \param content_type Content type string
@@ -51,7 +51,7 @@ namespace HttpUtilities
         //! Sets timeout for request. Default is 5 seconds.
         /*! \param seconds Timeout in seconds
          */
-        void SetTimeout(Core::Real seconds);
+        void SetTimeout(Real seconds);
         
         //! Performs the request
         void Perform();
@@ -63,10 +63,10 @@ namespace HttpUtilities
         Method GetMethod() const { return method_; }
         
         //! Returns request data
-        const std::vector<Core::u8>& GetRequestData() const { return request_data_; }
+        const std::vector<u8>& GetRequestData() const { return request_data_; }
         
         //! Returns timeout
-        Core::Real GetTimeout() const { return timeout_; }
+        Real GetTimeout() const { return timeout_; }
         
         //! Returns if succeeded
         bool GetSuccess() const { return success_; }
@@ -75,7 +75,7 @@ namespace HttpUtilities
         const std::string& GetReason() const { return reason_; }
         
         //! Returns reply data
-        const std::vector<Core::u8>& GetResponseData() const { return response_data_; }
+        const std::vector<u8>& GetResponseData() const { return response_data_; }
         
     private:
         //! Url
@@ -83,13 +83,13 @@ namespace HttpUtilities
         //! Method.
         Method method_;
         //! Http connection timeout
-        Core::Real timeout_;
+        Real timeout_;
         //! Request data to be send
-        std::vector<Core::u8> request_data_;
+        std::vector<u8> request_data_;
         //! Request data content type
         std::string content_type_;
         //! Reply data
-        std::vector<Core::u8> response_data_;
+        std::vector<u8> response_data_;
         //! Request success
         bool success_;
         //! Error reason

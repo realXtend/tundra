@@ -37,7 +37,7 @@ namespace Asset
             \param tag Asset request tag, allocated by AssetService
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag);
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         
         //! Returns whether a certain asset is already being downloaded
         virtual bool InProgress(const std::string& asset_id);
@@ -49,7 +49,7 @@ namespace Asset
             \param received_continuous Variable to receive amount of continuous bytes received from the start
             \return true If transfer in progress, and variables have been filled, false if transfer not found
          */
-        virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous);       
+        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);       
         
         //! Gets incomplete asset
         /*! If transfer not in progress or not enough bytes received, will return empty pointer
@@ -59,14 +59,14 @@ namespace Asset
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);   
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
         
 		virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule);
 
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
          */
-        virtual void Update(Core::f64 frametime);     
+        virtual void Update(f64 frametime);     
                 
         //! Handles incoming network packet event
         /*! \return true if event handled
@@ -82,7 +82,7 @@ namespace Asset
             //! Asset type
             int asset_type_;
             //! Associated request tags
-            Core::RequestTagVector tags_;
+            RequestTagVector tags_;
         };
         
         //! Sends pending UDP asset requests
@@ -94,13 +94,13 @@ namespace Asset
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime);
+        void HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime);
 
         //! Handles other asset timeouts
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, Core::f64 frametime);
+        void HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime);
         
         //! Makes current transfers into pending requests & clears transfers.
         /*! Called when connection lost.
@@ -152,7 +152,7 @@ namespace Asset
             \param tags Asset request tag(s)
          */
         void RequestTexture(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, 
-            const RexTypes::RexUUID& asset_id, const Core::RequestTagVector& tags);
+            const RexUUID& asset_id, const RequestTagVector& tags);
         
         //! Requests an other asset from network
         /*! \param net Connected network interface
@@ -160,7 +160,7 @@ namespace Asset
             \param tags Asset request tag(s)        
          */
         void RequestOtherAsset(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
-            const RexTypes::RexUUID& asset_id, Core::uint asset_type, const Core::RequestTagVector& tags);
+            const RexUUID& asset_id, uint asset_type, const RequestTagVector& tags);
         
         //! Sends progress event of asset transfer
         /*! \param transfer Asset transfer
@@ -172,7 +172,7 @@ namespace Asset
          */
         void SendAssetCanceled(UDPAssetTransfer& transfer);    
            
-        typedef std::map<RexTypes::RexUUID, UDPAssetTransfer> UDPAssetTransferMap;
+        typedef std::map<RexUUID, UDPAssetTransfer> UDPAssetTransferMap;
                 
         //! Ongoing UDP asset transfers, keyed by transfer id
         UDPAssetTransferMap asset_transfers_;
@@ -181,13 +181,13 @@ namespace Asset
         UDPAssetTransferMap texture_transfers_;
                         
         //! Asset event category
-        Core::event_category_id_t event_category_;
+        event_category_id_t event_category_;
         
         //! Current asset transfer timeout
-        Core::f64 asset_timeout_;
+        f64 asset_timeout_;
         
         //! Default asset transfer timeout 
-        static const Core::Real DEFAULT_ASSET_TIMEOUT;
+        static const Real DEFAULT_ASSET_TIMEOUT;
                     
         //! Framework
         Foundation::Framework* framework_;    

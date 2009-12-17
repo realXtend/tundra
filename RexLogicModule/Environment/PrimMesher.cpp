@@ -107,7 +107,7 @@ namespace PrimMesher
         Angle(1.0f, 1.0f, 0.0f)
     };
 
-    static const float twoPi = 2.0f * (float)Core::PI;
+    static const float twoPi = 2.0f * (float)PI;
 
     Quat::Quat()
     {
@@ -391,13 +391,13 @@ namespace PrimMesher
         angles.clear();
         normals.clear();
 
-        double twoPi = Core::PI * 2.0;
+        double twoPi = PI * 2.0;
         float twoPiInv = 1.0f / (float)twoPi;
 
         if (sides < 1)
-            throw Core::Exception("number of sides not greater than zero");
+            throw Exception("number of sides not greater than zero");
         if (stopAngle <= startAngle)
-            throw Core::Exception("stopAngle not greater than startAngle");
+            throw Exception("stopAngle not greater than startAngle");
 
         if ((sides == 3 || sides == 4 || sides == 24))
         {
@@ -1089,7 +1089,7 @@ namespace PrimMesher
         }
         else if (sides == 4)
         {
-            initialProfileRot = 1.25f * (float)Core::PI;
+            initialProfileRot = 1.25f * (float)PI;
             if (hollowSides != 4)
                 hollow *= 0.707f;
         }
@@ -1394,9 +1394,9 @@ namespace PrimMesher
         float twistTotalAbs = abs(twistTotal);
         if (twistTotalAbs > 0.01f)
         {
-            if (twistTotalAbs > Core::PI * 1.5f)
+            if (twistTotalAbs > PI * 1.5f)
                 steps *= 2;
-            if (twistTotalAbs > Core::PI * 3.0f)
+            if (twistTotalAbs > PI * 3.0f)
                 steps *= 2;
         }
 
@@ -1428,7 +1428,7 @@ namespace PrimMesher
         float initialProfileRot = 0.0f;
         if (sides == 3)
         {
-            initialProfileRot = (float)Core::PI;
+            initialProfileRot = (float)PI;
             if (hollowSides == 4)
             {
                 if (hollow > 0.7f)
@@ -1439,13 +1439,13 @@ namespace PrimMesher
         }
         else if (sides == 4)
         {
-            initialProfileRot = 0.25f * (float)Core::PI;
+            initialProfileRot = 0.25f * (float)PI;
             if (hollowSides != 4)
                 hollow *= 0.707f;
         }
         else if (sides > 4)
         {
-            initialProfileRot = (float)Core::PI;
+            initialProfileRot = (float)PI;
             if (hollowSides == 4)
             {
                 if (hollow > 0.7f)
@@ -1800,7 +1800,7 @@ namespace PrimMesher
     {
         int numFaces = faces.size();
         if (faceIndex < 0 || faceIndex >= numFaces)
-            throw Core::Exception("faceIndex out of range");
+            throw Exception("faceIndex out of range");
 
         return SurfaceNormal(faces[faceIndex]);
     }

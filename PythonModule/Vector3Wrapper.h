@@ -5,8 +5,6 @@
 #include <QObject>
 #include "Core.h"
 
-using Core::Vector3df;
-
 namespace PythonScript {
    
 	class Vector3Wrapper : public QObject

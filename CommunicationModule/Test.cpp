@@ -18,7 +18,7 @@ namespace CommunicationTest
 		}
 	}
 
-	Console::CommandResult Test::OnConsoleCommand(const Core::StringVector &params)
+	Console::CommandResult Test::OnConsoleCommand(const StringVector &params)
 	{
 		if (params.size() != 1)
 		{
@@ -98,7 +98,7 @@ namespace CommunicationTest
 			}
 
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			QString message = QString("Cannot create opensim IM connction object: ").append(e.what());
 			LogError(message.toStdString());
@@ -122,7 +122,7 @@ namespace CommunicationTest
 				chat->SendMessage("Hello world");
 			}
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			LogError(e.what());
 		}
@@ -147,7 +147,7 @@ namespace CommunicationTest
 			Communication::VoiceSessionInterface* voice = jabber_connection_->OpenVoiceSession(*(contacts[0]));
 			voice->Close();
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			LogError(e.what());
 		}
@@ -175,7 +175,7 @@ namespace CommunicationTest
 			Communication::ChatSessionInterface* chat = jabber_connection_->OpenChatSession("my_test_123@conference.jabber.org");
 			chat->SendMessage("Hello world!");
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			LogError(e.what());
 		}
@@ -204,7 +204,7 @@ namespace CommunicationTest
 				break;
 			}
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			LogError(e.what());
 		}
@@ -221,7 +221,7 @@ namespace CommunicationTest
 		{
 			jabber_connection_->Close();
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			LogError(e.what());
 		}
@@ -248,7 +248,7 @@ namespace CommunicationTest
 				break;
 			}
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			QString message = QString("Cannot create jabber connction object: ").append(e.what());
 			LogError(message.toStdString());
@@ -271,7 +271,7 @@ namespace CommunicationTest
 				LogInfo(message.toStdString());
 			}
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			QString message = QString("Error: ").append(e.what());
 			LogDebug(message.toStdString());
@@ -285,7 +285,7 @@ namespace CommunicationTest
 			connect(&connection, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface&) ), SLOT(OnChatSessionReceived( Communication::ChatSessionInterface&) ));
             connect(&connection, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT(OnVoiceSessionReceived( Communication::VoiceSessionInterface&) ));
 		}
-		catch(Core::Exception &e)
+		catch(Exception &e)
 		{
 			QString message = QString("Test for TelepathyIM failed: ").append(e.what());
 			LogDebug(message.toStdString());
@@ -328,7 +328,7 @@ namespace CommunicationTest
 			public_chat->SendMessage("Hello world");
 			public_chat->Close();
 		}
-		catch (Core::Exception /*&e*/)
+		catch (Exception /*&e*/)
 		{
 			QString message = QString("Test failed (Cannot send a message): ").append(connection.GetReason());
 			LogError(message.toStdString());

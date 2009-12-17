@@ -78,14 +78,14 @@ namespace RexLogic
         void AdjustHeightOffset(Scene::EntityPtr entity);
         
         //! Performs frame-based update.
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         
         //! Handles resource event
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         //! Handles asset event
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
         //! Handles inventory event
-        bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);        
+        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);        
         
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
@@ -100,7 +100,7 @@ namespace RexLogic
         void InventoryExportReset();
         
         //! Changes a material on an avatar. Filename can either be image or material.
-        bool ChangeAvatarMaterial(Scene::EntityPtr entity, Core::uint index, const std::string& filename);
+        bool ChangeAvatarMaterial(Scene::EntityPtr entity, uint index, const std::string& filename);
         
         //! Adds an attachment on the avatar. Filename is the xml attachment description.
         bool AddAttachment(Scene::EntityPtr entity, const std::string& filename);
@@ -122,10 +122,10 @@ namespace RexLogic
         void ResetBones(Scene::EntityPtr entity);
         
         //! Applies a bone modifier
-        void ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Core::Real value);
+        void ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Real value);
         
         //! Hides vertices from an entity's mesh. Mesh should be cloned from the base mesh and this must not be called more than once for the entity.
-        void HideVertices(Ogre::Entity*, std::set<Core::uint> vertices_to_hide);
+        void HideVertices(Ogre::Entity*, std::set<uint> vertices_to_hide);
         
         //! Processes appearance downloads
         void ProcessAppearanceDownloads();
@@ -134,13 +134,13 @@ namespace RexLogic
         void ProcessAvatarExport();
         
         //! Processes an avatar appearance download result
-        void ProcessAppearanceDownload(Scene::EntityPtr entity, const Core::u8* data, Core::uint size);
+        void ProcessAppearanceDownload(Scene::EntityPtr entity, const u8* data, uint size);
 
         //! Processes an avatar appearance asset (inventory based avatar)
-        void ProcessInventoryAppearance(Scene::EntityPtr entity, const Core::u8* data, Core::uint size);
+        void ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size);
         
         //! Requests needed avatar resouces
-        Core::uint RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode = false);
+        uint RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode = false);
             
         //! Fixes up avatar resource references after downloading of all avatar assets complete
         void FixupResources(Scene::EntityPtr entity);
@@ -190,16 +190,16 @@ namespace RexLogic
         boost::shared_ptr<QDomDocument> default_appearance_;
         
         //! Thread tasks for avatar appearance downloads
-        std::map<Core::entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
+        std::map<entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
         
         //! Avatar resource request tags associated to entity
-        std::map<Core::request_tag_t, Core::entity_id_t> avatar_resource_tags_;
+        std::map<request_tag_t, entity_id_t> avatar_resource_tags_;
 
         //! Avatar appearance xml asset request tags associated to entity, for inventory based appearance
-        std::map<Core::request_tag_t, Core::entity_id_t> avatar_appearance_tags_;
+        std::map<request_tag_t, entity_id_t> avatar_appearance_tags_;
         
         //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
-        std::map<Core::entity_id_t, Core::uint> avatar_pending_requests_;
+        std::map<entity_id_t, uint> avatar_pending_requests_;
         
         //! Legacy storage avatar exporter task
         AvatarExporterPtr avatar_exporter_;

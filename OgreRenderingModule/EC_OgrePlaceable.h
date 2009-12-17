@@ -38,15 +38,15 @@ namespace OgreRenderer
         //! sets position
         /*! \param position new position
          */
-        void SetPosition(const Core::Vector3df& position);
+        void SetPosition(const Vector3df& position);
         //! sets orientation
         /*! \param orientation new orientation
          */
-        void SetOrientation(const Core::Quaternion& orientation);
+        void SetOrientation(const Quaternion& orientation);
         //! sets scale
         /*! \param scale new scale
          */
-        void SetScale(const Core::Vector3df& scale);
+        void SetScale(const Vector3df& scale);
 
         //! sets select priority
         /*! \param priority new select priority
@@ -57,11 +57,11 @@ namespace OgreRenderer
         Foundation::ComponentPtr GetParent() { return parent_; }
         
         //! returns position
-        Core::Vector3df GetPosition() const;
+        Vector3df GetPosition() const;
         //! returns orientation
-        Core::Quaternion GetOrientation() const;
+        Quaternion GetOrientation() const;
         //! returns scale
-        Core::Vector3df GetScale() const;
+        Vector3df GetScale() const;
         
         //! returns Ogre scenenode
         Ogre::SceneNode* GetSceneNode() const { return scene_node_; }

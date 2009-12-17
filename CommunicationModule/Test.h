@@ -24,7 +24,7 @@ namespace CommunicationTest
 		Test(Foundation::Framework* framework);
 
 		//! Console command handler
-		Console::CommandResult OnConsoleCommand(const Core::StringVector &params);
+		Console::CommandResult OnConsoleCommand(const StringVector &params);
 
 		//! Show help text to console
 		virtual void ShowHelp();

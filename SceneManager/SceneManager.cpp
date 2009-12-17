@@ -7,7 +7,7 @@
 
 namespace Scene
 {
-    Core::uint SceneManager::gid_ = 0;
+    uint SceneManager::gid_ = 0;
 
     Scene::ScenePtr SceneManager::Clone(const std::string &newName) const
     {
@@ -18,17 +18,17 @@ namespace Scene
         return new_scene;
     }
 
-    Scene::EntityPtr SceneManager::CreateEntity(Core::entity_id_t id, const Core::StringVector &components)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components)
     {
         // Figure out new entity id
-        Core::entity_id_t newentityid = 0;
+        entity_id_t newentityid = 0;
         if(id == 0)
             newentityid = GetNextFreeId();
         else
         {
             if(entities_.find(id) != entities_.end())
             {
-                Foundation::RootLogError("Can't create entity with given id because it's already used: " + Core::ToString(id));
+                Foundation::RootLogError("Can't create entity with given id because it's already used: " + ToString(id));
                 return Scene::EntityPtr();
             }
             else
@@ -45,7 +45,7 @@ namespace Scene
         
         // Send event.
         Events::SceneEventData event_data(entity->GetId());
-        Core::event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+        event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
         framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_ADDED, &event_data);
         
         return entity;        
@@ -62,7 +62,7 @@ namespace Scene
         return new_entity;
     }
     
-    Scene::EntityPtr SceneManager::GetEntity(Core::entity_id_t id) const
+    Scene::EntityPtr SceneManager::GetEntity(entity_id_t id) const
     {
         EntityMap::const_iterator it = entities_.find(id);
         if (it != entities_.end())
@@ -71,15 +71,15 @@ namespace Scene
         return Scene::EntityPtr();
     }
 
-    Core::entity_id_t SceneManager::GetNextFreeId()
+    entity_id_t SceneManager::GetNextFreeId()
     {
         while(entities_.find(gid_) != entities_.end())
-            gid_ = (gid_ + 1) % static_cast<Core::uint>(-1);
+            gid_ = (gid_ + 1) % static_cast<uint>(-1);
         
         return gid_;
     }
 
-    void SceneManager::RemoveEntity(Core::entity_id_t id)
+    void SceneManager::RemoveEntity(entity_id_t id)
     {
         EntityMap::iterator it = entities_.find(id);
         if (it != entities_.end())    
@@ -88,7 +88,7 @@ namespace Scene
             
             // Send event.         
             Events::SceneEventData event_data(id);
-            Core::event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+            event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
             framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
 
             entities_.erase(it); 

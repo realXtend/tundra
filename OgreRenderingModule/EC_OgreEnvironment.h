@@ -67,27 +67,27 @@ namespace OgreRenderer
 
         /// Sets the viewport's background color.
         /// @param color Color.
-        void SetBackgoundColor(const Core::Color &color);
+        void SetBackgoundColor(const Color &color);
 
         /// @return Color of the viewport's background.
-        Core::Color GetBackgoundColor() const;
+        Color GetBackgoundColor() const;
 
         /// Set ambient light color.
         /// @param color Color.
-        void SetAmbientLightColor(const Core::Color &color);
+        void SetAmbientLightColor(const Color &color);
 
         /// @return The ambient light color.
-        Core::Color GetAmbientLightColor() const;
+        Color GetAmbientLightColor() const;
 
         /// Sets the sun color.
         /// @param color Color of the sun.
-        void SetSunColor(const Core::Color &color);
+        void SetSunColor(const Color &color);
 
         /// @return Color of the sun.
-        Core::Color GetSunColor() const;
+        Color GetSunColor() const;
 
         /// Sets the sun direction.
-        void SetSunDirection(const Core::Vector3df &direction);
+        void SetSunDirection(const Vector3df &direction);
 
         /// Whether the sunlight casts shadows or not.
         /// @param enabled Whether the light casts shadows or not.
@@ -102,7 +102,7 @@ namespace OgreRenderer
 
         /// Updates the visual effects, e.g. the fog.
         /// @param frametime Time since last frame.
-        void UpdateVisualEffects(Core::f64 frametime);
+        void UpdateVisualEffects(f64 frametime);
 
         /// Disables the fog.
         void DisableFog();

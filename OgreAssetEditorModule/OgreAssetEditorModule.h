@@ -44,10 +44,10 @@ namespace OgreAssetEditor
         void Initialize();
         void PostInitialize();
         void Uninitialize();
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id,
+            event_category_id_t category_id,
+            event_id_t event_id,
             Foundation::EventDataInterface* data);
 
         MODULE_LOGGING_FUNCTIONS
@@ -58,8 +58,8 @@ namespace OgreAssetEditor
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
 
-        typedef QMap<QPair<RexTypes::RexUUID, Core::request_tag_t>, QObject *> AssetEditorMap;
-        typedef QMapIterator<QPair<RexTypes::RexUUID, Core::request_tag_t>, QObject *> AssetEditorMapIter;
+        typedef QMap<QPair<RexUUID, request_tag_t>, QObject *> AssetEditorMap;
+        typedef QMapIterator<QPair<RexUUID, request_tag_t>, QObject *> AssetEditorMapIter;
 
     private:
         OgreAssetEditorModule(const OgreAssetEditorModule &);
@@ -69,13 +69,13 @@ namespace OgreAssetEditor
         Foundation::EventManagerPtr eventManager_;
 
         /// Inventory event category.
-        Core::event_category_id_t inventoryEventCategory_;
+        event_category_id_t inventoryEventCategory_;
 
         /// Asset event category.
-        Core::event_category_id_t assetEventCategory_ ;
+        event_category_id_t assetEventCategory_ ;
 
         /// Resource event category.
-        Core::event_category_id_t resourceEventCategory_;
+        event_category_id_t resourceEventCategory_;
 
         /// Asset editors
         AssetEditorMap assetEditors_;

@@ -64,7 +64,7 @@ namespace Asset
 		std::string content_type_;
 
 		//! sha1 hash
-		Core::u8 hash_sha1_[20];
+		u8 hash_sha1_[20];
 
 		//! true if asset is temporary
 		bool temporary_;

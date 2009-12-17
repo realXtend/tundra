@@ -12,7 +12,7 @@ namespace OpenALAudio
         static bool LoadFromFile(Sound* sound, const std::string& filename);
 
         //! Load WAV from memory buffer
-        static bool LoadFromBuffer(Sound* sound, Core::u8* data, Core::uint size);
+        static bool LoadFromBuffer(Sound* sound, u8* data, uint size);
     };
     
 }

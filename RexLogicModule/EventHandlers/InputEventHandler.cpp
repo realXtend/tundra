@@ -19,7 +19,7 @@ namespace RexLogic
     {
     }
     
-    bool InputEventHandler::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Input::Events::SWITCH_CAMERA_STATE)
         {
@@ -32,7 +32,7 @@ namespace RexLogic
         return false;
     }
 
-    void InputEventHandler::Update(Core::f64 frametime)
+    void InputEventHandler::Update(f64 frametime)
     {
     }
 }

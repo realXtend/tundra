@@ -168,13 +168,13 @@ void InventoryWindow::RenameItem()
 void InventoryWindow::Upload()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    Core::StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+    StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
     if (names.empty())
         return;
 
     // Convert to QStringList ///\todo Use QStringList all the way...
     QStringList filenames;
-    for (Core::StringList::iterator it = names.begin(); it != names.end(); ++it)
+    for (StringList::iterator it = names.begin(); it != names.end(); ++it)
         filenames << QString((*it).c_str());
 
     inventoryItemModel_->Upload(index, filenames);

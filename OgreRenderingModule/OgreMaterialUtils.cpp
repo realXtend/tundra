@@ -50,7 +50,7 @@ namespace OgreRenderer
 
     bool IsMaterialSuffixValid(const std::string& suffix)
     {
-        for (Core::uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             if (suffix == MaterialSuffix[i])
                 return true;
@@ -59,11 +59,11 @@ namespace OgreRenderer
         return false;
     }
     
-    std::string GetMaterialSuffix(Core::uint variation)
+    std::string GetMaterialSuffix(uint variation)
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {
-            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + Core::ToString<Core::uint>(variation));
+            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
             variation = 0;
         }
         
@@ -121,7 +121,7 @@ namespace OgreRenderer
         if (((tex.isNull()) || (!update)) && (!mm.getByName(texture_name).isNull()))
             return;
         
-        for (Core::uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             const std::string& base_material_name = BaseMaterials[i];
             const std::string& alpha_base_material_name = AlphaBaseMaterials[i];
@@ -151,7 +151,7 @@ namespace OgreRenderer
         }
     }
 
-    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index)
+    void SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, uint index)
     {
         if (material.isNull())
             return;
@@ -170,7 +170,7 @@ namespace OgreRenderer
                 Ogre::Pass *pass = passIter.getNext();
                 
                 Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
-                Core::uint cmp_index = 0;
+                uint cmp_index = 0;
                 
                 while(texIter.hasMoreElements())
                 {
@@ -223,7 +223,7 @@ namespace OgreRenderer
         }
     }
     
-    void GetTextureNamesFromMaterial(Ogre::MaterialPtr material, Core::StringVector& textures)
+    void GetTextureNamesFromMaterial(Ogre::MaterialPtr material, StringVector& textures)
     {
         textures.clear();
         if (material.isNull())

@@ -39,7 +39,7 @@ namespace Console
         {
             std::string command_line;
             {
-                Core::MutexLock lock(commandlines_mutex_);
+                MutexLock lock(commandlines_mutex_);
                 command_line = commandlines_.front();
                 commandlines_.pop();
             }
@@ -50,13 +50,13 @@ namespace Console
 
     void CommandManager::QueueCommand(const std::string &commandline)
     {
-        Core::MutexLock lock(commandlines_mutex_);
+        MutexLock lock(commandlines_mutex_);
         commandlines_.push(commandline);
     }
 
     void CommandManager::RegisterCommand(const Console::Command &command)
     {
-        Core::RecursiveMutexLock lock(commands_mutex_);
+        RecursiveMutexLock lock(commands_mutex_);
 
         if (commands_.find(command.name_) != commands_.end())
         {
@@ -72,7 +72,7 @@ namespace Console
 
     void CommandManager::UnregisterCommand(const std::string &name)
     {
-        Core::RecursiveMutexLock lock(commands_mutex_);
+        RecursiveMutexLock lock(commands_mutex_);
 
         std::string name_low = name;
         boost::to_lower(name_low);
@@ -90,12 +90,12 @@ namespace Console
         std::string command_l = command;
         boost::to_lower(command_l);
 
-        Core::RecursiveMutexLock lock(commands_mutex_);
+        RecursiveMutexLock lock(commands_mutex_);
         
         CommandParamMap::iterator it = delayed_commands_.find(command_l);
         if (it != delayed_commands_.end())
         {
-            CommandResult result = ExecuteCommandAlways(it->first, it->second, true); // Core::MutexLock recursive, no deadlock
+            CommandResult result = ExecuteCommandAlways(it->first, it->second, true); // MutexLock recursive, no deadlock
             delayed_commands_.erase(it);
 
             return boost::optional<CommandResult>(result);
@@ -117,7 +117,7 @@ namespace Console
         
         std::string command;
         std::string param_line;
-        Core::StringVector params;
+        StringVector params;
 
         tokenizer::iterator it = commandline_tok.begin();
         if (it == commandline_tok.end())
@@ -162,7 +162,7 @@ namespace Console
         return ExecuteCommand(command, params);
     }
 
-    Console::CommandResult CommandManager::ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always)
+    Console::CommandResult CommandManager::ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always)
     {
         std::string low_name = name;
         boost::to_lower(low_name);
@@ -170,7 +170,7 @@ namespace Console
         Console::CallbackPtr callback;
         bool delayed = false;
         {
-            Core::RecursiveMutexLock lock(commands_mutex_);
+            RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator iter = commands_.find(low_name);
             if (iter == commands_.end())
             {
@@ -200,7 +200,7 @@ namespace Console
         return result;
     }
 
-    Console::CommandResult CommandManager::ConsoleHelp(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleHelp(const StringVector &params)
     {
         if (params.empty())
         {
@@ -209,7 +209,7 @@ namespace Console
         bool success = false;
 
         {   
-            Core::RecursiveMutexLock lock(commands_mutex_);
+            RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator it = commands_.begin();
             for ( ; it != commands_.end() ; ++it)
             {
@@ -236,7 +236,7 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult CommandManager::ConsoleExit(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleExit(const StringVector &params)
     {
         console_->Print("Exiting");
         parent_->GetFramework()->Exit();
@@ -244,7 +244,7 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult CommandManager::ConsoleTest(const Core::StringVector &params)
+    Console::CommandResult CommandManager::ConsoleTest(const StringVector &params)
     {
         std::string all_params;
         for (size_t i = 0 ; i < params.size() ; ++i)
@@ -259,6 +259,6 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    //Console::CommandResult ConsoleLook(const Core::StringVector &params);
+    //Console::CommandResult ConsoleLook(const StringVector &params);
 }
 

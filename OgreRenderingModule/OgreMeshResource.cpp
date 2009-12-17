@@ -67,7 +67,7 @@ namespace OgreRenderer
             // Generate extremity points to submeshes, 1 should be enough
             try
             {
-                for(Core::uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
+                for(uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
                 {
                     Ogre::SubMesh *smesh = ogre_mesh_->getSubMesh(i);
                     if (smesh)
@@ -78,7 +78,7 @@ namespace OgreRenderer
             
             // Assign default materials that won't complain
             original_materials_.clear();
-            for (Core::uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
+            for (uint i = 0; i < ogre_mesh_->getNumSubMeshes(); ++i)
             {
                 Ogre::SubMesh* submesh = ogre_mesh_->getSubMesh(i);
                 if (submesh)

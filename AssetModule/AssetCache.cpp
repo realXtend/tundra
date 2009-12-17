@@ -14,7 +14,7 @@ namespace Asset
 
 const char *DEFAULT_ASSET_CACHE_PATH = "/assetcache";
 const int DEFAULT_MEMORY_CACHE_SIZE = 32 * 1024 * 1024;
-const Core::f64 CACHE_CHECK_INTERVAL = 1.0;
+const f64 CACHE_CHECK_INTERVAL = 1.0;
 
 AssetCache::AssetCache(Foundation::Framework* framework) :
     framework_(framework), 
@@ -55,7 +55,7 @@ void AssetCache::CheckDiskCache()
     }
 }
 
-void AssetCache::Update(Core::f64 frametime)
+void AssetCache::Update(f64 frametime)
 {
     update_time_ += frametime;   
     if (update_time_ < CACHE_CHECK_INTERVAL)
@@ -63,9 +63,9 @@ void AssetCache::Update(Core::f64 frametime)
     
     AssetMap::iterator i = assets_.begin();
     AssetMap::iterator oldest_asset = assets_.end();
-    Core::f64 oldest_age = 0;
+    f64 oldest_age = 0;
     
-    Core::uint total_size = 0;
+    uint total_size = 0;
     while (i != assets_.end())
     {
         RexAsset* asset = dynamic_cast<RexAsset*>(i->second.get());
@@ -118,14 +118,14 @@ Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool chec
             if (filestr.good())
             {
                 filestr.seekg(0, std::ios::end);
-                Core::uint length = filestr.tellg();
+                uint length = filestr.tellg();
                 filestr.seekg(0, std::ios::beg);
 
                 if (length > 1)
                 {
                     std::string type;
                     char c = 0;
-                    Core::uint name_length = 0;
+                    uint name_length = 0;
                     
                     do
                     {
@@ -181,8 +181,8 @@ void AssetCache::StoreAsset(Foundation::AssetPtr asset)
     std::ofstream filestr(file_path.native_directory_string().c_str(), std::ios::out | std::ios::binary);
     if (filestr.good())
     {
-        const Core::u8* data = asset->GetData();
-        Core::uint size = asset->GetSize();
+        const u8* data = asset->GetData();
+        uint size = asset->GetSize();
 
         // Store first the asset type, then the actual data
         const std::string& type = asset->GetType();

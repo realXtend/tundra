@@ -6,31 +6,47 @@
 #include <exception>
 #include <cstring>
 
-namespace Core
+//! Generic exception class.
+/*! Can be used to throw generic exceptions.
+
+    \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
+*/
+class Exception : public std::exception
 {
-    //! Generic exception class.
-    /*! Can be used to throw generic exceptions.
+public:
+    //! default constructor
+    Exception() : std::exception(), what_(0), do_free_(0) {}
 
-        \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
-    */
-    class Exception : public std::exception
+    //! constructor that takes a string
+    explicit Exception(const char * const& what) : std::exception()
     {
-    public:
-        //! default constructor
-        Exception() : std::exception(), what_(0), do_free_(0) {}
+        do_free_ = 1;
 
-        //! constructor that takes a string
-        explicit Exception(const char * const& what) : std::exception()
+        size_t len = strlen(what);
+        what_ = static_cast< char* >(malloc(len + 1));
+        strcpy(const_cast< char* >(what_), what);
+    }
+
+    //! copy constructor
+    Exception(const Exception &other)
+    {
+        do_free_ = other.do_free_;
+
+        if (do_free_)
         {
-            do_free_ = 1;
-
-            size_t len = strlen(what);
+            size_t len = strlen(other.what_);
             what_ = static_cast< char* >(malloc(len + 1));
-            strcpy(const_cast< char* >(what_), what);
+            strcpy(const_cast< char* >(what_), other.what_);
+        } else
+        {
+            what_ = other.what_;
         }
+    }
 
-        //! copy constructor
-        Exception(const Exception &other)
+    //! assignment operator
+    Exception& operator =(const Exception &other)
+    {
+        if (this != &other)
         {
             do_free_ = other.do_free_;
 
@@ -45,48 +61,29 @@ namespace Core
             }
         }
 
-        //! assignment operator
-        Exception& operator =(const Exception &other)
+        return *this;
+    }
+
+    //! destructor
+    virtual ~Exception() throw ()
+    {
+        if (do_free_)
         {
-            if (this != &other)
-            {
-                do_free_ = other.do_free_;
-
-                if (do_free_)
-                {
-                    size_t len = strlen(other.what_);
-                    what_ = static_cast< char* >(malloc(len + 1));
-                    strcpy(const_cast< char* >(what_), other.what_);
-                } else
-                {
-                    what_ = other.what_;
-                }
-            }
-
-            return *this;
+            free(const_cast< char* >(what_));
         }
+    }
 
-        //! destructor
-        virtual ~Exception() throw ()
-        {
-            if (do_free_)
-            {
-                free(const_cast< char* >(what_));
-            }
-        }
-
-        //! returns the exception string
-        virtual const char *what () const throw ()
-        {
-            if (what_ != 0)
-                return what_;
-            else
-                return "Unknown exception";
-        }
-    private:
-        const char *what_;
-        int do_free_;
-    };
-}
+    //! returns the exception string
+    virtual const char *what () const throw ()
+    {
+        if (what_ != 0)
+            return what_;
+        else
+            return "Unknown exception";
+    }
+private:
+    const char *what_;
+    int do_free_;
+};
 
 #endif

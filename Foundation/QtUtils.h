@@ -31,7 +31,7 @@ namespace Foundation
         /** Same as GetOpenFileName but for multiple files.
          *  @return List of absolute paths to the chosen files.
          */
-        static Core::StringList GetOpenFileNames(
+        static StringList GetOpenFileNames(
             const std::string &filter,
             const std::string &caption,
             const std::string &dir);
@@ -39,7 +39,7 @@ namespace Foundation
         /** Same as GetOpenFileNames but with hardcoded reX filters.
          *  @return List of absolute paths to the chosen files.
          */
-        static Core::StringList GetOpenRexFileNames(const std::string &dir);
+        static StringList GetOpenRexFileNames(const std::string &dir);
 
         /// @return The absolute path of the application's current directory.
         static std::string GetCurrentPath();

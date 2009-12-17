@@ -25,7 +25,7 @@ namespace RexLogic
         virtual ~NetworkEventHandler();
 
         // !Handle network events coming from OpenSimProtocolModule
-        bool HandleOpenSimNetworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface *data);
+        bool HandleOpenSimNetworkEvent(event_id_t event_id, Foundation::EventDataInterface *data);
     private:
         // !Handler functions for Opensim network events
         bool HandleOSNE_AgentMovementComplete(ProtocolUtilities::NetworkEventInboundData *data);

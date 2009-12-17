@@ -51,7 +51,7 @@ namespace Console
         checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
     }
 
-    void ConsoleModule::Update(Core::f64 frametime)
+    void ConsoleModule::Update(f64 frametime)
     {
         {
             PROFILE(ConsoleModule_Update);
@@ -63,7 +63,7 @@ namespace Console
     }
 
     // virtual
-    bool ConsoleModule::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
 

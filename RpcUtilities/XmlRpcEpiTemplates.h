@@ -92,7 +92,7 @@ template <typename T> T XmlRpcEpi::GetReply(const char* name) const
 				//vector, aka list, array 
 				std::string strName(name);
 				throw XmlRpcException(std::string("XmlRpcEpi exception in GetReply() error: XML reply contain Vector data! (Tried to retrieve reply by ID ") + strName);
-				//LogError("Error! XML reply contain vector type data! (Tried to retrieve int by ID " + Core::ToString(name)+ ".");
+				//LogError("Error! XML reply contain vector type data! (Tried to retrieve int by ID " + ToString(name)+ ".");
 				break;
 			}
 

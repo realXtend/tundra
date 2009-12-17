@@ -148,10 +148,10 @@ namespace Environment
         //! Ask texture decoder for a texture resource.
         //! @Param index for terrain_texture_id_list_ that holds the uuid that we want to use to request the resource that we need. Range should be [0 - 3].
         //! @Return request tag for the texture.
-        Core::request_tag_t RequestTerrainTexture(Core::uint index);
+        request_tag_t RequestTerrainTexture(uint index);
 
         //! Asset_tags for terrain texture requests.
-        std::vector<Core::request_tag_t> terrain_texture_requests_;
+        std::vector<request_tag_t> terrain_texture_requests_;
 
         //! Terrain texture id list.
         std::vector<std::string> terrain_texture_id_list_;
@@ -184,10 +184,10 @@ namespace Environment
         UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
 
         //! Mouse press flags
-        //Core::u8 mouse_press_flag_;
+        //u8 mouse_press_flag_;
 
         /// 
-        //Core::Real start_height_;
+        //Real start_height_;
     };
 }
 

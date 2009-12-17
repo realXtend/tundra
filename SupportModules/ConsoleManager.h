@@ -38,7 +38,7 @@ namespace Console
         //! this functions can be used for delayed initialization / creation.
         void CreateDelayed() { checked_static_cast<OgreOverlay*>(ogre_.get())->Create(); }
 
-        __inline virtual void Update(Core::f64 frametime)
+        __inline virtual void Update(f64 frametime)
         {
             command_manager_->Update();
             if (ogre_->IsVisible())
@@ -74,12 +74,12 @@ namespace Console
             return ogre_->IsActive();
         }
 
-        virtual bool HandleKeyDown(int code, Core::uint text)
+        virtual bool HandleKeyDown(int code, uint text)
         {
             return ogre_->HandleKeyDown(code, text);
         }
 
-        virtual bool HandleKeyUp(int code, Core::uint text)
+        virtual bool HandleKeyUp(int code, uint text)
         {
             return ogre_->HandleKeyUp(code, text);
         }

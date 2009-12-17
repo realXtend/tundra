@@ -17,7 +17,7 @@ namespace RexLogic
     {
     }
     
-    bool NetworkStateEventHandler::HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         switch(event_id)
         {
@@ -28,7 +28,7 @@ namespace RexLogic
                 rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Downloading terrain and avatar..."), 57, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
 
                 // Send WorldStream as internal event
-                Core::event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
+                event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
                 Foundation::WorldStreamReadyEvent event_data(rexlogicmodule_->GetServerConnection());
                 framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
 

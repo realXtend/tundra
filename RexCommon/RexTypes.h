@@ -21,8 +21,8 @@ using boost::int64_t;
 
 namespace RexTypes
 {
-    typedef Core::Vector3D<float> Vector3;
-    typedef Core::Vector3D<double> Vector3d;
+    typedef Vector3D<float> Vector3;
+    typedef Vector3D<double> Vector3d;
 
     ///\todo Is this needed? Only one message uses Vector4 (CameraConstraint).
     struct Vector4
@@ -352,7 +352,7 @@ namespace RexTypes
             const int FlyMode           = 22;
             const int Zoom              = 24;
         }
-        typedef std::map<Core::event_id_t, int> ActionInputMap;
+        typedef std::map<event_id_t, int> ActionInputMap;
     }
 
     bool IsNull(const RexAssetID& id);

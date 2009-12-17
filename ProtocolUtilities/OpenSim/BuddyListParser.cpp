@@ -36,7 +36,7 @@ namespace ProtocolUtilities
             XMLRPC_VALUE_TYPE type = XMLRPC_GetValueType(item);
             if (type == xmlrpc_vector) // xmlrpc-epi handles structs as arrays.
             {
-                RexTypes::RexUUID id;
+                RexUUID id;
                 int rights_given = 0;
                 int rights_has = 0;
 

@@ -56,7 +56,7 @@ namespace RexLogic
         virtual void Zoom(int value) {}
 
         //! update the state, called every frame
-        virtual void Update(Core::f64 frametime) {}
+        virtual void Update(f64 frametime) {}
     };
 
     typedef InputStateInterface InputState;

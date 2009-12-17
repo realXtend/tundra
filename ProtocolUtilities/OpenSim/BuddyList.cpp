@@ -2,11 +2,11 @@
 
 namespace ProtocolUtilities
 {
-    Buddy::Buddy(RexTypes::RexUUID id, int rights_given, int rights_has): id_(id), rights_given_(rights_given), rights_has_(rights_has)
+    Buddy::Buddy(RexUUID id, int rights_given, int rights_has): id_(id), rights_given_(rights_given), rights_has_(rights_has)
     {
     }
 
-    RexTypes::RexUUID Buddy::GetID() const
+    RexUUID Buddy::GetID() const
     {
         return id_;
     }

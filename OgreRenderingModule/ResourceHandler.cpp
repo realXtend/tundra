@@ -36,7 +36,7 @@ namespace OgreRenderer
         while (i != outstanding_references_.end())
         {
             Foundation::ResourceReferenceVector& vec = i->second;
-            for (Core::uint j = 0; j < vec.size(); ++j)
+            for (uint j = 0; j < vec.size(); ++j)
             {
                 OgreRenderingModule::LogDebug("Remaining outstanding reference " + vec[j].id_ + " type " + vec[j].type_ + " for resource " + i->first);
             }
@@ -89,7 +89,7 @@ namespace OgreRenderer
         return i->second;
     }
     
-    Core::request_tag_t ResourceHandler::RequestResource(const std::string& id, const std::string& type)
+    request_tag_t ResourceHandler::RequestResource(const std::string& id, const std::string& type)
     {
         if (type == OgreTextureResource::GetTypeStatic())
             return RequestTexture(id);
@@ -118,7 +118,7 @@ namespace OgreRenderer
         }
     }
     
-    bool ResourceHandler::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         switch (event_id)
         {
@@ -152,8 +152,8 @@ namespace OgreRenderer
             {
                 Asset::Events::AssetCanceled *event_data = checked_static_cast<Asset::Events::AssetCanceled*>(data);
                 // Send a RESOURCE_CANCELED event for each request that was made for this asset, then clear the tags
-                const Core::RequestTagVector& tags = request_tags_[event_data->asset_id_];
-                for (Core::uint i = 0; i < tags.size(); ++i)
+                const RequestTagVector& tags = request_tags_[event_data->asset_id_];
+                for (uint i = 0; i < tags.size(); ++i)
                 {
                     Resource::Events::ResourceCanceled canceled_event_data(event_data->asset_id_, tags[i]);
                     framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_CANCELED, &canceled_event_data);
@@ -165,7 +165,7 @@ namespace OgreRenderer
                 while (i != outstanding_references_.end())
                 {
                     Foundation::ResourceReferenceVector& vec = i->second;
-                    for (Core::uint j = 0; j < vec.size(); ++j)
+                    for (uint j = 0; j < vec.size(); ++j)
                     {
                         if (vec[j].id_ == event_data->asset_id_)
                         {
@@ -181,7 +181,7 @@ namespace OgreRenderer
         return false;
     }
 
-    bool ResourceHandler::HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {     
@@ -205,9 +205,9 @@ namespace OgreRenderer
         return false;
     }
 
-    Core::request_tag_t ResourceHandler::RequestTexture(const std::string& id)
+    request_tag_t ResourceHandler::RequestTexture(const std::string& id)
     {
-        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
             
         // See if already have the texture and at maximum quality level
         Foundation::ResourcePtr tex = GetResource(id, OgreTextureResource::GetTypeStatic());
@@ -229,7 +229,7 @@ namespace OgreRenderer
             // Perform the actual decode request only once, for the first request
             if (request_tags_.find(id) == request_tags_.end())
             {
-                Core::request_tag_t source_tag = texture_service->RequestTexture(id);
+                request_tag_t source_tag = texture_service->RequestTexture(id);
                 if (source_tag)
                 {
                     expected_request_tags_.insert(source_tag);
@@ -247,7 +247,7 @@ namespace OgreRenderer
         return 0;
     }
 
-    bool ResourceHandler::UpdateTexture(Foundation::ResourcePtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateTexture(Foundation::ResourcePtr source, request_tag_t tag)
     {
         Foundation::TexturePtr source_tex = boost::shared_dynamic_cast<Foundation::TextureInterface>(source);
         if (!source_tex) 
@@ -273,8 +273,8 @@ namespace OgreRenderer
             // Create legacy material(s) based on the texture
             CreateLegacyMaterials(source_tex->GetId(), true);
             
-            const Core::RequestTagVector& tags = request_tags_[source_tex->GetId()];
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            const RequestTagVector& tags = request_tags_[source_tex->GetId()];
+            for (uint i = 0; i < tags.size(); ++i)
             {
                 Resource::Events::ResourceReady event_data(tex->GetId(), tex, tags[i]);
                 framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
@@ -290,12 +290,12 @@ namespace OgreRenderer
         return success;
     }    
 
-    Core::request_tag_t ResourceHandler::RequestOtherResource(const std::string& id, const std::string& type)
+    request_tag_t ResourceHandler::RequestOtherResource(const std::string& id, const std::string& type)
     {
         if (source_types_.find(type) == source_types_.end())
             return 0;
     
-        Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+        request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
         
         // See if already have the resource with valid data
         Foundation::ResourcePtr res = GetResource(id, type);
@@ -314,7 +314,7 @@ namespace OgreRenderer
             // Perform the actual asset request only once, for the first request
             if (request_tags_.find(id) == request_tags_.end())
             {
-                Core::request_tag_t source_tag = asset_service->RequestAsset(id, source_types_[type]);
+                request_tag_t source_tag = asset_service->RequestAsset(id, source_types_[type]);
                 if (source_tag) 
                 {
                     request_tags_[id].push_back(tag);
@@ -332,7 +332,7 @@ namespace OgreRenderer
         return 0;
     }
 
-    bool ResourceHandler::UpdateMesh(Foundation::AssetPtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateMesh(Foundation::AssetPtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -358,7 +358,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateImageTexture(Foundation::AssetPtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateImageTexture(Foundation::AssetPtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -384,7 +384,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -399,7 +399,7 @@ namespace OgreRenderer
         OgreMaterialResource* material_res = checked_static_cast<OgreMaterialResource*>(material.get());
 
         // If data successfully set, or already have valid data, success; check resource references if any
-        Core::StringVector tex_names;
+        StringVector tex_names;
         if ((material_res->IsValid()) || (material_res->SetData(source)))
         {
             resources_[source->GetId()] = material;
@@ -411,7 +411,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateParticles(Foundation::AssetPtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateParticles(Foundation::AssetPtr source, request_tag_t tag)
     {
         expected_request_tags_.erase(tag);
         
@@ -426,7 +426,7 @@ namespace OgreRenderer
         OgreParticleResource* particle_res = checked_static_cast<OgreParticleResource*>(particle.get());
 
         // If data successfully set, or already have valid data, success; check resource references if any
-        Core::StringVector tex_names;
+        StringVector tex_names;
         if ((particle_res->IsValid()) || (particle_res->SetData(source)))
         {
             resources_[source->GetId()] = particle;
@@ -438,7 +438,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateSkeleton(Foundation::AssetPtr source, Core::request_tag_t tag)
+    bool ResourceHandler::UpdateSkeleton(Foundation::AssetPtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -473,7 +473,7 @@ namespace OgreRenderer
         if (GetNumOutstandingReferences(resource->GetId()))
             return;
         
-        for (Core::uint i = 0; i < references.size(); ++i)
+        for (uint i = 0; i < references.size(); ++i)
         {
             Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
@@ -489,7 +489,7 @@ namespace OgreRenderer
                         continue;
 
                     outstanding_references_[resource->GetId()].push_back(references[i]);
-                    Core::request_tag_t tag = RequestResource(references[i].id_, references[i].type_);
+                    request_tag_t tag = RequestResource(references[i].id_, references[i].type_);
                     if (tag)
                         reference_request_tags_[tag] = resource->GetId();
                 }
@@ -499,8 +499,8 @@ namespace OgreRenderer
         // If no outstanding references, send RESOURCE_READY
         if (!GetNumOutstandingReferences(resource->GetId()))
         {
-            const Core::RequestTagVector& tags = request_tags_[resource->GetId()];
-            for (Core::uint i = 0; i < tags.size(); ++i)
+            const RequestTagVector& tags = request_tags_[resource->GetId()];
+            for (uint i = 0; i < tags.size(); ++i)
             {
                 Resource::Events::ResourceReady event_data(resource->GetId(), resource, tags[i]);
                 framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
@@ -510,7 +510,7 @@ namespace OgreRenderer
     }
     
     //! Processes resource ready for an outstanding reference
-    void ResourceHandler::ProcessReferenceReady(Foundation::ResourcePtr resource, Core::request_tag_t tag)
+    void ResourceHandler::ProcessReferenceReady(Foundation::ResourcePtr resource, request_tag_t tag)
     {
         if (reference_request_tags_.find(tag) != reference_request_tags_.end())
         {
@@ -549,8 +549,8 @@ namespace OgreRenderer
                     if (send_ready)
                     {
                         OgreRenderingModule::LogDebug("Last reference, sending RESOURCE_READY for " + dependent->GetId());
-                        const Core::RequestTagVector& tags = request_tags_[dependent->GetId()];
-                        for (Core::uint i = 0; i < tags.size(); ++i)
+                        const RequestTagVector& tags = request_tags_[dependent->GetId()];
+                        for (uint i = 0; i < tags.size(); ++i)
                         {
                             Resource::Events::ResourceReady event_data(dependent->GetId(), dependent, tags[i]);
                             framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);

@@ -20,7 +20,7 @@ namespace RexLogic
             : connection_(connection), framework_(framework), rexLogic_(rexLogic) {}
 
         //! handle framework event
-        bool HandleFrameworkEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     private:
         //! server connection
         ProtocolUtilities::WorldStream *connection_;

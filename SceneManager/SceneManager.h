@@ -39,14 +39,14 @@ namespace Scene
         
 
         //! Current global id for entities
-        static Core::uint gid_;
+        static uint gid_;
 
     public:
-        typedef std::map<Core::entity_id_t, Scene::EntityPtr> EntityMap;
+        typedef std::map<entity_id_t, Scene::EntityPtr> EntityMap;
         //! entity iterator, see begin() and end()
-        typedef Core::MapIterator<EntityMap::iterator, Scene::EntityPtr> iterator;
+        typedef MapIterator<EntityMap::iterator, Scene::EntityPtr> iterator;
         //! const entity iterator. see begin() and end()
-        typedef Core::MapIterator<EntityMap::const_iterator, const Scene::EntityPtr> const_iterator;
+        typedef MapIterator<EntityMap::const_iterator, const Scene::EntityPtr> const_iterator;
 
         //! destructor
         ~SceneManager() {}
@@ -84,7 +84,7 @@ namespace Scene
             \param id Id of the new entity. Use GetNextFreeId().
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         */
-        Scene::EntityPtr CreateEntity(Core::entity_id_t id = 0, const Core::StringVector &components = Core::StringVector());
+        Scene::EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector());
         //! Makes a soft clone of the entity. The new entity will be placed in this scene.
         /*! The entity need not be contained in this scene
 
@@ -96,10 +96,10 @@ namespace Scene
             \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,
                   to avoid dangling references that prevent entities from being properly destroyed.
         */
-        Scene::EntityPtr GetEntity(Core::entity_id_t id) const;
+        Scene::EntityPtr GetEntity(entity_id_t id) const;
 
         //! Returns true if entity with the specified id exists in this scene, false otherwise
-        bool HasEntity(Core::entity_id_t id) const
+        bool HasEntity(entity_id_t id) const
         {
             return (entities_.find(id) != entities_.end());
         }
@@ -110,10 +110,10 @@ namespace Scene
 
             \param id Id of the entity to remove
         */
-        void RemoveEntity(Core::entity_id_t id);
+        void RemoveEntity(entity_id_t id);
 
         //! Get the next free entity id. Can be used with CreateEntity().
-        Core::entity_id_t GetNextFreeId();
+        entity_id_t GetNextFreeId();
 
         iterator begin() { return iterator(entities_.begin()); }
         iterator end() { return iterator(entities_.end()); }

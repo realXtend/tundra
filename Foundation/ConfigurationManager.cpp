@@ -127,7 +127,7 @@ namespace Foundation
                 
                 // Create exception.
                 std::string what = std::string("Failed to load configuration file: ") + path;
-                throw Core::Exception(what.c_str());
+                throw Exception(what.c_str());
             }
 
             if ( pConfiguration.get() != 0 )

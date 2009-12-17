@@ -34,7 +34,7 @@ namespace RexLogic
         // !ID related
         uint64_t RegionHandle;
         uint32_t LocalId;
-        RexTypes::RexUUID FullId;
+        RexUUID FullId;
         uint32_t ParentId;
                 
     private:

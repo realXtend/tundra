@@ -35,7 +35,7 @@ namespace TextureDecoder
     {
     }
    
-    void TextureRequest::UpdateSizeReceived(Core::uint size, Core::uint received)
+    void TextureRequest::UpdateSizeReceived(uint size, uint received)
     {
         size_ = size;
         received_ = received;
@@ -50,16 +50,16 @@ namespace TextureDecoder
         return received_ >= EstimateDataSize(next_level_);
     }
 
-    Core::uint TextureRequest::EstimateDataSize(int level) const
+    uint TextureRequest::EstimateDataSize(int level) const
     {
         if (level < 0) level = 0;
         
         // If nothing known of the image yet, assume the first full packet will tell us everything
-        Core::uint estimate = 600;
+        uint estimate = 600;
         
         // If know the dimensions, do data size estimation
         if ((width_) && (height_) && (components_))
-            estimate = (Core::uint)((width_ >> level) * (height_ >> level) * components_ * 0.15f);
+            estimate = (uint)((width_ >> level) * (height_ >> level) * components_ * 0.15f);
 
         // If asset size known, adjust level 0 to require whole asset downloaded, and make sure
         // the estimate is not higher than actual data size

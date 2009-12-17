@@ -70,7 +70,7 @@ namespace RexLogic
 
             const KeyBindingMap     *binding_;
 
-            Core::event_category_id_t     eid_;
+            event_category_id_t     eid_;
             Foundation::EventManagerPtr   eventmgr_;
     };
 }

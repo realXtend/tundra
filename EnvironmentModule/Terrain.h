@@ -45,7 +45,7 @@ public:
     /// new resource requests to the asset handler if any of the textures have changed.
     void SetTerrainTextures(const RexTypes::RexAssetID textures[num_terrain_textures]);
 
-    void SetTerrainHeightValues(const Core::Real start_heights[num_terrain_textures], const Core::Real height_ranges[num_terrain_textures]);
+    void SetTerrainHeightValues(const Real start_heights[num_terrain_textures], const Real height_ranges[num_terrain_textures]);
 
     void RequestTerrainTextures();
 
@@ -62,21 +62,21 @@ public:
     //! Get terrain texture ids.
     const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
 
-    const Core::Real &GetTerrainTextureStartHeight(int index) const;
+    const Real &GetTerrainTextureStartHeight(int index) const;
 
-    const Core::Real &GetTerrainTextureHeightRange(int index) const;
+    const Real &GetTerrainTextureHeightRange(int index) const;
 
 private:
     EnvironmentModule *owner_;
 
-    Core::request_tag_t terrain_texture_requests_[num_terrain_textures];
+    request_tag_t terrain_texture_requests_[num_terrain_textures];
 
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
     RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
 
     //! lowest point where the fist texture is blended
-    Core::Real start_heights_[num_terrain_textures];
-    Core::Real height_ranges_[num_terrain_textures];
+    Real start_heights_[num_terrain_textures];
+    Real height_ranges_[num_terrain_textures];
 
     Scene::EntityWeakPtr cachedTerrainEntity_;
 

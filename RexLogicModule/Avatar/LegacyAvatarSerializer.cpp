@@ -27,12 +27,12 @@ namespace RexLogic
         "cumulative"
     };
     
-    Core::Real ParseReal(const std::string& text, Core::Real default_value = 0.0f)
+    Real ParseReal(const std::string& text, Real default_value = 0.0f)
     {
-        Core::Real ret_value = default_value;
+        Real ret_value = default_value;
         try
         {
-            ret_value = Core::ParseString<Core::Real>(text);
+            ret_value = ParseString<Real>(text);
         }
         catch (boost::bad_lexical_cast)
         {
@@ -45,7 +45,7 @@ namespace RexLogic
         int ret_value = default_value;
         try
         {
-            ret_value = Core::ParseString<int>(text);
+            ret_value = ParseString<int>(text);
         }
         catch (boost::bad_lexical_cast)
         {
@@ -53,18 +53,18 @@ namespace RexLogic
         return ret_value;
     }    
     
-    Core::Vector3df ParseVector3(const std::string& text)
+    Vector3df ParseVector3(const std::string& text)
     {
-        Core::Vector3df vec(0.0f, 0.0f, 0.0f);
+        Vector3df vec(0.0f, 0.0f, 0.0f);
         
-        Core::StringVector components = Core::SplitString(text, ' ');
+        StringVector components = SplitString(text, ' ');
         if (components.size() == 3)
         {
             try
             {
-                vec.x = Core::ParseString<Core::Real>(components[0]);
-                vec.y = Core::ParseString<Core::Real>(components[1]);
-                vec.z = Core::ParseString<Core::Real>(components[2]);
+                vec.x = ParseString<Real>(components[0]);
+                vec.y = ParseString<Real>(components[1]);
+                vec.z = ParseString<Real>(components[2]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -73,19 +73,19 @@ namespace RexLogic
         return vec;
     }
     
-    Core::Quaternion ParseQuaternion(const std::string& text)
+    Quaternion ParseQuaternion(const std::string& text)
     {
-        Core::Quaternion quat;
+        Quaternion quat;
         
-        Core::StringVector components = Core::SplitString(text, ' ');
+        StringVector components = SplitString(text, ' ');
         if (components.size() == 4)
         {
             try
             {
-                quat.w = Core::ParseString<Core::Real>(components[0]);
-                quat.x = Core::ParseString<Core::Real>(components[1]);
-                quat.y = Core::ParseString<Core::Real>(components[2]);
-                quat.z = Core::ParseString<Core::Real>(components[3]);
+                quat.w = ParseString<Real>(components[0]);
+                quat.x = ParseString<Real>(components[1]);
+                quat.y = ParseString<Real>(components[2]);
+                quat.z = ParseString<Real>(components[3]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -94,20 +94,20 @@ namespace RexLogic
         return quat;
     }
     
-    Core::Quaternion ParseEulerAngles(const std::string& text)
+    Quaternion ParseEulerAngles(const std::string& text)
     {
-        Core::Quaternion quat;
+        Quaternion quat;
         
-        Core::StringVector components = Core::SplitString(text, ' ');
+        StringVector components = SplitString(text, ' ');
         if (components.size() == 3)
         {
             try
             {
-                Core::Real xrad = Core::degToRad(Core::ParseString<Core::Real>(components[0]));
-                Core::Real yrad = Core::degToRad(Core::ParseString<Core::Real>(components[1]));
-                Core::Real zrad = Core::degToRad(Core::ParseString<Core::Real>(components[2]));
+                Real xrad = degToRad(ParseString<Real>(components[0]));
+                Real yrad = degToRad(ParseString<Real>(components[1]));
+                Real zrad = degToRad(ParseString<Real>(components[2]));
                 
-                Core::Real angle = yrad * 0.5;
+                Real angle = yrad * 0.5;
                 double cx = cos(angle);
                 double sx = sin(angle);
 
@@ -142,29 +142,29 @@ namespace RexLogic
             return "false";
     }
     
-    std::string WriteVector3(const Core::Vector3df& vector)
+    std::string WriteVector3(const Vector3df& vector)
     {
-        return Core::ToString<Core::Real>(vector.x) + " " +
-            Core::ToString<Core::Real>(vector.y) + " " +
-            Core::ToString<Core::Real>(vector.z);
+        return ToString<Real>(vector.x) + " " +
+            ToString<Real>(vector.y) + " " +
+            ToString<Real>(vector.z);
     }
     
-    std::string WriteQuaternion(const Core::Quaternion& quat)
+    std::string WriteQuaternion(const Quaternion& quat)
     {
-        return Core::ToString<Core::Real>(quat.w) + " " +
-            Core::ToString<Core::Real>(quat.x) + " " +
-            Core::ToString<Core::Real>(quat.y) + " " +
-            Core::ToString<Core::Real>(quat.z);
+        return ToString<Real>(quat.w) + " " +
+            ToString<Real>(quat.x) + " " +
+            ToString<Real>(quat.y) + " " +
+            ToString<Real>(quat.z);
     }
     
-    std::string WriteEulerAngles(const Core::Quaternion& quat)
+    std::string WriteEulerAngles(const Quaternion& quat)
     {
-        Core::Vector3df radians;
+        Vector3df radians;
         quat.toEuler(radians);
         
-        return Core::ToString<Core::Real>(radians.x * Core::RADTODEG) + " " +
-            Core::ToString<Core::Real>(radians.y * Core::RADTODEG) + " " + 
-            Core::ToString<Core::Real>(radians.z * Core::RADTODEG);
+        return ToString<Real>(radians.x * RADTODEG) + " " +
+            ToString<Real>(radians.y * RADTODEG) + " " + 
+            ToString<Real>(radians.z * RADTODEG);
         
         //Ogre::Matrix3 rotMatrix;
         //Ogre::Quaternion value = OgreRenderer::ToOgreQuaternion(quat);
@@ -174,14 +174,14 @@ namespace RexLogic
         //Ogre::Radian anglez;
         //rotMatrix.ToEulerAnglesXYZ(anglex, angley, anglez);
 
-        //Core::Real angles[3];
+        //Real angles[3];
         //angles[0] = anglex.valueDegrees();
         //angles[1] = angley.valueDegrees();
         //angles[2] = anglez.valueDegrees();
         //
-        //return Core::ToString<Core::Real>(angles[0]) + " " +
-        //    Core::ToString<Core::Real>(angles[1]) + " " + 
-        //    Core::ToString<Core::Real>(angles[2]);
+        //return ToString<Real>(angles[0]) + " " +
+        //    ToString<Real>(angles[1]) + " " + 
+        //    ToString<Real>(angles[2]);
     }
 
     void SetAttribute(QDomElement& elem, const std::string& name, const char* value)
@@ -194,9 +194,9 @@ namespace RexLogic
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(value));
     }
      
-    void SetAttribute(QDomElement& elem, const std::string& name, Core::Real value)
+    void SetAttribute(QDomElement& elem, const std::string& name, Real value)
     {
-        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<Core::Real>(value)));
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(ToString<Real>(value)));
     }
     
     void SetAttribute(QDomElement& elem, const std::string& name, bool value)
@@ -206,7 +206,7 @@ namespace RexLogic
     
     void SetAttribute(QDomElement& elem, const std::string& name, int value)
     {
-        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(Core::ToString<int>(value)));
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(ToString<int>(value)));
     }
     
     bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source, bool read_mesh)
@@ -242,7 +242,7 @@ namespace RexLogic
         }
                
         // Get materials, should be 2 of them
-        Core::uint mat_index = 0;
+        uint mat_index = 0;
         QDomElement material_elem = avatar.firstChildElement("material");
         AvatarMaterialVector materials;
         while (!material_elem.isNull())
@@ -622,7 +622,7 @@ namespace RexLogic
             QDomElement polygon = avatar.firstChildElement("avatar_polygon");
             while (!polygon.isNull())
             {
-                Core::uint idx = ParseInt(polygon.attribute("idx").toStdString());
+                uint idx = ParseInt(polygon.attribute("idx").toStdString());
                 attachment.vertices_to_hide_.push_back(idx);
                 polygon = polygon.nextSiblingElement("avatar_polygon");
             }
@@ -696,7 +696,7 @@ namespace RexLogic
         QDomElement polygon = avatar_elem.firstChildElement("avatar_polygon");
         while (!polygon.isNull())
         {
-            Core::uint idx = ParseInt(polygon.attribute("idx").toStdString());
+            uint idx = ParseInt(polygon.attribute("idx").toStdString());
             dest.vertices_to_hide_.push_back(idx);
             polygon = polygon.nextSiblingElement("avatar_polygon");
         }
@@ -740,7 +740,7 @@ namespace RexLogic
         
         // Material elements
         const AvatarMaterialVector& materials = source.GetMaterials();
-        for (Core::uint i = 0; i < materials.size(); ++i)
+        for (uint i = 0; i < materials.size(); ++i)
         {
             // Append elements in submesh order
             QDomElement material = dest.createElement("material");
@@ -790,7 +790,7 @@ namespace RexLogic
         
         // Attachments
         const AvatarAttachmentVector& attachments = source.GetAttachments();
-        for (Core::uint i = 0; i < attachments.size(); ++i)
+        for (uint i = 0; i < attachments.size(); ++i)
         {
             QDomElement attachment = WriteAttachment(dest, attachments[i], source.GetMesh());
             avatar.appendChild(attachment);
@@ -798,14 +798,14 @@ namespace RexLogic
         
         // Bone modifiers
         const BoneModifierSetVector& bone_modifiers = source.GetBoneModifiers();
-        for (Core::uint i = 0; i < bone_modifiers.size(); ++i)
+        for (uint i = 0; i < bone_modifiers.size(); ++i)
         {
             WriteBoneModifierSet(dest, avatar, bone_modifiers[i]);
         }
         
         // Morph modifiers
         const MorphModifierVector& morph_modifiers = source.GetMorphModifiers();
-        for (Core::uint i = 0; i < morph_modifiers.size(); ++i)
+        for (uint i = 0; i < morph_modifiers.size(); ++i)
         {
             QDomElement morph = WriteMorphModifier(dest, morph_modifiers[i]);
             avatar.appendChild(morph);
@@ -813,7 +813,7 @@ namespace RexLogic
         
         // Master modifiers
         const MasterModifierVector& master_modifiers = source.GetMasterModifiers();
-        for (Core::uint i = 0; i < master_modifiers.size(); ++i)
+        for (uint i = 0; i < master_modifiers.size(); ++i)
         {
             QDomElement master = WriteMasterModifier(dest, master_modifiers[i]);
             avatar.appendChild(master);
@@ -902,7 +902,7 @@ namespace RexLogic
         modifier.appendChild(base_animations);
         
         QDomElement bonelist = dest.createElement("bones");
-        for (Core::uint i = 0; i < bones.modifiers_.size(); ++i)
+        for (uint i = 0; i < bones.modifiers_.size(); ++i)
         {
             QDomElement bone = WriteBone(dest, bones.modifiers_[i]);
             bonelist.appendChild(bone);
@@ -963,7 +963,7 @@ namespace RexLogic
         SetAttribute(elem, "name", master.name_);
         SetAttribute(elem, "position", master.value_);
         SetAttribute(elem, "category", master.category_);
-        for (Core::uint i = 0; i < master.modifiers_.size(); ++i)
+        for (uint i = 0; i < master.modifiers_.size(); ++i)
         {
             QDomElement target_elem = dest.createElement("target_modifier");
             SetAttribute(target_elem, "name", master.modifiers_[i].name_);
@@ -975,7 +975,7 @@ namespace RexLogic
                 SetAttribute(target_elem, "mode", "cumulative");
             else
                 SetAttribute(target_elem, "mode", "average");
-            for (Core::uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
+            for (uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
             {
                 QDomElement mapping_elem = dest.createElement("position_mapping");
                 SetAttribute(mapping_elem, "master", master.modifiers_[i].mapping_[j].master_);
@@ -1024,7 +1024,7 @@ namespace RexLogic
             
             avatar_elem.appendChild(bone_elem);
             
-            for (Core::uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
+            for (uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
             {
                 QDomElement polygon_elem = dest.createElement("avatar_polygon");
                 SetAttribute(polygon_elem, "idx", (int)attachment.vertices_to_hide_[i]);

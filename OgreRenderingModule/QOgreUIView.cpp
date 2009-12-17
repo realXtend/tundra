@@ -105,9 +105,9 @@ namespace OgreRenderer
 
         // Window position to params
         if (left != -1)
-            params["left"] = Core::ToString(left);
+            params["left"] = ToString(left);
         if (top != -1)
-            params["top"] = Core::ToString(top);
+            params["top"] = ToString(top);
 
         win_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
 

@@ -17,7 +17,7 @@ namespace RexLogic
         NetworkStateEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
         virtual ~NetworkStateEventHandler();
 
-        bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
         Foundation::Framework *framework_;

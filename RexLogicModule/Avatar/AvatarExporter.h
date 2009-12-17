@@ -15,7 +15,7 @@ namespace RexLogic
     {
     public:
         //! Asset data
-        std::vector<Core::u8> data_;
+        std::vector<u8> data_;
         //! Base64-encoded SHA1 hash of data
         std::string hash_;
         

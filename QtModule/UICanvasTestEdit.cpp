@@ -103,7 +103,7 @@ namespace QtUI
             Scene::EntityPtr entity = scene->GetEntity(last_entity_id_);
             if (entity.get())
             {
-                Core::uint submesh = combo_s->currentIndex();
+                uint submesh = combo_s->currentIndex();
                 QString proxy_widget_name = combo_c->currentText();
                 boost::shared_ptr<QtUI::UICanvas> canvas;
                 
@@ -175,7 +175,7 @@ namespace QtUI
             SetEntityId(0);
     }
     
-    void UICanvasTestEdit::SetEntityId(Core::entity_id_t entity_id)
+    void UICanvasTestEdit::SetEntityId(entity_id_t entity_id)
     {
         if (!editor_widget_)
             return;
@@ -192,7 +192,7 @@ namespace QtUI
         if (!last_entity_id_)
             label->setText("");
         else
-            label->setText(QString::fromStdString(Core::ToString<Core::uint>(last_entity_id_)));
+            label->setText(QString::fromStdString(ToString<uint>(last_entity_id_)));
     }
     
     void UICanvasTestEdit::RefreshSubmeshes()
@@ -200,7 +200,7 @@ namespace QtUI
         if (!editor_widget_)
             return;
             
-        Core::uint numsubmeshes = 0;
+        uint numsubmeshes = 0;
         
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (scene.get())
@@ -221,8 +221,8 @@ namespace QtUI
         if (!combo)
             return;        
         combo->clear();
-        for (Core::uint i = 0; i < numsubmeshes; ++i)
-            combo->addItem(QString::fromStdString(Core::ToString<Core::uint>(i)));
+        for (uint i = 0; i < numsubmeshes; ++i)
+            combo->addItem(QString::fromStdString(ToString<uint>(i)));
     }
     
     void UICanvasTestEdit::RefreshCanvases()

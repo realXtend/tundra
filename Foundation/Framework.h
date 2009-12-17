@@ -103,11 +103,11 @@ namespace Foundation
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
-        __inline boost::weak_ptr<T> GetService(Core::service_type_t type) { return service_manager_->GetService<T>(type); }
+        __inline boost::weak_ptr<T> GetService(service_type_t type) { return service_manager_->GetService<T>(type); }
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
-        __inline const boost::weak_ptr<T> GetService(Core::service_type_t type) const { return service_manager_->GetService<T>(type); }
+        __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
 
         //! Creates new empty scene.
         /*! 
@@ -162,22 +162,22 @@ namespace Foundation
         void RemoveLogChannel(Poco::Channel *channel);
 
         //! load and init module
-        Console::CommandResult ConsoleLoadModule(const Core::StringVector &params);
+        Console::CommandResult ConsoleLoadModule(const StringVector &params);
 
         //! uninit and unload a module
-        Console::CommandResult ConsoleUnloadModule(const Core::StringVector &params);
+        Console::CommandResult ConsoleUnloadModule(const StringVector &params);
 
         //! List all loaded modules
-        Console::CommandResult ConsoleListModules(const Core::StringVector &params);
+        Console::CommandResult ConsoleListModules(const StringVector &params);
 
         //! send event
-        Console::CommandResult ConsoleSendEvent(const Core::StringVector &params);
+        Console::CommandResult ConsoleSendEvent(const StringVector &params);
 
         //! Output profiling data
-        Console::CommandResult ConsoleProfile(const Core::StringVector &params);
+        Console::CommandResult ConsoleProfile(const StringVector &params);
 
         //! limit frames
-        Console::CommandResult ConsoleLimitFrames(const Core::StringVector &params);
+        Console::CommandResult ConsoleLimitFrames(const StringVector &params);
 
         //! Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific
@@ -251,7 +251,7 @@ namespace Foundation
         std::auto_ptr <QtFrameworkEngine> engine_;
 
         //! maximum number of ticks (milliseconds) per frame for frame limiter
-        Core::uint max_ticks_;
+        uint max_ticks_;
 
         //! profiler
         Profiler profiler_;
@@ -276,9 +276,9 @@ namespace Foundation
 
     namespace
     {
-        const Core::event_id_t PROGRAM_OPTIONS = 1;
-        const Core::event_id_t NETWORKING_REGISTERED = 2;
-        const Core::event_id_t WORLD_STREAM_READY = 3;
+        const event_id_t PROGRAM_OPTIONS = 1;
+        const event_id_t NETWORKING_REGISTERED = 2;
+        const event_id_t WORLD_STREAM_READY = 3;
     }
 
     //! Contains pre-parsed program options and non-parsed command line arguments.

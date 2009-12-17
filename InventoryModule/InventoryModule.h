@@ -50,10 +50,10 @@ namespace Inventory
         void Initialize();
         void PostInitialize();
         void Uninitialize();
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id,
+            event_category_id_t category_id,
+            event_id_t event_id,
             Foundation::EventDataInterface* data);
 
         void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
@@ -67,10 +67,10 @@ namespace Inventory
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
 
         /// Console command for uploading an asset, non-threaded.
-        Console::CommandResult UploadAsset(const Core::StringVector &params);
+        Console::CommandResult UploadAsset(const StringVector &params);
 
         /// Console command for uploading multiple assets, threaded.
-        Console::CommandResult UploadMultipleAssets(const Core::StringVector &params);
+        Console::CommandResult UploadMultipleAssets(const StringVector &params);
 
         /// Get the current WorldStream
         ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
@@ -85,19 +85,19 @@ namespace Inventory
         Foundation::EventManagerPtr eventManager_;
 
         /// Inventory event category.
-        Core::event_category_id_t inventoryEventCategory_;
+        event_category_id_t inventoryEventCategory_;
 
         /// Network state event category.
-        Core::event_category_id_t networkStateEventCategory_;
+        event_category_id_t networkStateEventCategory_;
 
         /// Framework event category
-        Core::event_category_id_t frameworkEventCategory_;
+        event_category_id_t frameworkEventCategory_;
 
         /// Asset event category.
-        Core::event_category_id_t assetEventCategory_ ;
+        event_category_id_t assetEventCategory_ ;
 
         /// Resource event category.
-        Core::event_category_id_t resourceEventCategory_;
+        event_category_id_t resourceEventCategory_;
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;

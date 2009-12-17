@@ -8,7 +8,7 @@
 
 namespace Scene
 {
-    Entity::Entity(Core::uint id) : id_(id)
+    Entity::Entity(uint id) : id_(id)
     {
     }
 
@@ -25,7 +25,7 @@ namespace Scene
         return new_entity;
     }
 
-    void Entity::SetNewId(Core::entity_id_t id)
+    void Entity::SetNewId(entity_id_t id)
     {
         id_ = id;
     }
@@ -51,7 +51,7 @@ namespace Scene
                 ///\todo Ali: send event
             } else
             {
-                Foundation::RootLogWarning("Failed to remove component: " + component->Name() + " from entity: " + Core::ToString(GetId()));
+                Foundation::RootLogWarning("Failed to remove component: " + component->Name() + " from entity: " + ToString(GetId()));
             }
         }
     }

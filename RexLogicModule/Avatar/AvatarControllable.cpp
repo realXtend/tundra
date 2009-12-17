@@ -16,37 +16,37 @@ namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
-    uint32_t SetFPControlFlags(uint32_t control_flags, Core::Real pitch)
+    uint32_t SetFPControlFlags(uint32_t control_flags, Real pitch)
     {
         uint32_t net_controlflags = control_flags;
 
         // First person mode fly up/down automation
         if ((control_flags & RexTypes::AGENT_CONTROL_FLY) && ((control_flags & (RexTypes::AGENT_CONTROL_UP_POS|RexTypes::AGENT_CONTROL_UP_NEG)) == 0))
         {
-            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch > Core::PI/12))
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch > PI/12))
             {
                 net_controlflags |= RexTypes::AGENT_CONTROL_UP_POS;
-                if (pitch > Core::PI/3)
+                if (pitch > PI/3)
                     net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_POS;
             }
             
-            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch < -Core::PI/12))
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_POS) && (pitch < -PI/12))
             {
                 net_controlflags |= RexTypes::AGENT_CONTROL_UP_NEG;
-                if (pitch < -Core::PI/3)
+                if (pitch < -PI/3)
                     net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_POS;
             }
-            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch > Core::PI/12))
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch > PI/12))
             {
                 net_controlflags |= RexTypes::AGENT_CONTROL_UP_NEG;
-                if (pitch > Core::PI/3)
+                if (pitch > PI/3)
                     net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_NEG;
             }
             
-            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch < -Core::PI/12))
+            if ((control_flags & RexTypes::AGENT_CONTROL_AT_NEG) && (pitch < -PI/12))
             {
                 net_controlflags |= RexTypes::AGENT_CONTROL_UP_POS;
-                if (pitch < -Core::PI/3)
+                if (pitch < -PI/3)
                     net_controlflags &= ~RexTypes::AGENT_CONTROL_AT_NEG;
             }
         }
@@ -66,7 +66,7 @@ namespace RexLogic
     {
         action_event_category_ = event_manager_->QueryEventCategory("Action");
 
-        if (action_event_category_ == Core::IllegalEventCategory)
+        if (action_event_category_ == IllegalEventCategory)
             RexLogicModule::LogError("AvatarControllable: failed to acquire action event category, controller disabled.");
 
 
@@ -78,12 +78,12 @@ namespace RexLogic
         control_flags_[RA::MoveDown] = RexTypes::AGENT_CONTROL_UP_NEG;
 
         rotation_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "rotation_speed", 1.1f);
-        Core::Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
+        Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
         if (updates_per_second <= 0.f) updates_per_second = 1.f;
         net_updateinterval_ = 1.0f / updates_per_second;
     }
         
-    bool AvatarControllable::HandleSceneEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
         {
@@ -111,7 +111,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleInputEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         // switch between first and third person modes
 
@@ -162,7 +162,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleActionEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         Scene::Events::EntityEventData *entity_data = dynamic_cast<Scene::Events::EntityEventData*>(data);
         if (!entity_data) // a bit of a hax, we need to watchout as different action events contain different data
@@ -219,7 +219,7 @@ namespace RexLogic
         return false;
     }
 
-    void AvatarControllable::AddTime(Core::f64 frametime)
+    void AvatarControllable::AddTime(f64 frametime)
     {
         if (current_state_ == InActive)
             return;
@@ -230,7 +230,7 @@ namespace RexLogic
             boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
             if (movement)
             {
-                drag_yaw_ = static_cast<Core::Real>(movement->x_.rel_) * -0.005f;
+                drag_yaw_ = static_cast<Real>(movement->x_.rel_) * -0.005f;
                 net_dirty_ = true;
             } else if (drag_yaw_ != 0)
             {
@@ -253,7 +253,7 @@ namespace RexLogic
                 {
                     EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
 
-                    Core::Quaternion rotchange(0, 0, (-avatar->yaw * (Core::Real)frametime + drag_yaw_) * rotation_sensitivity_);
+                    Quaternion rotchange(0, 0, (-avatar->yaw * (Real)frametime + drag_yaw_) * rotation_sensitivity_);
                     netpos->orientation_ = rotchange * netpos->orientation_;
                     netpos->Updated();
 
@@ -261,7 +261,7 @@ namespace RexLogic
                 }
 
                 //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
-                Core::Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
+                Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
                 
                 uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
                 if (net_controlflags != avatar->cached_controlflags)
@@ -273,10 +273,10 @@ namespace RexLogic
             }
         }
 
-        net_movementupdatetime_ += (Core::Real)frametime;
+        net_movementupdatetime_ += (Real)frametime;
     }
 
-    const Core::Quaternion &AvatarControllable::GetBodyRotation() const
+    const Quaternion &AvatarControllable::GetBodyRotation() const
     {
         Scene::EntityPtr avatarentity = entity_.lock();
         if(avatarentity)
@@ -285,18 +285,18 @@ namespace RexLogic
             return netpos.orientation_;
         }
 
-        return Core::Quaternion::IDENTITY;
+        return Quaternion::IDENTITY;
     }
 
-    void AvatarControllable::SendMovementToServer(Core::uint controlflags)
+    void AvatarControllable::SendMovementToServer(uint controlflags)
     {
         //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but the update for them all goes through here. -cm
 
         // 0 = walk, 1 = mouselook, 2 = type
         uint8_t flags = 0;
         
-        Core::Quaternion bodyrot = GetBodyRotation();
-        Core::Quaternion headrot = bodyrot;
+        Quaternion bodyrot = GetBodyRotation();
+        Quaternion headrot = bodyrot;
 
         RexTypes::Vector3 camcenter = Vector3::ZERO;
         RexTypes::Vector3 camataxis = Vector3::ZERO;
@@ -307,7 +307,7 @@ namespace RexLogic
         connection_->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,controlflags,flags);
     }
 
-    void AvatarControllable::SendScheduledMovementToServer(Core::uint controlflags)
+    void AvatarControllable::SendScheduledMovementToServer(uint controlflags)
     {
         if (!net_dirty_)
             return;
@@ -336,7 +336,7 @@ namespace RexLogic
         netpos.Updated();    
     }    
 
-	void AvatarControllable::SetYaw(Core::Real newyaw)
+	void AvatarControllable::SetYaw(Real newyaw)
 	{
 		//keys left/right set to -1/1 .. but this can use fractions too, right?
 		//and is seeminly not overridden by anything at least in AddTime.
@@ -356,7 +356,7 @@ namespace RexLogic
 		net_dirty_ = true;
 	}
 
-	void AvatarControllable::SetRotation(Core::Quaternion newrot)
+	void AvatarControllable::SetRotation(Quaternion newrot)
 	{
 		std::cout << "AvatarControllable::SetRotation" << std::endl;
 		Scene::ScenePtr scene = framework_->GetScene("World");

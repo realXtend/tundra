@@ -28,7 +28,7 @@ namespace Scene
             \param id unique id for the entity.
             \param module parent module
         */
-        Entity(Core::uint id);
+        Entity(uint id);
 
         //! Copy constructor. Shared components between two entities.
         Entity(const Entity &other) : id_(other.id_)
@@ -37,7 +37,7 @@ namespace Scene
         }
 
         //! Set new id
-        void SetNewId(Core::entity_id_t id);
+        void SetNewId(entity_id_t id);
 
     public:
         //! component container
@@ -93,7 +93,7 @@ namespace Scene
         Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
 
         //! Returns the unique id of this entity
-        Core::entity_id_t GetId() const { return id_; }
+        entity_id_t GetId() const { return id_; }
 
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const;
@@ -103,7 +103,7 @@ namespace Scene
         ComponentVector components_;
 
         //! Unique id for this entity
-        Core::entity_id_t id_;
+        entity_id_t id_;
    };
 }
 

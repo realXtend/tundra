@@ -13,8 +13,8 @@
 
 namespace OpenALAudio
 {
-    const Core::uint DEFAULT_SOUND_CACHE_SIZE = 32 * 1024 * 1024;
-    const Core::f64 CACHE_CHECK_INTERVAL = 1.0;
+    const uint DEFAULT_SOUND_CACHE_SIZE = 32 * 1024 * 1024;
+    const f64 CACHE_CHECK_INTERVAL = 1.0;
     
     SoundSystem::SoundSystem(Foundation::Framework *framework) : 
         framework_(framework),
@@ -82,7 +82,7 @@ namespace OpenALAudio
         initialized_ = false;
     }
 
-    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(Core::sound_id_t id) const
+    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(sound_id_t id) const
     {
         SoundChannelMap::const_iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -90,9 +90,9 @@ namespace OpenALAudio
         return i->second->GetState();
     }
     
-    std::vector<Core::sound_id_t> SoundSystem::GetActiveSounds() const
+    std::vector<sound_id_t> SoundSystem::GetActiveSounds() const
     {
-        std::vector<Core::sound_id_t> ret;
+        std::vector<sound_id_t> ret;
         
         SoundChannelMap::const_iterator i = channels_.begin();
         while (i != channels_.end())        
@@ -105,7 +105,7 @@ namespace OpenALAudio
         return ret;
     }
     
-    const std::string& SoundSystem::GetSoundName(Core::sound_id_t id) const
+    const std::string& SoundSystem::GetSoundName(sound_id_t id) const
     {
         static std::string empty;
         
@@ -115,7 +115,7 @@ namespace OpenALAudio
         return i->second->GetSoundName();
     }    
     
-    void SoundSystem::Update(Core::f64 frametime)
+    void SoundSystem::Update(f64 frametime)
     {   
         mutex.lock();
         std::vector<SoundChannelMap::iterator> channels_to_delete;
@@ -123,8 +123,8 @@ namespace OpenALAudio
         // Update listener position/orientation to sound device
         ALfloat pos[] = {listener_position_.x, listener_position_.y, listener_position_.z};
         alListenerfv(AL_POSITION, pos);
-        Core::Vector3df front = listener_orientation_ * Core::Vector3df(0.0f, -1.0f, 0.0f);
-        Core::Vector3df up = listener_orientation_ * Core::Vector3df(0.0f, 0.0f, -1.0f); 
+        Vector3df front = listener_orientation_ * Vector3df(0.0f, -1.0f, 0.0f);
+        Vector3df up = listener_orientation_ * Vector3df(0.0f, 0.0f, -1.0f); 
         ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
         alListenerfv(AL_ORIENTATION, orient);    
         
@@ -139,7 +139,7 @@ namespace OpenALAudio
         }
         
         // Remove stopped channels
-        for (Core::uint j = 0; j < channels_to_delete.size(); ++j)
+        for (uint j = 0; j < channels_to_delete.size(); ++j)
             channels_.erase(channels_to_delete[j]);   
         
         mutex.unlock();
@@ -148,7 +148,7 @@ namespace OpenALAudio
         UpdateCache(frametime);      
     }
     
-    void SoundSystem::SetListener(const Core::Vector3df& position, const Core::Quaternion& orientation)
+    void SoundSystem::SetListener(const Vector3df& position, const Quaternion& orientation)
     {
         if (!initialized_)
             return;
@@ -157,7 +157,7 @@ namespace OpenALAudio
         listener_orientation_ = orientation;    
     }
       
-    Core::sound_id_t SoundSystem::PlaySound(const std::string& name, bool local, Core::sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound(const std::string& name, bool local, sound_id_t channel)
     {
         SoundPtr sound = GetSound(name, local);
         if (!sound)
@@ -167,7 +167,7 @@ namespace OpenALAudio
         if (i == channels_.end())
         {
             i = channels_.insert(
-                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
         }
         
         i->second->SetPositional(false);
@@ -176,7 +176,7 @@ namespace OpenALAudio
         return i->first;     
     }
     
-    Core::sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Core::Vector3df position, Core::sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Vector3df position, sound_id_t channel)
     {        
         SoundPtr sound = GetSound(name, local);
         if (!sound)
@@ -186,7 +186,7 @@ namespace OpenALAudio
         if (i == channels_.end())
         {
             i = channels_.insert(
-                std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
         }
         
         i->second->SetPositional(true);        
@@ -196,7 +196,7 @@ namespace OpenALAudio
         return i->first;     
     }        
 
-    Core::sound_id_t SoundSystem::PlayAudioData(Core::u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel)
+    sound_id_t SoundSystem::PlayAudioData(u8 * buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, sound_id_t channel)
     {
         // TODO: Make a sound stream map so we can have multiple
         // return id of this stream so you can call its FillBuffer again who ever gets it! 
@@ -234,20 +234,20 @@ namespace OpenALAudio
         //    SoundChannel* s = new SoundChannel();
         //    if (!s)
         //        return 0;
-        //    i = channels_.insert(std::pair<Core::sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
+        //    i = channels_.insert(std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(s))).first;
         //}
         //
         //if (!i->second.get())
         //    return 0;
         //i->second->Play(sound);
         //
-        //Core::sound_id_t this_channel_id =  i->first;
+        //sound_id_t this_channel_id =  i->first;
         //mutex.unlock();
         //return this_channel_id;     
     }
 
 
-    void SoundSystem::StopSound(Core::sound_id_t id)
+    void SoundSystem::StopSound(sound_id_t id)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -256,7 +256,7 @@ namespace OpenALAudio
         i->second->Stop();
     }
     
-    void SoundSystem::SetPitch(Core::sound_id_t id, Core::Real pitch)
+    void SoundSystem::SetPitch(sound_id_t id, Real pitch)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -265,7 +265,7 @@ namespace OpenALAudio
         i->second->SetPitch(pitch);  
     }
     
-    void SoundSystem::SetGain(Core::sound_id_t id, Core::Real gain)
+    void SoundSystem::SetGain(sound_id_t id, Real gain)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -274,7 +274,7 @@ namespace OpenALAudio
         i->second->SetGain(gain);
     }
     
-    void SoundSystem::SetLooped(Core::sound_id_t id, bool looped)
+    void SoundSystem::SetLooped(sound_id_t id, bool looped)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -283,7 +283,7 @@ namespace OpenALAudio
         i->second->SetLooped(looped);
     }
     
-    void SoundSystem::SetPositional(Core::sound_id_t id, bool positional)
+    void SoundSystem::SetPositional(sound_id_t id, bool positional)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -292,7 +292,7 @@ namespace OpenALAudio
         i->second->SetPositional(positional);
     }
     
-    void SoundSystem::SetPosition(Core::sound_id_t id, Core::Vector3df position)
+    void SoundSystem::SetPosition(sound_id_t id, Vector3df position)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -301,7 +301,7 @@ namespace OpenALAudio
         i->second->SetPosition(position);
     }
     
-    void SoundSystem::SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff)
+    void SoundSystem::SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -310,14 +310,14 @@ namespace OpenALAudio
         i->second->SetRange(inner_radius, outer_radius, rolloff);
     }    
 
-    void SoundSystem::SetSoundStreamPosition(Core::Vector3df position)
+    void SoundSystem::SetSoundStreamPosition(Vector3df position)
     {
         if (!sound_stream_)
             return;
         sound_stream_->SetPosition(position);
     }
  
-    Core::sound_id_t SoundSystem::GetNextSoundChannelID()
+    sound_id_t SoundSystem::GetNextSoundChannelID()
     {
         for (;;)
         {
@@ -388,16 +388,16 @@ namespace OpenALAudio
         return SoundPtr();
     }
     
-    void SoundSystem::UpdateCache(Core::f64 frametime)
+    void SoundSystem::UpdateCache(f64 frametime)
     {
 
         update_time_ += frametime;
         if (update_time_ < CACHE_CHECK_INTERVAL)
             return;
             
-        Core::uint total_size = 0;
+        uint total_size = 0;
         SoundMap::iterator oldest_sound = sounds_.end();
-        Core::f64 oldest_age = 0.0;
+        f64 oldest_age = 0.0;
         
         SoundMap::iterator i = sounds_.begin();
         while (i != sounds_.end())
@@ -446,7 +446,7 @@ namespace OpenALAudio
         return true;
     }
     
-    bool SoundSystem::HandleTaskEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool SoundSystem::HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id != Task::Events::REQUEST_COMPLETED)
             return false;
@@ -466,7 +466,7 @@ namespace OpenALAudio
         return true;
     }
             
-    bool SoundSystem::HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool SoundSystem::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id != Asset::Events::ASSET_READY)
             return false;

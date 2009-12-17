@@ -94,7 +94,7 @@ namespace OpensimIM
         return protocol.compare(OPENSIM_IM_PROTOCOL) == 0;
     }
 
-	bool ConnectionProvider::HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data)
+	bool ConnectionProvider::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 	{
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
 		{

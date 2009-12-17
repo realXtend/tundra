@@ -33,9 +33,9 @@ namespace Input
         //! destructor
         ~Mapper();
 
-        bool Poll(Core::event_id_t input_event) const { return module_->IsEvent(input_event); }
+        bool Poll(event_id_t input_event) const { return module_->IsEvent(input_event); }
 
-        boost::optional<const Input::Events::Movement&> PollSlider(Core::event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
+        boost::optional<const Input::Events::Movement&> PollSlider(event_id_t dragged_event) const { return module_->GetDraggedSliderInfo(dragged_event); }
 
         //! Loads input mappings from xml file.
         /*! Replaces the default mappings with ones loaded from the file. In case of an error

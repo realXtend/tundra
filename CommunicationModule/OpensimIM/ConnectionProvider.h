@@ -44,7 +44,7 @@ namespace OpensimIM
 		virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data);
 
 		//! Handle network event
-		virtual bool HandleNetworkStateEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+		virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
        //! @return true if connection provoder does support given protocol.
        virtual bool SupportProtocol(QString &protocol) const;

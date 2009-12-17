@@ -2,31 +2,26 @@
 #include "Quaternion.h"
 #include "QuatUtils.h"
 
-namespace Core
-{
-
-Core::Vector3df OpenSimToOgreCoordinateAxes(const Core::Vector3df &pos)
+Vector3df OpenSimToOgreCoordinateAxes(const Vector3df &pos)
 {
     return pos;
-//    return Core::Vector3df(pos.y, pos.z, pos.x);
+//    return Vector3df(pos.y, pos.z, pos.x);
 }
 
-Core::Quaternion OpenSimToOgreQuaternion(const Core::Quaternion &quat)
+Quaternion OpenSimToOgreQuaternion(const Quaternion &quat)
 {
     return quat;
-//    return Core::Quaternion(quat.y, quat.z, quat.x, quat.w);
+//    return Quaternion(quat.y, quat.z, quat.x, quat.w);
 }
 
-Core::Vector3df OgreToOpenSimCoordinateAxes(const Core::Vector3df &pos)
+Vector3df OgreToOpenSimCoordinateAxes(const Vector3df &pos)
 {
     return pos;
-//    return Core::Vector3df(pos.z, pos.x, pos.y);
+//    return Vector3df(pos.z, pos.x, pos.y);
 }
 
-Core::Quaternion OgreToOpenSimQuaternion(const Core::Quaternion &quat)
+Quaternion OgreToOpenSimQuaternion(const Quaternion &quat)
 {
     return quat;
-//    return Core::Quaternion(quat.z, quat.x, quat.y, quat.w);
-}
-
+//    return Quaternion(quat.z, quat.x, quat.y, quat.w);
 }

@@ -38,7 +38,7 @@ XMLRPC_REQUEST XmlRpcConnection::Send(const char* data)
     request.SetMethod(HttpUtilities::HttpRequest::Post);
     request.Perform();
     
-    const std::vector<Core::u8> response_data = request.GetResponseData();
+    const std::vector<u8> response_data = request.GetResponseData();
     
     if (!request.GetSuccess())
         throw XmlRpcException(std::string("XmlRpcEpi exception in XmlRpcConnection::Send() " + request.GetReason()));

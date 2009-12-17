@@ -28,7 +28,7 @@ namespace Resource
     {
         void RegisterResourceEvents(const Foundation::EventManagerPtr &event_manager)
         {
-            Core::event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
+            event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
             event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_READY, "ResourceReady");
             event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
         }
@@ -41,7 +41,7 @@ namespace Task
     {
         void RegisterTaskEvents(const Foundation::EventManagerPtr &event_manager)
         {
-            Core::event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Task");
+            event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Task");
             event_manager->RegisterEvent(resource_event_category, Task::Events::REQUEST_COMPLETED, "RequestCompleted");
         }
     }
@@ -80,8 +80,8 @@ namespace Foundation
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
             
-            Core::uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
-            Core::uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<Core::uint>(-1));
+            uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
+            uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<uint>(-1));
 
             max_ticks_ = 1000 / max_fps_release;
     #ifdef _DEBUG
@@ -154,7 +154,7 @@ namespace Foundation
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
         std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
-        logfilepath_w += L"/" + Core::ToWString(config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
+        logfilepath_w += L"/" + ToWString(config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
         std::string logfilepath;
         Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 
@@ -259,7 +259,7 @@ namespace Foundation
     {
         PROFILE(FW_PostInitialize);
 
-        Core::event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
+        event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
         srand(time(0));
 
         LoadModules();
@@ -319,7 +319,7 @@ namespace Foundation
 
         //! \note Frame limiter disabled for now for inaccuracy of boost timer, hopefully more accurate solution can be made on Qt side
         //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
-        //Core::uint elapsed_time = static_cast<Core::uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
+        //uint elapsed_time = static_cast<uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
         //if (max_ticks_ > elapsed_time)
         //{
         //    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
@@ -396,7 +396,7 @@ namespace Foundation
         return Scene::ScenePtr();
     }
 
-    Console::CommandResult Framework::ConsoleLoadModule(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
     {
         if (params.size() != 2 && params.size() != 1)
             return Console::ResultInvalidParameters();
@@ -415,7 +415,7 @@ namespace Foundation
         return Console::ResultSuccess("Module " + entry + " loaded.");
     }
 
-    Console::CommandResult Framework::ConsoleUnloadModule(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleUnloadModule(const StringVector &params)
     {
         if (params.size() != 1)
             return Console::ResultInvalidParameters();
@@ -433,7 +433,7 @@ namespace Foundation
         return Console::ResultSuccess("Module " + params[0] + " unloaded.");
     }
 
-    Console::CommandResult Framework::ConsoleListModules(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
     {
         boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
         if (console)
@@ -447,17 +447,17 @@ namespace Foundation
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleSendEvent(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleSendEvent(const StringVector &params)
     {
         if (params.size() != 2)
             return Console::ResultInvalidParameters();
 
-        Core::event_category_id_t event_category = event_manager_->QueryEventCategory(params[0]);
-        if (event_category == Core::IllegalEventCategory)
+        event_category_id_t event_category = event_manager_->QueryEventCategory(params[0]);
+        if (event_category == IllegalEventCategory)
             return Console::ResultFailure("Event category not found.");
         else
         {
-            event_manager_->SendEvent(event_category, Core::ParseString<Core::event_id_t>(params[1]), 0);
+            event_manager_->SendEvent(event_category, ParseString<event_id_t>(params[1]), 0);
             return Console::ResultSuccess();
         }
     }
@@ -516,11 +516,11 @@ namespace Foundation
 
     /*
                 timings += timings_node->Name();
-                timings += ": called total " + Core::ToString(timings_node->num_called_total_);
-                timings += ", elapsed total " + Core::ToString(timings_node->total_);
-                timings += ", called " + Core::ToString(timings_node->num_called_);
-                timings += ", elapsed " + Core::ToString(timings_node->elapsed_);
-                timings += ", average " + Core::ToString(average);
+                timings += ": called total " + ToString(timings_node->num_called_total_);
+                timings += ", elapsed total " + ToString(timings_node->total_);
+                timings += ", called " + ToString(timings_node->num_called_);
+                timings += ", elapsed " + ToString(timings_node->elapsed_);
+                timings += ", average " + ToString(average);
     */
 
                     std::string timings;
@@ -546,7 +546,7 @@ namespace Foundation
             level -= 2;
     }
 
-    Console::CommandResult Framework::ConsoleProfile(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
     {
         boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
         if (console)
@@ -564,12 +564,12 @@ namespace Foundation
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleLimitFrames(const Core::StringVector &params)
+    Console::CommandResult Framework::ConsoleLimitFrames(const StringVector &params)
     {
         if (params.size() != 1)
             return Console::ResultInvalidParameters();
 
-        int max_fps = Core::clamp(Core::ParseString<int>(params[0]), 1, 1000000);
+        int max_fps = clamp(ParseString<int>(params[0]), 1, 1000000);
         max_ticks_ = 1000 / max_fps;
 
         return Console::ResultSuccess();

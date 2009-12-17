@@ -25,7 +25,7 @@ namespace Foundation
         event_subscriber_root_.reset();
     }
     
-    Core::event_category_id_t EventManager::RegisterEventCategory(const std::string& name)
+    event_category_id_t EventManager::RegisterEventCategory(const std::string& name)
     {
         if (event_category_map_.find(name) == event_category_map_.end())
         {
@@ -41,16 +41,16 @@ namespace Foundation
         return event_category_map_[name];
     }
     
-    Core::event_category_id_t EventManager::QueryEventCategory(const std::string& name) const
+    event_category_id_t EventManager::QueryEventCategory(const std::string& name) const
     {
         EventCategoryMap::const_iterator i = event_category_map_.find(name);
         if (i != event_category_map_.end())
             return i->second;
         else 
-            return Core::IllegalEventCategory;
+            return IllegalEventCategory;
     }
     
-    const std::string& EventManager::QueryEventCategoryName(Core::event_category_id_t category_id) const
+    const std::string& EventManager::QueryEventCategoryName(event_category_id_t category_id) const
     {
         EventCategoryMap::const_iterator i = event_category_map_.begin();
         static std::string empty;
@@ -66,7 +66,7 @@ namespace Foundation
         return empty;
     }
     
-    void EventManager::RegisterEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, const std::string& name)
+    void EventManager::RegisterEvent(event_category_id_t category_id, event_id_t event_id, const std::string& name)
     {
         if (!QueryEventCategoryName(category_id).length())
         {
@@ -82,9 +82,9 @@ namespace Foundation
         event_map_[category_id][event_id] = name;
     }
     
-    bool EventManager::SendEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
+    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
-        if (category_id == Core::IllegalEventCategory)
+        if (category_id == IllegalEventCategory)
         {
             Foundation::RootLogWarning("Attempted to send event with illegal category");
             return false;
@@ -93,16 +93,16 @@ namespace Foundation
         return SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
     }
     
-    void EventManager::SendDelayedEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataPtr data, Core::f64 delay)
+    void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay)
     {
-        if (category_id == Core::IllegalEventCategory)
+        if (category_id == IllegalEventCategory)
         {
             Foundation::RootLogWarning("Attempted to send delayed event with illegal category");
             return;
         }    
         
         {   
-            Core::MutexLock lock(delayed_events_mutex_);
+            MutexLock lock(delayed_events_mutex_);
                
             DelayedEvent new_delayed_event;
             new_delayed_event.category_id_ = category_id;
@@ -114,7 +114,7 @@ namespace Foundation
         }
     }  
     
-    bool EventManager::SendEvent(EventSubscriber* node, Core::event_category_id_t category_id, Core::event_id_t event_id, EventDataInterface* data) const
+    bool EventManager::SendEvent(EventSubscriber* node, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
         if (ModuleSharedPtr module = node->module_.lock())
         {
@@ -337,13 +337,13 @@ namespace Foundation
         }
     }
     
-    Core::request_tag_t EventManager::GetNextRequestTag()
+    request_tag_t EventManager::GetNextRequestTag()
     {
         if (next_request_tag_ == 0) next_request_tag_++; // Never use 0
         return next_request_tag_++;
     }    
     
-    void EventManager::ProcessDelayedEvents(Core::f64 frametime)
+    void EventManager::ProcessDelayedEvents(f64 frametime)
     {
         delayed_events_.insert(delayed_events_.end(), new_delayed_events_.begin(), new_delayed_events_.end());
         new_delayed_events_.clear();

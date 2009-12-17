@@ -81,7 +81,7 @@ namespace TaigaProtocol
             framework_->GetModuleManager()->GetModule<ProtocolModuleTaiga>(Foundation::Module::MT_TaigaProtocol);
         if (modulePointerToThis.lock().get())
         {
-            Core::event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
+            event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
             Foundation::NetworkingRegisteredEvent event_data(modulePointerToThis);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
             LogInfo("System " + Name() + " sending NetworkingRegisteredEvent event");
@@ -104,7 +104,7 @@ namespace TaigaProtocol
 	}
 
 	// virtual
-	void ProtocolModuleTaiga::Update(Core::f64 frametime)
+	void ProtocolModuleTaiga::Update(f64 frametime)
 	{
 		{
 			PROFILE(ProtocolModuleTaiga_Update);
@@ -168,7 +168,7 @@ namespace TaigaProtocol
 		    eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
 		    
 		    // Request capabilities from the server.
-		    Core::Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this, GetClientParameters().seedCapabilities));
+		    Thread thread(boost::bind(&ProtocolModuleTaiga::RequestCapabilities, this, GetClientParameters().seedCapabilities));
 		    return true;
         }
         else
@@ -275,7 +275,7 @@ namespace TaigaProtocol
 			return;
 		}
 		
-		std::vector<Core::u8> response = request.GetResponseData();
+		std::vector<u8> response = request.GetResponseData();
 		if (response.size() == 0)
 		{
 			LogError("Size of the response data to \"SEED\" capabilities message was zero.");

@@ -58,7 +58,7 @@ namespace Asset
     		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
             manager_->RegisterAssetProvider(http_asset_provider_);
         } 
-        catch (Core::Exception)
+        catch (Exception)
         {
             AssetModule::LogWarning("Failed to create HTTP asset provider.");
         }
@@ -91,7 +91,7 @@ namespace Asset
 	}
 
     // virtual
-    void AssetModule::Update(Core::f64 frametime)
+    void AssetModule::Update(f64 frametime)
     {
         {
             PROFILE(AssetModule_Update);
@@ -114,7 +114,7 @@ namespace Asset
         LogInfo("Module " + Name() + " uninitialized.");
     }
     
-    Console::CommandResult AssetModule::ConsoleRequestAsset(const Core::StringVector &params)
+    Console::CommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
     {
         if (params.size() != 2)
         {
@@ -126,8 +126,8 @@ namespace Asset
     }
     
     bool AssetModule::HandleEvent(
-        Core::event_category_id_t category_id,
-        Core::event_id_t event_id, 
+        event_category_id_t category_id,
+        event_id_t event_id, 
         Foundation::EventDataInterface* data)
     {
         PROFILE(AssetModule_HandleEvent);

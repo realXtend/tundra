@@ -27,7 +27,7 @@ namespace QtUI
         ~UICanvasTestEdit();
         
         //! Set new entity to use
-        void SetEntityId(Core::entity_id_t entity_id);
+        void SetEntityId(entity_id_t entity_id);
         
     public slots:
         //! Handle UICanvas bind to entity -action
@@ -53,7 +53,7 @@ namespace QtUI
         QWidget *editor_widget_;        
 
         //! Last selected entity
-        Core::entity_id_t last_entity_id_;
+        entity_id_t last_entity_id_;
 
         //! Ui services proxy widget for ui
         UiServices::UiProxyWidget *editor_widget_proxy_;

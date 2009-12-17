@@ -40,7 +40,7 @@ namespace Console
         //! Clear the console, clear all buffers
         void Clear()
         {
-            Core::MutexLock lock(mutex_);
+            MutexLock lock(mutex_);
             message_lines_.clear();
             command_line_.clear();
             command_history_.clear();
@@ -65,13 +65,13 @@ namespace Console
         virtual bool IsActive() const;
 
         //! update overlay. Should be called from rendering thread.
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
         //! process key down event. Thread safe.
-        virtual bool HandleKeyDown(int code, Core::uint text);
+        virtual bool HandleKeyDown(int code, uint text);
 
         //! process key up event. Thread safe.
-        virtual bool HandleKeyUp(int code, Core::uint text);
+        virtual bool HandleKeyUp(int code, uint text);
 
         //! Returns the current command line, debug use only!
         const std::string &GetCommandLine() const { return command_line_; }
@@ -79,7 +79,7 @@ namespace Console
         //! Returns console line, 0 is bottom, debug use only!
         const std::string &GetLine(size_t index) const
         {
-            Core::StringList::const_iterator line = message_lines_.begin();
+            StringList::const_iterator line = message_lines_.begin();
             std::advance(line, index);
             return *line;
         }
@@ -92,7 +92,7 @@ namespace Console
         void MoveCursor(int offset);
 
     private:
-        bool HandleKey(int code, Core::uint text);
+        bool HandleKey(int code, uint text);
 
         //! format a page according to overlay properties so it can be displayed on the console
         /*! Formats the current buffer and outputs it into the parameter
@@ -128,16 +128,16 @@ namespace Console
         PocoLogChannelPtr poco_log_channel_;
 
         //! Contains all lines printed to the console
-        Core::StringList message_lines_;
+        StringList message_lines_;
 
         //! current command line
         std::string command_line_;
 
         //! buffer for command history
-        Core::StringList command_history_;
+        StringList command_history_;
 
         //! current position in command history
-        Core::StringList::const_iterator command_history_pos_;
+        StringList::const_iterator command_history_pos_;
 
         //! maximum number of commands the console will store
         const size_t max_command_history_;
@@ -155,7 +155,7 @@ namespace Console
         size_t max_visible_lines;
 
         //! timer for displaying prompt
-        Core::f64 prompt_timer_;
+        f64 prompt_timer_;
 
         //! if true, show prompt cursor
         bool show_cursor_;
@@ -167,22 +167,22 @@ namespace Console
         bool update_;
 
         //! mutex for the console
-        Core::Mutex mutex_;
+        Mutex mutex_;
 
         //! Frequency for the cursor blink, in seconds
-        Core::Real cursor_blink_freq_;
+        Real cursor_blink_freq_;
 
         //! default command manager
         CommandManagerPtr command_manager_;
 
         //! counter for key strokes
-        Core::IntervalTimer counter_;
+        IntervalTimer counter_;
 
         //! OIS code for the current key held down, or 0 if no key is held down
         int current_code_;
 
         //! Ascii code for the current key held down, or 0 if no key is held down
-        Core::uint current_key_;
+        uint current_key_;
     };
 }
 

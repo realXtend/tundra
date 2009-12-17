@@ -34,22 +34,22 @@ namespace RexLogic
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
         
         //! Misc. frame-based update
-        void Update(Core::f64 frametime);
+        void Update(f64 frametime);
         
         /// Update the avatar name overlay positions.
         void UpdateAvatarNameOverlayPositions();
         
         //! Updates running avatar animations
-        void UpdateAvatarAnimations(Core::entity_id_t avatarid, Core::f64 frametime);
+        void UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime);
         
         //! Handles resource event
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
                 
         //! Handles inventory event
-        bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handles asset event
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handles logout
         void HandleLogout();
@@ -72,29 +72,29 @@ namespace RexLogic
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component,
         //!         and EC_OpenSimPresence component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
-        Scene::EntityPtr GetOrCreateAvatarEntity(Core::entity_id_t entityid, const RexUUID &fullid);
-        Scene::EntityPtr CreateNewAvatarEntity(Core::entity_id_t entityid);
+        Scene::EntityPtr GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid);
+        Scene::EntityPtr CreateNewAvatarEntity(entity_id_t entityid);
         
         //! Creates mesh for the avatar / sets up appearance, animations
-        void CreateAvatarMesh(Core::entity_id_t entity_id);
+        void CreateAvatarMesh(entity_id_t entity_id);
         
         //! Creates the name overlay above the avatar.
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-        void CreateNameOverlay(Foundation::ComponentPtr placeable, Core::entity_id_t entity_id);
+        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
         
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.
-        void ShowAvatarNameOverlay(Core::entity_id_t entity_id);
+        void ShowAvatarNameOverlay(entity_id_t entity_id);
         
         //! Starts requested avatar animations, stops others
-        void StartAvatarAnimations(const RexTypes::RexUUID& avatarid, const std::vector<RexTypes::RexUUID>& anim_ids);
+        void StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids);
         
         //! Sets avatar state
-        void SetAvatarState(const RexTypes::RexUUID& avatarid, EC_OpenSimAvatar::State state);
+        void SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state);
 
         //! Avatar state map
-        typedef std::map<RexTypes::RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;
+        typedef std::map<RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;
         AvatarStateMap avatar_states_;
         
         //! Avatar appearance controller

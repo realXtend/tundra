@@ -42,7 +42,7 @@ namespace PythonScript
     static Foundation::Framework *staticframework;
 
     // Category id for scene events - outside the module class 'cause entity_setattro wants this too
-    static Core::event_category_id_t scene_event_category_ ;
+    static event_category_id_t scene_event_category_ ;
 
 
     
@@ -62,18 +62,18 @@ namespace PythonScript
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
         //handling events
         virtual bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id, 
+            event_category_id_t category_id,
+            event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
         //! callback for console command        
-        Console::CommandResult ConsoleRunString(const Core::StringVector &params);
-        Console::CommandResult ConsoleRunFile(const Core::StringVector &params);
-        Console::CommandResult ConsoleReset(const Core::StringVector &params);
+        Console::CommandResult ConsoleRunString(const StringVector &params);
+        Console::CommandResult ConsoleRunFile(const StringVector &params);
+        Console::CommandResult ConsoleReset(const StringVector &params);
 
         // Subscribing to network categories
         void SubscribeToNetworkEvents();
@@ -89,10 +89,10 @@ namespace PythonScript
 
         //api code is outside the module now, but reuses these .. err, but can't see 'cause dont have a ref to the instance?
         // Category id for incoming messages.
-        Core::event_category_id_t inboundCategoryID_;
-        Core::event_category_id_t inputeventcategoryid;
-        Core::event_category_id_t networkstate_category_id;
-        Core::event_category_id_t framework_category_id;
+        event_category_id_t inboundCategoryID_;
+        event_category_id_t inputeventcategoryid;
+        event_category_id_t networkstate_category_id;
+        event_category_id_t framework_category_id;
         
     private:
         

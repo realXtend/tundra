@@ -49,8 +49,8 @@ namespace Environment
         void PostInitialize();
         void Uninitialize();
         void SubscribeToNetworkEvents();
-        void Update(Core::f64 frametime);
-        bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        void Update(f64 frametime);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         bool HandleNetworkEvent(Foundation::EventDataInterface* data);
         bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
@@ -71,13 +71,13 @@ namespace Environment
         /// @return The water handler.
         WaterPtr GetWaterHandler();
 
-        void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, Core::uint texture_index);
+        void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
         /// Change new terrain height value,
         /// @Param start_height what height texture starts at (meters).
         /// @Param height_range how many meters texture will go up from the texture_start_height 
         /// @Param corner what texture height we want to change.
-        void SendTextureHeightMessage(Core::Real start_height, Core::Real height_range, Core::uint corner);
+        void SendTextureHeightMessage(Real start_height, Real height_range, uint corner);
 
         /*! Modify land message Used to send a to server.
          *  @param x coordinate of terrain texture.
@@ -87,7 +87,7 @@ namespace Environment
          *  @param seconds how long has the modify land operation been executed.
          *  @param previous height value for spesific texture coordinate
          */
-        void SendModifyLandMessage(Core::f32 x, Core::f32 y, Core::u8 brush, Core::u8 action, Core::Real seconds, Core::Real height);
+        void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height);
 
         /// Creates a new scene and sets that as active. Also creates the core entities to that scene that 
         /// are always to be present in an reX world, like terrain.
@@ -129,19 +129,19 @@ namespace Environment
         Foundation::EventManagerPtr event_manager_;
 
         /// Id for Framework event category
-        Core::event_category_id_t framework_evet_category_;
+        event_category_id_t framework_evet_category_;
 
         /// Id for Resource event category
-        Core::event_category_id_t resource_event_category_;
+        event_category_id_t resource_event_category_;
 
         /// Id for Scene event category
-        Core::event_category_id_t scene_event_category_;
+        event_category_id_t scene_event_category_;
 
         /// Id for NetworkIn event category
-        Core::event_category_id_t network_in_event_category_;
+        event_category_id_t network_in_event_category_;
 
         /// Id for NetworkState event category
-        Core::event_category_id_t network_state_event_category_;
+        event_category_id_t network_state_event_category_;
 
         /// Terrain geometry ptr.
         TerrainPtr terrain_;

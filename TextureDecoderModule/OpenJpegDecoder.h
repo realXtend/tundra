@@ -24,7 +24,7 @@ namespace TextureDecoder
         //! Set maximum amount of decodes to perform per frame
         /*! \param decodes Amount of decodes per frame
          */
-        void SetDecodesPerFrame(Core::uint decodes);
+        void SetDecodesPerFrame(uint decodes);
         
     private:
         //! perform a decode & queue result
@@ -32,7 +32,7 @@ namespace TextureDecoder
          */
         void PerformDecode(DecodeRequestPtr request);
         
-        Core::uint decodes_per_frame_;
+        uint decodes_per_frame_;
     };
 }
 #endif

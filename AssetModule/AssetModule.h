@@ -45,11 +45,11 @@ namespace Asset
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void PostInitialize();
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
         virtual bool HandleEvent(
-            Core::event_category_id_t category_id,
-            Core::event_id_t event_id, 
+            event_category_id_t category_id,
+            event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
 		virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
@@ -58,7 +58,7 @@ namespace Asset
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
-        Console::CommandResult ConsoleRequestAsset(const Core::StringVector &params);
+        Console::CommandResult ConsoleRequestAsset(const StringVector &params);
         
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
@@ -79,10 +79,10 @@ namespace Asset
         AssetManagerPtr manager_;
         
         //! category id for incoming messages
-        Core::event_category_id_t inboundcategory_id_;
+        event_category_id_t inboundcategory_id_;
 
         //! framework id for internal events
-        Core::event_category_id_t framework_category_id_;
+        event_category_id_t framework_category_id_;
 
 		//! Pointer to current ProtocolModule
 		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;

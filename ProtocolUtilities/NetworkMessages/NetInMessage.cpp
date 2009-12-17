@@ -114,7 +114,7 @@ NetInMessage::NetInMessage(size_t seqNum, const uint8_t *data, size_t numBytes, 
     size_t messageIDLength = 0;
     messageID = ExtractNetworkMessageID(&messageData[0], numBytes, &messageIDLength);
     if (messageIDLength == 0)
-        throw Core::Exception("Malformed SLUDP packet read! MessageID not present!");
+        throw Exception("Malformed SLUDP packet read! MessageID not present!");
     
     // We remove the messageID from the beginning of the message data buffer, since we just want to store the message content.
     messageData.erase(messageData.begin(), messageData.begin() + messageIDLength);
@@ -312,12 +312,12 @@ Vector4 NetInMessage::ReadVector4()
     return *data;
 }
 
-Core::Quaternion NetInMessage::ReadQuaternion()
+Quaternion NetInMessage::ReadQuaternion()
 {
     RequireNextVariableType(NetVarQuaternion);
 
     Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
-    Core::Quaternion quat = Core::UnpackQuaternionFromFloat3(*data);
+    Quaternion quat = UnpackQuaternionFromFloat3(*data);
     AdvanceToNextVariable();
 
     return quat;

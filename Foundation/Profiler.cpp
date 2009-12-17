@@ -78,7 +78,7 @@ namespace Foundation
         double elapsed = node->block_.ElapsedTimeSeconds();
 
         node->elapsed_current_ += elapsed;
-        node->elapsed_min_current_ = (Core::equals(node->elapsed_min_current_, 0.0) ? elapsed : (elapsed < node->elapsed_min_current_ ? elapsed : node->elapsed_min_current_));
+        node->elapsed_min_current_ = (equals(node->elapsed_min_current_, 0.0) ? elapsed : (elapsed < node->elapsed_min_current_ ? elapsed : node->elapsed_min_current_));
         node->elapsed_max_current_ = elapsed > node->elapsed_max_current_ ? elapsed : node->elapsed_max_current_;
         node->total_ += elapsed;
 
@@ -109,7 +109,7 @@ namespace Foundation
 
     std::string Profiler::GetThisThreadRootBlockName()
     {
-        return std::string("Thread" + Core::ToString(boost::this_thread::get_id()));
+        return std::string("Thread" + ToString(boost::this_thread::get_id()));
     }
 
     ProfilerNodeTree *Profiler::CreateThreadRootBlock()

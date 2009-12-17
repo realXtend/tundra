@@ -50,7 +50,7 @@ namespace TextureDecoder
     {
     }
     
-    void OpenJpegDecoder::SetDecodesPerFrame(Core::uint decodes) 
+    void OpenJpegDecoder::SetDecodesPerFrame(uint decodes) 
     { 
         if (decodes)
             decodes_per_frame_ = decodes;
@@ -72,7 +72,7 @@ namespace TextureDecoder
                 {
                     for (;;)
                     {
-                        Core::uint results = manager->GetNumResults(GetTaskDescription());
+                        uint results = manager->GetNumResults(GetTaskDescription());
                         if (results < decodes_per_frame_)
                             break;
                         if (!ShouldRun())
@@ -171,7 +171,7 @@ namespace TextureDecoder
             // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
             Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), actual_width, actual_height, image->numcomps));
             TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
-            Core::u8* data = texture->GetData();
+            u8* data = texture->GetData();
             texture->SetLevel(request->level_);
             for (int y = 0; y < actual_height; ++y)
             {

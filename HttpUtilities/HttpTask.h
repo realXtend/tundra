@@ -23,11 +23,11 @@ namespace HttpUtilities
         //! Http method
         HttpUtilities::HttpRequest::Method method_;
         //! Connection timeout
-        Core::Real timeout_;
+        Real timeout_;
         //! Data content type. Only has significance if data exists
         std::string content_type_;
         //! Data to be sent in the request
-        std::vector<Core::u8> data_;
+        std::vector<u8> data_;
     };
     
     typedef boost::shared_ptr<HttpTaskRequest> HttpTaskRequestPtr;
@@ -41,7 +41,7 @@ namespace HttpUtilities
         //! Reason for error (if any)
         std::string reason_;
         //! Response data
-        std::vector<Core::u8> data_;
+        std::vector<u8> data_;
         
         bool GetSuccess() const { return success_; }
     };

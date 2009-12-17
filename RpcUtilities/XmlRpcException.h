@@ -11,7 +11,7 @@
 
 	/**
 	 * XMLRPCException is exception type which is throwed in cases if you use XMLRPC-epi interface and problem arises. 
-	 * @see Core::Exception
+	 * @see Exception
 	 */
 	class XmlRpcException : public std::exception
 	{

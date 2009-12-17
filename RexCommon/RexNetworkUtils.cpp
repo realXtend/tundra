@@ -19,42 +19,42 @@ namespace RexTypes
         return (boost::algorithm::starts_with(testedvalue,"true") || boost::algorithm::starts_with(testedvalue,"1")); 
     }
     
-    Core::Quaternion GetProcessedQuaternion(const uint8_t* bytes)
+    Quaternion GetProcessedQuaternion(const uint8_t* bytes)
     {    
         uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
-        Core::Quaternion rotation = Core::UnpackQuaternionFromU16_4(rot);
+        Quaternion rotation = UnpackQuaternionFromU16_4(rot);
         rotation.normalize();
 
-        return Core::OpenSimToOgreQuaternion(rotation);
+        return OpenSimToOgreQuaternion(rotation);
     }
 
-    Core::Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)
+    Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)
     {
         uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
         
-        Core::Vector3df resultvector;
+        Vector3df resultvector;
         resultvector.x = scale * ((vec[0] / 32768.0f) - 1.0f);
         resultvector.y = scale * ((vec[1] / 32768.0f) - 1.0f);
         resultvector.z = scale * ((vec[2] / 32768.0f) - 1.0f);
 
-        return Core::OpenSimToOgreCoordinateAxes(resultvector);        
+        return OpenSimToOgreCoordinateAxes(resultvector);        
     }
 
-    Core::Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes)
+    Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes)
     {
         uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
 
-        return Core::OpenSimToOgreCoordinateAxes(Core::Vector3df(vec[0],vec[1],vec[2]));    
+        return OpenSimToOgreCoordinateAxes(Vector3df(vec[0],vec[1],vec[2]));    
     }
     
-    Core::Vector3df GetProcessedVector(const uint8_t* bytes)
+    Vector3df GetProcessedVector(const uint8_t* bytes)
     {
-        Core::Vector3df resultvector = *reinterpret_cast<Core::Vector3df*>((Core::Vector3df*)&bytes[0]);
+        Vector3df resultvector = *reinterpret_cast<Vector3df*>((Vector3df*)&bytes[0]);
 
-        return Core::OpenSimToOgreCoordinateAxes(resultvector);  
+        return OpenSimToOgreCoordinateAxes(resultvector);  
     }
     
-    bool IsValidPositionVector(const Core::Vector3df &pos)
+    bool IsValidPositionVector(const Vector3df &pos)
     {
         // This is a heuristic check to guard against the OpenSim server sending us stupid positions.
         if (fabs(pos.x) > 1e6f || fabs(pos.y) > 1e6f || fabs(pos.z) > 1e6f) 
@@ -67,7 +67,7 @@ namespace RexTypes
         return true;
     }
 
-    bool IsValidVelocityVector(const Core::Vector3df &pos)
+    bool IsValidVelocityVector(const Vector3df &pos)
     {
         // This is a heuristic check to guard against the OpenSim server sending us stupid velocity vectors.
         if (fabs(pos.x) > 1e3f || fabs(pos.y) > 1e3f || fabs(pos.z) > 1e3f)
@@ -128,7 +128,7 @@ namespace RexTypes
         return result; 
     }     
 
-    RexTypes::RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx)
+    RexUUID ReadUUIDFromBytes(const uint8_t* bytes, int& idx)
     {
         RexUUID result = *(RexUUID*)(&bytes[idx]);
         idx += sizeof(RexUUID);
@@ -136,24 +136,24 @@ namespace RexTypes
         return result; 
     }
     
-    Core::Color ReadColorFromBytes(const uint8_t* bytes, int& idx)
+    Color ReadColorFromBytes(const uint8_t* bytes, int& idx)
     {
         uint8_t r = bytes[idx++];
         uint8_t g = bytes[idx++];
         uint8_t b = bytes[idx++];
         uint8_t a = bytes[idx++];
         
-        return Core::Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+        return Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
     
-    Core::Color ReadColorFromBytesInverted(const uint8_t* bytes, int& idx)
+    Color ReadColorFromBytesInverted(const uint8_t* bytes, int& idx)
     {
         uint8_t r = 255 - bytes[idx++];
         uint8_t g = 255 - bytes[idx++];
         uint8_t b = 255 - bytes[idx++];
         uint8_t a = 255 - bytes[idx++];
         
-        return Core::Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+        return Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
         
     std::string ReadNullTerminatedStringFromBytes(const uint8_t* bytes, int& idx)
@@ -202,10 +202,10 @@ namespace RexTypes
         idx += sizeof(float);
     }
     
-    void WriteUUIDToBytes(const RexTypes::RexUUID &value, uint8_t* bytes, int& idx)
+    void WriteUUIDToBytes(const RexUUID &value, uint8_t* bytes, int& idx)
     {
-        *(RexTypes::RexUUID*)(&bytes[idx]) = value;
-        idx += sizeof(RexTypes::RexUUID);
+        *(RexUUID*)(&bytes[idx]) = value;
+        idx += sizeof(RexUUID);
     }    
     
     void WriteNullTerminatedStringToBytes(const std::string& value, uint8_t* bytes, int& idx)
@@ -220,10 +220,10 @@ namespace RexTypes
     {
         // Split into lines
         NameValueMap map;
-        Core::StringVector lines = Core::SplitString(namevalue, '\n');
+        StringVector lines = SplitString(namevalue, '\n');
         for (unsigned i = 0; i < lines.size(); ++i)
         {
-            Core::StringVector line = Core::SplitString(lines[i], ' ');
+            StringVector line = SplitString(lines[i], ' ');
             if (line.size() > 4)
             {
                 // First element is the name

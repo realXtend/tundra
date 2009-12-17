@@ -42,13 +42,13 @@ namespace TextureDecoder
         int max_levels_;
 
         //! Original texture width 
-        Core::uint original_width_;
+        uint original_width_;
 
         //! Original texture height
-        Core::uint original_height_;
+        uint original_height_;
 
         //! Amount of components in texture
-        Core::uint components_;
+        uint components_;
     };
     
     typedef boost::shared_ptr<DecodeResult> DecodeResultPtr;
@@ -78,7 +78,7 @@ namespace TextureDecoder
         /*! \param size Total size of asset (from asset service)
             \param received Received continuous bytes (from asset service)
          */
-        void UpdateSizeReceived(Core::uint size, Core::uint received);
+        void UpdateSizeReceived(uint size, uint received);
 
         //! Updates request from decode result
         /*! \param result Decode result
@@ -87,16 +87,16 @@ namespace TextureDecoder
         bool UpdateWithDecodeResult(DecodeResult* result);
  
         //! Inserts a request tag
-        void InsertTag(Core::request_tag_t tag) { tags_.push_back(tag); }
+        void InsertTag(request_tag_t tag) { tags_.push_back(tag); }
         
         //! Inserts several request tags
-        void InsertTags(const Core::RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
+        void InsertTags(const RequestTagVector tags) { tags_.insert(tags_.end(), tags.begin(), tags.end()); }
         
         //! Clears request tags
         void ClearTags() { tags_.clear(); } 
              
         //! Returns associated request tags
-        const Core::RequestTagVector& GetTags() const { return tags_; }
+        const RequestTagVector& GetTags() const { return tags_; }
                 
         //! Checks if enough data to decode next level
         bool HasEnoughData() const;
@@ -111,19 +111,19 @@ namespace TextureDecoder
         bool IsDecodeRequested() const { return decode_requested_; }
 
         //! Returns total data size, 0 if unknown
-        Core::uint GetSize() const { return size_; }
+        uint GetSize() const { return size_; }
         
         //! Returns received bytes
-        Core::uint GetReceived() const { return received_; }
+        uint GetReceived() const { return received_; }
 
         //! Returns width, 0 if unknown
-        Core::uint GetWidth() const { return width_; }
+        uint GetWidth() const { return width_; }
 
         //! Returns height, 0 if unknown
-        Core::uint GetHeight() const { return height_; }
+        uint GetHeight() const { return height_; }
 
         //! Returns components, 0 if unknown
-        Core::uint GetComponents() const { return components_; }
+        uint GetComponents() const { return components_; }
 
         //! Returns amount quality levels, -1 if unknown
         int GetLevels() const { return levels_; }
@@ -135,13 +135,13 @@ namespace TextureDecoder
         int GetNextLevel() const { return next_level_; }
         
         //! List of request tags associated with this transfer
-        Core::RequestTagVector tags_;
+        RequestTagVector tags_;
         
     private:
         //! Estimates needed data size for a given level
         /*! \param level quality level
          */
-        Core::uint EstimateDataSize(int level) const;
+        uint EstimateDataSize(int level) const;
         
         //! Asset on which this request is based
         std::string id_;
@@ -153,19 +153,19 @@ namespace TextureDecoder
         bool decode_requested_;
 
         //! Total data size, 0 if unknown
-        Core::uint size_;
+        uint size_;
 
         //! Last checked size of download progress (continuous received bytes)
-        Core::uint received_;
+        uint received_;
 
         //! Texture original width, 0 if unknown
-        Core::uint width_;
+        uint width_;
 
         //! Texture original height, 0 if unknown
-        Core::uint height_;
+        uint height_;
 
         //! Components in image, 0 if unknown
-        Core::uint components_;
+        uint components_;
 
         //! Number of quality levels, -1 if unknown
         int levels_;

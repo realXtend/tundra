@@ -22,19 +22,19 @@ namespace Inventory
     {
         /// Event informing about new item inventory. Use this when creating new inventory items outside
         /// InventoryModule e.g. when handling incoming InventoryDescendents packet
-        static const Core::event_id_t EVENT_INVENTORY_DESCENDENT = 0x01;
+        static const event_id_t EVENT_INVENTORY_DESCENDENT = 0x01;
 
         /// Send this event with appropriate event data to upload asset from file.
-        static const Core::event_id_t EVENT_INVENTORY_UPLOAD_FILE = 0x02;
+        static const event_id_t EVENT_INVENTORY_UPLOAD_FILE = 0x02;
 
         /// Send this event with appropriate event data to upload asset from buffer.
-        static const Core::event_id_t EVENT_INVENTORY_UPLOAD_BUFFER = 0x03;
+        static const event_id_t EVENT_INVENTORY_UPLOAD_BUFFER = 0x03;
 
         /// Event informing inventory item opening (download request).
-        static const Core::event_id_t EVENT_INVENTORY_ITEM_OPEN = 0x04;
+        static const event_id_t EVENT_INVENTORY_ITEM_OPEN = 0x04;
 
         /// Event informing successful download of inventory asset.
-        static const Core::event_id_t EVENT_INVENTORY_ITEM_DOWNLOADED = 0x05;
+        static const event_id_t EVENT_INVENTORY_ITEM_DOWNLOADED = 0x05;
     }
 
     /// Inventory item type enumeration.
@@ -78,7 +78,7 @@ namespace Inventory
         InventoryUploadBufferEventData() {}
         virtual ~InventoryUploadBufferEventData() {}
         QStringList filenames;
-        QVector<QVector<Core::u8> > buffers;
+        QVector<QVector<u8> > buffers;
     };
 
     /// Event data class to be used with EVENT_INVENTORY_ITEM_OPEN.
@@ -87,7 +87,7 @@ namespace Inventory
     public:
         InventoryItemOpenEventData() {}
         virtual ~InventoryItemOpenEventData() {}
-        Core::request_tag_t requestTag;
+        request_tag_t requestTag;
         RexUUID inventoryId;
         RexUUID assetId;
         inventory_type_t inventoryType;
@@ -103,7 +103,7 @@ namespace Inventory
         virtual ~InventoryItemDownloadedEventData() {}
         RexUUID inventoryId;
         Foundation::AssetPtr asset;
-        Core::request_tag_t requestTag;
+        request_tag_t requestTag;
         asset_type_t assetType;
     };
 }

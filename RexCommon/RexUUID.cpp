@@ -31,8 +31,6 @@ static uint8_t StringToByte(const char *str)
 
 }
 
-namespace RexTypes
-{
 
 RexUUID::RexUUID()
 {
@@ -194,6 +192,4 @@ bool RexUUID::operator <(const RexUUID &rhs) const
             return false;
 
     return false;
-}
-
 }

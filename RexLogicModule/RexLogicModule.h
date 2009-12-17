@@ -67,9 +67,9 @@ namespace RexLogic
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         MODULE_LOGGING_FUNCTIONS;
 
@@ -121,29 +121,29 @@ namespace RexLogic
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
-        __inline Scene::EntityPtr GetPrimEntity(Core::entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimPrim"); }
+        __inline Scene::EntityPtr GetPrimEntity(entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimPrim"); }
         Scene::EntityPtr GetPrimEntity(const RexUUID &fullid);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component,
         //!         and EC_OpenSimPresence component.
-        __inline Scene::EntityPtr GetAvatarEntity(Core::entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimAvatar"); }
+        __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimAvatar"); }
         Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
 
         //! Register uuid - localid pair
-        void RegisterFullId(const RexTypes::RexUUID &fullid, Core::entity_id_t entityid);
+        void RegisterFullId(const RexUUID &fullid, entity_id_t entityid);
 
         //! Unregister uuid
-        void UnregisterFullId(const RexTypes::RexUUID &fullid);
+        void UnregisterFullId(const RexUUID &fullid);
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
-        bool HandleResourceEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handle an inventory event.
-        bool HandleInventoryEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handle an asset event.
-        bool HandleAssetEvent(Core::event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Handle real-time update of scene objects
         /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
@@ -152,19 +152,19 @@ namespace RexLogic
 
             Performs animation update to all objects that have an OgreAnimationController component.
          */
-        void UpdateObjects(Core::f64 frametime);
+        void UpdateObjects(f64 frametime);
 
         //! login through console
-        Console::CommandResult ConsoleLogin(const Core::StringVector &params);
+        Console::CommandResult ConsoleLogin(const StringVector &params);
 
         //! logout through console
-        Console::CommandResult ConsoleLogout(const Core::StringVector &params);
+        Console::CommandResult ConsoleLogout(const StringVector &params);
 
         //! login from py - temp while loginui misses dllexport
         void StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort);
 
         //! toggle fly mode through console
-        Console::CommandResult ConsoleToggleFlyMode(const Core::StringVector &params);
+        Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
 
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
@@ -175,21 +175,21 @@ namespace RexLogic
         void UpdateSoundListener();
 
         //! XXX have linking probs to AvatarController so trying this wrapper
-        void SetAvatarYaw(Core::Real newyaw);
-        void SetAvatarRotation(Core::Quaternion newrot);
-        void SetCameraYawPitch(Core::Real newyaw, Core::Real newpitch);
+        void SetAvatarYaw(Real newyaw);
+        void SetAvatarRotation(Quaternion newrot);
+        void SetCameraYawPitch(Real newyaw, Real newpitch);
 
-        Core::entity_id_t GetUserAvatarId();
+        entity_id_t GetUserAvatarId();
 
-        Core::Vector3df GetCameraUp();
-        Core::Vector3df GetCameraRight();
-        Core::Vector3df GetCameraPosition();
-        Core::Real GetCameraViewportWidth();
-        Core::Real GetCameraViewportHeight();
+        Vector3df GetCameraUp();
+        Vector3df GetCameraRight();
+        Vector3df GetCameraPosition();
+        Real GetCameraViewportWidth();
+        Real GetCameraViewportHeight();
 
-        Core::Real GetCameraFOV();
+        Real GetCameraFOV();
 
-        void SendRexPrimData(Core::entity_id_t entityid);
+        void SendRexPrimData(entity_id_t entityid);
 
     private:
         /// Return renderer pointer. Convenience function for making code cleaner.
@@ -214,14 +214,14 @@ namespace RexLogic
         WorldStreamConnectionPtr world_stream_;
 
         //! Movement damping constant
-        Core::Real movement_damping_constant_;
+        Real movement_damping_constant_;
 
         //! How long to keep doing dead reckoning
-        Core::f64 dead_reckoning_time_;
+        f64 dead_reckoning_time_;
 
-        typedef boost::function<bool(Core::event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
+        typedef boost::function<bool(event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
         typedef std::vector<LogicEventHandlerFunction> EventHandlerVector;
-        typedef std::map<Core::event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
+        typedef std::map<event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
 
         //! Event handler map.
         LogicEventHandlerMap event_handlers_;
@@ -250,10 +250,10 @@ namespace RexLogic
         bool login_failed_showed_;
 
         //! Get a component with certain entitycomponent in it
-        Scene::EntityPtr GetEntityWithComponent(Core::entity_id_t entityid, const std::string &requiredcomponent);
+        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent);
 
         //! Mapping for full uuids - localids
-        typedef std::map<RexUUID, Core::entity_id_t> IDMap;
+        typedef std::map<RexUUID, entity_id_t> IDMap;
         IDMap UUIDs_;
 
         //! The connection state which is shown in the login window.

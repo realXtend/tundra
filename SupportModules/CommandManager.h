@@ -49,40 +49,40 @@ namespace Console
             \param name Name of the command to execute
             \param params Parameters to pass to the command
         */
-        __inline virtual Console::CommandResult ExecuteCommand(const std::string &name, const Core::StringVector &params)
+        __inline virtual Console::CommandResult ExecuteCommand(const std::string &name, const StringVector &params)
         {
             return ExecuteCommandAlways(name, params, false);
         }
 
         //! Print out available commands to console
-        Console::CommandResult ConsoleHelp(const Core::StringVector &params);
+        Console::CommandResult ConsoleHelp(const StringVector &params);
 
         //! Exit application
-        Console::CommandResult ConsoleExit(const Core::StringVector &params);
+        Console::CommandResult ConsoleExit(const StringVector &params);
 
         //! Test command
-        Console::CommandResult ConsoleTest(const Core::StringVector &params);
+        Console::CommandResult ConsoleTest(const StringVector &params);
 
         //! Look command
-        Console::CommandResult ConsoleLook(const Core::StringVector &params) { return Console::ResultSuccess("It's dark."); }
+        Console::CommandResult ConsoleLook(const StringVector &params) { return Console::ResultSuccess("It's dark."); }
     private:
-        Console::CommandResult ExecuteCommandAlways(const std::string &name, const Core::StringVector &params, bool always);
+        Console::CommandResult ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always);
 
         typedef std::map<std::string, Console::Command> CommandMap;
         typedef std::queue<std::string> StringQueue;
-        typedef std::map< std::string, Core::StringVector> CommandParamMap;
+        typedef std::map< std::string, StringVector> CommandParamMap;
 
         //! Available commands
         CommandMap commands_;
 
         //! mutex for handling registered commands
-        Core::RecursiveMutex commands_mutex_;
+        RecursiveMutex commands_mutex_;
 
         //! Queue of command lines
         StringQueue commandlines_;
 
         //! mutex for handling command line queue
-        Core::Mutex commandlines_mutex_;
+        Mutex commandlines_mutex_;
 
         //! map of commands that have delayed execution
         CommandParamMap delayed_commands_;

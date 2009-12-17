@@ -41,7 +41,7 @@ namespace Asset
             \param tag Asset request tag, allocated by AssetService
             \return true if asset ID was valid and download could be queued, false if not 
          */
-        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, Core::request_tag_t tag);
+        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         
         //! Returns whether a certain asset is already being downloaded
         virtual bool InProgress(const std::string& asset_id);
@@ -53,7 +53,7 @@ namespace Asset
             \param received_continuous Variable to receive amount of continuous bytes received from the start
             \return true If transfer in progress, and variables have been filled, false if transfer not found
          */
-        virtual bool QueryAssetStatus(const std::string& asset_id, Core::uint& size, Core::uint& received, Core::uint& received_continuous);       
+        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);       
         
         //! Gets incomplete asset
         /*! If transfer not in progress or not enough bytes received, will return empty pointer
@@ -63,12 +63,12 @@ namespace Asset
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, Core::uint received);   
+        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
         
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
          */
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
         
     private:
         //! Asset request. Used internally by XMLRPCAssetProvider
@@ -79,9 +79,9 @@ namespace Asset
             //! Asset type
             std::string asset_type_;
             //! Associated request tags
-            Core::RequestTagVector tags_;
+            RequestTagVector tags_;
             //! Http request tag
-            Core::request_tag_t http_request_tag_;
+            request_tag_t http_request_tag_;
         };
         
         //! Process a http result
@@ -94,13 +94,13 @@ namespace Asset
         void SendCanceled(const AssetRequest& request, const std::string& error_message);
         
         //! Current asset transfer timeout
-        Core::f64 asset_timeout_;
+        f64 asset_timeout_;
         
         //! Default asset transfer timeout 
-        static const Core::Real DEFAULT_ASSET_TIMEOUT;
+        static const Real DEFAULT_ASSET_TIMEOUT;
         
         //! Asset event category
-        Core::event_category_id_t event_category_;
+        event_category_id_t event_category_;
         
         //! Framework
         Foundation::Framework* framework_;

@@ -102,7 +102,7 @@ namespace Foundation
         return ThreadTaskPtr();
     }
     
-    Core::request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
+    request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
     {
         if (request)
         {
@@ -111,7 +111,7 @@ namespace Foundation
             {
                 if ((*i)->GetTaskDescription() == task_description)
                 {
-                    Core::request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+                    request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
                     request->tag_ = tag;
                     (*i)->AddRequest(request);
                     return tag;
@@ -131,7 +131,7 @@ namespace Foundation
     
     void ThreadTaskManager::QueueResult(ThreadTaskResultPtr result)
     {
-        Core::MutexLock lock(result_mutex_);
+        MutexLock lock(result_mutex_);
         results_.push_back(result);
     }
 
@@ -139,7 +139,7 @@ namespace Foundation
     {
         std::vector<ThreadTaskResultPtr> results = GetResults();
         EventManagerPtr event_manager = framework_->GetEventManager();
-        Core::event_category_id_t threadtask_category = event_manager->QueryEventCategory("Task");
+        event_category_id_t threadtask_category = event_manager->QueryEventCategory("Task");
         
         std::vector<ThreadTaskResultPtr>::iterator i = results.begin();
         while (i != results.end())
@@ -169,7 +169,7 @@ namespace Foundation
         
         // Add queued results
         {
-            Core::MutexLock lock(result_mutex_);
+            MutexLock lock(result_mutex_);
 
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
             while (i != results_.end())
@@ -204,7 +204,7 @@ namespace Foundation
         
         // Add queued results
         {
-            Core::MutexLock lock(result_mutex_);
+            MutexLock lock(result_mutex_);
 
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
             while (i != results_.end())
@@ -221,18 +221,18 @@ namespace Foundation
         return results;
     }
 
-    Core::uint ThreadTaskManager::GetNumResults()
+    uint ThreadTaskManager::GetNumResults()
     {
-        Core::MutexLock lock(result_mutex_);
+        MutexLock lock(result_mutex_);
         return results_.size();
     }
     
-    Core::uint ThreadTaskManager::GetNumResults(const std::string& task_description)
+    uint ThreadTaskManager::GetNumResults(const std::string& task_description)
     {
-        Core::uint num = 0;
+        uint num = 0;
         
         {
-            Core::MutexLock lock(result_mutex_);
+            MutexLock lock(result_mutex_);
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
             while (i != results_.end())
             {

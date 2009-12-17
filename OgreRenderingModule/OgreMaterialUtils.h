@@ -9,28 +9,28 @@
 namespace OgreRenderer
 {
     //! Standard legacy variation (lit)
-    const Core::uint LEGACYMAT_NORMAL = 0;
+    const uint LEGACYMAT_NORMAL = 0;
     
     //! Fullbright legacy variation (can be combined with others)
-    const Core::uint LEGACYMAT_FULLBRIGHT = 1;
+    const uint LEGACYMAT_FULLBRIGHT = 1;
     
     //! Additive blended legacy variation
-    const Core::uint LEGACYMAT_ADDITIVE = 2;
+    const uint LEGACYMAT_ADDITIVE = 2;
     
     //! Forced alpha legacy variation
-    const Core::uint LEGACYMAT_ALPHA = 4;
+    const uint LEGACYMAT_ALPHA = 4;
 
     //! Vertex color variation
-    const Core::uint LEGACYMAT_VERTEXCOL = 6;
+    const uint LEGACYMAT_VERTEXCOL = 6;
     
     //! Vertex color + forced alpha variation
-    const Core::uint LEGACYMAT_VERTEXCOLALPHA = 8;
+    const uint LEGACYMAT_VERTEXCOLALPHA = 8;
     
     //! Maximum legacy material variations
-    const Core::uint MAX_MATERIAL_VARIATIONS = 10;
+    const uint MAX_MATERIAL_VARIATIONS = 10;
 
     //! Gets material suffix by variation type
-    std::string OGRE_MODULE_API GetMaterialSuffix(Core::uint variation);
+    std::string OGRE_MODULE_API GetMaterialSuffix(uint variation);
     
     //! Returns if material suffix valid
     bool OGRE_MODULE_API IsMaterialSuffixValid(const std::string& suffix);
@@ -53,7 +53,7 @@ namespace OgreRenderer
     //! Sets texture unit on a material to a given texture name.
     /*! If texture cannot actually be found, uses the missing texture texture
      */ 
-    void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, Core::uint index = 0);
+    void OGRE_MODULE_API SetTextureUnitOnMaterial(Ogre::MaterialPtr material, const std::string& texture_name, uint index = 0);
     
     //! Replaces texture name in all passes, techniques, textureunits with another name
     /*! If replacement texture cannot actually be found, uses the missing texture texture
@@ -61,7 +61,7 @@ namespace OgreRenderer
     void OGRE_MODULE_API ReplaceTextureOnMaterial(Ogre::MaterialPtr material, const std::string& original_name, const std::string& texture_name);
     
     //! Returns texture names used by a material's all techniques, passes & textureunits. Does not return duplicates.
-    void OGRE_MODULE_API GetTextureNamesFromMaterial(Ogre::MaterialPtr material, Core::StringVector& textures);
+    void OGRE_MODULE_API GetTextureNamesFromMaterial(Ogre::MaterialPtr material, StringVector& textures);
     
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);

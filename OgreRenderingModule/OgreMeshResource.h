@@ -55,14 +55,14 @@ namespace OgreRenderer
         static const std::string& GetTypeStatic();
         
         //! returns original material names
-        const Core::StringVector& GetOriginalMaterialNames() const { return original_materials_; }
+        const StringVector& GetOriginalMaterialNames() const { return original_materials_; }
         
     private:
         //! Ogre mesh
         Ogre::MeshPtr ogre_mesh_;
         
         //! Original materials
-        Core::StringVector original_materials_;
+        StringVector original_materials_;
         
         //! destroys mesh if exists
         void RemoveMesh();

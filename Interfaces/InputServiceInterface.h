@@ -64,7 +64,7 @@ namespace Input
             Polling presents another way of handling input. This function returns true if conditions
             specific to the input event are true, false otherwise.
         */
-        virtual bool Poll(Core::event_id_t input_event) const = 0;
+        virtual bool Poll(event_id_t input_event) const = 0;
 
         //! Returns a slider movement corresponding to the specified event, but only if the slider is currently being dragged.
         /*! If more than one slider matching the event is being dragged, one is chosen arbitrarily.
@@ -78,7 +78,7 @@ namespace Input
             \param dragged_event event corresponding to a slider
             \return Absolute and relative position in 3 dimensions
         */
-        virtual boost::optional<const Input::Events::Movement&> PollSlider(Core::event_id_t dragged_event) const = 0;
+        virtual boost::optional<const Input::Events::Movement&> PollSlider(event_id_t dragged_event) const = 0;
 
         //! Sets the current input state. State determines which events are lauched by which h/w input events.
         /*!

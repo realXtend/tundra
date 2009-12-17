@@ -71,7 +71,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
 
 EC_OgreEnvironment::~EC_OgreEnvironment()
 {
-    SetBackgoundColor(Core::Color(0, 0, 0));
+    SetBackgoundColor(Color(0, 0, 0));
     DisableFog();
 
     if (sunlight_)
@@ -98,35 +98,35 @@ void EC_OgreEnvironment::SetPlaceable(Foundation::ComponentPtr placeable)
     AttachSunlight();
 }
 
-void EC_OgreEnvironment::SetBackgoundColor(const Core::Color &color)
+void EC_OgreEnvironment::SetBackgoundColor(const Color &color)
 {
     renderer_->GetCurrentCamera()->getViewport()->setBackgroundColour(ToOgreColor(color));
 }
 
-Core::Color EC_OgreEnvironment::GetBackgoundColor() const
+Color EC_OgreEnvironment::GetBackgoundColor() const
 {
     return ToCoreColor(renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour());
 }
 
-void EC_OgreEnvironment::SetAmbientLightColor(const Core::Color &color)
+void EC_OgreEnvironment::SetAmbientLightColor(const Color &color)
 {
     Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
     sceneManager->setAmbientLight(ToOgreColor(color));
 }
 
-Core::Color EC_OgreEnvironment::GetAmbientLightColor() const
+Color EC_OgreEnvironment::GetAmbientLightColor() const
 {
     Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
     return ToCoreColor(sceneManager->getAmbientLight());
 }
 
-void EC_OgreEnvironment::SetSunColor(const Core::Color &color)
+void EC_OgreEnvironment::SetSunColor(const Color &color)
 {
     if (sunlight_)
         sunlight_->setDiffuseColour(ToOgreColor(color));
 }
 
-void EC_OgreEnvironment::SetSunDirection(const Core::Vector3df &direction)
+void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 {
     if (sunlight_)
         sunlight_->setDirection(ToOgreVector3(direction));
@@ -157,7 +157,7 @@ void EC_OgreEnvironment::SetTime(const time_t &time)
     ///\todo Do something with the time when Caelum is not used?
 }
 
-void EC_OgreEnvironment::UpdateVisualEffects(Core::f64 frametime)
+void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 {
 #ifdef CAELUM
     // Set sunlight attenuation using diffuse multiplier.
@@ -289,7 +289,7 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
     sunlight_->setDirection(-1, -1, -1);
     sunlight_->setCastShadows(true);
-    SetAmbientLightColor(Core::Color(0.5, 0.5, 0.5, 1));
+    SetAmbientLightColor(Color(0.5, 0.5, 0.5, 1));
 }
 
 void EC_OgreEnvironment::AttachSunlight()
