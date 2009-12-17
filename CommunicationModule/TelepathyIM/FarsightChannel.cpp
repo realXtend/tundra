@@ -27,7 +27,10 @@ namespace TelepathyIM
                                      audio_capsfilter_(0),
                                      audio_convert_(0),
                                      locally_captured_video_widget_(0),
-                                     received_video_widget_(0)
+                                     received_video_widget_(0),
+                                     on_closed_g_signal_(0),
+                                     on_session_created_g_signal_(0),
+                                     on_stream_created_g_signal_(0)
     {
         CreateTfChannel();
         CreatePipeline();
@@ -59,6 +62,13 @@ namespace TelepathyIM
         // TODO: CHECK Proper cleanup with unref
         if (tf_channel_)
         {
+            g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
+            g_signal_handler_disconnect(tf_channel_, on_session_created_g_signal_);
+            g_signal_handler_disconnect(tf_channel_, on_stream_created_g_signal_);
+            //g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
+            //g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
+            //g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
+
             //g_signal_handler_disconnect(tf_channel_, handler_id);
 //            g_object_unref(tf_channel_);
             tf_channel_ = 0;
@@ -112,10 +122,9 @@ namespace TelepathyIM
         }
 
         /* Set up the telepathy farsight channel */
-        g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
-        
-        g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
-        g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
+        on_closed_g_signal_ = g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
+        on_session_created_g_signal_ = g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
+        on_stream_created_g_signal_ = g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
     }
 
     void FarsightChannel::CreatePipeline()
@@ -243,10 +252,16 @@ namespace TelepathyIM
         FarsightChannel* self = (FarsightChannel*)user_data;
         
         int offset;
-        //if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
-        //    offset = 0;
-        //else
-        //    offset = (~GST_BUFFER_OFFSET(buffer))+1; // Two's complement
+        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
+            offset = 0;
+        else
+        {
+            offset = (~GST_BUFFER_OFFSET(buffer))+1; // Two's complement
+            QString log_message("audio buffer offset = ");
+            log_message.append(QString::number(offset));
+            LogDebug(log_message.toStdString());
+        }
+
 
         //int offset_end;
         //if(!GST_BUFFER_OFFSET_END_IS_VALID(buffer))

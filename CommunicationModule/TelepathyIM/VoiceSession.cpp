@@ -649,6 +649,7 @@ namespace TelepathyIM
                 return;     
 
             /*Core::u8 *data = (unsigned char *)stream_buffer_->data();*/
+            UpdateAudioSourcePosition(); // TEST SPATIAL VOICE
             soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, 0);
             //stream_buffer_->clear();
             //ms_buffer_size_ = 0;
@@ -744,6 +745,22 @@ namespace TelepathyIM
         else
             if (send)
                 CreateVideoStream();
+    }
+
+    void VoiceSession::UpdateAudioSourcePosition(Core::Vector3df position )
+    {
+        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
+        if (!framework)
+            return;
+        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        if (!service_manager.get())
+            return;
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            return;     
+        // TODO: IMPELEMNT
+
+        soundsystem->SetSoundStreamPosition(position);
     }
 
 } // end of namespace: TelepathyIM

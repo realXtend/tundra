@@ -78,19 +78,12 @@ namespace TelepathyIM
         void CreateVideoOutputElements();
 
         // G_CALLBACK's need static methods
-        static gboolean busWatch(GstBus *bus,
-                GstMessage *message, FarsightChannel *self);
-        static void onClosed(TfChannel *tfChannel,
-                FarsightChannel *self);
-        static void onSessionCreated(TfChannel *tfChannel,
-                FsConference *conference, FsParticipant *participant,
-                FarsightChannel *self);
-        static void onStreamCreated(TfChannel *tfChannel,
-                TfStream *stream, FarsightChannel *self);
-        static void onSrcPadAdded(TfStream *stream,
-                GstPad *src, FsCodec *codec, FarsightChannel *self);
-        static gboolean onRequestResource(TfStream *stream,
-                guint direction, gpointer data);
+        static gboolean busWatch(GstBus *bus, GstMessage *message, FarsightChannel *self);
+        static void onClosed(TfChannel *tfChannel, FarsightChannel *self);
+        static void onSessionCreated(TfChannel *tfChannel,  FsConference *conference, FsParticipant *participant, FarsightChannel *self);
+        static void onStreamCreated(TfChannel *tfChannel, TfStream *stream, FarsightChannel *self);
+        static void onSrcPadAdded(TfStream *stream, GstPad *src, FsCodec *codec, FarsightChannel *self);
+        static gboolean onRequestResource(TfStream *stream, guint direction, gpointer data);
 
         static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
@@ -126,6 +119,10 @@ namespace TelepathyIM
 
         GstElement *locally_captured_video_playback_element_;
         GstElement *received_video_playback_element_;
+
+        gulong on_closed_g_signal_;
+        gulong on_session_created_g_signal_;
+        gulong on_stream_created_g_signal_;
     };
 
 } // end of namespace: TelepathyIM

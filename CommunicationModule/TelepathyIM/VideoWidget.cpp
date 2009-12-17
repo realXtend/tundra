@@ -37,22 +37,26 @@ namespace TelepathyIM
 
         //////////// NEW CODE START ////////////
 
-        //// Video bin init
-        //const QString video_bin_name = "video_bin_for_" + name;
-        //GstElement *video_bin = gst_bin_new(video_bin_name.toStdString().c_str());
-        //// Add playback element to video bin
-        //gst_bin_add(GST_BIN(video_bin), video_playback_element_);
-        //// Link to bin 
-        //gst_element_link(video_bin, video_playback_element_); // <-- MATTIKU CHECK PLEASE
-
-        //// Pad inits
-        //GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink"); // <-- MATTIKU CHECK PLEASE
-        //GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad); // <-- MATTIKU CHECK PLEASE
-        //// Add bad to video bin
-        //gst_element_add_pad(video_bin, sink_ghost_pad); // <-- MATTIKU CHECK PLEASE
-
-        //fs_element_added_notifier_add(notifier_, GST_BIN(video_bin)); // <-- THIS WORKS NOW BECAUSE VIDEO IS INSIDE A BIN ELEMENT
-        
+        // Video bin init
+//        const QString video_bin_name = "video_bin_for_" + name;
+//        GstElement *video_bin = gst_bin_new(video_bin_name.toStdString().c_str());
+//        // Add playback element to video bin
+//        gst_bin_add(GST_BIN(video_bin), video_playback_element_);
+//        // Link to bin 
+////        gst_element_link(video_bin, video_playback_element_); // <-- MATTIKU CHECK PLEASE
+//
+//        // Pad inits
+//        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink"); // <-- MATTIKU CHECK PLEASE
+//        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad); // <-- MATTIKU CHECK PLEASE
+//        // Add bad to video bin
+//        gst_element_add_pad(video_bin, sink_ghost_pad); // <-- MATTIKU CHECK PLEASE
+//        gst_object_unref(G_OBJECT(static_sink_pad));
+//        gst_object_ref(video_bin);
+//        gst_object_sink(video_bin);
+//
+//
+//        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin)); // <-- THIS WORKS NOW BECAUSE VIDEO IS INSIDE A BIN ELEMENT
+//        
         ///////////// NEW CODE END ////////////
 
         fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));

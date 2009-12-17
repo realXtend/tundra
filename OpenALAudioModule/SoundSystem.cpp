@@ -309,6 +309,13 @@ namespace OpenALAudio
             
         i->second->SetRange(inner_radius, outer_radius, rolloff);
     }    
+
+    void SoundSystem::SetSoundStreamPosition(Core::Vector3df position)
+    {
+        if (!sound_stream_)
+            return;
+        sound_stream_->SetPosition(position);
+    }
  
     Core::sound_id_t SoundSystem::GetNextSoundChannelID()
     {
