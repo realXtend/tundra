@@ -157,6 +157,36 @@ bool Environment::GetFogColorOverride()
     return false;
 }
 
+QVector<float> Environment::GetFogGroundColor()
+{
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+    {
+        Ogre::ColourValue color = activeEnvComponent_->GetGroundFogColor();     
+        QVector<float> vec; 
+        vec<<color[0]<<color[1]<<color[2];
+        return vec;
+    }
+
+    return QVector<float>();
+}
+
+QVector<float> Environment::GetFogWaterColor()
+{
+    FindActiveEnvironment();
+    if ( activeEnvComponent_ != 0)
+    {
+        Ogre::ColourValue color = activeEnvComponent_->GetWaterFogColor();     
+        QVector<float> vec; 
+        vec<<color[0]<<color[1]<<color[2];
+        return vec;
+    }
+
+    return QVector<float>();
+
+   
+}
+
 void Environment::Update(Core::f64 frametime)
 {
     FindActiveEnvironment();
@@ -174,5 +204,84 @@ bool Environment::IsCaelum()
     return false;
 
 }
+
+void Environment::SetGroundFogColor(const QVector<float>& color)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+        activeEnvComponent_->SetGroundFogColor(fogColour); 
+    }
+    
+}
+        
+void Environment::SetWaterFogColor(const QVector<float>& color)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+        activeEnvComponent_->SetWaterFogColor(fogColour); 
+    }
+}
+
+void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        activeEnvComponent_->SetGroundFogStart(fogStart);
+        activeEnvComponent_->SetGroundFogEnd(fogStart);
+    }
+}
+
+void Environment::SetWaterFogDistance(float fogStart, float fogEnd)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        activeEnvComponent_->SetWaterFogStart(fogStart);
+        activeEnvComponent_->SetWaterFogEnd(fogStart);
+    }
+
+}
+
+float Environment::GetWaterFogStartDistance()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->GetWaterFogStart();
+    
+     return 0.0;
+}
+
+float Environment::GetWaterFogEndDistance()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->GetWaterFogEnd();
+    
+     return 0.0;
+}
+
+float Environment::GetGroundFogStartDistance()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->GetGroundFogStart();
+    
+    return 0.0;
+}
+
+float Environment::GetGroundFogEndDistance()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->GetGroundFogEnd();
+    
+     return 0.0;
+}
+
 
 }

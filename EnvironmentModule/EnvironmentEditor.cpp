@@ -6,6 +6,7 @@
 #include "EnvironmentEditor.h"
 #include "TerrainLabel.h"
 #include "Water.h"
+#include "Environment.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
@@ -41,6 +42,7 @@ namespace Environment
         terrain_texture_requests_.resize(cNumberOfTerrainTextures);
         terrain_ = environment_module_->GetTerrainHandler();
         water_ = environment_module_->GetWaterHandler();
+        environment_ = environment_module->GetEnvironmentHandler();
 
         InitEditorWindow();
 
@@ -259,6 +261,113 @@ namespace Environment
             QObject::connect(water_toggle_box, SIGNAL(stateChanged(int)), this, SLOT(UpdateWaterGeometry(int)));
             
         }
+
+        
+        // Defines that is override fog color value used. 
+        QCheckBox* fog_override_box = editor_widget_->findChild<QCheckBox* >("fog_override_checkBox");
+        
+        // Ground fog
+        QDoubleSpinBox* fog_ground_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_red_dSpinBox");
+        QDoubleSpinBox* fog_ground_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_blue_dSpinBox");
+        QDoubleSpinBox* fog_ground_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_green_dSpinBox");
+        QPushButton* fog_ground_color_button = editor_widget_->findChild<QPushButton *>("fog_ground_color_apply_button");
+        QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinBox");
+        QDoubleSpinBox* fog_ground_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_end_distance_dSpinBox");
+        QPushButton* fog_ground_distance_button = editor_widget_->findChild<QPushButton *>("fog_ground_distance_apply_button");
+
+        // Water fog
+        QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
+        QDoubleSpinBox* fog_water_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_blue_dSpinBox");
+        QDoubleSpinBox* fog_water_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_green_dSpinBox");
+        QPushButton* fog_water_color_button = editor_widget_->findChild<QPushButton *>("fog_water_color_apply_button");
+        QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
+        QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");
+        QPushButton* fog_water_distance_button = editor_widget_->findChild<QPushButton *>("fog_water_distance_apply_button");
+
+        
+        if ( environment_ != 0)
+        {
+            if ( fog_override_box != 0 )
+            {
+                if ( environment_->GetFogColorOverride() )
+                    fog_override_box->setChecked(true);
+                else
+                    fog_override_box->setChecked(false);
+
+                QObject::connect(fog_override_box, SIGNAL(clicked()), this, SLOT(ToggleFogOverride()));
+            }     
+             
+            if ( fog_ground_red != 0 
+                && fog_ground_blue != 0
+                && fog_ground_green != 0
+                && fog_ground_color_button != 0
+                && fog_ground_start_distance != 0
+                && fog_ground_end_distance != 0
+                && fog_ground_distance_button != 0)
+            {
+                    // Fog ground color. 
+                    QVector<float> color = environment_->GetFogGroundColor();
+                    
+                    fog_ground_red->setMinimum(0.0);
+                    fog_ground_red->setValue(color[0]);   
+
+                    fog_ground_blue->setMinimum(0.0);
+                    fog_ground_blue->setValue(color[1]);
+
+                    fog_ground_green->setMinimum(0.0);
+                    fog_ground_green->setValue(color[2]);
+
+                    QObject::connect(environment_.get(), SIGNAL(GroundFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateGroundFog(float, float, const QVector<float>&)));
+                    QObject::connect(fog_ground_color_button, SIGNAL(clicked()), this, SLOT(SetGroundFog()));
+                
+                    fog_ground_start_distance->setMinimum(0.0);
+                    fog_ground_end_distance->setMinimum(0.0);
+
+                    QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
+
+                    fog_ground_start_distance->setValue(environment_->GetGroundFogStartDistance());
+                    fog_ground_end_distance->setValue(environment_->GetGroundFogEndDistance());
+             }
+
+           if ( fog_water_red != 0 
+                && fog_water_blue != 0
+                && fog_water_green != 0
+                && fog_water_color_button != 0
+                && fog_water_start_distance != 0
+                && fog_water_end_distance != 0
+                && fog_water_distance_button != 0)
+            {
+                    // Fog water color. 
+                    QVector<float> color = environment_->GetFogWaterColor();
+                    
+                    fog_water_red->setMinimum(0.0);
+                    fog_water_red->setValue(color[0]);   
+
+                    fog_water_blue->setMinimum(0.0);
+                    fog_water_blue->setValue(color[1]);
+
+                    fog_water_green->setMinimum(0.0);
+                    fog_water_green->setValue(color[2]);
+
+                    QObject::connect(environment_.get(), SIGNAL(WaterFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateWaterFog(float, float, const QVector<float>&)));
+                    QObject::connect(fog_water_color_button, SIGNAL(clicked()), this, SLOT(SetWaterFog()));
+        
+                    fog_water_start_distance->setMinimum(0.0);
+                    fog_water_end_distance->setMinimum(0.0);
+
+                    QObject::connect(fog_water_distance_button, SIGNAL(clicked()), this, SLOT(SetWaterFogDistance()));
+
+                    fog_water_start_distance->setValue(environment_->GetWaterFogStartDistance());
+                    fog_water_end_distance->setValue(environment_->GetWaterFogEndDistance());
+
+            }
+
+        }
+
+
+        
+
+
     }
 
     void EnvironmentEditor::UpdateWaterHeight()
@@ -720,4 +829,123 @@ namespace Environment
         }
         return 0;
     }
+
+    void EnvironmentEditor::UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
+    {
+        // Adjust editor widget.
+
+        // Ground fog
+        QDoubleSpinBox* fog_ground_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_red_dSpinBox");
+        QDoubleSpinBox* fog_ground_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_blue_dSpinBox");
+        QDoubleSpinBox* fog_ground_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_green_dSpinBox");
+
+        QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinbox");
+        QDoubleSpinBox* fog_ground_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_end_distance_dSpinbox");
+
+        if ( fog_ground_red != 0 
+            && fog_ground_blue != 0
+            && fog_ground_green != 0
+            && fog_ground_start_distance != 0
+            && fog_ground_end_distance != 0)
+        {
+            fog_ground_red->setValue(color[0]);   
+            fog_ground_blue->setValue(color[1]);
+            fog_ground_green->setValue(color[2]);
+
+            fog_ground_start_distance->setValue(fogStart);
+            fog_ground_end_distance->setValue(fogEnd);
+        }
+
+
+    }
+    
+    void EnvironmentEditor::UpdateWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
+    {
+        // Water fog
+        QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
+        QDoubleSpinBox* fog_water_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_blue_dSpinBox");
+        QDoubleSpinBox* fog_water_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_green_dSpinBox");
+
+        QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
+        QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");
+
+        if ( fog_water_red != 0 
+            && fog_water_blue != 0
+            && fog_water_green != 0
+            && fog_water_start_distance != 0
+            && fog_water_end_distance != 0)
+        {
+            fog_water_red->setValue(color[0]);   
+            fog_water_blue->setValue(color[1]);
+            fog_water_green->setValue(color[2]);
+
+            fog_water_start_distance->setValue(fogStart);
+            fog_water_end_distance->setValue(fogEnd);
+        }
+
+    }
+    
+    void EnvironmentEditor::SetGroundFog()
+    {
+        QDoubleSpinBox* fog_ground_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_red_dSpinBox");
+        QDoubleSpinBox* fog_ground_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_blue_dSpinBox");
+        QDoubleSpinBox* fog_ground_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_green_dSpinBox");
+
+        if ( fog_ground_red != 0
+             && fog_ground_blue != 0
+             && fog_ground_green != 0)
+        {
+            QVector<float> color;
+            color << fog_ground_red->value();
+            color << fog_ground_blue->value();
+            color << fog_ground_green->value();
+            environment_->SetGroundFogColor(color);
+        }
+
+    }
+    
+    void EnvironmentEditor::SetWaterFog()
+    {
+        QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
+        QDoubleSpinBox* fog_water_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_blue_dSpinBox");
+        QDoubleSpinBox* fog_water_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_green_dSpinBox");
+
+        if ( fog_water_red != 0
+             && fog_water_blue != 0
+             && fog_water_green != 0)
+        {
+            QVector<float> color;
+            color << fog_water_red->value();
+            color << fog_water_blue->value();
+            color << fog_water_green->value();
+            environment_->SetGroundFogColor(color);
+        }
+    }
+
+    void EnvironmentEditor::SetGroundFogDistance()
+    {
+        QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinBox");
+        QDoubleSpinBox* fog_ground_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_end_distance_dSpinBox");   
+
+        if ( fog_ground_start_distance != 0 && fog_ground_end_distance != 0)
+            environment_->SetGroundFogDistance(fog_ground_start_distance->value(), fog_ground_end_distance->value());
+
+    }
+
+    void EnvironmentEditor::SetWaterFogDistance()
+    {
+        QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
+        QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");   
+
+        if ( fog_water_start_distance != 0 && fog_water_end_distance != 0)
+            environment_->SetWaterFogDistance(fog_water_start_distance->value(), fog_water_end_distance->value());
+    }
+
+    void EnvironmentEditor::ToggleFogOverride()
+    {
+
+
+    }
+
+
 }

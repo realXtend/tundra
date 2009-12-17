@@ -714,7 +714,7 @@ QWidget#Form {
           <string>Fog water controls</string>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_ground_red_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_ground_red_dSpinBox">
          <property name="geometry">
           <rect>
            <x>30</x>
@@ -724,7 +724,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_ground_green_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_ground_green_dSpinBox">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -734,7 +734,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_ground_blue_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_ground_blue_dSpinBox">
          <property name="geometry">
           <rect>
            <x>150</x>
@@ -868,7 +868,7 @@ QWidget#Form {
           <string>Red</string>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_water_red_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_water_red_dSpinBox">
          <property name="geometry">
           <rect>
            <x>30</x>
@@ -878,7 +878,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_water_green_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_water_green_dSpinBox">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -888,7 +888,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QSpinBox" name="fog_water_blue_iSpinBox">
+        <widget class="QDoubleSpinBox" name="fog_water_blue_dSpinBox">
          <property name="geometry">
           <rect>
            <x>140</x>
@@ -957,7 +957,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QPushButton" name="fog_wataer_distance_apply_button">
+        <widget class="QPushButton" name="fog_water_distance_apply_button">
          <property name="geometry">
           <rect>
            <x>210</x>
