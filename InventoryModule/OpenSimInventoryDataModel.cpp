@@ -14,9 +14,9 @@
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
-#include "TextureResource.h"
 #include "AssetUploader.h"
 #include "TextureServiceInterface.h"
+#include "TextureInterface.h"
 #include "AssetServiceInterface.h"
 
 #include <QFile>
@@ -398,7 +398,9 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
     if (i == downloadRequests_.end())
         return;
 
-    TextureDecoder::TextureResource *tex = checked_static_cast<TextureDecoder::TextureResource *>(resourceReady->resource_.get());
+    Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(resourceReady->resource_.get());
+    if (!tex)
+        return;
     if (tex->GetLevel() != 0)
         return;
 
