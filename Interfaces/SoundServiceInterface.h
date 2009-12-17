@@ -51,6 +51,8 @@ namespace Foundation
             \sample_width sample widh of audio data in bits. Currently only 8 and 16 are supported values
             \stereo If true then audio data is stero otherwise it's mono
             \channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+
+            \TODO: Support multiple SoundStream with sound stream id
         */
         virtual Core::sound_id_t PlayAudioData(Core::u8* buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, Core::sound_id_t channel = 0) = 0;
 
@@ -114,6 +116,15 @@ namespace Foundation
             Also, for non-positional channels the range parameters have no effect.
          */
         virtual void SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff) = 0;
+
+        //! Sets position of channel
+        /*! 
+            \param position New position
+
+            \todo: Merge with exist SetPosition method
+         */   
+        virtual void SetSoundStreamPosition(Core::Vector3df position) = 0;
+
     };
 }
 

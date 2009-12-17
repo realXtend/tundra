@@ -61,15 +61,14 @@ namespace TelepathyIM
         //! Reject incoming session
         virtual void Reject();
 
+        //!
         virtual void SendAudioData(bool send);
+
+        //!
         virtual void SendVideoData(bool send);
 
-        //virtual void SetAudioOutEnabled(bool value);
-        //virtual void SetVideoOutEnabled(bool value);
-        //virtual bool GetAudioInEnabled() { return audio_in_enabled_; };
-        //virtual bool GetVideoInEnabled() { return video_in_enabled_; };
-        //virtual bool GetAudioOutEnabled() { return audio_out_enabled_; };
-        //virtual bool GetVideoOutEnabled() { return video_out_enabled_; };
+        //! Update playback position for received audio
+        virtual void UpdateAudioSourcePosition(Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f) );
 
 	protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
@@ -93,11 +92,6 @@ namespace TelepathyIM
         Tp::ContactPtr tp_contact_;
         QString reason_;      
         VoiceSessionParticipantVector participants_;
-
-        //bool audio_in_enabled_;
-        //bool video_in_enabled_;
-        //bool audio_out_enabled_;
-        //bool video_out_enabled_;
 
         Core::sound_id_t audio_playback_channel_;
 
@@ -124,14 +118,6 @@ namespace TelepathyIM
 
         // When incoming session is ready for accecpt/reject
 		void Ready(VoiceSession* session);
-
-        //void AudioInEnabledStateChanged(bool state);
-
-        //void VideoInEnabledStateChanged(bool state);
-
-        //void AudioOutEnabledStateChanged(bool state);
-
-        //void VideoOutEnabledStateChanged(bool state);
     };
 
     typedef std::vector<VoiceSession*> VoiceSessionVector;

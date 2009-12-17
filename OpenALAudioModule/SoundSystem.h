@@ -120,6 +120,8 @@ namespace OpenALAudio
          */
         virtual void SetRange(Core::sound_id_t id, Core::Real inner_radius, Core::Real outer_radius, Core::Real rolloff); 
 
+        virtual void SetSoundStreamPosition(Core::Vector3df position);
+
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(Core::f64 frametime);
         

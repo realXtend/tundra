@@ -309,7 +309,10 @@ namespace Communication
 
         //! Enable video data sending. If video stream is not created then this create it.
         virtual void SendVideoData(bool send) = 0;
-        
+
+        //! Update playback position for received audio
+        virtual void UpdateAudioSourcePosition(Core::Vector3df position = Core::Vector3df(0.0f, 0.0f, 0.0f) ) = 0;
+
 	signals:
         //!
 		void ParticipantJoined(const VoiceSessionParticipantInterface& participant);

@@ -22,6 +22,9 @@ namespace OpenALAudio
         void AddBuffer(Core::u8 *data, Core::uint size);
         void FillBuffer(Core::u8 *data, Core::uint size);
         bool IsPlaying();
+
+        void SetPosition(Core::Vector3df position);
+
         
 
     private:
