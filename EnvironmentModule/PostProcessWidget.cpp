@@ -21,6 +21,18 @@ namespace Environment
 		
 	}
 
+    void PostProcessWidget::DisableAllEffects()
+    {
+        for(int i=0; i<widget_.checkboxlayout->count(); i++)
+        {
+                NamedCheckBox* c_box = dynamic_cast<NamedCheckBox*> (widget_.checkboxlayout->itemAt(i)->widget());
+                if(c_box && c_box->isChecked())
+                {
+                    c_box->setChecked(false);
+                }
+        }
+    }
+
     void PostProcessWidget::AddSelfToScene(EnvironmentModule *env_module)
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
