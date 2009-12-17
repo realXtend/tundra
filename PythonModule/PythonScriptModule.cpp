@@ -60,9 +60,8 @@
 //had to move the createcanvas func here due to the staticframework ref prob
 #include <PythonQt.h>
 #include <QGroupBox> //just for testing addObject
-#include <QUiLoader> //for .ui loading in testing
+#include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
-#include <QMap>
 #include "QtModule.h"
 #include "UICanvas.h"
 #include "UiWidgetProperties.h"
@@ -78,8 +77,6 @@
 
 //now that binding uicanvases (from mediahandler webviews) to 3d objects is here
 #include "EC_UICanvas.h"
-
-#include "QEC_Prim.h"
 
 namespace PythonScript
 {
@@ -153,7 +150,7 @@ namespace PythonScript
             
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
             //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
+			//PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly
@@ -301,27 +298,27 @@ namespace PythonScript
                 
                 value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
             }
-            else if(event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
-            {
-                
-                boost::weak_ptr<Input::InputModuleOIS> inputWeak;
-                inputWeak = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
+			else if(event_id == Input::Events::INWORLD_CLICK || event_id == Input::Events::INWORLD_CLICK_REL)
+			{
+				
+				boost::weak_ptr<Input::InputModuleOIS> inputWeak;
+				inputWeak = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
 
-                boost::shared_ptr<Input::InputModuleOIS> input;
-                input = inputWeak.lock();
-              
-                if (!input.get())
-                    return false;
+				boost::shared_ptr<Input::InputModuleOIS> input;
+				input = inputWeak.lock();
+		      
+				if (!input.get())
+					return false;
 
-                Input::Events::Movement* mouse;
-                mouse = checked_static_cast<Input::Events::Movement*>(data);
+				Input::Events::Movement* mouse;
+				mouse = checked_static_cast<Input::Events::Movement*>(data);
 
-                int x_abs = mouse->x_.abs_;
+				int x_abs = mouse->x_.abs_;
                 int y_abs = mouse->y_.abs_;
                 int x_rel = mouse->x_.rel_;
                 int y_rel = mouse->y_.rel_;
 
-                if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
+				if (input->IsButtonDown(OIS::MB_Left) && !mouse_left_button_down_)
                 {
                     value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
                     mouse_left_button_down_ = true;
@@ -331,7 +328,7 @@ namespace PythonScript
                     value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::LEFT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
                     mouse_left_button_down_ = false;
                 }
-                /*//INWORLD_CLICK is only for left-clicks 
+				/*//INWORLD_CLICK is only for left-clicks 
                 else if (input->IsButtonDown(OIS::MB_Right) && !mouse_right_button_down_)
                 {
                     value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_PRESSED, x_abs, y_abs, x_rel, y_rel);
@@ -342,8 +339,8 @@ namespace PythonScript
                     value = PyObject_CallMethod(pmmInstance, "MOUSE_CLICK", "iiiii", Input::Events::RIGHT_MOUSECLICK_RELEASED, x_abs, y_abs, x_rel, y_rel);
                     mouse_right_button_down_ = false;
                 }
-                */
-            }
+				*/
+			}
 
             else//XXX change to if-else...
             {
@@ -364,19 +361,34 @@ namespace PythonScript
                 if (ent_id != 0)
                     value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
             }
-            //todo: add EVENT_ENTITY_DELETED so that e.g. editgui can keep on track in collaborative editing when objs it keeps refs disappear
+			//todo: add EVENT_ENTITY_DELETED so that e.g. editgui can keep on track in collaborative editing when objs it keeps refs disappear
 
-            else
+            //for mediaurl handler
+            else if (event_id == Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED) 
+            {
+                Scene::Events::EntityEventData *entity_data = dynamic_cast<Scene::Events::EntityEventData*>(data);
+                if (!entity_data)
+                    return false;
+                    
+                Scene::EntityPtr entity = entity_data->entity;
+                if (!entity)
+                    return false;
+
+                value = PyObject_CallMethod(pmmInstance, "ENTITY_VISUALS_MODIFIED", "I", entity->GetId());
+            }
+
+            //how to pass any event data?
+            /*else
             {
                 // Note: can't assume that all scene events will use this datatype!!!
                 Scene::Events::SceneEventData* edata = dynamic_cast<Scene::Events::SceneEventData *>(data);
                 if (edata)
                 {
-                    unsigned int ent_id = edata->localID;    
+                    unsigned int ent_id = edata->localID;	
                     if (ent_id != 0)
                         value = PyObject_CallMethod(pmmInstance, "SCENE_EVENT", "iI", event_id, ent_id);
                 }
-            }            
+            }*/            
         }
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
         {
@@ -389,28 +401,28 @@ namespace PythonScript
         {
             SubscribeToNetworkEvents();
         }
-                
+		        
         //was for first receive chat test, when no module provided it, so handles net event directly
         /* got a crash with this now during login, when the viewer was also getting asset data etc.
            disabling the direct reading of network data here now to be on the safe side,
            this has always behaved correctly till now though (since march). --antont june 12th */
 
-        else if (category_id == inboundCategoryID_)
+		else if (category_id == inboundCategoryID_)
         {
-            ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            ProtocolUtilities::NetMsgID msgID = event_data->messageID;
-            ProtocolUtilities::NetInMessage *msg = event_data->message;
-            const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
-            //std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
+			ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+			ProtocolUtilities::NetMsgID msgID = event_data->messageID;
+			ProtocolUtilities::NetInMessage *msg = event_data->message;
+			const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
+			//std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
 
-            //Vector3df data = event_data->message->GetData();
+			//Vector3df data = event_data->message->GetData();
             //assert(info);
-            const std::string str = info->name;
-            unsigned int id = info->id;
+			const std::string str = info->name;
+			unsigned int id = info->id;
 
             //testing if the unsigned int actually is the same NetMsgID, in this case RexNetMsgAgentAlertMessage == 0xffff0087
-            //if (id == 0xff09) //RexNetMsgObjectProperties == 0xff09
-            //    LogInfo("golly... it worked");
+			//if (id == 0xff09) //RexNetMsgObjectProperties == 0xff09
+			//	LogInfo("golly... it worked");
 
             if (id == RexNetMsgGenericMessage)
             {
@@ -438,9 +450,9 @@ namespace PythonScript
             }
             /*else
             {
-                value = PyObject_CallMethod(pmmInstance, "INBOUND_NETWORK", "Is", id, str.c_str());//, msgID, msg);
+    			value = PyObject_CallMethod(pmmInstance, "INBOUND_NETWORK", "Is", id, str.c_str());//, msgID, msg);
             }*/
-            
+			
             /*
             std::stringstream ss;
             ss << info->name << " received, " << ToString(msg->GetDataSize()) << " bytes.";
@@ -482,7 +494,7 @@ namespace PythonScript
                 return false;
             }
         }
-        return false;
+		return false;
     }
 
     Console::CommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
@@ -610,10 +622,10 @@ namespace PythonScript
                 int x_rel = movement->x_.rel_;
                 int y_rel = movement->y_.rel_;
 
-                //was only sending the mouse_movement event if one of the buttons is pressed, XXX change?
-                //if (mouse_left_button_down_ || mouse_right_button_down_)
+			    //was only sending the mouse_movement event if one of the buttons is pressed, XXX change?
+			    //if (mouse_left_button_down_ || mouse_right_button_down_)
                 PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);                
-            }
+			}
         }
 
     }
@@ -697,13 +709,13 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
     boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-    //Scene::Entity *entity = render->Raycast(x, y).entity_;
-    Foundation::RaycastResult result = render->Raycast(x, y);
-    if (result.entity_)
-        return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
-    else
-        Py_RETURN_NONE;
-    /*
+	//Scene::Entity *entity = render->Raycast(x, y).entity_;
+	Foundation::RaycastResult result = render->Raycast(x, y);
+	if (result.entity_)
+		return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+	else
+		Py_RETURN_NONE;
+	/*
     if (result)
     {
         //Scene::Events::SceneEventData event_data(entity->GetId());
@@ -712,7 +724,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     }
     else 
         Py_RETURN_NONE;
-    */
+	*/
 }
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
@@ -828,10 +840,10 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    RexUUID ruuid = RexUUID();
-    ruuid.FromString(std::string(uuidstr));
+	RexUUID ruuid = RexUUID();
+	ruuid.FromString(std::string(uuidstr));
 
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
@@ -858,7 +870,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 //PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
 PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
-    PyObject* pyuicanvas;
+	PyObject* pyuicanvas;
     char* uuidstr;
 
     if(!PyArg_ParseTuple(args, "Os", &pyuicanvas, &uuidstr))
@@ -867,20 +879,37 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
         return NULL;
     }
 
-    if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
-    {
-        return NULL;
-    }
+	if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
 
-    PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
+	PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
 
-    QObject* qobject_ptr = wrapped_uicanvas->_obj;
+	QObject* qobject_ptr = wrapped_uicanvas->_obj;
     QtUI::UICanvas* canvas_ptr = (QtUI::UICanvas*) qobject_ptr; //XXX can this be checked, in case some other qobject was given in error?
-    boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
+    
+	RexUUID textureuuid = RexUUID();
+	textureuuid.FromString(std::string(uuidstr));
 
+    // Get QtModule
+    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
+    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
 
-    RexUUID textureuuid = RexUUID();
-    textureuuid.FromString(std::string(uuidstr));
+    //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
+    //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
+    boost::shared_ptr<QtUI::UICanvas> canvas;
+    const QList<boost::shared_ptr<QtUI::UICanvas>> canvases = qt_ui->GetCanvases();
+    QList<boost::shared_ptr<QtUI::UICanvas>>::const_iterator i;
+    for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
+    {
+        boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
+        if (thiscanv.get() == canvas_ptr)
+        {
+            canvas = thiscanv;
+            break;
+        }
+    }
 
     //_ApplyUICanvasToSubmeshesWithTexture(uicanvas_ptr, textureuuid);
 
@@ -895,10 +924,6 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     RexLogic::RexLogicModule *rexlogicmodule_;
     rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-    // Get QtModule
-    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
-    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-
     Scene::ScenePtr scene = PythonScript::GetScene();        
     if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
@@ -906,7 +931,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 
     //which -- if any -- submeshes / mat indices should get the 3duicanvas applied.
-    std::vector<uint> submeshes_; 
+    std::vector<uint> submeshes_;
 
     for(Scene::SceneManager::iterator iter = scene->begin();
         iter != scene->end(); ++iter)
@@ -916,11 +941,11 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
         Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
         if (!primentity) continue;
-
-        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());            
+        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+        
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
         {
-            Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
             if (!mesh) continue;
             OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
             // If don't have the actual mesh entity yet, no use trying to set texture
@@ -961,6 +986,156 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
+{
+    // Read params from py: entid as uint, textureuuid as string
+    unsigned int ent_id_int;
+    char* uuidstr;
+    entity_id_t ent_id;
+
+    if(!PyArg_ParseTuple(args, "Is", &ent_id_int, &uuidstr))
+        return NULL;   
+
+    ent_id = (entity_id_t) ent_id_int;
+    
+	RexUUID textureuuid = RexUUID();
+	textureuuid.FromString(std::string(uuidstr));
+
+    // Get RexLogic module
+    RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
+    if (!primentity) Py_RETURN_NONE;
+    RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+    
+    if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+    {
+        Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        if (!mesh) Py_RETURN_NONE;
+        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+        // If don't have the actual mesh entity yet, no use trying to set texture
+        if (!meshptr->GetEntity()) Py_RETURN_NONE;
+        
+        RexLogic::MaterialMap::const_iterator i = prim.Materials.begin();
+        
+        //which -- if any -- submeshes / mat indices use the given textureuuid in this mesh
+        std::vector<uint> submeshes_;
+
+        while (i != prim.Materials.end())
+        {
+            uint idx = i->first;
+            if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(textureuuid.ToString()) == 0))
+            {
+                // Use a legacy material with the same name as the texture, created automatically by renderer
+                //meshptr->SetMaterial(idx, res->GetId());
+
+                submeshes_.push_back(idx);
+
+                std::stringstream ss;
+                ss << "Subface in the entity with given texture id found: ";
+                ss << idx;
+                ss << " / ";
+                ss << textureuuid.ToString();
+                PythonScript::self()->LogInfo(ss.str());
+            }
+            ++i;
+        }
+
+        if (submeshes_.size() > 0)
+        {
+            PyObject* py_submeshes = PyList_New(submeshes_.size());
+            
+            for (int i = 0; i < submeshes_.size(); i++) //std::vector<uint>::iterator iter = submeshes_.begin(); iter != submeshes_.end(); ++iter)
+            {
+                uint submesh = submeshes_[i]; //*iter;
+                PyList_SET_ITEM(py_submeshes, i, Py_BuildValue("I", submesh));
+            }
+
+            return py_submeshes;            
+        }
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
+{
+    unsigned int ent_id_int;
+    PyObject* py_submeshes;
+	PyObject* pyuicanvas;
+    entity_id_t ent_id;
+
+    // Read params from py: entid as uint, a canvas qobject wrapped by pythonqt
+    if(!PyArg_ParseTuple(args, "IOO", &ent_id_int, &py_submeshes, &pyuicanvas))
+    {
+        //PyErr_SetString(PyExc_ValueError, "Setting uicanvas to textures failed,.");
+        return NULL;
+    }
+
+    ent_id = (entity_id_t) ent_id_int;
+    RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
+    if (!primentity) Py_RETURN_NONE; //XXX exception would be better?
+
+    if (!PyList_Check(py_submeshes))
+        return NULL;
+
+	if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
+		return NULL;
+
+	PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
+
+	QObject* qobject_ptr = wrapped_uicanvas->_obj;
+    QtUI::UICanvas* canvas_ptr = (QtUI::UICanvas*) qobject_ptr; //XXX can this be checked, in case some other qobject was given in error?
+    
+    // Get QtModule
+    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
+    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
+
+    //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
+    //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
+    boost::shared_ptr<QtUI::UICanvas> canvas;
+    const QList<boost::shared_ptr<QtUI::UICanvas>> canvases = qt_ui->GetCanvases();
+    QList<boost::shared_ptr<QtUI::UICanvas>>::const_iterator i;
+    for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
+    {
+        boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
+        if (thiscanv.get() == canvas_ptr)
+        {
+            canvas = thiscanv;
+            break;
+        }
+    }
+
+    //bleh, should really make this a qt slot somewhere and use a QList
+    std::vector<uint> submeshes_;
+    PyObject* py_iter;
+    PyObject* item;
+    py_iter = PyObject_GetIter(py_submeshes);
+    while(item=PyIter_Next(py_iter))
+    {
+        PyObject* py_int;
+        py_int = PyNumber_Int(item);
+        if (!item)
+        {
+            Py_DECREF(py_iter);
+            Py_DECREF(item);
+            PyErr_SetString(PyExc_ValueError, "Submesh indexes for applying uicanvases must be integers.");
+            return NULL;
+        }
+        submeshes_.push_back((uint)PyInt_AsLong(py_int));
+        Py_DECREF(item);
+    }
+    Py_DECREF(py_iter);
+
+    QtUI::EC_UICanvas* ec = dynamic_cast<QtUI::EC_UICanvas*>(qt_ui->CreateEC_UICanvasToEntity(primentity.get(), canvas).get());
+    if (ec)
+        ec->SetSubmeshes(submeshes_);
+
+    Py_RETURN_NONE;
+}
 
 
 //returns the internal Entity that's now a QObject, 
@@ -1011,17 +1186,17 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
-    std::string meshname;
-    const char* c_text;
-    float prio = 0;
-    //PyObject_Print(value, stdout, 0);
-    if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
-    {
+	std::string meshname;
+	const char* c_text;
+	float prio = 0;
+	//PyObject_Print(value, stdout, 0);
+	if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
+	{
         PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
         return NULL;
-    }
+	}
 
-    meshname = std::string(c_text);
+	meshname = std::string(c_text);
 
     Scene::ScenePtr scene = PythonScript::GetScene();        
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
@@ -1029,7 +1204,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         return NULL;   
     }
 
-    entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
+	entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
 
     StringVector defaultcomponents;
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
@@ -1040,16 +1215,16 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
     Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+	Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
     if (placeable)
     {
 
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-        if (prio != 0)
-            ogrepos.SetSelectPriority(prio);
-        OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-        ogremesh.SetPlaceable(placeable, entity.get());
-        ogremesh.SetMesh(meshname, true);
+		if (prio != 0)
+			ogrepos.SetSelectPriority(prio);
+		OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+		ogremesh.SetPlaceable(placeable, entity.get());
+		ogremesh.SetMesh(meshname, true);
 
         return entity_create(ent_id); //return the py wrapper for the new entity
     }
@@ -1211,7 +1386,7 @@ PyObject* CreateCanvas(PyObject *self, PyObject *args)
 
     QtUI::UICanvas* qcanvas = canvas_.get();
     
-    PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
+	PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
 
     return can;
 }
@@ -1224,39 +1399,39 @@ PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
         PythonScript::self()->LogInfo("PythonScript's framework is not present!");
         return NULL;
     }
-    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
+	UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
     return PythonQt::self()->wrapQObject(prop);;
 }
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    
-    PyObject* pywidget;
-    PyObject* pyuiprops;
+	boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+	
+	PyObject* pywidget;
+	PyObject* pyuiprops;
 
     if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
     {
-        return NULL;
-    }
+		return NULL;
+	}
 
-    if (!PyObject_TypeCheck(pywidget, &PythonQtInstanceWrapper_Type))
-    {
-        return NULL;
-    }
+	if (!PyObject_TypeCheck(pywidget, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
 
-    if (!PyObject_TypeCheck(pyuiprops, &PythonQtInstanceWrapper_Type))
-    {
-        return NULL;
-    }
+	if (!PyObject_TypeCheck(pyuiprops, &PythonQtInstanceWrapper_Type))
+	{
+		return NULL;
+	}
 
-    PythonQtInstanceWrapper* wrapped_widget = (PythonQtInstanceWrapper*)pywidget;
-    PythonQtInstanceWrapper* wrapped_uiproperty = (PythonQtInstanceWrapper*)pyuiprops;
+	PythonQtInstanceWrapper* wrapped_widget = (PythonQtInstanceWrapper*)pywidget;
+	PythonQtInstanceWrapper* wrapped_uiproperty = (PythonQtInstanceWrapper*)pyuiprops;
 
-    QObject* widget_ptr = wrapped_widget->_obj;
-    QObject* uiproperty_ptr = wrapped_uiproperty->_obj;
+	QObject* widget_ptr = wrapped_widget->_obj;
+	QObject* uiproperty_ptr = wrapped_uiproperty->_obj;
 
-    QWidget* widget = (QWidget*)widget_ptr;
-    const UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
+	QWidget* widget = (QWidget*)widget_ptr;
+	const UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
     // If this occurs, we're most probably operating in headless mode.
     if (ui_module.get() == 0)
     {
@@ -1264,15 +1439,15 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         return NULL;
     }
 
-    UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
-    return PythonQt::self()->wrapQObject(uiproxywidget);
+	UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
+	return PythonQt::self()->wrapQObject(uiproxywidget);
 }
 
 PyObject* GetPropertyEditor(PyObject *self)
 {
-    QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-    PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    return PythonQt::self()->wrapQObject(pe); 
+	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
+	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
+	return PythonQt::self()->wrapQObject(pe); 
 }
 
 PyObject* GetQtModule(PyObject *self)
@@ -1296,38 +1471,38 @@ PyObject* GetUiSceneManager(PyObject *self)
 
 PyObject* GetServerConnection(PyObject *self)
 {
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
-        return PythonQt::self()->wrapQObject(rexlogic_->GetServerConnection().get());
-    PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
-    return NULL;
+		return PythonQt::self()->wrapQObject(rexlogic_->GetServerConnection().get());
+	PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
+	return NULL;
 }
 
 PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 {
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
-        float start_x, start_y, start_z;
-        float end_x, end_y, end_z;
+		float start_x, start_y, start_z;
+		float end_x, end_y, end_z;
 
-        if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
+		if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
+			PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
             return NULL;   
-        }
+		}
 
-        rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
-    }
-    Py_RETURN_NONE;
+		rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
+	}
+	Py_RETURN_NONE;
 }
 
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
     std::cout << "Sending rexprimdata" << std::endl;
     
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
     
     /*rexviewer_EntityObject* py_ent;
     if(!PyArg_ParseTuple(args, "O!", rexviewer_EntityType, &py_ent))
@@ -1350,14 +1525,14 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
     if (rexlogic_)
     {
         rexlogic_->SendRexPrimData(ent_id); //py_ent->ent_id);
-    }
+	}
 
-    Py_RETURN_NONE;
+	Py_RETURN_NONE;
 }
 
 PyObject* DeleteObject(PyObject *self, PyObject *args)
 {
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
 
     unsigned int ent_id_int;
     entity_id_t ent_id;
@@ -1374,24 +1549,24 @@ PyObject* DeleteObject(PyObject *self, PyObject *args)
     if (rexlogic_)
     {
         rexlogic_->GetServerConnection()->SendObjectDeletePacket(ent_id);
-    }
+	}
 
-    Py_RETURN_NONE;
+	Py_RETURN_NONE;
 }
 
 PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    ProtocolUtilities::InventoryFolderSkeleton *folder = rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
-    if (folder)
-        return Py_BuildValue("s", folder->id.ToString().c_str());
-    return NULL;
+	RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+	ProtocolUtilities::InventoryFolderSkeleton *folder = rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
+	if (folder)
+		return Py_BuildValue("s", folder->id.ToString().c_str());
+	return NULL;
 }
 
 PyObject* GetUserAvatarId(PyObject* self)
 {
-    RexLogic::RexLogicModule *rexlogic_;
+	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
     {
@@ -1399,7 +1574,7 @@ PyObject* GetUserAvatarId(PyObject* self)
         return Py_BuildValue("I", id);
     }
 
-    Py_RETURN_NONE;
+	Py_RETURN_NONE;
 }
 
 PyObject* GetCameraUp(PyObject *self) 
@@ -1442,7 +1617,7 @@ PyObject* GetCameraFOV(PyObject *self)
 
 PyObject* GetCameraPosition(PyObject *self) 
 {
-    Vector3df pos;
+	Vector3df pos;
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1460,19 +1635,19 @@ PyObject* GetScreenSize(PyObject *self)
     if (rexlogic_)
     {
         float width = rexlogic_->GetCameraViewportWidth();
-        float height = rexlogic_->GetCameraViewportHeight();
+		float height = rexlogic_->GetCameraViewportHeight();
         return Py_BuildValue("ff", width, height);
     }
     Py_RETURN_NONE;
 }
-        
+		
 //slider input
 /*    UpdateSliderEvents(input_state_);
     UpdateSliderEvents(Input::State_All);*/
 
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
-    //PythonScript::self()->LogInfo("NetworkUpdate");
+	//PythonScript::self()->LogDebug("NetworkUpdate");
     unsigned int ent_id_int;
     entity_id_t ent_id;
 
@@ -1495,7 +1670,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Scene::Events::SceneEventData event_data(ent_id);
     event_data.entity_ptr_list.push_back(entity);
     PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
-    
+	
     Py_RETURN_NONE;
 }
 
@@ -1567,11 +1742,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 */
 PyObject* RandomTest(PyObject* self, PyObject* args)
 {
-	/*
 	unsigned int starter;
-
-    unsigned int starter;
-
     ProtocolUtilities::NetMsgID id;
 
     if(!PyArg_ParseTuple(args, "I", &starter))
@@ -1582,29 +1753,9 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
 
     id = (ProtocolUtilities::NetMsgID) starter;
 
-    if (id == 0xffff0087)
-        PythonScript::self()->LogDebug("Test successfull!!");
+	if (id == 0xffff0087)
+		PythonScript::self()->LogDebug("Test successfull!!");
 
-    Py_RETURN_NONE;
-	*/
-	
-	//QMap<QString, int> *map = new QMap<QString, int>;
-	QEC_Prim* prim = new QEC_Prim();
-	
-	prim->map["one"] = 1;
-	prim->map["three"] = 3;
-	
-	prim->setName("This is a Name!");
-	RexUUID uuid = RexUUID::CreateRandom();
-	//QString qstr(uuid.ToString());
-	//QVariant(
-	prim->setUUID(QString(uuid.ToString().c_str()));
-	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-	pe->setObject(prim);
-	pe->show();
-	
-	//return PythonQt::self()->wrapQObject(*map);
 	Py_RETURN_NONE;
 }
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
@@ -1652,7 +1803,7 @@ static PyMethodDef EmbMethods[] = {
     {"logInfo", (PyCFunction)PyLogInfo, METH_VARARGS,
     "Prints a text using the LogInfo-method."},
 
-    {"logDebug", (PyCFunction)PyLogDebug, METH_VARARGS,
+	{"logDebug", (PyCFunction)PyLogDebug, METH_VARARGS,
     "Prints a debug text using the LogDebug-method."},
 
     {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
@@ -1660,8 +1811,8 @@ static PyMethodDef EmbMethods[] = {
     
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
-    
-    {"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
+	
+	{"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
     "Get the size of the screen."},
 
     {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
@@ -1690,7 +1841,7 @@ static PyMethodDef EmbMethods[] = {
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
 
-    {"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
+	{"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
     "Returns the user's avatar's id."},
 
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
@@ -1719,7 +1870,7 @@ static PyMethodDef EmbMethods[] = {
 
     {"createUiWidgetProperty", (PyCFunction)CreateUiWidgetProperty, METH_VARARGS, 
     "creates a new UiWidgetProperty"},
-    
+	
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
 
@@ -1727,9 +1878,15 @@ static PyMethodDef EmbMethods[] = {
 //    "Finds all entities with material indices which are using the given texture"},
 
     {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
-    "Applies a ui canvas to all the entity subfaces where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
+    "Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
+
+    {"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
+    "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
     
-    {NULL, NULL, 0, NULL}
+    {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
+    "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
+    
+	{NULL, NULL, 0, NULL}
 };
 
 static PyObject* PythonScript::initpymod()
@@ -1793,14 +1950,14 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
     const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-    RexLogic::EC_OpenSimPrim *prim = 0;
+	RexLogic::EC_OpenSimPrim *prim = 0;
     if (prim_component)
-       prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-    
+	   prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
+	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    OgreRenderer::EC_OgrePlaceable *placeable = 0;
+	OgreRenderer::EC_OgrePlaceable *placeable = 0;
     if (ogre_component)
-        placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
     
     if (s_name.compare("id") == 0)
     {
@@ -1829,54 +1986,54 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
     }
 
     else if (s_name.compare("mesh") == 0)
-    {
+	{
         //std::cout << ".. getting prim in mesh getting" << std::endl;
         if (!prim)
         {
             PyErr_SetString(PyExc_AttributeError, "prim not found.");
             return NULL;   
         }  
-        return PyString_FromString(prim->MeshID.c_str());    
+        return PyString_FromString(prim->MeshID.c_str());	
         
         /* was a test thing, just changes what ogre shows locally
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (placeable)
-        {
-            OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-            
-            std::string text = ogremesh.GetMeshName();
-            return PyString_FromString(text.c_str());
-        }*/
+		Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+		if (placeable)
+		{
+			OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+			
+			std::string text = ogremesh.GetMeshName();
+			return PyString_FromString(text.c_str());
+		}*/
     }
-    else if(s_name.compare("uuid") == 0)
-    {
-        //std::cout << ".. getting prim" << std::endl;
+	else if(s_name.compare("uuid") == 0)
+	{
+		//std::cout << ".. getting prim" << std::endl;
         if (!prim)
         {
             PyErr_SetString(PyExc_AttributeError, "prim not found.");
             return NULL;   
         }
-        return PyString_FromString(prim->FullId.ToString().c_str());
-    }
-    else if(s_name.compare("updateflags") == 0)
-    {
-        //std::cout << ".. getting prim" << std::endl;
+		return PyString_FromString(prim->FullId.ToString().c_str());
+	}
+	else if(s_name.compare("updateflags") == 0)
+	{
+		//std::cout << ".. getting prim" << std::endl;
         if (!prim)
         {
             PyErr_SetString(PyExc_AttributeError, "prim not found.");
             return NULL;   
         }
-        return Py_BuildValue("I", prim->UpdateFlags);
-    }
-    else if(s_name.compare("editable") == 0)
-    {
-        // refactor to take into account permissions etc aswell later?
-        if(!placeable)
-            Py_RETURN_FALSE;
-        else
-            Py_RETURN_TRUE;
-    }
+		return Py_BuildValue("I", prim->UpdateFlags);
+	}
+	else if(s_name.compare("editable") == 0)
+	{
+		// refactor to take into account permissions etc aswell later?
+		if(!placeable)
+			Py_RETURN_FALSE;
+		else
+			Py_RETURN_TRUE;
+	}
 
     else if (s_name.compare("pos") == 0)
     {
@@ -1885,7 +2042,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }       
-        //std::cout << placeable->GetSelectPriority() << std::endl;
+		//std::cout << placeable->GetSelectPriority() << std::endl;
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
@@ -1905,7 +2062,7 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }     
-        Vector3df scale = placeable->GetScale();
+		Vector3df scale = placeable->GetScale();
 
         return Py_BuildValue("fff", scale.x, scale.y, scale.z);
     }
@@ -1935,40 +2092,40 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
-    else if (s_name.compare("boundingbox") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+	else if (s_name.compare("boundingbox") == 0)
+	{
+		if (!placeable)
+		{
+			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;  
-        }
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-        if (meshptr)
-        {
-            OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
-            Vector3df min, max;
+		}
+		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+		if (meshptr)
+		{
+			OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
+			Vector3df min, max;
 
-            cobj.GetBoundingBox(min, max);
+			cobj.GetBoundingBox(min, max);
 
-            return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
-        }
-        else
-        {
-            meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-            if (meshptr) 
-            {
-                OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-                Vector3df min, max;
+			return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
+		}
+		else
+		{
+			meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+			if (meshptr) 
+			{
+				OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+				Vector3df min, max;
 
-                mesh.GetBoundingBox(min, max);
+				mesh.GetBoundingBox(min, max);
 
-                return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
-            }
-        }
-        
-        PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
+				return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
+			}
+		}
+		
+		PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
         return NULL;  
-    }
+	}
 
 
     std::cout << "unknown component type."  << std::endl;
@@ -2010,14 +2167,14 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
     const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-    RexLogic::EC_OpenSimPrim *prim = 0;
+	RexLogic::EC_OpenSimPrim *prim = 0;
     if (prim_component)
-       prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-    
+	   prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
+	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    OgreRenderer::EC_OgrePlaceable *placeable = 0;
+	OgreRenderer::EC_OgrePlaceable *placeable = 0;
     if (ogre_component)
-        placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
     
     RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
     
@@ -2033,8 +2190,8 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
         return PyString_FromString(retstr.c_str());
     }*/
-    //PyObject_Print(value, stdout, 0);
-    //std::cout << "\n" << std::endl;
+	//PyObject_Print(value, stdout, 0);
+	//std::cout << "\n" << std::endl;
     //else 
     if (s_name.compare("pos") == 0)
     {
@@ -2042,30 +2199,30 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
         float x, y, z;
-        x = 0;
-        y = 0;
-        z = 0;
+		x = 0;
+		y = 0;
+		z = 0;
 
-        //int parsing;
-        //parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
-        /*
-        PyObject* pos;
-        if(!parsing) {
-            parsing = PyArg_ParseTuple(value, "O", &pos);
-            if (parsing != 0)
-            {
-                PyErr_SetString(PyExc_ValueError, "it worked.");
-                return -1;
-            }
-        }
-        */
+		//int parsing;
+		//parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
+		/*
+		PyObject* pos;
+		if(!parsing) {
+			parsing = PyArg_ParseTuple(value, "O", &pos);
+			if (parsing != 0)
+			{
+				PyErr_SetString(PyExc_ValueError, "it worked.");
+				return -1;
+			}
+		}
+		*/
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {    
+        {	
             //std::cout << "...parse error" << std::endl;
             //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
             return -1;
         }
-        
+		
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
@@ -2095,9 +2252,9 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
     else if (s_name.compare("scale") == 0)
     {
         float x, y, z;
-        x = 0;
-        y = 0;
-        z = 0;
+		x = 0;
+		y = 0;
+		z = 0;
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
         {
             //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
@@ -2172,21 +2329,21 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
 
         return 0;
     }
-    else if (s_name.compare("mesh") == 0)
-    {
-        //std::cout << "Setting mesh" << std::endl;
-        if (PyString_Check(value) || PyUnicode_Check(value))
+	else if (s_name.compare("mesh") == 0)
+	{
+	    //std::cout << "Setting mesh" << std::endl;
+		if (PyString_Check(value) || PyUnicode_Check(value))
         {
-            //NOTE: This is stricly done locally only for now, nothing is sent to the server.
-            const char* c_text = PyString_AsString(value);
-            std::string text = std::string(c_text);
+			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
+			const char* c_text = PyString_AsString(value);
+			std::string text = std::string(c_text);
 
             //std::cout << ".. getting prim in mesh setting" << std::endl;
-            if (!prim)
-            {
-                PyErr_SetString(PyExc_AttributeError, "prim not found.");
-                return -1;   
-            }  
+			if (!prim)
+			{
+				PyErr_SetString(PyExc_AttributeError, "prim not found.");
+				return -1;   
+			}  
 
             prim->MeshID = text;
             prim->DrawType = RexTypes::DRAWTYPE_MESH;
@@ -2196,33 +2353,34 @@ int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *valu
         
         /* was a test thing, just changes what ogre shows locally
 
-            
+			
             /*Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-            Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-            if (placeable)
-            {
-                OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-                
-                ogremesh.SetMesh(text);
+			Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+			if (placeable)
+			{
+				OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+				
+				ogremesh.SetMesh(text);
 
-                PythonScript::self()->LogInfo("Entity's mesh changed locally.");
-                return NULL;
-            }*/
+				PythonScript::self()->LogInfo("Entity's mesh changed locally.");
+				return NULL;
+			}*/
 
         else
         {
             PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
             return -1;
         }
-    }
-    
-    else if(s_name.compare("uuid") == 0)
-    {
+	}
+	
+    //XXX why does this even exist when uuid is not settable?
+	else if(s_name.compare("uuid") == 0)
+	{
         PythonScript::self()->LogInfo("UUID cannot be set manually.");
         return 0;   
-    }
+	}
 
     //std::cout << "unknown component type."  << std::endl;
-    PythonScript::self()->LogDebug("Unknown component type.");
+	PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }

@@ -31,6 +31,8 @@ class ModuleManager:
     def ENTITY_UPDATED(self, id):
         pass
         #print "Manager got an entity updated", id
+    def ENTITY_VISUALS_MODIFIED(self, entid):
+        pass
     def SCENE_EVENT(self, evid, entid):
         pass
     def LOGIN_INFO(self, *args):
