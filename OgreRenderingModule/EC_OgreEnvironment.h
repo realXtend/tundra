@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderer_EC_OgreEnvironment_h
 #define incl_OgreRenderer_EC_OgreEnvironment_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "OgreModuleApi.h"
 
 #include <OgreColourValue.h>
@@ -51,6 +51,8 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgreEnvironment : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreEnvironment);
     public:
         virtual ~EC_OgreEnvironment();

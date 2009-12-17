@@ -3,6 +3,7 @@
 #ifndef incl_EC_NetworkPosition_h
 #define incl_EC_NetworkPosition_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexUUID.h"
@@ -15,6 +16,8 @@ namespace RexLogic
      */ 
     class REXLOGIC_MODULE_API EC_NetworkPosition : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_NetworkPosition);
     public:
         virtual ~EC_NetworkPosition();

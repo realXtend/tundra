@@ -3,8 +3,8 @@
 #ifndef incl_OpenALAudio_EC_AttachedSound_h
 #define incl_OpenALAudio_EC_AttachedSound_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "RexLogicModuleApi.h"
 
 namespace RexLogic
@@ -16,9 +16,11 @@ namespace RexLogic
      */
     class REXLOGIC_MODULE_API EC_AttachedSound : public Foundation::ComponentInterface
 	{	    
+        Q_OBJECT
+
 		DECLARE_EC(EC_AttachedSound);
 	public:
-
+    
 	    //! Sound slot definitions. 
 	    /*! When a new sound is added to either OpenSimAttachedSound or RexAmbientSound slot, the previous will be killed.
 	        "Other" slot on the other hand allows as many sounds to be added as desired

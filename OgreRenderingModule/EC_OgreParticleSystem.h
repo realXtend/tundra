@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderer_EC_OgreParticleSystem_h
 #define incl_OgreRenderer_EC_OgreParticleSystem_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "OgreModuleApi.h"
 
 namespace Ogre
@@ -27,6 +27,8 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgreParticleSystem : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreParticleSystem);
     public:
         virtual ~EC_OgreParticleSystem();

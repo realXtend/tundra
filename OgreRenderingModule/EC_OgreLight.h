@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderer_EC_OgreLight_h
 #define incl_OgreRenderer_EC_OgreLight_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "OgreModuleApi.h"
 
 namespace Ogre
@@ -25,6 +25,8 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgreLight : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreLight);
     public:
         //! light type enumeration

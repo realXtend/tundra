@@ -3,6 +3,7 @@
 #ifndef incl_EC_FreeData_h
 #define incl_EC_FreeData_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "Foundation.h"
 #include "RexLogicModuleApi.h"
@@ -14,6 +15,8 @@ namespace RexLogic
     ///       of string-value pairs.
     class EC_FreeData : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_FreeData);
        
     public:

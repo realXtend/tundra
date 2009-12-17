@@ -3,8 +3,8 @@
 #ifndef incl_EC_OpenSimPrim_h
 #define incl_EC_OpenSimPrim_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "RexUUID.h"
 #include "RexTypes.h"
 #include "RexLogicModuleApi.h"
@@ -34,6 +34,8 @@ namespace RexLogic
     //! this component.
     class REXLOGIC_MODULE_API EC_OpenSimPrim : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_OpenSimPrim);
     public:
         virtual ~EC_OpenSimPrim();

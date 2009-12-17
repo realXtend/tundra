@@ -3,8 +3,8 @@
 #ifndef incl_EC_Water_h
 #define incl_EC_Water_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "RexUUID.h"
 
 namespace Ogre
@@ -18,6 +18,8 @@ namespace Environment
     /// Represents data related to a water plane.
     class EC_Water : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_Water);
     public:
         virtual ~EC_Water();

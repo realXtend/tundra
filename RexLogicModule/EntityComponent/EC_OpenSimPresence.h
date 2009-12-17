@@ -3,8 +3,8 @@
 #ifndef incl_RexLogic_EC_OpenSimPresence_h
 #define incl_RexLogic_EC_OpenSimPresence_h
 
+#include "Foundation.h"
 #include "ComponentInterface.h"
-//#include "Foundation.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
 
@@ -13,6 +13,8 @@ namespace RexLogic
     //! This component is present on all agents when connected to an OpenSim world. 
     class REXLOGIC_MODULE_API EC_OpenSimPresence : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+            
         DECLARE_EC(EC_OpenSimPresence);
        
     public:

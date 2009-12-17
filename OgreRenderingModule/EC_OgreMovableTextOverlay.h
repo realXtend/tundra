@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 #define incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
+#include "ComponentInterface.h"
 #include "OgreModuleApi.h"
 
 #include <OgreVector2.h>
@@ -30,6 +30,8 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgreMovableTextOverlay : public Foundation::ComponentInterface
     {
+        Q_OBJECT
+        
         DECLARE_EC(EC_OgreMovableTextOverlay);
     private:
         //! constructor
