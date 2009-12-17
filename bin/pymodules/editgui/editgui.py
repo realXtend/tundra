@@ -45,10 +45,15 @@ else:
 #EXTERNAL = 0
 
 OIS_KEY_ALT = 256
+OIS_KEY_CTRL = 16
 OIS_KEY_M = 50
 OIS_KEY_S = 31
 OIS_KEY_R = 19
+OIS_KEY_U = 22
+OIS_KEY_D = 32
+OIS_KEY_Z = 44
 OIS_KEY_ESC = 1
+OIS_KEY_DEL = 211
 
 DEV =False #if this is false, the canvas is added to the controlbar
 
@@ -236,6 +241,9 @@ class EditGUI(Component):
             (OIS_KEY_ESC, 0): self.deselect,
             (OIS_KEY_M, OIS_KEY_ALT): self.manipulator_move,#"ALT+M", #move
             (OIS_KEY_S, OIS_KEY_ALT): self.manipulator_scale,#"ALT+S" #, #scale
+            (OIS_KEY_DEL, 0): self.deleteObject,
+            (OIS_KEY_Z, OIS_KEY_CTRL): self.undo, 
+            (OIS_KEY_D, OIS_KEY_ALT): self.duplicate, 
             #(OIS_KEY_R, ALT): self.manipulator_rotate #rotate
         }
         
@@ -682,7 +690,8 @@ class EditGUI(Component):
         self.left_button_down = False
         
         if self.sel:
-            if self.sel_activated:
+            if self.sel_activated and self.dragging:
+                #print "LeftMouseUp, networkUpdate call"
                 r.networkUpdate(self.sel.id)
             
             self.sel_activated = True
@@ -828,6 +837,7 @@ class EditGUI(Component):
             if self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True
                 self.shortcuts[(keycode, keymod)]()
+                callback(True)
         
     def on_inboundnetwork(self, evid, name, callback):
         pass
