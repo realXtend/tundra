@@ -4,4 +4,6 @@
 	<dependency>QtModule</dependency>
     <dependency>RexLogicModule</dependency>
     <dependency>ProtocolModuleOpenSim</dependency>
+    <dependency>OpenALAudioModule</dependency>
+    <dependency>UiModule</dependency>
 </config>

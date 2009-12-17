@@ -68,8 +68,6 @@ namespace TelepathyIM
     private:
 
         GstElement* setUpElement(const QString &element_name);
-
-        void ConnectTfChannelEvents();
         void CreatePipeline();
         void CreateTfChannel();
         void CreateAudioInputElement(const QString &name);

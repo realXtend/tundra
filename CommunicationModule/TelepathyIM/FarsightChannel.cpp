@@ -65,11 +65,6 @@ namespace TelepathyIM
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_session_created_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_stream_created_g_signal_);
-            //g_signal_connect(tf_channel_, "closed", G_CALLBACK(&FarsightChannel::onClosed), this);
-            //g_signal_connect(tf_channel_, "session-created", G_CALLBACK(&FarsightChannel::onSessionCreated), this);
-            //g_signal_connect(tf_channel_, "stream-created", G_CALLBACK(&FarsightChannel::onStreamCreated), this);
-
-            //g_signal_handler_disconnect(tf_channel_, handler_id);
 //            g_object_unref(tf_channel_);
             tf_channel_ = 0;
         }
@@ -185,19 +180,19 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Core::Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
+//        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
         //gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
-        //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
-        //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
-        //if (!ok)
-        //{
-        //    QString error_message = "Cannot link elements for audio playback bin.";
-        //    LogError(error_message.toStdString());
-        //    throw Core::Exception(error_message.toStdString().c_str());
-        //}
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
+        gboolean ok = gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
+        if (!ok)
+        {
+            QString error_message = "Cannot link elements for audio playback bin.";
+            LogError(error_message.toStdString());
+            throw Core::Exception(error_message.toStdString().c_str());
+        }
 
         // add ghost pad to audio_bin_
-        GstPad *sink = gst_element_get_static_pad(fake_audio_output_, "sink");
+        GstPad *sink = gst_element_get_static_pad(audio_resample_, "sink");
         audio_playback_bin_sink_pad_ = gst_ghost_pad_new("sink", sink);
         gst_element_add_pad(GST_ELEMENT(audio_playback_bin_), audio_playback_bin_sink_pad_);
         gst_object_unref(G_OBJECT(sink));
@@ -257,11 +252,11 @@ namespace TelepathyIM
         else
         {
             offset = (~GST_BUFFER_OFFSET(buffer))+1; // Two's complement
+            int u_offset = GST_BUFFER_OFFSET(buffer);
             QString log_message("audio buffer offset = ");
-            log_message.append(QString::number(offset));
+            log_message.append(QString::number(offset)).append(" , ").append(QString::number(u_offset));
             LogDebug(log_message.toStdString());
         }
-
 
         //int offset_end;
         //if(!GST_BUFFER_OFFSET_END_IS_VALID(buffer))
@@ -271,11 +266,6 @@ namespace TelepathyIM
         
         offset = 0;
         emit self->AudioPlaybackBufferReady(buffer->data + offset, buffer->size - offset);
-    }
-
-
-    void FarsightChannel::ConnectTfChannelEvents()
-    {
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
