@@ -30,7 +30,8 @@ namespace TelepathyIM
                                      received_video_widget_(0),
                                      on_closed_g_signal_(0),
                                      on_session_created_g_signal_(0),
-                                     on_stream_created_g_signal_(0)
+                                     on_stream_created_g_signal_(0),
+                                     bus_watch_(0)
     {
         CreateTfChannel();
         CreatePipeline();
@@ -68,7 +69,10 @@ namespace TelepathyIM
 //            g_object_unref(tf_channel_);
             tf_channel_ = 0;
         }
-        if (bus_) {
+        if (bus_)
+        {
+            if (bus_watch_)
+                g_source_remove(bus_watch_);
             g_object_unref(bus_);
             bus_ = 0;
         }
@@ -244,28 +248,24 @@ namespace TelepathyIM
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
-        FarsightChannel* self = (FarsightChannel*)user_data;
-        
-        int offset;
-        if (!GST_BUFFER_OFFSET_IS_VALID(buffer))
-            offset = 0;
-        else
+        if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
-            offset = (~GST_BUFFER_OFFSET(buffer))+1; // Two's complement
-            int u_offset = GST_BUFFER_OFFSET(buffer);
-            QString log_message("audio buffer offset = ");
-            log_message.append(QString::number(offset)).append(" , ").append(QString::number(u_offset));
-            LogDebug(log_message.toStdString());
+            LogDebug("Preroll audio data packet.");
+            gst_buffer_unref(buffer);
+            return;
+        }
+        if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_GAP))
+        {
+            LogDebug("Caps audio data packet.");
+            gst_buffer_unref(buffer);
+            return;
         }
 
-        //int offset_end;
-        //if(!GST_BUFFER_OFFSET_END_IS_VALID(buffer))
-        //    offset_end = buffer->size-1;
-        //else
-        //    offset_end = (~GST_BUFFER_OFFSET_END(buffer))+1; // Two's complement
+        FarsightChannel* self = (FarsightChannel*)user_data;
         
-        offset = 0;
-        emit self->AudioPlaybackBufferReady(buffer->data + offset, buffer->size - offset);
+        u8* data = GST_BUFFER_DATA(buffer);
+        u32 size = GST_BUFFER_SIZE(buffer);
+        emit self->AudioPlaybackBufferReady(data, size);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
@@ -329,7 +329,7 @@ namespace TelepathyIM
 
     void FarsightChannel::onSessionCreated(TfChannel *tfChannel, FsConference *conference, FsParticipant *participant, FarsightChannel *self)
     {
-        gst_bus_add_watch(self->bus_, (GstBusFunc) &FarsightChannel::busWatch, self);
+        self->bus_watch_ = gst_bus_add_watch(self->bus_, (GstBusFunc) &FarsightChannel::busWatch, self);
         gst_bin_add(GST_BIN(self->pipeline_), GST_ELEMENT(conference));
         gst_element_set_state(GST_ELEMENT(conference), GST_STATE_PLAYING);
     }
