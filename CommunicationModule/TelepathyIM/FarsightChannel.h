@@ -64,7 +64,7 @@ namespace TelepathyIM
         GstPad *audio_in_src_pad_; // todo setter
         GstPad *video_in_src_pad_; // todo setter
         Status status_; // todo setter
-        gulong bus_watch_; // todo: setter
+        guint bus_watch_; // todo: setter
 
     private:
 
