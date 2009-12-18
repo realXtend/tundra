@@ -186,8 +186,8 @@ namespace TelepathyIM
 
 //        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
         //gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
-        gboolean ok = gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         if (!ok)
         {
             QString error_message = "Cannot link elements for audio playback bin.";
@@ -260,12 +260,16 @@ namespace TelepathyIM
             gst_buffer_unref(buffer);
             return;
         }
-
-        FarsightChannel* self = (FarsightChannel*)user_data;
         
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
-        emit self->AudioPlaybackBufferReady(data, size);
+        FarsightChannel* self = (FarsightChannel*)user_data;
+        self->HandleAudioData(data, size);
+    }
+
+    void FarsightChannel::HandleAudioData(u8* data, int size)
+    {
+        emit AudioPlaybackBufferReady(data, size);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
