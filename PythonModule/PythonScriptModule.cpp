@@ -78,6 +78,9 @@
 //now that binding uicanvases (from mediahandler webviews) to 3d objects is here
 #include "EC_UICanvas.h"
 
+#include "QEC_Prim.h"
+#include "RexUUID.h"
+
 namespace PythonScript
 {
     PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
@@ -1112,6 +1115,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     }
 
     //bleh, should really make this a qt slot somewhere and use a QList
+	//that is: all this is just to convert a python list to a std::vector.
     std::vector<uint> submeshes_;
     PyObject* py_iter;
     PyObject* item;
@@ -1180,6 +1184,30 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     }
 }*/
 
+PyObject* GetQPrim(PyObject* self, PyObject* args)
+{
+    unsigned int ent_id_int;
+    entity_id_t ent_id;
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        return NULL;
+    }
+
+    ent_id = (entity_id_t) ent_id_int;
+
+    RexLogic::RexLogicModule *rexlogic_;
+	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    Scene::EntityPtr primentity = rexlogic_->GetPrimEntity(ent_id);
+    if (!primentity) 
+	{
+		PyErr_SetString(PyExc_ValueError, "The entity id given to getQPrim does not have a prim component.");
+		return NULL;
+	}
+    RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+
+	return PythonQt::self()->wrapQObject(prim);
+}
 
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
@@ -1744,6 +1772,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 */
 PyObject* RandomTest(PyObject* self, PyObject* args)
 {
+	/*
 	unsigned int starter;
     ProtocolUtilities::NetMsgID id;
 
@@ -1757,7 +1786,24 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
 
 	if (id == 0xffff0087)
 		PythonScript::self()->LogDebug("Test successfull!!");
-
+	*/
+	//QMap<QString, int> *map = new QMap<QString, int>;
+	QEC_Prim* prim = new QEC_Prim();
+	
+	prim->map["one"] = 1;
+	prim->map["three"] = 3;
+	
+	prim->setName("This is a Name!");
+	RexUUID uuid = RexUUID::CreateRandom();
+	//QString qstr(uuid.ToString());
+	//QVariant(
+	prim->setUUID(QString(uuid.ToString().c_str()));
+	QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
+	PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
+	pe->setObject(prim);
+	pe->show();
+	
+	//return PythonQt::self()->wrapQObject(*map);
 	Py_RETURN_NONE;
 }
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
@@ -1771,6 +1817,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
+
+	{"getQPrim", (PyCFunction)GetQPrim, METH_VARARGS,
+    "Gets the prim component as a QObject from an entity with the given ID."},
 
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
