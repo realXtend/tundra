@@ -44,39 +44,28 @@ namespace Inventory
         virtual ~AbstractInventoryItem() {}
 
         /// @return Name.
-        QString GetName() const {return name_; }
-//        virtual QString GetName() const = 0;
+        virtual QString GetName() const = 0;
 
         /// @param name New name.
-        void SetName(const QString &name) { name_ = name; }
-//        virtual void SetName(const QString &name) = 0;
+        virtual void SetName(const QString &name) = 0;
 
         /// @return ID.
-        QString GetID() const { return id_; }
-//        virtual QString GetID() const = 0;
+        virtual QString GetID() const = 0;
 
         /// @param id New ID.
-        void SetID(const QString &id) { id_ = id; }
-//        virtual void SetID(const QString &id) = 0;
+        virtual void SetID(const QString &id) = 0;
 
         /// @return Parent pointer.
-        AbstractInventoryItem *GetParent() const { return parent_; }
-//        virtual AbstractInventoryItem *GetParent() const = 0;
+        virtual AbstractInventoryItem *GetParent() const = 0;
 
         /// @param parent New parent pointer.
-        void SetParent(AbstractInventoryItem *parent) { parent_ = parent; }
-//        virtual void SetParent(AbstractInventoryItem *parent) = 0;
+        virtual void SetParent(AbstractInventoryItem *parent) = 0;
 
         /// @return Is this item editable.
-        bool IsEditable() const { return editable_; }
-//        virtual bool IsEditable() const = 0;
+        virtual bool IsEditable() const = 0;
 
         /// @param editable Is this item editable.
-        void SetEditable(const bool &editable) { editable_ = editable; }
-//        virtual void SetEditable(const bool &editable);
-
-        /// @return Type of the item.
-        virtual InventoryItemType GetItemType() const = 0;
+        virtual void SetEditable(const bool &editable) = 0;
 
         /// @return Is this item library asset.
         virtual bool IsLibraryItem() const = 0;
@@ -84,13 +73,14 @@ namespace Inventory
         /// @param value Is this item library asset.
         virtual void SetIsLibraryItem(const bool &value) = 0;
 
+        /// @return Type of the item.
+        virtual InventoryItemType GetItemType() const = 0;
+
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
         virtual bool IsDescendentOf(AbstractInventoryItem *searchFolder) = 0;
 
-    private:
-        Q_DISABLE_COPY(AbstractInventoryItem);
-
+    protected:
         /// Unique ID for this item.
         QString id_;
 
@@ -102,6 +92,9 @@ namespace Inventory
 
         /// Editable flag.
         bool editable_;
+
+    private:
+        Q_DISABLE_COPY(AbstractInventoryItem);
     };
 }
 

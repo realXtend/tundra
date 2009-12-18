@@ -135,7 +135,7 @@ namespace Inventory
 
         /// Handles RESOURCE_READY event.
         /// @param data Event data.
-        void HandleResourceReady(Foundation::EventDataInterface *data);
+//        void HandleResourceReady(Foundation::EventDataInterface *data);
 
         /// Handles ASSET_READY event.
         /// @param data Event data.

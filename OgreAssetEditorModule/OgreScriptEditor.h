@@ -9,7 +9,7 @@
 #ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
 #define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
-#include "RexTypes.h"
+#include <RexTypes.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -42,7 +42,6 @@ namespace OgreAssetEditor
     /// PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
     class PropertyTableWidget : public QTableWidget
     {
-        friend class OgreScriptEditor;
     public:
         /// Default constuctor.
         /// @param parent Parent widget.
@@ -57,7 +56,6 @@ namespace OgreAssetEditor
         /// Destructor.
         ~PropertyTableWidget();
 
-        //
     protected:
         /// QTableWidget overrides.
         QStringList mimeTypes() const;
@@ -67,9 +65,6 @@ namespace OgreAssetEditor
     private:
         /// Convenience function for initializing the widget.
         void InitWidget();
-
-        /// Convenience function for post-initializing after the view is populated.
-        void PostInit();
     };
 
     class OgreScriptEditor : public QObject

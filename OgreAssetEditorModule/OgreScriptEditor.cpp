@@ -9,11 +9,13 @@
 #include "StableHeaders.h"
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
-#include "Framework.h"
-#include "Inventory/InventoryEvents.h"
-#include "AssetEvents.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
+
+#include <Framework.h>
+#include <Inventory/InventoryEvents.h>
+#include <AssetEvents.h>
+
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
@@ -75,29 +77,6 @@ void PropertyTableWidget::InitWidget()
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
-void PropertyTableWidget::PostInit()
-{
-    //resize(parent()->size());
-    resizeColumnToContents(0);
-    horizontalHeader()->setStretchLastSection(true);
-    horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    //setParent(editorWidget_);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    ///\todo Take size from table, not from widget.
-    //editorWidget_->resize(propertyTable_->size());
-    //parentWidget()->resize(size());
-    resize(parentWidget()->size());
-    show();
-
-//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-//  if (layout)
-//      layout->addWidget(propertyTable_);
-
-//  QGridLayout *layout = new QGridLayout;
-//  layout->addWidget(table, 0, 0);
-//  setLayout(layout);
-}
-
 bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action)
 {
     if (action == Qt::IgnoreAction)
@@ -114,31 +93,23 @@ bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *dat
     while(!stream.atEnd())
     {
         ///\todo Make convience function for parsing data.
-        QString asset_type, item_id, name;
+        QString mimedata, asset_type, item_id, name;
+        stream >> mimedata;
 
-        QString info;
-        stream >> info;
+        QStringList list = mimedata.split(";", QString::SkipEmptyParts);
+        if (list.size() < 4)
+            continue;
 
-        int idx1 = info.indexOf(";");
-        asset_type = info.mid(0, idx1);
+        asset_type = list.at(0);
         if (asset_type.toInt(&valid) != RexTypes::RexAT_Texture)
             continue;
 
-        int idx2 = info.indexOf(";", idx1);
-        int idx3 = info.indexOf(";", idx2 + 1);
-        item_id = info.mid(idx2 + 1, idx3 - idx2 - 1);
+        item_id = list.at(1);
         if (!RexUUID::IsValid(item_id.toStdString()))
             continue;
 
-        int idx4 = info.indexOf(";", idx3);
-        int idx5 = info.indexOf(";", idx4 + 1);
-        name = info.mid(idx4 + 1, idx5 - idx4 - 1);
-
-        int idx6 = info.indexOf(";", idx5);
-        int idx7 = info.indexOf(";", idx6 + 1);
-        asset_id = info.mid(idx6 + 1, idx7 - idx6 - 1);
-        if (!RexUUID::IsValid(asset_id.toStdString()))
-            continue;
+        name = list.at(2);
+        asset_id = list.at(3);
     }
 
     if (!valid || !RexUUID::IsValid(asset_id.toStdString()))
@@ -437,7 +408,8 @@ void OgreScriptEditor::CreatePropertyEditor()
         ++row;
     }
 
-    propertyTable_->PostInit();
+    propertyTable_->resize(propertyTable_->parentWidget()->size());
+    propertyTable_->show();
 
     QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
 }

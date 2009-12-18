@@ -37,6 +37,45 @@ namespace Inventory
         /// Destructor.
         virtual ~InventoryAsset();
 
+        /// AbstractInventoryItem override
+        QString GetName() const {return name_; }
+
+        /// AbstractInventoryItem override
+        void SetName(const QString &name) { name_ = name; }
+
+        /// AbstractInventoryItem override
+        QString GetID() const { return id_; }
+
+        /// AbstractInventoryItem override
+        void SetID(const QString &id) { id_ = id; }
+
+        /// AbstractInventoryItem override
+        AbstractInventoryItem *GetParent() const { return parent_; }
+
+        /// AbstractInventoryItem override
+        void SetParent(AbstractInventoryItem *parent) { parent_ = parent; }
+
+        /// AbstractInventoryItem override
+        bool IsEditable() const { return editable_; }
+
+        /// AbstractInventoryItem override
+        void SetEditable(const bool &editable) { editable_ = editable; }
+
+        /// AbstractInventoryItem override
+        bool IsLibraryItem() const { return libraryAsset_; }
+
+        /// AbstractInventoryItem override
+        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
+
+        /// Is this folder descendent of spesific folder.
+        /// @param searchFolder Folder to be investigated.
+        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
+
+        /// AbstractInventoryItem override
+        InventoryItemType GetItemType() const { return itemType_; }
+
+        /************ InventoryAsset API ************/
+
         /// @return asset reference.
         QString GetAssetReference() const { return assetReference_; }
 
@@ -58,19 +97,6 @@ namespace Inventory
 
         /// @param inventory_type New inventory type (see RexTypes.h).
         void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
-
-        /// Is this folder descendent of spesific folder.
-        /// @param searchFolder Folder to be investigated.
-        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
-
-        /// @return Is this item library asset.
-        bool IsLibraryItem() const { return libraryAsset_; }
-
-        /// @param value Is this item library asset.
-        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
-
-        /// @return Type of the item.
-        InventoryItemType GetItemType() const { return itemType_; }
 
         /// @return Row number of this inventory asset.
 //        int Row() const;

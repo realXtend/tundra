@@ -143,6 +143,9 @@ bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
     if(item->GetItemType() != AbstractInventoryItem::Type_Folder)
         return false;
 
+    ///\note    Due to some server-side mystery behaviour we must send the same packet twise: once
+    ///         with fetch_folders = true & fetch_items = false and once with fetch_folders = false & fetch_items = true
+    ///         in order to reveice the inventory item information correctly (asset&inventory types at least).
     if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
     {
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
@@ -332,29 +335,13 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     switch(asset_type)
     {
-    /*
-    case RexAT_Texture:
-    {
-        // Request textures from texture decoder.
-        if (service_manager->IsRegistered(Service::ST_Texture))
-        {
-            boost::shared_ptr<TextureServiceInterface> texture_service =
-                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
-
-            request_tag_t tag = texture_service->RequestTexture(id);
-            if (tag)
-                downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
-        }
-        break;
-    }
-    */
     case RexAT_Texture:
     case RexAT_Mesh:
     case RexAT_Skeleton:
     case RexAT_MaterialScript:
     case RexAT_ParticleScript:
     {
-        // Request other assets from asset system.
+        // Request assets from asset service.
         if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
         {
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
@@ -391,6 +378,7 @@ void OpenSimInventoryDataModel::SetWorldStream(ProtocolUtilities::WorldStreamPtr
     assetUploader_->SetWorldStream(world_stream);
 }
 
+/*
 void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
 {
     ///\todo    It seems that we don't necessarily need to handle ResourceReady.
@@ -434,17 +422,13 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
 
     downloadRequests_.erase(i);
 }
+*/
 
 void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDataInterface *data)
 {
     Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
-//    QString asset_id = assetReady->asset_->GetId().c_str();
-
-    // Don't handle AssetReady's for textures. We're interested in ResourceReady event for textures;
-//    if (asset_type == RexAT_Texture)
-//        return;
 
     AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
     if (i == downloadRequests_.end())
