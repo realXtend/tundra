@@ -13,7 +13,7 @@ del build\wrap_oal.dll
 del build\*d4.dll
 del build\*_d.dll
 del build\Poco*d.dll
-del build\dbus-1d.dll
+@rem del build\dbus-1d.dll
 del build\libcurld.dll
 del build\OpenJPEGd.dll
 del build\xmlrpcepid.dll
