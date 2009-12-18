@@ -205,27 +205,6 @@ bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder)
     }
 }
 
-QList<QString> InventoryFolder::GetDescendentIds()
-{
-    QList<QString> id_list;
-
-    QListIterator<AbstractInventoryItem *> it(children_);
-    while(it.hasNext())
-    {
-        AbstractInventoryItem *child = it.next();
-        id_list << child->GetID();
-
-        InventoryFolder *child_folder = dynamic_cast<InventoryFolder *>(child);
-        if (child_folder)
-        {
-            QList<QString> id_list2;
-            id_list2 = child_folder->GetDescendentIds();
-            id_list.append(id_list2);
-        }
-    }
-    return id_list;
-}
-
 AbstractInventoryItem *InventoryFolder::Child(int row)
 {
     if (row < 0 || row > children_.size() - 1)

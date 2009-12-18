@@ -177,12 +177,6 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
 
             info.append(asset_type + ";" + item->GetID() + ";" + item->GetName() + ";" + asset_ref);
             stream << info;
-/*
-            InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
-            if (folder)
-                foreach(QString id, folder->GetDescendentIds())
-                    stream << id;
-*/
         }
     }
 
