@@ -8,6 +8,7 @@
 #include <QByteArray>
 #include <QMap>
 #include <QBuffer>
+#include <QMutex>
 
 // todo: Change there to static member variables
 #define MAX_BUFFER_COUNT 2
@@ -53,6 +54,7 @@ namespace OpenALAudio
 
         // memory for OpenAL buffer objects
         QMap<ALuint, QByteArray*> playback_buffers_;
+        QMutex add_data_mutex_;
     };
 }
 

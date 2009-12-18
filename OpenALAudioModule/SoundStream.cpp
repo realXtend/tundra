@@ -34,7 +34,7 @@ namespace OpenALAudio
 
         alGenSources(1, &source_);
         alSourcef(source_, AL_GAIN, 1.0f);
-        //   alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
+        alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
 
         alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
@@ -76,30 +76,31 @@ namespace OpenALAudio
 
     void SoundStream::AddData(u8 *data, uint size)
     {
-        int max_buffer_length_ms = 1000;
-        //if (audio_data_.size()*8*1000/sample_width_/frequency_ > max_buffer_length_ms)
-        //{
-        //    OpenALAudioModule::LogDebug("Drop audio packet, buffer is full.");
-        //    return;
-        //}
+        add_data_mutex_.lock();
+        int max_buffer_length_ms = 1500;
 
         ALint empty_buffer_count = 0;
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
         if (empty_buffer_count == 0 && GetReceivedAudioDataLengthMs() > max_buffer_length_ms)
         {
             OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
+            add_data_mutex_.unlock();
             return;
         }
         received_audio_data_.append((char*)data, size);
 
         if (empty_buffer_count == 0)
+        {
+            add_data_mutex_.unlock();
             return;
+        }
 
         ALuint buffer_handle;
         alSourceUnqueueBuffers(source_, 1, &buffer_handle);
         if (alGetError() == AL_INVALID_VALUE)
         {
             OpenALAudioModule::LogDebug("Could not pull empty buffer from source!");
+            add_data_mutex_.unlock();
             return;
         }
         QByteArray* bytes = playback_buffers_[buffer_handle];
@@ -122,6 +123,7 @@ namespace OpenALAudio
 
         if (!IsPlaying())
             Play();
+        add_data_mutex_.unlock();
     }
 
     bool SoundStream::IsPlaying()
