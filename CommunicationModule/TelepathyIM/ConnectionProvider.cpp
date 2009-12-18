@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 
 #include <QtCore>
+#include <QApplication>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/PendingReady>
 #include "ConnectionProvider.h"
@@ -15,6 +16,14 @@ namespace TelepathyIM
 {
 	ConnectionProvider::ConnectionProvider(Foundation::Framework* framework): framework_(framework), dbus_daemon_(NULL), state_(STATE_INITIALIZING)
 	{
+        //QStringList test;
+        //test.append("TEST"),
+        //test.append("value");
+        //QProcess::setEnvironment(test);
+        
+//        QApplication::set
+//        QApplication::addLibraryPath("./gstreamer/bin");
+
 		// We want to start dbus daemon only on Windows platform
 #ifdef WIN32
         //! Ensures that gabble and dbus daemon processes are not running 
