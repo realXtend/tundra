@@ -54,6 +54,8 @@ namespace TelepathyIM
             SAFE_DELETE(p);
         }
         participants_.clear();
+        if (farsight_channel_)
+            SAFE_DELETE(farsight_channel_);
     }
 
     void VoiceSession::DeleteChannels()
@@ -73,8 +75,6 @@ namespace TelepathyIM
         if (video_stream)
             audio_stream->requestDirection(false, false);
         
-        if (farsight_channel_)
-            SAFE_DELETE(farsight_channel_);
 
         if (tp_channel_)
         {
@@ -103,7 +103,6 @@ namespace TelepathyIM
 
 	void VoiceSession::Close()
 	{
-        // TODO: CRASH SOMETIMES (THREAD PROBLEM)
         state_ = STATE_CLOSED;
         DeleteChannels();
         emit StateChanged(state_);
@@ -319,7 +318,7 @@ namespace TelepathyIM
     {
         QString log_message = QString(" VoiceSession::OnChannelInvalidated - ").append(error).append(" - ").append(message);
         LogInfo(log_message.toStdString());
-        state_ = STATE_ERROR;
+        state_ = STATE_CLOSED;
         reason_ = message;
         emit Closed(this);
         emit StateChanged(state_);
@@ -422,6 +421,10 @@ namespace TelepathyIM
 
         OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
         OnStreamStateChanged(stream, stream->state());
+
+        //state_ = STATE_OPEN;
+        //emit StateChanged(state_);
+
 
         // TODO: Shoud we handle these ?
         //stream->localSendingRequested();
