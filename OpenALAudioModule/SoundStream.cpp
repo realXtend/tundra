@@ -14,15 +14,8 @@ namespace OpenALAudio
           sample_width_(sample_width),
           stereo_(stereo),
           current_buffer_(0),
-          buffer_counter_(0),
-          next_free_data_queue_index_(0),
-          free_data_queque_index_count_(DATA_QUEUE_SIZE)
+          buffer_counter_(0)
     {
-        for (int i = 0; i < DATA_QUEUE_SIZE; i++)
-        {
-            data_queque_[i] = 0;
-        }
-
         switch (sample_width_)
         {
             case 8:
@@ -39,22 +32,19 @@ namespace OpenALAudio
                 break;
         }
 
-        alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         alGenSources(1, &source_);
-
         alSourcef(source_, AL_GAIN, 1.0f);
-     //   alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0);
+        //   alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
 
-        // Add empty buffers to source
-        //for (int buffer_count = 0; buffer_count<BUFFER_COUNT; ++buffer_count)
-        //{
-        //    u8 *temp = new u8[10];
-        //    for (int char_index = 0; char_index<10; ++char_index)
-        //        temp[char_index] = 0;
-        //    alBufferData(buffers_[buffer_count], format_, temp, 10, frequency_);
-        //}
-        //alSourceQueueBuffers(source_, BUFFER_COUNT, buffers_);
-        //Play();
+        alGenBuffers(MAX_BUFFER_COUNT, buffers_);
+        for (int i = 0; i < MAX_BUFFER_COUNT; i++)
+        {
+            ALuint buffer_handle = buffers_[i];
+            playback_buffers_[buffer_handle] = new QByteArray();
+            alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle]->data(), playback_buffers_[buffer_handle]->size(), frequency_);
+            alSourceQueueBuffers(source_, 1, &buffer_handle); // buffer is empy at the moment, but we don't start playback yet
+        }
+        Play();
     }
 
     SoundStream::~SoundStream()
@@ -67,13 +57,9 @@ namespace OpenALAudio
         alSourceStop(source_);
         alDeleteSources(1, &source_);
         alDeleteBuffers(MAX_BUFFER_COUNT, buffers_);
-        for (int i = 0; i < DATA_QUEUE_SIZE; i++)
+        for (int i = 0; i < MAX_BUFFER_COUNT; i++)
         {
-            if (data_queque_[i] != 0)
-            {
-                delete [] data_queque_[i];
-                data_queque_[i] = 0;
-            }
+            delete playback_buffers_[i];
         }
     }
 
@@ -83,82 +69,59 @@ namespace OpenALAudio
         OpenALAudioModule::LogDebug(">> Stream playback started");
     }
 
+    int SoundStream::GetReceivedAudioDataLengthMs()
+    {
+        return received_audio_data_.size()*1000*8/sample_width_/frequency_;
+    }
+
     void SoundStream::AddData(u8 *data, uint size)
     {
-        ALuint buffer = GetBufferWithData(data, size);
-        if (buffer == 0)
+        int max_buffer_length_ms = 1000;
+        //if (audio_data_.size()*8*1000/sample_width_/frequency_ > max_buffer_length_ms)
+        //{
+        //    OpenALAudioModule::LogDebug("Drop audio packet, buffer is full.");
+        //    return;
+        //}
+
+        ALint empty_buffer_count = 0;
+        alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
+        if (empty_buffer_count == 0 && GetReceivedAudioDataLengthMs() > max_buffer_length_ms)
+        {
+            OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
+            return;
+        }
+        received_audio_data_.append((char*)data, size);
+
+        if (empty_buffer_count == 0)
             return;
 
+        ALuint buffer_handle;
+        alSourceUnqueueBuffers(source_, 1, &buffer_handle);
+        if (alGetError() == AL_INVALID_VALUE)
+        {
+            OpenALAudioModule::LogDebug("Could not pull empty buffer from source!");
+            return;
+        }
+        QByteArray* bytes = playback_buffers_[buffer_handle];
+        if (!bytes)
+            assert(false); // These have been created on constructor
+        bytes->clear(); // Free previously reserved memory
+
+        // copy data
+        int copy_size = received_audio_data_.size();
+        //int max_copy_size = 1000;
+        //if (copy_size > max_copy_size)
+        //    copy_size = max_copy_size;
+        bytes->append(received_audio_data_, copy_size);
+        received_audio_data_.clear();
+
+        alBufferData(buffer_handle, format_, bytes->constData(), bytes->size(), frequency_);
+
         // Queue buffer back to sources playlist
-        alSourceQueueBuffers(source_, 1, &buffer);
+        alSourceQueueBuffers(source_, 1, &buffer_handle);
 
-        if (!IsPlaying() && (buffer_counter_ > MAX_BUFFER_COUNT*0.5))
+        if (!IsPlaying())
             Play();
-    }
-
-    ALuint SoundStream::GetBufferWithData(u8* data, uint size)
-    {
-        if (buffer_counter_ < MAX_BUFFER_COUNT)
-        {
-            u8* data_slot = StoreData(data, size);
-            if (!data_slot)
-                return 0;
-
-            ALuint buffer = buffers_[buffer_counter_++];
-            alBufferData(buffer, format_, data_slot, size, frequency_);
-            alSourceQueueBuffers(source_, 1, &buffer);
-            OpenALAudioModule::LogDebug("Added buffer " + boost::lexical_cast<std::string>(buffer_counter_+1) + "/" + boost::lexical_cast<std::string>(MAX_BUFFER_COUNT) + " to source");
-            return buffer;
-        }
-        else
-        {
-            ALint empty_buffer_count = 0;
-            alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
-            if (empty_buffer_count == 0)
-                return 0;
-            ALuint buffer;
-            alSourceUnqueueBuffers(source_, 1, &buffer);
-                
-            if (alGetError() == AL_INVALID_VALUE)
-            {
-                OpenALAudioModule::LogDebug("Could not pull empty buffer from source!");
-                return 0;
-            }
-            else
-                free_data_queque_index_count_++; // todo: call FreeData etc. method
-
-            u8* data_slot = StoreData(data, size);
-            if (!data_slot)
-                return 0;
-            if (free_data_queque_index_count_ >= DATA_QUEUE_SIZE)
-                assert(false); // Should never happen
-
-            alBufferData(buffer, format_, data_slot, size, frequency_);
-            return buffer;
-        }
-    }
-    
-    u8* SoundStream::StoreData(u8 *data, uint size)
-    {
-        if ( free_data_queque_index_count_ == 0)
-            return 0;
-        
-        u8* data_slot = data_queque_[next_free_data_queue_index_];
-        if (data_slot)
-        {
-            delete [] data_slot;
-            data_slot = 0;
-        }
-        data_slot = new u8[size];
-        memcpy(data_slot, data, size);
-        next_free_data_queue_index_ = (next_free_data_queue_index_ + 1 ) % DATA_QUEUE_SIZE;
-        free_data_queque_index_count_--;
-        return data_slot;
-    }
-
-    void SoundStream::ReleaseData()
-    {
-
     }
 
     bool SoundStream::IsPlaying()
