@@ -741,7 +741,7 @@ if 0:
     line = QLineEdit()
     box.addWidget(line)
 
-if 0:
+if 1:
     r.randomTest()
     #print qm, dir(qm)
     #~ print r.c.widget, r.c.proxywidget

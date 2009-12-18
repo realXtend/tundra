@@ -61,30 +61,9 @@ class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
-        self.setAcceptDrops(True)
-
-    def accept(self, ev):
-        return ev.mimeData().hasFormat("application/vnd.inventory.item")
-
-    def dragEnterEvent(self, ev):
-        #print "Got meshid dragEnterEvent", ev
-        if self.accept(ev):
-            ev.acceptProposedAction()
-
-    def dragMoveEvent(self, ev):
-        #print "Got meshid dragMoveEvent", ev
-        if self.accept(ev):
-            ev.acceptProposedAction()
 
     def dropEvent(self, ev):
-        print "Got meshid_drop:", self, ev
-        if not self.accept(ev):
-            return
-
-        data = ev.mimeData()
-        print dir(data)
-        ev.acceptProposedAction()
-        """
+    #    print "Got meshid_drop:", self, ev
         text = ev.mimeData().text()
         r.logDebug("EDITGUI: Mesh asset id got drag drop: %s" % text)
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
@@ -94,7 +73,6 @@ class MeshAssetidEditline(QLineEdit):
             self.text = text
         else:
             self.text = "(no scene entity selected)"
-        """
 
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
@@ -162,26 +140,10 @@ class EditGUI(Component):
         if box is not None:
             line = MeshAssetidEditline(self) 
             box.addWidget(line)
-        
-        #~ #print dir(ui)
-        #~ meshassetedit = MeshAssetidEditline(self) #ui) #ui.MainFrame) - crashes :o
-        #~ """<x>190</x>
-        #~ <y>180</y>
-        #~ <width>151</width>
-        #~ <height>20</height>"""
-        #~ meshassetedit.show()
-        #~ meshassetedit.move(200, 177)
-        #~ self.canvas.AddWidget(meshassetedit)
-
-
-        modu = r.getQtModule()
-
-        #for some reason setRange is not there. is not not a slot of these?
-        #"QDoubleSpinBox has no attribute named 'setRange'"
-        #apparently they are properties .minimum and .maximum, made in the xml now
-        #~ for p in [widget.MainFrame.xpos, widget.MainFrame.ypos]:
-            #~ p.setRange(0, 256)
-        #~ widget.zpos.setRange(0, 100)
+            
+        self.propedit = r.getPropertyEditor()
+        #print pe, pe.setObject, pe.show
+        #self.propedit.show()
         
         #~ widget.xpos.connect('valueChanged(double)', self.changed_x)
         def poschanger(i):
@@ -491,6 +453,7 @@ class EditGUI(Component):
             id, tWid = self.widgetList.pop(str(ent.id))
             #print tWid, tWid.text(0)
             tWid.delete()
+            self.deselect()
             self.sel = None
 
     def setMesh(self):
@@ -512,7 +475,7 @@ class EditGUI(Component):
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
             self.sel = ent
             self.sel_activated = False
-            self.worldstream.SendObjectSelectPacket(ent.id) #XXX is this already sent on the c++ side, GRAB event or something? is needed to get objectproperties (which are not needed here for anything (yet))
+            self.worldstream.SendObjectSelectPacket(ent.id)
             
             if not self.widgetList.has_key(str(self.sel.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
@@ -528,6 +491,11 @@ class EditGUI(Component):
             self.widget.label.text = ent.id
             
             self.update_selection()
+            
+            qprim = r.getQPrim(ent.id)
+            self.propedit.setObject(qprim)
+            self.propedit.show()
+           #print "Set propedit object to:", qprim, dir(qprim)
     
     def deselect(self):
         if self.sel is not None:
@@ -540,6 +508,7 @@ class EditGUI(Component):
             self.canmove = False
             self.arrow_grabbed_axis = None
             self.arrow_grabbed = False
+            self.propedit.hide()
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
@@ -625,10 +594,7 @@ class EditGUI(Component):
             #scale = self.move_arrows.scale
             #print self.move_arrows.scale, self.move_arrows.pos
             self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-            try:
-                self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
-            except ValueError: #fails now somehow for some weird reason
-                pass
+            self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
         
         self.arrow_grabbed_axis = None
         self.arrow_grabbed = False
