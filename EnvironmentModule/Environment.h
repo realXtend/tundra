@@ -79,7 +79,13 @@ namespace Environment
          
         void SetFogColorOverride(bool enabled);
         
+        /**
+         * Returns information is fog color controlled by user or caelum.
+         * @return true if it is fog color is controlled by user, else false.
+         **/
         
+        bool GetFogColorOverride();
+ 
         void SetGroundFogColor(const QVector<float>& color);
         
         void SetWaterFogColor(const QVector<float>& color);
@@ -93,12 +99,7 @@ namespace Environment
         float GetGroundFogStartDistance();
         float GetGroundFogEndDistance();
 
-        /**
-         * Returns information is fog color controlled by user or caelum.
-         * @return true if it is fog color is controlled by user, else false.
-         **/
-        
-        bool GetFogColorOverride();
+     
 
         /**
          * Returns current fog ground color. 
@@ -122,6 +123,9 @@ namespace Environment
 
         //! Set server time override
         void SetTimeOverride(bool enabled) { time_override_ = enabled; }      
+
+      
+      
      
     signals:
         

@@ -945,7 +945,10 @@ namespace Environment
 
     void EnvironmentEditor::ToggleFogOverride()
     {
-
+        if ( environment_->GetFogColorOverride() )
+            environment_->SetFogColorOverride(false);
+        else 
+            environment_->SetFogColorOverride(true);
 
     }
 
