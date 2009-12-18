@@ -749,3 +749,8 @@ if 1:
     #~ #print pe, pe.setObject, pe.show
     #~ pe.setObject(r.c.proxywidget)
     #~ pe.show()
+
+if 0:
+    worldstream = r.getServerConnection()
+    print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])
+

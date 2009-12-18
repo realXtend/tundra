@@ -12,6 +12,7 @@
 
 #include <QString>
 #include <QUrl>
+#include <QStringList> //for pythonqt compat override of SendGenericMessage
 
 namespace ProtocolUtilities
 {
@@ -1157,6 +1158,22 @@ void WorldStream::SendTerminateFriendshipPacket(const RexUUID &other_id)
     m->AddUUID(other_id);
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendGenericMessage(QString method, QStringList& strings)
+{
+    StringVector stringvec;
+    //QVector<QString> qstv = strings.toVector();
+    //stringvec = qstv.toStdVector(); //QString != std::string so this can't work, right?
+
+    for (QStringList::const_iterator const_iter = strings.constBegin();
+        const_iter != strings.constEnd(); ++const_iter)
+    {
+        QString qstr = *const_iter;
+        stringvec.push_back(qstr.toStdString());
+    }
+
+    SendGenericMessage(method.toStdString(), stringvec);
 }
 
 void WorldStream::SendGenericMessage(const std::string& method, const StringVector& strings)
