@@ -52,6 +52,8 @@ namespace TelepathyIM
 
         int audio_stream_in_clock_rate_; // todo getter
 
+        virtual void HandleAudioData(u8* data, int size);
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
         void AudioStreamReceived();

@@ -5,6 +5,7 @@
 
 // Debug prints only
 #include "OpenALAudioModule.h"
+#include <QFile>
 
 namespace OpenALAudio
 {
@@ -76,8 +77,15 @@ namespace OpenALAudio
 
     void SoundStream::AddData(u8 *data, uint size)
     {
-        add_data_mutex_.lock();
-        int max_buffer_length_ms = 1500;
+        // TEST
+        //QFile file("audio.raw");
+        //file.open(QIODevice::WriteOnly | QIODevice::OpenModeFlag::Append);
+        //file.write((char*)data, size);
+        //file.close();
+
+        if (!add_data_mutex_.tryLock())
+            return;
+        int max_buffer_length_ms = 500;
 
         ALint empty_buffer_count = 0;
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);

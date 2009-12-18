@@ -51,6 +51,8 @@ namespace TelepathyIM
         virtual bool IsReceivingAudioData() const;
         virtual bool IsReceivingVideoData() const;
 
+        
+
     public slots:
         //! Close the session
 		virtual void Close();
