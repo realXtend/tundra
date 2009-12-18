@@ -632,8 +632,8 @@ namespace TelepathyIM
         int sample_width = 16; // fix this
         int rate = 16000; 
 
-        if (farsight_channel_)
-            rate = farsight_channel_->audio_stream_in_clock_rate_; 
+        //if (farsight_channel_)
+        //    rate = farsight_channel_->audio_stream_in_clock_rate_; 
 
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)

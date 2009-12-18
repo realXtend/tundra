@@ -51,8 +51,8 @@ namespace TelepathyIM
 // This is because gimagesink does not inherit GstBin and there for the GST_BIN() typecheck in fs_element_added_notifier_add will fail
 #ifdef Q_WS_WIN
         video_playback_element_ = gst_element_factory_make("glimagesink", name.toStdString().c_str());
-        gst_object_ref(video_playback_element_);
-        gst_object_sink(video_playback_element_);
+//        gst_object_ref(video_playback_element_);
+//        gst_object_sink(video_playback_element_);
 
         // Video bin init
         const QString video_bin_name = "video_bin_for_" + name;
@@ -100,7 +100,7 @@ namespace TelepathyIM
         }
         if (video_playback_element_)
         {
-            g_object_unref(video_playback_element_);
+//            g_object_unref(video_playback_element_);
             video_playback_element_ = 0;
         }
         if (video_bin_)
@@ -108,6 +108,7 @@ namespace TelepathyIM
             g_object_unref(video_bin_);
             video_bin_ = 0;
         }
+        // todo unconnect signals ?
     }
 
     void VideoWidget::OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self)

@@ -156,7 +156,7 @@ namespace TelepathyIM
         else
         {
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
-            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, NULL);
+            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, "sync", TRUE, NULL);
         }
         //return;
         // We use fake audio sink for now
@@ -248,16 +248,17 @@ namespace TelepathyIM
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
+        gst_buffer_ref(buffer);
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
             LogDebug("Preroll audio data packet.");
-            gst_buffer_unref(buffer);
+//            gst_buffer_unref(buffer);
             return;
         }
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_GAP))
         {
             LogDebug("Caps audio data packet.");
-            gst_buffer_unref(buffer);
+//            gst_buffer_unref(buffer);
             return;
         }
         
@@ -265,6 +266,7 @@ namespace TelepathyIM
         u32 size = GST_BUFFER_SIZE(buffer);
         FarsightChannel* self = (FarsightChannel*)user_data;
         self->HandleAudioData(data, size);
+        gst_buffer_unref(buffer);
     }
 
     void FarsightChannel::HandleAudioData(u8* data, int size)
