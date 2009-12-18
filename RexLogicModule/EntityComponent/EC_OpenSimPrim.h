@@ -35,47 +35,46 @@ namespace RexLogic
     //! this component.
     class REXLOGIC_MODULE_API EC_OpenSimPrim : public Foundation::ComponentInterface
     {
-        Q_OBJECT
-            
         DECLARE_EC(EC_OpenSimPrim);
 
-		Q_PROPERTY(QString ObjectName READ getObjectName WRITE setObjectName)
-		Q_PROPERTY(QString FullId READ getFullId WRITE setFullId)
-		Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
-		Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
+        Q_OBJECT
+        Q_PROPERTY(QString ObjectName READ getObjectName WRITE setObjectName)
+        Q_PROPERTY(QString FullId READ getFullId WRITE setFullId)
+        Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
+        Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
         Q_PROPERTY(QString MediaUrl READ getMediaUrl WRITE setMediaUrl)
-		Q_PROPERTY(QString HoveringText READ getHoveringText WRITE setHoveringText)
-		Q_PROPERTY(bool CastShadows READ getCastShadows WRITE setCastShadows)
-		Q_PROPERTY(double SoundVolume READ getSoundVolume WRITE setSoundVolume)
-		Q_PROPERTY(double SoundRadius READ getSoundRadius WRITE setSoundRadius)
-		Q_PROPERTY(unsigned int Material READ getMaterial WRITE setMaterial)
-		Q_PROPERTY(unsigned int ClickAction READ getClickAction WRITE setClickAction)
-		Q_PROPERTY(unsigned int PathCurve READ getPathCurve WRITE setPathCurve)
-		Q_PROPERTY(unsigned int ProfileCurve READ getProfileCurve WRITE setProfileCurve)
-		Q_PROPERTY(QVariant RegionHandle READ getRegionHandle WRITE setRegionHandle)
-		Q_PROPERTY(unsigned int LocalId READ getLocalId WRITE setLocalId)
+        Q_PROPERTY(QString HoveringText READ getHoveringText WRITE setHoveringText)
+        Q_PROPERTY(bool CastShadows READ getCastShadows WRITE setCastShadows)
+        Q_PROPERTY(double SoundVolume READ getSoundVolume WRITE setSoundVolume)
+        Q_PROPERTY(double SoundRadius READ getSoundRadius WRITE setSoundRadius)
+        Q_PROPERTY(unsigned int Material READ getMaterial WRITE setMaterial)
+        Q_PROPERTY(unsigned int ClickAction READ getClickAction WRITE setClickAction)
+        Q_PROPERTY(unsigned int PathCurve READ getPathCurve WRITE setPathCurve)
+        Q_PROPERTY(unsigned int ProfileCurve READ getProfileCurve WRITE setProfileCurve)
+        Q_PROPERTY(QVariant RegionHandle READ getRegionHandle WRITE setRegionHandle)
+        Q_PROPERTY(unsigned int LocalId READ getLocalId WRITE setLocalId)
 
-		Q_PROPERTY(unsigned int PrimDefaultMaterialType READ getPrimDefaultMaterialType WRITE setPrimDefaultMaterialType)
-		Q_PROPERTY(unsigned int DrawType READ getDrawType WRITE setDrawType)
+        Q_PROPERTY(unsigned int PrimDefaultMaterialType READ getPrimDefaultMaterialType WRITE setPrimDefaultMaterialType)
+        Q_PROPERTY(unsigned int DrawType READ getDrawType WRITE setDrawType)
 
-		Q_PROPERTY(double DrawDistance READ getDrawDistance WRITE setDrawDistance)
-		Q_PROPERTY(double LOD READ getLOD WRITE setLOD)
+        Q_PROPERTY(double DrawDistance READ getDrawDistance WRITE setDrawDistance)
+        Q_PROPERTY(double LOD READ getLOD WRITE setLOD)
 
-		Q_PROPERTY(QString CollisionMeshID READ getCollisionMeshID WRITE setCollisionMeshID)
-		Q_PROPERTY(QString SoundID READ getSoundID WRITE setSoundID)
-		Q_PROPERTY(QString MeshID READ getMeshID WRITE setMeshID)
-		Q_PROPERTY(QString ParticleScriptID READ getParticleScriptID WRITE setParticleScriptID)
-		Q_PROPERTY(QString AnimationPackageID READ getAnimationPackageID WRITE setAnimationPackageID)
-		Q_PROPERTY(QString PrimDefaultTextureID READ getPrimDefaultTextureID WRITE setPrimDefaultTextureID)
-		Q_PROPERTY(QString AnimationName READ getAnimationName WRITE setAnimationName)
-		Q_PROPERTY(double AnimationRate READ getAnimationRate WRITE setAnimationRate)
+        Q_PROPERTY(QString CollisionMeshID READ getCollisionMeshID WRITE setCollisionMeshID)
+        Q_PROPERTY(QString SoundID READ getSoundID WRITE setSoundID)
+        Q_PROPERTY(QString MeshID READ getMeshID WRITE setMeshID)
+        Q_PROPERTY(QString ParticleScriptID READ getParticleScriptID WRITE setParticleScriptID)
+        Q_PROPERTY(QString AnimationPackageID READ getAnimationPackageID WRITE setAnimationPackageID)
+        Q_PROPERTY(QString PrimDefaultTextureID READ getPrimDefaultTextureID WRITE setPrimDefaultTextureID)
+        Q_PROPERTY(QString AnimationName READ getAnimationName WRITE setAnimationName)
+        Q_PROPERTY(double AnimationRate READ getAnimationRate WRITE setAnimationRate)
 
-		Q_PROPERTY(bool IsVisible READ getIsVisible WRITE setIsVisible)
-		Q_PROPERTY(bool LightCreatesShadows READ getLightCreatesShadows WRITE setLightCreatesShadows)
-		Q_PROPERTY(bool DescriptionTexture READ getDescriptionTexture WRITE setDescriptionTexture)
-		Q_PROPERTY(bool ScaleToPrim READ getScaleToPrim WRITE setScaleToPrim)
+        Q_PROPERTY(bool IsVisible READ getIsVisible WRITE setIsVisible)
+        Q_PROPERTY(bool LightCreatesShadows READ getLightCreatesShadows WRITE setLightCreatesShadows)
+        Q_PROPERTY(bool DescriptionTexture READ getDescriptionTexture WRITE setDescriptionTexture)
+        Q_PROPERTY(bool ScaleToPrim READ getScaleToPrim WRITE setScaleToPrim)
 
-		Q_PROPERTY(double PathBegin READ getPathBegin WRITE setPathBegin)
+        Q_PROPERTY(double PathBegin READ getPathBegin WRITE setPathBegin)
         Q_PROPERTY(double PathEnd READ getPathEnd WRITE setPathEnd)
         Q_PROPERTY(double PathScaleX READ getPathScaleX WRITE setPathScaleX)
         Q_PROPERTY(double PathScaleY READ getPathScaleY WRITE setPathScaleY)
@@ -92,9 +91,9 @@ namespace RexLogic
         Q_PROPERTY(double ProfileEnd READ getProfileEnd WRITE setProfileEnd)
         Q_PROPERTY(double ProfileHollow READ getProfileHollow WRITE setProfileHollow)
         Q_PROPERTY(bool HasPrimShapeData READ getHasPrimShapeData WRITE setHasPrimShapeData)
-		Q_PROPERTY(QVariant SelectPriority READ getSelectPriority WRITE setSelectPriority)
+        Q_PROPERTY(QVariant SelectPriority READ getSelectPriority WRITE setSelectPriority)
 
-		Q_PROPERTY(unsigned int UpdateFlags READ getUpdateFlags WRITE setUpdateFlags)
+        Q_PROPERTY(unsigned int UpdateFlags READ getUpdateFlags WRITE setUpdateFlags)
         Q_PROPERTY(unsigned int ParentId READ getParentId WRITE setParentId)
 
     public:
@@ -177,160 +176,162 @@ namespace RexLogic
         float ProfileHollow;
         bool HasPrimShapeData;
 
+#ifdef _DEBUG
         void PrintDebug();
+#endif
 
-		QString getCollisionMeshID() { return QString(CollisionMeshID.c_str()); }
-		void setCollisionMeshID(QString value) { CollisionMeshID = value.toStdString(); }
+        QString getCollisionMeshID() const { return QString(CollisionMeshID.c_str()); }
+        void setCollisionMeshID(QString value) { CollisionMeshID = value.toStdString(); }
 
-		QString getSoundID() { return QString(SoundID.c_str()); }
-		void setSoundID(QString value) { SoundID = value.toStdString(); }
+        QString getSoundID() const { return QString(SoundID.c_str()); }
+        void setSoundID(QString value) { SoundID = value.toStdString(); }
 
-		QString getMeshID() { return QString(MeshID.c_str()); }
-		void setMeshID(QString value) { MeshID = value.toStdString(); }
+        QString getMeshID() const { return QString(MeshID.c_str()); }
+        void setMeshID(QString value) { MeshID = value.toStdString(); }
 
-		QString getParticleScriptID() { return QString(ParticleScriptID.c_str()); }
-		void setParticleScriptID(QString value) { ParticleScriptID = value.toStdString(); }
+        QString getParticleScriptID() const { return QString(ParticleScriptID.c_str()); }
+        void setParticleScriptID(QString value) { ParticleScriptID = value.toStdString(); }
 
-		QString getAnimationPackageID() { return QString(AnimationPackageID.c_str()); }
-		void setAnimationPackageID(QString value) { AnimationPackageID = value.toStdString(); }
+        QString getAnimationPackageID() const { return QString(AnimationPackageID.c_str()); }
+        void setAnimationPackageID(QString value) { AnimationPackageID = value.toStdString(); }
 
-		QString getPrimDefaultTextureID() { return QString(PrimDefaultTextureID.c_str()); }
-		void setPrimDefaultTextureID(QString value) { PrimDefaultTextureID = value.toStdString(); }
+        QString getPrimDefaultTextureID() const { return QString(PrimDefaultTextureID.c_str()); }
+        void setPrimDefaultTextureID(QString value) { PrimDefaultTextureID = value.toStdString(); }
 
-		QString getAnimationName() { return QString(AnimationName.c_str()); }
-		void setAnimationName(QString value) { AnimationName = value.toStdString(); }
+        QString getAnimationName() const { return QString(AnimationName.c_str()); }
+        void setAnimationName(QString value) { AnimationName = value.toStdString(); }
 
-		QString getObjectName() { return QString(ObjectName.c_str()); }
-		void setObjectName(QString name) { ObjectName = name.toStdString(); }
-		
-		QString getDescription() { return QString(Description.c_str()); }
-		void setDescription(QString value) { Description = value.toStdString(); }
-		
-		QString getMediaUrl() { return QString(MediaUrl.c_str()); }
-		void setMediaUrl(QString value) { MediaUrl = value.toStdString(); }
-		
-		QString getHoveringText() { return QString(HoveringText.c_str()); }
-		void setHoveringText(QString value) { HoveringText = value.toStdString(); }
+        QString getObjectName() const { return QString(ObjectName.c_str()); }
+        void setObjectName(QString name) { ObjectName = name.toStdString(); }
 
-		QString getServerScriptClass() { return QString(ServerScriptClass.c_str()); }
-		void setServerScriptClass(QString scriptclass) { ServerScriptClass = scriptclass.toStdString(); }
+        QString getDescription() const { return QString(Description.c_str()); }
+        void setDescription(QString value) { Description = value.toStdString(); }
 
-		bool getCastShadows() { return CastShadows; }
-		void setCastShadows(bool shadows) { CastShadows = shadows; }
+        QString getMediaUrl() const { return QString(MediaUrl.c_str()); }
+        void setMediaUrl(QString value) { MediaUrl = value.toStdString(); }
 
-		double getSoundVolume() { return (double)SoundVolume; }
-		void setSoundVolume(double sound) { SoundVolume = (float)sound; }
+        QString getHoveringText() const { return QString(HoveringText.c_str()); }
+        void setHoveringText(QString value) { HoveringText = value.toStdString(); }
 
-		double getSoundRadius() { return (double)SoundRadius; }
-		void setSoundRadius(double sound) { SoundRadius = (float)sound; }
+        QString getServerScriptClass() const { return QString(ServerScriptClass.c_str()); }
+        void setServerScriptClass(QString scriptclass) { ServerScriptClass = scriptclass.toStdString(); }
 
-		void setClickAction(unsigned int mat) { ClickAction = (uint8_t)mat; }
-		unsigned int getClickAction() { return ClickAction; }
+        bool getCastShadows() const { return CastShadows; }
+        void setCastShadows(bool shadows) { CastShadows = shadows; }
 
-		void setMaterial(unsigned int mat) { Material = (uint8_t)mat; }
-		unsigned int getMaterial() { return Material; }
+        double getSoundVolume() const { return (double)SoundVolume; }
+        void setSoundVolume(double sound) { SoundVolume = (float)sound; }
 
-		void setPrimDefaultMaterialType(unsigned int mat) { PrimDefaultMaterialType = (uint8_t)mat; }
-		unsigned int getPrimDefaultMaterialType() { return PrimDefaultMaterialType; }
+        double getSoundRadius() const { return (double)SoundRadius; }
+        void setSoundRadius(double sound) { SoundRadius = (float)sound; }
 
-		void setDrawType(unsigned int mat) { DrawType = (uint8_t)mat; }
-		unsigned int getDrawType() { return DrawType; }
+        void setClickAction(unsigned int mat) { ClickAction = (uint8_t)mat; }
+        unsigned int getClickAction() const { return ClickAction; }
 
-		void setPathCurve(unsigned int value) { PathCurve = (uint8_t)value; }
-		unsigned int getPathCurve() { return PathCurve; }
+        void setMaterial(unsigned int mat) { Material = (uint8_t)mat; }
+        unsigned int getMaterial() const { return Material; }
 
-		void setProfileCurve(unsigned int value) { ProfileCurve = (uint8_t)value; }
-		unsigned int getProfileCurve() { return ProfileCurve; }
+        void setPrimDefaultMaterialType(unsigned int mat) { PrimDefaultMaterialType = (uint8_t)mat; }
+        unsigned int getPrimDefaultMaterialType() const { return PrimDefaultMaterialType; }
 
-		void setRegionHandle(QVariant reg) { RegionHandle = reg.toULongLong(); }
-		QVariant getRegionHandle() { return QVariant(RegionHandle); }
+        void setDrawType(unsigned int mat) { DrawType = (uint8_t)mat; }
+        unsigned int getDrawType() const { return DrawType; }
 
-		void setLocalId(unsigned int lid) { LocalId = (uint32_t)lid; }
-		unsigned int getLocalId() { return LocalId; }
+        void setPathCurve(unsigned int value) { PathCurve = (uint8_t)value; }
+        unsigned int getPathCurve() const { return PathCurve; }
 
-        double getPathBegin() { return (double)PathBegin; }
-		void setPathBegin(double value) { PathBegin = value; }
-        
-        double getPathEnd() { return (double)PathEnd; }
-		void setPathEnd(double value) {PathEnd = value; }
-        
-        double getPathScaleX() { return (double)PathScaleX; }
-		void setPathScaleX(double value) { PathScaleX = value; }
-        
-        double getPathScaleY() { return (double)PathScaleY; }
-		void setPathScaleY(double value) { PathScaleY= value; }
-        
-        double getPathShearX() { return (double)PathShearX; }
-		void setPathShearX(double value) { PathShearX= value; }
-        
-        double getPathShearY() { return (double)PathShearY; }
-		void setPathShearY(double value) {PathShearY = value; }
-        
-        double getPathTwist() { return (double)PathTwist; }
-		void setPathTwist(double value) { PathTwist= value; }
-        
-        double getPathTwistBegin() { return (double)PathTwistBegin; }
-		void setPathTwistBegin(double value) { PathTwistBegin= value; }
-        
-        double getPathRadiusOffset() { return (double)PathRadiusOffset; }
-		void setPathRadiusOffset(double value) { PathRadiusOffset= value; }
-        
-        double getPathTaperX() { return (double)PathTaperX; }
-		void setPathTaperX(double value) { PathTaperX= value; }
-        
-        double getPathTaperY() { return (double)PathTaperY; }
-		void setPathTaperY(double value) { PathTaperY= value; }
-        
-        double getPathRevolutions() { return (double)PathRevolutions; }
-		void setPathRevolutions(double value) { PathRevolutions= value; }
-        
-        double getPathSkew() { return (double)PathSkew; }
-		void setPathSkew(double value) { PathSkew= value; }
-        
-        double getProfileBegin() { return (double)ProfileBegin; }
-		void setProfileBegin(double value) { ProfileBegin= value; }
-        
-        double getProfileEnd() { return (double)ProfileEnd; }
-		void setProfileEnd(double value) { ProfileEnd= value; }
-        
-        double getProfileHollow() { return (double)ProfileHollow; }
-		void setProfileHollow(double value) {ProfileHollow = value; }
-        
-        bool getHasPrimShapeData() { return HasPrimShapeData; }
-		void setHasPrimShapeData(bool value) { HasPrimShapeData= value; }
-		
-		QString getFullId() { return QString(FullId.ToString().c_str()); }
-		void setFullId(QString value) { FullId.FromString(value.toStdString()); }
+        void setProfileCurve(unsigned int value) { ProfileCurve = (uint8_t)value; }
+        unsigned int getProfileCurve() const { return ProfileCurve; }
 
-		bool getLightCreatesShadows() { return LightCreatesShadows; }
-		void setLightCreatesShadows(bool value) { LightCreatesShadows = value; }
+        void setRegionHandle(QVariant reg) { RegionHandle = reg.toULongLong(); }
+        QVariant getRegionHandle() const { return QVariant(RegionHandle); }
 
-		bool getDescriptionTexture() { return DescriptionTexture; }
-		void setDescriptionTexture(bool value) { DescriptionTexture = value; }
+        void setLocalId(unsigned int lid) { LocalId = (uint32_t)lid; }
+        unsigned int getLocalId() const { return LocalId; }
 
-		bool getIsVisible() { return IsVisible; }
-		void setIsVisible(bool value) { IsVisible = value; }
+        double getPathBegin() const { return (double)PathBegin; }
+        void setPathBegin(double value) { PathBegin = value; }
 
-		bool getScaleToPrim() { return ScaleToPrim; }
-		void setScaleToPrim(bool value) { ScaleToPrim = value; }
+        double getPathEnd()const  { return (double)PathEnd; }
+        void setPathEnd(double value) {PathEnd = value; }
 
-		double getAnimationRate() { return (double)AnimationRate; }
-		void setAnimationRate(double value) { AnimationRate = value; }
+        double getPathScaleX() const { return (double)PathScaleX; }
+        void setPathScaleX(double value) { PathScaleX = value; }
 
-		double getDrawDistance() { return (double)DrawDistance; }
-		void setDrawDistance(double value) { DrawDistance = value; }
+        double getPathScaleY() const { return (double)PathScaleY; }
+        void setPathScaleY(double value) { PathScaleY= value; }
 
-		double getLOD() { return (double)LOD; }
-		void setLOD(double value) { LOD = value; }
+        double getPathShearX() const { return (double)PathShearX; }
+        void setPathShearX(double value) { PathShearX= value; }
 
-		void setSelectPriority(QVariant value) { SelectPriority = value.toULongLong(); }
-		QVariant getSelectPriority() { return QVariant(SelectPriority); }
+        double getPathShearY() const { return (double)PathShearY; }
+        void setPathShearY(double value) {PathShearY = value; }
 
-		void setParentId(unsigned int value) { ParentId = value; }
-		unsigned int getParentId() { return ParentId; }
-        
-		void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
-		unsigned int getUpdateFlags() { return UpdateFlags; }
+        double getPathTwist() const { return (double)PathTwist; }
+        void setPathTwist(double value) { PathTwist= value; }
+
+        double getPathTwistBegin() const { return (double)PathTwistBegin; }
+        void setPathTwistBegin(double value) { PathTwistBegin= value; }
+
+        double getPathRadiusOffset() const { return (double)PathRadiusOffset; }
+        void setPathRadiusOffset(double value) { PathRadiusOffset= value; }
+
+        double getPathTaperX() const { return (double)PathTaperX; }
+        void setPathTaperX(double value) { PathTaperX= value; }
+
+        double getPathTaperY() const { return (double)PathTaperY; }
+        void setPathTaperY(double value) { PathTaperY= value; }
+
+        double getPathRevolutions() const { return (double)PathRevolutions; }
+        void setPathRevolutions(double value) { PathRevolutions= value; }
+
+        double getPathSkew() const { return (double)PathSkew; }
+        void setPathSkew(double value) { PathSkew= value; }
+
+        double getProfileBegin() const { return (double)ProfileBegin; }
+        void setProfileBegin(double value) { ProfileBegin= value; }
+
+        double getProfileEnd() const { return (double)ProfileEnd; }
+        void setProfileEnd(double value) { ProfileEnd= value; }
+
+        double getProfileHollow() const { return (double)ProfileHollow; }
+        void setProfileHollow(double value) {ProfileHollow = value; }
+
+        bool getHasPrimShapeData() const { return HasPrimShapeData; }
+        void setHasPrimShapeData(bool value) { HasPrimShapeData= value; }
+
+        QString getFullId() const { return QString(FullId.ToString().c_str()); }
+        void setFullId(QString value) { FullId.FromString(value.toStdString()); }
+
+        bool getLightCreatesShadows() const { return LightCreatesShadows; }
+        void setLightCreatesShadows(bool value) { LightCreatesShadows = value; }
+
+        bool getDescriptionTexture() const { return DescriptionTexture; }
+        void setDescriptionTexture(bool value) { DescriptionTexture = value; }
+
+        bool getIsVisible() const { return IsVisible; }
+        void setIsVisible(bool value) { IsVisible = value; }
+
+        bool getScaleToPrim() const { return ScaleToPrim; }
+        void setScaleToPrim(bool value) { ScaleToPrim = value; }
+
+        double getAnimationRate() const { return (double)AnimationRate; }
+        void setAnimationRate(double value) { AnimationRate = value; }
+
+        double getDrawDistance() const { return (double)DrawDistance; }
+        void setDrawDistance(double value) { DrawDistance = value; }
+
+        double getLOD() const { return (double)LOD; }
+        void setLOD(double value) { LOD = value; }
+
+        void setSelectPriority(QVariant value) { SelectPriority = value.toULongLong(); }
+        QVariant getSelectPriority() const { return QVariant(SelectPriority); }
+
+        void setParentId(unsigned int value) { ParentId = value; }
+        unsigned int getParentId() const { return ParentId; }
+
+        void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
+        unsigned int getUpdateFlags() const { return UpdateFlags; }
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);

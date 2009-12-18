@@ -3,15 +3,13 @@
 #ifndef incl_Interfaces_ModuleInterface_h
 #define incl_Interfaces_ModuleInterface_h
 
-#include <Poco/ClassLibrary.h>
-#include <Poco/Logger.h>
-
-#include <Framework.h>
-
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
 #include "ConsoleCommandServiceInterface.h"
+
+#include <Poco/ClassLibrary.h>
+#include <Poco/Logger.h>
 
 //! this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \
@@ -45,6 +43,8 @@ namespace Foundation
 
             \ingroup Module_group
         */
+
+        //! Module enumeration.
         enum Type 
         {
             MT_Renderer = 0,
@@ -67,9 +67,9 @@ namespace Foundation
             MT_TaigaProtocol,
             MT_OgreAssetEditor,
             MT_UiServices,
-			MT_Environment,
-			MT_Unknown
-		};
+            MT_Environment,
+            MT_Unknown
+        };
 
         //! Returns string from type enum.
         /*!
@@ -127,6 +127,7 @@ namespace Foundation
             Component is the class of the component.
         */
         virtual void Load() = 0;
+
         //! called when module is unloaded from memory. Do not trust that framework can be used.
         //! Override in your own module. Do not call.
         virtual void Unload() = 0;
@@ -134,13 +135,15 @@ namespace Foundation
         //! Pre-initialization for the module. Called before modules are initializated.
         //! Only override if you need. Do not call.
         virtual void PreInitialize() = 0;
+
         //! Initializes the module. Called when module is taken in use.
         //! Override in your own module. Do not call.
         virtual void Initialize() = 0;
+
         //! Post-initialization for the module. At this point Initialize() has been called for all enabled modules.
         //! Only override if you need. Do not call.
         virtual void PostInitialize() = 0;
-																																						
+
         //! Uninitialize the module. Called when module is removed from use
         //! Override in your own module. Do not call.
         virtual void Uninitialize() = 0;
@@ -203,6 +206,7 @@ namespace Foundation
 
         //! Called when module is loaded. Do not override in child classes. For internal use.
         virtual void LoadInternal() = 0;
+
         //! Called when module is unloaded. Do not override in child classes. For internal use.
         virtual void UnloadInternal() = 0;
 
@@ -227,134 +231,75 @@ namespace Foundation
     class MODULE_API ModuleInterfaceImpl : public ModuleInterface
     {
         friend class ModuleManager;
+
     private:
         typedef std::vector<Console::Command> CommandVector;
+
     public:
-    
-        explicit ModuleInterfaceImpl(const std::string &name) : name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(0)
-        { 
-            try
-            {
-                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), Poco::Message::PRIO_TRACE);    
-            }
-            catch (std::exception)
-            {
-                Foundation::RootLogError("Failed to create logger " + Name() + ".");
-            }
-        }
+        /// Constructor.
+        /// @param name Module name.
+        explicit ModuleInterfaceImpl(const std::string &name);
 
-        explicit ModuleInterfaceImpl(Module::Type type) : type_(type), state_(Module::MS_Unloaded), framework_(0)
-        { 
-            try
-            {
-                Poco::Logger::create(Name(),Poco::Logger::root().getChannel(),Poco::Message::PRIO_TRACE);           
-            }
-            catch (std::exception)
-            {
-                Foundation::RootLogError("Failed to create logger " + Name() + ".");
-            }
-        }
+        /// Constructor.
+        /// @param name type Module type.
+        explicit ModuleInterfaceImpl(Module::Type type);
 
-        virtual ~ModuleInterfaceImpl()
-        {
-            Poco::Logger::destroy(Name());
-        }
+        /// Destructor.
+        virtual ~ModuleInterfaceImpl();
 
+        /// ModuleInterface override.
         virtual void PreInitialize() {}
+
+        /// ModuleInterface override.
         virtual void PostInitialize() {}
-        
+
+        /// ModuleInterface override.
         virtual void Update(f64 frametime) {}
 
+        /// ModuleInterface override.
         virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
+
+        /// ModuleInterface override.
         virtual Module::Type Type() const { return type_; }
+
+        /// ModuleInterface override.
         virtual bool IsInternal() const { return type_ != Module::MT_Unknown; }
 
-        virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar)
-        {
-            component_registrars_.push_back(registrar);
-        }
-        
+        /// ModuleInterface override.
+        virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) { component_registrars_.push_back(registrar); }
+
+        /// ModuleInterface override.
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
 
+        /// ModuleInterface override.
         virtual Module::State State() const { return state_; }
 
-        virtual void AutoRegisterConsoleCommand(const Console::Command &command)
-        {
-            assert (State() == Module::MS_Unloaded && "AutoRegisterConsoleCommand function can only be used when loading the module.");
+        /// ModuleInterface override.
+        virtual void AutoRegisterConsoleCommand(const Console::Command &command);
 
-            for ( CommandVector::iterator it = console_commands_.begin() ; 
-                  it != console_commands_.end() ;
-                  ++it )
-            {
-                if (it->name_ == command.name_)
-                    assert (false && "Registering console command twice");
-            }
+        /// ModuleInterface override.
+        virtual Framework *GetFramework() const;
 
-            console_commands_.push_back(command); 
-        }
+        /// ModuleInterface override.
+        virtual std::string VersionMajor() const;
 
-        virtual Framework *GetFramework() const { return framework_; }
+        /// ModuleInterface override.
+        virtual std::string VersionMinor() const;
 
-        virtual std::string VersionMajor() const
-        {
-            if (IsInternal())
-            {
-                static const std::string version("version_major");
-                return ( GetFramework()->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), version) );
-            }
-            return std::string("0");
-        }
-
-        virtual std::string VersionMinor() const
-        {
-            if (IsInternal())
-            {
-                static const std::string version("version_minor");
-                return ( GetFramework()->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), version) );
-            }
-            return std::string("0");
-        }
     protected:
         //! parent framework
         Framework *framework_;
-        
+
     private:
         virtual void LoadInternal() { assert(state_ == Module::MS_Unloaded); Load(); state_ = Module::MS_Loaded; }
         virtual void UnloadInternal() { assert(state_ == Module::MS_Loaded); Unload(); state_ = Module::MS_Unloaded; }
         virtual void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
         //! Unused
-        virtual void PreInitializeInternal()
-        {
-            PreInitialize();
-        }
+        virtual void PreInitializeInternal() { PreInitialize(); }
 
         //! Registers all declared components
-        virtual void InitializeInternal()
-        {
-            assert(framework_ != 0);
-            assert (state_ == Module::MS_Loaded);
-
-            //! Register components
-            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
-            {
-                component_registrars_[n]->Register(framework_, this);
-            }
-            
-            //! Register commands
-            for ( CommandVector::iterator it = console_commands_.begin() ; 
-                  it != console_commands_.end() ;
-                  ++it )
-            {
-                if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
-                {
-                    boost::weak_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
-                    console.lock()->RegisterCommand(*it);
-                }
-            }
-
-            Initialize();
-        }
+        virtual void InitializeInternal();
 
         //! Sets internal state to "initialized"
         virtual void PostInitializeInternal()
@@ -364,35 +309,7 @@ namespace Foundation
         }
 
         //! Unregisters all declared components
-        virtual void UninitializeInternal()
-        {
-            assert(framework_ != 0);
-            assert (state_ == Module::MS_Initialized);
-
-            for (size_t n=0 ; n<component_registrars_.size() ; ++n)
-            {
-                component_registrars_[n]->Unregister(framework_);
-            }
-
-            //! Unregister commands
-            for ( CommandVector::iterator it = console_commands_.begin() ; 
-                  it != console_commands_.end() ;
-                  ++it )
-            {
-                if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
-                {
-                    boost::weak_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);
-                    console.lock()->UnregisterCommand(it->name_);
-                }
-            }
-
-            Uninitialize();
-
-            // The module is now uninitialized, but it is still loaded in memory.
-            // The module can now be initialized again, and InitializeInternal()
-            // expects the state to be Module::MS_Loaded.
-            state_ = Module::MS_Loaded;
-        }
+        virtual void UninitializeInternal();
 
         typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
@@ -404,12 +321,13 @@ namespace Foundation
 
         //! name of the module
         const std::string name_;
+
         //! type of the module if inbuild, unknown otherwise
         const Module::Type type_;
+
         //! Current state of the module
         Module::State state_;
     };
 }
 
 #endif
-

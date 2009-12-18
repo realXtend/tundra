@@ -64,7 +64,7 @@ void PropertyTableWidget::InitWidget()
     setAcceptDrops(true);
     setDragEnabled(false);
     setDragDropMode(QAbstractItemView::DropOnly);
-    viewport()->setAcceptDrops(true);
+    /*viewport()->*/setAcceptDrops(true);
     setDropIndicatorShown(true);
     setDragDropOverwriteMode(true);
 
