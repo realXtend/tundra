@@ -1001,7 +1001,7 @@ QWidget#Form {
         <attribute name="title">
          <string>Ambient light</string>
         </attribute>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox">
+        <widget class="QDoubleSpinBox" name="sun_direction_x">
          <property name="geometry">
           <rect>
            <x>20</x>
@@ -1011,7 +1011,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+        <widget class="QDoubleSpinBox" name="sun_direction_y">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -1021,7 +1021,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+        <widget class="QDoubleSpinBox" name="sun_direction_z">
          <property name="geometry">
           <rect>
            <x>160</x>
@@ -1057,7 +1057,7 @@ QWidget#Form {
           <string>Sun color</string>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+        <widget class="QDoubleSpinBox" name="sun_color_red">
          <property name="geometry">
           <rect>
            <x>20</x>
@@ -1067,7 +1067,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+        <widget class="QDoubleSpinBox" name="sun_color_blue">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -1077,7 +1077,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+        <widget class="QDoubleSpinBox" name="sun_color_green">
          <property name="geometry">
           <rect>
            <x>160</x>
@@ -1136,7 +1136,7 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> X</string>
+          <string>Red</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_7">
@@ -1149,7 +1149,7 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> Y</string>
+          <string> Blue</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_8">
@@ -1162,10 +1162,10 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> Z</string>
+          <string>Green</string>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
+        <widget class="QDoubleSpinBox" name="ambient_light_red">
          <property name="geometry">
           <rect>
            <x>20</x>
@@ -1175,7 +1175,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
+        <widget class="QDoubleSpinBox" name="ambient_light_blue">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -1185,7 +1185,7 @@ QWidget#Form {
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
+        <widget class="QDoubleSpinBox" name="ambient_light_green">
          <property name="geometry">
           <rect>
            <x>160</x>
@@ -1218,7 +1218,7 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> X</string>
+          <string> Red</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_11">
@@ -1231,7 +1231,7 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> Y</string>
+          <string>Blue</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_12">
@@ -1244,10 +1244,10 @@ QWidget#Form {
           </rect>
          </property>
          <property name="text">
-          <string> Z</string>
+          <string>Green</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="ambient_light_button">
          <property name="geometry">
           <rect>
            <x>230</x>
