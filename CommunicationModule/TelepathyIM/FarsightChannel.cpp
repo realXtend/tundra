@@ -156,7 +156,7 @@ namespace TelepathyIM
         else
         {
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
-            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", (gboolean)true, this);
+            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, NULL);
         }
         //return;
         // We use fake audio sink for now
@@ -388,6 +388,7 @@ namespace TelepathyIM
                 //g_object_ref(output_element); // do we need this
                 if (self->audio_in_src_pad_)
                     sink_already_linked = true;
+                LogDebug("Got pad for incoming AUDIO stream.");
                 break;
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
@@ -395,6 +396,7 @@ namespace TelepathyIM
                 output_element = self->received_video_playback_element_;
                 if (self->video_in_src_pad_)
                     sink_already_linked = true;
+                LogDebug("Got pad for incoming VIDEO stream.");
                 break;
             }
             default:

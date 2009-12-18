@@ -682,6 +682,12 @@ namespace TelepathyIM
 
     bool VoiceSession::IsSendingAudioData() const
     {
+        if (!farsight_channel_)
+            return false;
+
+        if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
+            return false;
+
         Tp::MediaStreamPtr stream = GetAudioMediaStream();
         if (!stream)
             return false;
@@ -691,6 +697,12 @@ namespace TelepathyIM
 
     bool VoiceSession::IsSendingVideoData() const
     {
+        if (!farsight_channel_)
+            return false;
+
+        if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
+            return false;
+
         Tp::MediaStreamPtr stream = GetVideoMediaStream();
         if (!stream)
             return false;
@@ -700,6 +712,12 @@ namespace TelepathyIM
 
     bool VoiceSession::IsReceivingAudioData() const
     {
+        if (!farsight_channel_)
+            return false;
+
+        if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
+            return false;
+
         Tp::MediaStreamPtr stream = GetAudioMediaStream();
         if (!stream)
             return false;
@@ -709,6 +727,12 @@ namespace TelepathyIM
 
     bool VoiceSession::IsReceivingVideoData() const
     {
+        if (!farsight_channel_)
+            return false;
+
+        if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
+            return false;
+
         Tp::MediaStreamPtr stream = GetVideoMediaStream();
         if (!stream)
             return false;
