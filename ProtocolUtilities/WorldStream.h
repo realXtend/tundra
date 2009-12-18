@@ -370,6 +370,9 @@ namespace ProtocolUtilities
             \param strings Vector of data strings to be sent
          */
         void SendGenericMessage(const std::string& method, const StringVector& strings);
+        
+        //a qt version for pythonqt & qtscript
+        void SendGenericMessage(QString method, QStringList& strings);
 
         //! Sends a generic message with binary data packed to the end
         /*! \param method Method name
