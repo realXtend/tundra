@@ -168,7 +168,7 @@ namespace OpenALAudio
         return (state == AL_PLAYING);
     }
 
-    void SoundStream::SetPosition(Vector3df &position)
+    void SoundStream::SetPosition(const Vector3df &position)
     {
         if (source_)
         {

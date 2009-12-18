@@ -209,7 +209,9 @@ namespace OpenALAudio
         if (!sound_stream_)
             sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
         if (!positional)
-            sound_stream_->SetPosition(Vector3df(0.0f, 0.0f, 0.0f));
+        {
+            sound_stream_->SetPosition(Vector3df::ZERO);
+        }
         sound_stream_->AddData(buffer, buffer_size);
         return 0;
 

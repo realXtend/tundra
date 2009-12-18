@@ -28,7 +28,7 @@ namespace OpenALAudio
         //!       and it can free the data block.
         void AddData(u8 *data, uint size);
         bool IsPlaying();
-        void SetPosition(Vector3df &position);
+        void SetPosition(const Vector3df& position);
 
     private:
         //! /return handle to OpenAL buffer object with given data
