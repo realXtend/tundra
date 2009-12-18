@@ -52,6 +52,7 @@ namespace CommunicationUI
         void UpdateRemoteAudioControls(bool state);
 
     private slots:
+        void ClearContent();
         void ShowConfirmationWidget();
         void ShowVideoWidgets();
         void CloseSession();

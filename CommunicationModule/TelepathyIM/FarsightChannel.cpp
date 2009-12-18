@@ -53,12 +53,12 @@ namespace TelepathyIM
 
     FarsightChannel::~FarsightChannel()
     {
-        // delete widgets
-        //if (locally_captured_video_widget_)
-        //    SAFE_DELETE(locally_captured_video_widget_);
+        // Delete video widgets
+        if (locally_captured_video_widget_)
+            SAFE_DELETE(locally_captured_video_widget_);
 
-        //if (received_video_widget_)
-        //    SAFE_DELETE(received_video_widget_);
+        if (received_video_widget_)
+            SAFE_DELETE(received_video_widget_);
 
         // TODO: CHECK Proper cleanup with unref
         if (tf_channel_)
@@ -66,7 +66,7 @@ namespace TelepathyIM
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_session_created_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_stream_created_g_signal_);
-//            g_object_unref(tf_channel_);
+            //g_object_unref(tf_channel_);
             tf_channel_ = 0;
         }
         if (bus_)
@@ -76,7 +76,7 @@ namespace TelepathyIM
             g_object_unref(bus_);
             bus_ = 0;
         }
-        gst_element_set_state(pipeline_, GST_STATE_NULL);
+        gst_element_set_state(pipeline_, GST_STATE_PAUSED);
 
         if (video_input_bin_)
         {

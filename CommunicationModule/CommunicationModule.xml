@@ -1,7 +1,6 @@
 <config>
 	<entry>CommunicationModule</entry>
 	<dependency>SupportModules</dependency>
-	<dependency>QtModule</dependency>
     <dependency>RexLogicModule</dependency>
     <dependency>ProtocolModuleOpenSim</dependency>
     <dependency>OpenALAudioModule</dependency>

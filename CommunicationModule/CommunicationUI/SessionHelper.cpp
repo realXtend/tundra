@@ -139,7 +139,10 @@ namespace UiHelpers
             info_widget_->setStyleSheet(QString("QWidget#infoWidget { background-color: rgb(255,255,255); } QLabel { color: rgb(0,0,0); }"));
             QVBoxLayout *layout = new QVBoxLayout(info_widget_);
             layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
-            layout->addWidget(new QLabel("Click on Show Friend List from the top menu to start communicating...", info_widget_));
+            QLabel *info_label = new QLabel("Click on Show Friend List from the top menu to start communicating", info_widget_);
+            info_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            info_label->setAlignment(Qt::AlignCenter);
+            layout->addWidget(info_label);
             layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
             info_widget_->setLayout(layout);
 

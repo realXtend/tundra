@@ -75,35 +75,51 @@ namespace CommunicationUI
         SAFE_DELETE(internal_widget_);
     }
 
+    void VideoSessionWidget::ClearContent()
+    {
+        if (internal_v_layout_local_ && local_video_)
+        {
+            local_video_->hide();
+            internal_v_layout_local_->removeWidget(local_video_);
+            local_video_->setParent(0);
+            local_video_ = 0;
+        }
+        if (internal_v_layout_remote_ && remote_video_)
+        {
+            remote_video_->hide();
+            internal_v_layout_remote_->removeWidget(remote_video_);
+            remote_video_->setParent(0);
+            remote_video_ = 0;
+        }
+        SAFE_DELETE(internal_widget_);
+    }
+
     void VideoSessionWidget::SessionStateChanged(Communication::VoiceSessionInterface::State new_state)
     {
-        SAFE_DELETE(internal_widget_);
+        ClearContent();
 
         switch (new_state)
         {
             case Communication::VoiceSessionInterface::STATE_OPEN:
             {
-                //QSpacerItem *spacer = dynamic_cast<QSpacerItem *>(video_session_ui_.mainVerticalLayout->takeAt(0)->widget());
-                //if (spacer)
-                //    delete spacer;
                 ShowVideoWidgets();
                 video_session_ui_.connectionStatus->setText("Open");
                 break;
             }
             case Communication::VoiceSessionInterface::STATE_CLOSED:
             {
+                video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.connectionStatus->setText("This coversation has been closed");
                 break;
             }
             case Communication::VoiceSessionInterface::STATE_ERROR:
             {
-                //video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+                video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.connectionStatus->setText("Connection failed");
                 break;
             }
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
             {
-                //video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 video_session_ui_.connectionStatus->setText("Initializing...");
                 break;
             }
