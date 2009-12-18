@@ -386,7 +386,6 @@ class EditGUI(Component):
                 self.update_selection()
             
     def changerot(self, i, v):
-        return
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
