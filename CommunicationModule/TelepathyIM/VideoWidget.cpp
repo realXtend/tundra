@@ -31,9 +31,6 @@ namespace TelepathyIM
         qDebug() << "VideoWidget " << name << " INIT STARTED";
         setWindowTitle(name);
 
-//        gst_object_ref(bus_);
-//        gst_object_sink(bus_);
-
         // Element notifier init
         notifier_ = fs_element_added_notifier_new();
         g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
@@ -65,16 +62,16 @@ namespace TelepathyIM
         gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
 
         // Pad inits
-        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink"); // <-- MATTIKU CHECK PLEASE
-        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad); // <-- MATTIKU CHECK PLEASE
+        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
+        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
 
         // Add bad to video bin
-        gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad); // <-- MATTIKU CHECK PLEASE
+        gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad);
         gst_object_unref(G_OBJECT(static_sink_pad));
         gst_object_ref(video_bin_);
         gst_object_sink(video_bin_);
 
-        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_)); // <-- THIS WORKS NOW BECAUSE VIDEO IS INSIDE A BIN ELEMENT
+        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
 #endif
         
         gst_bus_enable_sync_message_emission(bus_);
@@ -82,9 +79,10 @@ namespace TelepathyIM
 
         qDebug() << "VideoWidget " << name << " INIT COMPLETE";
 
+        // QWidget properties
         QPalette palette;
-        palette.setColor(QPalette::Background, Qt::white);
-        palette.setColor(QPalette::Window, Qt::white);
+        palette.setColor(QPalette::Background, Qt::black);
+        palette.setColor(QPalette::Window, Qt::black);
         setPalette(palette);
         setAutoFillBackground(true);
         setAttribute(Qt::WA_NoSystemBackground, true);
@@ -96,11 +94,20 @@ namespace TelepathyIM
     VideoWidget::~VideoWidget()
     {
         if (bus_)
+        {
             g_object_unref(bus_);
+            bus_ = 0;
+        }
         if (video_playback_element_)
+        {
             g_object_unref(video_playback_element_);
+            video_playback_element_ = 0;
+        }
         if (video_bin_)
+        {
             g_object_unref(video_bin_);
+            video_bin_ = 0;
+        }
     }
 
     void VideoWidget::OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self)
