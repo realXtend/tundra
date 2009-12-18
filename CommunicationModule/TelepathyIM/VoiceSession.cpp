@@ -450,8 +450,8 @@ namespace TelepathyIM
         switch(stream->type())
         {
         case Tp::MediaStreamTypeAudio:
-            emit SendingAudioData(stream->sending());
-            emit ReceivingAudioData(stream->receiving());
+            emit SendingAudioData(IsSendingAudioData());
+            emit ReceivingAudioData(IsReceivingAudioData());
             if (stream->localSendingRequested())
             {
                 LogDebug("Audio send requested.");
@@ -459,8 +459,8 @@ namespace TelepathyIM
             }
             break;
         case Tp::MediaStreamTypeVideo:
-            emit SendingVideoData(stream->sending());
-            emit ReceivingVideoData(stream->receiving());
+            emit SendingVideoData(IsSendingVideoData());
+            emit ReceivingVideoData(IsReceivingVideoData());
             if (stream->localSendingRequested())
             {
                 LogDebug("Video send requested.");
@@ -642,7 +642,6 @@ namespace TelepathyIM
         if (!soundsystem.get())
             return;     
 
-
         soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
     }
 
@@ -718,6 +717,9 @@ namespace TelepathyIM
         if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
             return false;
 
+        if (GetState() != STATE_OPEN)
+            return false;
+
         Tp::MediaStreamPtr stream = GetAudioMediaStream();
         if (!stream)
             return false;
@@ -731,6 +733,9 @@ namespace TelepathyIM
             return false;
 
         if (farsight_channel_->GetStatus() != FarsightChannel::StatusConnected)
+            return false;
+
+        if (GetState() != STATE_OPEN)
             return false;
 
         Tp::MediaStreamPtr stream = GetVideoMediaStream();

@@ -31,8 +31,8 @@ namespace TelepathyIM
         qDebug() << "VideoWidget " << name << " INIT STARTED";
         setWindowTitle(name);
 
-        gst_object_ref(bus_);
-        gst_object_sink(bus_);
+//        gst_object_ref(bus_);
+//        gst_object_sink(bus_);
 
         // Element notifier init
         notifier_ = fs_element_added_notifier_new();
@@ -95,8 +95,10 @@ namespace TelepathyIM
 
     VideoWidget::~VideoWidget()
     {
-        g_object_unref(bus_);
-        g_object_unref(video_playback_element_);
+        if (bus_)
+            g_object_unref(bus_);
+        if (video_playback_element_)
+            g_object_unref(video_playback_element_);
         if (video_bin_)
             g_object_unref(video_bin_);
     }
