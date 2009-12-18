@@ -5,10 +5,12 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <QByteArray>
+#include <QMap>
+#include <QBuffer>
 
 // todo: Change there to static member variables
-#define MAX_BUFFER_COUNT 30
-#define DATA_QUEUE_SIZE 30
+#define MAX_BUFFER_COUNT 2
 
 namespace OpenALAudio
 {
@@ -19,7 +21,7 @@ namespace OpenALAudio
         SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo);
         virtual ~SoundStream();
 
-        void Release();
+        
         void Play();
         
         //! SoundStream object will store given data to it's internal data queue so 
@@ -31,32 +33,12 @@ namespace OpenALAudio
         void SetPosition(const Vector3df& position);
 
     private:
-        //! /return handle to OpenAL buffer object with given data
-        //! Does craete new OpenAL buffer object of total buffer count is lesser than BUFFER_COUNT.
-        //! Anotherwise it recycles exist buffers.
-        //! Used by AddData method.
-        ALuint GetBufferWithData(u8* data, uint size);
-
-        //! Store given data to internal data queue. If data queue is full then does nothing.
-        //! Deletes previously reserved memory on same data queue slot before fill it with new data.
-        //! Rest of data will be freed on deconstructor
-        //!
-        //! Only locally stored data is playwith with OpenAL buffers so caller of AddData method
-        //! Can free the data immediately after method AddData call.
-        //! /return pointer to stored data if there was space on data queue. Otherwise return 0.
-        u8* StoreData(u8* data, u32 size);
-        void ReleaseData();
+        void Release();
+        int GetReceivedAudioDataLengthMs();
 
         ALuint buffers_[MAX_BUFFER_COUNT];
         ALuint source_;
         ALenum format_;
-        u8* data_queque_[DATA_QUEUE_SIZE];
-
-        //! The next index in data_queue to store audio data
-        int next_free_data_queue_index_; 
-
-        //! count of used data_queue indexes
-        int free_data_queque_index_count_;
 
         int current_buffer_;
         std::string name_;
@@ -65,6 +47,12 @@ namespace OpenALAudio
         bool stereo_;
 
         int buffer_counter_;
+
+        //! Received audio data waiting for move to playback_buffers_object
+        QByteArray received_audio_data_;
+
+        // memory for OpenAL buffer objects
+        QMap<ALuint, QByteArray*> playback_buffers_;
     };
 }
 
