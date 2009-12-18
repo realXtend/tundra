@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_ComponentFactoryInterface_h
 #define incl_Interfaces_ComponentFactoryInterface_h
 
+#include <boost/shared_ptr.hpp>
+
 namespace Foundation
 {
     class ComponentInterface;

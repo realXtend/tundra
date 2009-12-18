@@ -3,10 +3,11 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
-#include <QObject>
-
+#include "CoreDefines.h"
 #include "ComponentFactoryInterface.h"
 #include "ComponentRegistrarInterface.h"
+
+#include <QObject>
 
 namespace Foundation
 {
@@ -34,25 +35,16 @@ namespace Foundation
     */
     class MODULE_API ComponentInterface : public QObject
     {
-        ComponentInterface();
+        Q_OBJECT
+
     public:
-        explicit ComponentInterface(const Foundation::Framework *framework)
-        :framework_(framework)
-        {
-        }
-
-        ComponentInterface(const ComponentInterface &rhs)
-        :QObject(), framework_(rhs.framework_)
-        {
-        }
-
-        virtual ~ComponentInterface()
-        {
-            assert(framework_);
-            framework_->GetComponentManager()->RemoveExpiredComponents();
-        }
-        
+        explicit ComponentInterface(const Foundation::Framework *framework);
+        ComponentInterface(const ComponentInterface &rhs);
+        virtual ~ComponentInterface();
         virtual const std::string &Name() const = 0;
+
+    protected:
+        ComponentInterface();
 
     private:
         const Foundation::Framework * const framework_;
@@ -60,4 +52,3 @@ namespace Foundation
 }
 
 #endif
-

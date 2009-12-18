@@ -77,6 +77,7 @@ EC_OpenSimPrim::~EC_OpenSimPrim()
 {
 }
 
+#ifdef _DEBUG
 void EC_OpenSimPrim::PrintDebug()
 {
     RexLogicModule::LogInfo("*** EC_OpenSimPrim ***");
@@ -104,5 +105,6 @@ void EC_OpenSimPrim::PrintDebug()
 
     RexLogicModule::LogInfo("SelectPriority:" + ToString(SelectPriority));
 }
+#endif
 
 } // namespace RexLogic

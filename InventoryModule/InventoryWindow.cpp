@@ -8,12 +8,13 @@
 #include "StableHeaders.h"
 #include "InventoryWindow.h"
 #include "InventoryModule.h"
-#include "Framework.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
-#include "RexLogicModule.h"
-#include "Inventory/InventoryEvents.h"
-#include "QtUtils.h"
+
+#include <Framework.h>
+#include <RexLogicModule.h>
+#include <Inventory/InventoryEvents.h>
+#include <QtUtils.h>
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
