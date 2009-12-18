@@ -55,24 +55,45 @@ OIS_KEY_Z = 44
 OIS_KEY_ESC = 1
 OIS_KEY_DEL = 211
 
-DEV =False #if this is false, the canvas is added to the controlbar
+DEV = False #if this is false, the canvas is added to the controlbar
 
 class MeshAssetidEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
 
+    def accept(self, ev):
+        return ev.mimeData().hasFormat("application/vnd.inventory.item")
+
+    def dragEnterEvent(self, ev):
+        if self.accept(ev):
+            ev.acceptProposedAction()
+
+    def dragMoveEvent(self, ev):
+        if self.accept(ev):
+            ev.acceptProposedAction()
+
     def dropEvent(self, ev):
-    #    print "Got meshid_drop:", self, ev
-        text = ev.mimeData().text()
-        r.logDebug("EDITGUI: Mesh asset id got drag drop: %s" % text)
+        print "Got meshid_drop:", self, ev
+        if not self.accept(ev):
+            return
+
+        mimedata = ev.mimeData()
+        invitem = mimedata.data("application/vnd.inventory.item")
+
+        #some_qbytearray_thing = invitem[:4] #struct.unpack('i', 
+        data = invitem[4:].decode('utf-16-be') #XXX how it happens to be an win: should be explicitly encoded to latin-1 or preferrably utf-8 in the c++ inventory code
+        #print data
+        asset_type, inv_id, inv_name, asset_ref = data.split(';')
+
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
-        #XXX validate input for being a valid mesh asset UUID somehow
         if ent is not None:
-            applymesh(ent, text)
-            self.text = text
+            applymesh(ent, asset_ref)
+            self.text = inv_name
         else:
             self.text = "(no scene entity selected)"
+
+        ev.acceptProposedAction()
 
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid

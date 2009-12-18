@@ -53,6 +53,7 @@ class MediaURLHandler(Component):
                           
     def on_entity_visuals_modified(self, entid):
         #print "MediaURLHandler got Visual Modified for:", entid
+        #XXX add checks to not re-apply blindly when is already up-to-date!
         for tx, wc in self.texture2canvas.iteritems():
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
