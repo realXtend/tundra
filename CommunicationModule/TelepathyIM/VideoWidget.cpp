@@ -175,10 +175,10 @@ namespace TelepathyIM
             // Get window id from this widget and set it for video sink
             // so it renders to our widget id and does not open separate window (that is the default behaviour)
             qDebug() << name_ << " >> SetOverlay() called";
-            window_id_ = winId();
+			window_id_ = winId();
             if (window_id_)
             {
-                qDebug() << name_ << " >> Window id set to " << window_id_;
+                qDebug() << name_ << " >> Giving x overlay widgets window id " << window_id_;
                 #ifdef Q_WS_X11
                     QApplication::syncX();
                 #endif
@@ -200,6 +200,16 @@ namespace TelepathyIM
             gst_x_overlay_expose(GST_X_OVERLAY(video_overlay_));
         }
     }
+
+	GstElement *VideoWidget::GetVideoPlaybackElement() const
+	{
+		if (video_bin_) 
+			return video_bin_; 
+		else if (video_playback_element_)
+			return video_playback_element_;
+		else
+			return 0;
+	}
 
     bool VideoWidget::VideoAvailable()
     {

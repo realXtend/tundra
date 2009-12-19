@@ -24,7 +24,7 @@ namespace TelepathyIM
 
         //! Getters
         virtual bool VideoAvailable();
-        GstElement *GetVideoPlaybackElement() const { if (video_bin_) return video_bin_; else return video_playback_element_; }
+        GstElement *GetVideoPlaybackElement() const;
 
         //! Glib callbacks
         static void OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self);
