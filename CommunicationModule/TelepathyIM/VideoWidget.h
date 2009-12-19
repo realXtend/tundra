@@ -44,6 +44,9 @@ namespace TelepathyIM
         GstElement *video_playback_element_;
         GstElement *video_overlay_;
         FsElementAddedNotifier *notifier_;
+        gulong on_element_added_g_signal_;
+        gulong on_sync_message_g_signal_;
+
         
         //! Qt variables
         WId window_id_; 

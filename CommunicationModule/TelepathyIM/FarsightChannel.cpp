@@ -286,8 +286,8 @@ namespace TelepathyIM
         }
         Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
         gst_object_unref(G_OBJECT(src));
-        gst_object_ref(video_input_bin_);
-        gst_object_sink(video_input_bin_);
+        //gst_object_ref(video_input_bin_);
+        //gst_object_sink(video_input_bin_);
 
         video_tee_ = setUpElement("tee");
         //gst_object_ref(video_tee_);
@@ -372,6 +372,15 @@ namespace TelepathyIM
             gst_buffer_unref(buffer);
             g_static_mutex_unlock (&mutex);
             return;
+        }
+
+        if (GST_BUFFER_OFFSET_IS_VALID(buffer))
+        {
+            guint64 offset = GST_BUFFER_OFFSET (buffer);
+        }
+        if (GST_BUFFER_OFFSET_END_IS_VALID(buffer))
+        {
+            guint64 offset = GST_BUFFER_OFFSET_END(buffer);
         }
 
         u8* data = GST_BUFFER_DATA(buffer);
