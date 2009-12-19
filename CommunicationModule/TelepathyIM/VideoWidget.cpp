@@ -51,12 +51,23 @@ namespace TelepathyIM
 // This is because gimagesink does not inherit GstBin and there for the GST_BIN() typecheck in fs_element_added_notifier_add will fail
 #ifdef Q_WS_WIN
         video_playback_element_ = gst_element_factory_make("glimagesink", name.toStdString().c_str());
+        if (!video_playback_element_)
+        {
+            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
+            return;
+        }
+
 //        gst_object_ref(video_playback_element_);
 //        gst_object_sink(video_playback_element_);
 
         // Video bin init
         const QString video_bin_name = "video_bin_for_" + name;
         video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
+        if (!video_bin_)
+        {
+            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
+            return;
+        }
 
         // Add playback element to video bin
         gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
