@@ -232,8 +232,8 @@ namespace CommunicationUI
         {
             if (remote_video_ && remote_status_label_)
             {
-                internal_v_layout_remote_->takeAt(1);
-                remote_video_->show();
+                //internal_v_layout_remote_->takeAt(1);
+                //remote_video_->show();
                 remote_status_label_->setText("Receiving video");
             }
             controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
@@ -242,8 +242,8 @@ namespace CommunicationUI
         {
             if (remote_video_ && remote_status_label_)
             {
-                remote_video_->hide();
-                internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
+                //remote_video_->hide();
+                //internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
                 remote_status_label_->setText("Friend is currently not sending video");
             }
             controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: red;"));
@@ -332,8 +332,8 @@ namespace CommunicationUI
         if (remote_video_)
         {
            internal_v_layout_remote_->addWidget(remote_video_);
-           remote_video_->hide();
-           internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
+           //remote_video_->hide();
+           //internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
         }
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
