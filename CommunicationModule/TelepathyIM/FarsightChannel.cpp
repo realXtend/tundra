@@ -43,8 +43,8 @@ namespace TelepathyIM
 
         if( video_src_name.length() != 0)
         {
-            //CreateVideoWidgets();
-            //CreateVideoInputElement(video_src_name);
+            CreateVideoWidgets();
+            CreateVideoInputElement(video_src_name);
         }
 
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
