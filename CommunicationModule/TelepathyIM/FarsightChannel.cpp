@@ -292,7 +292,8 @@ namespace TelepathyIM
         video_tee_ = setUpElement("tee");
         //gst_object_ref(video_tee_);
         //gst_object_sink(video_tee_);
-        if (!locally_captured_video_playback_element_)
+
+        if (GST_ELEMENT(locally_captured_video_playback_element_))
         {
             gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
             ok = gst_element_link_many(video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
