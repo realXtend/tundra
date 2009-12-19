@@ -46,43 +46,45 @@ namespace TelepathyIM
         fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
 #endif
 
-// WINDOWS -> glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
-// With glimagesink on windows we need to add it to a new bin and make the proper connections to bin.
-// This is because gimagesink does not inherit GstBin and there for the GST_BIN() typecheck in fs_element_added_notifier_add will fail
+// WINDOWS -> autovideosink will chose one of there: glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
 #ifdef Q_WS_WIN
-        video_playback_element_ = gst_element_factory_make("glimagesink", name.toStdString().c_str());
+        video_playback_element_ = gst_element_factory_make("autovideosink", name.toStdString().c_str());
         if (!video_playback_element_)
         {
             qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
             return;
         }
 
-//        gst_object_ref(video_playback_element_);
-//        gst_object_sink(video_playback_element_);
+		if (GST_BIN(video_playback_element_))
+		{
+			fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
+		}
+		else
+		{
+			// Video bin init
+			const QString video_bin_name = "video_bin_for_" + name;
+			video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
+			if (!video_bin_)
+			{
+				qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
+				return;
+			}
 
-        // Video bin init
-        const QString video_bin_name = "video_bin_for_" + name;
-        video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
-        if (!video_bin_)
-        {
-            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
-            return;
-        }
+			// Add playback element to video bin
+			gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
 
-        // Add playback element to video bin
-        gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
+			// Pad inits
+			GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
+			GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
 
-        // Pad inits
-        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
-        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
+			// Add bad to video bin
+			gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad);
+			gst_object_unref(G_OBJECT(static_sink_pad));
+			gst_object_ref(video_bin_);
+			gst_object_sink(video_bin_);
 
-        // Add bad to video bin
-        gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad);
-        gst_object_unref(G_OBJECT(static_sink_pad));
-        gst_object_ref(video_bin_);
-        gst_object_sink(video_bin_);
-
-        fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
+			fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
+		}       
 #endif
         
         gst_bus_enable_sync_message_emission(bus_);
@@ -126,6 +128,9 @@ namespace TelepathyIM
     {
         // If element implements GST_X_OVERLAY interface, set local video_overlay_ to element
         // If true element = the current video sink
+		if (GST_IS_X_OVERLAY(element))
+			qDebug() << "GST_IS_X_OVERLAY(element) == true";
+
         if (!self->video_overlay_ && GST_IS_X_OVERLAY(element))
         {
             qDebug() << self->name_ << " >> element-added CALLBACK >> Got overlay element, storing";
