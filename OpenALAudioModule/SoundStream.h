@@ -5,13 +5,11 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <QByteArray>
 #include <QMap>
-#include <QBuffer>
 #include <QMutex>
 
 // todo: Change there to static member variables
-#define MAX_BUFFER_COUNT 3
+#define MAX_BUFFER_COUNT 2
 
 namespace OpenALAudio
 {
@@ -36,6 +34,11 @@ namespace OpenALAudio
     private:
         void Release();
         int GetReceivedAudioDataLengthMs();
+        void StoreToQueue(u8* data, int size);
+
+        //! /return handle to given buffer if success. Return 0 if fails
+        ALint FillBufferFromQueue(ALint);
+
 
         ALuint buffers_[MAX_BUFFER_COUNT];
         ALuint source_;
@@ -47,13 +50,11 @@ namespace OpenALAudio
         int sample_width_;
         bool stereo_;
 
-        int buffer_counter_;
-
-        //! Received audio data waiting for move to playback_buffers_object
-        QByteArray received_audio_data_;
+        std::vector<u8*> data_queue_;
+        std::vector<u32> data_queue_packet_sizes_;
 
         // memory for OpenAL buffer objects
-        QMap<ALuint, QByteArray*> playback_buffers_;
+        QMap<ALuint, u8*> playback_buffers_;
         QMutex add_data_mutex_;
     };
 }
