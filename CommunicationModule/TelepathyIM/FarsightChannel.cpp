@@ -16,7 +16,6 @@ namespace TelepathyIM
                                      bus_(0),
                                      pipeline_(0),
                                      audio_input_(0), 
-                                     //audio_output_(0),
                                      video_input_(0),
                                      video_tee_(0), 
                                      audio_volume_(0),
@@ -31,7 +30,8 @@ namespace TelepathyIM
                                      on_closed_g_signal_(0),
                                      on_session_created_g_signal_(0),
                                      on_stream_created_g_signal_(0),
-                                     bus_watch_(0)
+                                     bus_watch_(0),
+                                     fake_sink_handoff_mutex_(g_mutex_new ())
     {
         CreateTfChannel();
         CreatePipeline();
@@ -88,12 +88,12 @@ namespace TelepathyIM
             pipeline_ = 0;
         }
         if (audio_input_) {
-            g_object_unref(audio_input_);
+//            g_object_unref(audio_input_);
             audio_input_ = 0;
         }
 
         if (audio_playback_bin_){
-            g_object_unref(audio_playback_bin_);
+//            g_object_unref(audio_playback_bin_);
             audio_playback_bin_ = 0;
         }
 
@@ -160,9 +160,9 @@ namespace TelepathyIM
         }
         //return;
         // We use fake audio sink for now
-        //audio_output_ = setUpElement(audio_sink_name);
-        //if (audio_output_ == 0)
-        //    throw Exception("Cannot create GStreamer audio output element.");
+        audio_output_ = setUpElement("directsoundsink");
+        if (audio_output_ == 0)
+            throw Exception("Cannot create GStreamer audio output element.");
 
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
@@ -184,10 +184,10 @@ namespace TelepathyIM
         if (audio_convert_ == 0)
             throw Exception("Cannot create GStreamer audio convert element.");
 
-//        gst_bin_add_many(GST_BIN(audio_playback_bin_),  fake_audio_output_, NULL);
-        //gboolean ok = gst_element_link_many( fake_audio_output_, NULL);
         gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, audio_output_, NULL);
+        //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, audio_output_, NULL);
         if (!ok)
         {
             QString error_message = "Cannot link elements for audio playback bin.";
@@ -248,25 +248,30 @@ namespace TelepathyIM
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
+        FarsightChannel* self = (FarsightChannel*)user_data;
+        g_mutex_lock(self->fake_sink_handoff_mutex_);
+        
         gst_buffer_ref(buffer);
+
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
             LogDebug("Preroll audio data packet.");
-//            gst_buffer_unref(buffer);
+            gst_buffer_unref(buffer);
             return;
         }
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_GAP))
         {
             LogDebug("Caps audio data packet.");
-//            gst_buffer_unref(buffer);
+            gst_buffer_unref(buffer);
             return;
         }
         
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
-        FarsightChannel* self = (FarsightChannel*)user_data;
+        
         self->HandleAudioData(data, size);
         gst_buffer_unref(buffer);
+        g_mutex_unlock(self->fake_sink_handoff_mutex_);
     }
 
     void FarsightChannel::HandleAudioData(u8* data, int size)
