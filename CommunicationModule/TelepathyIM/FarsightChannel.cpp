@@ -38,11 +38,9 @@ namespace TelepathyIM
         CreateAudioInputElement(audio_src_name);
         CreateAudioPlaybackElement(audio_sink_name);
 
-        GstElement *video_src;
-        
         if( video_src_name.length() != 0)
         {
-            CreateVideoOutputElements();
+            CreateVideoWidgets();
             CreateVideoInputElement(video_src_name);
         }
 
@@ -180,9 +178,9 @@ namespace TelepathyIM
             NULL);
         g_object_set(G_OBJECT(audio_capsfilter_), "caps", audio_caps, NULL);
 
-        audio_convert_ = gst_element_factory_make("audioconvert", NULL);
-        if (audio_convert_ == 0)
-            throw Exception("Cannot create GStreamer audio convert element.");
+        //audio_convert_ = gst_element_factory_make("audioconvert", NULL);
+        //if (audio_convert_ == 0)
+        //    throw Exception("Cannot create GStreamer audio convert element.");
 
         gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
         gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
@@ -204,39 +202,7 @@ namespace TelepathyIM
         gst_object_sink(audio_playback_bin_);
     }
 
-    void FarsightChannel::CreateVideoInputElement(const QString &video_src_name)
-    {
-        video_input_bin_ = gst_bin_new("video-input-bin");
-        
-        GstElement *scale = gst_element_factory_make("videoscale", NULL);
-        GstElement *rate = gst_element_factory_make("videorate", NULL);
-        GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
-        GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
-        GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
-                "width", G_TYPE_INT, 320,
-                "height", G_TYPE_INT, 240,
-                NULL);
-        g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
-
-        video_input_ = setUpElement(video_src_name);
-        gst_bin_add_many(GST_BIN(video_input_bin_), video_input_, scale, rate, colorspace, capsfilter, NULL);
-        gst_element_link_many(video_input_, scale, rate, colorspace, capsfilter, NULL);
-        GstPad *src = gst_element_get_static_pad(capsfilter, "src");
-        GstPad *ghost = gst_ghost_pad_new("src", src);
-        Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
-        gst_object_unref(G_OBJECT(src));
-        gst_object_ref(video_input_bin_);
-        gst_object_sink(video_input_bin_);
-
-        video_tee_ = setUpElement("tee");
-        gst_object_ref(video_tee_);
-        gst_object_sink(video_tee_);
-
-        gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
-        gst_element_link_many(video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
-    }
-
-    void FarsightChannel::CreateVideoOutputElements()
+    void FarsightChannel::CreateVideoWidgets()
     {
         locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video");
         locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
@@ -245,9 +211,117 @@ namespace TelepathyIM
         received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
     }
 
+    void FarsightChannel::CreateVideoInputElement(const QString &video_src_name)
+    {
+        video_input_bin_ = gst_bin_new("video-input-bin");
+        if (!video_input_bin_)
+        {
+            QString error_message = "Cannot create bin for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+        
+        GstElement *scale = gst_element_factory_make("videoscale", NULL);
+        if (!scale)
+        {
+            QString error_message = "Cannot create scale element for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        GstElement *rate = gst_element_factory_make("videorate", NULL);
+        if (!rate)
+        {
+            QString error_message = "Cannot create rate element for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
+        if (!colorspace)
+        {
+            QString error_message = "Cannot create colorspace element for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
+        if (!capsfilter)
+        {
+            QString error_message = "Cannot create capsfilter element for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
+                "width", G_TYPE_INT, 320,
+                "height", G_TYPE_INT, 240,
+                NULL);
+        g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
+
+        video_input_ = gst_element_factory_make(video_src_name.toStdString().c_str(), NULL);
+        if (!video_input_)
+        {
+            QString error_message = "Cannot create video src element for video input";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        gst_bin_add_many(GST_BIN(video_input_bin_), video_input_, scale, rate, colorspace, capsfilter, NULL);
+        bool ok = gst_element_link_many(video_input_, scale, rate, colorspace, capsfilter, NULL);
+        if (!ok)
+        {
+            QString error_message = "Cannot link: video_input_ ! scale ! rate ! colorspace ! capsfilter ";
+            LogError(error_message.toStdString());
+            return;
+        }
+
+        GstPad *src = gst_element_get_static_pad(capsfilter, "src");
+        GstPad *ghost = gst_ghost_pad_new("src", src);
+        if (!ghost || !src)
+        {
+            QString error_message = "Cannot create ghost bad for video_input_bin_";
+            LogError(error_message.toStdString());
+            return;
+        }
+        Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
+        gst_object_unref(G_OBJECT(src));
+        gst_object_ref(video_input_bin_);
+        gst_object_sink(video_input_bin_);
+
+        video_tee_ = setUpElement("tee");
+        //gst_object_ref(video_tee_);
+        //gst_object_sink(video_tee_);
+        if (!locally_captured_video_playback_element_)
+        {
+            gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
+            ok = gst_element_link_many(video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
+            if (!ok)
+            {
+                QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ! locally_captured_video_playback_element_";
+                LogError(error_message.toStdString());
+                return;
+            }
+        }
+        else
+        {
+            QString error_message = "locally_captured_video_playback_element_ is NULL";
+            LogError(error_message.toStdString());
+
+            gst_bin_add_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, NULL);
+            ok = gst_element_link_many(video_input_bin_, video_tee_, NULL);
+            if (!ok)
+            {
+                QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ";
+                LogError(error_message.toStdString());
+                return;
+            }
+        }
+    }
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
+//        LogInfo("AUDIO BUFFER DATA");
         FarsightChannel* self = (FarsightChannel*)user_data;
         g_mutex_lock(self->fake_sink_handoff_mutex_);
         
@@ -272,6 +346,7 @@ namespace TelepathyIM
         self->HandleAudioData(data, size);
         gst_buffer_unref(buffer);
         g_mutex_unlock(self->fake_sink_handoff_mutex_);
+
     }
 
     void FarsightChannel::HandleAudioData(u8* data, int size)
@@ -399,7 +474,7 @@ namespace TelepathyIM
                 //g_object_ref(output_element); // do we need this
                 if (self->audio_in_src_pad_)
                     sink_already_linked = true;
-                LogDebug("Got pad for incoming AUDIO stream.");
+                LogInfo("Got pad for incoming AUDIO stream.");
                 break;
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
@@ -407,7 +482,7 @@ namespace TelepathyIM
                 output_element = self->received_video_playback_element_;
                 if (self->video_in_src_pad_)
                     sink_already_linked = true;
-                LogDebug("Got pad for incoming VIDEO stream.");
+                LogInfo("Got pad for incoming VIDEO stream.");
                 break;
             }
             default:
@@ -456,7 +531,7 @@ namespace TelepathyIM
 
     gboolean FarsightChannel::onRequestResource(TfStream *stream, guint direction, gpointer data)
     {
-        LogInfo("CommunicationModule: resource request");
+        LogInfo("resource request");
         return TRUE;
     }
 } // end of namespace: TelepathyIM

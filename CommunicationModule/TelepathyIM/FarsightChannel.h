@@ -77,7 +77,7 @@ namespace TelepathyIM
         void CreateAudioInputElement(const QString &name);
         void CreateAudioPlaybackElement(const QString &audio_sink_name);
         void CreateVideoInputElement(const QString &video_src_name);
-        void CreateVideoOutputElements();
+        void CreateVideoWidgets();
 
         // G_CALLBACK's need static methods
         static gboolean busWatch(GstBus *bus, GstMessage *message, FarsightChannel *self);
