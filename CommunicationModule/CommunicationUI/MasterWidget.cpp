@@ -28,6 +28,7 @@ namespace CommunicationUI
           event_handler_(new EventHandler(framework)),
           to_be_deleted_()
     {
+		setWindowIcon(QIcon(":/images/iconUsers.png"));
         ChangeContext();
         InitializeSelf();
     }

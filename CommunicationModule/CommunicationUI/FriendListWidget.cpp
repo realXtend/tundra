@@ -17,6 +17,7 @@ namespace CommunicationUI
           clicked_item_(0)
     {
         hide();
+
         friend_list_ui_->setupUi(this);
         friend_helper_->SetupUi(friend_list_ui_);
 
@@ -36,6 +37,8 @@ namespace CommunicationUI
                 friend_helper_, SLOT( OnContactRemoved(const Communication::ContactInterface&) ));
 
         im_connection_->CheckPendingFriendRequests();
+
+		setWindowIcon(QIcon(":/images/iconUsers.png"));
     }
 
     FriendListWidget::~FriendListWidget()
@@ -93,8 +96,8 @@ namespace CommunicationUI
         friend_actions_menu->addAction(QIcon(":images/iconChat.png"), "Start Chat", this, SLOT( StartChatSession() ));
         friend_actions_menu->addAction(QIcon(":images/iconVideo.png"), "Start Video Conversation", this, SLOT( StartVideoSession() ));
         friend_actions_menu->addSeparator();
-        friend_actions_menu->addAction(QIcon(":images/iconRename.png"), "Rename"); // add slot
-        friend_actions_menu->addAction(QIcon(":images/iconRemove.png"), "Remove"); // add slot
+        //friend_actions_menu->addAction(QIcon(":images/iconRename.png"), "Rename"); // Add later if this is possible to do in the backend
+        friend_actions_menu->addAction(QIcon(":images/iconRemove.png"), "Remove contact", this, SLOT( RemoveContact() ));
         friend_actions_menu->popup(QCursor::pos());
     }
 
@@ -138,5 +141,12 @@ namespace CommunicationUI
             }
         }
     }
+
+	void FriendListWidget::RemoveContact()
+	{
+		Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
+		if (contact)
+			im_connection_->RemoveContact(*contact);
+	}
 
 }
