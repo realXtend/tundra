@@ -42,6 +42,7 @@ namespace UiManagers
         QMenuBar *menu_bar_;
         QAction *available_status, *chatty_status, *away_status;
         QAction *extended_away_status, *busy_status, *hidden_status;
+		QAction *set_status_message, *signout, *manage_spatial_voice, *join_chat_room, *add_new_friend;
 
         Ui::SessionManagerWidget            *session_manager_ui_;
         Ui::SpatialVoiceConfigureWidget     spatial_voice_configure_ui_;

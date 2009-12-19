@@ -155,7 +155,7 @@ namespace UiHelpers
     void SessionHelper::SendFriendRequest()
     {
         bool ok = false;
-        QString request_address = QInputDialog::getText(0, "Add New Friend", "Give friends IM address", QLineEdit::Normal, "", &ok);
+		QString request_address = QInputDialog::getText(0, "Add New Friend", "Give friends IM address", QLineEdit::Normal, "", &ok);
         if (ok)
         {
             im_connection_->SendFriendRequest(request_address, "");

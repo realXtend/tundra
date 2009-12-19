@@ -62,10 +62,14 @@ namespace UiManagers
         // QMenuBar and QMenu init
         menu_bar_ = new QMenuBar(main_parent_);
         
+        // FILE MENU
+        QMenu *file_menu = new QMenu("File", main_parent_);
+        file_menu->addAction("Hide", this, SLOT( Hide() ));
+
         // STATUS menu
         QMenu *status_menu = new QMenu("Status", main_parent_);
        
-        status_menu->addAction("Set Status Message", session_helper_, SLOT( SetStatusMessage() ));
+        set_status_message = status_menu->addAction("Set Status Message", session_helper_, SLOT( SetStatusMessage() ));
         status_menu->addSeparator();
         available_status = status_menu->addAction("Available", this, SLOT( StatusAvailable() ));
         chatty_status = status_menu->addAction("Chatty", this, SLOT( StatusChatty() ));
@@ -74,6 +78,7 @@ namespace UiManagers
         busy_status = status_menu->addAction("Busy", this, SLOT( StatusBusy() ));
         hidden_status = status_menu->addAction("Hidden", this, SLOT( StatusHidden() ));
         
+		set_status_message->setIcon(QIcon(":images/iconRename.png"));
         available_status->setCheckable(true);
         available_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("available"));
         chatty_status->setCheckable(true);
@@ -97,24 +102,25 @@ namespace UiManagers
         available_status->setChecked(true);
 
         status_menu->addSeparator();
-        status_menu->addAction("Sign out", this, SLOT( SignOut() ));
-
-        // FILE MENU
-        QMenu *file_menu = new QMenu("File", main_parent_);
-        file_menu->addAction("Hide", this, SLOT( Hide() ));
+        signout = status_menu->addAction("Sign out", this, SLOT( SignOut() ));
+		signout->setIcon(QIcon(":images/iconSignout.png"));
         
         // JOIN MENU
-        QMenu *join_menu = new QMenu("Actions", main_parent_);
-        join_menu->addAction("Manage 3D Voice", this, SLOT( Show3DSoundManager() ));
-        QAction *join_chat_room = join_menu->addAction("Chat Room", this, SLOT( JoinChatRoom() ));
-        join_chat_room->setIcon(QIcon(":/images/iconUsers.png"));
+        QMenu *actions_menu = new QMenu("Actions", main_parent_);
+		add_new_friend = actions_menu->addAction("Add New Friend");
+		add_new_friend->setIcon(QIcon(":images/iconAdd.png"));
+        join_chat_room = actions_menu->addAction("Join Chat Room", this, SLOT( JoinChatRoom() ));
+		join_chat_room->setIcon(QIcon(":/images/iconConference.png"));
+		manage_spatial_voice = actions_menu->addAction("Manage 3D Voice", this, SLOT( Show3DSoundManager() ));
+		manage_spatial_voice->setIcon(QIcon(":images/iconProperties.png"));
         
+		// Add sub menus to menu bar
         menu_bar_->addMenu(file_menu);
         menu_bar_->addMenu(status_menu);
-        menu_bar_->addMenu(join_menu);
+        menu_bar_->addMenu(actions_menu);
         menu_bar_->addAction("Show Friend List", this, SLOT( ToggleShowFriendList() ));
-        QAction *add_new_friend = menu_bar_->addAction("Add New Friend");
-
+        
+		// Connect signals
         connect(add_new_friend, SIGNAL( triggered() ),
                 session_helper_, SLOT( SendFriendRequest() ));
         connect(this, SIGNAL( StatusChange(const QString&) ), 
