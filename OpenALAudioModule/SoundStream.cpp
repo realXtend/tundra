@@ -91,7 +91,7 @@ namespace OpenALAudio
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
         if (empty_buffer_count == 0 && GetReceivedAudioDataLengthMs() > max_buffer_length_ms)
         {
-            OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
+//            OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
             add_data_mutex_.unlock();
             return;
         }
