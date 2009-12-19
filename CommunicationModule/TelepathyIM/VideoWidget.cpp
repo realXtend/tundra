@@ -26,14 +26,17 @@ namespace TelepathyIM
           video_playback_element_(0),
           video_bin_(0),
           name_(name),
-          window_id_(0)
+          window_id_(0),
+          on_element_added_g_signal_(0),
+          on_sync_message_g_signal_(0)
+
     {
         qDebug() << "VideoWidget " << name << " INIT STARTED";
         setWindowTitle(name);
 
         // Element notifier init
         notifier_ = fs_element_added_notifier_new();
-        g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
+        on_element_added_g_signal_ = g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
 
 // UNIX -> autovideosink
 #ifdef Q_WS_X11
@@ -88,7 +91,7 @@ namespace TelepathyIM
 #endif
         
         gst_bus_enable_sync_message_emission(bus_);
-        g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
+        on_sync_message_g_signal_ = g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
 
         qDebug() << "VideoWidget " << name << " INIT COMPLETE";
 
@@ -106,6 +109,11 @@ namespace TelepathyIM
 
     VideoWidget::~VideoWidget()
     {
+        if (notifier_)
+            g_signal_handler_disconnect(notifier_, on_element_added_g_signal_);
+        if (bus_)
+            g_signal_handler_disconnect(bus_, on_sync_message_g_signal_);
+
         if (bus_)
         {
             g_object_unref(bus_);
