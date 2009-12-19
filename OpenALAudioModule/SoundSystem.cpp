@@ -117,7 +117,7 @@ namespace OpenALAudio
     
     void SoundSystem::Update(f64 frametime)
     {   
-        mutex.lock();
+//        mutex.lock();
         std::vector<SoundChannelMap::iterator> channels_to_delete;
 
         // Update listener position/orientation to sound device
@@ -142,7 +142,7 @@ namespace OpenALAudio
         for (uint j = 0; j < channels_to_delete.size(); ++j)
             channels_.erase(channels_to_delete[j]);   
         
-        mutex.unlock();
+     //   mutex.unlock();
         
         // Age the sound cache
         UpdateCache(frametime);      

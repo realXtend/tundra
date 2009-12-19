@@ -67,6 +67,7 @@ namespace TelepathyIM
         GstPad *video_in_src_pad_; // todo setter
         Status status_; // todo setter
         guint bus_watch_; // todo: setter
+        GMutex* fake_sink_handoff_mutex_;
 
     private:
 
@@ -102,6 +103,7 @@ namespace TelepathyIM
         GstElement *video_input_;
         GstElement *video_tee_;
         GstElement *fake_audio_output_;
+        GstElement *audio_output_;
         
         // audio modification elements
         GstElement *audio_resample_;

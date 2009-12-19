@@ -11,7 +11,7 @@
 #include <QMutex>
 
 // todo: Change there to static member variables
-#define MAX_BUFFER_COUNT 2
+#define MAX_BUFFER_COUNT 3
 
 namespace OpenALAudio
 {

@@ -85,7 +85,7 @@ namespace OpenALAudio
 
         if (!add_data_mutex_.tryLock())
             return;
-        int max_buffer_length_ms = 500;
+        int max_buffer_length_ms = 1000;
 
         ALint empty_buffer_count = 0;
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
@@ -97,8 +97,9 @@ namespace OpenALAudio
         }
         received_audio_data_.append((char*)data, size);
 
-        if (empty_buffer_count == 0)
+        if (empty_buffer_count == 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
         {
+            // we do not want to fill OpenAL buffer even if we have one available
             add_data_mutex_.unlock();
             return;
         }
@@ -118,9 +119,6 @@ namespace OpenALAudio
 
         // copy data
         int copy_size = received_audio_data_.size();
-        //int max_copy_size = 1000;
-        //if (copy_size > max_copy_size)
-        //    copy_size = max_copy_size;
         bytes->append(received_audio_data_, copy_size);
         received_audio_data_.clear();
 
