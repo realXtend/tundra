@@ -56,13 +56,15 @@ namespace TelepathyIM
 
         static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
+        u8* GetAudioData(int &size);
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
         void AudioStreamReceived();
         void VideoStreamReceived();
 
         //! When audio buffer is ready for playback
-        void AudioPlaybackBufferReady(u8* buffer, int buffer_size, int rate);
+        void AudioDataAvailable(int rate);
 
     public:
         GstPad *audio_in_src_pad_; // todo setter
@@ -129,6 +131,11 @@ namespace TelepathyIM
         gulong on_session_created_g_signal_;
         gulong on_stream_created_g_signal_;
 
+        std::vector<u8*> audio_queue_;
+        std::vector<u32> audio_queue_sizes_;
+        int total_audio_queue_size_;
+
+        QMutex audio_queue_mutex_;
     };
 
 } // end of namespace: TelepathyIM

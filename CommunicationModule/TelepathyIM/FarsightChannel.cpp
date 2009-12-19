@@ -2,6 +2,7 @@
 
 #include "FarsightChannel.h"
 #include <TelepathyQt4/Farsight/Channel>
+#include <QFile>
 
 
 namespace TelepathyIM
@@ -31,7 +32,9 @@ namespace TelepathyIM
                                      on_session_created_g_signal_(0),
                                      on_stream_created_g_signal_(0),
                                      bus_watch_(0),
-                                     locally_captured_video_playback_element_(0)
+                                     locally_captured_video_playback_element_(0),
+                                     video_input_bin_(0),
+                                     total_audio_queue_size_(0)
     {
         CreateTfChannel();
         CreatePipeline();
@@ -40,8 +43,8 @@ namespace TelepathyIM
 
         if( video_src_name.length() != 0)
         {
-            CreateVideoWidgets();
-            CreateVideoInputElement(video_src_name);
+            //CreateVideoWidgets();
+            //CreateVideoInputElement(video_src_name);
         }
 
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
@@ -99,8 +102,16 @@ namespace TelepathyIM
         //    g_object_unref(audio_output_);
         //    audio_output_ = 0;
         //}
-    }
 
+        for(int i = 0; i < audio_queue_.size(); ++i)
+        {
+            delete [] audio_queue_[i];
+            audio_queue_[i] = 0;
+        }
+        audio_queue_.clear();
+        audio_queue_sizes_.clear();
+        total_audio_queue_size_ = 0;
+    }
 
     void FarsightChannel::CreateTfChannel()
     {
@@ -154,7 +165,7 @@ namespace TelepathyIM
         else
         {
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
-            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, "sync", TRUE, NULL);
+            g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, NULL);
         }
         //return;
         // We use fake audio sink for now
@@ -322,7 +333,6 @@ namespace TelepathyIM
 
     void FarsightChannel::OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data)
     {
-//        LogInfo("AUDIO BUFFER DATA");
         FarsightChannel* self = (FarsightChannel*)user_data;
 
         static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -385,15 +395,58 @@ namespace TelepathyIM
 
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
+
+
         
         self->HandleAudioData(data, size, rate);
         gst_buffer_unref(buffer);
         g_static_mutex_unlock (&mutex);
     }
 
+    u8* FarsightChannel::GetAudioData(int &size)
+    {
+        audio_queue_mutex_.lock();
+
+        size = total_audio_queue_size_;
+        u8* data = new u8[size];
+        int offset = 0;
+        for(int i = 0; i < audio_queue_.size(); ++i)
+        {
+            memcpy(data+offset, audio_queue_[i], audio_queue_sizes_[i]);
+            offset += audio_queue_sizes_[i];
+            delete [] audio_queue_[i];
+            audio_queue_[i] = 0;
+        }
+        audio_queue_.clear();
+        audio_queue_sizes_.clear();
+        total_audio_queue_size_ = 0;
+
+        audio_queue_mutex_.unlock();
+        return data;
+    }
+
     void FarsightChannel::HandleAudioData(u8* data, int size, int rate)
     {
-        emit AudioPlaybackBufferReady(data, size, rate);
+        audio_queue_mutex_.lock();
+        //static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+        //g_static_mutex_lock (&mutex);
+
+        u8* temp = new u8[size];
+        memcpy(temp, data, size);
+        audio_queue_.push_back(temp);
+        audio_queue_sizes_.push_back(size);
+        total_audio_queue_size_ += size;
+
+        //QFile file("audio_1.raw");
+        //file.open(QIODevice::OpenModeFlag::Append);
+        //file.write((char*)temp,size);
+        audio_queue_mutex_.unlock();
+
+        emit AudioDataAvailable(rate);
+
+        //QFile file2("audio_2.raw");
+        //file2.open(QIODevice::OpenModeFlag::Append);
+        //file2.write((char*)temp,size);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
@@ -550,8 +603,8 @@ namespace TelepathyIM
                 if (self->audio_in_src_pad_)
                 {
                     gst_pad_unlink(self->audio_in_src_pad_, output_pad);
-                    self->audio_in_src_pad_ = src_pad;
                 }
+                self->audio_in_src_pad_ = src_pad;
                 break;
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
@@ -559,11 +612,12 @@ namespace TelepathyIM
                 if (self->video_in_src_pad_)
                 {
                     gst_pad_unlink(self->video_in_src_pad_, output_pad);
-                    self->video_in_src_pad_ = src_pad;
                 }
+                self->video_in_src_pad_ = src_pad;
                 break;
             }
         }
+
         gst_pad_link(src_pad, output_pad);
         gst_element_set_state(output_element, GST_STATE_PLAYING);
 

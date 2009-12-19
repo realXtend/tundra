@@ -221,7 +221,7 @@ namespace TelepathyIM
             return;
         }
 
-        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(u8*, int, int)), SLOT( OnAudioPlaybackBufferReady(u8* , int, int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -626,8 +626,9 @@ namespace TelepathyIM
         return 0;
     }
 
-    void VoiceSession::OnAudioPlaybackBufferReady(u8* buffer, int buffer_size, int rate)
+    void VoiceSession::OnFarsightAudioDataAvailable(int rate)
     {       
+
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
 
@@ -641,7 +642,14 @@ namespace TelepathyIM
         if (!soundsystem.get())
             return;     
 
-        soundsystem->PlayAudioData(buffer, buffer_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
+        int data_size = 0;
+        u8* data = farsight_channel_->GetAudioData(data_size);
+
+        if (data)
+        {
+            soundsystem->PlayAudioData(data, data_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
+            delete [] data;
+        }
     }
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetAudioStreamState() const
