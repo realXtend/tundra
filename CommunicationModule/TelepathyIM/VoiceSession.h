@@ -113,7 +113,7 @@ namespace TelepathyIM
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
         void OnAudioStreamCreated(Tp::PendingOperation *op);
         void OnVideoStreamCreated(Tp::PendingOperation *op);
-        void OnAudioPlaybackBufferReady(u8* buffer, int buffer_size);
+        void OnAudioPlaybackBufferReady(u8* buffer, int buffer_size, int rate);
 
     private:
         QByteArray *stream_buffer_;

@@ -52,7 +52,9 @@ namespace TelepathyIM
 
         int audio_stream_in_clock_rate_; // todo getter
 
-        virtual void HandleAudioData(u8* data, int size);
+        virtual void HandleAudioData(u8* data, int size, int rate);
+
+        static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
@@ -60,14 +62,13 @@ namespace TelepathyIM
         void VideoStreamReceived();
 
         //! When audio buffer is ready for playback
-        void AudioPlaybackBufferReady(u8* buffer, int buffer_size);
+        void AudioPlaybackBufferReady(u8* buffer, int buffer_size, int rate);
 
     public:
         GstPad *audio_in_src_pad_; // todo setter
         GstPad *video_in_src_pad_; // todo setter
         Status status_; // todo setter
         guint bus_watch_; // todo: setter
-        GMutex* fake_sink_handoff_mutex_;
 
     private:
 
@@ -80,6 +81,7 @@ namespace TelepathyIM
         void CreateVideoWidgets();
 
         // G_CALLBACK's need static methods
+    public:
         static gboolean busWatch(GstBus *bus, GstMessage *message, FarsightChannel *self);
         static void onClosed(TfChannel *tfChannel, FarsightChannel *self);
         static void onSessionCreated(TfChannel *tfChannel,  FsConference *conference, FsParticipant *participant, FarsightChannel *self);
@@ -87,8 +89,8 @@ namespace TelepathyIM
         static void onSrcPadAdded(TfStream *stream, GstPad *src, FsCodec *codec, FarsightChannel *self);
         static gboolean onRequestResource(TfStream *stream, guint direction, gpointer data);
 
-        static void OnFakeSinkHandoff(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer user_data);
 
+    private:
         Tp::StreamedMediaChannelPtr tp_channel_;
         
         //GValue volume_;

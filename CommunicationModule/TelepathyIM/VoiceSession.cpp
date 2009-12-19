@@ -221,7 +221,7 @@ namespace TelepathyIM
             return;
         }
 
-        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(u8*, int)), SLOT( OnAudioPlaybackBufferReady(u8* , int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioPlaybackBufferReady(u8*, int, int)), SLOT( OnAudioPlaybackBufferReady(u8* , int, int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -626,14 +626,10 @@ namespace TelepathyIM
         return 0;
     }
 
-    void VoiceSession::OnAudioPlaybackBufferReady(u8* buffer, int buffer_size)
+    void VoiceSession::OnAudioPlaybackBufferReady(u8* buffer, int buffer_size, int rate)
     {       
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
-        int rate = 16000; 
-
-        //if (farsight_channel_)
-        //    rate = farsight_channel_->audio_stream_in_clock_rate_; 
 
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)

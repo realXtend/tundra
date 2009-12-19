@@ -14,8 +14,7 @@ namespace OpenALAudio
           frequency_(frequency),
           sample_width_(sample_width),
           stereo_(stereo),
-          current_buffer_(0),
-          buffer_counter_(0)
+          current_buffer_(0)
     {
         switch (sample_width_)
         {
@@ -41,9 +40,9 @@ namespace OpenALAudio
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
         {
             ALuint buffer_handle = buffers_[i];
-            playback_buffers_[buffer_handle] = new QByteArray();
-            alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle]->data(), playback_buffers_[buffer_handle]->size(), frequency_);
-            alSourceQueueBuffers(source_, 1, &buffer_handle); // buffer is empy at the moment, but we don't start playback yet
+            playback_buffers_[buffer_handle] = 0;
+            alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle], 0, frequency_);
+            alSourceQueueBuffers(source_, 1, &buffer_handle); 
         }
         Play();
     }
@@ -60,8 +59,17 @@ namespace OpenALAudio
         alDeleteBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
         {
-            delete playback_buffers_[i];
+            delete [] playback_buffers_[i];
+            playback_buffers_[i] = 0;
         }
+        for (std::vector<u8*>::iterator i = data_queue_.begin(); i != data_queue_.end(); ++i)
+        {
+            u8* data = *i;
+            delete [] data;
+            data = 0;
+        }
+        data_queue_.clear();
+        data_queue_packet_sizes_.clear();
     }
 
     void SoundStream::Play()
@@ -72,7 +80,53 @@ namespace OpenALAudio
 
     int SoundStream::GetReceivedAudioDataLengthMs()
     {
-        return received_audio_data_.size()*1000*8/sample_width_/frequency_;
+        u32 byte_count = 0;
+        for (std::vector<u32>::iterator i = data_queue_packet_sizes_.begin(); i != data_queue_packet_sizes_.end(); ++i)
+        {
+            u32 size = *i;
+            byte_count += size;
+        }
+
+        return byte_count*1000*8/sample_width_/frequency_;
+    }
+
+    void SoundStream::StoreToQueue(u8* data, int size)
+    {
+        u8* local_copy = new u8[size]; // RESERVE MEMORY
+        memcpy(local_copy, data, size);
+        data_queue_.push_back(local_copy);
+        data_queue_packet_sizes_.push_back(size);
+    }
+
+    ALint SoundStream::FillBufferFromQueue(ALint buffer_handle)
+    {
+        int total_queue_size = 0;
+        for (std::vector<u32>::iterator i = data_queue_packet_sizes_.begin(); i != data_queue_packet_sizes_.end(); ++i)
+        {
+            u32 size = *i;
+            total_queue_size += size;
+        }
+        u8* local_copy = new u8[total_queue_size]; // RESERVE MEMORY
+        u32 offset = 0;
+        for (int i = 0; i < data_queue_.size(); i++)
+        {
+            u32 size = data_queue_packet_sizes_[i];
+            memcpy(local_copy + offset, data_queue_[i], size);
+            delete [] data_queue_[i]; // FREE MEMORY
+            offset += size;
+        }
+        data_queue_.clear();
+        data_queue_packet_sizes_.clear();
+
+        // clear previously playback buffer 
+        u8* playback_buffer  = playback_buffers_[buffer_handle];
+        if (playback_buffer)
+            delete [] playback_buffer; // FREE MEMORY
+
+        playback_buffers_[buffer_handle] = local_copy;
+
+        alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle], total_queue_size, frequency_);
+        return buffer_handle;
     }
 
     void SoundStream::AddData(u8 *data, uint size)
@@ -95,7 +149,8 @@ namespace OpenALAudio
             add_data_mutex_.unlock();
             return;
         }
-        received_audio_data_.append((char*)data, size);
+
+        StoreToQueue(data, size);
 
         if (empty_buffer_count == 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
         {
@@ -112,23 +167,16 @@ namespace OpenALAudio
             add_data_mutex_.unlock();
             return;
         }
-        QByteArray* bytes = playback_buffers_[buffer_handle];
-        if (!bytes)
-            assert(false); // These have been created on constructor
-        bytes->clear(); // Free previously reserved memory
 
-        // copy data
-        int copy_size = received_audio_data_.size();
-        bytes->append(received_audio_data_, copy_size);
-        received_audio_data_.clear();
-
-        alBufferData(buffer_handle, format_, bytes->constData(), bytes->size(), frequency_);
+        if (!FillBufferFromQueue(buffer_handle))
+            return;
 
         // Queue buffer back to sources playlist
         alSourceQueueBuffers(source_, 1, &buffer_handle);
 
         if (!IsPlaying())
             Play();
+
         add_data_mutex_.unlock();
     }
 

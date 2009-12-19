@@ -31,7 +31,7 @@ namespace TelepathyIM
                                      on_session_created_g_signal_(0),
                                      on_stream_created_g_signal_(0),
                                      bus_watch_(0),
-                                     fake_sink_handoff_mutex_(g_mutex_new ())
+                                     locally_captured_video_playback_element_(0)
     {
         CreateTfChannel();
         CreatePipeline();
@@ -182,8 +182,8 @@ namespace TelepathyIM
         //if (audio_convert_ == 0)
         //    throw Exception("Cannot create GStreamer audio convert element.");
 
-        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
-        gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, fake_audio_output_, NULL);
+        gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
+        gboolean ok = gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
         //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, audio_output_, NULL);
         //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, audio_output_, NULL);
         if (!ok)
@@ -323,35 +323,67 @@ namespace TelepathyIM
     {
 //        LogInfo("AUDIO BUFFER DATA");
         FarsightChannel* self = (FarsightChannel*)user_data;
-        g_mutex_lock(self->fake_sink_handoff_mutex_);
-        
+
+        static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+        g_static_mutex_lock (&mutex);
         gst_buffer_ref(buffer);
+
+        int rate = 0;
+	    GstCaps *caps;
+	    GstStructure *structure;
+	    caps = gst_buffer_get_caps(buffer);
+	    structure = gst_caps_get_structure(caps, 0);
+	    gst_structure_get_int(structure, "rate", &rate);
+	    gst_caps_unref(caps);
+
+        if ( rate != 8000 && rate != 16000)
+        {
+            LogInfo("Drop fakesink buffer: wrong audio rate.");
+            gst_buffer_unref(buffer);
+            g_static_mutex_unlock (&mutex);
+            return;
+        }
 
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
-            LogDebug("Preroll audio data packet.");
+            LogInfo("Drop fakesink buffer: Preroll audio data packet.");
             gst_buffer_unref(buffer);
+            g_static_mutex_unlock (&mutex);
             return;
         }
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_GAP))
         {
-            LogDebug("Caps audio data packet.");
+            LogInfo("Drop fakesink buffer: Caps audio data packet.");
             gst_buffer_unref(buffer);
+            g_static_mutex_unlock (&mutex);
             return;
         }
-        
+        if (GST_BUFFER_DURATION(buffer) == 0)
+        {
+            LogInfo("Drop fakesink buffer: Got audio data packet with 0 duration");
+            gst_buffer_unref(buffer);
+            g_static_mutex_unlock (&mutex);
+            return;
+        }
+        if (GST_BUFFER_IS_DISCONT(buffer))
+        {
+            LogInfo("Drop fakesink buffer: Got disconnect audio data packet.");
+            gst_buffer_unref(buffer);
+            g_static_mutex_unlock (&mutex);
+            return;
+        }
+
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
         
-        self->HandleAudioData(data, size);
+        self->HandleAudioData(data, size, rate);
         gst_buffer_unref(buffer);
-        g_mutex_unlock(self->fake_sink_handoff_mutex_);
-
+        g_static_mutex_unlock (&mutex);
     }
 
-    void FarsightChannel::HandleAudioData(u8* data, int size)
+    void FarsightChannel::HandleAudioData(u8* data, int size, int rate)
     {
-        emit AudioPlaybackBufferReady(data, size);
+        emit AudioPlaybackBufferReady(data, size, rate);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
