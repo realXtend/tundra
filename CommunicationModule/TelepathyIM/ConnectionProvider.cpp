@@ -47,7 +47,7 @@ namespace TelepathyIM
         LogInfo(text.toStdString());
         // InitializeGStreamer();
 
-        g_main_loop_.setPriority(QThread::Priority::LowPriority);
+     //   g_main_loop_.setPriority(QThread::Priority::LowPriority);
         g_main_loop_.start();
 
 #else
