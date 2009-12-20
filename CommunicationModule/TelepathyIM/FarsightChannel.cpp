@@ -55,13 +55,10 @@ namespace TelepathyIM
     FarsightChannel::~FarsightChannel()
     {
         // TODO: CHECK Proper cleanup with unref
-
         if (locally_captured_video_widget_)
             SAFE_DELETE(locally_captured_video_widget_);
-
         if (received_video_widget_)
             SAFE_DELETE(received_video_widget_);
-
         if (tf_channel_)
         {
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
@@ -77,24 +74,24 @@ namespace TelepathyIM
             g_object_unref(bus_);
             bus_ = 0;
         }
-        gst_element_set_state(pipeline_, GST_STATE_PAUSED);
-
         if (video_input_bin_)
         {
             g_object_unref(video_input_bin_);
             video_input_bin_ = 0;
         }
-        if (pipeline_) {
+        if (pipeline_) 
+		{
             g_object_unref(pipeline_);
             pipeline_ = 0;
         }
-        if (audio_input_) {
-//            g_object_unref(audio_input_);
+        if (audio_input_) 
+		{
+			//g_object_unref(audio_input_);
             audio_input_ = 0;
         }
-
-        if (audio_playback_bin_){
-//            g_object_unref(audio_playback_bin_);
+        if (audio_playback_bin_)
+		{
+			//g_object_unref(audio_playback_bin_);
             audio_playback_bin_ = 0;
         }
 
@@ -112,6 +109,12 @@ namespace TelepathyIM
         audio_queue_sizes_.clear();
         total_audio_queue_size_ = 0;
     }
+
+	void FarsightChannel::ClearPipeline()
+	{
+		if (pipeline_)
+			gst_element_set_state(pipeline_, GST_STATE_NULL);
+	}
 
     void FarsightChannel::CreateTfChannel()
     {

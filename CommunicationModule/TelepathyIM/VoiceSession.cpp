@@ -80,7 +80,10 @@ namespace TelepathyIM
         }
 
 		if (farsight_channel_)
+		{
+			farsight_channel_->ClearPipeline();
             SAFE_DELETE(farsight_channel_);
+		}
     }
 
 	Communication::VoiceSessionInterface::State VoiceSession::GetState() const

@@ -61,6 +61,8 @@ namespace TelepathyIM
         bool IncomingAudioStreamConnected() { return audio_in_src_pad_; }
         bool IncomingVideoStreamConnected() { return video_in_src_pad_; }
 
+		void ClearPipeline();
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
         void AudioStreamReceived();
