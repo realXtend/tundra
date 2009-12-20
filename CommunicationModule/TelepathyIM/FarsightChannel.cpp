@@ -55,11 +55,11 @@ namespace TelepathyIM
     FarsightChannel::~FarsightChannel()
     {
         // Delete video widgets
-        if (locally_captured_video_widget_)
-            SAFE_DELETE(locally_captured_video_widget_);
+        //if (locally_captured_video_widget_)
+        //    SAFE_DELETE(locally_captured_video_widget_);
 
-        if (received_video_widget_)
-            SAFE_DELETE(received_video_widget_);
+        //if (received_video_widget_)
+        //    SAFE_DELETE(received_video_widget_);
 
         // TODO: CHECK Proper cleanup with unref
         if (tf_channel_)
@@ -138,17 +138,17 @@ namespace TelepathyIM
     void FarsightChannel::CreatePipeline()
     {
         pipeline_ = gst_pipeline_new(NULL);
-        if (pipeline_ == 0)
+        if (!pipeline_)
             throw Exception("Cannot create GStreamer pipeline.");
         bus_ = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
-        if (bus_ == 0)
+        if (!bus_)
             throw Exception("Cannot create GStreamer bus.");
     }
 
     void FarsightChannel::CreateAudioInputElement(const QString & name)
     {
         audio_input_ = setUpElement(name);
-        if (audio_input_ == 0)
+        if (!audio_input_)
             throw Exception("Cannot create GStreamer audio input element.");
     }
 
@@ -195,8 +195,6 @@ namespace TelepathyIM
 
         gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, fake_audio_output_, NULL);
         gboolean ok = gst_element_link_many(audio_resample_, fake_audio_output_, NULL);
-        //gst_bin_add_many(GST_BIN(audio_playback_bin_), audio_resample_, audio_capsfilter_, audio_output_, NULL);
-        //gboolean ok = gst_element_link_many(audio_resample_, audio_capsfilter_, audio_output_, NULL);
         if (!ok)
         {
             QString error_message = "Cannot link elements for audio playback bin.";
@@ -296,7 +294,13 @@ namespace TelepathyIM
             LogError(error_message.toStdString());
             return;
         }
-        Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
+        ok = gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost);
+        if (!ok)
+        {
+            QString error_message = "Cannot add ghost pad to video_input_bin_";
+            LogError(error_message.toStdString());
+            return;
+        }
         gst_object_unref(G_OBJECT(src));
         gst_object_ref(video_input_bin_);
         gst_object_sink(video_input_bin_);
