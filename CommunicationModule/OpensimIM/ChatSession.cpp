@@ -115,8 +115,9 @@ namespace OpensimIM
 		Communication::ChatMessageVector message_history;
 		for (ChatMessageVector::iterator i = message_history_.begin(); i != message_history_.end(); ++i)
 		{
-			assert( (*i) != NULL );
-			message_history.push_back( (*i) );
+            ChatMessage* message = *i;
+			assert( message != NULL );
+			message_history.push_back( message );
 		}
 		return message_history;
 	}
