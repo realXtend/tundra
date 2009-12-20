@@ -54,8 +54,7 @@ namespace TelepathyIM
             SAFE_DELETE(p);
         }
         participants_.clear();
-        if (farsight_channel_)
-            SAFE_DELETE(farsight_channel_);
+
     }
 
     void VoiceSession::DeleteChannels()
@@ -75,11 +74,13 @@ namespace TelepathyIM
         if (video_stream)
             audio_stream->requestDirection(false, false);
         
-
         if (tp_channel_)
         {
             tp_channel_->requestClose();
         }
+
+		if (farsight_channel_)
+            SAFE_DELETE(farsight_channel_);
     }
 
 	Communication::VoiceSessionInterface::State VoiceSession::GetState() const

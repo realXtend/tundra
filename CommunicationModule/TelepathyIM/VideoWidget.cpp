@@ -117,7 +117,7 @@ namespace TelepathyIM
     {
         if (notifier_)
         {
-            fs_element_added_notifier_remove(notifier_, GST_BIN(video_playback_element_));
+            fs_element_added_notifier_remove(notifier_, GST_BIN(video_bin_));
             g_signal_handler_disconnect(notifier_, on_element_added_g_signal_);
         }
         if (bus_)
@@ -128,17 +128,21 @@ namespace TelepathyIM
             g_object_unref(bus_);
             bus_ = 0;
         }
-        if (video_playback_element_)
+        if (video_bin_)
         {
-            //if (GST_BIN(video_playback_element_))
-            //    g_object_unref(video_playback_element_);
-            video_playback_element_ = 0;
+            if (GST_BIN(video_bin_))
+                g_object_unref(video_bin_);
+			video_bin_ = 0;
         }
+		if (video_playback_element_)
+			video_playback_element_ = 0;
         if (video_bin_)
         {
             g_object_unref(video_bin_);
             video_bin_ = 0;
         }
+		if (video_overlay_)
+			video_overlay_ = 0;
         // todo unconnect signals ?
     }
 
@@ -187,6 +191,12 @@ namespace TelepathyIM
         QWidget::showEvent(showEvent);
         SetOverlay();
     }
+
+	void VideoWidget::hideEvent(QHideEvent *hideEvent)
+	{
+		gst_element_set_state(video_overlay_, GST_STATE_NULL);
+		QWidget::hideEvent(hideEvent);
+	}
 
     void VideoWidget::SetOverlay()
     {

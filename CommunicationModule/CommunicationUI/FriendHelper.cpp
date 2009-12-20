@@ -115,8 +115,8 @@ namespace UiHelpers
 
     void FriendHelper::OnNewContact(const Communication::ContactInterface &contact)
     {
-        //Communication::ContactInterface *contact_ptr = dynamic_cast<Communication::ContactInterface *>(&contact);
-        //contacts_map_[contact.GetID()] = contact_ptr;
+        Communication::ContactInterface *contact_ptr = (Communication::ContactInterface *)(&contact);
+        contacts_map_[contact.GetID()] = contact_ptr;
 
         CommunicationUI::FriendListItem *list_item = 
             new CommunicationUI::FriendListItem(friend_list_ui_->friendListWidget,
@@ -140,9 +140,11 @@ namespace UiHelpers
             {
                 if (list_item->GetID() == remove_id)
                 {
-                    friend_list_ui_->friendListWidget->removeItemWidget(list_item);
+					int row = friend_list_ui_->friendListWidget->row((QListWidgetItem *)list_item);
+                    friend_list_ui_->friendListWidget->takeItem(row);
                     friend_list_ui_->friendListWidget->sortItems();
                     contacts_map_.remove(remove_id);
+					SAFE_DELETE(list_item);
                     return;
                 }
             }

@@ -32,6 +32,7 @@ namespace TelepathyIM
     
     protected:
         void showEvent(QShowEvent *showEvent);
+		void hideEvent(QHideEvent *hideEvent);
 
     private slots:
         void SetOverlay();
