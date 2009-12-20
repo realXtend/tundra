@@ -130,8 +130,8 @@ namespace TelepathyIM
         }
         if (video_playback_element_)
         {
-            if (GST_BIN(video_playback_element_))
-                g_object_unref(video_playback_element_);
+            //if (GST_BIN(video_playback_element_))
+            //    g_object_unref(video_playback_element_);
             video_playback_element_ = 0;
         }
         if (video_bin_)
