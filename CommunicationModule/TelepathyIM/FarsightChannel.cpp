@@ -265,6 +265,7 @@ namespace TelepathyIM
         }
 
         GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
+        //GstCaps *caps = gst_caps_new_simple("video/x-raw-rgb",
                 "width", G_TYPE_INT, 320,
                 "height", G_TYPE_INT, 240,
                 NULL);
@@ -297,12 +298,10 @@ namespace TelepathyIM
         }
         Q_ASSERT(gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost));
         gst_object_unref(G_OBJECT(src));
-        //gst_object_ref(video_input_bin_);
-        //gst_object_sink(video_input_bin_);
+        gst_object_ref(video_input_bin_);
+        gst_object_sink(video_input_bin_);
 
         video_tee_ = setUpElement("tee");
-        //gst_object_ref(video_tee_);
-        //gst_object_sink(video_tee_);
 
         if (GST_ELEMENT(locally_captured_video_playback_element_))
         {
@@ -312,6 +311,7 @@ namespace TelepathyIM
             {
                 QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ! locally_captured_video_playback_element_";
                 LogError(error_message.toStdString());
+                gst_bin_remove_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
                 return;
             }
         }
@@ -326,6 +326,7 @@ namespace TelepathyIM
             {
                 QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ";
                 LogError(error_message.toStdString());
+                gst_bin_remove_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, NULL);
                 return;
             }
         }
