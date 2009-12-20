@@ -40,6 +40,7 @@ namespace TelepathyIM
 
 // UNIX -> autovideosink
 #ifdef Q_WS_X11
+
         qt_x11_set_global_double_buffer(false);
 
         video_playback_element_ = gst_element_factory_make("autovideosink", name.toStdString().c_str());
@@ -47,18 +48,20 @@ namespace TelepathyIM
         gst_object_sink(video_playback_element_);
 
         fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
+
 #endif
 
 // WINDOWS -> autovideosink will chose one of there: glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
 #ifdef Q_WS_WIN
-        video_playback_element_ = gst_element_factory_make("autovideosink", 0); //name.toStdString().c_str());
+
+        video_playback_element_ = gst_element_factory_make("autovideosink", 0);
         if (!video_playback_element_)
         {
             qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
             return;
         }
 
-		if (GST_BIN(video_playback_element_))
+		if (video_playback_element_)
 		{
 			fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
 			gst_object_ref(video_playback_element_);
@@ -89,7 +92,8 @@ namespace TelepathyIM
 			gst_object_sink(video_bin_);
 
 			fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
-		}       
+		}
+
 #endif
         
         gst_bus_enable_sync_message_emission(bus_);
@@ -142,9 +146,6 @@ namespace TelepathyIM
     {
         // If element implements GST_X_OVERLAY interface, set local video_overlay_ to element
         // If true element = the current video sink
-		if (GST_IS_X_OVERLAY(element))
-			qDebug() << "GST_IS_X_OVERLAY(element) == true";
-
         if (!self->video_overlay_ && GST_IS_X_OVERLAY(element))
         {
             qDebug() << self->name_ << " >> element-added CALLBACK >> Got overlay element, storing";
