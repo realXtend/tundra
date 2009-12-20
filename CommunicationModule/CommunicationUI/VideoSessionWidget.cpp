@@ -79,14 +79,14 @@ namespace CommunicationUI
     {
         if (internal_v_layout_local_ && local_video_)
         {
-            local_video_->hide();
+            local_video_->close();
             internal_v_layout_local_->removeWidget(local_video_);
             local_video_->setParent(0);
             local_video_ = 0;
         }
         if (internal_v_layout_remote_ && remote_video_)
         {
-            remote_video_->hide();
+            remote_video_->close();
             internal_v_layout_remote_->removeWidget(remote_video_);
             remote_video_->setParent(0);
             remote_video_ = 0;
@@ -102,6 +102,7 @@ namespace CommunicationUI
         {
             case Communication::VoiceSessionInterface::STATE_OPEN:
             {
+				video_session_ui_.mainVerticalLayout->setAlignment(video_session_ui_.horizontalLayout, Qt::AlignTop);
                 ShowVideoWidgets();
                 video_session_ui_.connectionStatus->setText("Open");
                 break;
@@ -346,6 +347,7 @@ namespace CommunicationUI
         // Add to main widgets layout
         internal_widget_->setLayout(internal_h_layout_);
         video_session_ui_.mainVerticalLayout->insertWidget(0, internal_widget_);
+		video_session_ui_.mainVerticalLayout->setStretch(0, 1);
 
         // Some stylesheets for consistent color theme
         // otherwise this will inherit transparent background from parent widget
