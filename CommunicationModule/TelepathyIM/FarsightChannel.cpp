@@ -401,8 +401,10 @@ namespace TelepathyIM
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
 
+		//QFile test("voice.raw");
+		//if (test.open(QIODevice::Append))
+		//	test.write((char *)data, size);
 
-        
         self->HandleAudioData(data, size, rate);
         gst_buffer_unref(buffer);
         g_static_mutex_unlock (&mutex);
