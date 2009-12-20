@@ -61,14 +61,14 @@ namespace TelepathyIM
             return;
         }
 
-		if (!video_playback_element_)
-		{
-			fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
-			gst_object_ref(video_playback_element_);
-			gst_object_sink(video_playback_element_);
-		}
-		else
-		{
+		//if (!video_playback_element_)
+		//{
+		//	fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
+		//	gst_object_ref(video_playback_element_);
+		//	gst_object_sink(video_playback_element_);
+		//}
+		//else
+		//{
 			// Video bin init
 			const QString video_bin_name = "video_bin_for_" + name;
 			video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
@@ -92,7 +92,7 @@ namespace TelepathyIM
 			gst_object_sink(video_bin_);
 
 			fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
-		}
+		//}
 
 #endif
         
