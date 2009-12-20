@@ -204,8 +204,8 @@ namespace OpenALAudio
     {
         if (source_)
         {
-            //alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
-            alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
+            alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+            //alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
             ALfloat sound_pos[] = { position.x, position.y, position.z };
             alSourcefv(source_, AL_POSITION, sound_pos);
         }
