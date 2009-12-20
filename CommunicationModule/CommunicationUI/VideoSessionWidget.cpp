@@ -120,6 +120,7 @@ namespace CommunicationUI
             }
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
             {
+				video_session_ui_.mainVerticalLayout->setAlignment(video_session_ui_.horizontalLayout, Qt::AlignBottom);
                 video_session_ui_.connectionStatus->setText("Initializing...");
                 break;
             }
@@ -363,6 +364,7 @@ namespace CommunicationUI
 
     void VideoSessionWidget::CloseSession()
     {
+		ClearContent();
         video_session_->Close();
         emit Closed(his_name_);
     }
