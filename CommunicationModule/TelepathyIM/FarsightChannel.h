@@ -47,8 +47,8 @@ namespace TelepathyIM
         //! @param value 0 to 1
         void SetAudioRecordVolume(const double value);
 
-        VideoWidget* GetLocallyCapturedVideoWidget() { return locally_captured_video_widget_; };
-        VideoWidget* GetReceivedVideoWidget() { return received_video_widget_; };
+        VideoWidget* GetLocallyCapturedVideoWidget();
+        VideoWidget* GetReceivedVideoWidget();
 
         int audio_stream_in_clock_rate_; // todo getter
 

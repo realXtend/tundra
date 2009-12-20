@@ -61,6 +61,8 @@ namespace TelepathyIM
 		if (GST_BIN(video_playback_element_))
 		{
 			fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
+			gst_object_ref(video_playback_element_);
+			gst_object_sink(video_playback_element_);
 		}
 		else
 		{
@@ -110,7 +112,10 @@ namespace TelepathyIM
     VideoWidget::~VideoWidget()
     {
         if (notifier_)
+        {
+            fs_element_added_notifier_remove(notifier_, GST_BIN(video_playback_element_));
             g_signal_handler_disconnect(notifier_, on_element_added_g_signal_);
+        }
         if (bus_)
             g_signal_handler_disconnect(bus_, on_sync_message_g_signal_);
 
@@ -121,7 +126,8 @@ namespace TelepathyIM
         }
         if (video_playback_element_)
         {
-//            g_object_unref(video_playback_element_);
+            if (GST_BIN(video_playback_element_))
+                g_object_unref(video_playback_element_);
             video_playback_element_ = 0;
         }
         if (video_bin_)

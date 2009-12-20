@@ -54,14 +54,14 @@ namespace TelepathyIM
 
     FarsightChannel::~FarsightChannel()
     {
-        // Delete video widgets
-        //if (locally_captured_video_widget_)
-        //    SAFE_DELETE(locally_captured_video_widget_);
-
-        //if (received_video_widget_)
-        //    SAFE_DELETE(received_video_widget_);
-
         // TODO: CHECK Proper cleanup with unref
+
+        if (locally_captured_video_widget_)
+            SAFE_DELETE(locally_captured_video_widget_);
+
+        if (received_video_widget_)
+            SAFE_DELETE(received_video_widget_);
+
         if (tf_channel_)
         {
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
@@ -635,4 +635,23 @@ namespace TelepathyIM
         LogInfo("resource request");
         return TRUE;
     }
+
+    VideoWidget* FarsightChannel::GetLocallyCapturedVideoWidget()
+    {
+        // todo: 
+        // - unlink previous widget
+        // - create new widget
+        // - link new widget
+        return locally_captured_video_widget_;
+    }
+
+    VideoWidget* FarsightChannel::GetReceivedVideoWidget()
+    {
+        // todo: 
+        // - unlink previous widget
+        // - create new widget
+        // - link new widget
+        return received_video_widget_;
+    }
+
 } // end of namespace: TelepathyIM
