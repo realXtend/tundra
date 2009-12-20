@@ -186,7 +186,7 @@ namespace CommunicationUI
 
     void VideoSessionWidget::UpdateLocalVideoControls(bool state)
     {
-        controls_local_ui_.videoCheckBox->setChecked(state);
+        controls_local_ui_.videoCheckBox->setChecked(video_session_->IsReceivingVideoData());
         if (state)
         {
             if (local_video_ && local_status_label_)

@@ -58,6 +58,9 @@ namespace TelepathyIM
 
         u8* GetAudioData(int &size);
 
+        bool IncomingAudioStreamConnected() { return audio_in_src_pad_; }
+        bool IncomingVideoStreamConnected() { return video_in_src_pad_; }
+
     Q_SIGNALS:
         void statusChanged(TelepathyIM::FarsightChannel::Status status);
         void AudioStreamReceived();
@@ -135,7 +138,7 @@ namespace TelepathyIM
         std::vector<u32> audio_queue_sizes_;
         int total_audio_queue_size_;
 
-        QMutex audio_queue_mutex_;
+        Mutex audio_queue_mutex_;
     };
 
 } // end of namespace: TelepathyIM

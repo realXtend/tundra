@@ -67,6 +67,9 @@ namespace TelepathyIM
         //! Ensure that gabble process isn't running 
         //! Calls ClearDBusDaemon()
         void ClearGabble();
+        void InitializeGLib();
+        void InitializeGStreamer();
+        void InitializeDBusAndGabble();
 
 		State state_;
 

@@ -35,6 +35,7 @@ namespace OpenALAudio
         alGenSources(1, &source_);
         alSourcef(source_, AL_GAIN, 1.0f);
         alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
+        alSourcef(source_, AL_REFERENCE_DISTANCE, 10.0);
 
         alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
@@ -98,10 +99,12 @@ namespace OpenALAudio
         memcpy(local_copy, data, size);
         data_queue_.push_back(local_copy);
         data_queue_packet_sizes_.push_back(size);
+        assert(data_queue_.size() == data_queue_packet_sizes_.size());
     }
 
     ALint SoundStream::FillBufferFromQueue(ALint buffer_handle)
     {
+        // Copy audio data from queue to playback buffers
         int total_queue_size = 0;
         for (std::vector<u32>::iterator i = data_queue_packet_sizes_.begin(); i != data_queue_packet_sizes_.end(); ++i)
         {
@@ -121,9 +124,8 @@ namespace OpenALAudio
         data_queue_packet_sizes_.clear();
 
         // clear previously playback buffer 
-        u8* playback_buffer  = playback_buffers_[buffer_handle];
-        if (playback_buffer)
-            delete [] playback_buffer; // FREE MEMORY
+        if (playback_buffers_[buffer_handle])
+            delete [] playback_buffers_[buffer_handle]; // FREE MEMORY
 
         playback_buffers_[buffer_handle] = local_copy;
 
@@ -133,9 +135,9 @@ namespace OpenALAudio
             OpenALAudioModule::LogError("Cannot fill audio buffer: OpenAl out of memory");
             return 0;
         }
-        if (alGetError() == AL_INVALID_VALUE)
+        if (alGetError() != AL_NONE)
         {
-            OpenALAudioModule::LogError("Cannot fill audio buffer");
+            OpenALAudioModule::LogError("Cannot fill audio buffer: Reason unknown");
             return 0;
         }
         return buffer_handle;
@@ -169,7 +171,7 @@ namespace OpenALAudio
         // Now we have a ampty OpenAl buffer to fill and at enough data on queue
         ALuint buffer_handle;
         alSourceUnqueueBuffers(source_, 1, &buffer_handle);
-        if (alGetError() == AL_INVALID_VALUE)
+        if (alGetError() != AL_NONE)
         {
             OpenALAudioModule::LogDebug("Could not pull empty buffer from source!");
             add_data_mutex_.unlock();
@@ -202,7 +204,8 @@ namespace OpenALAudio
     {
         if (source_)
         {
-            alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+            //alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+            alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
             ALfloat sound_pos[] = { position.x, position.y, position.z };
             alSourcefv(source_, AL_POSITION, sound_pos);
         }
