@@ -622,7 +622,9 @@ namespace TelepathyIM
     Communication::VideoWidgetInterface* VoiceSession::GetLocallyCapturedVideo()
     {
         if (farsight_channel_)
+        {
             return farsight_channel_->GetLocallyCapturedVideoWidget();
+        }
         return 0;
     }
 
