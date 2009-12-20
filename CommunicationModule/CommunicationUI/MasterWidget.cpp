@@ -115,30 +115,22 @@ namespace CommunicationUI
         foreach (QString ui_class, to_be_deleted_)
         {
             if (ui_class == "login_ui_")
-                SAFE_DELETE(login_ui_->verticalLayout_2);
+			{
+				SAFE_DELETE(login_ui_->verticalLayout_2);
+				SAFE_DELETE(login_ui_->connectPushButton);
+				SAFE_DELETE(login_ui_->MainFrame);
+			}
             if (ui_class == "loading_ui_")
             {
                 SAFE_DELETE(loading_ui_->verticalLayout_2);
+				SAFE_DELETE(loading_ui_->cancelPushButton);
+				SAFE_DELETE(loading_ui_->label);
                 SAFE_DELETE(loading_ui_->MainFrame);
             }
             if (ui_class == "session_manager_ui_")
                 SAFE_DELETE(session_manager_ui_->mainVerticalLayout);
         }
         to_be_deleted_.clear();
-
-        switch (ui_state_)
-        {
-            case UiDefines::UiStates::Exit:
-            {
-                SAFE_DELETE(login_helper_);
-                SAFE_DELETE(config_helper_);
-                SAFE_DELETE(session_manager_);
-                SAFE_DELETE(login_ui_);
-                SAFE_DELETE(loading_ui_);
-                SAFE_DELETE(session_manager_ui_);
-                break;
-            }
-        }
 
         return size();
     }
