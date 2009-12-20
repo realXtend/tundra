@@ -29,23 +29,9 @@ namespace TelepathyIM
         //! Ensures that gabble and dbus daemon processes are not running 
         //! and start new dbus daemon process
 
-        //InitializeDBusAndGabble();
-		ClearGabble();
-        
-        // Initialize glib
-        g_type_init();
-        // InitializeGLib();
-
-        // Initialize GStreamer
-        int argc=0;
-        char **argv = NULL;
-        gst_init(&argc, &argv);
-        guint major, minor, micro, nano;
-        gst_version (&major, &minor, &micro, &nano);
-        QString text;
-        text.sprintf("GStreamer version %i.%i.%i.%i initialized.", major, minor, micro, nano);
-        LogInfo(text.toStdString());
-        // InitializeGStreamer();
+        InitializeDBusAndGabble();
+        InitializeGLib();
+        InitializeGStreamer();
 
      //   g_main_loop_.setPriority(QThread::Priority::LowPriority);
         g_main_loop_.start();
@@ -54,6 +40,43 @@ namespace TelepathyIM
       	InitializeTelepathyConnectionManager("gabble");
 #endif
 	}
+
+    void ConnectionProvider::InitializeGLib()
+    {
+        g_type_init();
+    }
+
+    void ConnectionProvider::InitializeGStreamer()
+    {
+//        QString gst_plugin_path("--gst-plugin-path=./gstreamer/lib");
+        QString gst_plugin_path("");
+        int argc=1;
+        char* argv[1];
+        argv[0] = (char*)gst_plugin_path.toStdString().c_str();
+        char** p_argv = &argv[0];
+        GError error;
+        GError *p_error = &error;
+        if (!gst_init_check(&argc, &p_argv, &p_error))
+        {
+            QString error_message("Canot initialize GStreamer: ");
+            error_message.append(p_error->message);
+            LogError(error_message.toStdString());
+            return;
+        }
+        guint major, minor, micro, nano;
+        gst_version (&major, &minor, &micro, &nano);
+        QString text;
+        text.sprintf("GStreamer version %i.%i.%i.%i initialized.", major, minor, micro, nano);
+        LogInfo(text.toStdString());
+    }
+
+    void ConnectionProvider::InitializeDBusAndGabble()
+    {
+        // this will start signal&slot chain that will kill gabble and start
+        // dbus-daemon and gabble processes
+        ClearGabble();
+    }
+
 
 	ConnectionProvider::~ConnectionProvider()
 	{

@@ -412,7 +412,8 @@ namespace TelepathyIM
 
     u8* FarsightChannel::GetAudioData(int &size)
     {
-        audio_queue_mutex_.lock();
+        boost::mutex::scoped_lock lock(audio_queue_mutex_);
+        //audio_queue_mutex_.lock();
 
         size = total_audio_queue_size_;
         u8* data = new u8[size];
@@ -428,15 +429,19 @@ namespace TelepathyIM
         audio_queue_sizes_.clear();
         total_audio_queue_size_ = 0;
 
-        audio_queue_mutex_.unlock();
+      //  audio_queue_mutex_.unlock();
         return data;
     }
 
     void FarsightChannel::HandleAudioData(u8* data, int size, int rate)
     {
-        audio_queue_mutex_.lock();
-        //static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-        //g_static_mutex_lock (&mutex);
+         boost::mutex::scoped_lock lock(audio_queue_mutex_);
+
+        int max_buffer_length_ms = 500;
+        if (1000*total_audio_queue_size_/rate/2 > max_buffer_length_ms)
+        {
+            return;
+        }
 
         u8* temp = new u8[size];
         memcpy(temp, data, size);
@@ -444,16 +449,7 @@ namespace TelepathyIM
         audio_queue_sizes_.push_back(size);
         total_audio_queue_size_ += size;
 
-        //QFile file("audio_1.raw");
-        //file.open(QIODevice::OpenModeFlag::Append);
-        //file.write((char*)temp,size);
-        audio_queue_mutex_.unlock();
-
         emit AudioDataAvailable(rate);
-
-        //QFile file2("audio_2.raw");
-        //file2.open(QIODevice::OpenModeFlag::Append);
-        //file2.write((char*)temp,size);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
@@ -603,6 +599,10 @@ namespace TelepathyIM
         }
 
         output_pad = gst_element_get_static_pad(output_element, "sink");
+        if (!output_pad)
+        {
+            LogError("Cannot get sink pad from output element");
+        }
         switch (media_type)
         {
             case TP_MEDIA_STREAM_TYPE_AUDIO:

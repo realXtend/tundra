@@ -355,6 +355,9 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
     {
+        emit SendingAudioData(IsSendingAudioData());
+        emit SendingVideoData(IsSendingAudioData());
+ 
         switch (status)
         {
         case FarsightChannel::StatusConnecting:
@@ -734,6 +737,9 @@ namespace TelepathyIM
         if (!stream)
             return false;
 
+        if (!farsight_channel_->IncomingAudioStreamConnected())
+            return false;
+
         return stream->receiving();
     }
 
@@ -750,6 +756,9 @@ namespace TelepathyIM
 
         Tp::MediaStreamPtr stream = GetVideoMediaStream();
         if (!stream)
+            return false;
+
+        if (!farsight_channel_->IncomingVideoStreamConnected())
             return false;
 
         return stream->receiving();
