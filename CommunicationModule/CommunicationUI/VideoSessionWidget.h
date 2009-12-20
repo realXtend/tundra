@@ -39,6 +39,8 @@ namespace CommunicationUI
         QLabel *local_status_label_;
         QLabel *remote_status_label_;
 
+		bool main_view_visible_;
+
     public slots:
         void SessionStateChanged(Communication::VoiceSessionInterface::State new_state);
         void AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state);

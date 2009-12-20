@@ -24,7 +24,8 @@ namespace CommunicationUI
           local_video_(0),
           remote_video_(0),
           controls_local_widget_(new QWidget(this)),
-          controls_remote_widget_(new QWidget(this))
+          controls_remote_widget_(new QWidget(this)),
+		  main_view_visible_(false)
 
     {
         // Init all ui elements
@@ -97,6 +98,7 @@ namespace CommunicationUI
     void VideoSessionWidget::SessionStateChanged(Communication::VoiceSessionInterface::State new_state)
     {
         ClearContent();
+		main_view_visible_ = false;
 
         switch (new_state)
         {
@@ -104,6 +106,7 @@ namespace CommunicationUI
             {
 				video_session_ui_.mainVerticalLayout->setAlignment(video_session_ui_.horizontalLayout, Qt::AlignTop);
                 ShowVideoWidgets();
+				main_view_visible_ = true;
                 video_session_ui_.connectionStatus->setText("Open");
                 break;
             }
@@ -176,89 +179,99 @@ namespace CommunicationUI
 
     void VideoSessionWidget::LocalVideoStateChange(int state)
     {
-        bool enabled = false;
-        if (state == Qt::Checked)
-            enabled = true;
-        else if (state == Qt::Unchecked)
-            enabled = false;
-        video_session_->SendVideoData(enabled);
-        UpdateLocalVideoControls(enabled);
+		if (main_view_visible_)
+		{
+			bool enabled = false;
+			if (state == Qt::Checked)
+				enabled = true;
+			else if (state == Qt::Unchecked)
+				enabled = false;
+			video_session_->SendVideoData(enabled);
+			UpdateLocalVideoControls(enabled);
+		}
     }
 
     void VideoSessionWidget::UpdateLocalVideoControls(bool state)
     {
-        controls_local_ui_.videoCheckBox->setChecked(video_session_->IsReceivingVideoData());
-        if (state)
-        {
-            if (local_video_ && local_status_label_)
-            {
-                if (video_session_->GetVideoStreamState() == Communication::VoiceSessionInterface::SS_CONNECTED)
-                    local_status_label_->setText("Sending video");
-                else
-                    local_status_label_->setText("Cannot send video, video stream not connected");
-            }
-            controls_local_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
-        }
-        else
-        {
-            if (local_video_ && local_status_label_)
-                local_status_label_->setText("Preview of captured video");
-            controls_local_ui_.videoCheckBox->setStyleSheet(QString("color: red;"));
-        }
+		if (main_view_visible_)
+		{
+			controls_local_ui_.videoCheckBox->setChecked(video_session_->IsReceivingVideoData());
+			if (state)
+			{
+				if (local_video_ && local_status_label_)
+				{
+					if (video_session_->GetVideoStreamState() == Communication::VoiceSessionInterface::SS_CONNECTED)
+						local_status_label_->setText("Sending video");
+					else
+						local_status_label_->setText("Cannot send video, video stream not connected");
+				}
+				controls_local_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
+			}
+			else
+			{
+				if (local_video_ && local_status_label_)
+					local_status_label_->setText("Preview of captured video");
+				controls_local_ui_.videoCheckBox->setStyleSheet(QString("color: red;"));
+			}
+		}
     }
 
     void VideoSessionWidget::LocalAudioStateChange(int state)
     {
-        bool enabled = false;
-        if (state == Qt::Checked)
-            enabled = true;
-        else if (state == Qt::Unchecked)
-            enabled = false;
-        video_session_->SendAudioData(enabled);
-        UpdateLocalAudioControls(enabled);
+		if (main_view_visible_)
+		{
+			bool enabled = false;
+			if (state == Qt::Checked)
+				enabled = true;
+			else if (state == Qt::Unchecked)
+				enabled = false;
+			video_session_->SendAudioData(enabled);
+			UpdateLocalAudioControls(enabled);
+		}
     }
 
     void VideoSessionWidget::UpdateLocalAudioControls(bool state)
     {
-        controls_local_ui_.audioCheckBox->setChecked(state);
-        if (state)
-            controls_local_ui_.audioCheckBox->setStyleSheet(QString("color: green;"));
-        else
-            controls_local_ui_.audioCheckBox->setStyleSheet(QString("color: red;"));
+		if (main_view_visible_)
+		{
+			controls_local_ui_.audioCheckBox->setChecked(state);
+			if (state)
+				controls_local_ui_.audioCheckBox->setStyleSheet(QString("color: green;"));
+			else
+				controls_local_ui_.audioCheckBox->setStyleSheet(QString("color: red;"));
+		}
     }
 
     void VideoSessionWidget::UpdateRemoteVideoControls(bool state)
     {
-        controls_remote_ui_.videoCheckBox->setChecked(state);
-        if (state)
-        {
-            if (remote_video_ && remote_status_label_)
-            {
-                //internal_v_layout_remote_->takeAt(1);
-                //remote_video_->show();
-                remote_status_label_->setText("Receiving video");
-            }
-            controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
-        }
-        else
-        {
-            if (remote_video_ && remote_status_label_)
-            {
-                //remote_video_->hide();
-                //internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
-                remote_status_label_->setText("Friend is currently not sending video");
-            }
-            controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: red;"));
-        }
+		if (main_view_visible_)
+		{
+			controls_remote_ui_.videoCheckBox->setChecked(state);
+			if (state)
+			{
+				if (remote_video_ && remote_status_label_)
+					remote_status_label_->setText("Receiving video");
+				controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
+			}
+			else
+			{
+				if (remote_video_ && remote_status_label_)
+					remote_status_label_->setText("Friend is currently not sending video");
+				controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color: red;"));
+			}
+		}
     }
 
     void VideoSessionWidget::UpdateRemoteAudioControls(bool state)
     {
-        controls_remote_ui_.audioCheckBox->setChecked(state);
-        if (state)
-            controls_remote_ui_.audioCheckBox->setStyleSheet(QString("color: green;"));
-        else
-            controls_remote_ui_.audioCheckBox->setStyleSheet(QString("color: red;"));
+		if (main_view_visible_)
+		{
+			controls_remote_ui_.audioCheckBox->setChecked(state);
+			if (state)
+				controls_remote_ui_.audioCheckBox->setStyleSheet(QString("color: green;"));
+			else
+				controls_remote_ui_.audioCheckBox->setStyleSheet(QString("color: red;"));
+		}
     }
 
     void VideoSessionWidget::ShowConfirmationWidget()
@@ -307,7 +320,6 @@ namespace CommunicationUI
 
         // Local video and controls
         local_video_ = (QWidget *)(video_session_->GetLocallyCapturedVideo());
-        //video_session_->GetLocallyCapturedVideo()->show();
         controls_local_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         local_status_label_ = new QLabel("Preview of captured video", this);
         local_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -316,14 +328,11 @@ namespace CommunicationUI
         local_status_label_->setMaximumHeight(20);
         internal_v_layout_local_->addWidget(local_status_label_);
         if (local_video_)
-        {
             internal_v_layout_local_->addWidget(local_video_);
-        }
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
         remote_video_ = (QWidget *)(video_session_->GetReceivedVideo());
-        //video_session_->GetReceivedVideo()->show();
         controls_remote_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         remote_status_label_ = new QLabel("Friend is currently not sending video", this);
         remote_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -332,11 +341,7 @@ namespace CommunicationUI
         remote_status_label_->setMaximumHeight(20);
         internal_v_layout_remote_->addWidget(remote_status_label_);
         if (remote_video_)
-        {
            internal_v_layout_remote_->addWidget(remote_video_);
-           //remote_video_->hide();
-           //internal_v_layout_remote_->insertSpacerItem(1, new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
-        }
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
