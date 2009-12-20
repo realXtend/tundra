@@ -51,7 +51,7 @@ namespace TelepathyIM
 
 // WINDOWS -> autovideosink will chose one of there: glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
 #ifdef Q_WS_WIN
-        video_playback_element_ = gst_element_factory_make("autovideosink", name.toStdString().c_str());
+        video_playback_element_ = gst_element_factory_make("autovideosink", 0); //name.toStdString().c_str());
         if (!video_playback_element_)
         {
             qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
