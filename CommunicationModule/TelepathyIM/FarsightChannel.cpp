@@ -348,11 +348,15 @@ namespace TelepathyIM
         gst_buffer_ref(buffer);
 
         int rate = 0;
+        int channels = 0;
+        int width = 0;
 	    GstCaps *caps;
 	    GstStructure *structure;
 	    caps = gst_buffer_get_caps(buffer);
 	    structure = gst_caps_get_structure(caps, 0);
 	    gst_structure_get_int(structure, "rate", &rate);
+        gst_structure_get_int(structure, "channels", &channels);
+        gst_structure_get_int(structure, "width", &width);
 	    gst_caps_unref(caps);
 
         if ( rate != 8000 && rate != 16000)
@@ -404,9 +408,10 @@ namespace TelepathyIM
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
 
-		//QFile test("voice.raw");
-		//if (test.open(QIODevice::Append))
-		//	test.write((char *)data, size);
+        //QFile file("audio-OnFakeSinkHandoff.raw");
+        //file.open(QIODevice::OpenModeFlag::Append);
+        //file.write((char*)data, size);
+        //file.close();
 
         self->HandleAudioData(data, size, rate);
         gst_buffer_unref(buffer);
@@ -416,7 +421,6 @@ namespace TelepathyIM
     u8* FarsightChannel::GetAudioData(int &size)
     {
         boost::mutex::scoped_lock lock(audio_queue_mutex_);
-        //audio_queue_mutex_.lock();
 
         size = total_audio_queue_size_;
         u8* data = new u8[size];
@@ -431,6 +435,11 @@ namespace TelepathyIM
         audio_queue_.clear();
         audio_queue_sizes_.clear();
         total_audio_queue_size_ = 0;
+
+        //QFile file("audio-GetAudioData.raw");
+        //file.open(QIODevice::OpenModeFlag::Append);
+        //file.write((char*)data, size);
+        //file.close();
 
         return data;
     }
