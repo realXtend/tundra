@@ -432,7 +432,6 @@ namespace TelepathyIM
         audio_queue_sizes_.clear();
         total_audio_queue_size_ = 0;
 
-      //  audio_queue_mutex_.unlock();
         return data;
     }
 
