@@ -146,39 +146,45 @@ namespace CommunicationUI
 
     void VideoSessionWidget::AudioStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state)
     {
-        switch (new_state)
-        {
-            case Communication::VoiceSessionInterface::SS_CONNECTING:
-                video_session_ui_.audioStatus->setText("Connecting");
-				controls_local_ui_.audioCheckBox->setText("Requesting Audio");
-                break;
-            case Communication::VoiceSessionInterface::SS_CONNECTED:
-                video_session_ui_.audioStatus->setText("Connected");
-				controls_local_ui_.audioCheckBox->setText("Audio");
-                break;
-            case Communication::VoiceSessionInterface::SS_DISCONNECTED:
-                video_session_ui_.audioStatus->setText("Disconnected");
-				controls_local_ui_.audioCheckBox->setText("Audio");
-                break;
+		if (main_view_visible_)
+		{
+            switch (new_state)
+            {
+                case Communication::VoiceSessionInterface::SS_CONNECTING:
+                    video_session_ui_.audioStatus->setText("Connecting");
+				    controls_local_ui_.audioCheckBox->setText("Requesting Audio");
+                    break;
+                case Communication::VoiceSessionInterface::SS_CONNECTED:
+                    video_session_ui_.audioStatus->setText("Connected");
+				    controls_local_ui_.audioCheckBox->setText("Audio");
+                    break;
+                case Communication::VoiceSessionInterface::SS_DISCONNECTED:
+                    video_session_ui_.audioStatus->setText("Disconnected");
+				    controls_local_ui_.audioCheckBox->setText("Audio");
+                    break;
+            }
         }
     }
 
     void VideoSessionWidget::VideoStreamStateChanged(Communication::VoiceSessionInterface::StreamState new_state)
     {
-        switch (new_state)
-        {
-            case Communication::VoiceSessionInterface::SS_CONNECTING:
-                video_session_ui_.videoStatus->setText("Connecting");
-				controls_local_ui_.videoCheckBox->setText("Requesting Video");
-                break;
-            case Communication::VoiceSessionInterface::SS_CONNECTED:
-                video_session_ui_.videoStatus->setText("Connected");
-				controls_local_ui_.videoCheckBox->setText("Video");
-                break;
-            case Communication::VoiceSessionInterface::SS_DISCONNECTED:
-                video_session_ui_.videoStatus->setText("Disconnected");
-				controls_local_ui_.videoCheckBox->setText("Video");
-                break;
+        if (main_view_visible_)
+		{
+            switch (new_state)
+            {
+                case Communication::VoiceSessionInterface::SS_CONNECTING:
+                    video_session_ui_.videoStatus->setText("Connecting");
+				    controls_local_ui_.videoCheckBox->setText("Requesting Video");
+                    break;
+                case Communication::VoiceSessionInterface::SS_CONNECTED:
+                    video_session_ui_.videoStatus->setText("Connected");
+				    controls_local_ui_.videoCheckBox->setText("Video");
+                    break;
+                case Communication::VoiceSessionInterface::SS_DISCONNECTED:
+                    video_session_ui_.videoStatus->setText("Disconnected");
+				    controls_local_ui_.videoCheckBox->setText("Video");
+                    break;
+            }
         }
     }
 
