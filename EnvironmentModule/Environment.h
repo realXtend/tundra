@@ -124,8 +124,14 @@ namespace Environment
         //! Set server time override
         void SetTimeOverride(bool enabled) { time_override_ = enabled; }      
 
-      
-      
+        void SetSunDirection(const QVector<float>& vector);
+        QVector<float> GetSunDirection();
+
+        void SetSunColor(const QVector<float>& vector);
+        QVector<float> GetSunColor();
+
+        QVector<float> GetAmbientLight();
+        void SetAmbientLight(const QVector<float>& vector);
      
     signals:
         

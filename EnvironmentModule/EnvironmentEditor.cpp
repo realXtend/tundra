@@ -364,6 +364,62 @@ namespace Environment
 
             }
 
+
+            // Sun direction
+            QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
+            QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
+            QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
+            
+            // Sun color
+            QDoubleSpinBox* sun_color_red = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_red");
+            QDoubleSpinBox* sun_color_blue  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_blue");
+            QDoubleSpinBox* sun_color_green  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_green");
+            QDoubleSpinBox* sun_color_alpha  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_alpha");
+
+            // Ambient light
+            QDoubleSpinBox* ambient_light_red = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_red");
+            QDoubleSpinBox* ambient_light_blue = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_blue");
+            QDoubleSpinBox* ambient_light_green = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_green");
+
+            QPushButton* ambient_button = editor_widget_->findChild<QPushButton *>("ambient_light_button");
+        
+            if ( sun_direction_x != 0
+                 && sun_direction_y != 0
+                 && sun_direction_z != 0
+                 && sun_color_red != 0
+                 && sun_color_blue != 0
+                 && sun_color_green != 0
+                 && sun_color_alpha != 0
+                 && ambient_light_red != 0
+                 && ambient_light_blue !=0
+                 && ambient_light_green != 0
+                 && ambient_button != 0)
+            {
+                // Initialize sun direction value
+                QVector<float> sun_direction = environment_->GetSunDirection();
+                sun_direction_x->setValue(sun_direction[0]);
+                sun_direction_y->setValue(sun_direction[1]);
+                sun_direction_z->setValue(sun_direction[2]);
+
+
+                QVector<float> sun_color = environment_->GetSunColor();
+                sun_color_red->setValue(sun_color[0]);
+                sun_color_green->setValue(sun_color[1]);
+                sun_color_blue->setValue(sun_color[2]);
+                sun_color_alpha->setValue(sun_color[3]);
+
+
+                QVector<float> ambient_light = environment_->GetAmbientLight();
+                ambient_light_red->setValue(ambient_light[0]);
+                ambient_light_green->setValue(ambient_light[1]);
+                ambient_light_blue->setValue(ambient_light[2]);
+
+                QObject::connect(ambient_button, SIGNAL(clicked()), this, SLOT(UpdateAmbient()));
+
+            }
+
+
+                
         }
 
 
@@ -952,5 +1008,56 @@ namespace Environment
 
     }
 
+    void EnvironmentEditor::UpdateAmbient()
+    {
+        // Sun direction
+        QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
+        QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
+        QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
+        
+        // Sun color
+        QDoubleSpinBox* sun_color_red = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_red");
+        QDoubleSpinBox* sun_color_blue  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_blue");
+        QDoubleSpinBox* sun_color_green  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_green");
+        QDoubleSpinBox* sun_color_alpha  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_alpha");
 
+        // Ambient light
+        QDoubleSpinBox* ambient_light_red = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_red");
+        QDoubleSpinBox* ambient_light_blue = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_blue");
+        QDoubleSpinBox* ambient_light_green = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_green");
+
+         if ( sun_direction_x != 0
+                 && sun_direction_y != 0
+                 && sun_direction_z != 0
+                 && sun_color_red != 0
+                 && sun_color_blue != 0
+                 && sun_color_green != 0
+                 && sun_color_alpha != 0
+                 && ambient_light_red != 0
+                 && ambient_light_blue !=0
+                 && ambient_light_green != 0)
+                 
+            {
+                QVector<float> sun_direction(3);
+                sun_direction[0] = static_cast<float>(sun_direction_x->value());
+                sun_direction[1] = static_cast<float>(sun_direction_y->value());
+                sun_direction[2] = static_cast<float>(sun_direction_z->value());
+                environment_->SetSunDirection(sun_direction);
+
+
+                QVector<float> sun_color(4);
+                sun_color[0] = static_cast<float>(sun_color_red->value());
+                sun_color[1] = static_cast<float>(sun_color_green->value());
+                sun_color[2] = static_cast<float>(sun_color_blue->value());
+                sun_color[3] = static_cast<float>(sun_color_alpha->value());
+                environment_->SetSunColor(sun_color);
+
+                QVector<float> ambient_light(3); 
+                ambient_light[0] = static_cast<float>(ambient_light_red->value());
+                ambient_light[1] = static_cast<float>(ambient_light_green->value());
+                ambient_light[2] = static_cast<float>(ambient_light_blue->value());
+                environment_->SetAmbientLight(ambient_light);
+            }
+
+    }
 }

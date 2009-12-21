@@ -89,6 +89,8 @@ namespace OgreRenderer
         /// Sets the sun direction.
         void SetSunDirection(const Vector3df &direction);
 
+        Vector3df GetSunDirection() const;
+
         /// Whether the sunlight casts shadows or not.
         /// @param enabled Whether the light casts shadows or not.
         void SetSunCastShadows(const bool &enabled);
