@@ -95,6 +95,11 @@ namespace OpenALAudio
 
     void SoundStream::StoreToQueue(u8* data, int size)
     {
+        //QFile file("audio-StoreToQueue.raw");
+        //file.open(QIODevice::OpenModeFlag::Append);
+        //file.write((char*)data, size);
+        //file.close();
+
         u8* local_copy = new u8[size]; // RESERVE MEMORY
         memcpy(local_copy, data, size);
         data_queue_.push_back(local_copy);
@@ -116,6 +121,12 @@ namespace OpenALAudio
         for (int i = 0; i < data_queue_.size(); i++)
         {
             u32 size = data_queue_packet_sizes_[i];
+
+            //QFile file("audio-FillBufferFromQueue.raw");
+            //file.open(QIODevice::OpenModeFlag::Append);
+            //file.write((char*)data_queue_[i], size);
+            //file.close();
+
             memcpy(local_copy + offset, data_queue_[i], size);
             delete [] data_queue_[i]; // FREE MEMORY
             offset += size;
