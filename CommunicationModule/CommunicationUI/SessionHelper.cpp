@@ -126,7 +126,10 @@ namespace UiHelpers
         }
 
         if (info_widget_)
+		{
+			info_widget_->findChild<QLabel *>("infoLabel")->hide();
             SAFE_DELETE(info_widget_);
+		}
     }
 
     void SessionHelper::TabWidgetPostStateCheck()
@@ -140,6 +143,7 @@ namespace UiHelpers
             QVBoxLayout *layout = new QVBoxLayout(info_widget_);
             layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
             QLabel *info_label = new QLabel("Click on Show Friend List from the top menu to start communicating", info_widget_);
+			info_label->setObjectName("infoLabel");
             info_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
             info_label->setAlignment(Qt::AlignCenter);
             layout->addWidget(info_label);
