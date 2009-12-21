@@ -90,6 +90,7 @@ else:
 #~ else:
     #~ r.logDebug("   reloading headtrack.control")
     #~ headtrack.control = reload(headtrack.control)
+import headtrack.control
 
 try:
     import webserver.webcontroller
@@ -109,7 +110,7 @@ modules = [
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     editgui.EditGUI,
-    mediaurlhandler.mediaurlhandler.MediaURLHandler,
+    #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
