@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainWidget</class>
+ <widget class="QWidget" name="mainWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>409</width>
+    <height>345</height>
+   </rect>
+  </property>
+  <property name="styleSheet">
+   <string>
+    /* Containers */
+    QFrame#MainFrame
+    {
+        background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
+        padding: 5px;
+    }
+    
+    /* Other widgets */
+    QLabel
+    {
+        color: rgb(255,255,255);
+    }
+    
+    QAbstractButton
+    {
+        color: rgb(255,255,255);
+    }
+    QPushButton
+    {
+        color: rgb(0, 0, 0);
+        min-width: 60px;
+        font-size: 12px;
+        border: 1px solid;
+        border-color: rgb(48, 48, 48);
+        border-radius: 8px;
+        border-top-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        padding: 2px 5px;
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
+    }
+    QPushButton:hover
+    {
+        border-color: rgba(0, 0, 0, 255);
+        color: rgb(0,0,0);
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
+    }
+    </string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="MainFrame">
+     <property name="maximumSize">
+      <size>
+       <width>16777207</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QWidget" name="widget" native="true">
+          <widget class="QWidget" name="widgetFileView" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>-4</y>
+             <width>397</width>
+             <height>288</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QWidget" name="widgetButtons" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>290</y>
+             <width>397</width>
+             <height>39</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="buttonOk">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Ok</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonCancel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Cancel</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
