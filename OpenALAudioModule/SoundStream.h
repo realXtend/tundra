@@ -53,6 +53,8 @@ namespace OpenALAudio
         // memory for OpenAL buffer objects
         QMap<ALuint, u8*> playback_buffers_;
         QMutex add_data_mutex_;
+
+        int test_;
     };
 }
 
