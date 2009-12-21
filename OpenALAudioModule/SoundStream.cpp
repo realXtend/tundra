@@ -9,27 +9,30 @@
 
 namespace OpenALAudio
 {
-    SoundStream::SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo)
-        : name_(stream_name),
-          frequency_(frequency),
-          sample_width_(sample_width),
-          stereo_(stereo),
-          test_(0)
+    SoundStream::SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo) :
+        name_(stream_name),
+        frequency_(frequency),
+        sample_width_(sample_width),
+        stereo_(stereo),
+        test_(0)
     {
         switch (sample_width_)
         {
-            case 8:
-                if (stereo)
-                    format_ = AL_FORMAT_STEREO8;
-                else
-                    format_ = AL_FORMAT_MONO8;
-                break;
-            case 16:
-                if (stereo)
-                    format_ = AL_FORMAT_STEREO16;
-                else
-                    format_ = AL_FORMAT_MONO16;
-                break;
+        case 8:
+            if (stereo)
+                format_ = AL_FORMAT_STEREO8;
+            else
+                format_ = AL_FORMAT_MONO8;
+            break;
+        case 16:
+            if (stereo)
+                format_ = AL_FORMAT_STEREO16;
+            else
+                format_ = AL_FORMAT_MONO16;
+            break;
+        default:
+            format_ = 0;
+            break;
         }
 
         alGenSources(1, &source_);
@@ -162,7 +165,6 @@ namespace OpenALAudio
 
         playback_buffers_[buffer_handle] = local_copy;
 
-        
         //QFile file("audio-FillBufferFromQueue-2.raw");
         //file.open(QIODevice::OpenModeFlag::Append);
         //file.write((char*)playback_buffers_[buffer_handle], total_queue_size);
@@ -241,26 +243,20 @@ namespace OpenALAudio
             Play();
 
         add_data_mutex_.unlock();
-        test_ --;
+        test_--;
     }
 
     bool SoundStream::IsPlaying()
     {
         ALint state;
         alGetSourcei(source_, AL_SOURCE_STATE, &state);
-        if (state == AL_PLAYING)
+        switch(state)
         {
-            //OpenALAudioModule::LogInfo("STATE == PLAYING (true)");
+        case AL_PLAYING:
             return true;
-        }
-        else if (state == AL_PAUSED)
-        {
-            //OpenALAudioModule::LogInfo("STATE == PAUSED (false)");
-            return false;
-        }
-        else if (state == AL_STOPPED)
-        {
-            //OpenALAudioModule::LogInfo("STATE == STOPPED (false)");
+        case AL_PAUSED:
+        case AL_STOPPED:
+        default:
             return false;
         }
     }
