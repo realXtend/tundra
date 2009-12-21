@@ -100,7 +100,7 @@ namespace OpenALAudio
         {
             OpenALAudioModule::LogError("Cannot alSourcePlay failed!");
         }
-        OpenALAudioModule::LogDebug(">> Stream playback started");
+        OpenALAudioModule::LogInfo(">> Stream playback started");
     }
 
     int SoundStream::GetReceivedAudioDataLengthMs()
@@ -248,7 +248,21 @@ namespace OpenALAudio
     {
         ALint state;
         alGetSourcei(source_, AL_SOURCE_STATE, &state);
-        return (state == AL_PLAYING);
+        if (state == AL_PLAYING)
+        {
+            //OpenALAudioModule::LogInfo("STATE == PLAYING (true)");
+            return true;
+        }
+        else if (state == AL_PAUSED)
+        {
+            //OpenALAudioModule::LogInfo("STATE == PAUSED (false)");
+            return false;
+        }
+        else if (state == AL_STOPPED)
+        {
+            //OpenALAudioModule::LogInfo("STATE == STOPPED (false)");
+            return false;
+        }
     }
 
     void SoundStream::SetPosition(const Vector3df &position)

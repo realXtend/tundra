@@ -185,7 +185,7 @@ namespace UiManagers
 
     void SessionManager::SignOut()
     {
-        im_connection_->Close();                    
+        im_connection_->Close();          
         friend_list_widget_->close(); 
         SAFE_DELETE(friend_list_widget_);
         emit StateChange(UiDefines::UiStates::Disconnected);
