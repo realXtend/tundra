@@ -79,8 +79,27 @@ namespace OpenALAudio
 
     void SoundStream::Play()
     {
-//        alSourceStop(source_);
+        ALint buffers_in_play = 0;
+        alGetSourcei(source_, AL_BUFFERS_QUEUED, &buffers_in_play);
+
+        ALint state;
+        alGetSourcei(source_, AL_SOURCE_STATE, &state);
+
+        if (buffers_in_play > 0 )
+        {
+//            return;
+        }
+
+        if (state == AL_PLAYING)
+            return;
+
+        alGetError();
         alSourcePlay(source_);
+        ALenum error = alGetError();
+        if (error != AL_NO_ERROR)
+        {
+            OpenALAudioModule::LogError("Cannot alSourcePlay failed!");
+        }
         OpenALAudioModule::LogDebug(">> Stream playback started");
     }
 
@@ -179,8 +198,8 @@ namespace OpenALAudio
         {
             OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
             // All the buffers are full, we'll ignore this audio sample packet
-            add_data_mutex_.unlock();
             test_ --;
+            add_data_mutex_.unlock();
             return;
         }
 
@@ -189,8 +208,8 @@ namespace OpenALAudio
         if (empty_buffer_count <= 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
         {
             // we do not want to fill OpenAL buffer even if we have one available but we have stored the data to queue
-            add_data_mutex_.unlock();
             test_ --;
+            add_data_mutex_.unlock();
             return;
         }
 

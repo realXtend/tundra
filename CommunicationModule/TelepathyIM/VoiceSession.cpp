@@ -325,7 +325,7 @@ namespace TelepathyIM
         LogInfo(log_message.toStdString());
         state_ = STATE_CLOSED;
         reason_ = message;
-        emit Closed(this);
+//        emit Closed(this);
         emit StateChanged(state_);
     }
 
