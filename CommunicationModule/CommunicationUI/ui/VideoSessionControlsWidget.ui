@@ -29,11 +29,11 @@ QCheckBox::indicator {
 }
 
 QCheckBox::indicator:checked {
-	image: url(:/images/iconGreen.png);
+	image: url(:images/iconGreen.png);
 }
 
 QCheckBox::indicator:unchecked {
-	image: url(:/images/iconRed.png);
+	image: url(:images/iconRed.png);
 }</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">

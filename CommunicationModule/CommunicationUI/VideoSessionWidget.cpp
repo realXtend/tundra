@@ -32,10 +32,12 @@ namespace CommunicationUI
         video_session_ui_.setupUi(this);
 
         controls_local_ui_.setupUi(controls_local_widget_);
+		controls_local_ui_.videoCheckBox->setStyleSheet(QString("color:red"));
         controls_local_ui_.horizontalLayout->insertSpacerItem(2, new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed));
         controls_local_widget_->hide();  
 
         controls_remote_ui_.setupUi(controls_remote_widget_);
+		controls_remote_ui_.videoCheckBox->setStyleSheet(QString("color:red"));
         controls_remote_ui_.horizontalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed));
         controls_remote_ui_.audioCheckBox->setEnabled(false);
         controls_remote_ui_.videoCheckBox->setEnabled(false);
@@ -148,12 +150,15 @@ namespace CommunicationUI
         {
             case Communication::VoiceSessionInterface::SS_CONNECTING:
                 video_session_ui_.audioStatus->setText("Connecting");
+				controls_local_ui_.audioCheckBox->setText("Requesting Audio");
                 break;
             case Communication::VoiceSessionInterface::SS_CONNECTED:
                 video_session_ui_.audioStatus->setText("Connected");
+				controls_local_ui_.audioCheckBox->setText("Audio");
                 break;
             case Communication::VoiceSessionInterface::SS_DISCONNECTED:
                 video_session_ui_.audioStatus->setText("Disconnected");
+				controls_local_ui_.audioCheckBox->setText("Audio");
                 break;
         }
     }
@@ -164,15 +169,15 @@ namespace CommunicationUI
         {
             case Communication::VoiceSessionInterface::SS_CONNECTING:
                 video_session_ui_.videoStatus->setText("Connecting");
+				controls_local_ui_.videoCheckBox->setText("Requesting Video");
                 break;
             case Communication::VoiceSessionInterface::SS_CONNECTED:
-            {
                 video_session_ui_.videoStatus->setText("Connected");
-                LocalVideoStateChange(controls_local_ui_.videoCheckBox->checkState());
+				controls_local_ui_.videoCheckBox->setText("Video");
                 break;
-            }
             case Communication::VoiceSessionInterface::SS_DISCONNECTED:
                 video_session_ui_.videoStatus->setText("Disconnected");
+				controls_local_ui_.videoCheckBox->setText("Video");
                 break;
         }
     }
@@ -187,7 +192,7 @@ namespace CommunicationUI
 			else if (state == Qt::Unchecked)
 				enabled = false;
 			video_session_->SendVideoData(enabled);
-			UpdateLocalVideoControls(enabled);
+            UpdateLocalVideoControls(enabled);
 		}
     }
 
@@ -195,15 +200,17 @@ namespace CommunicationUI
     {
 		if (main_view_visible_)
 		{
-			controls_local_ui_.videoCheckBox->setChecked(video_session_->IsReceivingVideoData());
+            controls_local_ui_.videoCheckBox->setChecked(state);
 			if (state)
 			{
 				if (local_video_ && local_status_label_)
 				{
 					if (video_session_->GetVideoStreamState() == Communication::VoiceSessionInterface::SS_CONNECTED)
 						local_status_label_->setText("Sending video");
+                    else if (video_session_->GetVideoStreamState() == Communication::VoiceSessionInterface::SS_CONNECTING)
+                        local_status_label_->setText("Requesting video...");
 					else
-						local_status_label_->setText("Cannot send video, video stream not connected");
+                        local_status_label_->setText("Could not open video stream");
 				}
 				controls_local_ui_.videoCheckBox->setStyleSheet(QString("color: green;"));
 			}
@@ -226,7 +233,6 @@ namespace CommunicationUI
 			else if (state == Qt::Unchecked)
 				enabled = false;
 			video_session_->SendAudioData(enabled);
-			UpdateLocalAudioControls(enabled);
 		}
     }
 

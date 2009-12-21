@@ -36,6 +36,8 @@ namespace OpenALAudio
         alSourcef(source_, AL_GAIN, 1.0f);
         alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
         alSourcef(source_, AL_REFERENCE_DISTANCE, 10.0);
+        alSourcei(source_, AL_LOOPING, AL_FALSE);
+        alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
 
         alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
