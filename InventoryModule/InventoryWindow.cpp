@@ -19,7 +19,7 @@
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
-#include <DirectoryView.h>
+//#include <DirectoryView.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -169,8 +169,8 @@ void InventoryWindow::RenameItem()
 
 void InventoryWindow::Upload()
 {
-    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(const QStringList &)), 0);
-/*
+//    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(const QStringList &)), 0);
+
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
     if (names.empty())
@@ -182,7 +182,6 @@ void InventoryWindow::Upload()
         filenames << QString((*it).c_str());
 
     inventoryItemModel_->Upload(index, filenames);
-*/
 }
 
 void InventoryWindow::UploadFiles(const QStringList &filenames)
