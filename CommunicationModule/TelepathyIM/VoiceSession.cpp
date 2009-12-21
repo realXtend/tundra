@@ -320,6 +320,7 @@ namespace TelepathyIM
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
     {
+        // TODO: CRASH HERE !!!
         QString log_message = QString(" VoiceSession::OnChannelInvalidated - ").append(error).append(" - ").append(message);
         LogInfo(log_message.toStdString());
         state_ = STATE_CLOSED;
@@ -358,8 +359,10 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status)
     {
-        emit SendingAudioData(IsSendingAudioData());
-        emit SendingVideoData(IsSendingAudioData());
+        emit ReceivingAudioData(IsReceivingAudioData());
+        emit ReceivingVideoData(IsReceivingVideoData());
+        emit SendingAudioData(IsReceivingAudioData());
+        emit SendingVideoData(IsReceivingVideoData());
  
         switch (status)
         {
@@ -650,6 +653,8 @@ namespace TelepathyIM
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;     
+        if (!farsight_channel_)
+            return;
 
         int data_size = 0;
         u8* data = farsight_channel_->GetAudioData(data_size);
