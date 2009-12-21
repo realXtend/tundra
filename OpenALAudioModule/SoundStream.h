@@ -9,10 +9,11 @@
 #include <QMutex>
 
 // todo: Change there to static member variables
-#define MAX_BUFFER_COUNT 4
+#define MAX_BUFFER_COUNT 4 
 
 namespace OpenALAudio
 {
+    //! TODO: Don't reserve momory for audio data dynamically. Use static buffers.
     class SoundStream
     {
     public:
@@ -35,7 +36,7 @@ namespace OpenALAudio
         void StoreToQueue(u8* data, int size);
 
         //! /return handle to given buffer if success. Return 0 if fails
-        ALint FillBufferFromQueue(ALint);
+        ALint FillBufferFromQueue(ALint, int max_bytes);
 
         ALuint buffers_[MAX_BUFFER_COUNT];
         ALuint source_;
@@ -52,8 +53,7 @@ namespace OpenALAudio
         // memory for OpenAL buffer objects
         QMap<ALuint, u8*> playback_buffers_;
         QMutex add_data_mutex_;
-
-        int test_;
+        static const int EMPTY_SAMPLES_SIZE = 2;
     };
 }
 
