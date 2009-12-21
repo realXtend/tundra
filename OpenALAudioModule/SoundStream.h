@@ -9,7 +9,7 @@
 #include <QMutex>
 
 // todo: Change there to static member variables
-#define MAX_BUFFER_COUNT 2
+#define MAX_BUFFER_COUNT 4
 
 namespace OpenALAudio
 {
@@ -19,7 +19,6 @@ namespace OpenALAudio
     public:
         SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo);
         virtual ~SoundStream();
-
         
         void Play();
         
@@ -39,12 +38,10 @@ namespace OpenALAudio
         //! /return handle to given buffer if success. Return 0 if fails
         ALint FillBufferFromQueue(ALint);
 
-
         ALuint buffers_[MAX_BUFFER_COUNT];
         ALuint source_;
         ALenum format_;
 
-        int current_buffer_;
         std::string name_;
         uint frequency_;
         int sample_width_;

@@ -13,8 +13,7 @@ namespace OpenALAudio
         : name_(stream_name),
           frequency_(frequency),
           sample_width_(sample_width),
-          stereo_(stereo),
-          current_buffer_(0)
+          stereo_(stereo)
     {
         switch (sample_width_)
         {
@@ -79,6 +78,7 @@ namespace OpenALAudio
 
     void SoundStream::Play()
     {
+//        alSourceStop(source_);
         alSourcePlay(source_);
         OpenALAudioModule::LogDebug(">> Stream playback started");
     }
@@ -164,9 +164,9 @@ namespace OpenALAudio
 
         ALint empty_buffer_count = 0;
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
-        if (empty_buffer_count == 0 && GetReceivedAudioDataLengthMs() > max_buffer_length_ms)
+        if (empty_buffer_count <= 0 && GetReceivedAudioDataLengthMs() > max_buffer_length_ms)
         {
-//            OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
+            OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
             // All the buffers are full, we'll ignore this audio sample packet
             add_data_mutex_.unlock();
             return;
@@ -174,7 +174,7 @@ namespace OpenALAudio
 
         StoreToQueue(data, size);
 
-        if (empty_buffer_count == 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
+        if (empty_buffer_count <= 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
         {
             // we do not want to fill OpenAL buffer even if we have one available but we have stored the data to queue
             add_data_mutex_.unlock();
@@ -193,6 +193,7 @@ namespace OpenALAudio
 
         if (!FillBufferFromQueue(buffer_handle))
         {
+            OpenALAudioModule::LogDebug("Could not fill OpenAL buffer.");
             add_data_mutex_.unlock();
             return;
         }
@@ -218,7 +219,6 @@ namespace OpenALAudio
         if (source_)
         {
             alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
-            //alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
             ALfloat sound_pos[] = { position.x, position.y, position.z };
             alSourcefv(source_, AL_POSITION, sound_pos);
         }
