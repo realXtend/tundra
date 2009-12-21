@@ -131,6 +131,8 @@ namespace Environment
         void SetWaterFogDistance();
         void ToggleFogOverride();
 
+        void UpdateAmbient();
+
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 

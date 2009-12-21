@@ -126,10 +126,30 @@ void EC_OgreEnvironment::SetSunColor(const Color &color)
         sunlight_->setDiffuseColour(ToOgreColor(color));
 }
 
+Color EC_OgreEnvironment::GetSunColor() const
+{
+    if ( sunlight_ != 0)
+    {
+        Ogre::ColourValue color = sunlight_->getDiffuseColour();
+        return Color(color.r, color.g, color.b, color.a);
+    }
+    return Color(0.0,0.0,0.0,0.0);
+}
+
 void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 {
     if (sunlight_)
         sunlight_->setDirection(ToOgreVector3(direction));
+}
+
+Vector3df EC_OgreEnvironment::GetSunDirection() const
+{
+    if ( sunlight_ != 0)
+    {
+        Ogre::Vector3 vec = sunlight_->getDirection();
+        return Vector3df(vec.x, vec.y, vec.z);
+    }
+    return Vector3df();
 }
 
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)

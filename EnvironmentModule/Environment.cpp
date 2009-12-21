@@ -283,5 +283,71 @@ float Environment::GetGroundFogEndDistance()
      return 0.0;
 }
 
+void Environment::SetSunDirection(const QVector<float>& vector)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+        activeEnvComponent_->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
+}
+
+QVector<float> Environment::GetSunDirection() 
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        Vector3df vec = activeEnvComponent_->GetSunDirection();
+        QVector<float> vector(3);
+        vector[0] = vec.x, vector[1] = vec.y, vector[2] = vec.z;
+        return vector;
+    }
+        
+    return QVector<float>(3);
+}
+
+void Environment::SetSunColor(const QVector<float>& vector)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        Color color(vector[0], vector[1], vector[2], vector[3]);
+        activeEnvComponent_->SetSunColor(color);
+    }
+}
+     
+QVector<float> Environment::GetSunColor()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        Color color = activeEnvComponent_->GetSunColor();
+        QVector<float> vec(4);
+        vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
+        return vec;
+    }
+    return QVector<float>(4);
+}
+
+QVector<float> Environment::GetAmbientLight()
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+       Color color = activeEnvComponent_->GetAmbientLightColor(); 
+       QVector<float> vec(3);
+       vec[0] = color.r, vec[1] = color.g, vec[2] = color.b;
+       return vec;
+    }
+    return QVector<float>(3);
+}
+
+void Environment::SetAmbientLight(const QVector<float>& vector)
+{
+    FindActiveEnvironment();
+    if (activeEnvComponent_ != 0)
+    {
+        activeEnvComponent_->SetAmbientLightColor(Color(vector[0], vector[1], vector[2]));
+    }
+}
+     
 
 }
