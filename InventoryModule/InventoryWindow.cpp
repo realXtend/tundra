@@ -10,7 +10,6 @@
 #include "InventoryModule.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
-#include "DirectoryView.h"
 
 #include <Framework.h>
 #include <RexLogicModule.h>
@@ -20,6 +19,7 @@
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
+#include <DirectoryView.h>
 
 #include <QUiLoader>
 #include <QFile>
