@@ -41,9 +41,8 @@ namespace Hydrax
 namespace OgreRenderer
 {
     class Renderer;
-    class EC_OgrePlaceable;
-
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     /** Ogre environment component.
      *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
@@ -56,14 +55,6 @@ namespace OgreRenderer
         DECLARE_EC(EC_OgreEnvironment);
     public:
         virtual ~EC_OgreEnvironment();
-
-        /// Gets the placeable component.
-        Foundation::ComponentPtr GetSunPlaceable() const { return placeable_; }
-
-        /// Sets placeable component.
-        /// set a null placeable (or do not set a placeable) to have a detached light.
-        /// @param placeable Placeable component.
-        void SetPlaceable(Foundation::ComponentPtr placeable);
 
         /// Sets the viewport's background color.
         /// @param color Color.
@@ -149,14 +140,6 @@ namespace OgreRenderer
         /// Creates the sunlight.
         void CreateSunlight();
 
-        /// Attaches sunlight to placeable.
-        /// \note Not sure if this is needed. Maybe if we want to create custom suns?
-        void AttachSunlight();
-
-        /// Detaches sunlight from placeable.
-        /// \note Not sure if this is needed. Maybe if we want to create custom suns?
-        void DetachSunlight();
-
 #ifdef CAELUM
         /// Initializes the Caleum system.
         void InitCaelum();
@@ -176,14 +159,8 @@ namespace OgreRenderer
         /// Initializes shadows.
         void InitShadows();
 
-        /// placeable component, optional
-        Foundation::ComponentPtr placeable_;
-
-        /// attached to placeable -flag
-        bool attached_;
-
         /// renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
 
         /// Ogre sunlight
         Ogre::Light *sunlight_;

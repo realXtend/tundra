@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
 #include "OgreRenderingModule.h"

@@ -17,6 +17,7 @@ namespace OgreRenderer
     class Renderer;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
     //! Ogre placeable (scene node) component
     /*! \ingroup OgreRenderingModuleClient
@@ -82,7 +83,7 @@ namespace OgreRenderer
         void DetachNode();
         
         //! renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         //! parent placeable
         Foundation::ComponentPtr parent_;

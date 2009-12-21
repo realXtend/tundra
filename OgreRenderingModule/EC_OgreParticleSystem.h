@@ -19,6 +19,7 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
     //! Ogre particle system entity component
     /*! May contain multiple particle systems created from templates.
@@ -119,7 +120,7 @@ namespace OgreRenderer
         Foundation::ComponentPtr placeable_;
         
         //! renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         //! Ogre particle systems
         std::vector<Ogre::ParticleSystem*> systems_;

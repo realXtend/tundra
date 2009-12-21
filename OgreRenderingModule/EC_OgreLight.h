@@ -18,6 +18,7 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
     //! Ogre light component
     /*! A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
@@ -96,7 +97,7 @@ namespace OgreRenderer
         Foundation::ComponentPtr placeable_;
         
         //! renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         //! Ogre light
         Ogre::Light* light_;

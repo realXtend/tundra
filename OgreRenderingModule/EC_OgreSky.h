@@ -94,6 +94,7 @@ namespace OgreRenderer
 
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     /** Ogre sky component
      *
@@ -150,7 +151,7 @@ namespace OgreRenderer
         EC_OgreSky(Foundation::ModuleInterface* module);
         
         /// Renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         /// whether sky enabled by this component
         bool skyEnabled_;

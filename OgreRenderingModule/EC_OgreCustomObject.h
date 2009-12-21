@@ -18,8 +18,9 @@ namespace OgreRenderer
     class Renderer;
     class EC_OgrePlaceable;
     
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    
+    typedef boost::shared_ptr<Renderer> RendererPtr;    
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
+        
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
         Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
@@ -103,7 +104,7 @@ namespace OgreRenderer
         Foundation::ComponentPtr placeable_;
         
         //! renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         //! Ogre manual object
         Ogre::ManualObject* object_;

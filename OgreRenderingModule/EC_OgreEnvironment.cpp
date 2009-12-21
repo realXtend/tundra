@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -40,7 +39,6 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     module_(0),
 #endif
     cameraUnderWater_(false),
-    attached_(false),
     useCaelum_(false),
     useHydrax_(false),
     sunColorMultiplier_(MAX_SUNLIGHT_MULTIPLIER),
@@ -71,13 +69,16 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
 
 EC_OgreEnvironment::~EC_OgreEnvironment()
 {
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+        
     SetBackgoundColor(Color(0, 0, 0));
     DisableFog();
 
     if (sunlight_)
     {
-        DetachSunlight();
-        Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+        Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
         sceneManager->destroyLight(sunlight_);
         sunlight_ = 0;
     }
@@ -91,32 +92,41 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
 #endif
 }
 
-void EC_OgreEnvironment::SetPlaceable(Foundation::ComponentPtr placeable)
-{
-    DetachSunlight();
-    placeable_ = placeable;
-    AttachSunlight();
-}
-
 void EC_OgreEnvironment::SetBackgoundColor(const Color &color)
 {
-    renderer_->GetCurrentCamera()->getViewport()->setBackgroundColour(ToOgreColor(color));
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+    
+    renderer->GetCurrentCamera()->getViewport()->setBackgroundColour(ToOgreColor(color));
 }
 
 Color EC_OgreEnvironment::GetBackgoundColor() const
 {
-    return ToCoreColor(renderer_->GetCurrentCamera()->getViewport()->getBackgroundColour());
+    if (renderer_.expired())
+        return Color(0.0f, 0.0f, 0.0f, 0.0f);
+    RendererPtr renderer = renderer_.lock();
+    
+    return ToCoreColor(renderer->GetCurrentCamera()->getViewport()->getBackgroundColour());
 }
 
 void EC_OgreEnvironment::SetAmbientLightColor(const Color &color)
 {
-    Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+    
+    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setAmbientLight(ToOgreColor(color));
 }
 
 Color EC_OgreEnvironment::GetAmbientLightColor() const
 {
-    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    if (renderer_.expired())
+        return Color(0.0f, 0.0f, 0.0f, 0.0f);
+    RendererPtr renderer = renderer_.lock();
+            
+    Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
     return ToCoreColor(sceneManager->getAmbientLight());
 }
 
@@ -179,6 +189,10 @@ void EC_OgreEnvironment::SetTime(const time_t &time)
 
 void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 {
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+    
 #ifdef CAELUM
     // Set sunlight attenuation using diffuse multiplier.
     // Seems to be working ok, but feel free to fix if you find better logic and/or values.
@@ -212,8 +226,8 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 #endif
 
     // Set fogging
-    Ogre::Camera *camera = renderer_->GetCurrentCamera();
-    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+    Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
     Ogre::Entity* water = 0;
     
     if ( sceneManager->hasEntity("WaterEntity") )
@@ -226,28 +240,31 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         camera->getViewport()->setBackgroundColour(fogColor_);
         camera->setFarClipDistance(cameraFarClip_);
     }
-    else if(camera->getPosition().z >= water->getParentNode()->getPosition().z)
+    else 
     {
-        // We're above the water.
-#ifdef CAELUM
-        caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
-#endif
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
-        camera->getViewport()->setBackgroundColour(fogColor_);
-        camera->setFarClipDistance(cameraFarClip_);
-        cameraUnderWater_ = false;
-    }
-    else
-    {
-        // We're below the water.
-#ifdef CAELUM
-        // Hide the Caelum subsystems.
-        caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-#endif
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
-        camera->getViewport()->setBackgroundColour(fogColor_ * waterFogColor_);
-        camera->setFarClipDistance(waterFogEnd_ + 10.f);
-        cameraUnderWater_ = true;
+        if(camera->getPosition().z >= water->getParentNode()->getPosition().z)
+        {
+            // We're above the water.
+    #ifdef CAELUM
+            caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
+    #endif
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
+            camera->getViewport()->setBackgroundColour(fogColor_);
+            camera->setFarClipDistance(cameraFarClip_);
+            cameraUnderWater_ = false;
+        }
+        else
+        {
+            // We're below the water.
+    #ifdef CAELUM
+            // Hide the Caelum subsystems.
+            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+    #endif
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
+            camera->getViewport()->setBackgroundColour(fogColor_ * waterFogColor_);
+            camera->setFarClipDistance(waterFogEnd_ + 10.f);
+            cameraUnderWater_ = true;
+        }
     }
 
 #ifdef CAELUM
@@ -289,7 +306,11 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 
 void EC_OgreEnvironment::DisableFog()
 {
-    Ogre::SceneManager *sceneManager = renderer_->GetSceneManager();
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+    
+    Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
     sceneManager->setFog(Ogre::FOG_NONE);
 }
 
@@ -302,8 +323,12 @@ void EC_OgreEnvironment::SetTimeScale(const float &value)
 
 void EC_OgreEnvironment::CreateSunlight()
 {
-    Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
-    sunlight_ = sceneManager->createLight(renderer_->GetUniqueObjectName());
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();
+    
+    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
+    sunlight_ = sceneManager->createLight(renderer->GetUniqueObjectName());
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
@@ -312,32 +337,14 @@ void EC_OgreEnvironment::CreateSunlight()
     SetAmbientLightColor(Color(0.5, 0.5, 0.5, 1));
 }
 
-void EC_OgreEnvironment::AttachSunlight()
-{
-    if ((placeable_) && (!attached_))
-    {
-        EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
-        Ogre::SceneNode* node = placeable->GetSceneNode();
-        node->attachObject(sunlight_);
-        attached_ = true;
-    }
-}
-
-void EC_OgreEnvironment::DetachSunlight()
-{
-    if ((placeable_) && (attached_))
-    {
-        EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
-        Ogre::SceneNode* node = placeable->GetSceneNode();
-        node->detachObject(sunlight_);
-        attached_ = false;
-    }
-}
-
 #ifdef CAELUM
 void EC_OgreEnvironment::InitCaelum()
 {
     using namespace Caelum;
+    
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();   
 
     caelumComponents_ = CaelumSystem::CAELUM_COMPONENTS_NONE;
     caelumComponents_ = caelumComponents_ |
@@ -349,8 +356,8 @@ void EC_OgreEnvironment::InitCaelum()
         CaelumSystem::CAELUM_COMPONENT_GROUND_FOG;
     // Caelum clouds are hidden, otherwise shadows get messed up.
 
-    caelumSystem_ = new CaelumSystem(renderer_->GetRoot().get(),
-        renderer_->GetSceneManager(), (CaelumSystem::CaelumComponent)caelumComponents_);
+    caelumSystem_ = new CaelumSystem(renderer->GetRoot().get(),
+        renderer->GetSceneManager(), (CaelumSystem::CaelumComponent)caelumComponents_);
 
     // Flip the Caelum camera and ground node orientations 90 degrees.
     Ogre::Quaternion orientation(Ogre::Degree(90), Ogre::Vector3(1, 0, 0));
@@ -375,10 +382,14 @@ void EC_OgreEnvironment::ShutdownCaelum()
 
 #ifdef HYDRAX
 void EC_OgreEnvironment::InitHydrax()
-{
+{    
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();   
+
     // Create Hydrax system.
-    hydraxSystem_ = new Hydrax::Hydrax(renderer_->GetSceneManager(), renderer_->GetCurrentCamera(),
-        renderer_->GetCurrentCamera()->getViewport());
+    hydraxSystem_ = new Hydrax::Hydrax(renderer->GetSceneManager(), renderer->GetCurrentCamera(),
+        renderer->GetCurrentCamera()->getViewport());
 
     // Create noise module. 
     noiseModule_ = new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f));
@@ -449,7 +460,11 @@ void EC_OgreEnvironment::ShutdownHydrax()
 #endif
 
 void EC_OgreEnvironment::InitShadows()
-{
+{    
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();   
+
     float shadowFarDist = 50;
     unsigned short shadowTextureSize = 2048;
     size_t shadowTextureCount = 1;
@@ -461,7 +476,7 @@ void EC_OgreEnvironment::InitShadows()
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
 
-    Ogre::SceneManager* sceneManager = renderer_->GetSceneManager();
+    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
     sceneManager->setShadowFarDistance(shadowFarDist);
 
