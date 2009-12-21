@@ -640,7 +640,6 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightAudioDataAvailable(int rate)
     {       
-
         bool stereo = false; // fix this
         int sample_width = 16; // fix this
 
