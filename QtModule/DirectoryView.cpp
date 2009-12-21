@@ -70,6 +70,7 @@ DirectoryView::DirectoryView(QObject *target, const char* slot, QWidget *parent)
     setAttribute(Qt::WA_DeleteOnClose,true);
     resize(300, 350);
     treeView_->resize(299, 349);
+
     show();
 }
 
