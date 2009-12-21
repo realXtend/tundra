@@ -18,6 +18,7 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;    
 
     //! Interface for the console overlay, so in SupportModules we don't need to link against OgreRenderingModule.
     class EC_OgreConsoleOverlayInterface : public Foundation::ComponentInterface
@@ -121,7 +122,7 @@ namespace OgreRenderer
         const Real speed_;
 
         //! the renderer, need reference to check if renderer is still alive
-        boost::weak_ptr<Renderer> renderer_;
+        RendererWeakPtr renderer_;
     };
 }
 

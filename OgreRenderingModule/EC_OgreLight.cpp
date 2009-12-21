@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -18,16 +17,21 @@ namespace OgreRenderer
         light_(0),
         attached_(false)
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        light_ = scene_mgr->createLight(renderer_->GetUniqueObjectName());
+        RendererPtr renderer = renderer_.lock();               
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+        light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
     }
     
     EC_OgreLight::~EC_OgreLight()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();   
+        
         if (light_)
         {
             DetachLight();
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             scene_mgr->destroyLight(light_);
             light_ = 0;
         }

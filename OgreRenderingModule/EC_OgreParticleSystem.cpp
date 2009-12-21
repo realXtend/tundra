@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -19,18 +18,23 @@ namespace OgreRenderer
         attached_(false),
         draw_distance_(0.0)
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        RendererPtr renderer = renderer_.lock();     
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         adjustment_node_ = scene_mgr->createSceneNode();
     }
     
     EC_OgreParticleSystem::~EC_OgreParticleSystem()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();   
+            
         DetachSystems();
         RemoveParticleSystems();
         
         if (adjustment_node_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             scene_mgr->destroySceneNode(adjustment_node_);
             adjustment_node_ = 0;
         }
@@ -51,10 +55,14 @@ namespace OgreRenderer
     
     bool EC_OgreParticleSystem::AddParticleSystem(const std::string& system_name)
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();   
+            
         try
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-            Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer_->GetUniqueObjectName(), system_name);
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+            Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), system_name);
             if (system)
             {
                 adjustment_node_->attachObject(system);
@@ -90,10 +98,14 @@ namespace OgreRenderer
     
     bool EC_OgreParticleSystem::RemoveParticleSystem(uint index)
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();  
+            
         if (index >= systems_.size())
             return false;
         
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         adjustment_node_->detachObject(systems_[index]);
         scene_mgr->destroyParticleSystem(systems_[index]);
@@ -105,7 +117,11 @@ namespace OgreRenderer
     
     void EC_OgreParticleSystem::RemoveParticleSystems()
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();  
+            
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         for (uint i = 0; i < systems_.size(); ++i)
         {

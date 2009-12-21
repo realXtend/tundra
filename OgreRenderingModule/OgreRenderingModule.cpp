@@ -18,6 +18,7 @@
 #include "EC_OgreParticleSystem.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
+#include "EC_OgreCamera.h"
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Entity.h"
@@ -55,6 +56,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreParticleSystem);
         DECLARE_MODULE_EC(EC_OgreAnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
+        DECLARE_MODULE_EC(EC_OgreCamera);
 
         AutoRegisterConsoleCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 

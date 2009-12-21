@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -20,14 +19,17 @@ namespace OgreRenderer
         cast_shadows_(false),
         draw_distance_(0.0f)
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
-        
-        object_ = scene_mgr->createManualObject(renderer_->GetUniqueObjectName());
+        RendererPtr renderer = renderer_.lock();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();      
+        object_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName());
     }
     
     EC_OgreCustomObject::~EC_OgreCustomObject()
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        if (renderer_.expired())
+            return;
+            
+        Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
         DestroyEntity();
 
         if (object_)
@@ -54,6 +56,10 @@ namespace OgreRenderer
     
     bool EC_OgreCustomObject::CommitChanges()
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();
+                
         DestroyEntity();
         
         if (!object_->getNumSections())
@@ -61,13 +67,13 @@ namespace OgreRenderer
             
         try
         {
-            std::string mesh_name = renderer_->GetUniqueObjectName();
+            std::string mesh_name = renderer->GetUniqueObjectName();
             object_->convertToMesh(mesh_name);
             object_->clear();
         
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
 
-            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh_name);
+            entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
             if (entity_)
             {
                 AttachEntity();
@@ -173,7 +179,11 @@ namespace OgreRenderer
     
     void EC_OgreCustomObject::DestroyEntity()
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();
+                
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         if (entity_)
         {

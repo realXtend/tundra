@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -23,17 +22,22 @@ namespace OgreRenderer
         cast_shadows_(false),
         draw_distance_(0.0)
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        RendererPtr renderer = renderer_.lock();               
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         adjustment_node_ = scene_mgr->createSceneNode();
     }
     
     EC_OgreMesh::~EC_OgreMesh()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();   
+            
         RemoveMesh();
         
         if (adjustment_node_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             scene_mgr->destroySceneNode(adjustment_node_);
             adjustment_node_ = 0;
         }
@@ -152,9 +156,13 @@ namespace OgreRenderer
     
     bool EC_OgreMesh::SetMesh(const std::string& mesh_name, bool clone)
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();   
+            
         RemoveMesh();
 
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
         if (!mesh)
@@ -162,7 +170,7 @@ namespace OgreRenderer
         
         try
         {
-            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh->getName());
+            entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
             if (!entity_)
             {
                 OgreRenderingModule::LogError("Could not set mesh " + mesh_name);
@@ -185,6 +193,10 @@ namespace OgreRenderer
     
     bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();   
+            
         Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeleton_name);
         if (skel.isNull())
         {
@@ -194,7 +206,7 @@ namespace OgreRenderer
         
         RemoveMesh();
 
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
         if (!mesh)
@@ -213,7 +225,7 @@ namespace OgreRenderer
         
         try
         {
-            entity_ = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh->getName());
+            entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
             if (!entity_)
             {
                 OgreRenderingModule::LogError("Could not set mesh " + mesh_name);
@@ -237,12 +249,16 @@ namespace OgreRenderer
     
     void EC_OgreMesh::RemoveMesh()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();   
+            
         if (entity_)
         {
             RemoveAllAttachments();
             DetachEntity();
 
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             scene_mgr->destroyEntity(entity_);
             
             entity_ = 0;
@@ -265,13 +281,17 @@ namespace OgreRenderer
     
     bool EC_OgreMesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
     {
+        if (renderer_.expired())
+            return false;
+        RendererPtr renderer = renderer_.lock();   
+            
         if (!entity_)
         {
             OgreRenderingModule::LogError("No mesh entity created yet, can not create attachments");
             return false;
         }
         
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         size_t oldsize = attachment_entities_.size();
         size_t newsize = index + 1;
@@ -316,7 +336,7 @@ namespace OgreRenderer
 
         try
         {
-            attachment_entities_[index] = scene_mgr->createEntity(renderer_->GetUniqueObjectName(), mesh->getName());
+            attachment_entities_[index] = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
             if (!attachment_entities_[index])
             {
                 OgreRenderingModule::LogError("Could not set attachment mesh " + mesh_name);
@@ -362,13 +382,17 @@ namespace OgreRenderer
     
     void EC_OgreMesh::RemoveAttachmentMesh(uint index)
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();   
+            
         if (!entity_)
             return;
             
         if (index >= attachment_entities_.size())
             return;
         
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
         if (attachment_entities_[index] && attachment_nodes_[index])
         {
@@ -583,6 +607,10 @@ namespace OgreRenderer
     
     Ogre::Mesh* EC_OgreMesh::PrepareMesh(const std::string& mesh_name, bool clone)
     {
+        if (renderer_.expired())
+            return 0;
+        RendererPtr renderer = renderer_.lock();   
+            
         Ogre::MeshManager& mesh_mgr = Ogre::MeshManager::getSingleton();
         Ogre::MeshPtr mesh = mesh_mgr.getByName(mesh_name);
         
@@ -612,7 +640,7 @@ namespace OgreRenderer
         {
             try
             {
-                mesh = mesh->clone(renderer_->GetUniqueObjectName());
+                mesh = mesh->clone(renderer->GetUniqueObjectName());
                 mesh->setAutoBuildEdgeLists(false);
                 cloned_mesh_name_ = mesh->getName();
             }

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgreSky.h"
@@ -48,9 +47,13 @@ EC_OgreSky::~EC_OgreSky()
 
 void EC_OgreSky::CreateSky(bool show)
 {
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();  
+    
     DisableSky();
     
-    Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     
     RexTypes::Vector3 v = genericSkyParameters.angleAxis;
     Ogre::Quaternion orientation(Ogre::Degree(genericSkyParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
@@ -117,9 +120,13 @@ void EC_OgreSky::CreateSky(bool show)
 
 bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
 {
+    if (renderer_.expired())
+        return false;
+    RendererPtr renderer = renderer_.lock();  
+        
     DisableSky();
     
-    Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     
     try
     {
@@ -137,7 +144,11 @@ bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
 
 void EC_OgreSky::DisableSky()
 {
-    Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+    if (renderer_.expired())
+        return;
+    RendererPtr renderer = renderer_.lock();  
+    
+    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     scene_mgr->setSkyBox(false, "");
     scene_mgr->setSkyDome(false, "");
     scene_mgr->setSkyPlane(false, Ogre::Plane(), "");

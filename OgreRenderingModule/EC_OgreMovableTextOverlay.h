@@ -24,6 +24,7 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     //! Movable Ogre text overlay.
     /*! \ingroup OgreRenderingModuleClient
@@ -151,7 +152,7 @@ namespace OgreRenderer
         bool visible_;
 
         //! The renderer, need reference to check if renderer is still alive.
-        boost::weak_ptr<Renderer> renderer_;
+        RendererWeakPtr renderer_;
 
         //! The window width during the overlay construction.
         int windowWidth_;

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -17,17 +16,22 @@ namespace OgreRenderer
         attached_(false),
         select_priority_(0)
     {
-        Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+        RendererPtr renderer = renderer_.lock();      
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_node_ = scene_mgr->createSceneNode();
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();  
+            
         if (scene_node_)
         {
             DetachNode();
             
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             scene_mgr->destroySceneNode(scene_node_);
             scene_node_ = 0;
         }
@@ -81,6 +85,10 @@ namespace OgreRenderer
 
     void EC_OgrePlaceable::AttachNode()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();  
+            
         if (attached_)
             return;
                 
@@ -88,7 +96,7 @@ namespace OgreRenderer
         
         if (!parent_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             parent_node = scene_mgr->getRootSceneNode();
         }
         else
@@ -103,6 +111,10 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::DetachNode()
     {
+        if (renderer_.expired())
+            return;
+        RendererPtr renderer = renderer_.lock();  
+            
         if (!attached_)
             return;
             
@@ -110,7 +122,7 @@ namespace OgreRenderer
         
         if (!parent_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_->GetSceneManager();
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             parent_node = scene_mgr->getRootSceneNode();
         }
         else

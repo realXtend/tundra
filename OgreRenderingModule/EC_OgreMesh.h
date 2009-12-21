@@ -21,6 +21,7 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
     //! Ogre mesh entity component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
@@ -212,7 +213,7 @@ namespace OgreRenderer
         Foundation::ComponentPtr placeable_;
         
         //! renderer
-        RendererPtr renderer_;
+        RendererWeakPtr renderer_;
         
         //! Ogre mesh entity
         Ogre::Entity* entity_;
