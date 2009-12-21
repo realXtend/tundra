@@ -73,11 +73,12 @@ void MainPanel::InitBookmarks()
     int index = 0;
     QString value("none");
     QString configGroup("WorldBookmarks");
-    QString configKey("world");
+    QString configKey;
     QStringList bookmarks = QStringList("Drop down this menu for your bookmarks");
 
     while (value != "")
     {
+        configKey = "world";
         ++index;
         value = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(
             configGroup.toStdString(), configKey.append(QString::number(index)).toStdString()).c_str());
