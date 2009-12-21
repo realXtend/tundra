@@ -13,12 +13,15 @@ namespace OgreRenderer
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),
+        link_scene_node_(0),
         attached_(false),
         select_priority_(0)
     {
         RendererPtr renderer = renderer_.lock();      
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+        link_scene_node_ = scene_mgr->createSceneNode();
         scene_node_ = scene_mgr->createSceneNode();
+        link_scene_node_->addChild(scene_node_);
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -26,20 +29,31 @@ namespace OgreRenderer
         if (renderer_.expired())
             return;
         RendererPtr renderer = renderer_.lock();  
-            
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+                        
+        if (scene_node_ && link_scene_node_)
+        {
+            link_scene_node_->removeChild(scene_node_);
+        }
+        
         if (scene_node_)
+        {
+            scene_mgr->destroySceneNode(scene_node_);
+            scene_node_ = 0;
+        }
+        
+        if (link_scene_node_)
         {
             DetachNode();
             
-            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-            scene_mgr->destroySceneNode(scene_node_);
-            scene_node_ = 0;
+            scene_mgr->destroySceneNode(link_scene_node_);
+            link_scene_node_ = 0;
         }
     }
     
     void EC_OgrePlaceable::SetParent(Foundation::ComponentPtr placeable)
     {
-        if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
+        if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
         {
             OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + NameStatic());
             return;
@@ -51,13 +65,13 @@ namespace OgreRenderer
     
     Vector3df EC_OgrePlaceable::GetPosition() const
     {
-        const Ogre::Vector3& pos = scene_node_->getPosition();
+        const Ogre::Vector3& pos = link_scene_node_->getPosition();
         return Vector3df(pos.x, pos.y, pos.z);
     }
     
     Quaternion EC_OgrePlaceable::GetOrientation() const
     {
-        const Ogre::Quaternion& orientation = scene_node_->getOrientation();
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
         return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }
     
@@ -69,13 +83,13 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::SetPosition(const Vector3df& position)
     {
-        scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+        link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
         AttachNode(); // Nodes become visible only after having their position set at least once
     }
 
     void EC_OgrePlaceable::SetOrientation(const Quaternion& orientation)
     {
-        scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+        link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }
     
     void EC_OgrePlaceable::SetScale(const Vector3df& scale)
@@ -102,10 +116,10 @@ namespace OgreRenderer
         else
         {
             EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
-            parent_node = parent->GetSceneNode();
+            parent_node = parent->GetLinkSceneNode();
         }
         
-        parent_node->addChild(scene_node_);
+        parent_node->addChild(link_scene_node_);
         attached_ = true;
     }
     
@@ -128,10 +142,10 @@ namespace OgreRenderer
         else
         {
             EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
-            parent_node = parent->GetSceneNode();
+            parent_node = parent->GetLinkSceneNode();
         }
         
-        parent_node->removeChild(scene_node_);
+        parent_node->removeChild(link_scene_node_);
         attached_ = false;
     }
 }

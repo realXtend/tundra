@@ -494,6 +494,8 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
     if (framework_->HasScene("World"))
         DeleteScene("World");
+        
+    pending_parents_.clear();
 }
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
@@ -732,6 +734,14 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     return GetCurrentActiveScene();
 }
 
+Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid)
+{
+    if (!activeScene_)
+        return Scene::EntityPtr();
+        
+    return activeScene_->GetEntity(entityid);    
+}
+
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent)
 {
     if (!activeScene_)
@@ -856,6 +866,66 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             sound.SetPosition(ogrepos.GetPosition());
         }
     }
+}
+
+void RexLogicModule::HandleObjectParent(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = GetEntity(entityid);
+    if (!entity)
+        return;
+
+    OgreRenderer::EC_OgrePlaceable* child_placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get()); 
+    if (!child_placeable)
+        return;
+        
+    // If object is a prim, parent id is in the prim component, and in presence component for an avatar
+    EC_OpenSimPrim* prim = dynamic_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPresence* presence = dynamic_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
+        
+    entity_id_t parentid = 0;
+    if (prim)
+        parentid = prim->ParentId;
+    if (presence)    
+        parentid = presence->ParentId;
+        
+    if (parentid == 0)
+    {
+        // No parent, attach to scene root
+        child_placeable->SetParent(Foundation::ComponentPtr());        
+        return;
+    }
+    
+    Scene::EntityPtr parent_entity = GetEntity(parentid);
+    if (!parent_entity)
+    {
+        // If can't get the parent entity yet, add to pending parent list
+        pending_parents_[parentid].insert(entityid);
+    }   
+    
+    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    child_placeable->SetParent(parent_placeable);           
+}
+
+void RexLogicModule::HandleMissingParent(entity_id_t entityid)
+{
+    // Make sure we actually can get this now
+    Scene::EntityPtr parent_entity = GetEntity(entityid);
+    if (!parent_entity)
+        return;
+    
+    // See if any accumulated objects missing the parent
+    ObjectParentMap::iterator i = pending_parents_.find(entityid);
+    if (i == pending_parents_.end())
+        return;
+   
+    std::set<entity_id_t>::const_iterator j = i->second.begin();
+    while (j != i->second.end())
+    {
+        HandleObjectParent(*j);
+        ++j;
+    }
+
+    pending_parents_.erase(i);
 }
 
 } // namespace RexLogic

@@ -213,6 +213,10 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         msg->SkipToNextVariable(); // To next instance
         
         HandleDrawType(localid);
+        
+        // Handle setting the prim as child of another object, or possibly being parent itself
+        rexlogicmodule_->HandleMissingParent(localid);
+        rexlogicmodule_->HandleObjectParent(localid);
     }
 
     return false;
@@ -909,7 +913,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
 }
 
 void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float radius, float falloff)
-{
+{    
     if (radius < 0.001) radius = 0.001;
 
     // Attenuation calculation
@@ -1484,6 +1488,5 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     
     return false;
 }
-
 
 } // namespace RexLogic

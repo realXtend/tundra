@@ -174,10 +174,11 @@ void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
 
 void EC_OgreMovableTextOverlay::AttachNode()
 {
+    // Using the link scene node is necessary here so that the overlays can use the _update() trick to avoid stutter
     if ((node_) && (!attached_) && (placeable_))
     {
         Ogre::SceneNode* parent =
-            checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
+            checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetLinkSceneNode();
         parent->addChild(node_);
         attached_ = true;
     }
@@ -187,7 +188,7 @@ void EC_OgreMovableTextOverlay::DetachNode()
 {
     if ((node_) && (attached_) && (placeable_))
     {
-        Ogre::SceneNode* parent = checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetSceneNode();
+        Ogre::SceneNode* parent = checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetLinkSceneNode();
         parent->removeChild(node_);
         attached_ = false;
     }

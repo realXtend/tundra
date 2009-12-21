@@ -64,9 +64,17 @@ namespace OgreRenderer
         //! returns scale
         Vector3df GetScale() const;
         
-        //! returns Ogre scenenode
+        //! returns Ogre scenenode for attaching geometry.
+        /*! Do not manipulate the pos/orientation/scale of this node directly
+         */
         Ogre::SceneNode* GetSceneNode() const { return scene_node_; }
-
+       
+        //! returns Ogre scenenode for linking another placeable in OpenSim compatible way.
+        /*! Only used by other placeables, or in other rare cases. Do not use if GetSceneNode() works for you,
+            as this doesn't take scaling into account!
+         */
+        Ogre::SceneNode* GetLinkSceneNode() const { return link_scene_node_; }
+                       
         //! returns select priority
         int GetSelectPriority() const { return select_priority_; }
         
@@ -88,8 +96,11 @@ namespace OgreRenderer
         //! parent placeable
         Foundation::ComponentPtr parent_;
         
-        //! Ogre scene node
+        //! Ogre scene node for geometry. scale is handled here
         Ogre::SceneNode* scene_node_;
+
+        //! Ogre scene node for linking. position & orientation are handled here, and the geometry scene node is attached to this
+        Ogre::SceneNode* link_scene_node_;
         
         //! attached to scene hierarchy-flag
         bool attached_;

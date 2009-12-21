@@ -191,8 +191,12 @@ namespace RexLogic
 
             ShowAvatarNameOverlay(presence.LocalId);
 
+            // Handle setting the avatar as child of another object, or possibly being parent itself
+            rexlogicmodule_->HandleMissingParent(localid);
+            rexlogicmodule_->HandleObjectParent(localid);
+
             msg->SkipToFirstVariableByName("JointAxisOrAnchor");
-            msg->SkipToNextVariable(); // To next instance
+            msg->SkipToNextVariable(); // To next instance            
         }
         
         return false;

@@ -70,7 +70,7 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetMaterial(uint index, const std::string& material_name);
-        
+                     
         //! gets number of materials (submeshes) in committed geometry
         uint GetNumMaterials() const;
         
