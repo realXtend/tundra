@@ -10,10 +10,13 @@
 #ifndef incl_InventoryModule_h
 #define incl_InventoryModule_h
 
-#include "Foundation.h"
-#include "ModuleInterface.h"
-#include "EventDataInterface.h"
+#include <ModuleInterface.h>
 #include "WorldStream.h"
+
+namespace Foundation
+{
+    class EventDataInterface;
+}
 
 namespace ProtocolUtilities
 {
@@ -41,7 +44,7 @@ namespace Inventory
         /// Default constructor.
         InventoryModule();
 
-        /// Default destructor 
+        /// Destructor 
         ~InventoryModule();
 
         /// ModuleInterfaceImpl overrides.

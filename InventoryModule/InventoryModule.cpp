@@ -80,7 +80,7 @@ void InventoryModule::Initialize()
             Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
     }
 
-    // Create inventory_ window.
+    // Create inventory window.
     inventoryWindow_ = new InventoryWindow(framework_);
 
     LogInfo("System " + Name() + " initialized.");

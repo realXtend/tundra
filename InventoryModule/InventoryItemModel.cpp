@@ -515,7 +515,7 @@ void InventoryItemModel::Download(const QString &store_path, const QItemSelectio
 
 void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
 {
-    if(!index.isValid())
+    if (!index.isValid())
         return;
 
     AbstractInventoryItem *parentItem = GetItem(index);
