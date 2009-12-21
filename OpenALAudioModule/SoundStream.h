@@ -15,13 +15,12 @@ namespace OpenALAudio
 {
     class SoundStream
     {
-    
     public:
         SoundStream(std::string stream_name, uint frequency, int sample_width, bool stereo);
         virtual ~SoundStream();
-        
+
         void Play();
-        
+
         //! SoundStream object will store given data to it's internal data queue so 
         //! the caller of this method can free the given data block right after this method call
         //! TODO: We would safe data copy if we just signal the caller when we have played the data
