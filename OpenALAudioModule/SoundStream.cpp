@@ -13,8 +13,7 @@ namespace OpenALAudio
         name_(stream_name),
         frequency_(frequency),
         sample_width_(sample_width),
-        stereo_(stereo),
-        test_(0)
+        stereo_(stereo)
     {
         switch (sample_width_)
         {
@@ -45,11 +44,10 @@ namespace OpenALAudio
         alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
         {
-            const int empty_buffer_fill_size = 100;
             ALuint buffer_handle = buffers_[i];
-            playback_buffers_[buffer_handle] = new u8[empty_buffer_fill_size];
-            memset(playback_buffers_[buffer_handle], 0, empty_buffer_fill_size);
-            alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle], empty_buffer_fill_size, frequency_);
+            playback_buffers_[buffer_handle] = new u8[EMPTY_SAMPLES_SIZE];
+            memset(playback_buffers_[buffer_handle], 0, EMPTY_SAMPLES_SIZE);
+            alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle], EMPTY_SAMPLES_SIZE, frequency_);
             alSourceQueueBuffers(source_, 1, &buffer_handle); 
         }
         Play();
@@ -82,17 +80,8 @@ namespace OpenALAudio
 
     void SoundStream::Play()
     {
-        ALint buffers_in_play = 0;
-        alGetSourcei(source_, AL_BUFFERS_QUEUED, &buffers_in_play);
-
         ALint state;
         alGetSourcei(source_, AL_SOURCE_STATE, &state);
-
-        if (buffers_in_play > 0 )
-        {
-//            return;
-        }
-
         if (state == AL_PLAYING)
             return;
 
@@ -101,7 +90,7 @@ namespace OpenALAudio
         ALenum error = alGetError();
         if (error != AL_NO_ERROR)
         {
-            OpenALAudioModule::LogError("Cannot alSourcePlay failed!");
+            OpenALAudioModule::LogError("Cannot start tp play audio buffer: alSourcePlay failed!");
         }
         OpenALAudioModule::LogInfo(">> Stream playback started");
     }
@@ -132,43 +121,39 @@ namespace OpenALAudio
         assert(data_queue_.size() == data_queue_packet_sizes_.size());
     }
 
-    ALint SoundStream::FillBufferFromQueue(ALint buffer_handle)
+    ALint SoundStream::FillBufferFromQueue(ALint buffer_handle, int max_bytes)
     {
         // Copy audio data from queue to playback buffers
         int total_queue_size = 0;
+        int queue_count = 0;
         for (std::vector<u32>::iterator i = data_queue_packet_sizes_.begin(); i != data_queue_packet_sizes_.end(); ++i)
         {
             u32 size = *i;
+            if ( total_queue_size + size > max_bytes && total_queue_size > 0)
+                break;
             total_queue_size += size;
+            queue_count++;
         }
         u8* local_copy = new u8[total_queue_size]; // RESERVE MEMORY
         u32 offset = 0;
-        for (int i = 0; i < data_queue_.size(); i++)
+        for (int i = 0; i < queue_count; i++)
         {
-            u32 size = data_queue_packet_sizes_[i];
-
-            //QFile file("audio-FillBufferFromQueue.raw");
-            //file.open(QIODevice::OpenModeFlag::Append);
-            //file.write((char*)data_queue_[i], size);
-            //file.close();
-
-            memcpy(local_copy + offset, data_queue_[i], size);
-            delete [] data_queue_[i]; // FREE MEMORY
+            u32 size = data_queue_packet_sizes_[0];
+            memcpy(local_copy + offset, data_queue_[0], size);
+            
+            delete [] data_queue_[0]; // FREE MEMORY
             offset += size;
+
+            // drop data entries from queue becouse the data is now copied to local_copy
+            data_queue_.erase(data_queue_.begin());
+            data_queue_packet_sizes_.erase(data_queue_packet_sizes_.begin());
         }
-        data_queue_.clear();
-        data_queue_packet_sizes_.clear();
 
         // clear previously playback buffer 
         if (playback_buffers_[buffer_handle])
             delete [] playback_buffers_[buffer_handle]; // FREE MEMORY
 
         playback_buffers_[buffer_handle] = local_copy;
-
-        //QFile file("audio-FillBufferFromQueue-2.raw");
-        //file.open(QIODevice::OpenModeFlag::Append);
-        //file.write((char*)playback_buffers_[buffer_handle], total_queue_size);
-        //file.close();
 
         alGetError();
         alBufferData(buffer_handle, format_, playback_buffers_[buffer_handle], total_queue_size, frequency_);
@@ -189,10 +174,12 @@ namespace OpenALAudio
     void SoundStream::AddData(u8 *data, uint size)
     {
         if (!add_data_mutex_.tryLock())
+        {
+            OpenALAudioModule::LogError("Drop audio packet: AddData mutex.");
             return;
-        int max_buffer_length_ms = 200;
+        }
 
-        test_ ++;
+        int max_buffer_length_ms = 700;
 
         ALint empty_buffer_count = 0;
         alGetSourcei(source_, AL_BUFFERS_PROCESSED, &empty_buffer_count);
@@ -200,50 +187,54 @@ namespace OpenALAudio
         {
             OpenALAudioModule::LogDebug("Drop audio packet, no buffers for playback.");
             // All the buffers are full, we'll ignore this audio sample packet
-            test_ --;
             add_data_mutex_.unlock();
             return;
         }
 
         StoreToQueue(data, size);
 
-        if (empty_buffer_count <= 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms / 2)
+        if (empty_buffer_count <= 0 || GetReceivedAudioDataLengthMs() < max_buffer_length_ms/MAX_BUFFER_COUNT)
         {
             // we do not want to fill OpenAL buffer even if we have one available but we have stored the data to queue
-            test_ --;
             add_data_mutex_.unlock();
             return;
         }
 
-        // Now we have a ampty OpenAl buffer to fill and at enough data on queue
-        ALuint buffer_handle;
+        // Now we have a ampty OpenAl buffers to fill and at enough data on queue
+        ALuint buffer_handles[MAX_BUFFER_COUNT];
         alGetError();
-        alSourceUnqueueBuffers(source_, 1, &buffer_handle);
+        alSourceUnqueueBuffers(source_, empty_buffer_count, buffer_handles);
         if (alGetError() != AL_NONE)
         {
             OpenALAudioModule::LogDebug("Could not pull empty buffer from source!");
             add_data_mutex_.unlock();
-            test_ --;
             return;
         }
 
-        if (!FillBufferFromQueue(buffer_handle))
+        for (int i = 0; i < empty_buffer_count; ++i)
         {
-            OpenALAudioModule::LogDebug("Could not fill OpenAL buffer.");
-            add_data_mutex_.unlock();
-            test_ --;
-            return;
+            int max_size_per_buffer = size/empty_buffer_count + 1;
+            if (!FillBufferFromQueue(buffer_handles[i], max_size_per_buffer))
+            {
+                OpenALAudioModule::LogDebug("Could not fill OpenAL buffer.");
+                add_data_mutex_.unlock();
+                return;
+            }
         }
 
-        // Queue buffer back to sources playlist
-        alSourceQueueBuffers(source_, 1, &buffer_handle);
+        // Queue all the buffers back to sources playlist
+        alGetError();
+        alSourceQueueBuffers(source_, empty_buffer_count, buffer_handles);
+        ALenum error = alGetError();
+        if (error != AL_NO_ERROR)
+        {
+            OpenALAudioModule::LogDebug("Cannot queue audio buffers.");
+        }
 
-        assert (test_ == 1);
         if (!IsPlaying())
             Play();
 
         add_data_mutex_.unlock();
-        test_--;
     }
 
     bool SoundStream::IsPlaying()

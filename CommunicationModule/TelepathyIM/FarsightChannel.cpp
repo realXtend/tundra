@@ -448,7 +448,7 @@ namespace TelepathyIM
     {
          boost::mutex::scoped_lock lock(audio_queue_mutex_);
 
-        int max_buffer_length_ms = 500;
+        int max_buffer_length_ms = 2500;
         if (1000*total_audio_queue_size_/rate/2 > max_buffer_length_ms)
         {
             return;
