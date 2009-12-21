@@ -118,6 +118,9 @@ namespace RexLogic
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
+        
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        Scene::EntityPtr GetEntity(entity_id_t entityid);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
@@ -153,6 +156,12 @@ namespace RexLogic
             Performs animation update to all objects that have an OgreAnimationController component.
          */
         void UpdateObjects(f64 frametime);
+        
+        //! handles assignment of object as a child of other object, if applicable
+        void HandleObjectParent(entity_id_t entityid);
+        
+        //! handles assignment of child objects, who were previously missing this object as a parent
+        void HandleMissingParent(entity_id_t entityid);
 
         //! login through console
         Console::CommandResult ConsoleLogin(const StringVector &params);
@@ -256,6 +265,12 @@ namespace RexLogic
         typedef std::map<RexUUID, entity_id_t> IDMap;
         IDMap UUIDs_;
 
+        //! pending parent object assignments, keyed by parent id
+        //! the parent id will be added as a key if it is not missing, and the children id's are added to the set.
+        //! once the parent prim appears, the children will be assigned the parent and the key will be removed from here.
+        typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
+        ObjectParentMap pending_parents_;
+        
         //! The connection state which is shown in the login window.
         ProtocolUtilities::Connection::State connectionState_;
 
