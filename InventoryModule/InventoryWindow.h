@@ -90,6 +90,8 @@ namespace Inventory
         /// File upload.
         void Upload();
 
+        void UploadFiles(const QStringList &filenames);
+
         /// File download.
         void Download();
 

@@ -7,8 +7,9 @@
 
 #include <Foundation.h>
 #include <RexTypes.h>
-#include <QObject>
 #include "EnvironmentModuleApi.h"
+
+#include <QObject>
 
 namespace ProtocolUtilities
 {
@@ -20,7 +21,6 @@ namespace OgreRenderer
 {
     class EC_OgreEnvironment;
 }
-
 
 namespace Environment
 {
@@ -53,7 +53,7 @@ namespace Environment
          * Handles the "SimulatorViewerTimeMessage" packet.
          * @param data The network event data pointer.
          **/
-        bool DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
         /** 
          * Sets a water fog for current active environment.

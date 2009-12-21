@@ -80,7 +80,7 @@ void Environment::CreateEnvironment()
     activeEnvEntity_ = entity;
 }
 
-bool Environment::DecodeSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
+bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();

@@ -2,18 +2,20 @@
 
 /**
  *  @file   EnvironmentModule.h
- *  @brief  Blaa blaa
+ *  @brief  Environment module. Environment module is be responsible for visual environment features like terrain, sky & water.
  */
 
 #ifndef incl_EnvironmentModule_h
 #define incl_EnvironmentModule_h
 
-#include <Foundation.h>
-#include "ModuleInterface.h"
 #include "EnvironmentModuleApi.h"
-#include "EventDataInterface.h"
-#include "WorldStream.h"
+#include <ModuleInterface.h>
+#include <WorldStream.h>
 
+namespace Foundation
+{
+    class EventDataInterface;
+}
 
 namespace Environment
 {
@@ -38,7 +40,7 @@ namespace Environment
         /// Default constructor.
         EnvironmentModule();
 
-        /// Default destructor 
+        /// Destructor 
         virtual ~EnvironmentModule();
 
         /// Owerrides from ModuleInterface
@@ -83,7 +85,8 @@ namespace Environment
          *  @param x coordinate of terrain texture.
          *  @param y coordinate of terrain texture.
          *  @param brush brush size OpenSim supports following brush sizes (small = 0, medium = 1 and large = 2)
-         *  @param action what terrain modification operation is used. OpenSim supports following actions (Flatten = 0, Raise = 1, Lower = 2, Smooth = 3, Roughen = 4 and Revert = 5)
+         *  @param action what terrain modification operation is used. OpenSim supports following actions: 
+         *          Flatten = 0, Raise = 1, Lower = 2, Smooth = 3, Roughen = 4 and Revert = 5)
          *  @param seconds how long has the modify land operation been executed.
          *  @param previous height value for spesific texture coordinate
          */
@@ -163,7 +166,7 @@ namespace Environment
 
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 
-        bool waiting_for_reqioninfomessage_;
+        bool waiting_for_regioninfomessage_;
 
         /// Active scene ptr
         //Scene::ScenePtr activeScene_;

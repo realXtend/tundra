@@ -10,6 +10,7 @@
 #include "InventoryModule.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
+#include "DirectoryView.h"
 
 #include <Framework.h>
 #include <RexLogicModule.h>
@@ -168,6 +169,8 @@ void InventoryWindow::RenameItem()
 
 void InventoryWindow::Upload()
 {
+    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(const QStringList &)), 0);
+/*
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
     if (names.empty())
@@ -179,6 +182,14 @@ void InventoryWindow::Upload()
         filenames << QString((*it).c_str());
 
     inventoryItemModel_->Upload(index, filenames);
+*/
+}
+
+void InventoryWindow::UploadFiles(const QStringList &filenames)
+{
+    QModelIndex index = treeView_->selectionModel()->currentIndex();
+    if (!filenames.isEmpty())
+        inventoryItemModel_->Upload(index, filenames);
 }
 
 void InventoryWindow::Download()
