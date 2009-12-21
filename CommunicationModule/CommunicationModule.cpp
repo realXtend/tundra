@@ -32,7 +32,6 @@ namespace Communication
 	void CommunicationModule::Initialize() 
 	{
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-        event_category_scene_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 		LogInfo("Initialized");
 	}
 
@@ -108,17 +107,10 @@ namespace Communication
                     opensim_chat_ui_ = new CommunicationUI::OpenSimChatWidget(client_params);
                     AddWidgetToUi("World Chat");
                 }
-            }
-
-            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
+            } else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
                SAFE_DELETE(opensim_chat_ui_);
             }
-        }
-        else if (category_id == event_category_scene_ && event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY && im_ui_)
-        {
-            /*Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);*/
-            /*im_ui_->GetEventHandler()->UpdateAvatarPositions(event_data->entity_ptr_list);*/
         }
 
         if (communication_service_)

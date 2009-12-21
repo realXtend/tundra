@@ -76,7 +76,6 @@ namespace Communication
 		// Event category IDs
 		event_category_id_t event_category_networkstate_;
         event_category_id_t event_category_framework_;
-        event_category_id_t event_category_scene_;
 
     private:
         void AddWidgetToUi(const QString &name);

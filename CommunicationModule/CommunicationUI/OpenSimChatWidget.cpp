@@ -90,7 +90,7 @@ namespace CommunicationUI
 		QString timestamp(QString("%1 %2").arg(msg.GetTimeStamp().date().toString("dd.MM.yyyy"),msg.GetTimeStamp().time().toString("hh:mm:ss")));
 		QString who(msg.GetOriginator()->GetName());
 		QString message(msg.GetText());
-		QString htmlcontent("<span style='color:#C1D1FF;'>[");
+		QString htmlcontent("<span style='color:#99b2ff;'>[");
 		htmlcontent.append(timestamp);
 		if ( opensimConnection_->GetUserID() != msg.GetOriginator()->GetID() )
 			htmlcontent.append("]</span> <span style='color:#0099FF;'>");
@@ -100,7 +100,7 @@ namespace CommunicationUI
 			who = "Me";
 		}
 		htmlcontent.append(who);
-		htmlcontent.append(": </span><span style='color:white;'>");
+		htmlcontent.append(": </span><span style='color:black;'>");
 		htmlcontent.append(message);
 		htmlcontent.append("</span>");
         opensim_chat_ui_.worldChatTextEdit->appendHtml(htmlcontent);

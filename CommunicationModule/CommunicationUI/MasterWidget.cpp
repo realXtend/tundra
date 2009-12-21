@@ -85,7 +85,7 @@ namespace CommunicationUI
             }
             case UiDefines::UiStates::Exit:
             {
-                close();
+                hide();
                 return;
             }
         }
@@ -103,6 +103,12 @@ namespace CommunicationUI
         QFile style_sheet_file("../CommunicationModule/CommunicationUI/ui/StyleSheet.css");
         if (style_sheet_file.open(QIODevice::ReadOnly | QIODevice::Text))
             setStyleSheet(QString(style_sheet_file.readAll()));
+        else
+        {
+            QFile style_sheet_file("./data/ui/StyleSheet.css");
+            if (style_sheet_file.open(QIODevice::ReadOnly | QIODevice::Text))
+                setStyleSheet(QString(style_sheet_file.readAll()));
+        }
 
         // Set initial size
         resize(350, 120);
