@@ -16,7 +16,6 @@ namespace Environment
 
 Environment::Environment(EnvironmentModule *owner) : 
     owner_(owner), 
-    activeEnvComponent_(0), 
     activeEnvEntity_(Scene::EntityWeakPtr()), 
     time_override_(false),
     usecSinceStart_(0),
@@ -31,52 +30,33 @@ Environment::~Environment()
 {
     // Does not own.
     activeEnvEntity_.reset();
-    activeEnvComponent_ = 0;
     owner_ = 0;
 
 }
 
-Scene::EntityWeakPtr Environment::FindActiveEnvironment()
+OgreRenderer::EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 {
-    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
-
-    // Check that is current environment entity still valid.
-
-    if ( !activeEnvEntity_.expired() )
-        if(scene->GetEntity(activeEnvEntity_.lock()->GetId()).get() != 0)
-            return activeEnvEntity_;
-
-    for(Scene::SceneManager::iterator iter = scene->begin();
-        iter != scene->end(); ++iter)
-    {
-        Scene::Entity &entity = **iter;
-        activeEnvComponent_ = static_cast<OgreRenderer::EC_OgreEnvironment*>(entity.GetComponent("EC_OgreEnvironment").get());
-        if (activeEnvComponent_ != 0)
-        {
-            activeEnvEntity_ = scene->GetEntity(entity.GetId());
-            if ( !activeEnvEntity_.expired())
-                return activeEnvEntity_;
-        }
-     }
-    activeEnvComponent_ = 0;
-    return Scene::EntityWeakPtr();
+    if (activeEnvEntity_.expired())
+        return 0;
+    
+    OgreRenderer::EC_OgreEnvironment* ec = static_cast<OgreRenderer::EC_OgreEnvironment*>(activeEnvEntity_.lock()->GetComponent("EC_OgreEnvironment").get());    
+    return ec;
 }
+
 
 Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
 {
-    return FindActiveEnvironment();
+    return activeEnvEntity_;
 }
 
 void Environment::CreateEnvironment()
 {
-    FindActiveEnvironment();
     if ( !activeEnvEntity_.expired())
         return;
 
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddEntityComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
-    activeEnvComponent_ = static_cast<OgreRenderer::EC_OgreEnvironment*>(entity->GetComponent("EC_OgreEnvironment").get()); 
     activeEnvEntity_ = entity;
 }
 
@@ -93,20 +73,19 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     sunPhase_ = msg.ReadF32();
     sunAngVelocity_ = msg.ReadVector3();
 
-    FindActiveEnvironment();
-   
-    if (activeEnvEntity_.expired())
-        return false;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return false; 
 
     // Update the sunlight direction and angle velocity.
-    ///\note Not needed anymore as we use Caleum now.
+    ///\note Not needed anymore as we use Caelum now.
     //OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
     //    (component.get());
     //env.SetSunDirection(-sunDirection_);
 
-    if (!time_override_ && activeEnvComponent_ != 0)
+    if (!time_override_)
     {
-        activeEnvComponent_->SetTime(usecSinceStart_);
+        env->SetTime(usecSinceStart_);
     }
 
     return false;
@@ -114,239 +93,226 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
 
 void Environment::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-    {   
-        activeEnvComponent_->SetWaterFogStart(fogStart);
-        activeEnvComponent_->SetWaterFogEnd(fogEnd);
-        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
-        activeEnvComponent_->SetWaterFogColor(fogColour); 
-        emit WaterFogAdjusted(fogStart, fogEnd, color);
-    }
-
-   
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return; 
+        
+    env->SetWaterFogStart(fogStart);
+    env->SetWaterFogEnd(fogEnd);
+    Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+    env->SetWaterFogColor(fogColour); 
+    emit WaterFogAdjusted(fogStart, fogEnd, color);   
 }
 
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-    {   
-        activeEnvComponent_->SetGroundFogStart(fogStart);
-        activeEnvComponent_->SetGroundFogEnd(fogEnd);
-        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
-        activeEnvComponent_->SetGroundFogColor(fogColour); 
-        emit GroundFogAdjusted(fogStart, fogEnd, color);
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return; 
+           
+    env->SetGroundFogStart(fogStart);
+    env->SetGroundFogEnd(fogEnd);
+    Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+    env->SetGroundFogColor(fogColour); 
+    emit GroundFogAdjusted(fogStart, fogEnd, color);
 }
 
 void Environment::SetFogColorOverride(bool enabled)
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-        activeEnvComponent_->SetFogColorOverride(enabled);
-    
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return; 
+    env->SetFogColorOverride(enabled);  
 }
 
 bool Environment::GetFogColorOverride() 
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-        return activeEnvComponent_->GetFogColorOverride();
-
-    return false;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return false;
+         
+    return env->GetFogColorOverride();
 }
 
 QVector<float> Environment::GetFogGroundColor()
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-    {
-        Ogre::ColourValue color = activeEnvComponent_->GetGroundFogColor();     
-        QVector<float> vec; 
-        vec<<color[0]<<color[1]<<color[2];
-        return vec;
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return QVector<float>();
 
-    return QVector<float>();
+    Ogre::ColourValue color = env->GetGroundFogColor();     
+    QVector<float> vec; 
+    vec<<color[0]<<color[1]<<color[2];
+    return vec;
 }
 
 QVector<float> Environment::GetFogWaterColor()
 {
-    FindActiveEnvironment();
-    if ( activeEnvComponent_ != 0)
-    {
-        Ogre::ColourValue color = activeEnvComponent_->GetWaterFogColor();     
-        QVector<float> vec; 
-        vec<<color[0]<<color[1]<<color[2];
-        return vec;
-    }
-
-    return QVector<float>();
-
-   
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return QVector<float>();
+        
+    Ogre::ColourValue color = env->GetWaterFogColor();     
+    QVector<float> vec; 
+    vec<<color[0]<<color[1]<<color[2];
+    return vec;
 }
 
 void Environment::Update(f64 frametime)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-        activeEnvComponent_->UpdateVisualEffects(frametime);
-
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+         
+    env->UpdateVisualEffects(frametime);
 }
 
 bool Environment::IsCaelum()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-        return activeEnvComponent_->IsCaleumUsed();
-    
-    return false;
-
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return false;
+        
+    return env->IsCaelumUsed();
 }
 
 void Environment::SetGroundFogColor(const QVector<float>& color)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
-        activeEnvComponent_->SetGroundFogColor(fogColour); 
-    }
-    
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+
+    Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+    env->SetGroundFogColor(fogColour); 
 }
         
 void Environment::SetWaterFogColor(const QVector<float>& color)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        Ogre::ColourValue fogColour(color[0], color[1], color[2]);
-        activeEnvComponent_->SetWaterFogColor(fogColour); 
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+
+    Ogre::ColourValue fogColour(color[0], color[1], color[2]);
+    env->SetWaterFogColor(fogColour); 
 }
 
 void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        activeEnvComponent_->SetGroundFogStart(fogStart);
-        activeEnvComponent_->SetGroundFogEnd(fogStart);
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+        
+    env->SetGroundFogStart(fogStart);
+    env->SetGroundFogEnd(fogStart);
 }
 
 void Environment::SetWaterFogDistance(float fogStart, float fogEnd)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        activeEnvComponent_->SetWaterFogStart(fogStart);
-        activeEnvComponent_->SetWaterFogEnd(fogStart);
-    }
-
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+        
+    env->SetWaterFogStart(fogStart);
+    env->SetWaterFogEnd(fogStart);
 }
 
 float Environment::GetWaterFogStartDistance()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-       return activeEnvComponent_->GetWaterFogStart();
-    
-     return 0.0;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return 0.0;
+        
+    return env->GetWaterFogStart();
 }
 
 float Environment::GetWaterFogEndDistance()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-       return activeEnvComponent_->GetWaterFogEnd();
-    
-     return 0.0;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return 0.0;
+    return env->GetWaterFogEnd();
 }
 
 float Environment::GetGroundFogStartDistance()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-        return activeEnvComponent_->GetGroundFogStart();
-    
-    return 0.0;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return 0.0;
+        
+    return env->GetGroundFogStart();
 }
 
 float Environment::GetGroundFogEndDistance()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-       return activeEnvComponent_->GetGroundFogEnd();
-    
-     return 0.0;
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return 0.0;
+        
+    return env->GetGroundFogEnd();
 }
 
 void Environment::SetSunDirection(const QVector<float>& vector)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-        activeEnvComponent_->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+        
+    env->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
 }
 
 QVector<float> Environment::GetSunDirection() 
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        Vector3df vec = activeEnvComponent_->GetSunDirection();
-        QVector<float> vector(3);
-        vector[0] = vec.x, vector[1] = vec.y, vector[2] = vec.z;
-        return vector;
-    }
-        
-    return QVector<float>(3);
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return QVector<float>(3);
+
+    Vector3df vec = env->GetSunDirection();
+    QVector<float> vector(3);
+    vector[0] = vec.x, vector[1] = vec.y, vector[2] = vec.z;
+    return vector;
 }
 
 void Environment::SetSunColor(const QVector<float>& vector)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        Color color(vector[0], vector[1], vector[2], vector[3]);
-        activeEnvComponent_->SetSunColor(color);
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+        
+    Color color(vector[0], vector[1], vector[2], vector[3]);
+    env->SetSunColor(color);
 }
      
 QVector<float> Environment::GetSunColor()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        Color color = activeEnvComponent_->GetSunColor();
-        QVector<float> vec(4);
-        vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
-        return vec;
-    }
-    return QVector<float>(4);
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return QVector<float>(4);
+        
+    Color color = env->GetSunColor();
+    QVector<float> vec(4);
+    vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
+    return vec;
 }
 
 QVector<float> Environment::GetAmbientLight()
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-       Color color = activeEnvComponent_->GetAmbientLightColor(); 
-       QVector<float> vec(3);
-       vec[0] = color.r, vec[1] = color.g, vec[2] = color.b;
-       return vec;
-    }
-    return QVector<float>(3);
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return QVector<float>(3);
+        
+   Color color = env->GetAmbientLightColor(); 
+   QVector<float> vec(3);
+   vec[0] = color.r, vec[1] = color.g, vec[2] = color.b;
+   return vec;
 }
 
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
-    FindActiveEnvironment();
-    if (activeEnvComponent_ != 0)
-    {
-        activeEnvComponent_->SetAmbientLightColor(Color(vector[0], vector[1], vector[2]));
-    }
+    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+
+    env->SetAmbientLightColor(Color(vector[0], vector[1], vector[2]));
 }
      
 

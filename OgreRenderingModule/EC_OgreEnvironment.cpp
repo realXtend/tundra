@@ -173,16 +173,19 @@ void EC_OgreEnvironment::SetTime(const time_t &time)
     assert(time);
     tm *ptm = gmtime(&time);
 
-    // Calculate the time zone difference for hours and minutes.
-    Poco::LocalDateTime *mytime = new Poco::LocalDateTime();
-    int hour_diff = mytime->hour() - ptm->tm_hour;
-    int min_diff = mytime->minute() - ptm->tm_min;
-    SAFE_DELETE(mytime);
-
+    // Fixed hour adjustment
+    unsigned hour = ptm->tm_hour;
+    hour += 14;
+    hour %= 24;
+        
 #ifdef CAELUM
+    // Note: we actually don't use year/month/day, because then worlds would look different
+    // based on real-life time of year
     caelumSystem_->getUniversalClock()->setGregorianDateTime(
-        1900 + ptm->tm_year, 1 + ptm->tm_mon, ptm->tm_mday, ptm->tm_hour + hour_diff,
-        ptm->tm_min + min_diff, ptm->tm_sec);
+        1900, 5, 1, hour,
+        ptm->tm_min, ptm->tm_sec);
+    // Do not let Caelum clock proceed on its own, authoritative time comes from server
+    caelumSystem_->getUniversalClock()->setTimeScale(0);        
 #endif
     ///\todo Do something with the time when Caelum is not used?
 }

@@ -14,14 +14,11 @@ namespace Ogre
     class Light;
 }
 
-#ifdef CAELUM
 namespace Caelum
 {
     class CaelumSystem;
 }
-#endif
 
-#ifdef HYDRAX
 namespace Hydrax
 {
     class Hydrax;
@@ -36,7 +33,6 @@ namespace Hydrax
         class Perlin;
     }
 }
-#endif
 
 namespace OgreRenderer
 {
@@ -106,8 +102,8 @@ namespace OgreRenderer
         void SetTimeScale(const float &value);
 #endif
         /// @return Is the Caelum system used or not.
-        bool IsCaleumUsed() const { return useCaelum_; }
-
+        bool IsCaelumUsed() const { return useCaelum_; }
+        
         /// @return Is the Hydrax system used or not.
         bool IsHydraxUsed() const { return useHydrax_; }
 
@@ -141,7 +137,7 @@ namespace OgreRenderer
         void CreateSunlight();
 
 #ifdef CAELUM
-        /// Initializes the Caleum system.
+        /// Initializes the Caelum system.
         void InitCaelum();
 
         /// Shuts down the Caelum system.
@@ -168,17 +164,16 @@ namespace OgreRenderer
         /// Is the camera under the water.
         bool cameraUnderWater_;
 
-#ifdef CAELUM
         /// Caelum system.
         Caelum::CaelumSystem *caelumSystem_;
-#endif
+
         /// Is the Caelum system used or not.
         bool useCaelum_;
 
         /// Is the Hydrax system used or not.
         bool useHydrax_;
 
-        /// Caleum Sunlight ambient color multiplier factor.
+        /// Caelum Sunlight ambient color multiplier factor.
         float sunColorMultiplier_;
 
         /// Fog start distance.
@@ -210,11 +205,9 @@ namespace OgreRenderer
         /// Is fog color defined by caelum or user.
         bool fog_color_override_;
 
-#ifdef HYDRAX
         Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
-#endif
    
     };
 }
