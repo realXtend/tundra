@@ -10,6 +10,7 @@ namespace Foundation
 {
     class ResourceInterface;
     typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
+    typedef boost::weak_ptr<ResourceInterface> ResourceWeakPtr;
     typedef std::map<std::string, Foundation::ResourcePtr> ResourceMap;
 
     //! Reference to a resource depended on

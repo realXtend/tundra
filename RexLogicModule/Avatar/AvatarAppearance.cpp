@@ -1048,7 +1048,7 @@ namespace RexLogic
         // Fix mesh & skeleton
         FixupResource(mesh, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
         // If mesh is local, need to setup the skeleton & materials
-        if (!mesh.resource_)
+        if (!mesh.resource_.lock().get())
         {
             Ogre::MeshPtr ogremesh = OgreRenderer::GetLocalMesh(mesh.name_);
             if (!ogremesh.isNull())
@@ -1077,9 +1077,9 @@ namespace RexLogic
         {
             FixupResource(attachments[i].mesh_, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
             
-            if (attachments[i].mesh_.resource_)
+            if (attachments[i].mesh_.resource_.lock())
             {
-                OgreRenderer::OgreMeshResource* mesh_res = dynamic_cast<OgreRenderer::OgreMeshResource*>(attachments[i].mesh_.resource_.get());
+                OgreRenderer::OgreMeshResource* mesh_res = dynamic_cast<OgreRenderer::OgreMeshResource*>(attachments[i].mesh_.resource_.lock().get());
                 if (mesh_res)
                 {
                     const StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
@@ -1130,7 +1130,7 @@ namespace RexLogic
             return;
         }
         
-        if (!asset.resource_)
+        if (!asset.resource_.lock().get())
         {
             AvatarAssetMap::const_iterator i = asset_map.find(asset.name_);
             if (i != asset_map.end())
@@ -1155,7 +1155,7 @@ namespace RexLogic
             fixed_mat_name.append(".material");
         
         // First find resource for the material itself
-        if (!mat.asset_.resource_)
+        if (!mat.asset_.resource_.lock().get())
         {
             AvatarAssetMap::const_iterator i = asset_map.find(fixed_mat_name);
             if (i != asset_map.end())
@@ -1165,7 +1165,7 @@ namespace RexLogic
             }
         }
         // If couldn't still be found, it's a local resource. In that case, fixup the default texture names for eventual export
-        if (!mat.asset_.resource_) 
+        if (!mat.asset_.resource_.lock().get()) 
         {
             if (!mat.textures_.size())
             {
@@ -1211,7 +1211,7 @@ namespace RexLogic
             }
         }
         
-        OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(mat.asset_.resource_.get());
+        OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(mat.asset_.resource_.lock().get());
         if (!mat_res)
             return;
             
@@ -1220,7 +1220,7 @@ namespace RexLogic
             mat.textures_.resize(orig_textures.size());
         for (uint i = 0; i < mat.textures_.size(); ++i)
         {
-            if (!mat.textures_[i].resource_)
+            if (!mat.textures_[i].resource_.lock().get())
             {
                 // Fill in name if not specified
                 if ((mat.textures_[i].name_.empty()) && (i < orig_textures.size()))
@@ -1234,10 +1234,10 @@ namespace RexLogic
                 }
             }
             // If we found the texture, modify the material to use it.
-            if (mat.textures_[i].resource_)
+            if (mat.textures_[i].resource_.lock().get())
             {
                 Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
-                OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_->GetId());
+                OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_.lock()->GetId());
             }
         }
     }
@@ -1423,13 +1423,13 @@ namespace RexLogic
         Ogre::MaterialPtr ogre_mat;
 
         // Resource-based or local?
-        if (material.asset_.resource_)
+        if (material.asset_.resource_.lock().get())
         {
             // In inventory mode, being resource based means it already exists on the server, do not store again
             if (inventorymode)
                 return true;
             
-            OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(material.asset_.resource_.get());
+            OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(material.asset_.resource_.lock().get());
             if (!mat_res)
             {
                 RexLogicModule::LogError("Material resource " + export_name + " was not valid");
@@ -1565,7 +1565,7 @@ namespace RexLogic
         ExportAsset new_export_asset;
         
         // If it's loaded from resource, we should be able to get at the original raw asset data for export
-        if (asset.resource_)
+        if (asset.resource_.lock().get())
         {
             // In inventory mode, being resource based means it already exists on the server, do not store again
             if (inventorymode)
