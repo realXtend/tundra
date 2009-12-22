@@ -490,7 +490,9 @@ namespace Environment
         sky_->FindCurrentlyActiveSky();
 
         if (!GetEnvironmentHandler()->IsCaelum())
+        {
             sky_->CreateDefaultSky();
+        }
     }
 }
 

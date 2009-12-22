@@ -65,7 +65,7 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 
     // 4th instance contains the tiling parameter.
     float tiling = boost::lexical_cast<float>(msg.ReadString());
-
+        
     UpdateSky(type, images, curvature, tiling);
 
     return false;

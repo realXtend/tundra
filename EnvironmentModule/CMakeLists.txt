@@ -27,6 +27,14 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DENVIRONMENT_MODULE_EXPORTS)
 
+if (CAELUM)
+	add_definitions (-DCAELUM)
+endif (CAELUM)
+
+if (HYDRAX)
+	add_definitions (-DHYDRAX)
+endif (HYDRAX)
+
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)

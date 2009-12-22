@@ -45,6 +45,11 @@ namespace Environment
         Scene::EntityWeakPtr GetEnvironmentEntity();
 
         /**
+         * @return Enviroment entity component, or 0 if does not exist
+         **/
+        OgreRenderer::EC_OgreEnvironment* GetEnvironmentComponent();
+
+        /**
          * Creates the environment EC to current active scene and adjust it using default parameters.
          **/
         void CreateEnvironment();
@@ -140,17 +145,11 @@ namespace Environment
 
     private:
        
-        /// Looks through all the entities in RexLogic's currently active scene to find the Water
-        /// entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
-        Scene::EntityWeakPtr FindActiveEnvironment();
-
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
-      
-        OgreRenderer::EC_OgreEnvironment* activeEnvComponent_;
 
         /// Weak pointer to the entity which has the environment component.
         Scene::EntityWeakPtr activeEnvEntity_;
