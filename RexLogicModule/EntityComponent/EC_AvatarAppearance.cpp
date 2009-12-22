@@ -8,8 +8,8 @@ namespace RexLogic
 {
     const std::string& AvatarAsset::GetLocalOrResourceName() const
     {
-        if (resource_)
-            return resource_->GetId();
+        if (resource_.lock().get())
+            return resource_.lock()->GetId();
         else
             return name_;
     }

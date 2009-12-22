@@ -24,7 +24,7 @@ namespace RexLogic
         //! Asset resource id
         std::string resource_id_;
         //! Resource (once it has been loaded)
-        Foundation::ResourcePtr resource_;
+        Foundation::ResourceWeakPtr resource_;
         
         const std::string& GetLocalOrResourceName() const;
     };
