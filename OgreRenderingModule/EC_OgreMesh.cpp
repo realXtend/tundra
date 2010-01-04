@@ -562,6 +562,25 @@ namespace OgreRenderer
             return entity_->getMesh()->getName();
     }
     
+    
+    const std::string& EC_OgreMesh::GetSkeletonName() const
+    {
+        static std::string empty_name;
+        
+        if (!entity_)
+            return empty_name;
+        else
+        {
+            Ogre::MeshPtr mesh = entity_->getMesh();
+            if (!mesh->hasSkeleton())
+                return empty_name;
+            Ogre::SkeletonPtr skel = mesh->getSkeleton();
+            if (skel.isNull())
+                return empty_name;
+            return skel->getName();
+        }
+    }    
+        
     void EC_OgreMesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     {
         if (!entity_)

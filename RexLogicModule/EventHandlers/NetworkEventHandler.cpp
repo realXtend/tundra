@@ -182,6 +182,10 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEv
         return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
     else if (methodname == "RexPrimData")
         return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
+    else if (methodname == "RexPrimData")
+        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
+    else if (methodname == "RexPrimAnim")
+        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimAnim(data); 
     else if (methodname == "RexAppearance")
         return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
     //else if (methodname == "RexSky")
