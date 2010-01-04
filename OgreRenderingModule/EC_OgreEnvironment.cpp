@@ -138,11 +138,21 @@ void EC_OgreEnvironment::SetSunColor(const Color &color)
 
 Color EC_OgreEnvironment::GetSunColor() const
 {
+#ifdef CAELUM
+    if ( caelumSystem_ != 0)
+    {
+        Vector3df sunDirection = GetSunDirection();
+        Ogre::ColourValue color = caelumSystem_->getSunLightColour(caelumSystem_->getUniversalClock()->getJulianSecond(), ToOgreVector3(sunDirection));
+        return Color(color.r, color.g, color.b, color.a);
+    }   
+    
+#else
     if ( sunlight_ != 0)
     {
         Ogre::ColourValue color = sunlight_->getDiffuseColour();
         return Color(color.r, color.g, color.b, color.a);
     }
+#endif
     return Color(0.0,0.0,0.0,0.0);
 }
 
@@ -154,12 +164,24 @@ void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 
 Vector3df EC_OgreEnvironment::GetSunDirection() const
 {
+#ifdef CAELUM
+
+    if ( caelumSystem_ != 0)
+    {
+        float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
+        float relDayTime = fmod(julDay, 1);
+        Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
+        return Vector3df(sunDir.x, sunDir.y, sunDir.z);
+    }
+#else
     if ( sunlight_ != 0)
     {
         Ogre::Vector3 vec = sunlight_->getDirection();
         return Vector3df(vec.x, vec.y, vec.z);
     }
+#endif
     return Vector3df();
+
 }
 
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)

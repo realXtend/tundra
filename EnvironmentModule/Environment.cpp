@@ -267,8 +267,8 @@ QVector<float> Environment::GetSunDirection()
         return QVector<float>(3);
 
     Vector3df vec = env->GetSunDirection();
-    QVector<float> vector(3);
-    vector[0] = vec.x, vector[1] = vec.y, vector[2] = vec.z;
+    QVector<float> vector;
+    vector.append(vec.x), vector.append(vec.y), vector.append(vec.z);
     return vector;
 }
 

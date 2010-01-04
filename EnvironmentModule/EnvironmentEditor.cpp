@@ -367,8 +367,11 @@ namespace Environment
 
             // Sun direction
             QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
+            sun_direction_x->setMinimum(-100.0);
             QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
+            sun_direction_y->setMinimum(-100.0);
             QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
+            sun_direction_z->setMinimum(-100.0);
             
             // Sun color
             QDoubleSpinBox* sun_color_red = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_red");
