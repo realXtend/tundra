@@ -14,17 +14,17 @@ Microsoft Visual C++ 2005 or earlier versions are not officially supported (but 
 For getting the dependencies, you have two choices, depending on how much code you want to compile yourself. In the following, it is assumed that the viewer SVN trunk has been checked out to C:\Naali_trunk and checked out the binary dependencies into the folder C:\Naali_deps, but you have to option to locate these svn checkouts anywhere you like. Just keep that in mind when reading this document so you'll replace the example paths with your own location.
 
 # First you need to obtain the dependencies from a svn repository
-# Do a svn checkout from http://dev.realxtend.org/gf/project/viewerdeps/ to C:\Naali_deps
+# Do a svn checkout from http://realxtend-naali-deps.googlecode.com/svn/ to C:\Naali_deps
 
 === Preparing the dependency repository from SVN ===
 
 This is by far the easiest option. Use this option when you just need to get Naali compiled, and to focus on developing Naali itself.
 
-# Copy C:\Naali_deps\bin\win32\build_deps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
-# Copy C:\Naali_deps\bin\win32\runtime_deps to C:\Naali_trunk\bin. 
-#* Alternatively SVN export the C:\Naali_deps\bin\win32\runtime_deps folder (right-click on it and select Export) to C:\viewer\bin.
+# Copy C:\Naali_deps\bin\build_deps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
+# Copy C:\Naali_deps\bin\runtime_deps to C:\Naali_trunk\bin.
+#* Alternatively SVN export the C:\Naali_deps\bin\runtime_deps folder (right-click on it and select Export) to C:\viewer\bin.
 # Set the following Environment variables. If you dont know how to accomplish this refer to this page  http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#Setting_Windows_environment_variables_for_cmake
-#* NAALI_DEP_PATH=C:\Naali_deps\bin\win32\build_deps
+#* NAALI_DEP_PATH=C:\Naali_deps\bin\build_deps
 #* QTDIR=C:\Qt\build
 #* QMAKESPEC=win32-msvc2008
 # After getting Qt, continue from Building the Viewer below.
@@ -37,9 +37,9 @@ This process is much more involved, but allows you to have a lot less boundaries
 
 To build Naali using the dependency repository, perform the following:
 
-# Get the viewer dependency repository by executing 'svn checkout http://dev.realxtend.org/svn/viewerdeps/trunk/'. The following assumes that you checked out the dependencies into the folder C:\Naali_deps\src.
+# Get the viewer dependency repository by executing 'svn checkout http://realxtend-naali-deps.googlecode.com/svn/trunk/'. The following assumes that you checked out the dependencies into the folder C:\Naali_deps\src.
 # Download, install and build Boost from http://www.boost.org/. Version v1.36.0 or newer is required.
-# Download, install and build Qt from http://www.qtsoftware.com/, or obtain Qt from the precompiled dependency package. Check that the environment variable QTDIR is correct. See \viewer\doc\build-qt-windows.txt for more details. 
+# Download, install and build Qt from http://www.qtsoftware.com/, or obtain Qt from the precompiled dependency package. Check that the environment variable QTDIR is correct. See \viewer\doc\build-qt-windows.txt for more details.
 # Download, install and build Ogre from http://www.ogre3d.org/. Alternatively complete this dependency using the precompiled dependency package. Ogre version v1.6.1 or newer is required. Check that OGRE_HOME environment variable points to the installation root folder.
 # Download, install and build PoCo from http://pocoproject.org/. Version v1.3.4 or newer is required. It seems that Visual Studio 2008 Express cannot be used to compile PoCo, so in that case, you just have to get the precompiled version from the dependency package.
 # See viewerdeps\src\expat\ReadmeRex.txt. Build Expat from C:\viewerdeps\src\expat\expat.sln. Copy the outputted DLLs to viewer\bin.
