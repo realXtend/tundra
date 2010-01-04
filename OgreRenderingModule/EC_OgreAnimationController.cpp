@@ -20,10 +20,10 @@ namespace OgreRenderer
     }
     
     void EC_OgreAnimationController::SetMeshEntity(Foundation::ComponentPtr mesh_entity)
-    {
-        if (!dynamic_cast<EC_OgreMesh*>(mesh_entity.get()))
+    {           
+        if ((mesh_entity.get()) && (!dynamic_cast<EC_OgreMesh*>(mesh_entity.get())))
         {
-            OgreRenderingModule::LogError("Attempted to set mesh entity which is not " + NameStatic());
+            OgreRenderingModule::LogError("Attempted to set mesh entity which is not " + EC_OgreMesh::NameStatic());
             return;
         }
         

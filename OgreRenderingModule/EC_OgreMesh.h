@@ -140,6 +140,9 @@ namespace OgreRenderer
         
         //! returns mesh name
         const std::string& GetMeshName() const;
+
+        //! returns mesh skeleton name
+        const std::string& GetSkeletonName() const;
         
         //! Sets if the entity casts shadows or not.
         void SetCastShadows(bool enabled);

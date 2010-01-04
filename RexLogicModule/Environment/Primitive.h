@@ -24,6 +24,7 @@ namespace RexLogic
                 
         bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundData* data);
         
         bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
@@ -89,6 +90,9 @@ namespace RexLogic
                 
         //! handles mesh resource being ready
         void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
+
+        //! handles skeleton resource (used in conjunction with a mesh) being ready
+        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
         
         //! handles particle script resource being ready
         void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);

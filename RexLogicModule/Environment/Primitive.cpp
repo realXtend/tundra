@@ -9,6 +9,7 @@
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreAnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
@@ -16,6 +17,7 @@
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
 #include "OgreParticleResource.h"
+#include "OgreSkeletonResource.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "ConversionUtils.h"
@@ -26,6 +28,7 @@
 #include "SceneManager.h"
 #include "AssetServiceInterface.h"
 #include "SoundServiceInterface.h"
+#include "GenericMessageUtils.h"
 
 namespace RexLogic
 {
@@ -81,6 +84,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(EC_OpenSimPrim::NameStatic());
     defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
 
     Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
 
@@ -272,6 +276,56 @@ bool Primitive::HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundDa
             
     return false;
 }
+
+bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
+
+    // Should have 5 parameters:
+    // 0: prim id
+    // 1: animation name
+    // 2: animation speed
+    // 3: looped
+    // 4: stop flag (false = start animation, true = stop)
+    if (params.size() < 5)
+        return false;    
+    // Animation speed may have , instead of . so replace
+    ReplaceCharInplace(params[2], ',', '.');
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(RexUUID(params[0]));
+    if (!entity)
+        return false;
+    
+    // Entity should have animationcontroller
+    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+        entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+    if (!anim)
+        return false;
+    
+    try
+    {
+        float rate = ParseString<float>(params[2]);
+        bool looped = ParseBool(params[3]);
+        bool stop = ParseBool(params[4]);
+        
+        if (stop)
+        {
+            anim->DisableAnimation(params[1], 0.25f);
+        }
+        else
+        {
+            anim->EnableAnimation(params[1], looped, 0.025f);
+            anim->SetAnimationSpeed(params[1], rate);
+            if (rate < 0.0f)
+                anim->SetAnimationToEnd(params[1]);
+            anim->SetAnimationAutoStop(params[1], looped == false);
+        }
+    }
+    catch (...) {}  
+        
+    return false;
+        
+}    
 
 bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data)
 {
@@ -619,6 +673,12 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             return;
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
         
+        // Attach to animationcontroller
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        if (anim)
+            anim->SetMeshEntity(meshptr);
+        
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
             mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), entity.get());
@@ -626,7 +686,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         // Change mesh if yet nonexistent/changed
         // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
         const std::string& mesh_name = prim.MeshID;
-        if (mesh.GetMeshName() != mesh_name)
+        if ((!RexTypes::IsNull(mesh_name)) && (mesh.GetMeshName() != mesh_name))
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -639,6 +699,23 @@ void Primitive::HandleDrawType(entity_id_t entityid)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
         }
+        
+        // Load mesh skeleton if used/specified
+        const std::string& skeleton_name = prim.AnimationPackageID;
+        if ((!RexTypes::IsNull(skeleton_name)) && (mesh.GetSkeletonName() != skeleton_name))
+        {
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            if (renderer)
+            {
+                request_tag_t tag = renderer->RequestResource(skeleton_name, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
+
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Skeleton)] = entityid;
+            }
+        }
+        
         
         // Set rendering distance & shadows
         mesh.SetDrawDistance(prim.DrawDistance);
@@ -653,6 +730,11 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         if (meshptr)
             entity->RemoveEntityComponent(meshptr);
+        // Detach from animationcontroller
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        if (anim)
+            anim->SetMeshEntity(Foundation::ComponentPtr());
 
         // Get/create custom (manual) object component 
         Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
@@ -967,6 +1049,8 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataIn
             asset_type = RexTypes::RexAT_MaterialScript;
         else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic())
             asset_type = RexTypes::RexAT_ParticleScript;
+        else if (res->GetType() == OgreRenderer::OgreSkeletonResource::GetTypeStatic())
+            asset_type = RexTypes::RexAT_Skeleton;
 
         EntityResourceRequestMap::iterator i = prim_resource_request_tags_.find(std::make_pair(event_data->tag_, asset_type));
         if (i == prim_resource_request_tags_.end())
@@ -979,6 +1063,9 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataIn
             break;
         case RexAT_Mesh:
             HandleMeshReady(i->second, res);
+            break;
+        case RexAT_Skeleton:
+            HandleSkeletonReady(i->second, res);
             break;
         case RexAT_MaterialScript:
             HandleMaterialResourceReady(i->second, res);
@@ -1010,8 +1097,25 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
     if (!meshptr) return;
     OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+
+    // Use optionally skeleton if it's used and we already have the resource
+    Foundation::ResourcePtr skel_res;
+    if (!RexTypes::IsNull(prim.AnimationPackageID))
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        skel_res = renderer->GetResource(prim.AnimationPackageID, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
+    }                
     
-    mesh.SetMesh(res->GetId());
+    if (!skel_res)
+    {
+        mesh.SetMesh(res->GetId());
+    }
+    else
+    {
+        //! \todo what if multiple entities use the same mesh, but different skeleton?
+        mesh.SetMeshWithSkeleton(res->GetId(), skel_res->GetId());
+    }
 
     // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
     Quaternion adjust(PI/2, 0, PI);
@@ -1022,10 +1126,42 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     // Check/set textures now that we have the mesh
     HandleMeshMaterials(entityid); 
 
+    // Set animation now if applicable
+    if ((!RexTypes::IsNull(prim.AnimationPackageID)) && (!prim.AnimationName.empty()))
+    {
+        // Entity should have animationcontroller
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        if (anim)        
+        {
+            // In case animation name changes, have to disable previous animations
+            anim->DisableAllAnimations();
+            anim->EnableAnimation(prim.AnimationName, true, 1.0f);
+            anim->SetAnimationSpeed(prim.AnimationName, prim.AnimationRate);
+        }
+    }
+
     Scene::Events::EntityEventData event_data;
     event_data.entity = entity;
     Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
     event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+}
+
+void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePtr res)
+{
+    if (!res) return;
+    if (res->GetType() != OgreRenderer::OgreSkeletonResource::GetTypeStatic()) return;
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity) return;
+    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    
+    // The skeleton itself is not useful without the mesh. But if we have the mesh too, set it now
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();   
+    Foundation::ResourcePtr mesh_res = renderer->GetResource(prim.MeshID, OgreRenderer::OgreMeshResource::GetTypeStatic());
+    if (mesh_res)
+        HandleMeshReady(entityid, mesh_res);
 }
 
 void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::ResourcePtr res)
