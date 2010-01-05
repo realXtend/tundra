@@ -38,8 +38,9 @@ namespace Inventory
     public slots:
         /// Uploads multiple files using HTTP.
         /// @param filenames list of filenames.
-        void UploadFiles(StringList &filenames);
-        void UploadFiles(QStringList &filenames);
+        /// @param item_names list of item names.
+        void UploadFiles(StringList &filenames, StringList &item_names);
+        void UploadFiles(QStringList &filenames, QStringList &item_names);
 
         /// Uploads multiple assets using HTTP.
         /// @param files List of filenames (determines asset type & folder to use)
@@ -104,7 +105,7 @@ namespace Inventory
         */
 
         /// Used by UploadFiles.
-        void ThreadedUploadFiles(StringList filenames);
+        void ThreadedUploadFiles(StringList filenames, StringList item_names);
 
         /// Used by UploadBuffers.
         //void ThreadedUploadBuffers(StringList filenames, std::vector<std::vector<u8> > buffers);

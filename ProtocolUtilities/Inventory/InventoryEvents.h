@@ -69,6 +69,7 @@ namespace Inventory
         InventoryUploadEventData() {}
         virtual ~InventoryUploadEventData() {}
         QStringList filenames;
+        QStringList names;
     };
 
     /// Event data class to be used with EVENT_INVENTORY_UPLOAD_BUFFER.

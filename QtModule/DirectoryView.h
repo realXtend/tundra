@@ -22,19 +22,34 @@ namespace QtUI
         Q_OBJECT
 
     public:
+        /// Constructor.
+        /// @param target Target object (and owner of the slot).
+        /// @param slot Slot.
+        /// @param Parent.
         DirectoryView(QObject *target, const char* slot, QWidget *parent = 0);
+
+        /// Destructor.
         virtual ~DirectoryView();
 
     signals:
+        /// Emitted when files are chosen.
         void FilesChosen(const QStringList &);
 
     private slots:
+        /// This slot emit the FilesChosen signal when user activates (double-click or enter) files on the directory view.
         void Activated();
 
     private:
+        /// Initializes the UI.
         void InitUi();
+
+        /// Main widget.
         QWidget *widget_;
+
+        /// Directory tree view.
         QTreeView *treeView_;
+
+        /// Directory model.
         QDirModel *fileModel_;
     };
 }

@@ -207,7 +207,7 @@ bool InventoryModule::HandleEvent(
             if (!upload_data)
                 return false;
 
-            inventory_->UploadFiles(upload_data->filenames, 0);
+            inventory_->UploadFiles(upload_data->filenames, upload_data->names, 0);
         }
 
         // Upload request from other modules, using buffers.
@@ -351,7 +351,8 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 
     currentWorldStream_->SendAgentResumePacket();
 
-    uploader->UploadFiles(filenames);
+    StringList names;
+    uploader->UploadFiles(filenames, names);
 
     return Console::ResultSuccess();
 }

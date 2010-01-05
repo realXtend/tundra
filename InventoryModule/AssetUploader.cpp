@@ -34,7 +34,7 @@ void AssetUploader::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_strea
     currentWorldStream_ = world_stream;
 }
 
-void AssetUploader::UploadFiles(StringList &filenames)
+void AssetUploader::UploadFiles(StringList &filenames, StringList &item_names)
 {
     CreateRexInventoryFolders();
 
@@ -50,16 +50,19 @@ void AssetUploader::UploadFiles(StringList &filenames)
         SetUploadCapability(upload_url);
     }
 
-    Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames));
+    Thread thread(boost::bind(&AssetUploader::ThreadedUploadFiles, this, filenames, item_names));
 }
 
-void AssetUploader::UploadFiles(QStringList &filenames)
+void AssetUploader::UploadFiles(QStringList &filenames, QStringList &item_names)
 {
-    StringList files;
+    StringList files, names;
     for(QStringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
         files.push_back(it->toStdString());
 
-    UploadFiles(files);
+    for(QStringList::iterator it = item_names.begin(); it != item_names.end(); ++it)
+        names.push_back(it->toStdString());
+
+    UploadFiles(files, names);
 }
 
 void AssetUploader::UploadBuffers(QStringList &filenames, QVector<QVector<uchar> > &buffers)
@@ -343,10 +346,11 @@ std::string AssetUploader::CreateNameFromFilename(std::string filename)
     return name;
 }
 
-void AssetUploader::ThreadedUploadFiles(StringList filenames)
+void AssetUploader::ThreadedUploadFiles(StringList filenames, StringList item_names)
 {
     // Iterate trought every asset.
     int asset_count = 0;
+    StringList::iterator name_it = item_names.begin();
     for(StringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
     {
         std::string filename = *it;
@@ -363,7 +367,15 @@ void AssetUploader::ThreadedUploadFiles(StringList filenames)
         std::string cat_name = RexTypes::GetCategoryNameForAssetType(asset_type);
 
         ///\todo User-defined name and desc when we got the UI.
-        std::string name = CreateNameFromFilename(filename);
+        std::string name;
+        if (name_it != item_names.end())
+        {
+            name = *name_it;
+            ++name_it;
+        }
+        else
+            name = CreateNameFromFilename(filename);
+
         std::string description = "(No Description)";
 
         RexUUID folder_id(dataModel_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());

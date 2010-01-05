@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>401</height>
+    <height>404</height>
    </rect>
   </property>
   <property name="styleSheet">
@@ -59,6 +59,12 @@
    </property>
    <item>
     <widget class="QFrame" name="MainFrame">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="maximumSize">
       <size>
        <width>16777207</width>
@@ -96,6 +102,9 @@
           </item>
           <item>
            <widget class="QRadioButton" name="radioDiffSolidParam">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>solid color</string>
             </property>
@@ -105,6 +114,9 @@
            <widget class="QRadioButton" name="radioDiffRgbTexParam">
             <property name="text">
              <string>rgb texture</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -141,6 +153,9 @@
            <widget class="QRadioButton" name="radioSpecNoneParam">
             <property name="text">
              <string>none</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -182,6 +197,9 @@
             <property name="text">
              <string>none</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -199,7 +217,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioAplhaUseChanFromDiffMapParam">
+           <widget class="QRadioButton" name="radioAlphaUseChanFromDiffMapParam">
             <property name="text">
              <string>use the alpha channel from the 
 alpha layer of the diffuse map</string>
@@ -276,25 +294,39 @@ alpha layer of the diffuse map</string>
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="horizontalLayoutWidget">
+        <widget class="QWidget" name="formLayoutWidget">
          <property name="geometry">
           <rect>
            <x>10</x>
            <y>290</y>
-           <width>311</width>
+           <width>381</width>
            <height>51</height>
           </rect>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
            <widget class="QLabel" name="labelName">
             <property name="text">
-             <string>Name</string>
+             <string>Name:</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelTemplate">
+            <property name="text">
+             <string>Template:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
            <widget class="QLineEdit" name="lineEditName"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="labelCurrent">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

@@ -76,7 +76,7 @@ namespace Inventory
         void UploadFile(const QString &filename, AbstractInventoryItem *parent_folder);
 
         /// AbstractInventoryDataModel override.
-        void UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder);
+        void UploadFiles(QStringList &filenames, QStringList &item_names, AbstractInventoryItem *parent_folder);
 
         /// AbstractInventoryDataModel override.
         void UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
