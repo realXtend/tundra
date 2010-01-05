@@ -39,6 +39,8 @@ namespace OgreRenderer
 
         material->getTechnique(0)->getPass(0)->setSceneBlending
             (Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+        // Setup fog override so that scene fog does not affect UI rendering
+        material->setFog(true, Ogre::FOG_NONE);
 
         // set up overlays
         ui_overlay_ = (Ogre::OverlayManager::getSingleton().create("test/overlay/UI"));
