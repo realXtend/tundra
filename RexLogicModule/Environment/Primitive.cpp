@@ -723,6 +723,9 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         
         // Check/request mesh textures
         HandleMeshMaterials(entityid);
+        
+        // Check/set animation
+        HandleMeshAnimation(entityid);        
     }
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
@@ -956,6 +959,36 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
     }
 }
 
+void Primitive::HandleMeshAnimation(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity) return;
+    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    
+    // Set animation now if applicable
+    if ((!RexTypes::IsNull(prim.AnimationPackageID)) && (!prim.AnimationName.empty()))
+    {
+        // Entity should have animationcontroller
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        if (anim)        
+        {
+            // Check if any other animations than the supposed one is running, and stop them
+            const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();
+            OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
+            while (i != anims.end())
+            {
+                if (i->first != prim.AnimationName)
+                    anim->DisableAnimation(i->first); 
+                ++i;
+            }
+                        
+            anim->EnableAnimation(prim.AnimationName, true, 1.0f);
+            anim->SetAnimationSpeed(prim.AnimationName, prim.AnimationRate);
+        }
+    }
+}
+
 void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *extra_params_data)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entity_id);
@@ -1126,20 +1159,8 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     // Check/set textures now that we have the mesh
     HandleMeshMaterials(entityid); 
 
-    // Set animation now if applicable
-    if ((!RexTypes::IsNull(prim.AnimationPackageID)) && (!prim.AnimationName.empty()))
-    {
-        // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
-        if (anim)        
-        {
-            // In case animation name changes, have to disable previous animations
-            anim->DisableAllAnimations();
-            anim->EnableAnimation(prim.AnimationName, true, 1.0f);
-            anim->SetAnimationSpeed(prim.AnimationName, prim.AnimationRate);
-        }
-    }
+    // Check/set animation
+    HandleMeshAnimation(entityid);
 
     Scene::Events::EntityEventData event_data;
     event_data.entity = entity;
@@ -1463,7 +1484,6 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
         }
     }
 }
-
 
 EC_AttachedSound& Primitive::GetOrCreateAttachedSound(Scene::EntityPtr entity)
 {
