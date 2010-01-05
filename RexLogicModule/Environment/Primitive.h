@@ -75,6 +75,9 @@ namespace RexLogic
         //! those materials are made and the material binding is delayed until the downloads are complete.
         void HandleMeshMaterials(entity_id_t entityid);
 
+        //! Handles starting of looping mesh animation as specified in RexPrimData
+        void HandleMeshAnimation(entity_id_t entityid);
+
         //! handles prim texture/material requests
         //! @param entityid Entity id.
         void HandlePrimTexturesAndMaterial(entity_id_t entityid);
