@@ -217,7 +217,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
-    
+    Ogre::Camera *camera = renderer->GetCurrentCamera();
+    Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
+        
 #ifdef CAELUM
     // Set sunlight attenuation using diffuse multiplier.
     // Seems to be working ok, but feel free to fix if you find better logic and/or values.
@@ -250,9 +252,43 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         fogColor_ = caelumSystem_->getGroundFog()->getColour();
 #endif
 
+#ifdef CAELUM
+    // Update Caelum system.
+    caelumSystem_->notifyCameraChanged(camera);
+    caelumSystem_->updateSubcomponents(frametime);
+
+    // Disable specular from the sun & moon for now, because it easily leads to too strong results
+    sun->setSpecularColour(0.0f, 0.0f, 0.0f);
+    moon->setSpecularColour(0.0f, 0.0f, 0.0f);
+    
+    // Get the sun's position. The magic number 80000 is from "Nature" demo app, found from OGRE forum.
+    // This would be used for Hydrax.
+//    Ogre::Vector3 sunPos = camera->getPosition();
+//    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
+#endif
+
+#ifdef HYDRAX
+    // Update Hydrax system.
+    hydraxSystem_->update(frametime);
+
+    //Ogre::Vector3 origPos(-5000, -5000, 20);
+    //hydraxSystem_->setPosition(origPos);
+
+    sunPos = camera->getPosition();
+    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
+
+    //Ogre::Vector3 flippedSunPos(sunPos.y, sunPos.z, sunPos.x);
+    hydraxSystem_->setSunPosition(sunPos);
+    //hydraxSystem_->setPosition(Ogre::Vector3(-5000, 20, -5000));
+    //hydraxSystem_->setVisible(true);
+
+//        Ogre::Vector3 cam_pos = hydraxSystem_->getCamera()->getPosition();
+//        hydraxSystem_->getCamera()->setPosition(cam_pos);
+//    std::cout << "C " << hydraxSystem_->getMesh()->getSceneNode()->getPosition() << std::endl;
+//        std::cout << "D " << hydraxSystem_->getRttManager()->getPlanesSceneNode()->getPosition()<< std::endl;
+#endif
+
     // Set fogging
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
     Ogre::Entity* water = 0;
     
     if ( sceneManager->hasEntity("WaterEntity") )
@@ -291,42 +327,6 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
             cameraUnderWater_ = true;
         }
     }
-
-#ifdef CAELUM
-    // Update Caelum system.
-    caelumSystem_->notifyCameraChanged(camera);
-    caelumSystem_->updateSubcomponents(frametime);
-
-    // Disable specular from the sun & moon for now, because it easily leads to too strong results
-    sun->setSpecularColour(0.0f, 0.0f, 0.0f);
-    moon->setSpecularColour(0.0f, 0.0f, 0.0f);
-    
-    // Get the sun's position. The magic number 80000 is from "Nature" demo app, found from OGRE forum.
-    // This would be used for Hydrax.
-//    Ogre::Vector3 sunPos = camera->getPosition();
-//    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
-#endif
-
-#ifdef HYDRAX
-    // Update Hydrax system.
-    hydraxSystem_->update(frametime);
-
-    //Ogre::Vector3 origPos(-5000, -5000, 20);
-    //hydraxSystem_->setPosition(origPos);
-
-    sunPos = camera->getPosition();
-    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
-
-    //Ogre::Vector3 flippedSunPos(sunPos.y, sunPos.z, sunPos.x);
-    hydraxSystem_->setSunPosition(sunPos);
-    //hydraxSystem_->setPosition(Ogre::Vector3(-5000, 20, -5000));
-    //hydraxSystem_->setVisible(true);
-
-//        Ogre::Vector3 cam_pos = hydraxSystem_->getCamera()->getPosition();
-//        hydraxSystem_->getCamera()->setPosition(cam_pos);
-//    std::cout << "C " << hydraxSystem_->getMesh()->getSceneNode()->getPosition() << std::endl;
-//        std::cout << "D " << hydraxSystem_->getRttManager()->getPlanesSceneNode()->getPosition()<< std::endl;
-#endif
 }
 
 void EC_OgreEnvironment::DisableFog()

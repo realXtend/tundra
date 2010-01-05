@@ -18,6 +18,17 @@ namespace OgreRenderer
         RendererPtr renderer = renderer_.lock();               
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(); 
         camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());  
+        
+        // Set default values for the camera
+        camera_->setNearClipDistance(0.1f);
+        camera_->setFarClipDistance(2000.f);
+        
+        // Roll the view because of OpenSim coordinate axes
+        camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
+        
+        // Respond to viewport size automatically
+        camera_->setAutoAspectRatio(true);
     }
     
     EC_OgreCamera::~EC_OgreCamera()
