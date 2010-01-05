@@ -40,8 +40,8 @@ namespace OgreRenderer
         {
             if (rw == renderer_->renderwindow_)
             {
-                if (renderer_->camera_)
-                    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+                //if (renderer_->camera_)
+                //    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
 
                 Events::WindowResized data(rw->getWidth(), rw->getHeight());
                 renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Events::WINDOW_RESIZED, &data);         
@@ -101,8 +101,10 @@ namespace OgreRenderer
         initialized_(false),
         framework_(framework),
         scenemanager_(0),
-        camera_(0),
+        default_camera_(0),
+        camera_(0),       
         renderwindow_(0),
+        viewport_(0),
         object_id_(0),
         group_id_(0),
         main_window_handle_(0),
@@ -338,19 +340,22 @@ namespace OgreRenderer
     void Renderer::SetupScene()
     {
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
-        camera_ = scenemanager_->createCamera("Camera");
-        camera_->setNearClipDistance(0.1f);
-        camera_->setFarClipDistance(2000.f);
-        camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
-        camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
-        Ogre::Viewport* viewport = renderwindow_->addViewport(camera_);
-        camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-        camera_->setAutoAspectRatio(true);
+        default_camera_ = scenemanager_->createCamera("DefaultCamera");       
+        viewport_ = renderwindow_->addViewport(default_camera_);       
+                
+        default_camera_->setNearClipDistance(0.1f);
+        default_camera_->setFarClipDistance(2000.f);
+        default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        default_camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
+        //default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
+        default_camera_->setAutoAspectRatio(true);
+
+        camera_ = default_camera_;
 
         ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
         ray_query_->setSortByDistance(true); 
 
-        c_handler_.Initialize(framework_ ,viewport);
+        c_handler_.Initialize(framework_ ,viewport_);
     }
 
     size_t Renderer::GetWindowHandle() const
@@ -405,14 +410,25 @@ namespace OgreRenderer
             renderwindow_->resize(width, height);
             renderwindow_->windowMovedOrResized();
 
-            if (camera_)
-                camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
+            //if (camera_)
+            //    camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
 
             Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
             framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);
         }
     }
 
+    void Renderer::SetCurrentCamera(Ogre::Camera* camera)
+    {
+        if (!camera) 
+            camera = default_camera_;
+        if (viewport_)
+        {
+            viewport_->setCamera(camera);
+            camera_ = camera;
+        }
+    }
+    
     void Renderer::OnWindowClosed()
     {
         framework_->Exit();

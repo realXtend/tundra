@@ -203,7 +203,7 @@ void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
         return;
         
     env->SetGroundFogStart(fogStart);
-    env->SetGroundFogEnd(fogStart);
+    env->SetGroundFogEnd(fogEnd);
 }
 
 void Environment::SetWaterFogDistance(float fogStart, float fogEnd)
@@ -213,7 +213,7 @@ void Environment::SetWaterFogDistance(float fogStart, float fogEnd)
         return;
         
     env->SetWaterFogStart(fogStart);
-    env->SetWaterFogEnd(fogStart);
+    env->SetWaterFogEnd(fogEnd);
 }
 
 float Environment::GetWaterFogStartDistance()

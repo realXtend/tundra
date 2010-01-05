@@ -161,6 +161,12 @@ namespace OgreRenderer
          */
         void Update(f64 frametime);
 
+        //! Sets current camera used for rendering the main viewport
+        /*! Called by EC_OgreCamera when activating. Null will default to the default camera, so that we don't crash
+            when rendering.
+         */
+        void SetCurrentCamera(Ogre::Camera* camera);
+
 		//! Takes a screenshot and saves it to a file.
 		void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
 
@@ -195,8 +201,14 @@ namespace OgreRenderer
         //! Scene manager
         Ogre::SceneManager* scenemanager_;
         
-        //! Default camera
+        //! Default camera, used when no other camera exists
+        Ogre::Camera* default_camera_;
+
+        //! Current camera
         Ogre::Camera* camera_;
+        
+        //! Viewport
+        Ogre::Viewport* viewport_;
         
         //! Rendering window
         Ogre::RenderWindow* renderwindow_;
