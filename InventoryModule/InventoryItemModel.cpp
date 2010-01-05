@@ -210,19 +210,25 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QList<AbstractInventoryItem *> itemList;
     while(!stream.atEnd())
     {
+        QString mimedata;
+        stream >> mimedata;
+
         // We're interested only in the item id's.
-        QString info;
-        stream >> info;
-        int idx1 = info.indexOf(";");
-        int idx2 = info.indexOf(";", idx1 + 1);
-        QString id = info.mid(idx1 + 1, idx2 - idx1 - 1);
+        QStringList list = mimedata.split(";", QString::SkipEmptyParts);
+        if (list.size() < 4)
+            continue;
+
+        QString id = list.at(1);
         if (!RexUUID::IsValid(id.toStdString()))
             continue;
+
         AbstractInventoryItem *item = dataModel_->GetChildById(id);
         assert(item);
         itemList << item;
     }
 
+    ///\todo Differentiation between move and copy actions.
+    // Qt::CopyAction Qt::MoveAction
     AbstractInventoryItem *newParent = GetItem(parent);
 
     foreach(AbstractInventoryItem *item, itemList)
@@ -527,6 +533,7 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
         QString filename = it.next();
         if (!filename.isEmpty())
             dataModel_->UploadFile(filename, parentItem);
+        std::cout << filename.toStdString() << std::endl;
     }
 }
 

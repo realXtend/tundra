@@ -299,14 +299,14 @@ void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInve
     }
 
     ///\note For now, we're not interested about destination folder as they're hardcoded.
-    QStringList list;
+    QStringList list, names;
     list << filename;
-    assetUploader_->UploadFiles(list);
+    assetUploader_->UploadFiles(list, names);
 }
 
-void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
+void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, QStringList &names, AbstractInventoryItem *parent_folder)
 {
-    assetUploader_->UploadFiles(filenames);
+    assetUploader_->UploadFiles(filenames, names);
 }
 
 void OpenSimInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,

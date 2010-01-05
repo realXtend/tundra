@@ -275,9 +275,8 @@ void WebDavInventoryDataModel::UploadBuffer(const QString &filename, QByteArray&
     if (!parentFolder)
         return;
 
-    QString parentPath = ValidateFolderPath(parentFolder->GetID());  
+    QString parentPath = ValidateFolderPath(parentFolder->GetID());
     QStringList result = webdavclient_.call("uploadFileBuffer", QVariantList() << buffer << parentPath << filename).toStringList();
-
     if (result.count() >= 1)
     {
         if (result[0] == "True")
@@ -290,16 +289,17 @@ void WebDavInventoryDataModel::UploadBuffer(const QString &filename, QByteArray&
     }
 }
 
-void WebDavInventoryDataModel::UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder)
+void WebDavInventoryDataModel::UploadFiles(QStringList &filenames, QStringList &item_names, AbstractInventoryItem *parent_folder)
 {
-    for (uint i = 0; i < filenames.size(); ++i)
+    ///\todo Use also the item names.
+    for(uint i = 0; i < filenames.size(); ++i)
         UploadFile(filenames[i], parent_folder);
 }
 
 void WebDavInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QVector<QVector<uchar> > &buffers,
     AbstractInventoryItem *parent_folder)
 {
-    for (uint i = 0; i < filenames.size(); ++i)
+    for(uint i = 0; i < filenames.size(); ++i)
     {
         QByteArray data((const char*)&buffers[i][0], buffers[i].size());
         UploadBuffer(filenames[i], data, parent_folder);

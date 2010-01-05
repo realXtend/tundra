@@ -15,6 +15,8 @@
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
 
+#include <Inventory/InventoryEvents.h>
+
 #include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
@@ -22,13 +24,18 @@
 #include <QCheckBox>
 #include <QLineEdit>
 
+// Useful defines
+#define ENABLE(p) p->setEnabled(true);
+#define DISABLE(p) p->setEnabled(false);
+
 namespace OgreAssetEditor
 {
 
 MaterialWizard::MaterialWizard(Foundation::Framework *framework) :
     framework_(framework),
     proxyWidget_(0),
-    mainWidget_(0)
+    mainWidget_(0),
+    currentOptions_(Material_None)
 {
     InitWindow();
 }
@@ -47,111 +54,351 @@ void MaterialWizard::Create()
         return;
     }
 
-/*
-    QString filename("../media/material/templates/");
-    switch(parameters)
-    {
-    case Material_Diff:
-        filename = ;
-        break;
-    case Material_Diffa:
-        filename = ;
-        break;
-    case Material_DiffAlphamask:
-        filename = ;
-        break;
-    case Material_DiffAnim:
-        filename = ;
-        break;
-    case Material_DiffNormal:
-        filename = ;
-        break;
-    case Material_DiffNormalLightmap:
-        filename = ;
-        break;
-    case Material_DiffNormalShadow:
-        filename = ;
-        break;
-    case Material_DiffNormalShadowLightmap:
-        filename = ;
-        break;
-    case Material_DiffReflAlpha:
-        filename = ;
-        break;
-    case Material_DiffShadow:
-        filename = ;
-        break;
-    case Material_DiffShadowLightmap:
-        filename = ;
-        break;
-    case Material_DiffSpecflatNormalShadowLum:
-        filename = ;
-        break;
-    case Material_DiffSpecflatShadow:
-        filename = ;
-        break;
-    case Material_DiffSpecmap:
-        filename = ;
-        break;
-    case Material_DiffSpecmapNormal:
-        filename = ;
-        break;
-        filename = ;
-    case Material_DiffSpecmapNormalOpa:
-        filename = ;
-        break;
-    case Material_DiffSpecmapNormalShadow:
-        filename = ;
-        break;
-    case Material_DiffSpecmapNormalShadowLum:
-        filename = ;
-        break;
-    case Material_DiffSpecmapNormalShadowLumOpa:
-        filename = ;
-        break;
-    case Material_SpecmapRefl:
-        filename = ;
-        break;
-    case Material_DiffSpecmapShadow:
-        filename = ;
-        break;
-    case Material_DiffSpecmapShadowLum:
-        filename = ;
-        break;
-    case Material_DiffSpecmapShadowLumOpa:
-        filename = ;
-        break;
-    case Material_DiffSpecmapShadowOpa:
-        filename = ;
-        break;
-    case Material_DiffSpecmapShadowRefl:
-        filename = ;
-        break;
-    Material_None:
-    default:
-        break;
-    }
+    QString filename("./media/materials/templates/");
+    filename.append(GetCurrentMaterialFilename());
+    filename.append(".material");
 
-    filename.append();
     QFile file(filename);
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Could not appropriate material script for these parameters!");
+        OgreAssetEditorModule::LogError("Could create appropriate material script for these parameters!");
         return;
     }
 
     // Create event data.
     Inventory::InventoryUploadEventData event_data;
-    event_data.filenames.push_back(file.filename);
+    event_data.filenames.push_back(file.fileName());
+    event_data.names.push_back(scriptName_);
 
-    event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
-}
-    */
+    event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE, &event_data);
+
+    proxyWidget_->close();
 }
 
 void MaterialWizard::Cancel()
 {
     proxyWidget_->close();
+}
+
+void MaterialWizard::RefreshWidgets()
+{
+    ///\todo Solid not supported yet.
+    //QRadioButton *radioDiffSolidParam = mainWidget_->findChild<QRadioButton *>("radioDiffSolidParam");
+    QRadioButton *radioDiffRgbTexParam = mainWidget_->findChild<QRadioButton *>("radioDiffRgbTexParam");
+
+    // Specular params.
+    QRadioButton *radioSpecNoneParam = mainWidget_->findChild<QRadioButton *>("radioSpecNoneParam");
+    QRadioButton *radioSpecSolidParam = mainWidget_->findChild<QRadioButton *>("radioSpecSolidParam");
+    QRadioButton *radioSpecRgbTexParam = mainWidget_->findChild<QRadioButton *>("radioSpecRgbTexParam");
+
+    // Alpha params.
+    QRadioButton *radioAlphaNoneParam = mainWidget_->findChild<QRadioButton *>("radioAlphaNoneParam");
+    QRadioButton *radioAlphaSolidParam = mainWidget_->findChild<QRadioButton *>("radioAlphaSolidParam");
+    QRadioButton *radioAlphaSeparateParam = mainWidget_->findChild<QRadioButton *>("radioAlphaSeparateParam");
+    QRadioButton *radioAlphaUseChanFromDiffMapParam = mainWidget_->findChild<QRadioButton *>("radioAlphaUseChanFromDiffMapParam");
+    QCheckBox *checkBoxAlphaMaskingParam = mainWidget_->findChild<QCheckBox *>("checkBoxAlphaMaskingParam");
+
+    // Misc. params.
+    QCheckBox *checkBoxAnimParam = mainWidget_->findChild<QCheckBox *>("checkBoxAnimParam");
+    QCheckBox *checkBoxLightParam = mainWidget_->findChild<QCheckBox *>("checkBoxLightParam");
+    QCheckBox *checkBoxLumParam = mainWidget_->findChild<QCheckBox *>("checkBoxLumParam");
+    QCheckBox *checkBoxNormalParam = mainWidget_->findChild<QCheckBox *>("checkBoxNormalParam");
+    QCheckBox *checkBoxReflParam = mainWidget_->findChild<QCheckBox *>("checkBoxReflParam");
+    QCheckBox *checkBoxShadowParam = mainWidget_->findChild<QCheckBox *>("checkBoxShadowParam");
+
+/*
+    // Enable and disable widgets according to the current material parameter combination
+    ENABLE(radioDiffRgbTexParam) // always on for now
+
+    if (currentOptions_ == Material_Diff)
+    {
+        ENABLE(radioAlphaUseChanFromDiffMapParam)
+        ENABLE(checkBoxAlphaMaskingParam)
+        ENABLE(checkBoxAnimParam)
+        ENABLE(checkBoxReflParam)
+    }
+    else
+    {
+        DISABLE(radioAlphaUseChanFromDiffMapParam)
+        DISABLE(checkBoxAlphaMaskingParam)
+        DISABLE(checkBoxAnimParam)
+        DISABLE(checkBoxReflParam)
+    }
+/*
+    if (currentOptions_ == Material_DiffNormal)
+    {
+        ENABLE(checkBoxLightParam)
+        ENABLE(checkBoxShadowParam)
+    }
+
+    if (SSDiffReflAlpha)
+    {
+        //DISABLE_ALL_BUT()
+    }
+
+    if (ssdiffspecflat)
+    {
+        ENABLE(normal)
+        ENABLE(shadow)
+        ENABLE(lum)
+        DISABLE_REST();
+    }
+
+    if (SSDiffSpecmap)
+    {
+        ENABLE(normal)
+        ENABLE(shadow)
+        ENABLE(lum)
+        ENABLE(opa)
+        ENABLE(refl)
+
+    }
+*/
+    currentOptions_ = Material_None;
+
+    // Diffuse
+    if (radioDiffRgbTexParam->isChecked())
+        currentOptions_ |= MWO_DiffuseMap;
+    ///\todo "Modulate diffuse with vertex color" not supported yet. checkBoxDiffModulateParam
+
+    // Specular
+    if (radioSpecNoneParam->isEnabled() && radioSpecNoneParam->isChecked())
+        currentOptions_ |= MWO_SpecularNone;
+    if (radioSpecSolidParam->isEnabled() && radioSpecSolidParam->isChecked())
+        currentOptions_ |= MWO_SpecularSolid;
+    if (radioSpecRgbTexParam->isEnabled() && radioSpecRgbTexParam->isChecked())
+        currentOptions_ |= MWO_SpecularMap;
+
+    // Alpha
+    if (radioAlphaNoneParam->isEnabled() && radioAlphaNoneParam->isChecked())
+        currentOptions_ |= MWO_AlphaNone;
+    if (radioAlphaSolidParam->isEnabled() && radioAlphaSolidParam->isChecked())
+        currentOptions_ |= MWO_AlphaSolid;
+    if (radioAlphaSeparateParam->isEnabled() && radioAlphaSeparateParam->isChecked())
+        currentOptions_ |= MWO_Opacity;
+    if (radioAlphaUseChanFromDiffMapParam->isEnabled() && radioAlphaUseChanFromDiffMapParam->isChecked())
+        currentOptions_ |= MWO_DiffuseAlpha;
+    if (checkBoxAlphaMaskingParam->isEnabled() && checkBoxAlphaMaskingParam->isChecked())
+        currentOptions_ |= MWO_AlphaMasking;
+
+    // Misc
+    if (checkBoxAnimParam->isEnabled() && checkBoxAnimParam->isChecked())
+        currentOptions_ |= MWO_Animation;
+    if (checkBoxLightParam->isEnabled() && checkBoxLightParam->isChecked())
+        currentOptions_ |= MWO_LightMap;
+    if (checkBoxLumParam->isEnabled() && checkBoxLumParam->isChecked())
+        currentOptions_ |= MWO_LuminanceMap;
+    if (checkBoxNormalParam->isEnabled() && checkBoxNormalParam->isChecked())
+        currentOptions_ |= MWO_NormalMap;
+    if (checkBoxReflParam->isEnabled() && checkBoxReflParam->isChecked())
+        currentOptions_ |= MWO_ReflectionMap;
+    if (checkBoxShadowParam->isEnabled() && checkBoxShadowParam->isChecked())
+        currentOptions_ |= MWO_ReceivesShadows;
+
+    QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
+    labelCurrent->setText(GetCurrentMaterialFilename());
+
+
+
+    /* OLD SHIT STARTS HERE
+
+    // Diffuse
+    if (radioDiffRgbTexParam->isChecked())
+    {
+        currentOptions_ |= MWO_DiffuseMap;
+        std::cout << "MWO_DiffuseMap" << std::endl;
+    }
+
+    ///\todo "Modulate diffuse with vertex color" not supported yet.
+    //QCheckBox *checkBoxDiffModulateParam = mainWidget_->findChild<QCheckBox *>("checkBoxDiffModulateParam");
+
+    // Specular
+    if (radioSpecNoneParam->isChecked())
+    {
+        currentOptions_ |= MWO_SpecularNone;
+        std::cout << "MWO_SpecularNone" << std::endl;
+    }
+    else if(radioSpecSolidParam->isChecked())
+    {
+        currentOptions_ |= MWO_SpecularSolid;
+        std::cout << "MWO_SpecularSolid" << std::endl;
+    }
+    else if(radioSpecRgbTexParam->isChecked())
+    {
+        currentOptions_ |= MWO_SpecularMap;
+        std::cout << "MWO_SpecularMap" << std::endl;
+    }
+
+    if (currentOptions_ & MWO_SpecularSolid)
+    {
+        checkBoxLumParam->setEnabled(true);
+        checkBoxNormalParam->setEnabled(true);
+        checkBoxShadowParam->setEnabled(true);
+    }
+
+
+    if (currentOptions_ == Material_Diff)
+    {
+    
+    }
+
+    // Alpha
+    if (radioAlphaNoneParam->isChecked())
+    {
+        currentOptions_ |= MWO_AlphaNone;
+        std::cout << "MWO_AlphaNone" << std::endl;
+    }
+    else if(radioAlphaSolidParam->isChecked())
+    {
+        currentOptions_ |= MWO_AlphaSolid;
+        std::cout << "MWO_AlphaSolid" << std::endl;
+    }
+    else if(radioAlphaSeparateParam->isChecked())
+    {
+        currentOptions_ |= MWO_Opacity;
+        std::cout << "MWO_Opacity" << std::endl;
+        
+        SpecRgbTex + Normal
+        SpecRgbTex + Normal + Shadow + Lum 
+        SpecRgbTex + Shadow +Lum
+        radioSpecRgbTexParam
+        skip_rest = true;
+    }
+
+    if (currentOptions_ &
+
+    else if(radioAlphaUseChanFromDiffMapParam->isChecked())
+    {
+        currentOptions_ |= MWO_DiffuseAlpha;
+        std::cout << "MWO_DiffuseAlpha" << std::endl;
+    }
+
+    // Alpha masking not usable if we are using MWO_AlphaNone or MWO_AlphaSolid.
+    if (currentOptions_ & MWO_AlphaNone || currentOptions_ & MWO_AlphaSolid)
+    {
+        checkBoxAlphaMaskingParam->setEnabled(false);
+        std::cout << "checkBoxAlphaMaskingParam->setEnabled(false);" << std::endl;
+    }
+    else
+    {
+        checkBoxAlphaMaskingParam->setEnabled(true);
+        std::cout << "checkBoxAlphaMaskingParam->setEnabled(true);" << std::endl;
+    }
+
+    if (checkBoxAlphaMaskingParam->isEnabled() && checkBoxAlphaMaskingParam->isChecked())
+    {
+        currentOptions_ |= MWO_AlphaMasking;
+        std::cout << "MWO_AlphaMasking" << std::endl;
+    }
+
+    // Misc
+    // Animation available only if DIFFUSE_MAPPING and nothing else.
+    if (currentOptions_ == Material_Diff || currentOptions_ == Material_DiffAnim)
+    {
+        checkBoxAnimParam->setEnabled(true);
+        std::cout << "checkBoxAnimParam->setEnabled(true);" << std::endl;
+    }
+    else
+    {
+        checkBoxAnimParam->setEnabled(false);
+        std::cout << "checkBoxAnimParam->setEnabled(false);" << std::endl;
+    }
+
+    if (checkBoxAnimParam->isEnabled() && checkBoxAnimParam->isChecked())
+    {
+        currentOptions_ |= MWO_Animation;
+        std::cout << "MWO_Animation" << std::endl;
+    }
+
+    // Lightmap choosable with 1)normal, 2)normal+shadow, 3)shadow
+    if (currentOptions_ == Material_DiffNormal || currentOptions_ == Material_DiffNormalShadow || currentOptions_ == Material_DiffShadow)
+        checkBoxLightParam->setEnabled(true)
+    else
+        checkBoxLightParam->setEnabled(false)
+
+    if (checkBoxLightParam->isEnabled() && checkBoxLightParam->isChecked())
+    {
+        currentOptions_ |= MWO_LightMap;
+        std::cout << "MWO_LightMap" << std::endl;
+    }
+
+    // Luminance mapping choosable with 1)Specflat+Normal+Shadow 2) Specmap+Normal+Shadow
+    if (currentOptions_ == Material_DiffSpecflatNormalShadowLum || currentOptions_ == DiffSpecmapNormalShadow ||
+        currentOptions_ == Material_DiffSpecmapShadow)
+        checkBoxLumParam->setEnabled(true)
+    else
+        checkBoxLumParam->setEnabled(false)
+
+    if (checkBoxLumParam->isEnabled() && checkBoxLumParam->isChecked())
+    {
+        currentOptions_ |= MWO_LuminanceMap;
+        std::cout << "MWO_LuminanceMap" << std::endl;
+    }
+
+    // Opa Choosable with 2)DiffSpecmapNormal 2)DiffSpecmapNormalShadowLum 3)DiffSpecmapShadowLum
+    // 4)DiffSpecmapShadowOp
+    if (
+        checkBoxNormalParam->setEnabled(true)
+    else
+        checkBoxNormalParam->setEnabled(false)
+
+    // Normal choosable with 1)DiffNormal 2)DiffNormalLightmap 3)DiffNormalShadow 4)DiffNormalShadowLightmap
+    // 5)DiffSpecflatNormalShadowLum 6)DiffSpecmapNormal 7)DiffSpecmapNormalOpa 8)DiffSpecmapNormalShadow 9)DiffSpecmapNormalShadowLum
+    // 10)DiffSpecmapNormalShadowLumOpa
+
+    if (checkBoxNormalParam->isEnabled() && checkBoxNormalParam->isChecked())
+    {
+        currentOptions_ |= MWO_NormalMap;
+        std::cout << "MWO_NormalMap" << std::endl;
+    }
+
+    // Reflection map choosable with 1)DiffReflAlpha 2)SpecmapRefl 3)DiffSpecmapShadowRefl
+    if (checkBoxReflParam->isChecked())
+    {
+        currentOptions_ |= MWO_ReflectionMap;
+        std::cout << "MWO_ReflectionMap" << std::endl;
+    }
+
+/*
+    // 1)DiffNormalShadow 2)DiffNormalShadowLightmap
+    DiffShadow
+    DiffShadowLightmap
+    DiffSpecflatNormalShadowLum
+    DiffSpecflatShadow
+    DiffSpecmapNormalOpa
+    DiffSpecmapNormalShadow
+    DiffSpecmapNormalShadowLum
+    DiffSpecmapNormalShadowLumOpa
+    DiffSpecmapShadow
+    DiffSpecmapShadowLum
+    DiffSpecmapShadowLumOpa
+    DiffSpecmapShadowOpa
+    DiffSpecmapShadowRefl
+*/
+/*
+    if (checkBoxShadowParam->isChecked())
+    {
+        currentOptions_ |= MWO_ReceivesShadows;
+        std::cout << "MWO_ReceivesShadows" << std::endl;
+    }
+/*
+    // available only with DiffAlphamask
+    QCheckBox *alphaMasking = mainWidget_->findChild<QCheckBox *>("checkBoxAlphaMasking");
+    if (1)
+        alphaMasking->setEnabled(false);
+    else
+        alphaMasking->setEnabled(true);
+*/
+/*
+    //if (specSolid)
+    //SSDiffSpecflatNormalShadowLum.material  SpecSolid + Normal + Shadow + Lum
+    //SSDiffSpecflatShadow.material           SpecSolid + Shadow
+
+    QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
+    labelCurrent->setText(GetCurrentMaterialFilename());
+    
+    OLD SHIT ENDS HERE
+    */
 }
 
 void MaterialWizard::InitWindow()
@@ -169,9 +416,11 @@ void MaterialWizard::InitWindow()
         return;
     }
 
+    // Get pointers to widgets.
     mainWidget_ = loader.load(&file, 0);
     file.close();
 
+    // Connect parameter widgets' clicked signal to RefreshWidgets slot.
     QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
     QListIterator<QObject *> iter(widgetList);
     while(iter.hasNext())
@@ -184,127 +433,119 @@ void MaterialWizard::InitWindow()
 
     QPushButton *buttonCreate = mainWidget_->findChild<QPushButton *>("buttonCreate");
     QPushButton *buttonCancel = mainWidget_->findChild<QPushButton *>("buttonCancel");
+    QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
+
     QObject::connect(buttonCreate, SIGNAL(clicked(bool)), this, SLOT(Create()));
     QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Cancel()));
-//    QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+    QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
-        mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "Material Wizard", false));
+        mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "Material Wizard", true));
+
+    RefreshWidgets();
 }
 
-void MaterialWizard::RefreshWidgets()
+QString MaterialWizard::GetCurrentMaterialFilename()
 {
-//    MaterialWizardOptions options;
-    
-/*
-    int count
+    QString filename;
 
-    // Diffuse
-    radioDiffSolidParam
-    radioDiffRgbTexParam
-    checkBoxDiffModulateParam
+    switch(currentOptions_)
+    {
+    case Material_Diff:
+        filename = "SSDiff";
+        break;
+    case Material_Diffa:
+        filename = "SSDiffa";
+        break;
+    case Material_DiffAlphamask:
+        filename = "SSDiffAlphamask";
+        break;
+    case Material_DiffAnim:
+        filename = "SSDiffAnim";
+        break;
+    case Material_DiffNormal:
+        filename = "SSDiffNormal";
+        break;
+    case Material_DiffNormalLightmap:
+        filename = "SSDiffNormalLightmap";
+        break;
+    case Material_DiffNormalShadow:
+        filename = "SSDiffNormalShadow";
+        break;
+    case Material_DiffNormalShadowLightmap:
+        filename = "SSDiffNormalShadowLightmap";
+        break;
+    case Material_DiffReflAlpha:
+        filename = "SSDiffReflAlpha";
+        break;
+    case Material_DiffShadow:
+        filename = "SSDiffShadow";
+        break;
+    case Material_DiffShadowLightmap:
+        filename = "SSDiffShadowLightmap";
+        break;
+    case Material_DiffSpecflatShadow:
+        filename = "SSDiffSpecflatShadow";
+        break;
+    case Material_DiffSpecflatNormalShadowLum:
+        filename = "SSDiffSpecflatNormalShadowLum";
+        break;
+    case Material_DiffSpecmap:
+        filename = "SSDiffSpecmap";
+        break;
+    case Material_DiffSpecmapNormal:
+        filename = "SSDiffSpecmapNormal";
+        break;
+    case Material_DiffSpecmapNormalOpa:
+        filename = "SSDiffSpecmapNormalOpa";
+        break;
+    case Material_DiffSpecmapNormalShadow:
+        filename = "SSDiffSpecmapNormalShadow";
+        break;
+    case Material_DiffSpecmapNormalShadowLum:
+        filename = "SSDiffSpecmapNormalShadowLum";
+        break;
+    case Material_DiffSpecmapNormalShadowLumOpa:
+        filename = "SSDiffSpecmapNormalShadowLumOpa";
+        break;
+    case Material_DiffSpecmapRefl:
+        filename = "SSDiffSpecmapRefl";
+        break;
+    case Material_DiffSpecmapShadow:
+        filename = "SSDiffSpecmapShadow";
+        break;
+    case Material_DiffSpecmapShadowLum:
+        filename = "SSDiffSpecmapShadowLum";
+        break;
+    case Material_DiffSpecmapShadowLumOpa:
+        filename = "SSDiffSpecmapShadowLumOpa";
+        break;
+    case Material_DiffSpecmapShadowOpa:
+        filename = "SSDiffSpecmapShadowOpa";
+        break;
+    case Material_DiffSpecmapShadowRefl:
+        filename = "SSDiffSpecmapShadowRefl";
+        break;
+    case Material_None:
+    default:
+        break;
+    }
 
-    // Specular
-    radioSpecNoneParam
-    radioSpecRgbTexParam
-    radioSpecRgbTexParam
+    return filename;
+}
 
-    // Alpha
-    radioAlphaNoneParam
-    radioAlphaSolidParam
-    radioAlphaSeparateParam
-    radioAplhaUseChanFromDiffMapParam
-    checkBoxAlphaMaskingParam
-
-    // Misc
-    // Anim only if DIFFUSE_MAPPING and no nothing else.
-    checkBoxAnimParam
-
-        Material_None                           = 0,
-        Material_Diff                           = Material_None | MWO_DiffuseMap,
-        Material_Diffa                          = Material_Diff | MWO_DiffuseAlpha,
-        Material_DiffAlphamask                  = Material_Diff | MWO_AlphaMasking,
-        Material_DiffAnim                       = Material_Diff | MWO_Animation,
-        Material_DiffNormal                     = Material_Diff | MWO_NormalMap,
-        Material_DiffNormalLightmap             = Material_DiffNormal | MWO_LightMap,
-        Material_DiffNormalShadow               = Material_DiffNormal | MWO_ReceivesShadows,
-        Material_DiffNormalShadowLightmap       = Material_DiffNormalShadow | MWO_LightMap,
-        Material_DiffReflAlpha                  = Material_Diff | MWO_ReflectionMap | MWO_AlphaSolid,
-        Material_DiffShadow                     = Material_Diff | MWO_ReceivesShadows,
-        Material_DiffShadowLightmap             = Material_DiffShadow | MWO_LightMap,
-        Material_DiffSpecflatNormalShadowLum    = Material_Diff | MWO_SpecularSolid | MWO_NormalMap | MWO_ReceivesShadows | MWO_LuminanceMap,
-        Material_DiffSpecflatShadow             = Material_Diff | MWO_SpecularSolid | MWO_ReceivesShadows,
-        Material_DiffSpecmap                    = Material_Diff | MWO_SpecularMap,
-        Material_DiffSpecmapNormal              = Material_DiffSpecmap | MWO_NormalMap,
-        Material_DiffSpecmapNormalOpa           = Material_DiffSpecmapNormal | MWO_Opacity,
-        Material_DiffSpecmapNormalShadow        = Material_DiffSpecmapNormal | MWO_ReceivesShadows,
-        Material_DiffSpecmapNormalShadowLum     = Material_DiffSpecmap | MWO_ReceivesShadows | MWO_LuminanceMap,
-        Material_DiffSpecmapNormalShadowLumOpa  = Material_DiffSpecmap | MWO_NormalMap | MWO_ReceivesShadows | MWO_LuminanceMap | MWO_Opacity,
-        Material_SpecmapRefl                    = Material_DiffSpecmap | MWO_ReflectionMap,
-        Material_DiffSpecmapShadow              = Material_DiffSpecmap | MWO_ReceivesShadows,
-        Material_DiffSpecmapShadowLum           = Material_DiffSpecmapShadow | MWO_LuminanceMap,
-        Material_DiffSpecmapShadowLumOpa        = Material_DiffSpecmapShadowLum | MWO_Opacity,
-        Material_DiffSpecmapShadowOpa           = Material_DiffSpecmapShadow | MWO_Opacity,
-        Material_DiffSpecmapShadowRefl          = Material_DiffSpecmapShadow | MWO_ReflectionMap,
-
-    // Lightmap choosable with 1)normal, 2)normal+shadow, 3)shadow
-    //checkBoxLightParam
-
-    // Lum choosable with 1)Specflat+Normal+Shadow 2) Specmap+Normal+Shadow
-    //checkBoxLumParam
-
-    // Opa Choosable with 2)DiffSpecmapNormal 2)DiffSpecmapNormalShadowLum 3)DiffSpecmapShadowLum
-    // 4)DiffSpecmapShadowOp
-
-    // Normal choosable with 1)DiffNormal 2)DiffNormalLightmap 3)DiffNormalShadow 4)DiffNormalShadowLightmap
-    // 5)DiffSpecflatNormalShadowLum 6)DiffSpecmapNormal 7)DiffSpecmapNormalOpa 8)DiffSpecmapNormalShadow 9)DiffSpecmapNormalShadowLum
-    // 10)DiffSpecmapNormalShadowLumOpa
-    //checkBoxNormalParam
-
-    // Refl choosable with 1)DiffReflAlpha 2)SpecmapRefl 3)DiffSpecmapShadowRefl
-    //checkBoxReflParam
-    
-
-    // 1)DiffNormalShadow 2)DiffNormalShadowLightmap
-    DiffShadow
-    DiffShadowLightmap
-    DiffSpecflatNormalShadowLum
-    DiffSpecflatShadow
-    DiffSpecmapNormalOpa
-    DiffSpecmapNormalShadow
-    DiffSpecmapNormalShadowLum
-    DiffSpecmapNormalShadowLumOpa
-    DiffSpecmapShadow
-    DiffSpecmapShadowLum
-    DiffSpecmapShadowLumOpa
-    DiffSpecmapShadowOpa
-    DiffSpecmapShadowRefl
-    checkBoxShadowParam
-
-/*
-    // available only with DiffAlphamask
-    QCheckBox *alphaMasking = mainWidget_->findChild<QCheckBox *>("checkBoxAlphaMasking");
-    if (1)
-        alphaMasking->setEnabled(false);
-    else
-        alphaMasking->setEnabled(true);
-*/
-
-
-    
-    //if (specSolid)
-    //SSDiffSpecflatNormalShadowLum.material  SpecSolid + Normal + Shadow + Lum
-    //SSDiffSpecflatShadow.material           SpecSolid + Shadow
-
-/*
+void MaterialWizard::ValidateScriptName(const QString &name)
+{
     QPushButton *buttonCreate = mainWidget_->findChild<QPushButton *>("buttonCreate");
-    QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
-    QString name = lineEditName->text();
-    if (name.isEmpty() || name.isNull())
+    if (name.isEmpty() || name.isNull() || GetCurrentMaterialFilename().isEmpty())
+    {
         buttonCreate->setEnabled(false);
+    }
     else
+    {
         buttonCreate->setEnabled(true);
-*/
+        scriptName_ = name;
+    }
 }
 
 }

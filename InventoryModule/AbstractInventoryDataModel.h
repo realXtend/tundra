@@ -93,8 +93,9 @@ namespace Inventory
 
         /// Uploads multiple files.
         /// @param filenames List of filenames.
+        /// @param item_names List of names for the items.
         /// @param parent_folder Destination folder in inventory for upload.
-        virtual void UploadFiles(QStringList &filenames, AbstractInventoryItem *parent_folder) = 0;
+        virtual void UploadFiles(QStringList &filenames, QStringList &item_names, AbstractInventoryItem *parent_folder) = 0;
 
         /// Uploads multiple files, uses data buffers.
         /// @param filenames List of filenames.

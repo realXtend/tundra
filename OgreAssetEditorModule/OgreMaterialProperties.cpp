@@ -527,20 +527,20 @@ QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantT
         str = "MATRIX_4X4";
         break;
     case GCT_INT1:
-        str = "GCT_INT1";
+        str = "INT1";
         break;
     case GCT_INT2:
-        str = "GCT_INT2";
+        str = "INT2";
         break;
     case GCT_INT3:
-        str = "GCT_INT3";
+        str = "INT3";
         break;
     case GCT_INT4:
-        str = "GCT_INT4";
+        str = "INT4";
         break;
     case GCT_UNKNOWN:
     default:
-        str = "GCT_UNKNOWN";
+        str = "UNKNOWN";
         break;
     };
 

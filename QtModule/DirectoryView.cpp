@@ -14,12 +14,11 @@ namespace QtUI
 {
 
 DirectoryView::DirectoryView(QObject *target, const char* slot, QWidget *parent) :
+    QWidget(parent),
     //QTreeView(0),
     fileModel_(0)
 {
-    setParent(parent);
-
-       // Create widget from ui file
+    // Create widget from ui file
     QUiLoader loader;
     QFile uiFile("./data/ui/fileview.ui");
     widget_= loader.load(&uiFile, 0);
@@ -29,10 +28,13 @@ DirectoryView::DirectoryView(QObject *target, const char* slot, QWidget *parent)
     QWidget *w = widget_->findChild<QWidget *>("widgetFileView");
     widget_->setParent(this);
     w->setParent(widget_);
-    QVBoxLayout *layout  = widget_->findChild<QVBoxLayout *>("verticalLayout_2");
+    QVBoxLayout *layout = widget_->findChild<QVBoxLayout *>("verticalLayout_2");
     layout->addWidget(w);
+
     treeView_ = new QTreeView(w);
+    ///\todo The usage of QDirModel is not recommended anymore. The QFileSystemModel class is a more performant alternative.
     fileModel_ = new QDirModel();
+    fileModel_->setSorting(QDir::DirsFirst | QDir::Type);
     treeView_->setModel(fileModel_);
     w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     treeView_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -65,13 +67,16 @@ DirectoryView::DirectoryView(QObject *target, const char* slot, QWidget *parent)
     treeView_->header()->moveSection(1, 2);
 
     connect(treeView_, SIGNAL(activated(const QModelIndex &)), this, SLOT(Activated())), 
+    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(Resize()));
     connect(this, SIGNAL(FilesChosen(const QStringList &)), target, slot);
 
-    setAttribute(Qt::WA_DeleteOnClose,true);
-    resize(300, 350);
-    treeView_->resize(299, 349);
+    setWindowTitle("Open");
 
+    setAttribute(Qt::WA_DeleteOnClose,true);
+
+    //treeView_->resize(299, 349);
     show();
+    adjustSize();
 }
 
 //virtual
@@ -92,7 +97,7 @@ void DirectoryView::Activated()
         if (fileModel_->isDir(index))
             continue;
 
-        filenames << fileModel_->filePath(index);;
+        filenames << fileModel_->filePath(index);
     }
 
     emit FilesChosen(filenames);

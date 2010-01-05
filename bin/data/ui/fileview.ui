@@ -88,6 +88,12 @@
              <height>288</height>
             </rect>
            </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
           </widget>
           <widget class="QWidget" name="widgetButtons" native="true">
            <property name="geometry">
