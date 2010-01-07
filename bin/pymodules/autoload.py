@@ -90,7 +90,7 @@ else:
 #~ else:
     #~ r.logDebug("   reloading headtrack.control")
     #~ headtrack.control = reload(headtrack.control)
-import headtrack.control
+#~ import headtrack.control
 
 try:
     import webserver.webcontroller

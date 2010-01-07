@@ -221,7 +221,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -851,7 +851,7 @@ class EditGUI(Component):
                 callback(True)
         
     def on_inboundnetwork(self, evid, name, callback):
-        pass
+        return False
         #print "editgui got an inbound network event:", id, name
 
     def on_exit(self):
@@ -863,8 +863,10 @@ class EditGUI(Component):
         #~ else:
             #~ r.logDebug("...not restarting...")
         
-        modu = r.getQtModule()
+        self.proxywidget.hide() #prevent a crash at exit
+        
         if 0: #XXX self.canvas is not None:
+            modu = r.getQtModule()
             modu.DeleteCanvas(self.canvas)
 
         #r.logDebug("   ...exit done.")

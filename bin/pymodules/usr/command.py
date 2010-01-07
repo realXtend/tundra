@@ -741,7 +741,7 @@ if 0:
     line = QLineEdit()
     box.addWidget(line)
 
-if 1:
+if 0:
     r.randomTest()
     #print qm, dir(qm)
     #~ print r.c.widget, r.c.proxywidget
@@ -754,3 +754,8 @@ if 0:
     worldstream = r.getServerConnection()
     print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])
 
+if 0: 
+    print r.c, dir(r.c)
+    print r.c.widget
+    print dir(r.c.proxywidget)
+    r.c.proxywidget.hide()
