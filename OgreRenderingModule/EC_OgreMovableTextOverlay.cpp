@@ -24,7 +24,6 @@ EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface
     text_element_(0),
     container_(0),
     overlay_(0),
-    camera_(0),
     font_(0),
     node_(0),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
@@ -37,9 +36,9 @@ EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface
     text_(""),
     attached_(false)
 {
-    camera_ = renderer_.lock()->GetCurrentCamera();
-    windowWidth_ = camera_->getViewport()->getActualWidth();
-    windowHeight_ = camera_->getViewport()->getActualHeight();
+    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
+    windowWidth_ = viewport->getActualWidth();
+    windowHeight_ = viewport->getActualHeight();
 }
 
 // virtual
@@ -80,13 +79,14 @@ void EC_OgreMovableTextOverlay::Update()
         return;
     }
 
-    // This is possibly an evil thing to do but gets rid of overlay stuttering.
-    node_->_update(true, true);
+    Ogre::Camera* camera = renderer_.lock()->GetCurrentCamera();
+    if (!camera) return;
+    Ogre::Viewport* viewport = camera->getViewport();
 
     Ogre::Vector3 point = node_->_getDerivedPosition();
 
     // Is the camera facing that point? If not, hide the overlay and return.
-    Ogre::Plane cameraPlane = Ogre::Plane(Ogre::Vector3(camera_->getDerivedOrientation().zAxis()), camera_->getDerivedPosition());
+    Ogre::Plane cameraPlane = Ogre::Plane(Ogre::Vector3(camera->getDerivedOrientation().zAxis()), camera->getDerivedPosition());
     if(cameraPlane.getSide(point) != Ogre::Plane::NEGATIVE_SIDE)
     {
         overlay_->hide();
@@ -94,7 +94,7 @@ void EC_OgreMovableTextOverlay::Update()
     }
 
     // Hide the overlay if it's too far.
-    Ogre::Vector3 res = camera_->getPosition() - point;
+    Ogre::Vector3 res = camera->getDerivedPosition() - point;
     float distance = sqrt(res.x * res.x + res.y * res.y + res.z * res.z);
 
     if (distance > MAX_VISIBILITY_DISTANCE)
@@ -108,7 +108,7 @@ void EC_OgreMovableTextOverlay::Update()
         SetAlphaChannelIntensity(distance);
 
     // Derive the 2D screen-space coordinates for node point.
-    point = camera_->getProjectionMatrix() * (camera_->getViewMatrix() * point);
+    point = camera->getProjectionMatrix() * (camera->getViewMatrix() * point);
 
     // Transform from coordinate space [-1, 1] to [0, 1]
     float x = (point.x / 2) + 0.5f;
@@ -118,11 +118,11 @@ void EC_OgreMovableTextOverlay::Update()
     container_->setPosition(x - (textDim_.x / 2), y);
 
     // Update the dimensions also if the window is resized.
-    if (windowWidth_ != camera_->getViewport()->getActualWidth() ||
-        windowHeight_ != camera_->getViewport()->getActualHeight())
+    if (windowWidth_ != viewport->getActualWidth() ||
+        windowHeight_ != viewport->getActualHeight())
     {
-        windowWidth_ = camera_->getViewport()->getActualWidth();
-        windowHeight_ = camera_->getViewport()->getActualHeight();
+        windowWidth_ = viewport->getActualWidth();
+        windowHeight_ = viewport->getActualHeight();
         
         textDim_ = GetTextDimensions(text_);
         container_->setDimensions(textDim_.x, textDim_.y);
@@ -307,9 +307,13 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Vector3df& offset)
 }
 
 Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &text)
-{
+{        
     float charHeight = Ogre::StringConverter::parseReal(font_->getParameter("size"));
     Ogre::Vector2 result(0, 0);
+    
+    if (renderer_.expired())
+        return result;
+    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();        
     
     for(std::string::const_iterator it = text.begin(); it < text.end(); ++it)
     {
@@ -319,8 +323,8 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
             result.x += font_->getGlyphAspectRatio(*it);
     }
     
-    result.x = (result.x * charHeight) / (float)camera_->getViewport()->getActualWidth();
-    result.y = charHeight / (float)camera_->getViewport()->getActualHeight();
+    result.x = (result.x * charHeight) / (float)viewport->getActualWidth();
+    result.y = charHeight / (float)viewport->getActualHeight();
 
     return result;
 }

@@ -50,6 +50,9 @@ namespace RexLogic
         //! update camera simulation for all controllable cameras
         void AddTime(f64 frametime);
 
+        //! set camera entity
+        void SetCameraEntity(Scene::EntityPtr camera);
+
         //! returns camera pitch
         Real GetPitch() const { return firstperson_pitch_; }
 		void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
@@ -62,6 +65,9 @@ namespace RexLogic
 
         //! Entity this camera is attached to in third / first person modes
         Scene::EntityWeakPtr target_entity_;
+        
+        //! Camera entity
+        Scene::EntityWeakPtr camera_entity_;
 
         //! current camera distance from target
         Real camera_distance_;

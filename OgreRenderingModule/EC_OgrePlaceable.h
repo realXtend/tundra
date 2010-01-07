@@ -44,6 +44,24 @@ namespace OgreRenderer
         /*! \param orientation new orientation
          */
         void SetOrientation(const Quaternion& orientation);
+
+        //! orients to look at a point in space
+        /*! \param look_at point to look at
+         */
+        void LookAt(const Vector3df& look_at);        
+        //! yaws the node
+        /*! \param radians how many radians to yaw
+         */
+        void Yaw(Real radians);
+        //! pitches the node
+        /*! \param radians how many radians to yaw
+         */
+        void Pitch(Real radians);        
+        //! rolls the node
+        /*! \param radians how many radians to yaw
+         */
+        void Roll(Real radians);           
+        
         //! sets scale
         /*! \param scale new scale
          */

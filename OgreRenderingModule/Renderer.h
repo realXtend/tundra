@@ -25,6 +25,7 @@ namespace Ogre
     class Camera;
     class RenderWindow;
     class RaySceneQuery;
+    class Viewport;
     class Mesh;
 }
 
@@ -131,7 +132,13 @@ namespace OgreRenderer
         //! Returns Ogre scenemanager
         Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
         
+        //! Returns Ogre viewport
+        Ogre::Viewport* GetViewport() const { return viewport_; }
+        
         //! Returns active camera
+        /*! Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
+            and use the EC_OgreCamera entity component + its placeable
+         */ 
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
