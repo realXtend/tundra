@@ -70,6 +70,11 @@ namespace OgreRenderer
         //! returns whether camera is active in the viewport
         bool IsActive() const;
         
+        //! returns the actual Ogre camera.
+        /*! use with caution. never set the position of the camera directly, use the placeable component for that.
+         */
+        Ogre::Camera* GetCamera() { return camera_; }
+                
     private:
         //! constructor
         /*! \param module renderer module
