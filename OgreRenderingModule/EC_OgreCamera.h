@@ -38,6 +38,38 @@ namespace OgreRenderer
          */
         void SetPlaceable(Foundation::ComponentPtr placeable);
  
+        //! sets as active camera in the viewport
+        void SetActive();
+        
+        //! sets near clip distance
+        /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+            \param nearclip new near clip distance
+         */ 
+        void SetNearClip(Real nearclip);
+        
+        //! sets far clip distance
+        /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+            \param farclip new far clip distance
+         */         
+        void SetFarClip(Real farclip);
+        
+        //! sets vertical fov 
+        /*! \param fov new vertical fov in radians 
+         */
+        void SetVerticalFov(Real fov);
+        
+        //! returns near clip distance
+        Real GetNearClip() const;
+        
+        //! returns far clip distance
+        Real GetFarClip() const;
+        
+        //! returns vertical fov as radians
+        Real GetVerticalFov() const;
+        
+        //! returns whether camera is active in the viewport
+        bool IsActive() const;
+        
     private:
         //! constructor
         /*! \param module renderer module

@@ -112,9 +112,6 @@ namespace OgreRenderer
         //! Attached to parent-flag
         bool attached_;
 
-        //! Camera.
-        const Ogre::Camera *camera_;
-
         //! Unique object name for the overlay.
         std::string overlayName_;
 

@@ -35,6 +35,7 @@
 // Ogre -specific
 #include "Renderer.h"
 #include "OgreTextureResource.h"
+#include "EC_OgreCamera.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
@@ -225,14 +226,6 @@ void RexLogicModule::PostInitialize()
             &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
     else
         LogError("Unable to find event category for Framework");
-
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (renderer.get())
-    {
-        Ogre::Camera *cam = renderer->GetCurrentCamera();
-        cam->setPosition(-10, -10, -10);
-        cam->lookAt(0,0,0);
-    }
 
     send_input_state_ = true;
 
@@ -425,24 +418,13 @@ void RexLogicModule::Update(f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return;
-
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    if (!camera)
-        return;
-
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return;
 
-    Ogre::Vector3 pos = camera->getPosition();
-    Ogre::Quaternion orient = camera->getOrientation();
-
     soundsystem->SetListener(
-        Vector3df(pos.x, pos.y, pos.z),
-        Quaternion(orient.x, orient.y, orient.z, orient.w)
+        GetCameraPosition(),
+        GetCameraOrientation()
     );
 }
 
@@ -525,34 +507,40 @@ entity_id_t RexLogicModule::GetUserAvatarId()
 
 Vector3df RexLogicModule::GetCameraUp()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return Vector3df();
-
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Vector3 up = camera->getUp();
-    return Vector3df(up.x, up.y, up.z);
+    if (camera_entity_.expired())
+        return Vector3df(0.0f,0.0f,0.0f);
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+    if (!placeable_ptr)
+        return Vector3df(0.0f,0.0f,0.0f);
+        
+    //! \todo check if Ogre or OpenSim axis convention should actually be used
+    return placeable_ptr->GetOrientation() * Vector3df(0.0f,1.0f,0.0f);
 }
 
 Vector3df RexLogicModule::GetCameraRight()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return Vector3df();
-
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Vector3 right = camera->getRight();
-    return Vector3df(right.x, right.y, right.z);
+    if (camera_entity_.expired())
+        return Vector3df(0.0f,0.0f,0.0f);
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+    if (!placeable_ptr)
+        return Vector3df(0.0f,0.0f,0.0f);
+        
+    //! \todo check if Ogre or OpenSim axis convention should actually be used
+    return placeable_ptr->GetOrientation() * Vector3df(1.0f,0.0f,0.0f);
 }
 
 Real RexLogicModule::GetCameraFOV()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return 0;
-
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    return (Real)camera->getFOVy().valueRadians();
+    if (camera_entity_.expired())
+        return 0.0f;
+    Foundation::ComponentPtr camera = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgreCamera::NameStatic());
+    OgreRenderer::EC_OgreCamera* camera_ptr = dynamic_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+    if (!camera_ptr)
+        return 0.0f;
+        
+    return camera_ptr->GetVerticalFov(); 
 }
 
 Real RexLogicModule::GetCameraViewportWidth()
@@ -560,9 +548,8 @@ Real RexLogicModule::GetCameraViewportWidth()
     OgreRenderer::RendererPtr renderer = GetRendererPtr();
     if (!renderer.get())
         return 0;
-
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Viewport *viewport = camera->getViewport();
+        
+    Ogre::Viewport *viewport = renderer->GetViewport();
     return viewport->getActualWidth();
 }
 
@@ -572,17 +559,32 @@ Real RexLogicModule::GetCameraViewportHeight()
     if (!renderer.get())
         return 0;
 
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Viewport *viewport = camera->getViewport();
+    Ogre::Viewport *viewport = renderer->GetViewport();
     return viewport->getActualHeight();
 }
 
 Vector3df RexLogicModule::GetCameraPosition()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Vector3 pos = camera->getPosition();
-    return Vector3df(pos.x, pos.y, pos.z);;
+    if (camera_entity_.expired())
+        return Vector3df(0.0f,0.0f,0.0f);
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+    if (!placeable_ptr)
+        return Vector3df(0.0f,0.0f,0.0f);
+           
+    return placeable_ptr->GetPosition();
+}
+
+Quaternion RexLogicModule::GetCameraOrientation()
+{
+    if (camera_entity_.expired())
+        return Quaternion::IDENTITY;
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+    if (!placeable_ptr)
+        return Quaternion::IDENTITY;
+           
+    return placeable_ptr->GetOrientation();
 }
 
 void RexLogicModule::SendRexPrimData(entity_id_t entityid)
@@ -716,9 +718,30 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     activeScene_ = framework_->CreateScene(name);
     framework_->SetDefaultWorldScene(activeScene_);
 
+    // Create camera entity into the scene
+    {
+        Foundation::ComponentPtr placeable = GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        Foundation::ComponentPtr camera = GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::NameStatic());                
+
+        if ((placeable) && (camera))
+        {    
+            Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());        
+            
+            entity->AddEntityComponent(placeable);
+            entity->AddEntityComponent(camera);
+            
+            OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+            camera_ptr->SetPlaceable(placeable);        
+            camera_ptr->SetActive();
+            camera_entity_ = entity;
+            // Set camera controllable to use this camera entity. Note: it's a weak pointer so will not keep the camera alive needlessly
+            camera_controllable_->SetCameraEntity(entity);
+        }
+    }    
+
     event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
     if (scene_event_category == 0)
-        LogError("Failed to query \"Framework\" event category");
+        LogError("Failed to query \"Scene\" event category");
 
     // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
     // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course

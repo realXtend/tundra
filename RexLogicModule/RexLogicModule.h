@@ -104,6 +104,9 @@ namespace RexLogic
         //! Returns the avatar controllable
         AvatarControllablePtr GetAvatarControllable()  const { return avatar_controllable_; }
 
+        //! Return camera entity. Note: may be expired if scene got deleted and new scene not created yet
+        Scene::EntityWeakPtr GetCameraEntity() const { return camera_entity_; }
+        
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
@@ -193,6 +196,7 @@ namespace RexLogic
         Vector3df GetCameraUp();
         Vector3df GetCameraRight();
         Vector3df GetCameraPosition();
+        Quaternion GetCameraOrientation();
         Real GetCameraViewportWidth();
         Real GetCameraViewportHeight();
 
@@ -235,17 +239,20 @@ namespace RexLogic
         //! Event handler map.
         LogicEventHandlerMap event_handlers_;
 
-        //! Avatar pointer.
+        //! Avatar handler pointer.
         AvatarPtr avatar_;
 
         //! Avatar editor pointer.
         AvatarEditorPtr avatar_editor_;
 
-        //! Primitive pointer.
+        //! Primitive handler pointer.
         PrimitivePtr primitive_;
 
         //! Active scene pointer.
         Scene::ScenePtr activeScene_;
+        
+        //! Current camera entity
+        Scene::EntityWeakPtr camera_entity_;
 
 #ifdef _DEBUG
         /// Checks the currently active camera that its transformation is correct, and logs into debug output

@@ -98,7 +98,7 @@ void EC_OgreEnvironment::SetBackgoundColor(const Color &color)
         return;
     RendererPtr renderer = renderer_.lock();
     
-    renderer->GetCurrentCamera()->getViewport()->setBackgroundColour(ToOgreColor(color));
+    renderer->GetViewport()->setBackgroundColour(ToOgreColor(color));
 }
 
 Color EC_OgreEnvironment::GetBackgoundColor() const
@@ -107,7 +107,7 @@ Color EC_OgreEnvironment::GetBackgoundColor() const
         return Color(0.0f, 0.0f, 0.0f, 0.0f);
     RendererPtr renderer = renderer_.lock();
     
-    return ToCoreColor(renderer->GetCurrentCamera()->getViewport()->getBackgroundColour());
+    return ToCoreColor(renderer->GetViewport()->getBackgroundColour());
 }
 
 void EC_OgreEnvironment::SetAmbientLightColor(const Color &color)
@@ -218,6 +218,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         return;
     RendererPtr renderer = renderer_.lock();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
+    Ogre::Viewport *viewport = renderer->GetViewport();
     Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
         
 #ifdef CAELUM
@@ -298,19 +299,19 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     {
         // No water entity. ///\todo Test. Prolly crashes here.
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
-        camera->getViewport()->setBackgroundColour(fogColor_);
+        viewport->setBackgroundColour(fogColor_);
         camera->setFarClipDistance(cameraFarClip_);
     }
     else 
     {
-        if(camera->getPosition().z >= water->getParentNode()->getPosition().z)
+        if(camera->getDerivedPosition().z >= water->getParentNode()->getPosition().z)
         {
             // We're above the water.
     #ifdef CAELUM
             caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
     #endif
             sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
-            camera->getViewport()->setBackgroundColour(fogColor_);
+            viewport->setBackgroundColour(fogColor_);
             camera->setFarClipDistance(cameraFarClip_);
             cameraUnderWater_ = false;
         }
@@ -322,7 +323,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
             caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
     #endif
             sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
-            camera->getViewport()->setBackgroundColour(fogColor_ * waterFogColor_);
+            viewport->setBackgroundColour(fogColor_ * waterFogColor_);
             camera->setFarClipDistance(waterFogEnd_ + 10.f);
             cameraUnderWater_ = true;
         }
@@ -414,7 +415,7 @@ void EC_OgreEnvironment::InitHydrax()
 
     // Create Hydrax system.
     hydraxSystem_ = new Hydrax::Hydrax(renderer->GetSceneManager(), renderer->GetCurrentCamera(),
-        renderer->GetCurrentCamera()->getViewport());
+        renderer->GetViewport());
 
     // Create noise module. 
     noiseModule_ = new Hydrax::Noise::Perlin(Hydrax::Noise::Perlin::Options(8, 1.15f, 0.49f, 1.14f, 1.27f));

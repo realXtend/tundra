@@ -22,6 +22,9 @@ namespace OgreRenderer
         link_scene_node_ = scene_mgr->createSceneNode();
         scene_node_ = scene_mgr->createSceneNode();
         link_scene_node_->addChild(scene_node_);
+        
+        // In case the placeable is used for camera control, set fixed yaw axis
+        link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);            
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -92,10 +95,33 @@ namespace OgreRenderer
         link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }
     
+    void EC_OgrePlaceable::LookAt(const Vector3df& look_at)
+    {
+        // Don't rely on the stability of the lookat (since it uses previous orientation), 
+        // so start in identity transform
+        link_scene_node_->setOrientation(Ogre::Quaternion::IDENTITY);
+        link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);        
+    }
+    
+    void EC_OgrePlaceable::Yaw(Real radians)
+    {
+        link_scene_node_->yaw(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
+    }
+
+    void EC_OgrePlaceable::Pitch(Real radians)
+    {
+        link_scene_node_->pitch(Ogre::Radian(radians));
+    }
+ 
+   void EC_OgrePlaceable::Roll(Real radians)
+    {
+        link_scene_node_->roll(Ogre::Radian(radians));
+    } 
+    
     void EC_OgrePlaceable::SetScale(const Vector3df& scale)
     {
         scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
-    }
+    }       
 
     void EC_OgrePlaceable::AttachNode()
     {

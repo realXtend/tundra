@@ -40,8 +40,8 @@ namespace OgreRenderer
         {
             if (rw == renderer_->renderwindow_)
             {
-                //if (renderer_->camera_)
-                //    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
+                if (renderer_->camera_)
+                    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
 
                 Events::WindowResized data(rw->getWidth(), rw->getHeight());
                 renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Events::WINDOW_RESIZED, &data);         
@@ -347,7 +347,7 @@ namespace OgreRenderer
         default_camera_->setFarClipDistance(2000.f);
         default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
         default_camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
-        //default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
+        default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
         default_camera_->setAutoAspectRatio(true);
 
         camera_ = default_camera_;
@@ -410,8 +410,8 @@ namespace OgreRenderer
             renderwindow_->resize(width, height);
             renderwindow_->windowMovedOrResized();
 
-            //if (camera_)
-            //    camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
+            if (camera_)
+                camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
 
             Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
             framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);
@@ -422,6 +422,7 @@ namespace OgreRenderer
     {
         if (!camera) 
             camera = default_camera_;
+            
         if (viewport_)
         {
             viewport_->setCamera(camera);

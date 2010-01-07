@@ -17,17 +17,14 @@ namespace OgreRenderer
     {   
         RendererPtr renderer = renderer_.lock();               
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(); 
+        Ogre::Viewport* viewport = renderer->GetViewport();
         camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());  
         
         // Set default values for the camera
         camera_->setNearClipDistance(0.1f);
         camera_->setFarClipDistance(2000.f);
         
-        // Roll the view because of OpenSim coordinate axes
-        camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
-        camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
-        
-        // Respond to viewport size automatically
+        camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
         camera_->setAutoAspectRatio(true);
     }
     
@@ -37,10 +34,14 @@ namespace OgreRenderer
             return;
             
         DetachCamera();
-        
+                       
         if (camera_)
-        {
+        {           
             RendererPtr renderer = renderer_.lock();               
+         
+            if (renderer->GetCurrentCamera() == camera_)
+                renderer->SetCurrentCamera(0);
+                
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();         
             scene_mgr->destroyCamera(camera_);
             camera_ = 0;       
@@ -58,6 +59,52 @@ namespace OgreRenderer
         DetachCamera();
         placeable_ = placeable;
         AttachCamera();
+    }
+    
+    void EC_OgreCamera::SetNearClip(Real nearclip)
+    {
+        camera_->setNearClipDistance(nearclip);    
+    }
+    
+    void EC_OgreCamera::SetFarClip(Real farclip)
+    {
+        camera_->setFarClipDistance(farclip);
+    }
+    
+    void EC_OgreCamera::SetVerticalFov(Real fov)
+    {
+        camera_->setFOVy(Ogre::Radian(fov));
+    }
+    
+    void EC_OgreCamera::SetActive()
+    {
+        if (renderer_.expired())
+            return;           
+        RendererPtr renderer = renderer_.lock();
+        renderer->SetCurrentCamera(camera_);
+    }
+    
+    Real EC_OgreCamera::GetNearClip() const
+    {
+        return camera_->getNearClipDistance();
+    }
+
+    Real EC_OgreCamera::GetFarClip() const
+    {
+        return camera_->getFarClipDistance();
+    }
+    
+    Real EC_OgreCamera::GetVerticalFov() const
+    {
+        return camera_->getFOVy().valueRadians();
+    }  
+    
+    bool EC_OgreCamera::IsActive() const
+    {
+        if (renderer_.expired())
+            return false;           
+        RendererPtr renderer = renderer_.lock();    
+        return renderer->GetCurrentCamera() == camera_;
     }
     
     void EC_OgreCamera::DetachCamera()
