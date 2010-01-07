@@ -90,10 +90,10 @@ namespace RexLogic
         if (event_id == Input::Events::SCROLL)
         {
             CameraZoomEvent event_data;
-            //event_data.entity = entity_.lock(); // no entity for camera, :( -cm
+            event_data.entity = camera_entity_.lock();
             event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
-            //if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
-            framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
+            if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
+                framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
         }
 
         return false;
