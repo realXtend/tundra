@@ -246,8 +246,6 @@ void EC_OgreEnvironment::SetTime(Real time)
     int minutes = ((int)(time * 24.0*60.0)) % 60;
     int seconds = ((int)(time * 24.0*60.0*60.0)) % 60;
     
-    std::cout << hours << ":" << minutes << ":" << seconds << std::endl;
-    
 #ifdef CAELUM
     // Note: we actually don't use year/month/day, because then worlds would look different
     // based on real-life time of year
