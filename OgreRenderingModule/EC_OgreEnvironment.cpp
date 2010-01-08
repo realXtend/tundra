@@ -50,7 +50,8 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     waterFogColor_(0.2f, 0.4f, 0.35f),
     cameraNearClip_(0.5f),
     cameraFarClip_(500.f), 
-    fog_color_override_(false)
+    fog_color_override_(false),
+    override_flags_(None)
 {
 #ifdef CAELUM
     InitCaelum();
@@ -118,6 +119,13 @@ void EC_OgreEnvironment::SetAmbientLightColor(const Color &color)
     
     Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setAmbientLight(ToOgreColor(color));
+    
+    // Assure that there is "not" None-flag set. 
+    if ( override_flags_.testFlag(None))
+        override_flags_ &= ~None;
+    
+    override_flags_|=AmbientLight;
+    userAmbientLight_ = ToOgreColor(color);
 }
 
 Color EC_OgreEnvironment::GetAmbientLightColor() const
@@ -132,8 +140,26 @@ Color EC_OgreEnvironment::GetAmbientLightColor() const
 
 void EC_OgreEnvironment::SetSunColor(const Color &color)
 {
+#ifdef CAELUM 
+    if ( caelumSystem_ != 0)
+    {
+        Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
+        if ( sun != 0)
+        {          
+            sun->setLightColour(ToOgreColor(color));
+            
+             // Assure that there is "not" None-flag set. 
+            if ( override_flags_.testFlag(None))
+                override_flags_ &= ~None;
+
+            override_flags_|=SunColor;
+            userSunColor_ = ToOgreColor(color); 
+        } 
+    }
+#else
     if (sunlight_)
         sunlight_->setDiffuseColour(ToOgreColor(color));
+#endif
 }
 
 Color EC_OgreEnvironment::GetSunColor() const
@@ -158,8 +184,27 @@ Color EC_OgreEnvironment::GetSunColor() const
 
 void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 {
+#ifdef CAELUM 
+    if ( caelumSystem_ != 0)
+    {
+        Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
+        if ( sun != 0)
+        {
+            sun->setLightDirection(ToOgreVector3(direction));
+            
+            // Assure that there is "not" None-flag set. 
+            if ( override_flags_.testFlag(None))
+                override_flags_ &= ~None;
+            
+            override_flags_|=SunDirection;
+            userSunDirection_ = ToOgreVector3(direction);
+        }
+    }
+#else
     if (sunlight_)
         sunlight_->setDirection(ToOgreVector3(direction));
+#endif
+
 }
 
 Vector3df EC_OgreEnvironment::GetSunDirection() const
@@ -246,11 +291,6 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         if (sunColorMultiplier_ >= MAX_SUNLIGHT_MULTIPLIER)
             sunColorMultiplier_ = MAX_SUNLIGHT_MULTIPLIER;
     }
-
-    // Get the sky/sunlight and fog colors from Caelum.
-    float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
-    float relDayTime = fmod(julDay, 1);
-    Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
     
     if ( !fog_color_override_)
         fogColor_ = caelumSystem_->getGroundFog()->getColour();
@@ -264,35 +304,19 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     // Disable specular from the sun & moon for now, because it easily leads to too strong results
     sun->setSpecularColour(0.0f, 0.0f, 0.0f);
     moon->setSpecularColour(0.0f, 0.0f, 0.0f);
-    
-    // Get the sun's position. The magic number 80000 is from "Nature" demo app, found from OGRE forum.
-    // This would be used for Hydrax.
-//    Ogre::Vector3 sunPos = camera->getPosition();
-//    sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
 #endif
 
 #ifdef HYDRAX
+    
     // Update Hydrax system.
     hydraxSystem_->update(frametime);
-
-    //Ogre::Vector3 origPos(-5000, -5000, 20);
-    //hydraxSystem_->setPosition(origPos);
-
     sunPos = camera->getPosition();
     sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
-
-    //Ogre::Vector3 flippedSunPos(sunPos.y, sunPos.z, sunPos.x);
     hydraxSystem_->setSunPosition(sunPos);
-    //hydraxSystem_->setPosition(Ogre::Vector3(-5000, 20, -5000));
-    //hydraxSystem_->setVisible(true);
 
-//        Ogre::Vector3 cam_pos = hydraxSystem_->getCamera()->getPosition();
-//        hydraxSystem_->getCamera()->setPosition(cam_pos);
-//    std::cout << "C " << hydraxSystem_->getMesh()->getSceneNode()->getPosition() << std::endl;
-//        std::cout << "D " << hydraxSystem_->getRttManager()->getPlanesSceneNode()->getPosition()<< std::endl;
+
 #endif
 
-    // Set fogging
     Ogre::Entity* water = 0;
     
     if ( sceneManager->hasEntity("WaterEntity") )
@@ -300,7 +324,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
               
     if (!water)
     {
-        // No water entity. ///\todo Test. Prolly crashes here.
+        // No water entity, set fog value.
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
         viewport->setBackgroundColour(fogColor_);
         camera->setFarClipDistance(cameraFarClip_);
@@ -310,9 +334,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         if(camera->getDerivedPosition().z >= water->getParentNode()->getPosition().z)
         {
             // We're above the water.
-    #ifdef CAELUM
+#ifdef CAELUM
             caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
-    #endif
+#endif
             sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
             viewport->setBackgroundColour(fogColor_);
             camera->setFarClipDistance(cameraFarClip_);
@@ -321,17 +345,70 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         else
         {
             // We're below the water.
-    #ifdef CAELUM
+#ifdef CAELUM
             // Hide the Caelum subsystems.
             caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-    #endif
+#endif
             sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
             viewport->setBackgroundColour(fogColor_ * waterFogColor_);
             camera->setFarClipDistance(waterFogEnd_ + 10.f);
             cameraUnderWater_ = true;
         }
     }
+
+#ifdef CAELUM 
+    // If sun color and direction are controlled by user then their value are needed to override here. 
+    // internally caelum calculates new values for those so they are needed to set again in each update loop.
+
+    if ( override_flags_.testFlag(None) )
+        return;
+
+    if ( override_flags_.testFlag(AmbientLight))
+    {   
+        // Override ambient light.
+        sceneManager->setAmbientLight(userAmbientLight_);
+    }
+
+    if ( override_flags_.testFlag(SunDirection) )
+    {
+        // Override sun direction.
+        if ( sun != 0 )
+            sun->setDirection(userSunDirection_);
+    }
+
+    if ( override_flags_.testFlag(SunColor) )
+    {
+        // Override sun color. 
+        if ( sun != 0 )
+            sun->setDiffuseColour(userSunColor_);
+    }
+#endif 
+
 }
+ 
+void EC_OgreEnvironment::SetOverride(VisualEffectOverride effect)
+{
+    // Note: None override is a god-mode override, then caelum is used. 
+    if ( effect == None )
+        override_flags_ = QFlags<VisualEffectOverride>(None);
+    else
+    {
+        // Assure that there is "not" None-flag set. 
+        if ( override_flags_.testFlag(None))
+            override_flags_ &= ~None;
+        
+        override_flags_ |= effect;   
+        
+    }
+
+}
+
+void EC_OgreEnvironment::DisableOverride(VisualEffectOverride effect)
+{
+     if ( override_flags_.testFlag(effect))
+        override_flags_ &= ~effect;    
+}
+
 
 void EC_OgreEnvironment::DisableFog()
 {

@@ -10,6 +10,7 @@
 #include <QPair>
 
 class QImage;
+class QColorDialog;
 
 namespace Resource
 {
@@ -132,6 +133,9 @@ namespace Environment
         void ToggleFogOverride();
 
         void UpdateAmbient();
+        void UpdateSunDirection(double value);
+        void ShowColorPicker();
+        void UpdateColor(const QColor& color);
 
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
@@ -151,6 +155,9 @@ namespace Environment
         //! @Param index for terrain_texture_id_list_ that holds the uuid that we want to use to request the resource that we need. Range should be [0 - 3].
         //! @Return request tag for the texture.
         request_tag_t RequestTerrainTexture(uint index);
+
+        QWidget* GetPage(const QString& name);
+        QWidget* GetCurrentPage();
 
         //! Asset_tags for terrain texture requests.
         std::vector<request_tag_t> terrain_texture_requests_;
@@ -185,6 +192,8 @@ namespace Environment
         /// Proxy Widget for ui
         UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
 
+        QColorDialog* color_picker_;
+        bool ambient_;
         //! Mouse press flags
         //u8 mouse_press_flag_;
 
