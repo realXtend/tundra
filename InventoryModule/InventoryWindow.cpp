@@ -242,7 +242,7 @@ void InventoryWindow::InitInventoryWindow()
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile uiFile("./data/ui/inventory2.ui");
+    QFile uiFile("./data/ui/inventory.ui");
     inventoryWidget_ = loader.load(&uiFile, 0);
     inventoryWidget_->resize(300, 350);
     uiFile.close();
