@@ -528,6 +528,7 @@ QString MaterialWizard::GetCurrentMaterialFilename()
         break;
     case Material_None:
     default:
+        filename = "This combination is not currently supported!";
         break;
     }
 
@@ -538,14 +539,11 @@ void MaterialWizard::ValidateScriptName(const QString &name)
 {
     QPushButton *buttonCreate = mainWidget_->findChild<QPushButton *>("buttonCreate");
     if (name.isEmpty() || name.isNull() || GetCurrentMaterialFilename().isEmpty())
-    {
         buttonCreate->setEnabled(false);
-    }
     else
-    {
         buttonCreate->setEnabled(true);
-        scriptName_ = name;
-    }
+
+    scriptName_ = name;
 }
 
 }

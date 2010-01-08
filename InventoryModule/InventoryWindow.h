@@ -19,7 +19,6 @@
 QT_BEGIN_NAMESPACE
 class QPushButton;
 class QTreeWidgetItem;
-class QTreeView;
 class QItemSelection;
 class QModelIndex;
 class QMenu;
@@ -45,6 +44,7 @@ namespace UiServices
 
 namespace Inventory
 {
+    class InventoryTreeView;
     class InventoryItemEventData;
     class InventoryItemModel;
     class AbstractInventoryDataModel;
@@ -87,9 +87,11 @@ namespace Inventory
         /// Renames item (folder/asset).
         void RenameItem();
 
-        /// File upload.
+        /// Opens file open dialog.
         void Upload();
 
+        /// Uploads files.
+        /// @param filenames list of filenames to upload.
         void UploadFiles(const QStringList &filenames);
 
         /// File download.
@@ -125,8 +127,8 @@ namespace Inventory
         /// Inventory window widget.
         QWidget *inventoryWidget_;
 
-        /// Treeview widget.
-        QTreeView *treeView_;
+        // Inventory tree view widget
+        InventoryTreeView *treeView_;
 
         /// Close button.
         QPushButton *buttonClose_;

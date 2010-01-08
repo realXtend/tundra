@@ -64,7 +64,7 @@ void PropertyTableWidget::InitWidget()
     setAcceptDrops(true);
     setDragEnabled(false);
     setDragDropMode(QAbstractItemView::DropOnly);
-    /*viewport()->*/setAcceptDrops(true);
+    setAcceptDrops(true);
     setDropIndicatorShown(true);
     setDragDropOverwriteMode(true);
 
@@ -129,7 +129,7 @@ bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *dat
 
 Qt::DropActions PropertyTableWidget::supportedDropActions() const
 {
-    return /*Qt::MoveAction | */Qt::CopyAction;
+    return Qt::CopyAction;
 }
 
 /*************** OgreScriptEditor ***************/

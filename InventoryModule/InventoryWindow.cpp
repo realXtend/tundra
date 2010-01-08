@@ -10,6 +10,7 @@
 #include "InventoryModule.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
+#include "InventoryTreeView.h"
 
 #include <Framework.h>
 #include <RexLogicModule.h>
@@ -24,6 +25,8 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QTreeView>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QPushButton>
 #include <QModelIndex>
 #include <QAbstractItemView>
@@ -208,6 +211,7 @@ void InventoryWindow::Download()
 void InventoryWindow::UpdateActions()
 {
     ///\todo Utilize this function properly.
+
 //    bool hasSelection = !view->selectionModel()->selection().isEmpty();
     //removeRowAction->setEnabled(hasSelection);
     //removeColumnAction->setEnabled(hasSelection);
@@ -238,7 +242,7 @@ void InventoryWindow::InitInventoryWindow()
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile uiFile("./data/ui/inventory_main.ui");
+    QFile uiFile("./data/ui/inventory2.ui");
     inventoryWidget_ = loader.load(&uiFile, 0);
     inventoryWidget_->resize(300, 350);
     uiFile.close();
@@ -250,7 +254,15 @@ void InventoryWindow::InitInventoryWindow()
     buttonAddFolder_ = inventoryWidget_->findChild<QPushButton *>("pushButton_AddFolder");
     buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton *>("pushButton_DeleteItem");
     buttonRename_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Rename");
-    treeView_ = inventoryWidget_->findChild<QTreeView *>("treeView");
+
+    // Create inventory tree view.
+    treeView_ = new InventoryTreeView;
+    QHBoxLayout *hlayout = inventoryWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
+    hlayout->addWidget(treeView_);
+
+//    QWidget *tw = inventoryWidget_->findChild<QWidget *>("widgeTreeView");
+//    QVBoxLayout *vlayout = inventoryWidget_->findChild<QVBoxLayout *>("verticalLayout_RightContainer");
+//    hlayout->addLayout(vlayout);
 
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
