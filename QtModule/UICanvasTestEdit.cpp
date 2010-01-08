@@ -139,7 +139,7 @@ namespace QtUI
             Scene::EntityPtr entity = scene->GetEntity(last_entity_id_);
             if (entity.get())
             {
-                EC_UICanvas* ec = dynamic_cast<EC_UICanvas*>(entity->GetComponent(EC_UICanvas::NameStatic()).get());
+                EC_UICanvas* ec = entity->GetComponent<EC_UICanvas>().get();
                 if (ec)
                 {
                     // Get proxy widget from 3D canvas
@@ -208,8 +208,8 @@ namespace QtUI
             Scene::EntityPtr entity = scene->GetEntity(last_entity_id_);
             if (entity.get())
             {
-                OgreRenderer::EC_OgreMesh* mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-                OgreRenderer::EC_OgreCustomObject* custom = dynamic_cast<OgreRenderer::EC_OgreCustomObject*>(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()).get());
+                OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                OgreRenderer::EC_OgreCustomObject* custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
                 if (mesh)
                     numsubmeshes = mesh->GetNumMaterials();
                 if (custom)

@@ -98,8 +98,8 @@ namespace QtUI
         if (!entity_)
             return;
 
-        Foundation::ComponentPtr meshptr = entity_->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr customptr = entity_->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+        OgreRenderer::EC_OgreMesh* meshptr = entity_->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_OgreCustomObject* customptr = entity_->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         
         // If have both a mesh & custom object, too weird to handle. Abort.
         if (meshptr && customptr)
@@ -110,14 +110,13 @@ namespace QtUI
         // Set material to select submeshes of EC_OgreMesh
         if (meshptr)
         {        
-            OgreRenderer::EC_OgreMesh &obj = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());                     
-            
-            original_materials_.resize(obj.GetNumMaterials());
-            for (uint i = 0; i < obj.GetNumMaterials(); ++i)
+                         
+            original_materials_.resize(meshptr->GetNumMaterials());
+            for (uint i = 0; i < meshptr->GetNumMaterials(); ++i)
             {
                 // If this submesh does not have the UICanvas material yet, store the material for restoring later
                 {
-                    std::string orig_mat_name = obj.GetMaterialName(i);
+                    std::string orig_mat_name = meshptr->GetMaterialName(i);
                     if (orig_mat_name != mat_name)
                         original_materials_[i] = orig_mat_name;
                 }
@@ -128,14 +127,14 @@ namespace QtUI
                     if (submeshes_[j] == i) set_uicanvas = true;
                
                 if (set_uicanvas)
-                    obj.SetMaterial(i, mat_name);
+                    meshptr->SetMaterial(i, mat_name);
                 else
                 {
                     // Restore original if we know it
-                    if (obj.GetMaterialName(i) == mat_name)
+                    if (meshptr->GetMaterialName(i) == mat_name)
                     {
                         if (!original_materials_[i].empty())
-                            obj.SetMaterial(i, original_materials_[i]);
+                            meshptr->SetMaterial(i, original_materials_[i]);
                     }
                 }
             }
@@ -144,18 +143,16 @@ namespace QtUI
         // Set material to select submeshes of EC_OgreCustomObject
         if (customptr)
         {
-            OgreRenderer::EC_OgreCustomObject &obj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());   
-            
             // If custom object does not exist as actual committed geometry yet, can't do anything
-            if (!obj.IsCommitted())
+            if (!customptr->IsCommitted())
                 return;
                                   
-            original_materials_.resize(obj.GetNumMaterials());
-            for (uint i = 0; i < obj.GetNumMaterials(); ++i)
+            original_materials_.resize(customptr->GetNumMaterials());
+            for (uint i = 0; i < customptr->GetNumMaterials(); ++i)
             {
                 // If this submesh does not have the UICanvas material yet, store the material for restoring later
                 {
-                    std::string orig_mat_name = obj.GetMaterialName(i);
+                    std::string orig_mat_name = customptr->GetMaterialName(i);
                     if (orig_mat_name != mat_name)
                         original_materials_[i] = orig_mat_name;
                 }
@@ -166,14 +163,14 @@ namespace QtUI
                     if (submeshes_[j] == i) set_uicanvas = true;
                
                 if (set_uicanvas)
-                    obj.SetMaterial(i, mat_name);
+                    customptr->SetMaterial(i, mat_name);
                 else
                 {
                     // Restore original if we know it
-                    if (obj.GetMaterialName(i) == mat_name)
+                    if (customptr->GetMaterialName(i) == mat_name)
                     {
                         if (!original_materials_[i].empty())
-                            obj.SetMaterial(i, original_materials_[i]);
+                            customptr->SetMaterial(i, original_materials_[i]);
                     }
                 }
             }

@@ -75,12 +75,11 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
-        if (!avatarptr)
+        EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+        if (!avatar)
             return;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
-        
-        std::string appearance_address = avatar.GetAppearanceAddress();
+            
+        std::string appearance_address = avatar->GetAppearanceAddress();
         if (appearance_address.empty())
         {
             if (use_default)
@@ -143,13 +142,12 @@ namespace RexLogic
     
     void AvatarAppearance::SetupDefaultAppearance(Scene::EntityPtr entity)
     {
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         // Deserialize appearance from the document into the EC
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, *default_appearance_);
+        LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, *default_appearance_);
         
         SetupAppearance(entity);
     }
@@ -161,24 +159,22 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        
-        if (!meshptr || !appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!mesh || !appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
                                           
         // If document contains no animations, use ones from default
-        if (appearance.GetAnimations().empty())
+        if (appearance->GetAnimations().empty())
         {
             AnimationDefinitionMap animations;
             LegacyAvatarSerializer::ReadAnimationDefinitions(animations, *default_appearance_);
-            appearance.SetAnimations(animations);
+            appearance->SetAnimations(animations);
         }
         
         // If mesh name is empty, it would certainly be an epic fail. Do nothing.
-        if (appearance.GetMesh().name_.empty())
+        if (appearance->GetMesh().name_.empty())
             return;
                 
         // Fix up resource references
@@ -190,19 +186,19 @@ namespace RexLogic
         SetupAttachments(entity);
         
         // If there's no morph controls, interrogate the mesh for them
-        if (!appearance.GetMorphModifiers().size())
+        if (!appearance->GetMorphModifiers().size())
         {
             MorphModifierVector new_morphs;
             
-            Ogre::Entity *entity = mesh.GetEntity();
-            if (entity)
+            Ogre::Entity *ogre_entity = mesh->GetEntity();
+            if (ogre_entity)
             {
                 // Add all pose animations
-                Ogre::MeshPtr mesh = entity->getMesh();
-                size_t numanims = mesh->getNumAnimations();
+                Ogre::MeshPtr ogre_mesh = ogre_entity->getMesh();
+                size_t numanims = ogre_mesh->getNumAnimations();
                 for (uint i = 0; i < numanims; ++i)
                 {
-                    Ogre::Animation* anim = mesh->getAnimation(i);
+                    Ogre::Animation* anim = ogre_mesh->getAnimation(i);
                     Ogre::Animation::VertexTrackIterator it = anim->getVertexTrackIterator();
                     bool is_pose = false;
             
@@ -227,7 +223,7 @@ namespace RexLogic
                         new_morphs.push_back(new_morph);
                     }
                 }  
-                appearance.SetMorphModifiers(new_morphs);       
+                appearance->SetMorphModifiers(new_morphs);       
             }
         }
         
@@ -244,10 +240,10 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        
-        if (!meshptr || !appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!mesh || !appearance)
             return;
         
         SetupMorphs(entity);
@@ -260,26 +256,23 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        
-        if (!meshptr || !appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!mesh || !appearance)
             return;
-        
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         Ogre::Vector3 offset = Ogre::Vector3::ZERO;
         Ogre::Vector3 initial_base_pos = Ogre::Vector3::ZERO;
 
-        if (appearance.HasProperty("baseoffset"))
+        if (appearance->HasProperty("baseoffset"))
         {
-            initial_base_pos = Ogre::StringConverter::parseVector3(appearance.GetProperty("baseoffset"));
+            initial_base_pos = Ogre::StringConverter::parseVector3(appearance->GetProperty("baseoffset"));
         }
 
-        if (appearance.HasProperty("basebone"))
+        if (appearance->HasProperty("basebone"))
         {
-            Ogre::Bone* base_bone = GetAvatarBone(entity, appearance.GetProperty("basebone"));
+            Ogre::Bone* base_bone = GetAvatarBone(entity, appearance->GetProperty("basebone"));
             if (base_bone)
             {
                 Ogre::Vector3 temp;
@@ -289,9 +282,9 @@ namespace RexLogic
 
                 // Additionally, if has the rootbone property, can do dynamic adjustment for sitting etc.
                 // and adjust the name overlay height
-                if (appearance.HasProperty("rootbone"))
+                if (appearance->HasProperty("rootbone"))
                 {
-                    Ogre::Bone* root_bone = GetAvatarBone(entity, appearance.GetProperty("rootbone"));
+                    Ogre::Bone* root_bone = GetAvatarBone(entity, appearance->GetProperty("rootbone"));
                     if (root_bone)
                     {
                         Ogre::Vector3 initial_root_pos;
@@ -303,29 +296,28 @@ namespace RexLogic
                         offset = initial_base_pos * c;
 
                         // Set name overlay height according to base + root distance.
-                        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+                        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
                         if (overlay)
                         {
-                            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-                            name_overlay.SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
+                            overlay->SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
                         }
                     }
                 }
             }
         }
 
-        mesh.SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
+        mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
     }
     
     void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
-        
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                
         // Mesh needs to be cloned if there are attachments which need to hide vertices
         bool need_mesh_clone = false;
         
-        const AvatarAttachmentVector& attachments = appearance.GetAttachments();
+        const AvatarAttachmentVector& attachments = appearance->GetAttachments();
         std::set<uint> vertices_to_hide;
         for (uint i = 0; i < attachments.size(); ++i)
         {
@@ -337,30 +329,30 @@ namespace RexLogic
             }
         }
         
-        if (!appearance.GetSkeleton().GetLocalOrResourceName().empty())
-            mesh.SetMeshWithSkeleton(appearance.GetMesh().GetLocalOrResourceName(), appearance.GetSkeleton().GetLocalOrResourceName(), need_mesh_clone);
+        if (!appearance->GetSkeleton().GetLocalOrResourceName().empty())
+            mesh->SetMeshWithSkeleton(appearance->GetMesh().GetLocalOrResourceName(), appearance->GetSkeleton().GetLocalOrResourceName(), need_mesh_clone);
         else
-            mesh.SetMesh(appearance.GetMesh().GetLocalOrResourceName(), need_mesh_clone);
+            mesh->SetMesh(appearance->GetMesh().GetLocalOrResourceName(), need_mesh_clone);
             
         if (need_mesh_clone)
-            HideVertices(mesh.GetEntity(), vertices_to_hide);
+            HideVertices(mesh->GetEntity(), vertices_to_hide);
         
-        AvatarMaterialVector materials = appearance.GetMaterials();
+        AvatarMaterialVector materials = appearance->GetMaterials();
         for (uint i = 0; i < materials.size(); ++i)
         {
-            mesh.SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
+            mesh->SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
         }
         
         // Store the modified materials vector (with created temp resources) to the EC
-        appearance.SetMaterials(materials);
+        appearance->SetMaterials(materials);
         
         // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
         Quaternion adjust(PI/2, 0, -PI/2);
-        mesh.SetAdjustOrientation(adjust);
+        mesh->SetAdjustOrientation(adjust);
         // Position approximately within the bounding box
         // Will be overridden by bone-based height adjust, if available
-        mesh.SetAdjustPosition(Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
-        mesh.SetCastShadows(true);
+        mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
+        mesh->SetCastShadows(true);
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
@@ -370,41 +362,41 @@ namespace RexLogic
     
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                
+        mesh->RemoveAllAttachments();
         
-        mesh.RemoveAllAttachments();
-        
-        const AvatarAttachmentVector& attachments = appearance.GetAttachments();
+        const AvatarAttachmentVector& attachments = appearance->GetAttachments();
         
         for (uint i = 0; i < attachments.size(); ++i)
         {
             // Setup attachment meshes
-            mesh.SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
+            mesh->SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
             // Setup attachment mesh materials
             for (uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
-                mesh.SetAttachmentMaterial(i, j, attachments[i].materials_[j].asset_.GetLocalOrResourceName());
+                mesh->SetAttachmentMaterial(i, j, attachments[i].materials_[j].asset_.GetLocalOrResourceName());
             }
-            mesh.SetAttachmentPosition(i, attachments[i].transform_.position_);
-            mesh.SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
-            mesh.SetAttachmentScale(i, attachments[i].transform_.scale_);
+            mesh->SetAttachmentPosition(i, attachments[i].transform_.position_);
+            mesh->SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
+            mesh->SetAttachmentScale(i, attachments[i].transform_.scale_);
         }
     }
     
     void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
-        
-        Ogre::Entity* ogre_entity = mesh.GetEntity();
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                
+        Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
             return;
         Ogre::AnimationStateSet* anims = ogre_entity->getAllAnimationStates();
         if (!anims)
             return;
             
-        const MorphModifierVector& morphs = appearance.GetMorphModifiers();
+        const MorphModifierVector& morphs = appearance->GetMorphModifiers();
         for (uint i = 0; i < morphs.size(); ++i)
         {
             if (anims->hasAnimationState(morphs[i].morph_name_))
@@ -421,9 +413,9 @@ namespace RexLogic
                 anim->setEnabled(timePos > 0.0f);
                 
                 // Also set position in attachment entities, if have the same morph
-                for (uint j = 0; j < mesh.GetNumAttachments(); ++j)
+                for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
                 {
-                    Ogre::Entity* attachment = mesh.GetAttachmentEntity(j);
+                    Ogre::Entity* attachment = mesh->GetAttachmentEntity(j);
                     if (!attachment)
                         continue;
                     Ogre::AnimationStateSet* attachment_anims = attachment->getAllAnimationStates();
@@ -441,12 +433,11 @@ namespace RexLogic
     
     void AvatarAppearance::SetupBoneModifiers(Scene::EntityPtr entity)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
-        
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+                
         ResetBones(entity);
         
-        const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
+        const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
         for (uint i = 0; i < bone_modifiers.size(); ++i)
         {
             for (uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
@@ -458,10 +449,10 @@ namespace RexLogic
     
     void AvatarAppearance::ResetBones(Scene::EntityPtr entity)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
-        
-        Ogre::Entity* ogre_entity = mesh.GetEntity();
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                
+        Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
             return;
         // See that we actually have a skeleton
@@ -487,10 +478,9 @@ namespace RexLogic
     
     void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Real value)
     {
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()).get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(entity->GetComponent(EC_AvatarAppearance::NameStatic()).get());
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         
-        Ogre::Entity* ogre_entity = mesh.GetEntity();
+        Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
             return;
         // See that we actually have a skeleton
@@ -640,12 +630,13 @@ namespace RexLogic
     
     Ogre::Bone* AvatarAppearance::GetAvatarBone(Scene::EntityPtr entity, const std::string& bone_name)
     {
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!meshptr)
+        if (!entity)
+            return 0;            
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        if (!mesh)
             return 0;
         
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-        Ogre::Entity* ogre_entity = mesh.GetEntity();
+        Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
             return 0;
         Ogre::SkeletonInstance* skeleton = ogre_entity->getSkeleton();
@@ -753,10 +744,9 @@ namespace RexLogic
     {       
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         std::string data_str((const char*)data, size);
 
@@ -764,7 +754,7 @@ namespace RexLogic
         avatar_doc.setContent(QString::fromStdString(data_str));
 
         // Deserialize appearance from the document into the EC
-        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
         {
             // If fails badly, setup default instead
             RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
@@ -772,7 +762,7 @@ namespace RexLogic
             return;
         }
         
-        const AvatarAssetMap& assets = appearance.GetAssetMap(); 
+        const AvatarAssetMap& assets = appearance->GetAssetMap(); 
                 
         uint pending_requests = RequestAvatarResources(entity, assets, true);
         
@@ -831,12 +821,10 @@ namespace RexLogic
     {        
         if (!entity)
             return;
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!avatarptr || !appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+        if (!appearance || !avatar)
             return;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         std::string data_str((const char*)data, size);
         std::map<std::string, std::string> contents = RexTypes::ParseLLSDMap(data_str);
@@ -864,7 +852,7 @@ namespace RexLogic
         
         std::map<std::string, std::string>::iterator j = contents.begin();
         // Build mapping of human-readable asset names to id's
-        std::string host = HttpUtilities::GetHostFromUrl(avatar.GetAppearanceAddress());
+        std::string host = HttpUtilities::GetHostFromUrl(avatar->GetAppearanceAddress());
         AvatarAssetMap assets;
         while (j != contents.end())
         {
@@ -877,7 +865,7 @@ namespace RexLogic
         }
         
         // Deserialize appearance from the document into the EC
-        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
         {
             // If fails badly, setup default instead
             RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
@@ -885,7 +873,7 @@ namespace RexLogic
             return;
         }
         
-        appearance.SetAssetMap(assets);
+        appearance->SetAssetMap(assets);
 
         uint pending_requests = RequestAvatarResources(entity, assets);
         
@@ -916,11 +904,10 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
         if (!entity)
             return true;
-        
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return true;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         // If was the last request, rebuild avatar
         if (avatar_pending_requests_[id] == 0)
@@ -1033,17 +1020,17 @@ namespace RexLogic
         if (!entity)
             return;
             
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        const AvatarAssetMap& asset_map = appearance.GetAssetMap();
+            
+        const AvatarAssetMap& asset_map = appearance->GetAssetMap();
         
         // Get mesh, skeleton, materials & attachments
-        AvatarAsset mesh = appearance.GetMesh();
-        AvatarAsset skeleton = appearance.GetSkeleton();
-        AvatarMaterialVector materials = appearance.GetMaterials();
-        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        AvatarAsset mesh = appearance->GetMesh();
+        AvatarAsset skeleton = appearance->GetSkeleton();
+        AvatarMaterialVector materials = appearance->GetMaterials();
+        AvatarAttachmentVector attachments = appearance->GetAttachments();
         
         // Fix mesh & skeleton
         FixupResource(mesh, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
@@ -1065,8 +1052,7 @@ namespace RexLogic
                 }
             }
         }
-        
-        
+                
         FixupResource(skeleton, asset_map, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
         
         // Fix avatar mesh materials
@@ -1114,10 +1100,10 @@ namespace RexLogic
         }
         
         // Set modified mesh, skeleton, materials & attachments
-        appearance.SetMesh(mesh);
-        appearance.SetSkeleton(skeleton);
-        appearance.SetMaterials(materials);
-        appearance.SetAttachments(attachments);
+        appearance->SetMesh(mesh);
+        appearance->SetSkeleton(skeleton);
+        appearance->SetMaterials(materials);
+        appearance->SetAttachments(attachments);
     }
     
     void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
@@ -1244,10 +1230,11 @@ namespace RexLogic
     
     void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
     {
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        if (!entity)
+            return;                           
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
 
         if (inv_export_state_ != Idle)
         {
@@ -1259,7 +1246,7 @@ namespace RexLogic
         inv_export_entity_ = entity;
         inv_export_assetmap_ = AvatarAssetMap();
         inv_export_request_ = AvatarExporterRequestPtr(new AvatarExporterRequest());
-        GetAvatarAssetsForExport(inv_export_request_, appearance, true);   
+        GetAvatarAssetsForExport(inv_export_request_, *appearance, true);   
         
         // Check if there were any assets, if not, we can go to final phase directly
         if (inv_export_request_->assets_.empty())
@@ -1298,16 +1285,14 @@ namespace RexLogic
         inv_export_entity_.reset();
                 
         if (!entity)
+            return;                             
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-                             
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
             
         // Convert avatar appearance to xml
         inv_export_state_ = Avatar;
-        EC_AvatarAppearance temp_appearance = appearance;
+        EC_AvatarAppearance temp_appearance = *appearance;
         temp_appearance.SetAssetMap(inv_export_assetmap_);
         inv_export_assetmap_ = AvatarAssetMap();           
                 
@@ -1341,13 +1326,12 @@ namespace RexLogic
         
     void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password)
     {
-        Foundation::ComponentPtr avatarptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!avatarptr || !appearanceptr)
+        if (!entity)
+            return;                             
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_OpenSimAvatar& avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatarptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        
+            
         // Have only one export running at a time
         if (avatar_exporter_)
         {
@@ -1367,12 +1351,12 @@ namespace RexLogic
 
         // Convert avatar appearance to xml
         QDomDocument avatar_export("Avatar");
-        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, appearance);
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, *appearance);
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
 
         // Get assets for export 
-        GetAvatarAssetsForExport(request, appearance);
+        GetAvatarAssetsForExport(request, *appearance);
                                                 
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
     }
@@ -1675,10 +1659,11 @@ namespace RexLogic
         boost::filesystem::path path(filename);
         std::string dirname = path.branch_path().string();
         
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        if (!entity)
+            return false;                             
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return false;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
         
         if (filename.find(".mesh") != std::string::npos)
         {
@@ -1711,10 +1696,11 @@ namespace RexLogic
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return false;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        if (!entity)
+            return false;                             
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return false;        
                    
         QFile file(filename.c_str());
         QDomDocument avatar_doc("Avatar");
@@ -1733,17 +1719,17 @@ namespace RexLogic
         }
         file.close();
         
-        if (!LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc))
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
             return false;
             
-        AvatarAsset mesh = appearance.GetMesh();
+        AvatarAsset mesh = appearance->GetMesh();
         // If mesh name is empty, deduce mesh name from filename
         if (mesh.name_.empty())
         {
             RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
 
             mesh.name_ = ReplaceSubstring(leafname, ".xml", ".mesh");
-            appearance.SetMesh(mesh);
+            appearance->SetMesh(mesh);
         }      
         
         return true;    
@@ -1754,15 +1740,16 @@ namespace RexLogic
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        if (!entity)
+            return false;                             
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return false;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        
-        appearance.Clear();
+                
+        appearance->Clear();
         AvatarAsset mesh;
         mesh.name_ = leafname;
-        appearance.SetMesh(mesh);
+        appearance->SetMesh(mesh);
         
         std::string xmlname = ReplaceSubstring(filename, ".mesh", ".xml");       
         
@@ -1780,7 +1767,7 @@ namespace RexLogic
         }
         file.close();
         
-        LegacyAvatarSerializer::ReadAvatarAppearance(appearance, avatar_doc, false);
+        LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc, false);
     
         return true;
     }    
@@ -1806,14 +1793,14 @@ namespace RexLogic
                 
         std::string matname;
         
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!entity)
+            return false; 
+                   
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         
-        if (!meshptr || !appearanceptr)
-            return false;
-        
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        if (!mesh || !appearance)
+            return false;       
         
         AddTempResourceDirectory(dirname);
         
@@ -1865,15 +1852,15 @@ namespace RexLogic
             OgreRenderer::SetTextureUnitOnMaterial(ogremat, leafname);
         }
         
-        mesh.SetMaterial(index, matname);
+        mesh->SetMaterial(index, matname);
         
-        AvatarMaterialVector materials = appearance.GetMaterials();        
+        AvatarMaterialVector materials = appearance->GetMaterials();        
         if (index >= materials.size())
             return false;
         materials[index] = AvatarMaterial();
         materials[index].asset_.name_ = matname; 
         FixupMaterial(materials[index], AvatarAssetMap());
-        appearance.SetMaterials(materials);
+        appearance->SetMaterials(materials);
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
@@ -1891,14 +1878,14 @@ namespace RexLogic
                 
         std::string matname;
         
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
+        if (!entity)
+            return false; 
+                   
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         
-        if (!meshptr || !appearanceptr)
-            return false;
-        
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
+        if (!mesh || !appearance)
+            return false;    
   
         QFile file(filename.c_str());
         QDomDocument attachment_doc("Attachment");
@@ -1918,12 +1905,12 @@ namespace RexLogic
         file.close();  
         
         AvatarAttachment new_attachment;
-        if (!LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, appearance, leafname))
+        if (!LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, *appearance, leafname))
             return false;
         
-        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        AvatarAttachmentVector attachments = appearance->GetAttachments();
         attachments.push_back(new_attachment);
-        appearance.SetAttachments(attachments);
+        appearance->SetAttachments(attachments);
          
         // Assume any resources needed by the attachment are in the same dir as the .xml      
         AddTempResourceDirectory(dirname);

@@ -55,9 +55,9 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         // Create a new entity.
         Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
         rexlogicmodule_->RegisterFullId(fullid,entityid); 
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-        prim.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-        prim.FullId = fullid;
+        EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+        prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+        prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
         return entity;
     }
@@ -111,17 +111,17 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         uint8_t pcode = msg->ReadU8();
 
         Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+        EC_NetworkPosition *netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
         ///\todo Are we setting the param or looking up by this param? I think the latter, but this is now doing the former. 
         ///      Will cause problems with multigrid support.
-        prim.RegionHandle = regionhandle;
+        prim->RegionHandle = regionhandle;
 
-        prim.Material = msg->ReadU8();
-        prim.ClickAction = msg->ReadU8();
+        prim->Material = msg->ReadU8();
+        prim->ClickAction = msg->ReadU8();
 
-        prim.Scale = OpenSimToOgreCoordinateAxes(msg->ReadVector3());
+        prim->Scale = OpenSimToOgreCoordinateAxes(msg->ReadVector3());
         // Scale is not handled by interpolation system, so set directly
         HandlePrimScale(localid);
         
@@ -139,65 +139,65 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
 
             Vector3df vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[0]));
             if (IsValidPositionVector(vec))
-                netpos.position_ = vec;
+                netpos->position_ = vec;
 
             vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[12])); 
             if (IsValidVelocityVector(vec))
-                netpos.velocity_ = vec;
+                netpos->velocity_ = vec;
 
             vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[24]));
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Acceleration as well - it's ok as they are quite similar.
-                netpos.accel_ = vec;
+                netpos->accel_ = vec;
 
-            netpos.orientation_ = OpenSimToOgreQuaternion(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
+            netpos->orientation_ = OpenSimToOgreQuaternion(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
             vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[48]));
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Angular Velocity as well - it's ok as they are quite similar.
-                netpos.rotvel_ = vec;
-            netpos.Updated();
+                netpos->rotvel_ = vec;
+            netpos->Updated();
         }
         else
-            RexLogicModule::LogError("Error reading ObjectData for prim:" + ToString(prim.LocalId) + ". Bytes read:" + ToString(bytes_read));
+            RexLogicModule::LogError("Error reading ObjectData for prim:" + ToString(prim->LocalId) + ". Bytes read:" + ToString(bytes_read));
 
-        prim.ParentId = msg->ReadU32();
-        prim.UpdateFlags = msg->ReadU32();
+        prim->ParentId = msg->ReadU32();
+        prim->UpdateFlags = msg->ReadU32();
 
         // Read prim shape
-        prim.PathCurve = msg->ReadU8();
-        prim.ProfileCurve = msg->ReadU8();
-        prim.PathBegin = msg->ReadU16() * 0.00002f;
-        prim.PathEnd = msg->ReadU16() * 0.00002f;
-        prim.PathScaleX = msg->ReadU8() * 0.01f;
-        prim.PathScaleY = msg->ReadU8() * 0.01f;
-        prim.PathShearX = ((int8_t)msg->ReadU8()) * 0.01f;
-        prim.PathShearY = ((int8_t)msg->ReadU8()) * 0.01f;
-        prim.PathTwist = msg->ReadS8() * 0.01f;
-        prim.PathTwistBegin = msg->ReadS8() * 0.01f;
-        prim.PathRadiusOffset = msg->ReadS8() * 0.01f;
-        prim.PathTaperX = msg->ReadS8() * 0.01f;
-        prim.PathTaperY = msg->ReadS8() * 0.01f;
-        prim.PathRevolutions = 1.0f + msg->ReadU8() * 0.015f;
-        prim.PathSkew = msg->ReadS8() * 0.01f;
-        prim.ProfileBegin = msg->ReadU16() * 0.00002f;
-        prim.ProfileEnd = msg->ReadU16() * 0.00002f;
-        prim.ProfileHollow = msg->ReadU16() * 0.00002f;
-        prim.HasPrimShapeData = true;
+        prim->PathCurve = msg->ReadU8();
+        prim->ProfileCurve = msg->ReadU8();
+        prim->PathBegin = msg->ReadU16() * 0.00002f;
+        prim->PathEnd = msg->ReadU16() * 0.00002f;
+        prim->PathScaleX = msg->ReadU8() * 0.01f;
+        prim->PathScaleY = msg->ReadU8() * 0.01f;
+        prim->PathShearX = ((int8_t)msg->ReadU8()) * 0.01f;
+        prim->PathShearY = ((int8_t)msg->ReadU8()) * 0.01f;
+        prim->PathTwist = msg->ReadS8() * 0.01f;
+        prim->PathTwistBegin = msg->ReadS8() * 0.01f;
+        prim->PathRadiusOffset = msg->ReadS8() * 0.01f;
+        prim->PathTaperX = msg->ReadS8() * 0.01f;
+        prim->PathTaperY = msg->ReadS8() * 0.01f;
+        prim->PathRevolutions = 1.0f + msg->ReadU8() * 0.015f;
+        prim->PathSkew = msg->ReadS8() * 0.01f;
+        prim->ProfileBegin = msg->ReadU16() * 0.00002f;
+        prim->ProfileEnd = msg->ReadU16() * 0.00002f;
+        prim->ProfileHollow = msg->ReadU16() * 0.00002f;
+        prim->HasPrimShapeData = true;
 
         // Texture entry
         const uint8_t *textureentrybytes = msg->ReadBuffer(&bytes_read);
-        ParseTextureEntryData(prim, textureentrybytes, bytes_read);
+        ParseTextureEntryData(*prim, textureentrybytes, bytes_read);
 
         // Skip to prim text
         msg->SkipToFirstVariableByName("Text");
-        prim.HoveringText = msg->ReadString(); 
+        prim->HoveringText = msg->ReadString(); 
         msg->SkipToNextVariable();      // TextColor
         
         // read mediaurl, and send an event if it was changed
-        std::string prevMediaUrl = prim.MediaUrl;
-        prim.MediaUrl = msg->ReadString();
-        //RexLogicModule::LogInfo("MediaURL: " + prim.MediaUrl);
-        if (prim.MediaUrl.compare(prevMediaUrl) != 0)
+        std::string prevMediaUrl = prim->MediaUrl;
+        prim->MediaUrl = msg->ReadString();
+        //RexLogicModule::LogInfo("MediaURL: " + prim->MediaUrl);
+        if (prim->MediaUrl.compare(prevMediaUrl) != 0)
         {
-            RexLogicModule::LogInfo("MediaURL changed: " + prim.MediaUrl);
+            RexLogicModule::LogInfo("MediaURL changed: " + prim->MediaUrl);
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
             Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
@@ -245,26 +245,26 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
     
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
     if(!entity) return;
-    EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+    EC_NetworkPosition *netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
     Vector3df vec = GetProcessedVector(&bytes[i]);
     if (IsValidPositionVector(vec))
-        netpos.position_ = vec;
+        netpos->position_ = vec;
     i += sizeof(Vector3df);
 
-    netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+    netpos->velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
     i += 6;
 
-    netpos.accel_ = GetProcessedVectorFromUint16(&bytes[i]); 
+    netpos->accel_ = GetProcessedVectorFromUint16(&bytes[i]); 
     i += 6;
 
-    netpos.orientation_ = GetProcessedQuaternion(&bytes[i]);
+    netpos->orientation_ = GetProcessedQuaternion(&bytes[i]);
     i += 8;
 
-    netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+    netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
     i += 16;
 
-    netpos.Updated();
+    netpos->Updated();
     assert(i <= 60);
 }
 
@@ -297,8 +297,8 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         return false;
     
     // Entity should have animationcontroller
-    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-        entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+    OgreRenderer::EC_OgreAnimationController* anim = 
+        entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
     if (!anim)
         return false;
     
@@ -378,9 +378,9 @@ void Primitive::CheckPendingRexPrimData(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
-    RexPrimDataMap::iterator i = pending_rexprimdata_.find(prim.FullId);
+    RexPrimDataMap::iterator i = pending_rexprimdata_.find(prim->FullId);
     if (i != pending_rexprimdata_.end())
     {
         HandleRexPrimDataBlob(entityid, &i->second[0], i->second.size());
@@ -394,9 +394,9 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     if (!entity)
         return;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
     
-    RexUUID fullid = prim.FullId;
+    RexUUID fullid = prim->FullId;
     
     std::vector<uint8_t> buffer;
     buffer.resize(4096);
@@ -404,36 +404,36 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     bool send_asset_urls = false;
     
     // graphical values
-    WriteUInt8ToBytes(prim.DrawType, &buffer[0], idx);
-    WriteBoolToBytes(prim.IsVisible, &buffer[0], idx);
-    WriteBoolToBytes(prim.CastShadows, &buffer[0], idx);
-    WriteBoolToBytes(prim.LightCreatesShadows, &buffer[0], idx);
-    WriteBoolToBytes(prim.DescriptionTexture, &buffer[0], idx);
-    WriteBoolToBytes(prim.ScaleToPrim, &buffer[0], idx);
-    WriteFloatToBytes(prim.DrawDistance, &buffer[0], idx);
-    WriteFloatToBytes(prim.LOD, &buffer[0], idx);   
+    WriteUInt8ToBytes(prim->DrawType, &buffer[0], idx);
+    WriteBoolToBytes(prim->IsVisible, &buffer[0], idx);
+    WriteBoolToBytes(prim->CastShadows, &buffer[0], idx);
+    WriteBoolToBytes(prim->LightCreatesShadows, &buffer[0], idx);
+    WriteBoolToBytes(prim->DescriptionTexture, &buffer[0], idx);
+    WriteBoolToBytes(prim->ScaleToPrim, &buffer[0], idx);
+    WriteFloatToBytes(prim->DrawDistance, &buffer[0], idx);
+    WriteFloatToBytes(prim->LOD, &buffer[0], idx);   
     
     // UUIDs
     // Note: if the EC contains asset urls that can not be encoded as UUIDs, we still have to send
     // invalid (null) UUIDs to retain binary compatibility with the rexprimdatablob
     
-    if (IsUrlBased(prim.MeshID) || IsUrlBased(prim.CollisionMeshID) || IsUrlBased(prim.ParticleScriptID) || IsUrlBased(prim.AnimationPackageID))
+    if (IsUrlBased(prim->MeshID) || IsUrlBased(prim->CollisionMeshID) || IsUrlBased(prim->ParticleScriptID) || IsUrlBased(prim->AnimationPackageID))
         send_asset_urls = true;
         
-    WriteUUIDToBytes(RexUUID(prim.MeshID), &buffer[0], idx);
-    WriteUUIDToBytes(RexUUID(prim.CollisionMeshID), &buffer[0], idx);
-    WriteUUIDToBytes(RexUUID(prim.ParticleScriptID), &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim->MeshID), &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim->CollisionMeshID), &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim->ParticleScriptID), &buffer[0], idx);
 
     // Animation
-    WriteUUIDToBytes(RexUUID(prim.AnimationPackageID), &buffer[0], idx);
-    WriteNullTerminatedStringToBytes(prim.AnimationName, &buffer[0], idx);
-    WriteFloatToBytes(prim.AnimationRate, &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim->AnimationPackageID), &buffer[0], idx);
+    WriteNullTerminatedStringToBytes(prim->AnimationName, &buffer[0], idx);
+    WriteFloatToBytes(prim->AnimationRate, &buffer[0], idx);
 
     // Materials
-    size_t mat_count = prim.Materials.size();
-    MaterialMap::const_iterator i = prim.Materials.begin();
+    size_t mat_count = prim->Materials.size();
+    MaterialMap::const_iterator i = prim->Materials.begin();
     WriteUInt8ToBytes((uint8_t)mat_count, &buffer[0], idx); 
-    while (i != prim.Materials.end())
+    while (i != prim->Materials.end())
     {
         // Write assettype, uuid, index for each
         if (IsUrlBased(i->second.asset_id))
@@ -444,27 +444,27 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
         ++i;
     }
 
-    WriteNullTerminatedStringToBytes(prim.ServerScriptClass, &buffer[0], idx);
+    WriteNullTerminatedStringToBytes(prim->ServerScriptClass, &buffer[0], idx);
 
     // Sound
-    if (IsUrlBased(prim.SoundID))
+    if (IsUrlBased(prim->SoundID))
         send_asset_urls = true;
-    WriteUUIDToBytes(RexUUID(prim.SoundID), &buffer[0], idx);
-    WriteFloatToBytes(prim.SoundVolume, &buffer[0], idx);
-    WriteFloatToBytes(prim.SoundRadius, &buffer[0], idx);
+    WriteUUIDToBytes(RexUUID(prim->SoundID), &buffer[0], idx);
+    WriteFloatToBytes(prim->SoundVolume, &buffer[0], idx);
+    WriteFloatToBytes(prim->SoundRadius, &buffer[0], idx);
     
-    WriteUInt32ToBytes(prim.SelectPriority, &buffer[0], idx);
+    WriteUInt32ToBytes(prim->SelectPriority, &buffer[0], idx);
 
     // Extension: url based asset id's
     if (send_asset_urls)
     {
-        WriteNullTerminatedStringToBytes(prim.MeshID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim.CollisionMeshID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim.ParticleScriptID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim.AnimationPackageID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim.SoundID, &buffer[0], idx);
-        i = prim.Materials.begin();
-        while (i != prim.Materials.end())        
+        WriteNullTerminatedStringToBytes(prim->MeshID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim->CollisionMeshID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim->ParticleScriptID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim->AnimationPackageID, &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(prim->SoundID, &buffer[0], idx);
+        i = prim->Materials.begin();
+        while (i != prim->Materials.end())        
         {
             WriteNullTerminatedStringToBytes(i->second.asset_id, &buffer[0], idx);
             ++i;
@@ -490,26 +490,26 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     if (!entity)
         return;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
     // graphical values
-    prim.DrawType = ReadUInt8FromBytes(primdata,idx);
-    prim.IsVisible = ReadBoolFromBytes(primdata,idx);
-    prim.CastShadows = ReadBoolFromBytes(primdata,idx);
-    prim.LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
-    prim.DescriptionTexture = ReadBoolFromBytes(primdata,idx);
-    prim.ScaleToPrim = ReadBoolFromBytes(primdata,idx);
-    prim.DrawDistance = ReadFloatFromBytes(primdata,idx);
-    prim.LOD = ReadFloatFromBytes(primdata,idx);
+    prim->DrawType = ReadUInt8FromBytes(primdata,idx);
+    prim->IsVisible = ReadBoolFromBytes(primdata,idx);
+    prim->CastShadows = ReadBoolFromBytes(primdata,idx);
+    prim->LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
+    prim->DescriptionTexture = ReadBoolFromBytes(primdata,idx);
+    prim->ScaleToPrim = ReadBoolFromBytes(primdata,idx);
+    prim->DrawDistance = ReadFloatFromBytes(primdata,idx);
+    prim->LOD = ReadFloatFromBytes(primdata,idx);
 
-    prim.MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim.CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
-    prim.ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
+    prim->MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
+    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
+    prim->ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
-    prim.AnimationPackageID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim.AnimationName = ReadNullTerminatedStringFromBytes(primdata,idx);
-    prim.AnimationRate = ReadFloatFromBytes(primdata,idx);
+    prim->AnimationPackageID = ReadUUIDFromBytes(primdata,idx).ToString();
+    prim->AnimationName = ReadNullTerminatedStringFromBytes(primdata,idx);
+    prim->AnimationRate = ReadFloatFromBytes(primdata,idx);
 
     MaterialMap materials;
     uint8_t tempmaterialindex = 0; 
@@ -525,24 +525,22 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
         material_indexes.push_back(tempmaterialindex); 
         materials[tempmaterialindex] = newmaterialdata;
     }
-    prim.Materials = materials;
+    prim->Materials = materials;
 
-    prim.ServerScriptClass = ReadNullTerminatedStringFromBytes(primdata,idx);
+    prim->ServerScriptClass = ReadNullTerminatedStringFromBytes(primdata,idx);
 
     // sound
-    prim.SoundID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim.SoundVolume = ReadFloatFromBytes(primdata,idx);
-    prim.SoundRadius = ReadFloatFromBytes(primdata,idx);
+    prim->SoundID = ReadUUIDFromBytes(primdata,idx).ToString();
+    prim->SoundVolume = ReadFloatFromBytes(primdata,idx);
+    prim->SoundRadius = ReadFloatFromBytes(primdata,idx);
 
-    prim.SelectPriority = ReadUInt32FromBytes(primdata,idx);
+    prim->SelectPriority = ReadUInt32FromBytes(primdata,idx);
 
     // Copy selectpriority to the placeable for the renderer raycast
-    Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    if (placeableptr)
+    OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
     {
-        OgreRenderer::EC_OgrePlaceable &placeable = 
-            *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
-        placeable.SetSelectPriority(prim.SelectPriority);
+        placeable->SetSelectPriority(prim->SelectPriority);
     }
 
     // Asset urls
@@ -556,15 +554,15 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
         std::string rex_sound_url = ReadNullTerminatedStringFromBytes(primdata,idx);
 
         if (rex_mesh_url.size() > 0)
-            prim.CollisionMeshID = rex_mesh_url;
+            prim->CollisionMeshID = rex_mesh_url;
         if (rex_collision_mesh_url.size() > 0)
-            prim.CollisionMeshID = rex_collision_mesh_url;
+            prim->CollisionMeshID = rex_collision_mesh_url;
         if (rex_particle_script_url.size() > 0)
-            prim.ParticleScriptID = rex_particle_script_url;
+            prim->ParticleScriptID = rex_particle_script_url;
         if (rex_animation_package_url.size() > 0)
-            prim.AnimationPackageID = rex_animation_package_url;
+            prim->AnimationPackageID = rex_animation_package_url;
         if (rex_sound_url.size() > 0)
-            prim.SoundID = rex_sound_url;
+            prim->SoundID = rex_sound_url;
 
         for (int i=0; i<tempmaterialcount; ++i)
         {
@@ -575,7 +573,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
                 materials[material_index].asset_id = rex_material_url;
             }
         }
-        prim.Materials = materials;
+        prim->Materials = materials;
     }
     
     // Handle any change in the drawtype of the prim. Also, 
@@ -599,11 +597,10 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
     if(!entity)
         return false;
 
-    Foundation::ComponentPtr component = entity->GetComponent(EC_OpenSimPrim::NameStatic());
-    if(component)
+    EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    if (prim)
     {
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(component.get());
-        fullid = prim.FullId;
+        fullid = prim->FullId;
     }
     
     scene->RemoveEntity(objectid);
@@ -623,11 +620,11 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     ///\todo Handle rest of the vars.
     
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(full_id);
-    if(entity)
+    if (entity)
     {
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-        prim.ObjectName = name;
-        prim.Description = desc;
+        EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+        prim->ObjectName = name;
+        prim->Description = desc;
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
         /// message. Should we maintain our own notion of what's selected and rename this event to PRIM_OBJECT_PROPERTIES or
@@ -636,7 +633,7 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
 
         // Send the 'Entity Selected' event.
         event_category_id_t event_category_id = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
-        Scene::Events::SceneEventData event_data(prim.LocalId);
+        Scene::Events::SceneEventData event_data(prim->LocalId);
         rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category_id, Scene::Events::EVENT_ENTITY_SELECTED, &event_data);
     }
     else
@@ -657,7 +654,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if (!entity)
         return;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim &prim = *(entity->GetComponent<EC_OpenSimPrim>().get());
     if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!RexTypes::IsNull(prim.MeshID)))
     {
         // Remove custom object component if exists
@@ -674,8 +671,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
         
         // Attach to animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        OgreRenderer::EC_OgreAnimationController* anim =
+            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)
             anim->SetMeshEntity(meshptr);
         
@@ -734,8 +731,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if (meshptr)
             entity->RemoveEntityComponent(meshptr);
         // Detach from animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        OgreRenderer::EC_OgreAnimationController* anim = 
+            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)
             anim->SetMeshEntity(Foundation::ComponentPtr());
 
@@ -745,7 +742,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->AddEntityComponent(customptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()));
         if (!customptr)
             return;
-        OgreRenderer::EC_OgreCustomObject& custom = *(dynamic_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
+        OgreRenderer::EC_OgreCustomObject& custom = *(checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
 
         // Attach to placeable if not yet attached
         if (!custom.GetPlaceable())
@@ -779,7 +776,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->AddEntityComponent(particleptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic()));
         if (!particleptr)
             return;
-        OgreRenderer::EC_OgreParticleSystem& particle = *(dynamic_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
+        OgreRenderer::EC_OgreParticleSystem& particle = *(checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
         
         // Attach to placeable if not yet attached
         if (!particle.GetPlaceable())
@@ -814,11 +811,10 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     
     // Handle visibility via the placeable
     {
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        if (placeableptr)
+        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        if (placeable)
         {
-            OgreRenderer::EC_OgrePlaceable& placeable = *(dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get()));
-            placeable.GetSceneNode()->setVisible(prim.IsVisible);
+            placeable->GetSceneNode()->setVisible(prim.IsVisible);
         }
     }
     
@@ -829,7 +825,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) 
         return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -837,9 +833,9 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
         return;
 
     // Check for prim material override
-    if ((prim.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim.Materials[0].asset_id)))
+    if ((prim->Materials.size()) && (prim->Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim->Materials[0].asset_id)))
     {
-        std::string matname = prim.Materials[0].asset_id;
+        std::string matname = prim->Materials[0].asset_id;
         
         // Request material if don't have it yet
         if (!renderer->GetResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
@@ -856,11 +852,11 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
         // Otherwise request normal textures
         std::set<RexTypes::RexAssetID> tex_requests;
         
-        if (!RexTypes::IsNull(prim.PrimDefaultTextureID))
-            tex_requests.insert(prim.PrimDefaultTextureID);
+        if (!RexTypes::IsNull(prim->PrimDefaultTextureID))
+            tex_requests.insert(prim->PrimDefaultTextureID);
             
-        TextureMap::const_iterator i = prim.PrimTextures.begin();
-        while (i != prim.PrimTextures.end())
+        TextureMap::const_iterator i = prim->PrimTextures.begin();
+        while (i != prim->PrimTextures.end())
         {
             if (!RexTypes::IsNull(i->second))
                 tex_requests.insert(i->second);
@@ -887,22 +883,19 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) 
         return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
-       
-    Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-    if (!mesh)
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();                    
+    OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    if (!meshptr)
         return;
         
-    OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
- 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;
         
     // Loop through all the materials in the mesh 
-    MaterialMap::const_iterator i = prim.Materials.begin();
-    while (i != prim.Materials.end())
+    MaterialMap::const_iterator i = prim->Materials.begin();
+    while (i != prim->Materials.end())
     {
         if (RexTypes::IsNull(i->second.asset_id))
         {
@@ -963,14 +956,14 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     
     // Set animation now if applicable
-    if ((!RexTypes::IsNull(prim.AnimationPackageID)) && (!prim.AnimationName.empty()))
+    if ((!RexTypes::IsNull(prim->AnimationPackageID)) && (!prim->AnimationName.empty()))
     {
         // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic()).get());
+        OgreRenderer::EC_OgreAnimationController* anim = 
+            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)        
         {
             // Check if any other animations than the supposed one is running, and stop them
@@ -978,13 +971,13 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
             OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
             while (i != anims.end())
             {
-                if (i->first != prim.AnimationName)
+                if (i->first != prim->AnimationName)
                     anim->DisableAnimation(i->first); 
                 ++i;
             }
                         
-            anim->EnableAnimation(prim.AnimationName, true, 1.0f);
-            anim->SetAnimationSpeed(prim.AnimationName, prim.AnimationRate);
+            anim->EnableAnimation(prim->AnimationName, true, 1.0f);
+            anim->SetAnimationSpeed(prim->AnimationName, prim->AnimationRate);
         }
     }
 }
@@ -1047,21 +1040,19 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float
             max_radius = radius;
     }
 
-    if (!entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()))
+    OgreRenderer::EC_OgreLight* light = entity->GetComponent<OgreRenderer::EC_OgreLight>().get();
+    if (!light)
         return;
 
-    OgreRenderer::EC_OgreLight& light = *checked_static_cast<OgreRenderer::EC_OgreLight*>
-        (entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get());
-        
     ///\note Only point lights are supported at the moment.
-    light.SetType(OgreRenderer::EC_OgreLight::LT_Point);
+    light->SetType(OgreRenderer::EC_OgreLight::LT_Point);
     Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
     if (placeable)
-        light.SetPlaceable(placeable);
+        light->SetPlaceable(placeable);
     
     ///\note Test if the color values have to be in range [0, 1].
-    light.SetColor(color);
-    light.SetAttenuation(max_radius, 0.0f, linear, quad);
+    light->SetColor(color);
+    light->SetAttenuation(max_radius, 0.0f, linear, quad);
 }
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -1125,34 +1116,33 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
-    Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-    if (!meshptr) return;
-    OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-
+    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    if (!mesh) return;
+    
     // Use optionally skeleton if it's used and we already have the resource
     Foundation::ResourcePtr skel_res;
-    if (!RexTypes::IsNull(prim.AnimationPackageID))
+    if (!RexTypes::IsNull(prim->AnimationPackageID))
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        skel_res = renderer->GetResource(prim.AnimationPackageID, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
+        skel_res = renderer->GetResource(prim->AnimationPackageID, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
     }                
     
     if (!skel_res)
     {
-        mesh.SetMesh(res->GetId());
+        mesh->SetMesh(res->GetId());
     }
     else
     {
         //! \todo what if multiple entities use the same mesh, but different skeleton?
-        mesh.SetMeshWithSkeleton(res->GetId(), skel_res->GetId());
+        mesh->SetMeshWithSkeleton(res->GetId(), skel_res->GetId());
     }
 
     // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
     Quaternion adjust(PI/2, 0, PI);
-    mesh.SetAdjustOrientation(adjust);
+    mesh->SetAdjustOrientation(adjust);
 
     HandlePrimScale(entityid);
     
@@ -1175,12 +1165,12 @@ void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePt
     
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     
     // The skeleton itself is not useful without the mesh. But if we have the mesh too, set it now
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();   
-    Foundation::ResourcePtr mesh_res = renderer->GetResource(prim.MeshID, OgreRenderer::OgreMeshResource::GetTypeStatic());
+    Foundation::ResourcePtr mesh_res = renderer->GetResource(prim->MeshID, OgreRenderer::OgreMeshResource::GetTypeStatic());
     if (mesh_res)
         HandleMeshReady(entityid, mesh_res);
 }
@@ -1193,16 +1183,14 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
      
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
 
-    Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
-    if (!particleptr) return;
-    OgreRenderer::EC_OgreParticleSystem& particle = *checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get());
+    OgreRenderer::EC_OgreParticleSystem* particle = entity->GetComponent<OgreRenderer::EC_OgreParticleSystem>().get();
+    if (!particle) return;
 
-    particle.RemoveParticleSystems();
+    particle->RemoveParticleSystems();
     for (uint i = 0; i < partres->GetNumTemplates(); ++i)
     {
-        particle.AddParticleSystem(partres->GetTemplateName(i));
+        particle->AddParticleSystem(partres->GetTemplateName(i));
     }
 
     // Set adjustment orientation for system (legacy haxor)
@@ -1221,17 +1209,16 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
            
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
-    if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
+    if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!mesh) return;
-        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        if (!meshptr) return;
         // If don't have the actual mesh entity yet, no use trying to set texture
         if (!meshptr->GetEntity()) return;
         
-        MaterialMap::const_iterator i = prim.Materials.begin();
-        while (i != prim.Materials.end())
+        MaterialMap::const_iterator i = prim->Materials.begin();
+        while (i != prim->Materials.end())
         {
             uint idx = i->first;
             if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
@@ -1260,20 +1247,19 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
            
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();         
        
     // Handle material ready for prim
-    if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
+    if (prim->DrawType == RexTypes::DRAWTYPE_PRIM)
     {
-        Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-        if (customptr && res->GetId() == prim.Materials[0].asset_id  && prim.Materials[0].Type == RexTypes::RexAT_MaterialScript)
+        OgreRenderer::EC_OgreCustomObject* custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        if (custom && prim->Materials.size() && res->GetId() == prim->Materials[0].asset_id && prim->Materials[0].Type == RexTypes::RexAT_MaterialScript)
         {
-            OgreRenderer::EC_OgreCustomObject& custom = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get());
             // Update geometry now that the material exists
-            if (prim.HasPrimShapeData)
+            if (prim->HasPrimShapeData)
             {
-                CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
-                custom.CommitChanges();
+                CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom->GetObject(), *prim);
+                custom->CommitChanges();
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
@@ -1284,17 +1270,16 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     }
     
     // Handle material ready for mesh
-    if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+    if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (mesh) 
+        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        if (meshptr) 
         {
-            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());      
             // If don't have the actual mesh entity yet, no use trying to set the material
             if (!meshptr->GetEntity()) return;
             
-            MaterialMap::const_iterator i = prim.Materials.begin();
-            while (i != prim.Materials.end())
+            MaterialMap::const_iterator i = prim->Materials.begin();
+            while (i != prim->Materials.end())
             {
                 uint idx = i->first;
                 if ((i->second.Type == RexTypes::RexAT_MaterialScript) && (i->second.asset_id == res->GetId()))
@@ -1350,24 +1335,21 @@ void Primitive::HandlePrimScale(entity_id_t entityid)
     if (!entity)
         return;
         
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());            
-    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
-    if (!placeable)
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
+    OgreRenderer::EC_OgrePlaceable *ogrepos = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (!ogrepos)
         return;
-        
-    OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    
+            
     // Handle scale mesh to prim-setting
-    Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-    if (meshptr)
+    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    if (mesh)
     {
-        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
         Vector3df adjust_scale(1.0, 1.0, 1.0);
-        if (prim.ScaleToPrim && mesh.GetEntity())
+        if (prim->ScaleToPrim && mesh->GetEntity())
         {
             Vector3df min, max, size;
 
-            mesh.GetBoundingBox(min, max);
+            mesh->GetBoundingBox(min, max);
             size = max - min;
             if ((size.x != 0.0) && (size.y != 0.0) && (size.z != 0.0))
             {
@@ -1379,7 +1361,7 @@ void Primitive::HandlePrimScale(entity_id_t entityid)
 
         // Because Ogre doesn't care about rotation when combining scaling, have to do a nasty hack here
         // (meshes have X & Y axes swapped)
-        const Vector3df& prim_scale = prim.Scale;
+        const Vector3df& prim_scale = prim->Scale;
         if ((prim_scale.x != 0.0) && (prim_scale.y != 0.0) && (prim_scale.z != 0.0))
         {
             adjust_scale.y /= prim_scale.y;
@@ -1389,10 +1371,10 @@ void Primitive::HandlePrimScale(entity_id_t entityid)
             adjust_scale.z *= prim_scale.y;
         }
 
-        mesh.SetAdjustScale(adjust_scale);
+        mesh->SetAdjustScale(adjust_scale);
     }
 
-    ogrepos.SetScale(prim.Scale);
+    ogrepos->SetScale(prim->Scale);
 }
 
 void SkipTextureEntrySection(const uint8_t* bytes, int& idx, int length, int elementsize)
@@ -1485,13 +1467,13 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     }
 }
 
-EC_AttachedSound& Primitive::GetOrCreateAttachedSound(Scene::EntityPtr entity)
+EC_AttachedSound* Primitive::GetOrCreateAttachedSound(Scene::EntityPtr entity)
 {
     // Create attachedsound component into the entity, if doesn't exist already
     Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
     if (!attachedsoundptr)
         entity->AddEntityComponent(attachedsoundptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_AttachedSound::NameStatic()));    
-    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
+    EC_AttachedSound* attachedsound = checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
 
     return attachedsound;
 }    
@@ -1506,66 +1488,63 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
     if (!entity)
         return;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-    RexUUID sounduuid(prim.SoundID);
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    RexUUID sounduuid(prim->SoundID);
 
-    if (prim.SoundID.empty() || (RexUUID::IsValid(prim.SoundID) && sounduuid.IsNull()))
+    if (prim->SoundID.empty() || (RexUUID::IsValid(prim->SoundID) && sounduuid.IsNull()))
     {
         // If sound ID is empty or null, stop any previous sound
-        Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
-        if (attachedsoundptr)    
+        EC_AttachedSound* attachedsound = entity->GetComponent<EC_AttachedSound>().get();
+        if (attachedsound)    
         {
-            EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
-            attachedsound.RemoveSound(EC_AttachedSound::RexAmbientSound);
+            attachedsound->RemoveSound(EC_AttachedSound::RexAmbientSound);
         }
     }
     else
     {        
-        EC_AttachedSound& attachedsound = GetOrCreateAttachedSound(entity); 
+        EC_AttachedSound* attachedsound = GetOrCreateAttachedSound(entity); 
         
         // If not already playing the same sound, start it now
         bool same = false;
-        const std::vector<sound_id_t>& sounds = attachedsound.GetSounds();
+        const std::vector<sound_id_t>& sounds = attachedsound->GetSounds();
         sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
         if (rex_ambient_sound)
         {
-            if (soundsystem->GetSoundName(rex_ambient_sound) == prim.SoundID)
+            if (soundsystem->GetSoundName(rex_ambient_sound) == prim->SoundID)
                 same = true;
         }
         if (!same)
         {
             // Get initial position of sound from the placeable (will be updated later if the entity moves)
             Vector3df position(0.0f, 0.0f, 0.0f);
-            Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-            if (placeableptr)
+            OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (placeable)
             {
-                OgreRenderer::EC_OgrePlaceable &placeable = 
-                    *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
-                position = placeable.GetPosition();
+                position = placeable->GetPosition();
             }        
-            rex_ambient_sound = soundsystem->PlaySound3D(prim.SoundID, false, position);
+            rex_ambient_sound = soundsystem->PlaySound3D(prim->SoundID, false, position);
             // The ambient sounds will always loop
             soundsystem->SetLooped(rex_ambient_sound, true);
             
             // Now add the sound to entity
-            attachedsound.AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
+            attachedsound->AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
         }
         
         // Adjust the range & gain parameters
         if (rex_ambient_sound)
         {
             // Set positionality depending on the radius
-            if (prim.SoundRadius > 0.0)
+            if (prim->SoundRadius > 0.0)
             {
                 soundsystem->SetPositional(rex_ambient_sound, true);
-                soundsystem->SetRange(rex_ambient_sound, 0.0f, prim.SoundRadius, 2.0f);
+                soundsystem->SetRange(rex_ambient_sound, 0.0f, prim->SoundRadius, 2.0f);
             }
             else
             {
                 soundsystem->SetPositional(rex_ambient_sound, false);
             }
          
-            soundsystem->SetGain(rex_ambient_sound, prim.SoundVolume);
+            soundsystem->SetGain(rex_ambient_sound, prim->SoundVolume);
         }
     }
 }
@@ -1589,17 +1568,15 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     if (!soundsystem)
         return false;
         
-    EC_AttachedSound& attachedsound = GetOrCreateAttachedSound(entity);
+    EC_AttachedSound* attachedsound = GetOrCreateAttachedSound(entity);
     
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Vector3df position(0.0f, 0.0f, 0.0f);
-    Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    if (placeableptr)
+    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
     {
-        OgreRenderer::EC_OgrePlaceable &placeable = 
-            *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
-        position = placeable.GetPosition();
-    }
+        position = placeable->GetPosition();
+    }       
                 
     // Start new sound
     sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
@@ -1610,7 +1587,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     // Attach sound that the position will be updated / sound will be stopped if entity destroyed
     // Note that because we use the OpenSimAttachedSound sound slot, any previous sound in that slot
     // will be stopped.
-    attachedsound.AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
+    attachedsound->AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
     
     return false;
 }
@@ -1631,14 +1608,12 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     if (!soundsystem)
         return false;
         
-    // Get attachedsound component
-    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
-    if (!attachedsoundptr)
-        return false;
-        
+    // Get attachedsound component        
+    EC_AttachedSound* attachedsound = entity->GetComponent<EC_AttachedSound>().get(); 
+    if (!attachedsound)
+        return false; 
     // Change gain of sound(s) this entity is playing 
-    EC_AttachedSound& attachedsound = *checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());    
-    const std::vector<sound_id_t>& sounds = attachedsound.GetSounds();
+    const std::vector<sound_id_t>& sounds = attachedsound->GetSounds();
     for (uint i = 0; i < sounds.size(); ++i)
         soundsystem->SetGain(sounds[i], gain);
     

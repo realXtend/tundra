@@ -190,22 +190,25 @@ void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
         sunlight_->setCastShadows(enabled);
 }
 
-void EC_OgreEnvironment::SetTime(const time_t &time)
+void EC_OgreEnvironment::SetTime(Real time)
 {
-    assert(time);
-    tm *ptm = gmtime(&time);
-
-    // Fixed hour adjustment
-    unsigned hour = ptm->tm_hour;
-    hour += 14;
-    hour %= 24;
-        
+    if (time < 0.0)
+        time += 1.0;
+    if (time >= 1.0)
+        time -= 1.0;
+    
+    int hours = (int)(time * 24.0);
+    int minutes = ((int)(time * 24.0*60.0)) % 60;
+    int seconds = ((int)(time * 24.0*60.0*60.0)) % 60;
+    
+    std::cout << hours << ":" << minutes << ":" << seconds << std::endl;
+    
 #ifdef CAELUM
     // Note: we actually don't use year/month/day, because then worlds would look different
     // based on real-life time of year
     caelumSystem_->getUniversalClock()->setGregorianDateTime(
-        1900, 5, 1, hour,
-        ptm->tm_min, ptm->tm_sec);
+        1900, 5, 1, hours,
+        minutes, seconds);
     // Do not let Caelum clock proceed on its own, authoritative time comes from server
     caelumSystem_->getUniversalClock()->setTimeScale(0);        
 #endif

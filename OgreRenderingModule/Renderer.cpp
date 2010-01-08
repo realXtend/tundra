@@ -723,11 +723,11 @@ OLD OGRE RENDER FUNCTION
             {
                 continue;
             }
-            Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
-            if (!component)
-                continue;
                 
-            EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
+            EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+            if (!placeable)
+                continue;
+                            
             int current_priority = placeable->GetSelectPriority();
             if (current_priority > best_priority)
                 best_priority = current_priority;
@@ -773,12 +773,10 @@ OLD OGRE RENDER FUNCTION
                 
             int current_priority = minimum_priority;
             {
-                Foundation::ComponentPtr component = entity->GetComponent(EC_OgrePlaceable::NameStatic());
-                if (component)
+                EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+                if (placeable)
                 {
-                    EC_OgrePlaceable *placeable = checked_static_cast<EC_OgrePlaceable*>(component.get());
-                    if (placeable)
-                        current_priority = placeable->GetSelectPriority();
+                    current_priority = placeable->GetSelectPriority();
 //                    if (current_priority < closest_priority)
 //                        continue;
                 }

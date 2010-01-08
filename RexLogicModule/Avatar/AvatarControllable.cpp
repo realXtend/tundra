@@ -123,7 +123,7 @@ namespace RexLogic
             if (entity)
             {
                 //! \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
-                EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+                EC_OpenSimAvatar *avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->controlflags &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
                 avatar->controlflags &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
                 net_dirty_ = true;
@@ -138,7 +138,7 @@ namespace RexLogic
             if (entity)
             {
                 //! \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
-                EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+                EC_OpenSimAvatar *avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->yaw = 0;
                 net_dirty_ = true;
             }            
@@ -174,7 +174,7 @@ namespace RexLogic
         Foundation::ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::NameStatic());
         if (IsAvatar(component))
         {
-            EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>(entity_data->entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+            EC_OpenSimAvatar *avatar = entity_data->entity->GetComponent<EC_OpenSimAvatar>().get();
 
             if (event_id == RexTypes::Actions::FlyMode)
             {
@@ -248,10 +248,10 @@ namespace RexLogic
             component = (*it)->GetComponent(EC_Controllable::NameStatic());
             if (IsAvatar(component))
             {
-                EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>((*it)->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+                EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
                 if (avatar->yaw != 0 || drag_yaw_ != 0)
                 {
-                    EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
+                    EC_NetworkPosition *netpos = (*it)->GetComponent<EC_NetworkPosition>().get();
 
                     Quaternion rotchange(0, 0, (-avatar->yaw * (Real)frametime + drag_yaw_) * rotation_sensitivity_);
                     netpos->orientation_ = rotchange * netpos->orientation_;
@@ -281,8 +281,8 @@ namespace RexLogic
         Scene::EntityPtr avatarentity = entity_.lock();
         if(avatarentity)
         {
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
-            return netpos.orientation_;
+            EC_NetworkPosition *netpos = avatarentity->GetComponent<EC_NetworkPosition>().get();
+            return netpos->orientation_;
         }
 
         return Quaternion::IDENTITY;
@@ -329,11 +329,11 @@ namespace RexLogic
             return;
             
         // set position/rotation according to the value from server
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_NetworkPosition* netpos = avatarentity->GetComponent<EC_NetworkPosition>().get();
 
         //! \todo handle lookat to set initial avatar orientation
-        netpos.SetPosition(position);
-        netpos.Updated();    
+        netpos->SetPosition(position);
+        netpos->Updated();    
     }    
 
 	void AvatarControllable::SetYaw(Real newyaw)
@@ -349,7 +349,7 @@ namespace RexLogic
             component = (*it)->GetComponent(EC_Controllable::NameStatic());
             if (IsAvatar(component))
             {
-                EC_OpenSimAvatar *avatar = checked_static_cast<EC_OpenSimAvatar*>((*it)->GetComponent(EC_OpenSimAvatar::NameStatic()).get());
+                EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->yaw = newyaw;
 			}
 		}
@@ -358,7 +358,7 @@ namespace RexLogic
 
 	void AvatarControllable::SetRotation(Quaternion newrot)
 	{
-		std::cout << "AvatarControllable::SetRotation" << std::endl;
+		RexLogicModule::LogDebug("AvatarControllable::SetRotation");
 		Scene::ScenePtr scene = framework_->GetScene("World");
         Scene::SceneManager::iterator it = scene->begin();
         Foundation::ComponentPtr component;

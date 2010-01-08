@@ -92,6 +92,16 @@ namespace Scene
         */
         Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
 
+        //! Returns a component with certain type or empty pointer if component was not found, already cast to correct type.
+        /*! If there are several components with the specified name, returns the first component found (arbitrary).
+
+            \param name name of the component
+        */
+        template <class T> boost::shared_ptr<T> GetComponent() const
+        {
+            return boost::dynamic_pointer_cast<T>(GetComponent(T::NameStatic()));
+        }
+
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 

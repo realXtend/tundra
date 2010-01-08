@@ -57,6 +57,9 @@ namespace RexLogic
         Real GetPitch() const { return firstperson_pitch_; }
 		void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
 
+        //! returns current state of camera
+        State GetState() const { return current_state_; }
+         
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
 
