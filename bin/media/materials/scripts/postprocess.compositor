@@ -369,18 +369,19 @@ compositor HDR
 		target rt_full
 		{
 			// No input, render differently
-			input none
+			input previous
 
 			// Use float target HDR material scheme (unclamped shaders)
 			material_scheme HDR
+			
+			//Following 2 passes not used since the background color is not used. Could be done also by clearing the colour buffer in background color
+			//pass clear
+			//{
+			//}
 
-			pass clear
-			{
-			}
-
-			pass render_scene
-			{
-			}
+			//pass render_scene
+			//{
+			//}
 
 		}
 
