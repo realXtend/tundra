@@ -11,6 +11,8 @@
 
 #include <QString>
 
+#include <Poco/Environment.h>
+
 namespace fs = boost::filesystem;
 
 typedef void (*SetProfilerFunc)(Foundation::Profiler *profiler);
@@ -290,6 +292,7 @@ namespace Foundation
 
             StringVector entries;
             StringVector dependencies;
+            StringVector relativePathDependencyAddititions;
 
             Poco::AutoPtr<Poco::Util::XMLConfiguration> config;
             try
@@ -307,12 +310,19 @@ namespace Foundation
                         
                    if ((*it).find("dependency") != std::string::npos)
                         dependencies.push_back( config->getString(*it) );
+
+                   if ((*it).find("dependency_dir") != std::string::npos)
+                        relativePathDependencyAddititions.push_back( config->getString(*it) );
+
                 }
             }
             catch(std::exception)
             {
             }
             
+            if(!relativePathDependencyAddititions.empty())
+                AddDependenciesToPath(relativePathDependencyAddititions);
+
             if (entries.empty())
                 entries.push_back(modulePath.filename());
                 
@@ -542,5 +552,27 @@ namespace Foundation
         }
 
         return files;
+    }
+
+    void ModuleManager::AddDependenciesToPath(const StringVector &all_additions)
+    {
+
+        Poco::Environment env;
+        std::string path = env.get("path");
+        std::string cwd = Poco::Path::current();
+        char separator = Poco::Path::pathSeparator();
+
+        // add additions to env
+        for ( StringVector::const_iterator it = all_additions.begin() ; 
+          it != all_additions.end() ; ++it )
+        {   
+            std::string absolutePath = cwd + (*it);
+            absolutePath.push_back(separator);
+            path.insert(0, absolutePath);
+            path.push_back(separator);
+        }
+
+        //set additions to process path
+        env.set("path", path);        
     }
 }

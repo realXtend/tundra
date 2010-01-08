@@ -286,6 +286,9 @@ namespace Foundation
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
         StringVectorPtr GetXmlFiles(const std::string &path);
 
+        //! adds needed dependency paths to process path
+        void AddDependenciesToPath(const StringVector &all_additions);
+
         const std::string DEFAULT_MODULES_PATH;
 
         typedef std::set<std::string> ModuleTypeSet;

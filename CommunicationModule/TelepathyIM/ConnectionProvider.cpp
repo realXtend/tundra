@@ -48,8 +48,8 @@ namespace TelepathyIM
 
     void ConnectionProvider::InitializeGStreamer()
     {
-//        QString gst_plugin_path("--gst-plugin-path=./gstreamer/lib");
-        QString gst_plugin_path("");
+        QString gst_plugin_path("--gst-plugin-path=\\gstreamer\\lib\\gstreamer-0.10;");
+        //QString gst_plugin_path("");
         int argc=1;
         char* argv[1];
         argv[0] = (char*)gst_plugin_path.toStdString().c_str();
@@ -58,7 +58,7 @@ namespace TelepathyIM
         GError *p_error = &error;
         if (!gst_init_check(&argc, &p_argv, &p_error))
         {
-            QString error_message("Canot initialize GStreamer: ");
+            QString error_message("Cannot initialize GStreamer: ");
             error_message.append(p_error->message);
             LogError(error_message.toStdString());
             return;
