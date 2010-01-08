@@ -68,7 +68,7 @@ namespace Environment
             if(terrain_component->AllPatchesLoaded())
             {
                 // Find image label in widget so we can get the basic information about the image that we are about to update.
-                QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
+                QLabel *label = editor_widget_->findChild<QLabel *>("m_label");
                 const QPixmap *pixmap = label->pixmap();
                 QImage image = pixmap->toImage();
 
@@ -1185,56 +1185,5 @@ namespace Environment
 
     }
 
-    void EnvironmentEditor::UpdateAmbient()
-    {
-        // Sun direction
-        QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
-        QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
-        QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
-        
-        // Sun color
-        QDoubleSpinBox* sun_color_red = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_red");
-        QDoubleSpinBox* sun_color_blue  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_blue");
-        QDoubleSpinBox* sun_color_green  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_green");
-        QDoubleSpinBox* sun_color_alpha  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_alpha");
-
-        // Ambient light
-        QDoubleSpinBox* ambient_light_red = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_red");
-        QDoubleSpinBox* ambient_light_blue = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_blue");
-        QDoubleSpinBox* ambient_light_green = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_green");
-
-         if ( sun_direction_x != 0
-                 && sun_direction_y != 0
-                 && sun_direction_z != 0
-                 && sun_color_red != 0
-                 && sun_color_blue != 0
-                 && sun_color_green != 0
-                 && sun_color_alpha != 0
-                 && ambient_light_red != 0
-                 && ambient_light_blue !=0
-                 && ambient_light_green != 0)
-                 
-            {
-                QVector<float> sun_direction(3);
-                sun_direction[0] = static_cast<float>(sun_direction_x->value());
-                sun_direction[1] = static_cast<float>(sun_direction_y->value());
-                sun_direction[2] = static_cast<float>(sun_direction_z->value());
-                environment_->SetSunDirection(sun_direction);
-
-
-                QVector<float> sun_color(4);
-                sun_color[0] = static_cast<float>(sun_color_red->value());
-                sun_color[1] = static_cast<float>(sun_color_green->value());
-                sun_color[2] = static_cast<float>(sun_color_blue->value());
-                sun_color[3] = static_cast<float>(sun_color_alpha->value());
-                environment_->SetSunColor(sun_color);
-
-                QVector<float> ambient_light(3); 
-                ambient_light[0] = static_cast<float>(ambient_light_red->value());
-                ambient_light[1] = static_cast<float>(ambient_light_green->value());
-                ambient_light[2] = static_cast<float>(ambient_light_blue->value());
-                environment_->SetAmbientLight(ambient_light);
-            }
-
-    }
+    
 }
