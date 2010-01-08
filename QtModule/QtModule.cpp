@@ -353,12 +353,11 @@ bool QtModule::HandleEvent(event_category_id_t category_id,
                 Scene::EntityPtr entity = scene->GetEntity(raycast_data->localID);
                 if ( entity.get() != 0)
                 {
-                    Foundation::ComponentPtr obj = entity->GetComponent(EC_UICanvas::NameStatic());
-                    if ( obj.get() != 0)
+                    EC_UICanvas* ui_canvas = entity->GetComponent<EC_UICanvas>().get();
+                    if (ui_canvas)
                     {
                         // Has canvas.
-                        EC_UICanvas& ui_canvas = *checked_static_cast<EC_UICanvas*>(obj.get()); 
-                        boost::shared_ptr<UICanvas> canvas = ui_canvas.GetCanvas();
+                        boost::shared_ptr<UICanvas> canvas = ui_canvas->GetCanvas();
                         if (canvas)
                         {
                             // Note here coordinate system looks quite strange, but there happends inside of InjectMousePress "counter" fix for coordinates. 
@@ -738,12 +737,9 @@ void QtModule::RefreshEC_UICanvas(Foundation::EventDataInterface* data)
     if (!entity)
         return;
     
-    Foundation::ComponentPtr uicanvasptr = entity->GetComponent(EC_UICanvas::NameStatic());
-    if (!uicanvasptr)
-        return;
-        
-    EC_UICanvas& uicanvas = *checked_static_cast<EC_UICanvas*>(uicanvasptr.get());       
-    uicanvas.Refresh();
+    EC_UICanvas* uicanvas = entity->GetComponent<EC_UICanvas>().get();
+    if (uicanvas)
+        uicanvas->Refresh();
 }
 
 Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::Entity* entity, boost::shared_ptr<UICanvas> canvas)
@@ -760,9 +756,9 @@ Foundation::ComponentPtr QtModule::CreateEC_UICanvasToEntity(Scene::Entity* enti
         entity->AddEntityComponent(uicanvasptr);
     }
     
-    EC_UICanvas& uicanvas = *checked_static_cast<EC_UICanvas*>(uicanvasptr.get());    
-    uicanvas.SetCanvas(canvas);
-    uicanvas.SetEntity(entity);
+    EC_UICanvas* uicanvas = checked_static_cast<EC_UICanvas*>(uicanvasptr.get());    
+    uicanvas->SetCanvas(canvas);
+    uicanvas->SetEntity(entity);
     
     return uicanvasptr;    
 }
@@ -771,12 +767,11 @@ boost::shared_ptr<UICanvas> QtModule::GetCanvas(const Foundation::RaycastResult&
 {
     if ( result.entity_ != 0 )
     {
-        Foundation::ComponentPtr obj = result.entity_->GetComponent(EC_UICanvas::NameStatic());
-        if ( obj.get() != 0)
+        EC_UICanvas* ui_canvas = result.entity_->GetComponent<EC_UICanvas>().get();
+        if (ui_canvas)
         {
             // Has canvas.
-            EC_UICanvas& ui_canvas = *checked_static_cast<EC_UICanvas*>(obj.get()); 
-            boost::shared_ptr<UICanvas> canvas = ui_canvas.GetCanvas();
+            boost::shared_ptr<UICanvas> canvas = ui_canvas->GetCanvas();
             return canvas;
         }
     }

@@ -405,7 +405,7 @@ void RexLogicModule::Update(f64 frametime)
             camera_controllable_->AddTime(frametime);
 
             // Update avatar name overlay positions.
-            GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
+            avatar_->UpdateAvatarNameOverlayPositions();
         }
 
         // INFO: to enable KeyStateListener uncomment
@@ -422,8 +422,23 @@ void RexLogicModule::UpdateSoundListener()
     if (!soundsystem)
         return;
 
+    // In freelook, use camera position. Otherwise use avatar position
+    Vector3df listener_pos;    
+    if (camera_controllable_->GetState() == CameraControllable::FreeLook)
+        listener_pos = GetCameraPosition();
+    else
+    {
+        Scene::EntityPtr entity = avatar_->GetUserAvatar();
+        if (!entity)
+            return;
+        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        if (!placeable)
+            return;
+        listener_pos = placeable->GetPosition();
+    }
+
     soundsystem->SetListener(
-        GetCameraPosition(),
+        listener_pos,
         GetCameraOrientation()
     );
 }

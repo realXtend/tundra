@@ -39,7 +39,7 @@ OgreRenderer::EC_OgreEnvironment* Environment::GetEnvironmentComponent()
     if (activeEnvEntity_.expired())
         return 0;
     
-    OgreRenderer::EC_OgreEnvironment* ec = static_cast<OgreRenderer::EC_OgreEnvironment*>(activeEnvEntity_.lock()->GetComponent("EC_OgreEnvironment").get());    
+    OgreRenderer::EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<OgreRenderer::EC_OgreEnvironment>().get();  
     return ec;
 }
 
@@ -72,6 +72,14 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     sunDirection_ = msg.ReadVector3();
     sunPhase_ = msg.ReadF32();
     sunAngVelocity_ = msg.ReadVector3();
+    
+    // Calculate time of day from sun phase, which seems the most reliable way to do it
+    float dayphase;
+    
+    if (sunPhase_ < 1.25 * PI)
+        dayphase = (sunPhase_ / PI + 1.0) * 0.33333333;
+    else
+        dayphase = -0.5 + (sunPhase_ / PI);
 
     OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
@@ -85,7 +93,7 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
 
     if (!time_override_)
     {
-        env->SetTime(usecSinceStart_);
+        env->SetTime(dayphase);
     }
 
     return false;

@@ -290,7 +290,7 @@ namespace
         }
 
         Scene::EntityPtr terrain = GetTerrainEntity().lock();
-        EC_Terrain *terrainComponent = checked_static_cast<EC_Terrain*>(terrain->GetComponent("EC_Terrain").get());
+        EC_Terrain *terrainComponent = terrain->GetComponent<EC_Terrain>().get();
         assert(terrainComponent);
         EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(patch.header.x, patch.header.y);
         scenePatch.x = patch.header.x;
@@ -340,7 +340,7 @@ namespace
     {
         PROFILE(RegenerateOgreTerrainGeom);
         Scene::EntityPtr terrain = GetTerrainEntity().lock();
-        EC_Terrain *terrainComponent = checked_static_cast<EC_Terrain*>(terrain->GetComponent("EC_Terrain").get());
+        EC_Terrain *terrainComponent = terrain->GetComponent<EC_Terrain>().get();
         assert(terrainComponent);
 
         for(int y = 0; y < EC_Terrain::cNumPatchesPerEdge; ++y)
@@ -486,8 +486,8 @@ namespace
             iter != scene->end(); ++iter)
         {
             Scene::Entity &entity = **iter;
-            Foundation::ComponentInterfacePtr terrainComponent = entity.GetComponent("EC_Terrain");
-            if (terrainComponent.get())
+            EC_Terrain *terrainComponent = entity.GetComponent<EC_Terrain>().get();
+            if (terrainComponent)
             {
                 cachedTerrainEntity_ = scene->GetEntity(entity.GetId());
             }

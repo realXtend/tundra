@@ -80,7 +80,7 @@ void Sky::UpdateSky(const OgreRenderer::SkyType &type, std::vector<std::string> 
         Scene::EntityPtr sky = GetSkyEntity().lock();
         if (sky)
         {
-            OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+            OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
             sky_component->DisableSky();
             return;
         }
@@ -152,7 +152,7 @@ void Sky::CreateDefaultSky(const bool &show)
     Scene::EntityPtr sky = GetSkyEntity().lock();
     if (sky)
     {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+        OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
         assert(sky_component);
         sky_component->CreateSky();
     }
@@ -196,7 +196,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
         return;
     }
 
-    OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
+    OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
     assert(sky_component);
 
     switch(type_)
@@ -254,7 +254,7 @@ void Sky::FindCurrentlyActiveSky()
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentInterfacePtr sky_component = entity.GetComponent("EC_OgreSky");
+        Foundation::ComponentInterfacePtr sky_component = entity.GetComponent(OgreRenderer::EC_OgreSky::NameStatic());
         if (sky_component.get())
             cachedSkyEntity_ = scene->GetEntity(entity.GetId());
     }

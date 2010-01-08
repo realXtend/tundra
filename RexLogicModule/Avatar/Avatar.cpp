@@ -67,9 +67,9 @@ namespace RexLogic
             {
                 rexlogicmodule_->RegisterFullId(fullid,entityid);
             
-                EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
-                presence.LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-                presence.FullId = fullid;
+                EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+                presence->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+                presence->FullId = fullid;
             }
         }
         return entity;
@@ -96,7 +96,7 @@ namespace RexLogic
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
         if (placeable)
         {
-            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+            //OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
             //DebugCreateOgreBoundingBox(rexlogicmodule_,
             //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
             
@@ -129,10 +129,10 @@ namespace RexLogic
             if (!entity)
                 return false;
                 
-            EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+            EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
-            presence.RegionHandle = regionhandle;
+            presence->RegionHandle = regionhandle;
             
             // Get position from objectdata
             msg->SkipToFirstVariableByName("ObjectData");
@@ -142,26 +142,26 @@ namespace RexLogic
             {
                 // The data contents:
                 // ofs 16 - pos xyz - 3 x float (3x4 bytes)
-                netpos.position_ = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[16]));
-                netpos.Updated();
+                netpos->position_ = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[16]));
+                netpos->Updated();
             }
 
             msg->SkipToFirstVariableByName("ParentID");
-            presence.ParentId = msg->ReadU32();
+            presence->ParentId = msg->ReadU32();
             
             // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
             msg->SkipToFirstVariableByName("NameValue");
             std::string namevalue = msg->ReadString();
             NameValueMap map = ParseNameValueMap(namevalue);
-            presence.SetFirstName(map["FirstName"]);
-            presence.SetLastName(map["LastName"]);
+            presence->SetFirstName(map["FirstName"]);
+            presence->SetLastName(map["LastName"]);
             
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
             // controlled avatar entity. -jj.
             ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
-            if (presence.FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::NameStatic()))
+            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::NameStatic()))
             {
                 Foundation::Framework *fw = rexlogicmodule_->GetFramework();
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::NameStatic()));
@@ -173,13 +173,13 @@ namespace RexLogic
                 fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
                 
                 // If avatar does not have appearance address yet, and the connection info has, then use it
-                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());  
-                if (avatar.GetAppearanceAddress().empty())
+                EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+                if (avatar->GetAppearanceAddress().empty())
                 {                     
                     std::string avataraddress = rexlogicmodule_->GetServerConnection()->GetInfo().avatarStorageUrl;
                     if (!avataraddress.empty())
                     {                    
-                        avatar.SetAppearanceAddress(avataraddress,false);
+                        avatar->SetAppearanceAddress(avataraddress,false);
                         avatar_appearance_.DownloadAppearance(entity);
                     }
                 }
@@ -189,7 +189,7 @@ namespace RexLogic
                 rexlogicmodule_->GetAvatarEditor()->RebuildEditView();         
             }
 
-            ShowAvatarNameOverlay(presence.LocalId);
+            ShowAvatarNameOverlay(presence->LocalId);
 
             // Handle setting the avatar as child of another object, or possibly being parent itself
             rexlogicmodule_->HandleMissingParent(localid);
@@ -220,30 +220,30 @@ namespace RexLogic
 
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(!entity) return;
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
         Vector3df position = GetProcessedVector(&bytes[i]);    
         i += sizeof(Vector3df);
         if (!IsValidPositionVector(position))
             return;
         
-        netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        netpos->velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
         
         Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
      
-        netpos.position_ = position;
+        netpos->position_ = position;
         if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
-            netpos.orientation_ = rotation;
+            netpos->orientation_ = rotation;
         }
                   
         //! \todo what to do with acceleration & rotation velocity? zero them currently
-        netpos.accel_ = Vector3df::ZERO;
-        netpos.rotvel_ = Vector3df::ZERO;
+        netpos->accel_ = Vector3df::ZERO;
+        netpos->rotvel_ = Vector3df::ZERO;
         
-        netpos.Updated();
+        netpos->Updated();
 
         assert(i <= 30);
     }    
@@ -271,7 +271,7 @@ namespace RexLogic
         // set values
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(!entity) return;        
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::NameStatic()).get());
+        EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
         Vector3df position = GetProcessedVector(&bytes[i]);
         i += sizeof(Vector3df);
@@ -279,25 +279,25 @@ namespace RexLogic
         if (!IsValidPositionVector(position))
             return;
 
-        netpos.velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        netpos->velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         i += 6;
         
-        netpos.accel_ = GetProcessedVectorFromUint16(&bytes[i]);
+        netpos->accel_ = GetProcessedVectorFromUint16(&bytes[i]);
         i += 6;
 
         Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
         i += 8;        
 
-        netpos.rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+        netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         
-        netpos.position_ = position;
+        netpos->position_ = position;
         if (!entity->GetComponent(EC_Controllable::NameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
-            netpos.orientation_ = rotation;
+            netpos->orientation_ = rotation;
         }
         
-        netpos.Updated();
+        netpos->Updated();
 
         assert(i <= 60);                            
     }
@@ -318,8 +318,8 @@ namespace RexLogic
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
             if (entity)
             {
-                EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(entity->GetComponent(EC_OpenSimAvatar::NameStatic()).get());        
-                avatar.SetAppearanceAddress(avataraddress,overrideappearance);
+                EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();        
+                avatar->SetAppearanceAddress(avataraddress,overrideappearance);
                 avatar_appearance_.DownloadAppearance(entity);
             }
         }
@@ -339,11 +339,10 @@ namespace RexLogic
         if(!entity)
             return false;
 
-        Foundation::ComponentPtr component = entity->GetComponent(EC_OpenSimPresence::NameStatic());
-        if(component)
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (presence)
         {
-            EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(component.get());
-            fullid = presence.FullId;
+            fullid = presence->FullId;
         }
         
         scene->RemoveEntity(objectid);
@@ -395,8 +394,8 @@ namespace RexLogic
         for (it = rexlogicmodule_->GetFramework()->GetComponentManager()->Begin("EC_OgreMovableTextOverlay");
              it != rexlogicmodule_->GetFramework()->GetComponentManager()->End("EC_OgreMovableTextOverlay"); ++it)
         {
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(it->lock().get());
-            name_overlay.Update();
+            OgreRenderer::EC_OgreMovableTextOverlay* name_overlay = static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(it->lock().get());
+            name_overlay->Update();
         }
     }
     
@@ -410,14 +409,13 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
-        if (overlay)
+        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (overlay && presence)
         {
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.CreateOverlay(Vector3df(0.0f, 0.0f, 1.5f));
-            name_overlay.SetText(presence.GetFullName());
-            name_overlay.SetPlaceable(placeable);
+            overlay->CreateOverlay(Vector3df(0.0f, 0.0f, 1.5f));
+            overlay->SetText(presence->GetFullName());
+            overlay->SetPlaceable(placeable);
         }
     }   
     void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id)
@@ -430,13 +428,12 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        EC_OpenSimPresence &presence = *checked_static_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
-        if (overlay)
+        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (overlay && presence)
         {
-            OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-            name_overlay.SetText(presence.GetFullName());
-            name_overlay.SetVisible(true);
+            overlay->SetText(presence->GetFullName());
+            overlay->SetVisible(true);
         }
     }
     
@@ -446,24 +443,23 @@ namespace RexLogic
         if (!entity)
             return;
             
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());               
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
         if (placeableptr && meshptr)
         {
-            OgreRenderer::EC_OgrePlaceable &placeable = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeableptr.get());
-            OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+            OgreRenderer::EC_OgreMesh* mesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
             
-            mesh.SetPlaceable(placeableptr, entity.get());
+            mesh->SetPlaceable(placeableptr, entity.get());
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
         
         if (animctrlptr && meshptr)
         {
-            OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
+            OgreRenderer::EC_OgreAnimationController* animctrl = checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
             
-            animctrl.SetMeshEntity(meshptr);
+            animctrl->SetMeshEntity(meshptr);
         }
     }
     
@@ -473,14 +469,12 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!animctrlptr || !appearanceptr)
+        OgreRenderer::EC_OgreAnimationController* animctrl = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!animctrl || !appearance)
             return;
         
-        OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
-        EC_AvatarAppearance &appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        const AnimationDefinitionMap& anim_defs = appearance.GetAnimations();
+        const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
         // Convert uuid's to actual animation names
         std::vector<std::string> anims_to_start;
@@ -493,7 +487,7 @@ namespace RexLogic
         
         // Other animations that are going on have to be stopped
         std::vector<std::string> anims_to_stop;
-        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl.GetRunningAnimations();
+        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
         OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
@@ -506,24 +500,24 @@ namespace RexLogic
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_start[i]);
             
-            animctrl.EnableAnimation(
+            animctrl->EnableAnimation(
                 def.animation_name_,
                 def.looped_,
                 def.fadein_
             );
             
-            animctrl.SetAnimationSpeed(def.animation_name_, def.speedfactor_);
-            animctrl.SetAnimationWeight(def.animation_name_, def.weightfactor_);
+            animctrl->SetAnimationSpeed(def.animation_name_, def.speedfactor_);
+            animctrl->SetAnimationWeight(def.animation_name_, def.weightfactor_);
             
             if (def.always_restart_)
-                animctrl.SetAnimationTimePosition(def.animation_name_, 0.0);
+                animctrl->SetAnimationTimePosition(def.animation_name_, 0.0);
         }
         
         for (unsigned i = 0; i < anims_to_stop.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_stop[i]);
             
-            animctrl.DisableAnimation(
+            animctrl->DisableAnimation(
                 def.animation_name_,
                 def.fadeout_
             );
@@ -536,18 +530,15 @@ namespace RexLogic
         if (!entity)
             return;
         
-        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
-        Foundation::ComponentPtr netposptr = entity->GetComponent(EC_NetworkPosition::NameStatic());
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!animctrlptr || !netposptr || !appearanceptr)
+        OgreRenderer::EC_OgreAnimationController* animctrl = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
+        if (!animctrl || !netpos || !appearance)
             return;
         
-        OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
-        EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netposptr.get());
-        EC_AvatarAppearance &appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());
-        const AnimationDefinitionMap& anim_defs = appearance.GetAnimations();
+        const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
-        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl.GetRunningAnimations();
+        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
         OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
@@ -555,9 +546,9 @@ namespace RexLogic
             // If animation is velocity-adjusted, adjust animation speed by network position speed (horizontal plane movement only)
             if (def.use_velocity_)
             {
-                Real speed = Vector3df(netpos.velocity_.x, netpos.velocity_.y, 0).getLength() * 0.5;
+                Real speed = Vector3df(netpos->velocity_.x, netpos->velocity_.y, 0).getLength() * 0.5;
                 
-                animctrl.SetAnimationSpeed(anim->first, def.speedfactor_ * speed);
+                animctrl->SetAnimationSpeed(anim->first, def.speedfactor_ * speed);
             }
             
             ++anim;
@@ -569,12 +560,11 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
-         
-        Foundation::ComponentPtr avatar_ptr = entity->GetComponent(EC_OpenSimAvatar::NameStatic());
-        if (!avatar_ptr)
+        EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+        if (!avatar)
             return;
-        EC_OpenSimAvatar &avatar = *checked_static_cast<EC_OpenSimAvatar*>(avatar_ptr.get());
-        avatar.SetState(state);
+            
+        avatar->SetState(state);
     }
     
     bool Avatar::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)

@@ -138,10 +138,9 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
             return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
        
         int width = 308-10;
         int tab_width = 302-10;
@@ -149,7 +148,7 @@ namespace RexLogic
         
         // Materials
         ClearPanel(mat_panel); 
-        const AvatarMaterialVector& materials = appearance.GetMaterials();                
+        const AvatarMaterialVector& materials = appearance->GetMaterials();                
         mat_panel->resize(width, itemheight * (materials.size() + 1));
         
         for (uint y = 0; y < materials.size(); ++y)
@@ -174,7 +173,7 @@ namespace RexLogic
         
         // Attachments
         ClearPanel(attachment_panel);          
-        const AvatarAttachmentVector& attachments = appearance.GetAttachments();                
+        const AvatarAttachmentVector& attachments = appearance->GetAttachments();                
         attachment_panel->resize(width, itemheight * (attachments.size() + 1));
         
         for (uint y = 0; y < attachments.size(); ++y)
@@ -212,7 +211,7 @@ namespace RexLogic
             delete tab;
         }
           
-        const MasterModifierVector& master_modifiers = appearance.GetMasterModifiers();      
+        const MasterModifierVector& master_modifiers = appearance->GetMasterModifiers();      
         // If no master modifiers, show the individual morph/bone controls
         if (!master_modifiers.size())
         {
@@ -221,8 +220,8 @@ namespace RexLogic
             if (!morph_panel || !bone_panel)            
                 return;
                 
-            const BoneModifierSetVector& bone_modifiers = appearance.GetBoneModifiers();
-            const MorphModifierVector& morph_modifiers = appearance.GetMorphModifiers();  
+            const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
+            const MorphModifierVector& morph_modifiers = appearance->GetMorphModifiers();  
             morph_panel->resize(tab_width, itemheight * (morph_modifiers.size() + 1));
             bone_panel->resize(tab_width, itemheight * (bone_modifiers.size() + 1));
                                                       
@@ -328,12 +327,11 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;       
         
-        appearance.SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
+        appearance->SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
         rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }
     
@@ -349,12 +347,11 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;         
         
-        appearance.SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
+        appearance->SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
         rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }    
 
@@ -370,12 +367,11 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;      
         
-        appearance.SetMasterModifierValue(control_name, value / 100.0f);
+        appearance->SetMasterModifierValue(control_name, value / 100.0f);
         rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);                       
     }
      
@@ -438,16 +434,15 @@ namespace RexLogic
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
-        Foundation::ComponentPtr appearanceptr = entity->GetComponent(EC_AvatarAppearance::NameStatic());
-        if (!appearanceptr)
-            return;
-        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearanceptr.get());    
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;    
         
-        AvatarAttachmentVector attachments = appearance.GetAttachments();
+        AvatarAttachmentVector attachments = appearance->GetAttachments();
         if (index < attachments.size())
         {
             attachments.erase(attachments.begin() + index);
-            appearance.SetAttachments(attachments);
+            appearance->SetAttachments(attachments);
             rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
             RebuildEditView();              
         }

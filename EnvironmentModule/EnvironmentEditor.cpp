@@ -59,7 +59,7 @@ namespace Environment
         if(terrain_.get() && editor_widget_)
         {
             Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
-            EC_Terrain *terrain_component = checked_static_cast<EC_Terrain *>(entity->GetComponent("EC_Terrain").get());
+            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
 
             if(terrain_component->AllPatchesLoaded())
             {
@@ -635,7 +635,7 @@ namespace Environment
         {
             QPoint position = ev->pos();
             Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
-            EC_Terrain *terrain_component = checked_static_cast<EC_Terrain *>(entity->GetComponent("EC_Terrain").get());
+            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
             start_height_ = terrain_component->GetPoint(position.x(), position.y());
 
             switch(ev->button())
@@ -678,7 +678,7 @@ namespace Environment
 
                 QPoint position = ev->pos();
                 Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
-                EC_Terrain *terrain_component = checked_static_cast<EC_Terrain *>(entity->GetComponent("EC_Terrain").get());
+                EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
                 environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, start_height_);
         }*/
 
@@ -700,7 +700,7 @@ namespace Environment
                     return;
 
                 Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
-                EC_Terrain *terrain_component = checked_static_cast<EC_Terrain *>(entity->GetComponent("EC_Terrain").get());
+                EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
                 if(!terrain_component)
                     return;
 

@@ -65,7 +65,7 @@ namespace RexLogic
         void HandleAmbientSound(entity_id_t entityid);
         
         //! creates or gets EC_AttachedSound component to entity
-        EC_AttachedSound& GetOrCreateAttachedSound(Scene::EntityPtr entity);
+        EC_AttachedSound* GetOrCreateAttachedSound(Scene::EntityPtr entity);
         
         //! handles changes in drawtype (mesh/prim). also handles particle scripts.
         //! @param entityid Entity id.
