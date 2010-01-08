@@ -132,7 +132,6 @@ namespace Environment
         void SetWaterFogDistance();
         void ToggleFogOverride();
 
-        void UpdateAmbient();
         void UpdateSunDirection(double value);
         void ShowColorPicker();
         void UpdateColor(const QColor& color);
