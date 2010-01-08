@@ -42,7 +42,6 @@ bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
 
 /*
     AbstractInventoryItem *item = GetItem(index);
-///\todo Fetch inventory descendents only if the folder is "dirty".
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
 //    if (folder->IsDirty())
         dataModel_->FetchInventoryDescendents(item);
@@ -147,7 +146,6 @@ Qt::DropActions InventoryItemModel::supportedDropActions() const
 QStringList InventoryItemModel::mimeTypes() const
 {
     QStringList types;
-    ///\todo Different MIME type for each asset?
     types << "application/vnd.inventory.item";
     return types;
 }
@@ -162,8 +160,7 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
     {
         if (index.isValid())
         {
-            QString info;
-            QString asset_type, asset_ref;
+            QString info, asset_type, asset_ref;
 
             AbstractInventoryItem *item = GetItem(index);
             InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
@@ -187,6 +184,7 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
 bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
     int column, const QModelIndex &parent)
 {
+    std::cout << "InventoryItemModel::dropMimeData" << std::endl;
     if (action == Qt::IgnoreAction)
         return true;
 

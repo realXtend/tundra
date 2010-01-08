@@ -8,8 +8,8 @@
 #ifndef incl_Protocol_InventoryEvents_h
 #define incl_Protocol_InventoryEvents_h
 
-#include "RexUUID.h"
-#include "AssetServiceInterface.h"
+#include <RexUUID.h>
+#include <AssetServiceInterface.h>
 
 #include <QStringList>
 #include <QVector>

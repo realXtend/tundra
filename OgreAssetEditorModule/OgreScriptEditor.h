@@ -57,9 +57,15 @@ namespace OgreAssetEditor
         ~PropertyTableWidget();
 
     protected:
-        /// QTableWidget overrides.
+        Q_DISABLE_COPY(PropertyTableWidget);
+
+        /// QTableWidget override.
         QStringList mimeTypes() const;
+
+        /// QTableWidget override.
         bool dropMimeData (int row, int column, const QMimeData *data, Qt::DropAction action);
+
+        /// QTableWidget override.
         Qt::DropActions supportedDropActions() const;
 
     private:

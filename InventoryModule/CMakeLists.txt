@@ -13,7 +13,8 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES AbstractInventoryDataModel.h AbstractInventoryItem.h AssetUploader.h InventoryAsset.h
-    InventoryFolder.h InventoryItemModel.h InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h)
+    InventoryFolder.h InventoryItemModel.h InventoryWindow.h OpenSimInventoryDataModel.h WebdavInventoryDataModel.h
+    InventoryTreeView.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
