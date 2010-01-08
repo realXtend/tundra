@@ -8,6 +8,8 @@
 #include "OgreModuleApi.h"
 
 #include <OgreColourValue.h>
+#include <OgreVector3.h>
+#include <QFlags>
 
 namespace Ogre
 {
@@ -51,6 +53,17 @@ namespace OgreRenderer
         DECLARE_EC(EC_OgreEnvironment);
     public:
         virtual ~EC_OgreEnvironment();
+
+        enum VisualEffectOverride { 
+            None = 1 << 1,
+            AmbientLight = 1 << 3,
+            SunColor = 1 << 4,
+            SunDirection = 1 << 5
+        };
+  
+    
+        void SetOverride(VisualEffectOverride effect);
+        void DisableOverride(VisualEffectOverride effect);
 
         /// Sets the viewport's background color.
         /// @param color Color.
@@ -127,6 +140,7 @@ namespace OgreRenderer
 
         void SetFogColorOverride(bool on) { fog_color_override_ = on; }
         bool GetFogColorOverride() const { return fog_color_override_; }
+        
 
     private:
         /// Constructor.
@@ -205,11 +219,19 @@ namespace OgreRenderer
         /// Is fog color defined by caelum or user.
         bool fog_color_override_;
 
+        QFlags<VisualEffectOverride> override_flags_;
+
+        Ogre::ColourValue userAmbientLight_;
+        Ogre::ColourValue userSunColor_;
+        Ogre::Vector3 userSunDirection_;
+
         Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
    
     };
+
+    
 }
 
 #endif

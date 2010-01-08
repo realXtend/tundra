@@ -26,6 +26,7 @@
 #include <QTabWidget>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QColorDialog>
 
 namespace Environment
 {
@@ -33,7 +34,8 @@ namespace Environment
     environment_module_(environment_module),
     editor_widget_(0),
     action_(Flatten),
-    brush_size_(Small)
+    brush_size_(Small),
+    ambient_(false)
     //mouse_press_flag_(no_button)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
@@ -52,6 +54,8 @@ namespace Environment
     EnvironmentEditor::~EnvironmentEditor()
     {
         EnvironmentEditorProxyWidget_ = 0;
+        delete color_picker_;
+        color_picker_ = 0;
     }
 
     void EnvironmentEditor::CreateHeightmapImage()
@@ -373,54 +377,72 @@ namespace Environment
             QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
             sun_direction_z->setMinimum(-100.0);
             
-            // Sun color
-            QDoubleSpinBox* sun_color_red = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_red");
-            QDoubleSpinBox* sun_color_blue  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_blue");
-            QDoubleSpinBox* sun_color_green  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_green");
-            QDoubleSpinBox* sun_color_alpha  = editor_widget_->findChild<QDoubleSpinBox* >("sun_color_alpha");
-
-            // Ambient light
-            QDoubleSpinBox* ambient_light_red = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_red");
-            QDoubleSpinBox* ambient_light_blue = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_blue");
-            QDoubleSpinBox* ambient_light_green = editor_widget_->findChild<QDoubleSpinBox* >("ambient_light_green");
-
-            QPushButton* ambient_button = editor_widget_->findChild<QPushButton *>("ambient_light_button");
-        
+          
+            color_picker_ = new QColorDialog;
             if ( sun_direction_x != 0
                  && sun_direction_y != 0
                  && sun_direction_z != 0
-                 && sun_color_red != 0
-                 && sun_color_blue != 0
-                 && sun_color_green != 0
-                 && sun_color_alpha != 0
-                 && ambient_light_red != 0
-                 && ambient_light_blue !=0
-                 && ambient_light_green != 0
-                 && ambient_button != 0)
+                
+                 )
             {
                 // Initialize sun direction value
                 QVector<float> sun_direction = environment_->GetSunDirection();
                 sun_direction_x->setValue(sun_direction[0]);
                 sun_direction_y->setValue(sun_direction[1]);
                 sun_direction_z->setValue(sun_direction[2]);
-
+                
+                QObject::connect(sun_direction_x, SIGNAL(valueChanged(double)), this, SLOT(UpdateSunDirection(double)));
+                QObject::connect(sun_direction_y, SIGNAL(valueChanged(double)), this, SLOT(UpdateSunDirection(double)));
+                QObject::connect(sun_direction_z, SIGNAL(valueChanged(double)), this, SLOT(UpdateSunDirection(double)));
 
                 QVector<float> sun_color = environment_->GetSunColor();
-                sun_color_red->setValue(sun_color[0]);
-                sun_color_green->setValue(sun_color[1]);
-                sun_color_blue->setValue(sun_color[2]);
-                sun_color_alpha->setValue(sun_color[3]);
+              
+                
+                QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
+                if ( label != 0)
+                {
+                   
+                    QPixmap img(label->width(), 23);
+                    QColor color;
+                    color.setRedF(sun_color[0]);
+                    color.setGreenF(sun_color[1]);
+                    color.setBlueF(sun_color[2]);
+                    //color.setAlpha(sun_color[3]);
+                    //color.setAlpha(0);
+                    img.fill(color);
+                    label->setPixmap(img);
+                }
+                
+             
+              
+                QPushButton* sun_color_change = editor_widget_->findChild<QPushButton* >("sun_color_change_button");
+                if ( sun_color_change != 0)
+                    QObject::connect(sun_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
 
-
+                QPushButton* ambient_color_change = editor_widget_->findChild<QPushButton* >("ambient_color_change_button");
+                if ( ambient_color_change != 0)
+                    QObject::connect(ambient_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
+                
                 QVector<float> ambient_light = environment_->GetAmbientLight();
-                ambient_light_red->setValue(ambient_light[0]);
-                ambient_light_green->setValue(ambient_light[1]);
-                ambient_light_blue->setValue(ambient_light[2]);
+                label = editor_widget_->findChild<QLabel* >("ambient_color_img");
+                if ( label != 0)
+                {
+                   
+                    QPixmap img(label->width(), 23);
+                    QColor color;
+                    color.setRedF(ambient_light[0]);
+                    color.setGreenF(ambient_light[1]);
+                    color.setBlueF(ambient_light[2]);
+                    //color.setAlpha(sun_color[3]);
+                    //color.setAlpha(0);
+                    img.fill(color);
+                    label->setPixmap(img);
+                }
 
-                QObject::connect(ambient_button, SIGNAL(clicked()), this, SLOT(UpdateAmbient()));
+              
 
             }
-
+            QObject::connect(color_picker_, SIGNAL(currentColorChanged(const QColor& )), this, SLOT(UpdateColor(const QColor&)));
 
                 
         }
@@ -428,6 +450,158 @@ namespace Environment
 
         
 
+
+    }
+
+    void EnvironmentEditor::UpdateColor(const QColor& color)
+    {
+        QWidget* widget = GetCurrentPage();
+        if ( widget != 0 
+             && widget->objectName() == "ambient_light")
+        {
+            if ( !ambient_ ) 
+            {
+                QVector<float> current_sun_color = environment_->GetSunColor();
+                QVector<float> new_sun_color(4);
+                new_sun_color[0] = color.redF(), new_sun_color[1] = color.greenF(), new_sun_color[2] = color.blueF(), new_sun_color[3] = 1;
+                if ( new_sun_color[0] != current_sun_color[0] 
+                     && new_sun_color[1] != current_sun_color[1] 
+                     && new_sun_color[2] != current_sun_color[2])
+                {
+                    // Change to new color.
+                    environment_->SetSunColor(new_sun_color);
+                    QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
+                    if ( label != 0)
+                    {
+                        QPixmap img(label->width(), 23);
+                        QColor color;
+                        color.setRedF(new_sun_color[0]);
+                        color.setGreenF(new_sun_color[1]);
+                        color.setBlueF(new_sun_color[2]);
+                        //color.setAlpha(sun_color[3]);
+                        //color.setAlpha(0);
+                        img.fill(color);
+                        label->setPixmap(img);
+                    }
+                }
+
+            }
+            else
+            {
+                // ambient light.
+                QVector<float> current_ambient_color = environment_->GetAmbientLight();
+                QVector<float> new_ambient_color(3);
+                new_ambient_color[0] = color.redF(), new_ambient_color[1] = color.greenF(), new_ambient_color[2] = color.blueF();
+                if ( new_ambient_color[0] != current_ambient_color[0] 
+                     && new_ambient_color[1] != current_ambient_color[1] 
+                     && new_ambient_color[2] != current_ambient_color[2])
+                {
+                    // Change to new color.
+                    environment_->SetAmbientLight(new_ambient_color);
+                    QLabel* label = editor_widget_->findChild<QLabel* >("ambient_color_img");
+                    if ( label != 0)
+                    {
+                        QPixmap img(label->width(), 23);
+                        QColor color;
+                        color.setRedF(new_ambient_color[0]);
+                        color.setGreenF(new_ambient_color[1]);
+                        color.setBlueF(new_ambient_color[2]);
+                        //color.setAlpha(sun_color[3]);
+                        //color.setAlpha(0);
+                        img.fill(color);
+                        label->setPixmap(img);
+                    }
+                }
+
+                     ambient_ = false;
+            }
+
+
+        }
+
+    }
+
+
+    void EnvironmentEditor::ShowColorPicker()
+    {
+        QWidget* widget = GetCurrentPage();
+        if ( widget != 0 && widget->objectName() == "ambient_light"
+                && environment_ != 0 )
+        {
+            if (this->sender()->objectName() == "sun_color_change_button")
+            {
+                QVector<float> sun_color = environment_->GetSunColor();
+                QColor color;
+                color.setRedF(sun_color[0]);
+                color.setGreenF(sun_color[1]);
+                color.setBlueF(sun_color[2]);
+                //color.setAlpha(0);
+                color_picker_->setCurrentColor(color);
+            }
+
+            if ( this->sender()->objectName() == "ambient_color_change_button")
+            {
+                QVector<float> ambient_light = environment_->GetAmbientLight();
+                QColor color;
+                color.setRedF(ambient_light[0]);
+                color.setGreenF(ambient_light[1]);
+                color.setBlueF(ambient_light[2]);
+                color_picker_->setCurrentColor(color);
+                ambient_ = true;
+            }
+         }
+            
+       color_picker_->show();
+    }
+
+    QWidget* EnvironmentEditor::GetPage(const QString& name)
+    {
+         
+        QTabWidget* tab_widget = editor_widget_->findChild<QTabWidget* >("tabWidget");
+        if ( tab_widget != 0 )
+        {
+            for ( int i = 0; i < tab_widget->count(); ++i)
+            {
+                QWidget* page = tab_widget->widget(i);
+                if ( page != 0 && page->objectName() == name)
+                    return page;
+                
+            }
+        }
+
+        return 0;
+    }
+
+    QWidget* EnvironmentEditor::GetCurrentPage()
+    {
+        QWidget* page = 0;
+        QTabWidget* tab_widget = editor_widget_->findChild<QTabWidget* >("tabWidget");
+        if ( tab_widget != 0 )
+            page = tab_widget->currentWidget();
+            
+        return page;
+
+    }
+
+    void EnvironmentEditor::UpdateSunDirection(double value)
+    {
+        // Sun direction
+
+        QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
+        QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
+        QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
+       
+        if ( sun_direction_x != 0 &&
+             sun_direction_y != 0 &&
+             sun_direction_z != 0 &&
+             environment_ != 0)
+        {
+         QVector<float> sun_direction(3);
+         sun_direction[0] = static_cast<float>(sun_direction_x->value());
+         sun_direction[1] = static_cast<float>(sun_direction_y->value());
+         sun_direction[2] = static_cast<float>(sun_direction_z->value());
+         environment_->SetSunDirection(sun_direction);
+        }
 
     }
 
