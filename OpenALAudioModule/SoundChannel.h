@@ -12,7 +12,7 @@ namespace OpenALAudio
     {
     public:
         //! Constructor.
-        SoundChannel();
+        SoundChannel(Foundation::SoundServiceInterface::SoundType type);
         //! Destructor.
         ~SoundChannel();
         
@@ -28,6 +28,8 @@ namespace OpenALAudio
         void SetPitch(Real pitch);
         //! Set gain.
         void SetGain(Real gain);
+        //! Set master gain.
+        void SetMasterGain(Real master_gain);        
         //! Set range parameters
         void SetRange(Real inner_radius, Real outer_radius, Real rolloff);        
         //! Stop.
@@ -38,6 +40,8 @@ namespace OpenALAudio
         Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
         //! Return name/id of sound that's playing, empty if nothing playing
         const std::string& GetSoundName() const;
+        //! Return sound type
+        Foundation::SoundServiceInterface::SoundType GetSoundType() const { return type_; }
         
     private:
         //! Create OpenAL source if one does not exist yet
@@ -53,6 +57,8 @@ namespace OpenALAudio
         //! Start playback
         void StartPlaying();
     
+        //! Sound type
+        Foundation::SoundServiceInterface::SoundType type_;
         //! OpenAL handle
         ALuint handle_;
         //! Current sound being played
@@ -61,6 +67,8 @@ namespace OpenALAudio
         Real pitch_;
         //! Gain
         Real gain_;
+        //! Master gain. Final sound volume = gain * master gain * possible distance attenuation
+        Real master_gain_;
         //! Inner radius
         Real inner_radius_;
         //! Outer radius

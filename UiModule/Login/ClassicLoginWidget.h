@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_ClassicLoginWidget_h
 #define incl_UiModule_ClassicLoginWidget_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "AbstractLogin.h"
 
 #include <EventHandlers/LoginHandler.h>

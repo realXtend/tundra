@@ -3,7 +3,7 @@
 #ifndef incl_ProtocoUtilities_LoginCredentialsInterface_h
 #define incl_ProtocoUtilities_LoginCredentialsInterface_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 
 #include <QString>
 

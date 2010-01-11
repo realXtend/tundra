@@ -3,7 +3,6 @@
 #ifndef incl_Asset_HttpAssetProvider_h
 #define incl_Asset_HttpAssetProvider_h
 
-#include "StableHeaders.h"
 #include "RexAsset.h"
 #include "HttpAssetTransfer.h"
 #include "AssetProviderInterface.h"

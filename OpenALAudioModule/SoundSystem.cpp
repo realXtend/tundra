@@ -19,6 +19,7 @@ namespace OpenALAudio
     SoundSystem::SoundSystem(Foundation::Framework *framework) : 
         framework_(framework),
         initialized_(false), 
+        master_gain_(1.0f),
         context_(0), 
         device_(0), 
         next_channel_id_(0),
@@ -33,12 +34,21 @@ namespace OpenALAudio
         
         // Create vorbis decoder thread task and let the framework thread task manager handle it
         VorbisDecoder* decoder = new VorbisDecoder();
-        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));        
+        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));     
+        
+        // Set default master gains for sound types
+        master_gain_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "master_gain", 1.0);
+        sound_master_gain_[Foundation::SoundServiceInterface::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0);
+        sound_master_gain_[Foundation::SoundServiceInterface::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0);
     }
 
     SoundSystem::~SoundSystem()
     {
         Uninitialize();
+
+        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "master_gain", master_gain_);
+        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "triggered_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Triggered]);
+        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "ambient_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Ambient]);
     }
 
     void SoundSystem::Initialize()
@@ -157,7 +167,7 @@ namespace OpenALAudio
         listener_orientation_ = orientation;    
     }
       
-    sound_id_t SoundSystem::PlaySound(const std::string& name, bool local, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, sound_id_t channel)
     {
         SoundPtr sound = GetSound(name, local);
         if (!sound)
@@ -167,16 +177,17 @@ namespace OpenALAudio
         if (i == channels_.end())
         {
             i = channels_.insert(
-                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
         }
         
+        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);
         i->second->SetPositional(false);
         i->second->Play(sound);
          
         return i->first;     
     }
     
-    sound_id_t SoundSystem::PlaySound3D(const std::string& name, bool local, Vector3df position, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, Vector3df position, sound_id_t channel)
     {        
         SoundPtr sound = GetSound(name, local);
         if (!sound)
@@ -186,9 +197,10 @@ namespace OpenALAudio
         if (i == channels_.end())
         {
             i = channels_.insert(
-                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel()))).first;
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
         }
-        
+       
+        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);        
         i->second->SetPositional(true);        
         i->second->SetPosition(position);
         i->second->Play(sound);            
@@ -462,4 +474,37 @@ namespace OpenALAudio
         
         return false;
     }
+    
+    void SoundSystem::SetMasterGain(Real master_gain)
+    {
+        master_gain_ = master_gain;
+        ApplyMasterGain();
+    }
+    
+    Real SoundSystem::GetMasterGain()
+    {
+        return master_gain_;
+    }
+    
+    void SoundSystem::SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, Real master_gain)
+    {
+        sound_master_gain_[type] = master_gain;
+        ApplyMasterGain();
+    }
+    
+    Real SoundSystem::GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type)
+    {
+        return sound_master_gain_[type];
+    }
+
+    void SoundSystem::ApplyMasterGain()
+    {
+        SoundChannelMap::iterator i = channels_.begin();
+        while (i != channels_.end())
+        {
+            i->second->SetMasterGain(master_gain_ * sound_master_gain_[i->second->GetSoundType()]);
+            ++i;
+        }  
+    }
+
 }

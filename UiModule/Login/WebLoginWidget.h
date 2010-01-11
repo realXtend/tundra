@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_WebLoginWidget_h
 #define incl_UiModule_WebLoginWidget_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "UiModuleApi.h"
 #include "WebLogin.h"
 #include "AbstractLogin.h"
