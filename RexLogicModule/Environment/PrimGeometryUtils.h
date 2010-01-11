@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-class Ogre::ManualObject;
+namespace Ogre
+{
+    class ManualObject;
+}
 
 namespace RexLogic
 {
