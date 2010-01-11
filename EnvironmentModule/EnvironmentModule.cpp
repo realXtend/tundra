@@ -306,6 +306,29 @@ namespace Environment
                             environment_->SetWaterFog(fogStart, fogEnd, color); 
                         }
                     }
+                    else if (methodname == "RexAmbientL")
+                    {
+                        /**
+                         * Deals RexAmbientLight message. 
+                         **/
+                        
+                        StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
+                        if ( parameters.size() < 3)
+                            return false; 
+                       
+                     
+                        StringVector sun_light_direction = SplitString(parameters[0].c_str(), char(" "));
+                        StringVector sun_light_color = SplitString(parameters[1].c_str(), char(" "));
+                        StringVector ambient_light_color = SplitString(parameters[2].c_str(), char(" "));
+                        
+                        if ( environment_ != 0 )
+                        {
+                              environment_->SetSunDirection(environment_->ConvertToQVector<float>(sun_light_direction));                        
+                              environment_->SetSunColor(environment_->ConvertToQVector<float>(sun_light_color));
+                              environment_->SetAmbientLight(environment_->ConvertToQVector<float>(ambient_light_color));
+                         }
+
+                    }
             }
             else if (event_id == RexNetMsgSimulatorViewerTimeMessage)
             {
