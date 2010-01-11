@@ -31,23 +31,8 @@ namespace OgreRenderer
         SKYBOX_IND_COUNT
     };
 
-    struct SkyImageData
-    {
-        /// Sky type for which the image is for
-        SkyType type;
-
-        /// SkyBox texture index.
-        SkyBoxIndex index;
-        
-        /// Curvature of SkyDome.
-        float curvature;
-        
-        /// Tiling of SkyDome.
-        float tiling;
-    };
-
     /// Generic ogre sky parameters, see Ogre documentation for more info.
-    struct SkyParameters
+    /*struct SkyParameters
     {
         std::string material;
         float distance;
@@ -61,35 +46,117 @@ namespace OgreRenderer
         drawFirst(true),
         angle(90),
         angleAxis(1, 0, 0) {}
+
+        void Reset()
+        {
+            material= "";
+            distance = 0;
+            drawFirst = true;
+            angle = 90;
+            angleAxis = RexTypes::Vector3(1,0,0);
+        }
+    };*/
+
+    struct SkyBoxParameters
+    {
+        std::string material;
+        float distance;
+        float angle;
+        bool drawFirst;
+        RexTypes::Vector3 angleAxis;
+
+        SkyBoxParameters() : 
+        material("Rex/skybox"),
+        distance(50),
+        drawFirst(true),
+        angle(90),
+        angleAxis(1, 0, 0){}
+
+        void Reset()
+        {
+            material= "";
+            distance = 0;
+            drawFirst = true;
+            angle = 90;
+            angleAxis = RexTypes::Vector3(1,0,0);
+        }
     };
 
     /// Sky parameters for skydome, see Ogre documentation for more info.
     struct SkyDomeParameters
     {
+        std::string material;
         float curvature;
         float tiling;
+        float distance;
         int xSegments;
         int ySegments;
         int ySegmentsKeep;
-        
+        bool drawFirst;
+        float angle;
+        RexTypes::Vector3 angleAxis;
+
         SkyDomeParameters() :
+        //Sky dome and plane are sharing same material cause they both only need single sky texture.
+        material("Rex/SkyPlane"),
         curvature(10.f),
         tiling(8.f),
+        distance(50.f),
         xSegments(16),
         ySegments(16),
-        ySegmentsKeep(-1) {}
+        ySegmentsKeep(-1),
+        drawFirst(true),
+        angle(90),
+        angleAxis(1,0,0){}
+
+        void Reset()
+        {
+            material= "";
+            curvature = 0;
+            tiling = 0;
+            distance = 0;
+            xSegments = 0;
+            ySegments = 0;
+            ySegmentsKeep = 0;
+            drawFirst = true;
+            angle = 0;
+            angleAxis = RexTypes::Vector3(1,0,0);
+        }
     };
 
     /// Sky parameters for skyplane, see Ogre documentation for more info.
     struct SkyPlaneParameters
     {
+        std::string material;
         float scale;
-        float tiling; 
-        float bow; 
+        float tiling;
+        float bow;
+        float distance;
         int xSegments; 
-        int ySegments; 
+        int ySegments;
+        bool drawFirst;
         
-        ///\todo ctor with default values.
+        SkyPlaneParameters() :
+        material("Rex/SkyPlane"),
+        scale(300.f),
+        tiling(150.f),
+        bow(1.5f),
+        distance(50.f),
+        xSegments(150),
+        ySegments(150),
+        drawFirst(true){}
+
+        void Reset()
+        {
+            material= "";
+            scale = 0;
+            tiling = 0;
+            distance = 0;
+            bow = 0;
+            xSegments = 0;
+            ySegments = 0;
+            drawFirst = true;
+        }
     };
 
     class Renderer;
@@ -125,9 +192,11 @@ namespace OgreRenderer
          */
         bool SetSkyBox(const std::string& material_name, Real distance);
         
+        std::vector<std::string> GetMaterialTextureNames();
+
         /// Sets the sky material.
         /// @param material_name Material name.
-        void SetSkyMaterial(const std::string& material_name) { genericSkyParameters.material = material_name; }
+        //void SetSkyMaterial(const std::string& material_name) { genericSkyParameters.material = material_name; }
         
         /// Sets new textures for SkyBox.
         /// @param index Index of the texture.
@@ -136,15 +205,55 @@ namespace OgreRenderer
         
         /// Sets the texture for SkyDome.
         /// @param texture name Texture name.
-        void SetSkyDomeMaterialTexture(const char *texture_name, const SkyImageData *parameters);
+        void SetSkyDomeMaterialTexture(const char *texture_name);
         
         /// Sets the texture for SkyPlane.
         /// @param texture name Texture name.
         void SetSkyPlaneMaterialTexture(const char *texture_name);
-        
+
+        /// Set new sky dome parameters.
+        void SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky = true);
+
+        /// Set new sky plane parameters.
+        void SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky = true);
+
+        /// Set new sky generic parameters.
+        void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
+
+        /// Get sky dome material texture name as string switch is same as assetID.
+        /// @return Texture name.
+        RexTypes::RexAssetID GetSkyDomeTextureID() const;
+
+        /// Get sky dome material texture name as string switch is same as assetID.
+        /// @return Texture name.
+        RexTypes::RexAssetID GetSkyPlaneTextureID() const;
+
+        /// Get sky dome material texture name as string switch is same as assetID.
+        /// @param sky_box texture index, where(0 = front, 1 = back, 2 = left, 3 = right, 4 = up, 5 = down).
+        /// @return Texture name.
+        RexTypes::RexAssetID GetSkyBoxTextureID(uint texuture_index) const;
+
+        /// Return sky generic sky parameters mostly used by sky box.
+        SkyBoxParameters EC_OgreSky::GetBoxSkyParameters() const;
+
+        /// Returns sky dome parameters like tiling, curvature and so on.
+        SkyDomeParameters GetSkyDomeParameters() const;
+
+        /// Returns sky plane parameters like tiling and bow.
+        SkyPlaneParameters GetSkyPlaneParameters() const;
+
         /// Reads the sky parameters from the configuration file.
         void GetSkyConfig();
-            
+        
+        /// Has sky enabled.
+        bool IsSkyEnabled() const;
+
+        /// @Return sky type that is in use.
+        SkyType GetSkyType() const;
+
+        /// Change sky type into new one and create new sky if wanted.
+        /// @param sky type.
+        void SetSkyType(SkyType type, bool update_sky = true);
     private:
         /// Constructor
         /// @param module ModuleInterface pointer.
@@ -163,17 +272,20 @@ namespace OgreRenderer
     //    RexUUID skyboxTexturesIds_[SKYBOX_IND_COUNT];
         
         /// Generic sky parameters common to all sky types.
-        SkyParameters genericSkyParameters;
+        //SkyParameters genericSkyParameters;
+
+        /// Parameters for skybox.
+        SkyBoxParameters skyBoxParameters;
 
         /// Parameters for skydome
         SkyDomeParameters skyDomeParameters;
        
         /// Parameters for skyplane.
         SkyPlaneParameters skyPlaneParameters;
-           
+        
         /// List of skybox image names.
         std::vector<std::string> skyBoxImages_;
-       
+        
         Foundation::ModuleInterface* owner_; 
         
         size_t currentSkyBoxImageCount_;
