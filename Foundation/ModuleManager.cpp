@@ -304,16 +304,13 @@ namespace Foundation
                 for ( Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin() ; 
                       it != keys.end() ;
                       it++ )
-                {
-                    if ((*it).find("entry") != std::string::npos)
-                        entries.push_back( config->getString(*it) );
-                        
-                   if ((*it).find("dependency") != std::string::npos)
-                        dependencies.push_back( config->getString(*it) );
-
-                   if ((*it).find("dependency_dir") != std::string::npos)
+                {                        
+                    if ((*it).find("dependency_dir") != std::string::npos)
                         relativePathDependencyAddititions.push_back( config->getString(*it) );
-
+                    else if ((*it).find("dependency") != std::string::npos)
+                        dependencies.push_back( config->getString(*it) );
+                    else if ((*it).find("entry") != std::string::npos)
+                        entries.push_back( config->getString(*it) );
                 }
             }
             catch(std::exception)
