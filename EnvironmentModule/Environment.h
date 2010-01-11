@@ -10,6 +10,7 @@
 #include "EnvironmentModuleApi.h"
 #include <QVector>
 #include <QObject>
+#include <iostream>
 
 namespace ProtocolUtilities
 {
@@ -146,9 +147,12 @@ namespace Environment
             try
             {
                 for ( int i = 0; i < elements; ++i)
-                    vec[i] = boost::lexical_cast<T>(vector[i]);
+                {   
+                    std::istringstream stream(vector[i]);
+                    stream >> vec[i];
+                }
             }
-            catch ( boost::bad_lexical_cast&)
+            catch (...)
             {
                 return QVector<T>(0);
             }

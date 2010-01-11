@@ -68,7 +68,7 @@ namespace Environment
             if(terrain_component->AllPatchesLoaded())
             {
                 // Find image label in widget so we can get the basic information about the image that we are about to update.
-                QLabel *label = editor_widget_->findChild<QLabel *>("m_label");
+                QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
                 const QPixmap *pixmap = label->pixmap();
                 QImage image = pixmap->toImage();
 
