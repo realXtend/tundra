@@ -36,6 +36,12 @@ namespace TelepathyIM
                                      video_input_bin_(0),
                                      total_audio_queue_size_(0)
     {
+        //GstElementFactory* factory =  gst_element_factory_find ("fakesrc");
+        //if (!factory)
+        //{
+
+        //}
+
         CreateTfChannel();
         CreatePipeline();
         CreateAudioInputElement(audio_src_name);
@@ -154,7 +160,6 @@ namespace TelepathyIM
         if (!audio_input_)
             throw Exception("Cannot create GStreamer audio input element.");
     }
-
 
     void FarsightChannel::CreateAudioPlaybackElement(const QString &audio_sink_name)
     {
@@ -359,6 +364,7 @@ namespace TelepathyIM
         gst_structure_get_int(structure, "width", &width);
 	    gst_caps_unref(caps);
 
+        // Remove this ?
         if ( rate != 8000 && rate != 16000)
         {
             LogInfo("Drop fakesink buffer: wrong audio rate.");
@@ -408,11 +414,6 @@ namespace TelepathyIM
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
 
-        //QFile file("audio-OnFakeSinkHandoff.raw");
-        //file.open(QIODevice::OpenModeFlag::Append);
-        //file.write((char*)data, size);
-        //file.close();
-
         self->HandleAudioData(data, size, rate);
         gst_buffer_unref(buffer);
         g_static_mutex_unlock (&mutex);
@@ -435,11 +436,6 @@ namespace TelepathyIM
         audio_queue_.clear();
         audio_queue_sizes_.clear();
         total_audio_queue_size_ = 0;
-
-        //QFile file("audio-GetAudioData.raw");
-        //file.open(QIODevice::OpenModeFlag::Append);
-        //file.write((char*)data, size);
-        //file.close();
 
         return data;
     }

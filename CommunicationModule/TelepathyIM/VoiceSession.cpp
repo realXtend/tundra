@@ -54,7 +54,6 @@ namespace TelepathyIM
             SAFE_DELETE(p);
         }
         participants_.clear();
-
     }
 
     void VoiceSession::DeleteChannels()
@@ -123,7 +122,6 @@ namespace TelepathyIM
         tp_channel_->acceptCall();
 
         CreateFarsightChannel();
-
     }
 
     void VoiceSession::Reject()
@@ -147,7 +145,7 @@ namespace TelepathyIM
             state_ = STATE_ERROR;
             reason_ = QString("Cannot create connection").append(op->errorMessage());
             LogError(reason_.toStdString());
-            emit (Closed(this));
+//            emit (Closed(this));
             emit StateChanged(state_);
 			return;
 		}
@@ -171,7 +169,7 @@ namespace TelepathyIM
             QString message = QString("Incoming streamed media channel cannot become ready: ").append(op->errorMessage());
             LogError(message.toStdString());
             reason_ = message;
-            emit (Closed(this));
+//            emit (Closed(this));
             emit StateChanged(state_);
 			return;
 		}
@@ -213,7 +211,6 @@ namespace TelepathyIM
         try
         {
             farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
-            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "videotestsrc");     // TEST VIDEO
         }
         catch(Exception &e) 
         {
@@ -307,14 +304,12 @@ namespace TelepathyIM
         if ( pending_audio_streams_ == 0 && audio_stream.isNull() )
             CreateAudioStream();
         else
-            UpdateStreamDirection(audio_stream, true);
+        {
+            if (!audio_stream.isNull())
+                UpdateStreamDirection(audio_stream, true);
+        }
 
-        //if ( pending_video_streams_ == 0 && video_stream.isNull() )
-        //    CreateVideoStream();
-        //else
-        //    UpdateStreamDirection(video_stream, true);
-
-        emit ( Opened(this) );
+//        emit ( Opened(this) );
         emit StateChanged(state_);
     }
 
@@ -376,7 +371,7 @@ namespace TelepathyIM
             LogInfo("VoiceSession: Call FarsightChannel status = terminated.");
             state_ = STATE_CLOSED;
             tp_channel_->requestClose();
-            emit Closed(this);
+//            emit Closed(this);
             emit StateChanged(state_);
             break;
         }
@@ -622,14 +617,14 @@ namespace TelepathyIM
         return Tp::MediaStreamPtr();
     }
 
-    Communication::VideoWidgetInterface* VoiceSession::GetReceivedVideo()
+    Communication::VideoPlaybackWidgetInterface* VoiceSession::GetReceivedVideo()
     {
         if (farsight_channel_)
             return farsight_channel_->GetReceivedVideoWidget();
         return 0;
     }
 
-    Communication::VideoWidgetInterface* VoiceSession::GetLocallyCapturedVideo()
+    Communication::VideoPlaybackWidgetInterface* VoiceSession::GetLocallyCapturedVideo()
     {
         if (farsight_channel_)
         {
@@ -658,7 +653,7 @@ namespace TelepathyIM
         int data_size = 0;
         u8* data = farsight_channel_->GetAudioData(data_size);
 
-        if (data)
+        if (data && data_size > 0)
         {
             soundsystem->PlayAudioData(data, data_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
             delete [] data;
