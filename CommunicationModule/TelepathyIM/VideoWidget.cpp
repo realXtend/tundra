@@ -19,7 +19,7 @@ extern void qt_x11_set_global_double_buffer(bool);
 
 namespace TelepathyIM
 {
-    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent, const QString &name) 
+    VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent, const QString &name, const QString &video_sink_name) 
         : Communication::VideoPlaybackWidgetInterface(parent), 
           bus_((GstBus *) gst_object_ref(bus)), 
           video_overlay_(0), 
@@ -43,7 +43,7 @@ namespace TelepathyIM
 
         qt_x11_set_global_double_buffer(false);
 
-        video_playback_element_ = gst_element_factory_make("autovideosink", name.toStdString().c_str());
+        video_playback_element_ = gst_element_factory_make(video_sink_name.toStdString().c_str(), 0);
         gst_object_ref(video_playback_element_);
         gst_object_sink(video_playback_element_);
 
@@ -54,45 +54,36 @@ namespace TelepathyIM
 // WINDOWS -> autovideosink will chose one of there: glimagesink (best), directdrawsink (possible buffer errors), dshowvideosink (possible buffer errors)
 #ifdef Q_WS_WIN
 
-        video_playback_element_ = gst_element_factory_make("glimagesink", 0);
+        video_playback_element_ = gst_element_factory_make(video_sink_name.toStdString().c_str(), 0);
         if (!video_playback_element_)
         {
             qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
             return;
         }
 
-		//if (!video_playback_element_)
-		//{
-		//	fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_element_));
-		//	gst_object_ref(video_playback_element_);
-		//	gst_object_sink(video_playback_element_);
-		//}
-		//else
-		//{
-			// Video bin init
-			const QString video_bin_name = "video_bin_for_" + name;
-			video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
-			if (!video_bin_)
-			{
-				qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
-				return;
-			}
+		// Video bin init
+		const QString video_bin_name = "video_bin_for_" + name;
+		video_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
+		if (!video_bin_)
+		{
+			qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
+			return;
+		}
 
-			// Add playback element to video bin
-			gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
+		// Add playback element to video bin
+		gst_bin_add(GST_BIN(video_bin_), video_playback_element_);
 
-			// Pad inits
-			GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
-			GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
+		// Pad inits
+		GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
+		GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
 
-			// Add bad to video bin
-			gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad);
-			gst_object_unref(G_OBJECT(static_sink_pad));
-			gst_object_ref(video_bin_);
-			gst_object_sink(video_bin_);
+		// Add bad to video bin
+		gst_element_add_pad(GST_ELEMENT(video_bin_), sink_ghost_pad);
+		gst_object_unref(G_OBJECT(static_sink_pad));
+		gst_object_ref(video_bin_);
+		gst_object_sink(video_bin_);
 
-			fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
-		//}
+		fs_element_added_notifier_add(notifier_, GST_BIN(video_bin_));
 
 #endif
         
@@ -235,8 +226,6 @@ namespace TelepathyIM
 	{
 		if (video_bin_) 
 			return video_bin_; 
-		else if (video_playback_element_)
-			return video_playback_element_;
 		else
 			return 0;
 	}

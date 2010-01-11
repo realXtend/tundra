@@ -18,8 +18,8 @@ namespace CommunicationUI
         VideoSessionWidget(QWidget *parent, Communication::VoiceSessionInterface *video_session, QString &my_name, QString &his_name);
         virtual ~VideoSessionWidget();
 
-        QWidget *local_video_;
-        QWidget *remote_video_;
+        Communication::VideoPlaybackWidgetInterface *local_video_;
+        Communication::VideoPlaybackWidgetInterface *remote_video_;
 
     private:
         Ui::VideoSessionWidget video_session_ui_;

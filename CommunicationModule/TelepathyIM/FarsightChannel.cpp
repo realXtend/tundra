@@ -221,10 +221,10 @@ namespace TelepathyIM
 
     void FarsightChannel::CreateVideoWidgets()
     {
-        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video");
+        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", "autovideosink");
         locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
 
-        received_video_widget_ = new VideoWidget(bus_, 0, "received_video");
+        received_video_widget_ = new VideoWidget(bus_, 0, "received_video", "autovideosink");
         received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
     }
 
