@@ -7,11 +7,14 @@
 
 #include "StableHeaders.h"
 #include "InventoryTreeView.h"
-#include "AbstractInventoryItem.h"
+#include "InventoryItemModel.h"
+#include "AbstractInventoryDataModel.h"
+//#include "OpenSimInventoryDataModel.h"
 
 #include <QWidget>
 #include <QDragEnterEvent>
 #include <QApplication>
+#include <QUrl>
 
 namespace Inventory
 {
@@ -44,6 +47,8 @@ void InventoryTreeView::dragEnterEvent(QDragEnterEvent *event)
         else
             event->acceptProposedAction();
     }
+    else if(event->mimeData()->hasUrls())
+        event->accept();
     else
         event->ignore();
 }
@@ -60,8 +65,43 @@ void InventoryTreeView::dragMoveEvent(QDragMoveEvent *event)
         else
             event->acceptProposedAction();
     }
+    else if(event->mimeData()->hasUrls())
+        event->accept();
     else
         event->ignore();
+}
+
+void InventoryTreeView::dropEvent(QDropEvent *event)
+{
+    const QMimeData *data = event->mimeData();
+    if (data->hasUrls())
+    {
+        InventoryItemModel *itemModel = dynamic_cast<InventoryItemModel *>(model());
+        if (!itemModel)
+        {
+            event->ignore();
+            return;
+        }
+
+        AbstractInventoryDataModel *m = itemModel->GetInventory();
+        if (!m)
+        {
+            event->ignore();
+            return;
+        }
+
+        QStringList filenames, itemnames;
+        QList<QUrl> urlList = data->urls();
+
+        QListIterator<QUrl> it(urlList);
+        while(it.hasNext())
+            filenames << it.next().path().remove(0, 1);
+
+        if (!filenames.isEmpty())
+            m->UploadFiles(filenames, itemnames, 0);
+    }
+    else
+        QTreeView::dropEvent(event);
 }
 
 }
