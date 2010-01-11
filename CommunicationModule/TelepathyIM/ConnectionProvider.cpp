@@ -8,7 +8,7 @@
 #include <TelepathyQt4/PendingReady>
 #include "ConnectionProvider.h"
 #include "FarsightChannel.h"
-
+#include <Poco/Environment.h>
 
 // #include <TelepathyQt4/Debug__> // disabled because header not found on Linux
 
@@ -48,8 +48,12 @@ namespace TelepathyIM
 
     void ConnectionProvider::InitializeGStreamer()
     {
+        std::string fs_plugin_path = Poco::Path::current();
+        fs_plugin_path.append("gstreamer\\lib\\farsight2-0.0");
+        Poco::Environment env;
+        env.set("FS_PLUGIN_PATH", fs_plugin_path);        
+
         QString gst_plugin_path("--gst-plugin-path=\\gstreamer\\lib\\gstreamer-0.10;");
-        //QString gst_plugin_path("");
         int argc=1;
         char* argv[1];
         argv[0] = (char*)gst_plugin_path.toStdString().c_str();
