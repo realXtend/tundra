@@ -1157,7 +1157,7 @@ namespace PrimMesher
 
                     for (int i = 0; i < numFaces; i++)
                     {
-                        ViewerFace newViewerFace(0);
+                        ViewerFace newViewerFace(newLayer.bottomFaceNumber);
                         const Face& face = newLayer.faces[i];
                         newViewerFace.v1 = newLayer.coords[face.v1];
                         newViewerFace.v2 = newLayer.coords[face.v2];
@@ -1344,7 +1344,7 @@ namespace PrimMesher
                 // add the top faces to the viewerFaces list here
                 ViewerFace newViewerFace;
                 Coord faceNormal = newLayer.faceNormal;
-                newViewerFace.primFaceNumber = newLayer.bottomFaceNumber;
+                newViewerFace.primFaceNumber = 0;
                 int numFaces = newLayer.faces.size();
                 const std::vector<Face>& faces = newLayer.faces;
 
