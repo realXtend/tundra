@@ -13,7 +13,7 @@ namespace TelepathyIM
      *  Based on call example of telepathy-qt4 library
      *  QWidget for video playback. Created by FarsightChannel object and used by communication UI widgets.
      */
-    class VideoWidget : public Communication::VideoWidgetInterface
+    class VideoWidget : public Communication::VideoPlaybackWidgetInterface
     {
 
     Q_OBJECT

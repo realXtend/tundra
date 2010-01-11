@@ -20,7 +20,7 @@ extern void qt_x11_set_global_double_buffer(bool);
 namespace TelepathyIM
 {
     VideoWidget::VideoWidget(GstBus *bus,  QWidget *parent, const QString &name) 
-        : Communication::VideoWidgetInterface(parent), 
+        : Communication::VideoPlaybackWidgetInterface(parent), 
           bus_((GstBus *) gst_object_ref(bus)), 
           video_overlay_(0), 
           video_playback_element_(0),

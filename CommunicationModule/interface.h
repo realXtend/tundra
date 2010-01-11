@@ -232,18 +232,24 @@ namespace Communication
      *  Video playback widget
      *
      */
-    class VideoWidgetInterface : public QWidget
+    class VideoPlaybackWidgetInterface : public QWidget
     {
     
     public:
-        VideoWidgetInterface(QWidget *parent) : QWidget(parent) {}
+        VideoPlaybackWidgetInterface(QWidget *parent) : QWidget(parent) {}
+
         //! @return true if video source is available. Otherwise return false
         virtual bool VideoAvailable() = 0;
     };
 
 	/**
-	 *  \NOTE This is interface is under construction
-	 *        More information about audio module planning is needed.
+     *  Voice/Video session between two users. Audio is played using OpenALAudioModule and video is 
+     *  played through VideoPlaybackWidget objects.
+     *
+     *  To get VoiceSession object you must call ConnectionInterface::OpenVoiceSession method or get
+     *  ConnectionInterface::VoiceSessionReceived signal.
+     *
+     *  Currently only 1-1 sessions are supported and only 1 session can be exist at the time.
      *
 	 * @todo Getter for originator of the chat session (gui needs id of friend to create tab and store id to local containers with that id).
      *       GUI now needs to go through ChatSessionParticipantVector and do unneccesary looping to get one QString
@@ -265,13 +271,13 @@ namespace Communication
 		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
 
         //! /return widget for playback incoming video stream. Return 0 if widget doesn't exist.
-        virtual Communication::VideoWidgetInterface* GetReceivedVideo() = 0;
+        virtual Communication::VideoPlaybackWidgetInterface* GetReceivedVideo() = 0;
 
         //! /return widget for playback local captured video stream. Return 0 if widget doesn't exist.
-        virtual Communication::VideoWidgetInterface* GetLocallyCapturedVideo() = 0;
+        virtual Communication::VideoPlaybackWidgetInterface* GetLocallyCapturedVideo() = 0;
 
     public slots:
-
+                                   
         //! Closes the session and all streams associated to it.
         virtual void Close() = 0;
 
@@ -311,6 +317,7 @@ namespace Communication
         virtual void UpdateAudioSourcePosition(Vector3df position = Vector3df(0.0f, 0.0f, 0.0f) ) = 0;
 
         //! Set if we want to use spatial voice with avatar tracking
+        //! /todo is this needed here?
         virtual void TrackingAvatar(bool enabled) = 0;
 
 	signals:
@@ -321,10 +328,10 @@ namespace Communication
 		void ParticipantLeft(const VoiceSessionParticipantInterface& participant);
 
         //!
-		void Opened(VoiceSessionInterface*);   // do we need this ?
+		//void Opened(VoiceSessionInterface*);   // do we need this ?
 
-        //!
-		void Closed(VoiceSessionInterface*);   // do we need this ?
+  //      //!
+		//void Closed(VoiceSessionInterface*);   // do we need this ?
 
         //!
         void StateChanged(Communication::VoiceSessionInterface::State state);
@@ -352,7 +359,7 @@ namespace Communication
 
 
     /**
-     *  TODO...
+     * NOT IN USE CURRENTLY: VoiceSessionInterface have video functionality
      *
      */
     class VideoSessionInterface : public QObject
@@ -364,9 +371,8 @@ namespace Communication
 
         virtual void Close() = 0;
         
-        virtual VideoWidgetInterface* GetRemoteVideo() = 0;
-        virtual VideoWidgetInterface* GetLocalVideo() = 0;
-
+        virtual VideoPlaybackWidgetInterface* GetRemoteVideo() = 0;
+        virtual VideoPlaybackWidgetInterface* GetLocalVideo() = 0;
     };
 
 	/**
