@@ -234,7 +234,7 @@ namespace OgreRenderer
         RexTypes::RexAssetID GetSkyBoxTextureID(uint texuture_index) const;
 
         /// Return sky generic sky parameters mostly used by sky box.
-        SkyBoxParameters EC_OgreSky::GetBoxSkyParameters() const;
+        SkyBoxParameters GetBoxSkyParameters() const;
 
         /// Returns sky dome parameters like tiling, curvature and so on.
         SkyDomeParameters GetSkyDomeParameters() const;
