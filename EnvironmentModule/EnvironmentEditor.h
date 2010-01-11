@@ -5,6 +5,7 @@
 
 #include <Foundation.h>
 #include "UICanvas.h"
+#include "EC_OgreSky.h"
 
 #include <QObject>
 #include <QPair>
@@ -36,6 +37,7 @@ namespace Environment
     class Terrain;
     class EC_Terrain;
     class Water;
+    class Sky;
     class Environment;
 
     typedef QPair<float, float> MinMaxValue;
@@ -45,7 +47,7 @@ namespace Environment
         Q_OBJECT
 
     public:
-        // All modify land actions that we can send to server.
+        // All modify land actions that we can send into the server.
         // Note! Dont change the order of this list or server wont do right modify land actions.
         enum ModifyLandAction
         {
@@ -81,25 +83,46 @@ namespace Environment
         //! Destructor
         virtual ~EnvironmentEditor();
 
-        //! Handle resource ready event.
+        //! Handle resource ready event that will return the texture that has been requested.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
 
-        void SetTerrainTextureID();
+        //void SetTerrainTextureID();
 
         static const int cHeightmapImageWidth  = 256;
         static const int cHeightmapImageHeight = 256;
         static const int cNumberOfTerrainTextures = 4;
 
     public slots:
-        //! Get a new terrain texture from rexlogic.
+        //! Create new terrain heightmap texture using terrain height information.
         void UpdateTerrain();
+
+        //! Get new height ranges for each terrain texture.
+        void UpdateTerrainTextureRanges();
 
         void UpdateWaterGeometry(int state);
         void UpdateWaterHeight();
 
-        void UpdateTerrainTextureRanges();
+        //! Called when sky type has been changed.
+        void SkyTypeChanged(int index);
 
-        //! Called when qMouseEvent event is generated.
+        //! Enable/Disable sky.
+        void UpdateSkyState(int state);
+
+        //! Set combobox pointing to right sky type when sky type has changed by server side.
+        void UpdateSkyType();
+
+        //! Reads new texture names from line-edit fields and change those textures in EC_OgreSky if they have changed.
+        void ChangeSkyTextures();
+
+        //! Get new sky texture names from sky object.
+        void UpdateSkyTextureNames();
+
+        void ChangeSkyProperties();
+
+        //! Change state of sky enable check box.
+        void ToggleSkyCheckButton(bool enabled);
+
+        //! Called when QMouseEvent event is generated inside the terrain map image label.
         void HandleMouseEvent(QMouseEvent *ev);
 
         //! Called when brush size option has changed.
@@ -108,14 +131,14 @@ namespace Environment
         //! Called when terrain action option has changed.
         void PaintActionChanged();
 
-        //! Called when tab window state has changed.
+        //! Called when tab windows state has changed.
         void TabWidgetChanged(int index);
 
         //! Called when user has pressed enter or return on editor's LineEdit widget.
         void LineEditReturnPressed();
 
-        //! Called when apply button have been pressed
-        void ApplyButtonPressed();
+        //! Called when apply button have been pressed on terrain texture tab window.
+        void ChangeTerrainTexture();
 
         //! Called when user change some of the height values.
         void HeightValueChanged(double height);
@@ -125,6 +148,7 @@ namespace Environment
 
 
         void UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
+
         void UpdateWaterFog(float fogStart, float fogEnd, const QVector<float>& color);
         void SetGroundFog();
         void SetWaterFog();
@@ -146,9 +170,22 @@ namespace Environment
 
         //! Create a window for terrain editor.
         void InitEditorWindow();
+        void InitTerrainTabWindow();
+        void InitTerrainTextureTabWindow();
+        void InitWaterTabWindow();
+        void InitSkyTabWindow();
+        void InitFogTabWindow();
+        void InitAmbientTabWindow();
 
         //! Create a new heightmap image that will show heightmap values in grayscale.format
         void CreateHeightmapImage();
+
+        //! Clear old sky properties and create a new one for spesific sky type.
+        //! @Param sky_type is used to tell what type of sky is in use, so right properties will be created.
+        void CreateSkyProperties(OgreRenderer::SkyType sky_type);
+
+        //! Clean all option widgets on the option scroll area.
+        void CleanSkyProperties();
 
         //! Ask texture decoder for a texture resource.
         //! @Param index for terrain_texture_id_list_ that holds the uuid that we want to use to request the resource that we need. Range should be [0 - 3].
@@ -173,26 +210,20 @@ namespace Environment
         //! Main widget for editor
         QWidget *editor_widget_;
 
-        //! Terrain geometry information.
-        boost::shared_ptr<Terrain> terrain_;
-
-        //! Water information (geometry etc.)
-        boost::shared_ptr<Water> water_;
-
-        //! Environment information.
-        boost::shared_ptr<Environment> environment_;
-
         //! Brush size (small, medium and large).
         BrushSize brush_size_;
 
         //! Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
         ModifyLandAction action_;
 
-        /// Proxy Widget for ui
+        //! Proxy Widget for ui
         UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
 
         QColorDialog* color_picker_;
         bool ambient_;
+
+        //! sky type in use.
+        OgreRenderer::SkyType sky_type_;
         //! Mouse press flags
         //u8 mouse_press_flag_;
 

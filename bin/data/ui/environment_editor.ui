@@ -6,144 +6,41 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>401</width>
-    <height>401</height>
+    <width>408</width>
+    <height>418</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string>/* Containers */
-QWidget#Form {
-	background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
- padding: 5px;
-}
-
-</string>
-  </property>
-  <widget class="QFrame" name="MainFrame">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>361</width>
-     <height>361</height>
-    </rect>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="margin">
+    <number>0</number>
    </property>
-   <property name="styleSheet">
-    <string/>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>361</width>
-      <height>361</height>
-     </rect>
-    </property>
+   <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item>
       <widget class="QTabWidget" name="tabWidget">
-       <property name="styleSheet">
-        <string/>
-       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="tab">
-        <property name="styleSheet">
-         <string/>
-        </property>
+       <widget class="QWidget" name="edit_terrain">
         <attribute name="title">
          <string>Terrain</string>
         </attribute>
-        <widget class="QPushButton" name="button_update">
-         <property name="geometry">
-          <rect>
-           <x>270</x>
-           <y>270</y>
-           <width>81</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Update</string>
-         </property>
-        </widget>
-        <widget class="QWidget" name="map_widget" native="true">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>256</width>
-           <height>256</height>
-          </rect>
-         </property>
-         <property name="cursor">
-          <cursorShape>CrossCursor</cursorShape>
-         </property>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget_2">
-         <property name="geometry">
-          <rect>
-           <x>270</x>
-           <y>10</y>
-           <width>81</width>
-           <height>88</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QLabel" name="brush_text">
-            <property name="text">
-             <string>Brush size</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_small">
-            <property name="text">
-             <string>Small</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_medium">
-            <property name="text">
-             <string>Medium</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_large">
-            <property name="text">
-             <string>Large</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="verticalLayoutWidget_3">
          <property name="geometry">
           <rect>
-           <x>270</x>
-           <y>100</y>
-           <width>81</width>
+           <x>280</x>
+           <y>110</y>
+           <width>101</width>
            <height>171</height>
           </rect>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QLabel" name="action_text">
             <property name="text">
@@ -198,405 +95,424 @@ QWidget#Form {
           </item>
          </layout>
         </widget>
+        <widget class="QPushButton" name="button_update">
+         <property name="geometry">
+          <rect>
+           <x>280</x>
+           <y>290</y>
+           <width>81</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Update</string>
+         </property>
+        </widget>
+        <widget class="QWidget" name="verticalLayoutWidget_2">
+         <property name="geometry">
+          <rect>
+           <x>280</x>
+           <y>10</y>
+           <width>101</width>
+           <height>88</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="brush_text">
+            <property name="text">
+             <string>Brush size</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_small">
+            <property name="text">
+             <string>Small</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_medium">
+            <property name="text">
+             <string>Medium</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rad_button_large">
+            <property name="text">
+             <string>Large</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="map_widget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>256</width>
+           <height>256</height>
+          </rect>
+         </property>
+         <property name="cursor">
+          <cursorShape>CrossCursor</cursorShape>
+         </property>
+        </widget>
        </widget>
-       <widget class="QWidget" name="tab_2">
+       <widget class="QWidget" name="edit_terrain_texture">
         <attribute name="title">
          <string>Terrain texture</string>
         </attribute>
-        <widget class="QLabel" name="terrain_texture_label_1">
+        <widget class="QWidget" name="gridLayoutWidget">
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>245</y>
-           <width>64</width>
-           <height>64</height>
+           <y>10</y>
+           <width>381</width>
+           <height>262</height>
           </rect>
          </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-         <property name="margin">
-          <number>0</number>
-         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="texture_line_edit_1"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="apply_texture_button_1">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Apply</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_1"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="texture_height_label_3">
+            <property name="text">
+             <string>Start Height / Range</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="texture_label_1">
+            <property name="text">
+             <string>Texture 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_1"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="texture_label_2">
+            <property name="text">
+             <string>Texture 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLineEdit" name="texture_line_edit_2"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_2"/>
+          </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="apply_texture_button_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Apply</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_2"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="texture_label_3">
+            <property name="text">
+             <string>Texture 3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLineEdit" name="texture_line_edit_3"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_3"/>
+          </item>
+          <item row="6" column="2">
+           <widget class="QPushButton" name="apply_texture_button_3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Apply</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_3"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="texture_label_4">
+            <property name="text">
+             <string>Texture 4</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLineEdit" name="texture_line_edit_4"/>
+          </item>
+          <item row="8" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_4"/>
+          </item>
+          <item row="8" column="2">
+           <widget class="QPushButton" name="apply_texture_button_4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Apply</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_4"/>
+          </item>
+          <item row="12" column="0">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>225</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="12" column="2">
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="12" column="1">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
-        <widget class="QLabel" name="texture_label_5">
+        <widget class="QWidget" name="gridLayoutWidget_3">
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>310</y>
-           <width>51</width>
-           <height>16</height>
+           <y>260</y>
+           <width>381</width>
+           <height>121</height>
           </rect>
          </property>
-         <property name="text">
-          <string>Texture 1</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_6">
-         <property name="geometry">
-          <rect>
-           <x>95</x>
-           <y>310</y>
-           <width>51</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 2</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="terrain_texture_label_2">
-         <property name="geometry">
-          <rect>
-           <x>95</x>
-           <y>245</y>
-           <width>64</width>
-           <height>64</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_7">
-         <property name="geometry">
-          <rect>
-           <x>270</x>
-           <y>310</y>
-           <width>51</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 4</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-        </widget>
-        <widget class="QLabel" name="terrain_texture_label_4">
-         <property name="geometry">
-          <rect>
-           <x>270</x>
-           <y>245</y>
-           <width>64</width>
-           <height>64</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_8">
-         <property name="geometry">
-          <rect>
-           <x>180</x>
-           <y>310</y>
-           <width>51</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 3</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="terrain_texture_label_3">
-         <property name="geometry">
-          <rect>
-           <x>180</x>
-           <y>245</y>
-           <width>64</width>
-           <height>64</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="apply_button_4">
-         <property name="geometry">
-          <rect>
-           <x>310</x>
-           <y>193</y>
-           <width>41</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="apply_button_1">
-         <property name="geometry">
-          <rect>
-           <x>310</x>
-           <y>33</y>
-           <width>41</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="apply_button_2">
-         <property name="geometry">
-          <rect>
-           <x>310</x>
-           <y>87</y>
-           <width>41</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="apply_button_3">
-         <property name="geometry">
-          <rect>
-           <x>310</x>
-           <y>140</y>
-           <width>41</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>113</y>
-           <width>51</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 3</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="texture_line_edit_1">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>33</y>
-           <width>211</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_1">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>6</y>
-           <width>51</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 1</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="texture_line_edit_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>140</y>
-           <width>211</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="texture_line_edit_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>87</y>
-           <width>211</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="texture_line_edit_4">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>193</y>
-           <width>211</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>59</y>
-           <width>51</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 2</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_label_4">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>166</y>
-           <width>51</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Texture 4</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_1">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>33</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_2">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>87</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_3">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>140</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_4">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>193</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_1">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>60</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_2">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>112</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_3">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>166</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_4">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>220</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="texture_height_label_1">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>0</y>
-           <width>101</width>
-           <height>31</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Start Height / Range
-(meters)</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="terrain_texture_label_1">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+            <property name="margin">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="texture_label_5">
+            <property name="text">
+             <string>Texture 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="terrain_texture_label_2">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="texture_label_6">
+            <property name="text">
+             <string>Texture 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="terrain_texture_label_3">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="texture_label_8">
+            <property name="text">
+             <string>Texture 3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="terrain_texture_label_4">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLabel" name="texture_label_7">
+            <property name="text">
+             <string>Texture 4</string>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="4">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>64</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="4">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </widget>
        <widget class="QWidget" name="edit_water">
         <attribute name="title">
          <string>Water</string>
         </attribute>
+        <widget class="QPushButton" name="water_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>40</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="water_toggle_box">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>70</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>water</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="water_remove_label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Enable water</string>
+         </property>
+        </widget>
         <widget class="QDoubleSpinBox" name="water_height_doublespinbox">
          <property name="geometry">
           <rect>
-           <x>30</x>
-           <y>50</y>
+           <x>10</x>
+           <y>40</y>
            <width>62</width>
            <height>22</height>
           </rect>
@@ -608,8 +524,8 @@ QWidget#Form {
         <widget class="QLabel" name="water_height_label">
          <property name="geometry">
           <rect>
-           <x>30</x>
-           <y>20</y>
+           <x>10</x>
+           <y>10</y>
            <width>121</width>
            <height>16</height>
           </rect>
@@ -618,107 +534,199 @@ QWidget#Form {
           <string>Water height (meters)</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="water_apply_button">
+       </widget>
+       <widget class="QWidget" name="edit_sky">
+        <attribute name="title">
+         <string>Sky</string>
+        </attribute>
+        <widget class="QCheckBox" name="use_caelum_check_box">
          <property name="geometry">
           <rect>
-           <x>100</x>
-           <y>50</y>
-           <width>75</width>
-           <height>23</height>
+           <x>20</x>
+           <y>10</y>
+           <width>72</width>
+           <height>18</height>
           </rect>
          </property>
          <property name="text">
-          <string>Apply</string>
+          <string>Caelum</string>
          </property>
         </widget>
-        <widget class="QLabel" name="water_remove_label">
+        <widget class="QWidget" name="verticalLayoutWidget">
          <property name="geometry">
           <rect>
-           <x>30</x>
-           <y>90</y>
-           <width>111</width>
-           <height>16</height>
+           <x>10</x>
+           <y>30</y>
+           <width>381</width>
+           <height>351</height>
           </rect>
          </property>
-         <property name="text">
-          <string>Enable water</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="water_toggle_box">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>120</y>
-           <width>70</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>water</string>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QFrame" name="sky_edit_frame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <widget class="QComboBox" name="sky_type_combo">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>60</y>
+               <width>121</width>
+               <height>21</height>
+              </rect>
+             </property>
+            </widget>
+            <widget class="QLabel" name="sky_height_label">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>0</y>
+               <width>71</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Enable sky</string>
+             </property>
+            </widget>
+            <widget class="QScrollArea" name="scroll_sky_options">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>120</y>
+               <width>361</width>
+               <height>221</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="sizeIncrement">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="panel_materials">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>359</width>
+                <height>219</height>
+               </rect>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QLabel" name="label">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>40</y>
+               <width>46</width>
+               <height>14</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Sky type</string>
+             </property>
+            </widget>
+            <widget class="QFrame" name="properties_frame">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>0</y>
+               <width>231</width>
+               <height>121</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="sky_toggle_box">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>20</y>
+               <width>72</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Sky</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="sky_texture_label">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>100</y>
+               <width>46</width>
+               <height>14</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Textures</string>
+             </property>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </widget>
        <widget class="QWidget" name="edit_fog">
         <attribute name="title">
          <string>Fog</string>
         </attribute>
-        <widget class="QCheckBox" name="fog_override_checkBox">
+        <widget class="QDoubleSpinBox" name="fog_water_blue_dSpinBox">
          <property name="geometry">
           <rect>
-           <x>30</x>
-           <y>40</y>
-           <width>111</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>override fog color</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_override_label">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>10</y>
-           <width>131</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Enable fog color override</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_controls_label">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>70</y>
-           <width>121</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Ground  fog controls</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_controls_label">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>200</y>
-           <width>101</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Water fog controls</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_red_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>110</y>
+           <x>120</x>
+           <y>240</y>
            <width>42</width>
            <height>22</height>
           </rect>
@@ -727,7 +735,7 @@ QWidget#Form {
         <widget class="QDoubleSpinBox" name="fog_ground_green_dSpinBox">
          <property name="geometry">
           <rect>
-           <x>90</x>
+           <x>70</x>
            <y>110</y>
            <width>42</width>
            <height>22</height>
@@ -737,7 +745,53 @@ QWidget#Form {
         <widget class="QDoubleSpinBox" name="fog_ground_blue_dSpinBox">
          <property name="geometry">
           <rect>
-           <x>150</x>
+           <x>130</x>
+           <y>110</y>
+           <width>42</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_water_green_label">
+         <property name="geometry">
+          <rect>
+           <x>70</x>
+           <y>220</y>
+           <width>41</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Green</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fog_water_red_dSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>240</y>
+           <width>42</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_water_red_label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>220</y>
+           <width>31</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Red</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fog_ground_red_dSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
            <y>110</y>
            <width>42</width>
            <height>22</height>
@@ -747,7 +801,7 @@ QWidget#Form {
         <widget class="QLabel" name="fog_ground_red_label">
          <property name="geometry">
           <rect>
-           <x>30</x>
+           <x>10</x>
            <y>90</y>
            <width>31</width>
            <height>16</height>
@@ -757,56 +811,59 @@ QWidget#Form {
           <string>Red</string>
          </property>
         </widget>
-        <widget class="QLabel" name="fog_ground_green_label">
+        <widget class="QDoubleSpinBox" name="fog_water_start_distance_dSpinBox">
          <property name="geometry">
           <rect>
-           <x>90</x>
-           <y>90</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Green</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_blue_label">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>90</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Blue</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_start_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>170</y>
+           <x>10</x>
+           <y>300</y>
            <width>62</width>
            <height>22</height>
           </rect>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_end_distance_dSpinBox">
+        <widget class="QLabel" name="fog_override_label">
          <property name="geometry">
           <rect>
-           <x>130</x>
-           <y>170</y>
-           <width>62</width>
-           <height>22</height>
+           <x>10</x>
+           <y>10</y>
+           <width>131</width>
+           <height>16</height>
           </rect>
+         </property>
+         <property name="text">
+          <string>Enable fog color override</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="fog_water_distance_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>300</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_water_end_distance_label">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>280</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fog end distance</string>
          </property>
         </widget>
         <widget class="QLabel" name="fog_ground_start_distance_label">
          <property name="geometry">
           <rect>
-           <x>30</x>
+           <x>10</x>
            <y>150</y>
            <width>101</width>
            <height>16</height>
@@ -816,164 +873,46 @@ QWidget#Form {
           <string> Fog start distance</string>
          </property>
         </widget>
-        <widget class="QLabel" name="fog_ground_end_distance_label">
+        <widget class="QLabel" name="fog_water_controls_label">
          <property name="geometry">
           <rect>
-           <x>130</x>
-           <y>150</y>
-           <width>91</width>
+           <x>10</x>
+           <y>200</y>
+           <width>101</width>
            <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Fog end distance</string>
+          <string>Fog water controls</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="fog_ground_color_apply_button">
+        <widget class="QLabel" name="fog_ground_controls_label">
          <property name="geometry">
           <rect>
-           <x>210</x>
-           <y>110</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_ground_distance_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>210</x>
-           <y>170</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_red_label">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>220</y>
-           <width>31</width>
+           <x>10</x>
+           <y>70</y>
+           <width>121</width>
            <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Red</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_red_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_green_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_blue_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>140</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_green_label">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>220</y>
-           <width>41</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Green</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_blue_label">
-         <property name="geometry">
-          <rect>
-           <x>140</x>
-           <y>220</y>
-           <width>41</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Blue</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_water_color_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>210</x>
-           <y>240</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_start_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>300</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
+          <string>Fog ground controls</string>
          </property>
         </widget>
         <widget class="QDoubleSpinBox" name="fog_water_end_distance_dSpinBox">
          <property name="geometry">
           <rect>
-           <x>130</x>
+           <x>110</x>
            <y>300</y>
            <width>62</width>
            <height>22</height>
           </rect>
          </property>
         </widget>
-        <widget class="QPushButton" name="fog_water_distance_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>210</x>
-           <y>300</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
         <widget class="QLabel" name="fog_water_start_distance_label">
          <property name="geometry">
           <rect>
-           <x>30</x>
+           <x>10</x>
            <y>280</y>
            <width>91</width>
            <height>16</height>
@@ -983,11 +922,86 @@ QWidget#Form {
           <string>Fog start distance</string>
          </property>
         </widget>
-        <widget class="QLabel" name="fog_water_end_distance_label">
+        <widget class="QPushButton" name="fog_ground_distance_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>170</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fog_water_green_dSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>70</x>
+           <y>240</y>
+           <width>42</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_ground_green_label">
+         <property name="geometry">
+          <rect>
+           <x>70</x>
+           <y>90</y>
+           <width>31</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Green</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="fog_ground_color_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>110</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="fog_override_checkBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>111</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>override fog color</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_ground_blue_label">
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>280</y>
+           <y>90</y>
+           <width>31</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Blue</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="fog_ground_end_distance_label">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>150</y>
            <width>91</width>
            <height>16</height>
           </rect>
@@ -996,59 +1010,62 @@ QWidget#Form {
           <string>Fog end distance</string>
          </property>
         </widget>
+        <widget class="QLabel" name="fog_water_blue_label">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>220</y>
+           <width>41</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Blue</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fog_ground_end_distance_dSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>170</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fog_ground_start_distance_dSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>170</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="fog_water_color_apply_button">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>240</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="ambient_light">
         <attribute name="title">
          <string>Ambient light</string>
         </attribute>
-        <widget class="QDoubleSpinBox" name="sun_direction_x">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>70</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="sun_direction_y">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>70</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="sun_direction_z">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>70</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>141</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sun light direction (vector)</string>
-         </property>
-        </widget>
         <widget class="QLabel" name="label_5">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>100</y>
+           <x>10</x>
+           <y>90</y>
            <width>71</width>
            <height>16</height>
           </rect>
@@ -1057,37 +1074,11 @@ QWidget#Form {
           <string>Sun light color</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_2">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>50</y>
-           <width>46</width>
-           <height>13</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> X</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_3">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>50</y>
-           <width>46</width>
-           <height>13</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> Y</string>
-         </property>
-        </widget>
         <widget class="QLabel" name="label_4">
          <property name="geometry">
           <rect>
-           <x>160</x>
-           <y>50</y>
+           <x>150</x>
+           <y>40</y>
            <width>46</width>
            <height>13</height>
           </rect>
@@ -1096,24 +1087,67 @@ QWidget#Form {
           <string> Z</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_9">
+        <widget class="QDoubleSpinBox" name="sun_direction_y">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>200</y>
-           <width>91</width>
+           <x>80</x>
+           <y>60</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="sun_direction_x">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>141</width>
            <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Ambient light color</string>
+          <string>Sun light direction (vector)</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>46</width>
+           <height>13</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> X</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="sun_direction_z">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>60</y>
+           <width>62</width>
+           <height>22</height>
+          </rect>
          </property>
         </widget>
         <widget class="QWidget" name="horizontalLayoutWidget_2">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>130</y>
+           <x>10</x>
+           <y>120</y>
            <width>158</width>
            <height>41</height>
           </rect>
@@ -1141,11 +1175,24 @@ QWidget#Form {
           </item>
          </layout>
         </widget>
+        <widget class="QLabel" name="label_9">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>190</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Ambient light color</string>
+         </property>
+        </widget>
         <widget class="QWidget" name="horizontalLayoutWidget_3">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>240</y>
+           <x>10</x>
+           <y>230</y>
            <width>158</width>
            <height>41</height>
           </rect>
@@ -1173,12 +1220,25 @@ QWidget#Form {
           </item>
          </layout>
         </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>40</y>
+           <width>46</width>
+           <height>13</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> Y</string>
+         </property>
+        </widget>
        </widget>
       </widget>
      </item>
     </layout>
-   </widget>
-  </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

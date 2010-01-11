@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgreSky.h"
@@ -50,31 +51,32 @@ void EC_OgreSky::CreateSky(bool show)
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();  
-    
     DisableSky();
     
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     
-    RexTypes::Vector3 v = genericSkyParameters.angleAxis;
-    Ogre::Quaternion orientation(Ogre::Degree(genericSkyParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
+    /*RexTypes::Vector3 v = genericSkyParameters.angleAxis;
+    Ogre::Quaternion orientation(Ogre::Degree(genericSkyParameters.angle), Ogre::Vector3(v.x, v.y, v.z));*/
  
     ///\todo Get the sky type and other parameters from the config file.
     switch(type_)
     {
     case SKYTYPE_BOX:
     {
-        Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(genericSkyParameters.material);
+        Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
         skyMaterial->setReceiveShadows(false);
         try
         {
-//            if (skyboxImages_.size() == 6)
-                scene_mgr->setSkyBox(show, genericSkyParameters.material, genericSkyParameters.distance, genericSkyParameters.drawFirst, orientation);
+            RexTypes::Vector3 v = skyBoxParameters.angleAxis;
+            Ogre::Quaternion orientation(Ogre::Degree(skyBoxParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
+
+            scene_mgr->setSkyBox(show, skyBoxParameters.material, skyBoxParameters.distance, skyBoxParameters.drawFirst, orientation);
         }
         catch (Ogre::Exception& e)
         {
             OgreRenderingModule::LogError("Could not set SkyBox: " + std::string(e.what()));
             return;
-        }                
+        }
         
         skyEnabled_ = true;
         break;
@@ -82,8 +84,11 @@ void EC_OgreSky::CreateSky(bool show)
     case SKYTYPE_DOME:
         try
         {
-            scene_mgr->setSkyDome(show, genericSkyParameters.material, skyDomeParameters.curvature, skyDomeParameters.tiling,
-                genericSkyParameters.distance, genericSkyParameters.drawFirst, orientation, skyDomeParameters.xSegments,
+            RexTypes::Vector3 v = skyDomeParameters.angleAxis;
+            Ogre::Quaternion orientation(Ogre::Degree(skyDomeParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
+
+            scene_mgr->setSkyDome(show, skyDomeParameters.material, skyDomeParameters.curvature, skyDomeParameters.tiling,
+                skyDomeParameters.distance, skyDomeParameters.drawFirst, orientation, skyDomeParameters.xSegments,
                 skyDomeParameters.ySegments, skyDomeParameters.ySegmentsKeep);
         }
         catch (Ogre::Exception& e)
@@ -99,9 +104,10 @@ void EC_OgreSky::CreateSky(bool show)
         {
             ///\todo
             Ogre::Plane plane;
-            plane.d = 1000;
-            plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Y;
-            scene_mgr->setSkyPlane(true, plane, genericSkyParameters.material, 1500, 40, true, 1.5f, 150, 150);            
+            plane.d = skyPlaneParameters.distance;
+            plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
+            scene_mgr->setSkyPlane(true, plane, skyPlaneParameters.material, skyPlaneParameters.scale, skyPlaneParameters.tiling, true, 
+                                    skyPlaneParameters.bow, skyPlaneParameters.xSegments, skyPlaneParameters.ySegments);
         }
         catch (Ogre::Exception& e)
         {
@@ -123,7 +129,6 @@ bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();  
-        
     DisableSky();
     
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -142,12 +147,45 @@ bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
     return true;
 }
 
+std::vector<std::string> EC_OgreSky::GetMaterialTextureNames()
+{
+    Ogre::StringVector texture_names;
+    Ogre::MaterialPtr skyMaterial;
+    switch(type_)
+    {
+    case OgreRenderer::SKYTYPE_BOX:
+        skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
+        break;
+    case OgreRenderer::SKYTYPE_DOME:
+        skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
+        break;
+    case OgreRenderer::SKYTYPE_PLANE:
+        skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
+        break;
+    }
+
+    if (!skyMaterial.isNull())
+    {
+        Ogre::TextureUnitState *texture_state = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0);
+        if(texture_state)
+        {
+            for(uint i = 0; i < texture_state->getNumFrames(); i++)
+            {
+                texture_names.push_back(texture_state->getFrameTextureName(i));
+            }
+        }
+        //Ogre::String textures = texture_state->getTextureName();
+        //texture_names = Ogre::StringConverter::parseStringVector(textures);
+    }
+    return texture_names;
+}
+
 void EC_OgreSky::DisableSky()
 {
     if (renderer_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();  
-    
+    RendererPtr renderer = renderer_.lock();
+
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     scene_mgr->setSkyBox(false, "");
     scene_mgr->setSkyDome(false, "");
@@ -171,14 +209,24 @@ void EC_OgreSky::SetSkyBoxMaterialTexture(int index, const char *texture_name, s
     ++currentSkyBoxImageCount_;
     if (currentSkyBoxImageCount_ == image_count)
     {
-        Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(genericSkyParameters.material);
-        if (!skyMaterial.isNull())
+        Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
+        if (!skyMaterial.isNull() && image_count == 6)
         {
             skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&skyBoxImages_[0], false);
             //skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureScale(1, -1);
             CreateSky();
+            currentSkyBoxImageCount_ = 0;
         }
-        
+        else if(image_count < 6) // If all materials textures dont need to be changed, use code below.
+        {
+            for(uint i = 0; i < 6; i++)
+            {
+                if(skyBoxImages_[i] != "")
+                    skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setFrameTextureName(Ogre::String(skyBoxImages_[i]), i);
+            }
+            CreateSky();
+            currentSkyBoxImageCount_ = 0;
+        }
         ///\todo
         /*
         // Lets create scaled down cubemap texture for water reflections.
@@ -245,14 +293,11 @@ void EC_OgreSky::SetSkyBoxMaterialTexture(int index, const char *texture_name, s
     }
 }
 
-void EC_OgreSky::SetSkyDomeMaterialTexture(const char *texture_name, const SkyImageData *parameters)
+void EC_OgreSky::SetSkyDomeMaterialTexture(const char *texture_name)
 {
     type_ = SKYTYPE_DOME;
-///\todo pass the parameters
-//    skyDomeParameters.curvature = parameters->curvature;
-//    skyDomeParameters.tiling = parameters->tiling;
 
-    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(genericSkyParameters.material);
+    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
     if (!skyMaterial.isNull())
     {
         skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texture_name);
@@ -263,21 +308,132 @@ void EC_OgreSky::SetSkyDomeMaterialTexture(const char *texture_name, const SkyIm
 
 void EC_OgreSky::SetSkyPlaneMaterialTexture(const char *texture_name)
 {
-///\todo
-/*
     type_ = SKYTYPE_PLANE;
-    skyDomeParameters.curvature = imageData->curvature;
-    skyDomeParameters.tiling = imageData->tiling;
 
 //    const Ogre::String &texture = src_vi->getOgreTexture()->getName();
-    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(genericSkyParameters.material);
+    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
     if (!skyMaterial.isNull())
     {
         skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texture_name);
         skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
         CreateSky();
     }
-*/
+}
+
+void EC_OgreSky::SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky)
+{
+    skyDomeParameters.material = params.material;
+    skyDomeParameters.curvature = params.curvature;
+    skyDomeParameters.tiling = params.tiling;
+    skyDomeParameters.distance = params.distance;
+    skyDomeParameters.xSegments = params.xSegments;
+    skyDomeParameters.ySegments = params.ySegments;
+    skyDomeParameters.ySegmentsKeep = params.ySegmentsKeep;
+    skyDomeParameters.drawFirst = params.drawFirst;
+    skyDomeParameters.angle = params.angle;
+    skyDomeParameters.angleAxis = params.angleAxis;
+    if(update_sky)
+    {
+        type_ = SKYTYPE_DOME;
+        CreateSky();
+    }
+}
+
+void EC_OgreSky::SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky)
+{
+    skyPlaneParameters.material = params.material;
+    skyPlaneParameters.bow = params.bow;
+    skyPlaneParameters.scale = params.scale;
+    skyPlaneParameters.tiling = params.tiling;
+    skyPlaneParameters.distance = params.distance;
+    skyPlaneParameters.xSegments = params.xSegments;
+    skyPlaneParameters.ySegments = params.ySegments;
+    skyPlaneParameters.drawFirst = params.drawFirst;
+    if(update_sky)
+    {
+        type_ = SKYTYPE_PLANE;
+        CreateSky();
+    }
+}
+
+void EC_OgreSky::SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky)
+{
+    skyBoxParameters.material = params.material;
+    skyBoxParameters.angle = params.angle;
+    skyBoxParameters.angleAxis = params.angleAxis;
+    skyBoxParameters.distance = params.distance;
+    skyBoxParameters.drawFirst = params.drawFirst;
+    if(update_sky)
+    {
+        type_ = SKYTYPE_BOX;
+        CreateSky();
+    }
+}
+
+RexTypes::RexAssetID EC_OgreSky::GetSkyDomeTextureID() const
+{
+    RexTypes::RexAssetID textureID = "";
+    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
+    if (!skyMaterial.isNull())
+    {
+         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(0);
+    }
+    return textureID;
+}
+
+RexTypes::RexAssetID EC_OgreSky::GetSkyPlaneTextureID() const
+{
+    RexTypes::RexAssetID textureID = "";
+    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
+    if (!skyMaterial.isNull())
+    {
+         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(0);
+    }
+    return textureID;
+}
+
+RexTypes::RexAssetID EC_OgreSky::GetSkyBoxTextureID(uint texuture_index) const
+{
+    if(texuture_index >= 6) texuture_index = 5;
+    RexTypes::RexAssetID textureID = "";
+    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
+    if (!skyMaterial.isNull())
+    {
+         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(texuture_index);
+    }
+    return textureID;
+}
+
+SkyBoxParameters EC_OgreSky::GetBoxSkyParameters() const
+{
+    return skyBoxParameters;
+}
+
+SkyDomeParameters EC_OgreSky::GetSkyDomeParameters() const
+{
+    return skyDomeParameters;
+}
+
+SkyPlaneParameters EC_OgreSky::GetSkyPlaneParameters() const
+{
+    return skyPlaneParameters;
+}
+
+bool EC_OgreSky::IsSkyEnabled() const
+{
+    return skyEnabled_;
+}
+
+SkyType EC_OgreSky::GetSkyType() const
+{
+    return type_;
+}
+
+void EC_OgreSky::SetSkyType(SkyType type, bool update_sky)
+{
+    type_ = type;
+    if(update_sky)
+        CreateSky();
 }
 
 } //namespace OgreRenderer

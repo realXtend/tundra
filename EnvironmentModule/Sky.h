@@ -3,10 +3,11 @@
 #ifndef incl_RexLogicModule_Sky_h
 #define incl_RexLogicModule_Sky_h
 
-#include "ComponentInterface.h"
 #include "Foundation.h"
 #include "EC_OgreSky.h"
 #include "EnvironmentModuleApi.h"
+
+#include <QObject>
 
 namespace Resource
 {
@@ -23,9 +24,13 @@ namespace ProtocolUtilities
 
 namespace Environment
 {
+    class EnvironmentModule;
+
     /// Sky component
-    class ENVIRONMENT_MODULE_API Sky
+    class ENVIRONMENT_MODULE_API Sky : public QObject
     {
+        Q_OBJECT
+
     public:
         Sky(EnvironmentModule *owner);
         virtual ~Sky();
@@ -72,6 +77,46 @@ namespace Environment
         /// @return The scene entity that represents the sky in the currently active world.
         Scene::EntityWeakPtr GetSkyEntity();
 
+        /// @return The sky type that is in use.
+        OgreRenderer::SkyType GetSkyType() const;
+
+        /// Disable currently active sky.
+        void DisableSky();
+
+        /// Return that if sky is enabled.
+        bool IsSkyEnabled() const;
+
+        /// Enable/Disable sky.
+        void EnableSky(bool enabled);
+
+        /// Request sky type chaged. If requested sky type is same as currently used sky do nothing.
+        void ChangeSkyType(OgreRenderer::SkyType type, bool update_sky = true);
+
+        /// GetSkyTexture asset id.
+        /// @param What sky type we are requesting texture from.
+        /// @param Used only when sky type is set to SKYBOX. Index should be between 0 - 5.
+        RexTypes::RexAssetID GetSkyTextureID(OgreRenderer::SkyType sky_type, int index = 0) const;
+
+        /// Return all sky dome parameters from EC_Ogresky entity.
+        OgreRenderer::SkyDomeParameters GetSkyDomeParameters();
+
+        /// Return all sky plane parameters from EC_Ogresky entity.
+        OgreRenderer::SkyPlaneParameters GetSkyPlaneParameters();
+
+        /// Return all generic sky parameters from EC_Ogresky entity.
+        OgreRenderer::SkyBoxParameters GetSkyBoxParameters();
+
+        void SetSkyDomeParameters(const OgreRenderer::SkyDomeParameters &params, bool update_sky = true);
+        void SetSkyPlaneParameters(const OgreRenderer::SkyPlaneParameters &params, bool update_sky = true);
+        void SetSkyBoxParameters(const OgreRenderer::SkyBoxParameters &params, bool update_sky = true);
+
+    signals:
+        /// Signal is emited when sky is enabled/disabled.
+        void SkyEnabled(bool enabled);
+
+        /// Signal is emited when sky type has changed.
+        void SkyTypeChanged();
+
     private:
         Sky(const Sky &);
         void operator =(const Sky &);
@@ -96,9 +141,6 @@ namespace Environment
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID skyBoxTextures_[skyBoxTextureCount];
-
-        /// List of skybox image names (UUID's) as strings.
-        std::vector<RexTypes::RexAssetID> skyBoxImages_;
 
         /// UUID of the texture asset the skydome uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID skyDomeTexture_;
