@@ -8,7 +8,7 @@
 #include <Foundation.h>
 #include <RexTypes.h>
 #include "EnvironmentModuleApi.h"
-
+#include <QVector>
 #include <QObject>
 
 namespace ProtocolUtilities
@@ -137,6 +137,24 @@ namespace Environment
 
         QVector<float> GetAmbientLight();
         void SetAmbientLight(const QVector<float>& vector);
+
+        
+        template<typename T> QVector<T> ConvertToQVector(const StringVector& vector) 
+        {
+            int elements = vector.size();
+            QVector<T> vec(elements);
+            try
+            {
+                for ( int i = 0; i < elements; ++i)
+                    vec[i] = boost::lexical_cast<T>(vector[i]);
+            }
+            catch ( boost::bad_lexical_cast&)
+            {
+                return QVector<T>(0);
+            }
+
+            return vec;
+        }
      
     signals:
         
