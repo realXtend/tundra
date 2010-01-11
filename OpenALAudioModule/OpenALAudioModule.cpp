@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OpenALAudioModule.h"
 #include "SoundSystem.h"
+#include "SoundSettings.h"
 
 namespace OpenALAudio
 {
@@ -39,8 +40,10 @@ namespace OpenALAudio
 		soundsystem_ = SoundSystemPtr(new SoundSystem(framework_));    
         if (!soundsystem_->IsInitialized())
             return;
-
 		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
+
+        // Sound settings depends on the sound service, so init it last
+        soundsettings_ = SoundSettingsPtr(new SoundSettings(framework_));
     }
 
     void OpenALAudioModule::PostInitialize()

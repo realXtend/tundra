@@ -18,6 +18,12 @@ namespace Foundation
             Playing
         };
        
+        enum SoundType
+        {
+            Triggered = 0,
+            Ambient
+        };
+              
         SoundServiceInterface() {}
         virtual ~SoundServiceInterface() {}
 
@@ -27,22 +33,41 @@ namespace Foundation
          */
         virtual void SetListener(const Vector3df& position, const Quaternion& orientation) = 0;       
         
+        //! Sets master gain of whole sound system
+        /*! \param master_gain New master gain, in range 0.0 - 1.0
+         */
+        virtual void SetMasterGain(Real master_gain) = 0;
+        
+        //! Sets master gain of certain sound types
+        /*! \param type Sound channel type to adjust
+            \param master_gain New master gain, in range 0.0 - 1.0
+         */
+        virtual void SetSoundMasterGain(SoundType type, Real master_gain) = 0;
+        
+        //! Gets master gain of whole sound system
+        virtual Real GetMasterGain() = 0;
+        
+        //! Sets master gain of certain sound types
+        virtual Real GetSoundMasterGain(SoundType type) = 0;        
+                
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
+            \param type Sound channel type, decides which mastervolume to use for the channel 
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */           
-        virtual sound_id_t PlaySound(const std::string& name, bool local = false, sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound(const std::string& name, SoundType type = Triggered, bool local = false, sound_id_t channel = 0) = 0;
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
+            \param type Sound channel type, decides which mastervolume to use for the channel 
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param position Position of sound
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */     
-        virtual sound_id_t PlaySound3D(const std::string& name, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound3D(const std::string& name, SoundType type = Triggered, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
 
         //! Play raw audio data from buffer
         /*! \param buffer pointer to buffer where playable audio data is stored

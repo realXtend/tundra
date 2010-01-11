@@ -15,7 +15,9 @@ namespace Foundation
 namespace OpenALAudio
 {
     class SoundSystem;
+    class SoundSettings;
     typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;
+    typedef boost::shared_ptr<SoundSettings> SoundSettingsPtr;
 
     //! interface for modules
     class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterfaceImpl
@@ -43,7 +45,8 @@ namespace OpenALAudio
                 
     private:
 		SoundSystemPtr soundsystem_;
-		
+		SoundSettingsPtr soundsettings_;
+				
 		event_category_id_t task_event_category_;
 		event_category_id_t asset_event_category_;
     };

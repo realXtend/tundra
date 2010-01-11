@@ -18,9 +18,9 @@
 #include <QScrollBar>
 #include <QTabWidget>
 
-#include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "UiModule.h"
+#include "UiProxyWidget.h"
+#include "UiWidgetProperties.h"
 
 namespace RexLogic
 {

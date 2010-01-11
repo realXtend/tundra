@@ -3,7 +3,7 @@
 #ifndef incl_RexLogic_KeyState_h
 #define incl_RexLogic_KeyState_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "KeyBindings.h"
 
 #include <QObject>

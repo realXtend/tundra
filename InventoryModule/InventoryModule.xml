@@ -2,6 +2,7 @@
 <config>
     <entry>InventoryModule</entry>
     <dependency>RexLogicModule</dependency>
+    <dependency>UiModule</dependency>
     <dependency>QtModule</dependency>
     <dependency>PythonScriptModule</dependency>
 </config>

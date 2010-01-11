@@ -1,3 +1,4 @@
 <config>
-   <entry>OpenALAudioModule</entry>
+    <entry>OpenALAudioModule</entry>
+    <dependency>UiModule</dependency>
 </config>

@@ -11,10 +11,12 @@ namespace OpenALAudio
     static const Real DEFAULT_INNER_RADIUS = 1.0f;
     static const Real DEFAULT_OUTER_RADIUS = 50.0f;
     
-    SoundChannel::SoundChannel() :
+    SoundChannel::SoundChannel(Foundation::SoundServiceInterface::SoundType type) :
+        type_(type),
         handle_(0),
         pitch_(1.0f),
         gain_(1.0f),
+        master_gain_(1.0f),
         position_(0.0, 0.0, 0.0), 
         inner_radius_(DEFAULT_INNER_RADIUS),
         outer_radius_(DEFAULT_OUTER_RADIUS),
@@ -160,6 +162,16 @@ namespace OpenALAudio
         gain_ = gain;          
     }
     
+    void SoundChannel::SetMasterGain(Real master_gain)
+    {
+        if (master_gain < 0.0f) 
+            master_gain = 0.0f;
+        if (master_gain > 1.0f)
+            master_gain = 1.0f;
+            
+        master_gain_ = master_gain;          
+    }    
+    
     void SoundChannel::SetRange(Real inner_radius, Real outer_radius, Real rolloff)
     {
         if (rolloff < MINIMUM_ROLLOFF) 
@@ -222,9 +234,9 @@ namespace OpenALAudio
         if (handle_)
         {            
             if (positional_)
-                alSourcef(handle_, AL_GAIN, gain_ * attenuation_);          
+                alSourcef(handle_, AL_GAIN, master_gain_ * gain_ * attenuation_);          
             else  
-                alSourcef(handle_, AL_GAIN, gain_);     
+                alSourcef(handle_, AL_GAIN, master_gain_ * gain_);     
         }
     }
     

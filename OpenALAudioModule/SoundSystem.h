@@ -20,10 +20,11 @@ namespace OpenALAudio
     typedef std::map<sound_id_t, SoundChannelPtr> SoundChannelMap;
     typedef std::map<std::string, SoundPtr> SoundMap;
       
+    //! Sound service implementation. Owned by OpenALAudioModule.
     class SoundSystem : public Foundation::SoundServiceInterface
     {
-	public:
-        SoundSystem(Foundation::Framework *framework);
+	public:	
+        SoundSystem(Foundation::Framework* framework);
 		virtual ~SoundSystem();
 
         //! Sets listener position & orientation
@@ -32,13 +33,30 @@ namespace OpenALAudio
          */
         virtual void SetListener(const Vector3df& position, const Quaternion& orientation);       
         
+        //! Sets master gain of whole sound system
+        /*! \param master_gain New master gain, in range 0.0 - 1.0
+         */
+        virtual void SetMasterGain(Real master_gain);
+        
+        //! Sets master gain of certain sound types
+        /*! \param type Sound channel type to adjust
+            \param master_gain New master gain, in range 0.0 - 1.0
+         */
+        virtual void SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, Real master_gain);
+        
+        //! Gets master gain of whole sound system
+        virtual Real GetMasterGain();
+        
+        //! Sets master gain of certain sound types
+        virtual Real GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type);        
+                
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */           
-        virtual sound_id_t PlaySound(const std::string& name, bool local = false, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
@@ -47,7 +65,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */     
-        virtual sound_id_t PlaySound3D(const std::string& name, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
 
         //! Play raw audio data from buffer
         /*! \param buffer pointer to buffer where playable audio data is stored
@@ -141,6 +159,10 @@ namespace OpenALAudio
         void Uninitialize();
         //! Return next sound channel ID
         sound_id_t GetNextSoundChannelID();  
+        
+        //! Reapply master gain to all existing channels
+        void ApplyMasterGain();
+        
         //! Get sound
         /*! Creates new if necessary. Initiates asset decode/download as necessary.
          */ 
@@ -176,6 +198,11 @@ namespace OpenALAudio
         Vector3df listener_position_;
         //! Listener orientation
         Quaternion listener_orientation_;
+        
+        //! Master gain for whole sound system
+        Real master_gain_;
+        //! Master gain for individual sound types
+        std::map<Foundation::SoundServiceInterface::SoundType, Real> sound_master_gain_;
 
         SoundStream *sound_stream_;
 

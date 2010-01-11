@@ -584,7 +584,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     if (same_sound_detected >= MAX_SOUND_INSTANCE_COUNT)
         soundsystem->StopSound(sound_to_stop);
         
-    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, Foundation::SoundServiceInterface::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
               
     return false;
