@@ -285,9 +285,19 @@ void Environment::SetSunColor(const QVector<float>& vector)
     OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
-        
-    Color color(vector[0], vector[1], vector[2], vector[3]);
-    env->SetSunColor(color);
+    
+    
+    if ( vector.size() == 4)
+    {
+        Color color(vector[0], vector[1], vector[2], vector[3]);
+        env->SetSunColor(color);
+    }
+    else if ( vector.size() == 3 )
+    {
+        Color color(vector[0], vector[1], vector[2], 1.0);
+        env->SetSunColor(color);
+    }
+  
 }
      
 QVector<float> Environment::GetSunColor()
