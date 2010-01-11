@@ -33,6 +33,9 @@ namespace Inventory
 
         /// QAbstractItemView override.
         void dragMoveEvent(QDragMoveEvent *event);
+
+        /// QAbstractItemView override.
+        void dropEvent(QDropEvent *event);
     };
 }
 
