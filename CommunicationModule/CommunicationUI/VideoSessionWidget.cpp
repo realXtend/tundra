@@ -331,7 +331,7 @@ namespace CommunicationUI
         internal_v_layout_remote_ = new QVBoxLayout();
 
         // Local video and controls
-        local_video_ = (QWidget *)(video_session_->GetLocallyCapturedVideo());
+        local_video_ = video_session_->GetLocallyCapturedVideo();
         controls_local_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         local_status_label_ = new QLabel("Preview of captured video", this);
         local_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -344,7 +344,7 @@ namespace CommunicationUI
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
-        remote_video_ = (QWidget *)(video_session_->GetReceivedVideo());
+        remote_video_ = video_session_->GetReceivedVideo();
         controls_remote_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         remote_status_label_ = new QLabel("Friend is currently not sending video", this);
         remote_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

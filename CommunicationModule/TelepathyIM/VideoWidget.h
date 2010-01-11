@@ -19,7 +19,7 @@ namespace TelepathyIM
     Q_OBJECT
     
     public: 
-        VideoWidget(GstBus *bus, QWidget *parent = 0, const QString &name = QString("video_widget"));
+        VideoWidget(GstBus *bus, QWidget *parent, const QString &name, const QString &video_src_name);
         virtual ~VideoWidget();
 
         //! Getters
