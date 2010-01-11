@@ -317,9 +317,10 @@ namespace Environment
                             return false; 
                        
                      
-                        StringVector sun_light_direction = SplitString(parameters[0].c_str(), char(" "));
-                        StringVector sun_light_color = SplitString(parameters[1].c_str(), char(" "));
-                        StringVector ambient_light_color = SplitString(parameters[2].c_str(), char(" "));
+                        QChar empty(char(" "));
+                        StringVector sun_light_direction = SplitString(parameters[0].c_str(), empty.toAscii() );
+                        StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
+                        StringVector ambient_light_color = SplitString(parameters[2].c_str(), empty.toAscii());
                         
                         if ( environment_ != 0 )
                         {
