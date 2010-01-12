@@ -1395,6 +1395,11 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
 {
     prim.PrimTextures.clear();
     prim.PrimColors.clear();
+    prim.PrimRepeatU.clear();
+    prim.PrimRepeatV.clear();
+    prim.PrimOffsetU.clear();
+    prim.PrimOffsetV.clear();
+    prim.PrimUVRotation.clear();
     
     int idx = 0;
     uint32_t bits;
@@ -1403,9 +1408,7 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     if (idx >= length)
         return;
     
-    RexUUID default_texture_id = ReadUUIDFromBytes(bytes, idx);
-    prim.PrimDefaultTextureID = default_texture_id.ToString();
-    
+    prim.PrimDefaultTextureID = ReadUUIDFromBytes(bytes, idx).ToString();   
     while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
     {
         if (idx >= length)
@@ -1414,9 +1417,7 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
         for (int i = 0; i < num_bits; ++i)
         {
             if (bits & 1)
-            {
                 prim.PrimTextures[i] = texture_id.ToString();
-            }
             bits >>= 1;
         }
     }
@@ -1424,9 +1425,7 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     if (idx >= length)
         return;
     
-    Color default_color = ReadColorFromBytesInverted(bytes, idx);
-    prim.PrimDefaultColor = default_color;
-    
+    prim.PrimDefaultColor = ReadColorFromBytesInverted(bytes, idx); 
     while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
     {
         if (idx >= length)
@@ -1435,22 +1434,88 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
         for (int i = 0; i < num_bits; ++i)
         {
             if (bits & 1)
-            {
                 prim.PrimColors[i] = color;
-            }
             bits >>= 1;
         }
     }
     
-    SkipTextureEntrySection(bytes, idx, length, 4); // RepeatU
-    SkipTextureEntrySection(bytes, idx, length, 4); // RepeatV
-    SkipTextureEntrySection(bytes, idx, length, 2); // OffsetU
-    SkipTextureEntrySection(bytes, idx, length, 2); // OffsetV
-    SkipTextureEntrySection(bytes, idx, length, 2); // Rotation
+    if (idx >= length)
+        return;
+            
+    prim.PrimDefaultRepeatU = ReadFloatFromBytes(bytes, idx);
+    while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+    {
+        if (idx >= length)
+            return;
+        float repeat = ReadFloatFromBytes(bytes, idx);
+        for (int i = 0; i < num_bits; ++i)
+        {
+            if (bits & 1)
+                prim.PrimRepeatU[i] = repeat;
+            bits >>= 1;
+        }
+    }    
+   
+    if (idx >= length)
+        return;
+            
+    prim.PrimDefaultRepeatV = ReadFloatFromBytes(bytes, idx);
+    while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+    {
+        if (idx >= length)
+            return;
+        float repeat = ReadFloatFromBytes(bytes, idx);
+        for (int i = 0; i < num_bits; ++i)
+        {
+            if (bits & 1)
+                prim.PrimRepeatV[i] = repeat;
+            bits >>= 1;
+        }
+    }   
     
-    uint8_t default_materialtype = bytes[idx++];
-    prim.PrimDefaultMaterialType = default_materialtype;
+    prim.PrimDefaultOffsetU = ReadSInt16FromBytes(bytes, idx) / 32767.0f;
+    while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+    {
+        if (idx >= length)
+            return;
+        float offset = ReadSInt16FromBytes(bytes, idx) / 32767.0f;
+        for (int i = 0; i < num_bits; ++i)
+        {
+            if (bits & 1)
+                prim.PrimOffsetU[i] = offset;
+            bits >>= 1;
+        }
+    }       
     
+    prim.PrimDefaultOffsetV = ReadSInt16FromBytes(bytes, idx) / 32767.0f;
+    while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+    {
+        if (idx >= length)
+            return;
+        float offset = ReadSInt16FromBytes(bytes, idx) / 32767.0f;
+        for (int i = 0; i < num_bits; ++i)
+        {
+            if (bits & 1)
+                prim.PrimOffsetV[i] = offset;
+            bits >>= 1;
+        }
+    }            
+    
+    prim.PrimDefaultUVRotation = ReadSInt16FromBytes(bytes, idx) / 32767.0f * 2 * PI;
+    while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
+    {
+        if (idx >= length)
+            return;
+        float rotation = ReadSInt16FromBytes(bytes, idx) / 32767.0f * 2 * PI;
+        for (int i = 0; i < num_bits; ++i)
+        {
+            if (bits & 1)
+                prim.PrimUVRotation[i] = rotation;
+            bits >>= 1;
+        }
+    }  
+    
+    prim.PrimDefaultMaterialType = bytes[idx++];    
     while ((idx < length) && (ReadTextureEntryBits(bits, num_bits, bytes, idx)))
     {
         if (idx >= length)
@@ -1459,9 +1524,7 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
         for (int i = 0; i < num_bits; ++i)
         {
             if (bits & 1)
-            {
                 prim.PrimMaterialTypes[i] = materialtype;
-            }
             bits >>= 1;
         }
     }

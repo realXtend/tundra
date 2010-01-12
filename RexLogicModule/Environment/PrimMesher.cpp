@@ -243,6 +243,11 @@ namespace PrimMesher
         U = u;
         V = v;
     }
+    
+    UVCoord UVCoord::Flip()
+    {
+        return UVCoord(1.0f - U, 1.0f - V);
+    }
 
     Face::Face()
     {
@@ -1167,9 +1172,9 @@ namespace PrimMesher
                         newViewerFace.n2 = faceNormal;
                         newViewerFace.n3 = faceNormal;
 
-                        newViewerFace.uv1 = newLayer.faceUVs[face.v1];
-                        newViewerFace.uv2 = newLayer.faceUVs[face.v2];
-                        newViewerFace.uv3 = newLayer.faceUVs[face.v3];
+                        newViewerFace.uv1 = newLayer.faceUVs[face.v1].Flip();
+                        newViewerFace.uv2 = newLayer.faceUVs[face.v2].Flip();
+                        newViewerFace.uv3 = newLayer.faceUVs[face.v3].Flip();
 
                         viewerFaces.push_back(newViewerFace);
                     }
@@ -1359,9 +1364,9 @@ namespace PrimMesher
                     newViewerFace.n2 = faceNormal;
                     newViewerFace.n3 = faceNormal;
 
-                    newViewerFace.uv1 = newLayer.faceUVs[face.v1 - coordsLen];
-                    newViewerFace.uv2 = newLayer.faceUVs[face.v2 - coordsLen];
-                    newViewerFace.uv3 = newLayer.faceUVs[face.v3 - coordsLen];
+                    newViewerFace.uv1 = newLayer.faceUVs[face.v1 - coordsLen].Flip();;
+                    newViewerFace.uv2 = newLayer.faceUVs[face.v2 - coordsLen].Flip();;
+                    newViewerFace.uv3 = newLayer.faceUVs[face.v3 - coordsLen].Flip();;
 
                     viewerFaces.push_back(newViewerFace);
                 }
