@@ -1,5 +1,5 @@
-realXtend Naali 0.0.2
-=====================
+realXtend Naali 0.1alpha
+========================
 
 System requirements
 -------------------

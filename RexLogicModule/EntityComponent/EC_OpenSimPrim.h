@@ -18,6 +18,16 @@ namespace RexLogic
         uint8_t Type;
         RexTypes::RexAssetID asset_id;
     }; 
+    
+    //! Texture coordinate data structure
+    struct REXLOGIC_MODULE_API TexCoordData
+    {
+        float RepeatU;
+        float RepeatV;
+        float OffsetU;
+        float OffsetV;
+        float Rotation;
+    };
 
     //! Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;

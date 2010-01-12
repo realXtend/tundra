@@ -4,7 +4,7 @@ Page directory
 Page instfiles
 
 InstallDir "$PROGRAMFILES\Naali"
-VIProductVersion "0.0.2"
+VIProductVersion "0.1"
 
 OutFile "naali-viewer-installer.exe"
 
@@ -20,7 +20,7 @@ Section ""
                    "DisplayName" "Naali"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
-                   "DisplayVersion" "0.0.2"
+                   "DisplayVersion" "0.1"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
