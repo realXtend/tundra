@@ -49,7 +49,7 @@ namespace RexLogic
 
         Q_OBJECT
         Q_PROPERTY(QString ObjectName READ getObjectName WRITE setObjectName)
-        Q_PROPERTY(QString FullId READ getFullId WRITE setFullId)
+        Q_PROPERTY(QString FullId READ getFullId)
         Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
         Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
         Q_PROPERTY(QString MediaUrl READ getMediaUrl WRITE setMediaUrl)
@@ -100,11 +100,13 @@ namespace RexLogic
         Q_PROPERTY(double ProfileBegin READ getProfileBegin WRITE setProfileBegin)
         Q_PROPERTY(double ProfileEnd READ getProfileEnd WRITE setProfileEnd)
         Q_PROPERTY(double ProfileHollow READ getProfileHollow WRITE setProfileHollow)
-        Q_PROPERTY(bool HasPrimShapeData READ getHasPrimShapeData WRITE setHasPrimShapeData)
+        Q_PROPERTY(bool HasPrimShapeData READ getHasPrimShapeData)
         Q_PROPERTY(QVariant SelectPriority READ getSelectPriority WRITE setSelectPriority)
 
         Q_PROPERTY(unsigned int UpdateFlags READ getUpdateFlags WRITE setUpdateFlags)
         Q_PROPERTY(unsigned int ParentId READ getParentId WRITE setParentId)
+
+		Q_PROPERTY(QVariantMap Materials READ getMaterials WRITE setMaterials)
 
     public:
         virtual ~EC_OpenSimPrim();
@@ -114,7 +116,10 @@ namespace RexLogic
         uint32_t LocalId;
         RexUUID FullId;
         uint32_t ParentId;
-
+		//uint8_t State;
+		//uint32_t CRC;
+		//uint16_t TimeDilation;
+		//uint8_t PCode;
         std::string ObjectName;
 
         std::string Description;
@@ -132,8 +137,26 @@ namespace RexLogic
         RexTypes::RexAssetID SoundID;
         float SoundVolume;
         float SoundRadius;
+		
+
+		//uint8_t *TextureAnimBuffer; //this is here as a buffer, since we don't use the TextureAnim yet
+		//uint8_t *NameValueBuffer; //this is here as a buffer, since we don't use the NameValue yet
+		//uint8_t *DataBuffer; //this is here as a buffer, since we don't use the Data yet
+		//uint8_t *TextColor;
 
         int32_t SelectPriority;
+
+		//RexUUID Sound;
+		//RexUUID OwnerID;
+
+		//float Gain;
+		//float Radius;
+
+		//uint8_t JointType;
+		//uint8_t Flags;
+
+		//Vector3df JointPivot;
+		//Vector3df JointAxisOrAnchor;
 
         //! Drawing related variables
         Vector3df Scale; //not a property
@@ -308,10 +331,8 @@ namespace RexLogic
         void setProfileHollow(double value) {ProfileHollow = value; }
 
         bool getHasPrimShapeData() const { return HasPrimShapeData; }
-        void setHasPrimShapeData(bool value) { HasPrimShapeData= value; }
 
         QString getFullId() const { return QString(FullId.ToString().c_str()); }
-        void setFullId(QString value) { FullId.FromString(value.toStdString()); }
 
         bool getLightCreatesShadows() const { return LightCreatesShadows; }
         void setLightCreatesShadows(bool value) { LightCreatesShadows = value; }
@@ -342,6 +363,9 @@ namespace RexLogic
 
         void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
         unsigned int getUpdateFlags() const { return UpdateFlags; }
+
+		QVariantMap getMaterials();
+		void setMaterials(QVariantMap qvmap);
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
