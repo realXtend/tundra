@@ -17,8 +17,8 @@ namespace RexLogic
     {
         uint8_t Type;
         RexTypes::RexAssetID asset_id;
-    }; 
-    
+    };
+
     //! Texture coordinate data structure
     struct REXLOGIC_MODULE_API TexCoordData
     {
@@ -106,7 +106,7 @@ namespace RexLogic
         Q_PROPERTY(unsigned int UpdateFlags READ getUpdateFlags WRITE setUpdateFlags)
         Q_PROPERTY(unsigned int ParentId READ getParentId WRITE setParentId)
 
-		Q_PROPERTY(QVariantMap Materials READ getMaterials WRITE setMaterials)
+        Q_PROPERTY(QVariantMap Materials READ getMaterials WRITE setMaterials)
 
     public:
         virtual ~EC_OpenSimPrim();
@@ -116,10 +116,10 @@ namespace RexLogic
         uint32_t LocalId;
         RexUUID FullId;
         uint32_t ParentId;
-		//uint8_t State;
-		//uint32_t CRC;
-		//uint16_t TimeDilation;
-		//uint8_t PCode;
+        uint8_t State;
+        uint32_t CRC;
+        uint16_t TimeDilation;
+        uint8_t PCode;
         std::string ObjectName;
 
         std::string Description;
@@ -137,26 +137,25 @@ namespace RexLogic
         RexTypes::RexAssetID SoundID;
         float SoundVolume;
         float SoundRadius;
-		
 
-		//uint8_t *TextureAnimBuffer; //this is here as a buffer, since we don't use the TextureAnim yet
-		//uint8_t *NameValueBuffer; //this is here as a buffer, since we don't use the NameValue yet
-		//uint8_t *DataBuffer; //this is here as a buffer, since we don't use the Data yet
-		//uint8_t *TextColor;
+        uint8_t *TextureAnimBuffer; //this is here as a buffer, since we don't use the TextureAnim yet
+        uint8_t *NameValueBuffer; //this is here as a buffer, since we don't use the NameValue yet
+        uint8_t *DataBuffer; //this is here as a buffer, since we don't use the Data yet
+        uint8_t *TextColor;
 
         int32_t SelectPriority;
 
-		//RexUUID Sound;
-		//RexUUID OwnerID;
+        RexUUID Sound;
+        RexUUID OwnerID;
 
-		//float Gain;
-		//float Radius;
+        float Gain;
+        float Radius;
 
-		//uint8_t JointType;
-		//uint8_t Flags;
+        uint8_t JointType;
+        uint8_t Flags;
 
-		//Vector3df JointPivot;
-		//Vector3df JointAxisOrAnchor;
+        Vector3df JointPivot;
+        Vector3df JointAxisOrAnchor;
 
         //! Drawing related variables
         Vector3df Scale; //not a property
@@ -364,8 +363,8 @@ namespace RexLogic
         void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
         unsigned int getUpdateFlags() const { return UpdateFlags; }
 
-		QVariantMap getMaterials();
-		void setMaterials(QVariantMap qvmap);
+        QVariantMap getMaterials();
+        void setMaterials(QVariantMap qvmap);
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
