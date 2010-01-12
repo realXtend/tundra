@@ -1636,9 +1636,15 @@ namespace Environment
                 if(!tex && tex->GetLevel() != 0)
                     return;
 
-                // \todo Image should be able to create from raw data pointer, right now cant.
+            
                 //uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
-                QImage img = ConvertToQImage(*tex);//QImage::fromData(tex->GetData(), size);
+                //uint img_components = tex->GetComponents();
+          
+                QImage img(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_RGB888);
+
+                if ( img.isNull() )
+                    img = ConvertToQImage(*tex);
+                    
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
                 texture_label->setPixmap(QPixmap::fromImage(img));
                 //texture_label->show();
