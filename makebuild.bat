@@ -5,6 +5,7 @@
 rmdir build /S /Q
 md build
 copy readme.txt build
+copy license.txt build
 copy vcredist_x86.exe build
 copy oalinst.exe build
 xcopy bin\*.* build /S /C /Y
