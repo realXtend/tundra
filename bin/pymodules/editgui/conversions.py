@@ -34,13 +34,13 @@ def quat_to_euler(quat):
     test = q1.x*q1.y + q1.z*q1.w
     if (test > 0.499*unit): # singularity at north pole
         yaw = 2 * math.atan2(q1.x,q1.w)
-        pitch = math.PI/2
+        pitch = math.pi/2
         roll = 0
         return convert_to_degrees(yaw, pitch, roll)
         
     if (test < -0.499*unit): # singularity at south pole
         yaw = -2 * math.atan2(q1.x,q1.w)
-        pitch = -math.PI/2
+        pitch = -math.pi/2
         roll = 0
         return convert_to_degrees(yaw, pitch, roll)
         

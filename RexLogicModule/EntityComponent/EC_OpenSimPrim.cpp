@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "RexLogicModule.h"
-
+#include <QStringList>
 namespace RexLogic
 {
 
@@ -19,7 +19,10 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     Description = "";
     HoveringText = "";
     MediaUrl = "";
-
+	State = 0;
+	CRC = 0;
+	TimeDilation = 0;
+	PCode = 0;
     Material = 3;
     ClickAction = 0;
     UpdateFlags = 0;
@@ -29,8 +32,20 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     SoundID = "";
     SoundVolume = 0;
     SoundRadius = 0;
-
+	TextureAnimBuffer = 0;
+	NameValueBuffer = 0;
+	TextColor = 0;
+	DataBuffer = 0;
     SelectPriority = 0;
+
+	Sound.SetNull();
+	OwnerID.SetNull();
+
+	Gain= 0;
+	Radius= 0;
+
+	JointType= 0;
+	Flags= 0;
 
     DrawType = RexTypes::DRAWTYPE_PRIM;
     IsVisible = true;
@@ -75,6 +90,43 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
 
 EC_OpenSimPrim::~EC_OpenSimPrim()
 {
+}
+
+QVariantMap EC_OpenSimPrim::getMaterials()
+{
+	QVariantMap qvmap;
+
+
+	RexLogic::MaterialMap::const_iterator i = Materials.begin();
+	for(int n = 0; i != Materials.end(); n++)
+	{
+		//if (i->second.Type == RexTypes::RexAT_Texture)
+		//{	
+		QString str;
+		QString type;
+		QStringList strlist;
+
+		str.setNum(i->first);
+		type.setNum(i->second.Type);
+		strlist.append(type);
+		strlist.append(i->second.asset_id.c_str());
+		qvmap[str] = strlist;
+		//}
+
+		++i;
+	}
+	return qvmap;
+}
+
+void EC_OpenSimPrim::setMaterials(QVariantMap qvmap)
+{
+    QVariantMap::Iterator it = qvmap.begin();
+    while(it != qvmap.end()) {
+        //myProcessing(*it);
+		QString str = it.key();
+		QStringList strlist = it.value().toStringList();
+        ++it;
+    }
 }
 
 #ifdef _DEBUG

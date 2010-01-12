@@ -759,3 +759,14 @@ if 0:
     print r.c.widget
     print dir(r.c.proxywidget)
     r.c.proxywidget.hide()
+    
+if 0:
+    qprim = r.getQPrim(720259)
+    mats = qprim.Materials
+    print mats
+    qprim.Materials = mats
+    #print mats
+    #~ keys = qprim.Materials.keys()
+    #~ for thingie in mats.iteritems():
+        #~ print thingie
+    #print data
