@@ -44,6 +44,25 @@
 
 namespace RexLogic
 {
+    void TransformUV(Ogre::Vector2& uv, float repeat_u, float repeat_v, float offset_u, float offset_v, float rot_sin, float rot_cos)
+    {
+        const static Ogre::Vector2 half(0.5f, 0.5f);
+        
+        Ogre::Vector2 centered = uv - half;
+
+        uv.x = centered.y * rot_sin + centered.x * rot_cos;
+        uv.y = -centered.x * rot_sin + centered.y * rot_cos; 
+        
+        uv.x *= repeat_u;
+        uv.y *= repeat_v;
+        
+        uv.x += offset_u;
+        uv.y -= offset_v;
+        
+        uv += half;
+    }
+
+
     void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
     {
         if (!primitive.HasPrimShapeData)
@@ -130,14 +149,15 @@ namespace RexLogic
                 uint indices = 0;
                 bool first_face = true;
                 
-                //! \bug: for boxes, up and down faces are swapped, judging from applying a different texture to all faces. Seems to be a PrimMesher issue.
                 for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
                 {
+                    int facenum = primMesh.viewerFaces[i].primFaceNumber;
+                    
                     Color color = primitive.PrimDefaultColor;
-                    ColorMap::const_iterator c = primitive.PrimColors.find(primMesh.viewerFaces[i].primFaceNumber);
+                    ColorMap::const_iterator c = primitive.PrimColors.find(facenum);
                     if (c != primitive.PrimColors.end())
                         color = c->second;
-
+                                             
                     // Skip face if very transparent
                     if (color.a <= 0.11f)
                         continue;
@@ -154,7 +174,7 @@ namespace RexLogic
                         
                         // Check for fullbright
                         bool fullbright = (primitive.PrimDefaultMaterialType & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
-                        MaterialTypeMap::const_iterator mt = primitive.PrimMaterialTypes.find(primMesh.viewerFaces[i].primFaceNumber);
+                        MaterialTypeMap::const_iterator mt = primitive.PrimMaterialTypes.find(facenum);
                         if (mt != primitive.PrimMaterialTypes.end())
                             fullbright = (mt->second & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
                         if (fullbright)
@@ -164,13 +184,32 @@ namespace RexLogic
                         
                         // Try to find face's texture in texturemap, use default if not found
                         texture_id = primitive.PrimDefaultTextureID + suffix;
-                        TextureMap::const_iterator t = primitive.PrimTextures.find(primMesh.viewerFaces[i].primFaceNumber);
+                        TextureMap::const_iterator t = primitive.PrimTextures.find(facenum);
                         if (t != primitive.PrimTextures.end())
                             texture_id = t->second + suffix;
                         // Actually create the material here if texture yet missing, the material will be
                         // updated later
                         OgreRenderer::CreateLegacyMaterials(texture_id);
                     }
+     
+                    // Get texture mapping parameters
+                    float repeat_u = primitive.PrimDefaultRepeatU;
+                    float repeat_v = primitive.PrimDefaultRepeatV;
+                    float offset_u = primitive.PrimDefaultOffsetU;
+                    float offset_v = primitive.PrimDefaultOffsetV;
+                    float rot = primitive.PrimDefaultUVRotation;
+                    if (primitive.PrimRepeatU.find(facenum) != primitive.PrimRepeatU.end())
+                        repeat_u = primitive.PrimRepeatU[facenum];
+                    if (primitive.PrimRepeatV.find(facenum) != primitive.PrimRepeatV.end())
+                        repeat_v = primitive.PrimRepeatV[facenum];                    
+                    if (primitive.PrimOffsetU.find(facenum) != primitive.PrimOffsetU.end())
+                        offset_u = primitive.PrimOffsetU[facenum];
+                    if (primitive.PrimOffsetV.find(facenum) != primitive.PrimOffsetV.end())
+                        offset_v = primitive.PrimOffsetV[facenum];  
+                    if (primitive.PrimUVRotation.find(facenum) != primitive.PrimUVRotation.end())
+                        rot = primitive.PrimUVRotation[facenum];     
+                    float rot_sin = sin(-rot);
+                    float rot_cos = cos(-rot);     
                     
                     if ((first_face) || (texture_id != prev_texture_id))
                     {
@@ -195,6 +234,10 @@ namespace RexLogic
                     Ogre::Vector2 uv1(primMesh.viewerFaces[i].uv1.U, primMesh.viewerFaces[i].uv1.V);
                     Ogre::Vector2 uv2(primMesh.viewerFaces[i].uv2.U, primMesh.viewerFaces[i].uv2.V);
                     Ogre::Vector2 uv3(primMesh.viewerFaces[i].uv3.U, primMesh.viewerFaces[i].uv3.V);
+
+                    TransformUV(uv1, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
+                    TransformUV(uv2, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
+                    TransformUV(uv3, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
 
                     object->position(pos1);
                     object->normal(n1);

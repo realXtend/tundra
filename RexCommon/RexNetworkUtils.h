@@ -27,6 +27,7 @@ namespace RexTypes
     uint8_t ReadUInt8FromBytes(const uint8_t* bytes, int& idx);
     uint16_t ReadUInt16FromBytes(const uint8_t* bytes, int& idx);
     uint32_t ReadUInt32FromBytes(const uint8_t* bytes, int& idx);
+    int16_t ReadSInt16FromBytes(const uint8_t* bytes, int& idx);
     int32_t ReadSInt32FromBytes(const uint8_t* bytes, int& idx);
     float ReadFloatFromBytes(const uint8_t* bytes, int& idx);
     Color ReadColorFromBytes(const uint8_t* bytes, int& idx);

@@ -151,6 +151,8 @@ namespace PrimMesher
         UVCoord();
 
         UVCoord(float u, float v);
+        
+        UVCoord Flip();
     };
 
     struct Face

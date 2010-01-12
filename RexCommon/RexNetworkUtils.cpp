@@ -112,9 +112,17 @@ namespace RexTypes
         return result;
     }
 
+    int16_t ReadSInt16FromBytes(const uint8_t* bytes, int& idx)
+    {
+        int16_t result = *(int16_t*)(&bytes[idx]);
+        idx += sizeof(int16_t);
+        
+        return result;
+    }
+    
     int32_t ReadSInt32FromBytes(const uint8_t* bytes, int& idx)
     {
-        uint32_t result = *(int32_t*)(&bytes[idx]);
+        int32_t result = *(int32_t*)(&bytes[idx]);
         idx += sizeof(int32_t);
         
         return result;

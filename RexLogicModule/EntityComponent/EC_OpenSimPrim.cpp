@@ -87,6 +87,12 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     ProfileBegin = 0;
     ProfileEnd = 0;
     ProfileHollow = 0;
+    
+    PrimDefaultRepeatU = 1.0;
+    PrimDefaultRepeatV = 1.0;
+    PrimDefaultOffsetU = 0.0;
+    PrimDefaultOffsetV = 0.0;
+    PrimDefaultUVRotation = 0.0;
 }
 
 EC_OpenSimPrim::~EC_OpenSimPrim()

@@ -19,16 +19,6 @@ namespace RexLogic
         RexTypes::RexAssetID asset_id;
     };
 
-    //! Texture coordinate data structure
-    struct REXLOGIC_MODULE_API TexCoordData
-    {
-        float RepeatU;
-        float RepeatV;
-        float OffsetU;
-        float OffsetV;
-        float Rotation;
-    };
-
     //! Map for holding materials
     typedef std::map<uint8_t, MaterialData> MaterialMap;
 
@@ -40,6 +30,9 @@ namespace RexLogic
 
     //! Map for holding prim face material bytes
     typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
+
+    //! Map for holding prim face uv parameter info
+    typedef std::map<uint8_t, Real> UVParamMap;
 
     //! Each scene entity representing a prim in OpenSim sense has
     //! this component.
@@ -182,10 +175,23 @@ namespace RexLogic
         //! Primitive texture entry data
         RexTypes::RexAssetID PrimDefaultTextureID;
         TextureMap PrimTextures; //not a property
+        
         Color PrimDefaultColor; //not a property
         ColorMap PrimColors; //not a property
+        
         uint8_t PrimDefaultMaterialType;
         MaterialTypeMap PrimMaterialTypes; //not a property
+        
+        Real PrimDefaultRepeatU;
+        Real PrimDefaultRepeatV;
+        Real PrimDefaultOffsetU;
+        Real PrimDefaultOffsetV;
+        Real PrimDefaultUVRotation;
+        UVParamMap PrimRepeatU;
+        UVParamMap PrimRepeatV;
+        UVParamMap PrimOffsetU;
+        UVParamMap PrimOffsetV;
+        UVParamMap PrimUVRotation;
 
         //! Primitive shape related variables
         uint8_t PathCurve; 
