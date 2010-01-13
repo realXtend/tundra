@@ -91,7 +91,13 @@ namespace OpenALAudio
             \return Sound name, or empty if no sound
          */
         virtual const std::string& GetSoundName(sound_id_t id) const;
-        
+     
+        //! Gets type of sound played/pending on channel (triggered/ambient etc.)
+        /*! \param id Channel id
+            \return Sound type
+         */
+        virtual Foundation::SoundServiceInterface::SoundType GetSoundType(sound_id_t id) const;
+                
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
          */

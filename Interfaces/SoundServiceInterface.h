@@ -90,6 +90,12 @@ namespace Foundation
         //! Gets all non-stopped channels id's
         virtual std::vector<sound_id_t> GetActiveSounds() const = 0;
         
+        //! Gets type of sound played/pending on channel (triggered/ambient etc.)
+        /*! \param id Channel id
+            \return Sound type
+         */
+        virtual Foundation::SoundServiceInterface::SoundType GetSoundType(sound_id_t id) const = 0;
+
         //! Gets name of sound played/pending on channel
         /*! \param id Channel id
             \return Sound name, or empty if no sound

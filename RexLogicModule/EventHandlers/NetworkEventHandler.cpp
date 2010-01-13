@@ -573,7 +573,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     std::vector<sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
     for (uint i = 0; i < playing_sounds.size(); ++i)
     {
-        if (soundsystem->GetSoundName(playing_sounds[i]) == asset_id)
+        if ((soundsystem->GetSoundName(playing_sounds[i]) == asset_id) && (soundsystem->GetSoundType(playing_sounds[i]) == Foundation::SoundServiceInterface::Triggered))
         {
             same_sound_detected++;
             // This should be the oldest instance of the sound, because soundsystem gives channel ids from a map (ordered)                

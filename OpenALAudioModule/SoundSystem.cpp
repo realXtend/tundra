@@ -124,6 +124,14 @@ namespace OpenALAudio
             return empty;
         return i->second->GetSoundName();
     }    
+
+    Foundation::SoundServiceInterface::SoundType SoundSystem::GetSoundType(sound_id_t id) const
+    {
+        SoundChannelMap::const_iterator i = channels_.find(id);
+        if (i == channels_.end())
+            return Foundation::SoundServiceInterface::Triggered;
+        return i->second->GetSoundType();
+    }    
     
     void SoundSystem::Update(f64 frametime)
     {   
