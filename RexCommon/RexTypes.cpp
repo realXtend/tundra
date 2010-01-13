@@ -57,19 +57,22 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
 
 const std::string& GetInventoryTypeString(asset_type_t asset_type)
 {
-    if (asset_type == RexTypes::RexAT_Texture)
+    if (asset_type == RexAT_Texture)
         return IT_TEXTURE;
-    if (asset_type == RexTypes::RexAT_Mesh)
+    if (asset_type == RexAT_SoundVorbis ||
+        asset_type == RexAT_SoundWav)
+        return IT_SOUND;
+    if (asset_type == RexAT_Mesh)
         return IT_MESH;
-    if (asset_type == RexTypes::RexAT_Skeleton)
+    if (asset_type == RexAT_Skeleton)
         return IT_SKELETON;
-    if (asset_type == RexTypes::RexAT_MaterialScript)
+    if (asset_type == RexAT_MaterialScript)
         return IT_MATERIAL_SCRIPT;
-    if (asset_type == RexTypes::RexAT_ParticleScript)
+    if (asset_type == RexAT_ParticleScript)
         return IT_PARTICLE_SCRIPT;
-    if (asset_type == RexTypes::RexAT_FlashAnimation)
+    if (asset_type == RexAT_FlashAnimation)
         return IT_FLASH_ANIMATION;
-    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_GenericAvatarXml)
         return IT_WEARABLE;
 
     return IT_UNKNOWN;
@@ -77,18 +80,21 @@ const std::string& GetInventoryTypeString(asset_type_t asset_type)
 
 const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type)
 {
-    if (asset_type == RexTypes::RexAT_Texture)
+    if (asset_type == RexAT_Texture)
         return RexIT_Texture;
-    if (asset_type == RexTypes::RexAT_Mesh)
+    if (asset_type == RexAT_SoundVorbis ||
+        asset_type == RexAT_SoundWav)
+        return RexIT_Sound;
+    if (asset_type == RexAT_Mesh)
         return RexIT_Object;
-    if (asset_type == RexTypes::RexAT_Skeleton)
+    if (asset_type == RexAT_Skeleton)
         return RexIT_Animation;
-    if (asset_type == RexTypes::RexAT_MaterialScript ||
-        asset_type == RexTypes::RexAT_ParticleScript)
+    if (asset_type == RexAT_MaterialScript ||
+        asset_type == RexAT_ParticleScript)
         return RexIT_OgreScript;
-    if (asset_type == RexTypes::RexAT_FlashAnimation)
+    if (asset_type == RexAT_FlashAnimation)
         return RexIT_FlashAnimation;
-    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_GenericAvatarXml)
         return RexIT_Wearable;
 
     return RexIT_None;
@@ -96,19 +102,23 @@ const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type)
 
 const std::string& GetAssetTypeString(asset_type_t asset_type)
 {
-    if (asset_type == RexTypes::RexAT_Texture)
+    if (asset_type == RexAT_Texture)
         return AT_TEXTURE;
-    if (asset_type == RexTypes::RexAT_Mesh)
+    if (asset_type == RexAT_SoundVorbis)
+        return AT_SOUND_VORBIS;
+    if (asset_type == RexAT_SoundWav)
+        return AT_SOUND_WAV;
+    if (asset_type == RexAT_Mesh)
         return AT_MESH;
-    if (asset_type == RexTypes::RexAT_Skeleton)
+    if (asset_type == RexAT_Skeleton)
         return AT_SKELETON;
-    if (asset_type == RexTypes::RexAT_MaterialScript)
+    if (asset_type == RexAT_MaterialScript)
         return AT_MATERIAL_SCRIPT;
-    if (asset_type == RexTypes::RexAT_ParticleScript)
+    if (asset_type == RexAT_ParticleScript)
         return AT_PARTICLE_SCRIPT;
-    if (asset_type == RexTypes::RexAT_FlashAnimation)
+    if (asset_type == RexAT_FlashAnimation)
         return AT_FLASH_ANIMATION;
-    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_GenericAvatarXml)
         return AT_GENERIC_AVATAR_XML;
 
     return AT_UNKNOWN;
@@ -116,19 +126,22 @@ const std::string& GetAssetTypeString(asset_type_t asset_type)
 
 const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
 {
-    if (asset_type == RexTypes::RexAT_Texture)
+    if (asset_type == RexAT_Texture)
         return CATEGORY_TEXTURE;
-    if (asset_type == RexTypes::RexAT_Mesh)
+    if (asset_type == RexAT_SoundVorbis ||
+        asset_type == RexAT_SoundWav)
+        return CATEGORY_SOUND;
+    if (asset_type == RexAT_Mesh)
         return CATEGORY_MESH;
-    if (asset_type == RexTypes::RexAT_Skeleton)
+    if (asset_type == RexAT_Skeleton)
         return CATEGORY_SKELETON;
-    if (asset_type == RexTypes::RexAT_MaterialScript)
+    if (asset_type == RexAT_MaterialScript)
         return CATEGORY_MATERIAL_SCRIPT;
-    if (asset_type == RexTypes::RexAT_ParticleScript)
+    if (asset_type == RexAT_ParticleScript)
         return CATEGORY_PARTICLE_SCRIPT;
-    if (asset_type == RexTypes::RexAT_FlashAnimation)
+    if (asset_type == RexAT_FlashAnimation)
         return CATEGORY_FLASH_ANIMATION;
-    if (asset_type == RexTypes::RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_GenericAvatarXml)
         return CATEGORY_AVATAR;
 
     return CATEGORY_UNKNOWN;
@@ -136,17 +149,20 @@ const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
 
 const std::string& GetOpenFileNameFilter(asset_type_t asset_type)
 {
-    if (asset_type == RexTypes::RexAT_Texture)
+    if (asset_type == RexAT_Texture)
         return IMAGE_FILTER;
-    if (asset_type == RexTypes::RexAT_Mesh)
+    if (asset_type == RexAT_SoundVorbis ||
+        asset_type == RexAT_SoundWav)
+        return SOUND_FILTER;
+    if (asset_type == RexAT_Mesh)
         return MESH_FILTER;
-    if (asset_type == RexTypes::RexAT_Skeleton)
+    if (asset_type == RexAT_Skeleton)
         return MESHANIMATION_FILTER;
-    if (asset_type == RexTypes::RexAT_MaterialScript)
+    if (asset_type == RexAT_MaterialScript)
         return MATERIALSCRIPT_FILTER;
-    if (asset_type == RexTypes::RexAT_ParticleScript)
+    if (asset_type == RexAT_ParticleScript)
         return PARTICLE_FILTER;
-    if (asset_type == RexTypes::RexAT_FlashAnimation)
+    if (asset_type == RexAT_FlashAnimation)
         return FLASHANIMATION_FILTER;
 
     return ALLFILES_FILTER;
@@ -163,6 +179,10 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
         file_ext == "jpeg" ||
         file_ext == "png")
         return RexAT_Texture;
+    if (file_ext == "ogg")
+        return RexAT_SoundVorbis;
+    if (file_ext == "wav")
+        return RexAT_SoundWav;
     if (file_ext == "mesh")
         return RexAT_Mesh;
     if (file_ext == "skeleton")
@@ -185,6 +205,10 @@ std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type)
     {
     case RexAT_Texture:
         return ".png";
+    case RexAT_SoundVorbis:
+        return ".ogg";
+    case RexAT_SoundWav:
+        return ".wav";
     case RexAT_Mesh:
         return ".mesh";
     case RexAT_Skeleton:

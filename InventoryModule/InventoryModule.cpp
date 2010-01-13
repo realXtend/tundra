@@ -283,7 +283,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
     if (inventoryType_ != IDMT_OpenSim)
-        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory_.");
+        return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
 
     AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
     if (!uploader)

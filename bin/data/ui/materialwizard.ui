@@ -13,24 +13,24 @@
   <property name="styleSheet">
    <string>
     /* Containers */
-    QFrame#MainFrame
-    {
-        background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
-        padding: 5px;
+
+    QWidget#mainWidget {
+        background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255),
+        stop:0.465909 rgba(0, 0, 0, 255));
     }
-    
-    /* Other widgets */
-    QLabel
-    {
+
+    QLabel {
         color: rgb(255,255,255);
     }
-    
+
+    /* QABSTRACTBUTTON */
     QAbstractButton
     {
         color: rgb(255,255,255);
     }
-    QPushButton
-    {
+
+    /* QPUSHBUTTON */
+    QPushButton {
         color: rgb(0, 0, 0);
         min-width: 60px;
         font-size: 12px;
@@ -40,13 +40,15 @@
         border-top-left-radius: 0px;
         border-bottom-right-radius: 0px;
         padding: 2px 5px;
-        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
+        stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
     }
-    QPushButton:hover
-    {
+
+    QPushButton:hover {
         border-color: rgba(0, 0, 0, 255);
         color: rgb(0,0,0);
-        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
+        stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
     }
     </string>
   </property>

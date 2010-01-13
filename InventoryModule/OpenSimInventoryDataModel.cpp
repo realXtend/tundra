@@ -175,11 +175,9 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemMove(AbstractInventoryItem 
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemCopy(AbstractInventoryItem *item)
 {
-    if (item->GetItemType() != AbstractInventoryItem::Type_Asset)
-        return;
-
-    currentWorldStream_->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
-        QSTR_TO_UUID(item->GetID()), QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
+    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+        currentWorldStream_->SendCopyInventoryItemPacket(QSTR_TO_UUID(worldLibraryOwnerId_),
+            QSTR_TO_UUID(item->GetID()), QSTR_TO_UUID(item->GetParent()->GetID()), item->GetName().toStdString());
 }
 
 void OpenSimInventoryDataModel::NotifyServerAboutItemRemove(AbstractInventoryItem *item)
@@ -208,84 +206,95 @@ void OpenSimInventoryDataModel::NotifyServerAboutItemUpdate(AbstractInventoryIte
 
 bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
 {
+    ///\todo Should the event sending be in InventoryItemModel?
     using namespace Foundation;
 
     InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
     if (!asset)
         return false;
 
-    std::string asset_reference_id = asset->GetAssetReference().toStdString();
+    // Get asset service interface.
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
-    request_tag_t tag = 0;
-
-    asset_type_t asset_type = asset->GetAssetType();
-    switch(asset_type)
+    if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
     {
-    /*
-    case RexAT_Texture:
-    {
-        // Request textures from texture decoder.
-        if (service_manager->IsRegistered(Service::ST_Texture))
-        {
-            boost::shared_ptr<TextureServiceInterface> texture_service =
-                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
-
-            tag = texture_service->RequestTexture(asset_reference_id );
-            if (tag)
-                openRequests_[qMakePair(tag, asset_type)] = asset->GetName();
-        }
-        break;
-    }
-    */
-//    case RexAT_Mesh:
-//    case RexAT_Skeleton:
-    case RexAT_MaterialScript:
-    case RexAT_ParticleScript:
-    {
-        // Request other assets from asset system.
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
-        {
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-                service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-
-            tag = asset_service->RequestAsset(asset_reference_id, GetTypeNameFromAssetType(asset_type));
-            if (tag)
-                openRequests_[qMakePair(tag, asset_type)] = asset->GetID();
-        }
-        break;
-    }
-    case RexAT_Texture:
-    case RexAT_Mesh:
-    case RexAT_Skeleton:
-    case RexAT_GenericAvatarXml:
-    case RexAT_FlashAnimation:
-        InventoryModule::LogError("Non-supported asset type for opening: " + GetTypeNameFromAssetType(asset_type));
-        break;
-    case RexAT_None:
-    default:
-        InventoryModule::LogError("Invalid asset type for opening.");
-        break;
-    }
-
-    if (!tag)
+        InventoryModule::LogError("Asset service doesn't exist.");
         return false;
+    }
 
-    // Send InventoryItemOpen event.
+    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+        service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+
+    // Get event manager.
     EventManagerPtr event_mgr = framework_->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category == 0)
         return false;
 
-    InventoryItemOpenEventData itemOpen;
-    itemOpen.requestTag = tag;
-    itemOpen.inventoryId = QSTR_TO_UUID(asset->GetID());
-    itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
-    itemOpen.assetType = asset_type;
-    itemOpen.inventoryType = asset->GetInventoryType();
-    itemOpen.name = asset->GetName().toStdString();
-    event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_OPEN, &itemOpen);
-    ///\todo Read the return value from the event and open a download progress dialog if the asset editor
-    /// did not want to open its own progress window.
+    std::string asset_id = asset->GetAssetReference().toStdString();
+    asset_type_t asset_type = asset->GetAssetType();
+    request_tag_t tag = 0;
+
+    // Check out if the asset already exists in the cache.
+    Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset_id, GetTypeNameFromAssetType(asset_type));
+    if(assetPtr.get() && assetPtr->GetSize() > 0)
+    {
+        // Send InventoryItemDownloadedEventData event.
+        InventoryItemDownloadedEventData itemDownloaded;
+        itemDownloaded.inventoryId = QSTR_TO_UUID(asset->GetID());
+        itemDownloaded.asset = assetPtr;
+        itemDownloaded.requestTag = tag;
+        itemDownloaded.assetType = asset_type;
+        itemDownloaded.name = asset->GetName().toStdString();
+        event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
+
+        if (!itemDownloaded.handled)
+            ///\todo Show basic info dialog. Name, desc, file size etc.
+            std::cout << "Show basic info dialog. Name, desc, file size etc." << std::endl;
+    }
+    else
+    {
+        // If not, request asset from asset system.
+        switch(asset_type)
+        {
+        case RexAT_MaterialScript:
+        case RexAT_ParticleScript:
+            tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
+            break;
+        case RexAT_Texture:
+        case RexAT_SoundVorbis:
+        case RexAT_SoundWav:
+        case RexAT_Mesh:
+        case RexAT_Skeleton:
+        case RexAT_GenericAvatarXml:
+        case RexAT_FlashAnimation:
+            InventoryModule::LogError("Non-supported asset type for opening: " + GetTypeNameFromAssetType(asset_type));
+            break;
+        case RexAT_None:
+        default:
+            InventoryModule::LogError("Invalid asset type for opening.");
+            break;
+        }
+
+        if (!tag)
+            return false;
+
+        // Send InventoryItemOpen event.
+        InventoryItemOpenEventData itemOpen;
+        itemOpen.requestTag = tag;
+        itemOpen.inventoryId = QSTR_TO_UUID(asset->GetID());
+        itemOpen.assetId = QSTR_TO_UUID(asset->GetAssetReference());
+        itemOpen.assetType = asset_type;
+        itemOpen.inventoryType = asset->GetInventoryType();
+        itemOpen.name = asset->GetName().toStdString();
+        event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_OPEN, &itemOpen);
+
+        ///\todo Open a generic download progress dialog if no handler found.
+        if (!itemOpen.overrideDefaultHandler)
+        {
+            emit DownloadStarted(asset_id.c_str());
+            openRequests_[qMakePair(tag, asset_type)] = asset->GetID();
+        }
+    }
 
     return true;
 }
@@ -336,10 +345,14 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     switch(asset_type)
     {
     case RexAT_Texture:
+    case RexAT_SoundVorbis:
+    case RexAT_SoundWav:
     case RexAT_Mesh:
     case RexAT_Skeleton:
     case RexAT_MaterialScript:
     case RexAT_ParticleScript:
+    case RexAT_GenericAvatarXml:
+    case RexAT_FlashAnimation:
     {
         // Request assets from asset service.
         if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
@@ -356,10 +369,6 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
         }
         break;
     }
-    case RexAT_GenericAvatarXml:
-    case RexAT_FlashAnimation:
-        InventoryModule::LogError("Non-supported asset type for download: " + GetTypeNameFromAssetType(asset_type));
-        break;
     case RexAT_None:
     default:
         InventoryModule::LogError("Invalid asset type for download.");
@@ -394,9 +403,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
         return;
 
     Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(resourceReady->resource_.get());
-    if (!tex)
-        return;
-    if (tex->GetLevel() != 0)
+    if (!tex || tex->GetLevel() != 0)
         return;
 
 ///\todo Use QImage?
@@ -491,7 +498,9 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     itemDownloaded.assetType = asset_type;
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-    ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
+    if (!itemDownloaded.handled)
+        ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
+        std::cout << "jep" << std::endl;
 
     openRequests_.erase(i);
 }
@@ -574,7 +583,7 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 
 void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton)
 {
-    if (!inventory_skeleton->GetRoot())
+    if (!inventory_skeleton && !inventory_skeleton->GetRoot())
     {
         InventoryModule::LogError("Couldn't find inventory root folder skeleton. Can't create OpenSim inventory data model.");
         return;

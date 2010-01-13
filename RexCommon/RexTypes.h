@@ -158,6 +158,7 @@ namespace RexTypes
 
     // UDP Inventory types.
     const inventory_type_t RexIT_Texture = 0;
+    const inventory_type_t RexIT_Sound = 1;
     const inventory_type_t RexIT_Object = 6; // Used for meshes.
     const inventory_type_t RexIT_Wearable = 18;
     const inventory_type_t RexIT_Animation = 19; // Used for skeletal animations.
@@ -181,6 +182,7 @@ namespace RexTypes
     // Inventory category names.
     const std::string CATEGORY_AVATAR("Avatar");
     const std::string CATEGORY_TEXTURE("Textures");
+    const std::string CATEGORY_SOUND("Sounds");
     const std::string CATEGORY_MESH("3D Models");
     const std::string CATEGORY_SKELETON("Skeletal Animations");
     const std::string CATEGORY_MATERIAL_SCRIPT("Material Scripts");
@@ -190,6 +192,8 @@ namespace RexTypes
 
     // Text asset types used for uploading assets.
     const std::string AT_TEXTURE("texture");
+    const std::string AT_SOUND_VORBIS("sound");
+    const std::string AT_SOUND_WAV("snd_wav");
     const std::string AT_MESH("ogremesh");
     const std::string AT_SKELETON("ogreskel");
     const std::string AT_MATERIAL_SCRIPT("ogremate");
@@ -200,6 +204,7 @@ namespace RexTypes
 
     // Text inventory types used for uploading assets.
     const std::string IT_TEXTURE("texture");
+    const std::string IT_SOUND("sound");
     const std::string IT_MESH("object");
     const std::string IT_SKELETON("animation");
     const std::string IT_MATERIAL_SCRIPT("ogrescript");
@@ -210,6 +215,7 @@ namespace RexTypes
 
     // Filters for Open File Name dialog.
     const std::string IMAGE_FILTER("Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png)");
+    const std::string SOUND_FILTER("Sounds (*.ogg; *.wav)");
     const std::string MESH_FILTER("Ogre 3D Models (*.mesh)");
     const std::string PARTICLE_FILTER("Ogre Particle Scripts (*.particle)");
     const std::string MESHANIMATION_FILTER("Ogre Skeleton (*.skeleton)");

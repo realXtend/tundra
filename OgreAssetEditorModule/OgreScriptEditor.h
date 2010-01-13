@@ -130,9 +130,6 @@ namespace OgreAssetEditor
         /// The editor main window widget.
         QWidget *mainWidget_;
 
-        /// Property editor widget.
-        QWidget *editorWidget_;
-
         /// Save As button.
         QLineEdit *lineEditName_;
 

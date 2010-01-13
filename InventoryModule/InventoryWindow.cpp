@@ -225,6 +225,8 @@ void InventoryWindow::UpdateActions()
 
 void InventoryWindow::OpenDownloadProgess(const QString &asset_id)
 {
+    QMessageBox *box = new QMessageBox(inventoryWidget_);
+    
     ///\todo
 }
 

@@ -29,6 +29,7 @@
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QColor>
+#include <QVBoxLayout>
 
 namespace OgreAssetEditor
 {
@@ -141,7 +142,6 @@ OgreScriptEditor::OgreScriptEditor(
     framework_(framework),
     proxyWidget_(0),
     mainWidget_(0),
-    editorWidget_(0),
     lineEditName_(0),
     buttonSaveAs_(0),
     buttonCancel_(0),
@@ -326,20 +326,10 @@ void OgreScriptEditor::InitEditorWindow()
     mainWidget_ = loader.load(&file, 0);
     file.close();
 
-    QWidget *widgetName = mainWidget_->findChild<QWidget *>("widgetName");
-    QWidget *widgetEditor = mainWidget_->findChild<QWidget *>("widgetEditor");
-    QWidget *widgetButton = mainWidget_->findChild<QWidget *>("widgetButton");
-
-    QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-    layout->addWidget(widgetName);
-    layout->addWidget(widgetEditor);
-    layout->addWidget(widgetButton);
-
     // Get controls
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
     buttonSaveAs_ = mainWidget_->findChild<QPushButton *>("buttonSaveAs");
     buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
-    editorWidget_= mainWidget_->findChild<QWidget *>("widgetEditor");
 
     // Connect signals
     QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
@@ -355,15 +345,14 @@ void OgreScriptEditor::InitEditorWindow()
 void OgreScriptEditor::CreateTextEdit()
 {
     // Raw text edit for particle scripts or material scripts without properties.
-    textEdit_ = new QTextEdit(editorWidget_);
+    textEdit_ = new QTextEdit();
     textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    textEdit_->resize(editorWidget_->size());
     textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textEdit_->setLineWrapMode(QTextEdit::NoWrap);
 
-//  QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayout");
-//  layout->addWidget(editorWidget_);
+    QVBoxLayout *layout  = mainWidget_->findChild<QVBoxLayout *>("verticalLayoutEditor");
+    layout->addWidget(textEdit_);
     textEdit_->show();
 }
 
@@ -372,7 +361,9 @@ void OgreScriptEditor::CreatePropertyEditor()
     PropertyMap propMap = materialProperties_->GetPropertyMap();
     PropertyMapIter it(propMap);
 
-    propertyTable_ = new PropertyTableWidget(propMap.size(), 3, editorWidget_);
+    propertyTable_ = new PropertyTableWidget(propMap.size(), 3, 0);
+    QVBoxLayout *layout = mainWidget_->findChild<QVBoxLayout *>("verticalLayoutEditor");
+    layout->addWidget(propertyTable_);
 
     int row = 0;
     while(it.hasNext())

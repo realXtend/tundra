@@ -7,37 +7,34 @@
 
 namespace Foundation
 {
-
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
-    
+
     //! Interface for assets
     class MODULE_API AssetInterface
     {
     public:
         //! Default constructor
         AssetInterface() {}
-        
+
         //! Default destructor
         virtual ~AssetInterface() {}
-        
+
         //! Returns asset id. Can be for example UUID in text form
         virtual const std::string& GetId() const = 0;
-        
+
         //! Returns asset type in text form
         virtual const std::string& GetType() const = 0;
-        
+
         //! Returns asset data size
         virtual uint GetSize() const = 0;
-        
+
         //! Returns asset data
         virtual const u8* GetData() const = 0;
 
-		//! Returns asset metadata
-		virtual AssetMetadataInterface* GetMetadata() const = 0;
+        //! Returns asset metadata
+        virtual AssetMetadataInterface* GetMetadata() const = 0;
     };
-	
 }
 
 #endif
-
