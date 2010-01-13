@@ -38,7 +38,9 @@ namespace Environment
     editor_widget_(0),
     action_(Flatten),
     sky_type_(OgreRenderer::SKYTYPE_NONE),
-    ambient_(false)
+    ambient_(false),
+    sun_color_picker_(0),
+    ambient_color_picker_(0)
     //mouse_press_flag_(no_button)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
@@ -51,8 +53,10 @@ namespace Environment
     EnvironmentEditor::~EnvironmentEditor()
     {
         EnvironmentEditorProxyWidget_ = 0;
-        delete color_picker_;
-        color_picker_ = 0;
+        delete sun_color_picker_;
+        delete ambient_color_picker_;
+        sun_color_picker_ = 0;
+        ambient_color_picker_ = 0;
     }
 
     void EnvironmentEditor::CreateHeightmapImage()
@@ -475,7 +479,7 @@ namespace Environment
     void EnvironmentEditor::InitAmbientTabWindow()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(environment.get())
+        if(environment != 0)
         {
             // Sun direction
             QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
@@ -486,7 +490,11 @@ namespace Environment
             sun_direction_z->setMinimum(-100.0);
             
           
-            color_picker_ = new QColorDialog;
+            if ( sun_color_picker_ == 0)
+                sun_color_picker_ = new QColorDialog;
+            if ( ambient_color_picker_ == 0)
+                ambient_color_picker_ = new QColorDialog;
+
             if ( sun_direction_x != 0
                  && sun_direction_y != 0
                  && sun_direction_z != 0 )
@@ -526,14 +534,19 @@ namespace Environment
                     QObject::connect(sun_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
 
                 QPushButton* ambient_color_change = editor_widget_->findChild<QPushButton* >("ambient_color_change_button");
+                
                 if ( ambient_color_change != 0)
                     QObject::connect(ambient_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
 
-                if(color_picker_)
-                    QObject::connect(color_picker_, SIGNAL(currentColorChanged(const QColor& )), this, SLOT(UpdateColor(const QColor&)));
+                if(sun_color_picker_ != 0)
+                    QObject::connect(sun_color_picker_, SIGNAL(currentColorChanged(const QColor& )), this, SLOT(UpdateSunLightColor(const QColor&)));
                 
+                if ( ambient_color_picker_ != 0)
+                    QObject::connect(ambient_color_picker_, SIGNAL(currentColorChanged(const QColor& )), this, SLOT(UpdateAmbientLightColor(const QColor&)));
+
                 QVector<float> ambient_light = environment->GetAmbientLight();
                 label = editor_widget_->findChild<QLabel* >("ambient_color_img");
+                
                 if ( label != 0)
                 {
                    
@@ -897,7 +910,7 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::UpdateColor(const QColor& color)
+    void EnvironmentEditor::UpdateSunLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
         if(!environment.get())
@@ -907,8 +920,7 @@ namespace Environment
         if ( widget != 0 
              && widget->objectName() == "ambient_light")
         {
-            if ( !ambient_ ) 
-            {
+           
                 QVector<float> current_sun_color = environment->GetSunColor();
                 QVector<float> new_sun_color(4);
                 new_sun_color[0] = color.redF(), new_sun_color[1] = color.greenF(), new_sun_color[2] = color.blueF(), new_sun_color[3] = 1;
@@ -931,64 +943,76 @@ namespace Environment
                         img.fill(color);
                         label->setPixmap(img);
                     }
-                }
+                   
+                
 
-            }
-            else
-            {
-                // ambient light.
-                QVector<float> current_ambient_color = environment->GetAmbientLight();
-                QVector<float> new_ambient_color(3);
-                new_ambient_color[0] = color.redF(), new_ambient_color[1] = color.greenF(), new_ambient_color[2] = color.blueF();
-                if ( new_ambient_color[0] != current_ambient_color[0] 
-                     && new_ambient_color[1] != current_ambient_color[1] 
-                     && new_ambient_color[2] != current_ambient_color[2])
-                {
-                    // Change to new color.
-                    environment->SetAmbientLight(new_ambient_color);
-                    QLabel* label = editor_widget_->findChild<QLabel* >("ambient_color_img");
-                    if ( label != 0)
-                    {
-                        QPixmap img(label->width(), 23);
-                        QColor color;
-                        color.setRedF(new_ambient_color[0]);
-                        color.setGreenF(new_ambient_color[1]);
-                        color.setBlueF(new_ambient_color[2]);
-                        //color.setAlpha(sun_color[3]);
-                        //color.setAlpha(0);
-                        img.fill(color);
-                        label->setPixmap(img);
-                    }
-                }
-
-                     ambient_ = false;
-            }
-
-
-        }
+                 }
+           
+         }
 
     }
 
-
-    void EnvironmentEditor::ShowColorPicker()
+    void EnvironmentEditor::UpdateAmbientLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
         if(!environment.get())
             return;
 
         QWidget* widget = GetCurrentPage();
-        if ( widget != 0 && widget->objectName() == "ambient_light"
-                && environment.get() != 0 )
+        if ( widget != 0 
+             && widget->objectName() == "ambient_light")
+        {
+
+            // ambient light.
+            QVector<float> current_ambient_color = environment->GetAmbientLight();
+            QVector<float> new_ambient_color(3);
+            new_ambient_color[0] = color.redF(), new_ambient_color[1] = color.greenF(), new_ambient_color[2] = color.blueF();
+            if ( new_ambient_color[0] != current_ambient_color[0] 
+                 && new_ambient_color[1] != current_ambient_color[1] 
+                 && new_ambient_color[2] != current_ambient_color[2])
+            {
+                // Change to new color.
+                environment->SetAmbientLight(new_ambient_color);
+                QLabel* label = editor_widget_->findChild<QLabel* >("ambient_color_img");
+                if ( label != 0)
+                {
+                    QPixmap img(label->width(), 23);
+                    QColor color;
+                    color.setRedF(new_ambient_color[0]);
+                    color.setGreenF(new_ambient_color[1]);
+                    color.setBlueF(new_ambient_color[2]);
+                    //color.setAlpha(sun_color[3]);
+                    //color.setAlpha(0);
+                    img.fill(color);
+                    label->setPixmap(img);
+                }
+             }
+        }
+    }
+
+
+    void EnvironmentEditor::ShowColorPicker()
+    {
+        EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
+        QColorDialog *dialog = 0;
+
+        if( environment == 0)
+            return;
+
+        QWidget* widget = GetCurrentPage();
+        if ( widget != 0 && widget->objectName() == "ambient_light")
         {
             if (this->sender()->objectName() == "sun_color_change_button")
             {
+                
                 QVector<float> sun_color = environment->GetSunColor();
                 QColor color;
                 color.setRedF(sun_color[0]);
                 color.setGreenF(sun_color[1]);
                 color.setBlueF(sun_color[2]);
                 //color.setAlpha(0);
-                color_picker_->setCurrentColor(color);
+                sun_color_picker_->setCurrentColor(color);
+                dialog = sun_color_picker_;  
             }
 
             if ( this->sender()->objectName() == "ambient_color_change_button")
@@ -998,12 +1022,13 @@ namespace Environment
                 color.setRedF(ambient_light[0]);
                 color.setGreenF(ambient_light[1]);
                 color.setBlueF(ambient_light[2]);
-                color_picker_->setCurrentColor(color);
-                ambient_ = true;
+                ambient_color_picker_->setCurrentColor(color);
+                dialog = ambient_color_picker_;
             }
          }
             
-       color_picker_->show();
+        if ( dialog != 0)
+            dialog->show();
     }
 
     QWidget* EnvironmentEditor::GetPage(const QString& name)
