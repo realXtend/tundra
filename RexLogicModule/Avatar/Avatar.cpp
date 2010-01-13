@@ -589,6 +589,19 @@ namespace RexLogic
         return entity;
     }
     
+    bool Avatar::AvatarExportSupported()
+    {
+        Scene::EntityPtr entity = GetUserAvatar();
+        if (!entity)
+            return false;
+        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+        if (!conn)
+            return false;
+        
+        // For now, support only legacy storage export        
+        return (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection);
+    }                            
+
     void Avatar::ExportUserAvatar()
     {
         Scene::EntityPtr entity = GetUserAvatar();
@@ -600,6 +613,18 @@ namespace RexLogic
         
         // See whether to use legacy storage or inventory
         WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+        if (!conn)
+        {
+            RexLogicModule::LogError("Not connected to server, cannot export avatar");
+            return;
+        }
+        
+        if (!AvatarExportSupported())
+        {
+            RexLogicModule::LogError("Avatar export supported to legacy storage only for now");
+            return;
+        }
+        
         if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
         {
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
