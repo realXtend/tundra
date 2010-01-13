@@ -158,7 +158,8 @@ namespace Environment
 
         void UpdateSunDirection(double value);
         void ShowColorPicker();
-        void UpdateColor(const QColor& color);
+        void UpdateSunLightColor(const QColor& color);
+        void UpdateAmbientLightColor(const QColor& color);
 
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
@@ -219,7 +220,8 @@ namespace Environment
         //! Proxy Widget for ui
         UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
 
-        QColorDialog* color_picker_;
+        QColorDialog* sun_color_picker_;
+        QColorDialog* ambient_color_picker_;
         bool ambient_;
 
         //! sky type in use.
