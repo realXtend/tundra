@@ -232,14 +232,14 @@ bool OgreMaterialProperties::CreateProperties()
 Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 {
     // Make clone from the original and uset that for creating the new material.
-    Ogre::MaterialPtr MatPtr = material_->GetMaterial();
-    Ogre::MaterialPtr MatPtrClone = MatPtr->clone(objectName().toStdString() + "Clone");
+    Ogre::MaterialPtr matPtr = material_->GetMaterial();
+    Ogre::MaterialPtr matPtrClone = matPtr->clone(objectName().toStdString() + "Clone");
 
     // Material
-    if (!MatPtrClone.isNull())
+    if (!matPtrClone.isNull())
     {
         // Technique
-        Ogre::Material::TechniqueIterator tIter = MatPtrClone->getTechniqueIterator();
+        Ogre::Material::TechniqueIterator tIter = matPtrClone->getTechniqueIterator();
         while(tIter.hasMoreElements())
         {
             Ogre::Technique *tech = tIter.getNext();
@@ -442,11 +442,11 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
             }
         }
 
-        return MatPtrClone;
+        return matPtrClone;
     }
 
-    MatPtrClone.setNull();
-    return MatPtrClone;
+    matPtrClone.setNull();
+    return matPtrClone;
 }
 
 QString OgreMaterialProperties::ToString()

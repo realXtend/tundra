@@ -11,6 +11,7 @@
 #include "AbstractInventoryDataModel.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
+#include <RexUUID.h>
 
 #include <QModelIndex>
 #include <QVariant>
@@ -169,7 +170,10 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
                 asset_ref = asset->GetAssetReference();
             }
             else
+            {
                 asset_type.append(QString("%1").arg(RexTypes::RexAT_None));
+                asset_ref = RexUUID().ToString().c_str();
+            }
 
             info.append(asset_type + ";" + item->GetID() + ";" + item->GetName() + ";" + asset_ref);
             stream << info;
@@ -183,7 +187,6 @@ QMimeData *InventoryItemModel::mimeData(const QModelIndexList &indexes) const
 bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
     int column, const QModelIndex &parent)
 {
-    std::cout << "InventoryItemModel::dropMimeData" << std::endl;
     if (action == Qt::IgnoreAction)
         return true;
 
