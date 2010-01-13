@@ -17,7 +17,7 @@ namespace UiServices
         setWidget(widget);
         setPos(widget_properties_.getPosition().x(), widget_properties_.getPosition().y());
         setGeometry(QRectF(widget_properties_.getPosition(), QSizeF(widget_properties_.getSize())));
-       
+
         //InitAnimations();
     }
 

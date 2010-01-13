@@ -19,7 +19,7 @@ namespace OgreRenderer
 
     public:
         QOgreUIView ();
-        QOgreUIView (QGraphicsScene *scene);
+        QOgreUIView (QWidget *parent, QGraphicsScene *scene);
         virtual ~QOgreUIView ();
 
         void SetWorldView(QOgreWorldView *view);

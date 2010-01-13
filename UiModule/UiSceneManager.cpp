@@ -20,10 +20,8 @@ namespace UiServices
     {
         if (ui_view_)
         {
-            InitMasterLayout();
-            ui_view_->scene()->addItem(container_widget_);
+            InitMasterLayout();       
             SceneRectChanged(ui_view_->scene()->sceneRect());
-
             QObject::connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ), this, SLOT( SceneRectChanged(const QRectF &) ));
         }
         else
@@ -91,13 +89,13 @@ namespace UiServices
         ui_view_->scene()->removeItem((QGraphicsItem *)widget);
     }
 
-    
     void UiSceneManager::InitMasterLayout()
     {
         container_layout_ = new QGraphicsLinearLayout(Qt::Vertical, container_widget_);
         container_layout_->setContentsMargins(0,0,0,0);
         container_layout_->setSpacing(0);
         container_widget_->setLayout(container_layout_);
+        ui_view_->scene()->addItem(container_widget_);
 
         main_panel_ = new CoreUi::MainPanel(framework_);
         main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("Login", true));

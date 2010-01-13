@@ -13,6 +13,8 @@
 #include "QOgreWorldView.h"
 #include "CompositionHandler.h"
 
+#include <QWidget>
+
 namespace Foundation
 {
     class Framework;
@@ -261,6 +263,9 @@ namespace OgreRenderer
         
         //! added resource directories
         StringVector added_resource_directories_;
+
+        //! Qt main window widget
+        QWidget *main_window_;
 
         //! Ogre UI View Widget, inherits QGraphicsView
         QOgreUIView *q_ogre_ui_view_;
