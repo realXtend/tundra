@@ -86,7 +86,7 @@ namespace Inventory
     class InventoryItemOpenEventData : public Foundation::EventDataInterface
     {
     public:
-        InventoryItemOpenEventData() {}
+        InventoryItemOpenEventData() : overrideDefaultHandler(false) {}
         virtual ~InventoryItemOpenEventData() {}
         request_tag_t requestTag;
         RexUUID inventoryId;
@@ -94,18 +94,21 @@ namespace Inventory
         inventory_type_t inventoryType;
         asset_type_t assetType;
         std::string name;
+        bool overrideDefaultHandler;
     };
 
     /// Event data class to be used with EVENT_INVENTORY_ITEM_DOWNLOADED.
     class InventoryItemDownloadedEventData : public Foundation::EventDataInterface
     {
     public:
-        InventoryItemDownloadedEventData() {}
+        InventoryItemDownloadedEventData() : handled(false){}
         virtual ~InventoryItemDownloadedEventData() {}
         RexUUID inventoryId;
         Foundation::AssetPtr asset;
         request_tag_t requestTag;
         asset_type_t assetType;
+        std::string name;
+        bool handled;
     };
 }
 

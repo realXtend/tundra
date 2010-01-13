@@ -80,8 +80,7 @@ bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value
     AbstractInventoryItem *item = GetItem(index);
 
     InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
-    if (folder)
-        if(!folder->IsEditable())
+    if (folder && !folder->IsEditable())
             return false;
 
     if (item->GetName() == value.toString())

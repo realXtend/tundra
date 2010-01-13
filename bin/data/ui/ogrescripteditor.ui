@@ -11,36 +11,39 @@
    </rect>
   </property>
   <property name="styleSheet">
-   <string>/* Containers */
+   <string>
+   /* Containers */
+    QWidget#mainWidget {
+        background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255),
+            stop:0.465909 rgba(0, 0, 0, 255));
+    }
 
-QWidget#mainWidget {
-		background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
-}
+    QLabel {
+        color: rgb(255,255,255);
+    }
 
-QLabel {
-	color: rgb(255,255,255);
-}
+    /* QPUSHBUTTON */
+    QPushButton {
+        color: rgb(0, 0, 0);
+        min-width: 60px;
+        font-size: 12px;
+        border: 1px solid;
+        border-color: rgb(48, 48, 48);
+        border-radius: 8px;
+        border-top-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        padding: 2px 5px;
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
+            stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
+    }
 
-/* QPUSHBUTTON */
-
-QPushButton {
-	color: rgb(0, 0, 0);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid;
-	border-color: rgb(48, 48, 48);
-	border-radius: 8px;
-	border-top-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	border-color: rgba(0, 0, 0, 255);
-	color: rgb(0,0,0);
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
-}</string>
+    QPushButton:hover {
+        border-color: rgba(0, 0, 0, 255);
+        color: rgb(0,0,0);
+        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
+            stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
+    }
+    </string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -62,69 +65,63 @@ QPushButton:hover {
        <number>0</number>
       </property>
       <item>
-       <widget class="QWidget" name="widgetName" native="true">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>35</height>
-         </size>
-        </property>
-        <widget class="QLabel" name="labelName">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>33</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string>
+       <layout class="QVBoxLayout" name="verticalLayoutEditor">
+        <item>
+         <widget class="QWidget" name="widgetName" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>35</height>
+           </size>
+          </property>
+          <widget class="QLabel" name="labelName">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>33</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string>
             color: rgb(255, 255, 255);
             padding-bottom: 3px;
             background-color: rgba(255, 255, 255, 0);
           </string>
-         </property>
-         <property name="text">
-          <string>Name</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEditName">
-         <property name="geometry">
-          <rect>
-           <x>40</x>
-           <y>0</y>
-           <width>200</width>
-           <height>20</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widgetEditor" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
+           </property>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="lineEditName">
+           <property name="geometry">
+            <rect>
+             <x>40</x>
+             <y>0</y>
+             <width>200</width>
+             <height>20</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QWidget" name="widgetButton" native="true">

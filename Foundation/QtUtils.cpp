@@ -52,6 +52,7 @@ StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
 {
     QString qfilter(
         "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"
+        "Sounds (*.ogg; *.wav);;"
         "Ogre 3D Models (*.mesh);;"
         "Ogre Particle Scripts (*.particle);;"
         "Ogre Skeleton (*.skeleton);;"
