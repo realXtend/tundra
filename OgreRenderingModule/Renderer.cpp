@@ -12,6 +12,7 @@
 
 #include <Ogre.h>
 
+#include <QVBoxLayout>
 #include <QGraphicsScene>
 
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
@@ -114,12 +115,17 @@ namespace OgreRenderer
         plugins_filename_ (plugins),
         ray_query_(0),
         window_title_(window_title),
+        main_window_(0),
         q_ogre_ui_view_(0)
     {
-        q_ogre_ui_view_ = new QOgreUIView();
-        q_ogre_ui_view_->setScene(new QGraphicsScene());
+        main_window_ = new QWidget();
+        q_ogre_ui_view_ = new QOgreUIView(main_window_, new QGraphicsScene());
 
-        // ownership of uiview passed to framework
+        main_window_->setLayout(new QVBoxLayout(main_window_));
+        main_window_->layout()->setMargin(0);
+        main_window_->layout()->addWidget(q_ogre_ui_view_);
+
+        // Ownership of uiview passed to framework
         framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
 
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
@@ -158,9 +164,7 @@ namespace OgreRenderer
             Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
         }
 
-        SAFE_DELETE(q_ogre_world_view_);
         resource_handler_.reset();
-
         root_.reset();
     }
     
@@ -179,7 +183,7 @@ namespace OgreRenderer
             return;
 
         OgreRenderingModule::LogDebug("\n\nINITIALIZING OGRE \n================================================================\n");
-            
+
         std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 
@@ -204,6 +208,11 @@ namespace OgreRenderer
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
         
+        if (window_left < 0)
+            window_left = 0;
+        if (window_top < 25)
+            window_top = 25;
+
         Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
 #ifdef _WINDOWS
         // OpenGL fallback
@@ -232,21 +241,22 @@ namespace OgreRenderer
 
         try
         {
-            q_ogre_ui_view_->resize(width, height);
+            main_window_->setWindowTitle(QString(window_title_.c_str()));
+            main_window_->setGeometry(window_left, window_top, width, height);
             q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
-            q_ogre_ui_view_->setWindowTitle(QString(window_title_.c_str()));
-            q_ogre_ui_view_->show();
+            main_window_->show();
 
             renderwindow_ = q_ogre_ui_view_->CreateRenderWindow
                 (window_title_, width, height, window_left, window_top, fullscreen);           
 
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
-            
             q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
-            
             q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
         }
-        catch (Ogre::Exception e) { /* Could throw exception? */ }
+        catch (Ogre::Exception e) 
+        {
+            OgreRenderingModule::LogError("Could not create ogre rendering window!");
+        }
         
         if (renderwindow_)
         {
@@ -438,51 +448,33 @@ namespace OgreRenderer
 
     void Renderer::Render()
     {
-        if (!initialized_) return;
-
-/*
-OLD OGRE RENDER FUNCTION
-
-        PROFILE(Renderer_Render);
-        root_->_fireFrameStarted();
-        
-        // Render without swapping buffers first
-        Ogre::RenderSystem* renderer = root_->getRenderSystem();
-        renderer->_updateAllRenderTargets(false);
-        root_->_fireFrameRenderingQueued();
-        // Send postrender event, so that custom rendering may be added
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::POST_RENDER, 0);
-        // Swap buffers now
-        renderer->_swapAllRenderTargetBuffers(renderer->getWaitForVerticalBlank());
-
-        root_->_fireFrameEnded();
-*/
+        if (!initialized_) 
+            return;
 
         if (q_ogre_ui_view_->isDirty())
         {
             QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
-            QRect viewrect(QPoint (0, 0), viewsize);
+            QRect viewrect(QPoint(0, 0), viewsize);
 
-            // compositing back buffer
-            QImage buffer(viewsize, QImage::Format_ARGB32);
-#ifdef _DEBUG
+            // Compositing back buffer
+            QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
+            #ifdef _DEBUG
             buffer.fill(Qt::transparent);
-#endif
+            #endif
+
+            // Paint ui view into buffer
             QPainter painter(&buffer);
-
-            // paint ui view into buffer
-            q_ogre_ui_view_->render(&painter);
-
-            // blit ogre view into buffer
+            q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+            
+            // Blit ogre view into buffer
             Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
-            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *) buffer.bits());
+            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
 
             q_ogre_world_view_->OverlayUI(bufbox);
         }
+
         q_ogre_world_view_->RenderOneFrame();
-
         q_ogre_ui_view_->setDirty(false);
-
     }
 
     uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)

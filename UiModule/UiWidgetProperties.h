@@ -45,15 +45,21 @@ namespace UiServices
               fullscreen_(false),
               animation_type_(animation_type) {}
 
-        UiWidgetProperties(const QString &widget_name, bool fullscreen, AnimationType animation_type = SlideFromTop, const QSize &size = QSize(200,200))
+        UiWidgetProperties(const QString &widget_name, bool core_layout_widget, AnimationType animation_type = SlideFromTop, const QSize &size = QSize(200,200))
             : QObject(),
               my_size_(size),
               position_(QPointF(10.0, 60.0)),
-              window_type_(Qt::Dialog),
+              window_type_(0),
               widget_name_(widget_name),
-              show_at_toolbar_(!fullscreen),
-              fullscreen_(fullscreen),
-              animation_type_(animation_type) {}
+              show_at_toolbar_(!core_layout_widget),
+              fullscreen_(core_layout_widget),
+              animation_type_(animation_type) 
+        {
+            if (core_layout_widget)
+                window_type_ = Qt::Widget;
+            else
+                window_type_ = Qt::Dialog;
+        }
 
         UiWidgetProperties(const QPointF &position = QPointF(10.0, 60.0), const QSize &size = QSize(200,200), const Qt::WindowFlags window_type = Qt::Dialog, const QString &widget_name = QString("UiProxyWidget"), bool show_in_toolbar = true, bool fullscreen = false, AnimationType animation_type = SlideFromTop)
             : QObject(),
