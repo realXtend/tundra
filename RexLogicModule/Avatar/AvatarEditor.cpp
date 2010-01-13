@@ -129,7 +129,12 @@ namespace RexLogic
     {   
         if (!avatar_widget_)
             return;
-                                
+                     
+        // Activate/deactivate export button based on whether export currently supported
+        QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
+        if (button)
+            button->setEnabled(rexlogicmodule_->GetAvatarHandler()->AvatarExportSupported());         
+                                                   
         QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");  
         QWidget* attachment_panel = avatar_widget_->findChild<QWidget *>("panel_attachments");        
         if (!mat_panel || !attachment_panel)    

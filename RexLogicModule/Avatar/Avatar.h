@@ -57,6 +57,9 @@ namespace RexLogic
         //! Returns user's avatar
         Scene::EntityPtr GetUserAvatar();
         
+        //! Returns whether export avatar currently supported
+        bool AvatarExportSupported();
+        
         //! Exports user's avatar, if in scene
         void ExportUserAvatar();
         
