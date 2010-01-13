@@ -274,7 +274,7 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     newValueString.trimmed();
     bool valid = true;
 
-    ///\todo No validity check for texture names.
+    ///\todo Validity check for texture names.
     QString type = typeItem->text();
     if (type != "TEX_1D" && type != "TEX_2D" && type != "TEX_3D" && type != "TEX_CUBEMAP")
     {

@@ -14,7 +14,6 @@
 #include <Inventory/InventoryEvents.h>
 #include <AssetEvents.h>
 
-#include <QObject>
 #include <QStringList>
 #include <QVector>
 
@@ -92,48 +91,6 @@ bool OgreAssetEditorModule::HandleEvent(
 {
     if (category_id == inventoryEventCategory_)
     {
-    /*
-        if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_OPEN)
-        {
-            Inventory::InventoryItemOpenEventData *openEvent = static_cast<Inventory::InventoryItemOpenEventData *>(data);
-            RexTypes::asset_type_t at = openEvent->assetType;
-            switch(at)
-            {
-            case RexTypes::RexAT_ParticleScript:
-            {
-                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(openEvent->inventoryId, openEvent->requestTag));
-                if (it == assetEditors_.end())
-                {
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
-                    assetEditors_[qMakePair(openEvent->inventoryId, openEvent->requestTag)] = editor;
-                }
-                break;
-            }
-            case RexTypes::RexAT_MaterialScript:
-            {
-                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(openEvent->inventoryId, openEvent->requestTag));
-                if (it == assetEditors_.end())
-                {
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, openEvent->name.c_str());
-                    assetEditors_[qMakePair(openEvent->inventoryId, openEvent->requestTag)] = editor;
-                }
-                break;
-            }
-            default:
-                break;
-            }
-
-            return false;
-        }
-
-        if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
-        {
-            Inventory::InventoryItemDownloadedEventData *downloaded = static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
-            AssetEditorMap::iterator it = assetEditors_.find(qMakePair(downloaded->inventoryId, downloaded->requestTag));
-            if (it != assetEditors_.end())
-                dynamic_cast<OgreScriptEditor *>(it.value())->HandleAssetReady(downloaded->asset);
-        }
-    */
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
             Inventory::InventoryItemDownloadedEventData *downloaded = static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
