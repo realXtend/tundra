@@ -50,6 +50,12 @@ namespace OgreRenderer
                 is_win7 = true;
         #endif
 
+        QPalette p;
+        // Get rid of extra white layers under widgets
+        p.setColor(QPalette::Background, Qt::transparent); 
+        p.setColor(QPalette::Base, Qt::transparent);
+        setPalette(p);
+
         // Setup QGrapchicsView
         setUpdatesEnabled (false); // Turn off paintEvents, reduces flicker and overpaint
         setFocusPolicy (Qt::StrongFocus);
@@ -59,14 +65,8 @@ namespace OgreRenderer
 
         if (is_win7)
         {
-            QPalette p;
-            // Get rid of extra white layers under widgets (win7)
-            p.setColor(QPalette::Background, Qt::transparent); 
-            p.setColor(QPalette::Base, Qt::transparent);
-
             // Setup QGrapchicsView some more
             setAutoFillBackground(false);
-            setPalette(p);
             setAttribute(Qt::WA_OpaquePaintEvent, false);
             setAttribute(Qt::WA_NoSystemBackground, true);
             setAttribute(Qt::WA_DontShowOnScreen, true); // Hover will stop working but will get rid of the white paint (win7)
