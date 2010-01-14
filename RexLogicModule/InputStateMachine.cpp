@@ -258,8 +258,8 @@ namespace RexLogic
 
         QWheelEvent *e = static_cast <QWheelEvent *> (event);
 
-        scroll.z_.rel_ = e-> delta();
-        scroll.z_.abs_ = e-> delta();
+        scroll.z_.rel_ = e-> delta() / 2.0f;
+        scroll.z_.abs_ = e-> delta() / 2.0f;
 
         eventmgr-> SendEvent (catid, Input::Events::SCROLL, &scroll);
     }

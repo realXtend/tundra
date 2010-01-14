@@ -49,9 +49,7 @@ namespace RexLogic
         void MorphModifierValueChanged(int value);
         //! Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
-        //! Scrollbar quantizer handler (to try to prevent internal mode clipping bug)
-        void QuantizeScrollBar(int value);
-                
+
     private:
         RexLogicModule *rexlogicmodule_;
         

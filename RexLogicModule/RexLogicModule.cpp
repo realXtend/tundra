@@ -505,6 +505,8 @@ void RexLogicModule::LogoutAndDeleteWorld()
 
     if (avatar_)
         avatar_->HandleLogout();
+    if (primitive_)
+        primitive_->HandleLogout();
 
     if (framework_->HasScene("World"))
         DeleteScene("World");

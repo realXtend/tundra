@@ -33,6 +33,8 @@ namespace RexLogic
                         
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
+        void HandleLogout();
+        
         typedef std::map<std::pair<request_tag_t, RexTypes::asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
