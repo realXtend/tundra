@@ -11,19 +11,15 @@ add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
-use_package (OIS)
 use_package (OGRE)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule InputModuleOIS)
+use_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule)
-link_package (OIS)
 link_package (OGRE)
 link_package (BOOST)
 link_package (POCO)
-link_package (OIS)
-link_package (OGRE)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

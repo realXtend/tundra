@@ -27,7 +27,7 @@ namespace ProtocolUtilities
 
 namespace Foundation
 {
-    class QtFrameworkEngine;
+    class FrameworkQtApplication;
     class KeyStateListener;
 
     //! contains entry point for the framework.
@@ -207,9 +207,6 @@ namespace Foundation
         //! Set main UI View
         void SetUIView(std::auto_ptr <QGraphicsView> view);
 
-        //! Add a event listener to the UI View
-        void AddUIViewListener (QObject *listener);
-
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized
@@ -248,7 +245,7 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
-        std::auto_ptr <QtFrameworkEngine> engine_;
+        std::auto_ptr <FrameworkQtApplication> engine_;
 
         //! maximum number of ticks (milliseconds) per frame for frame limiter
         uint max_ticks_;

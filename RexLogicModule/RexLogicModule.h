@@ -7,8 +7,6 @@
 #include "ModuleInterface.h"
 #include "RexLogicModuleApi.h"
 #include "WorldStream.h"
-#include "KeyState.h"
-#include "KeyBindings.h"
 
 namespace CoreUi
 {
@@ -36,6 +34,7 @@ namespace RexLogic
     class OpenSimLoginHandler;
     class TaigaLoginHandler;
     class MainPanelHandler;
+    class WorldInputLogic;
 
     typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
@@ -302,17 +301,8 @@ namespace RexLogic
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
 
-        //! Keyboard State Listener
-        KeyStateListener *key_state_listener_;
-
-        //! First Person key bindings
-        FirstPersonBindings first_person_bindings_;
-
-        //! Third Person key bindings
-        ThirdPersonBindings third_person_bindings_;
-
-        //! First Person key bindings
-        FreeCameraBindings free_camera_bindings_;
+        //! Input handling state machine
+        WorldInputLogic *input_state_machine_;
     };
 }
 

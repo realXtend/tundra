@@ -9,7 +9,6 @@
     <subscriber module="OgreRenderingModule" priority="99" />
     <subscriber module="TextureDecoderModule" priority="98" />
     <subscriber module="OpenALAudioModule" priority="97" />
-    <subscriber module="QtModule" priority="104" />
 	<subscriber module="UiServices" priority="100" />
     <subscriber module="InventoryModule" priority="100" />
     <subscriber module="CommunicationModule" priority="100" />

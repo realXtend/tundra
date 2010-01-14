@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#include <OISKeyboard.h>
+#include <Qt>
 
 #include "OgreOverlay.h"
 #include "EC_OgreConsoleOverlay.h"
@@ -317,13 +317,13 @@ namespace Console
 
         switch (code)
         {
-        case OIS::KC_PGUP:
+        case Qt::Key_PageUp:
             Scroll(scroll_line_size_ * max_visible_lines - 2);
             break;
-        case OIS::KC_PGDOWN:
+        case Qt::Key_PageDown:
             Scroll(-scroll_line_size_ * max_visible_lines - 2);
             break;
-        case OIS::KC_UP:
+        case Qt::Key_Up:
             {
                 MutexLock lock(mutex_);
 
@@ -335,7 +335,7 @@ namespace Console
                 }
             }
             break;
-        case OIS::KC_DOWN:
+        case Qt::Key_Down:
             {
                 MutexLock lock(mutex_);
 
@@ -352,7 +352,7 @@ namespace Console
                 }
             }
             break;
-        case OIS::KC_BACK:
+        case Qt::Key_Backspace:
             {
                 MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ < command_line_.length())
@@ -361,7 +361,7 @@ namespace Console
                 }
                 break;
             }
-        case OIS::KC_DELETE:
+        case Qt::Key_Delete:
             {
                 MutexLock lock(mutex_);
                 if (command_line_.empty() == false && cursor_offset_ != 0)
@@ -371,15 +371,15 @@ namespace Console
                 }
                 break;
             }
-        case OIS::KC_LEFT:
+        case Qt::Key_Left:
             MoveCursor(-1);
             break;
 
-        case OIS::KC_RIGHT:
+        case Qt::Key_Right:
             MoveCursor(1);
             break;
 
-        case OIS::KC_RETURN:
+        case Qt::Key_Return:
             {
                 std::string command_line;
                 {

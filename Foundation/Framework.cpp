@@ -20,7 +20,7 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 
-#include "QtFrameworkEngine.h"
+#include "FrameworkQtApplication.h"
 
 namespace Resource
 {
@@ -121,7 +121,7 @@ namespace Foundation
             Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
-            engine_.reset (new QtFrameworkEngine(this, argc_, argv_));
+            engine_.reset (new FrameworkQtApplication(this, argc_, argv_));
 
             initialized_ = true;
         }
@@ -341,7 +341,7 @@ namespace Foundation
     {
         exit_signal_ = true;
         if (engine_.get())
-            engine_->SendQAppQuitMessage();
+            engine_->quit();
     }
 
     void Framework::LoadModules()
@@ -610,7 +610,7 @@ namespace Foundation
 
     QApplication *Framework::GetQApplication() const
     {
-        return engine_->GetQApplication();
+        return engine_.get();
     }
 
     QGraphicsView *Framework::GetUIView() const
@@ -621,10 +621,5 @@ namespace Foundation
     void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
     {
         engine_->SetUIView(view);
-    }
-
-    void Framework::AddUIViewListener (QObject *listener) 
-    {
-        engine_->AddUIViewListener (listener);
     }
 }

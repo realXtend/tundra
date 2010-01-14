@@ -5,6 +5,7 @@
 
 #include "EntityComponent/EC_Controllable.h"
 #include "RexTypes.h"
+#include "InputEvents.h"
 
 namespace ProtocolUtilities
 {
@@ -126,6 +127,12 @@ namespace RexLogic
         Real net_movementupdatetime_;
 
         Foundation::Framework *framework_;
+
+        //! Mouse-look flag
+        bool mouse_look_;
+
+        //! Mouse-look movement
+        Input::Events::Movement movement_;
     };
 }
 #endif

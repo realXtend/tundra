@@ -7,7 +7,6 @@
 
 #include "SceneManager.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-#include "EC_UICanvas.h"
 #include "RexLogicModule.h"
 #include "QtUtils.h"
 
