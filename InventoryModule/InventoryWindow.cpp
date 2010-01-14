@@ -135,22 +135,15 @@ void InventoryWindow::AddFolder()
         if (!model->insertColumn(0, index))
             return;
 
-    ///\todo    Change the functionality and flow so that when user clicks Add Folder it creates new folder but doesn't notify
-    ///         server until the name has been committed.
-    bool ok = false;
-    QString newFolderName = QInputDialog::getText(inventoryWidget_, "Create New Folder",
-        "Please give name of the new folder", QLineEdit::Normal, "", &ok);
-    if (!ok)
-        return;
-
-    if (newFolderName.isEmpty())
-        newFolderName = "New Folder";
+    QString newFolderName = "New Folder";
 
     if (!inventoryItemModel_->InsertFolder(index.row(), index, newFolderName))
         return;
 
     treeView_->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
     UpdateActions();
+
+    RenameItem();
 }
 
 void InventoryWindow::DeleteItem()
@@ -225,8 +218,7 @@ void InventoryWindow::UpdateActions()
 
 void InventoryWindow::OpenDownloadProgess(const QString &asset_id)
 {
-    QMessageBox *box = new QMessageBox(inventoryWidget_);
-    
+//    QMessageBox *box = new QMessageBox(inventoryWidget_);
     ///\todo
 }
 

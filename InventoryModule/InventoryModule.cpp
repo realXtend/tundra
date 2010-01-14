@@ -293,7 +293,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
     std::string description = "(No Description)";
 
     if (params.size() < 1)
-        return Console::ResultFailure("Invalid syntax. Usage: \"upload [asset_type] [name] [description]."
+        return Console::ResultFailure("Invalid syntax. Usage: \"upload(asset_type, name, description)."
             "Name and description are optional. Supported asset types:\n"
             "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
 
@@ -313,7 +313,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
     RexUUID folder_id = RexUUID(inventory_->GetFirstChildFolderByName(cat_name.c_str())->GetID().toStdString());
     if (folder_id.IsNull())
-         return Console::ResultFailure("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
+        return Console::ResultFailure("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
 
     currentWorldStream_->SendAgentPausePacket();
 
