@@ -149,6 +149,35 @@ namespace RexLogic
             current_state_ = InActive;
         }
 
+        if (event_id == Input::Events::MOUSELOOK)
+        {
+            Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
+
+            // mouse movement coordinates: 
+            // relative coordinates: relative to last movement
+            // absolute coordinate: window coordinates
+
+            int windowx = m->x_.rel_;
+            int windowy = m->y_.rel_;
+
+            movement_.x_.rel_ = windowx - movement_.x_.abs_;
+            movement_.y_.rel_ = windowy - movement_.y_.abs_;
+            movement_.x_.abs_ = windowx;
+            movement_.y_.abs_ = windowy;
+
+            mouse_look_ = true;
+        }
+
+        if (event_id == Input::Events::MOUSELOOK_STOPPED)
+        {
+            movement_.x_.rel_ = 0;
+            movement_.x_.abs_ = 0;
+            movement_.y_.rel_ = 0;
+            movement_.y_.abs_ = 0;
+
+            mouse_look_ = false;
+        }
+
         // send action events corresponding to input events
         RA::ActionInputMap::const_iterator it = input_events_.find(event_id);
         if (it != input_events_.end())
@@ -224,20 +253,33 @@ namespace RexLogic
         if (current_state_ == InActive)
             return;
 
-        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (input)
+        //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+        //if (input)
+        //{
+        //    boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
+        //    if (movement)
+        //    {
+        //        drag_yaw_ = static_cast<Real>(movement->x_.rel_) * -0.005f;
+        //        net_dirty_ = true;
+        //    } else if (drag_yaw_ != 0)
+        //    {
+        //        drag_yaw_ = 0;
+        //        net_dirty_ = true;
+        //    }
+        //}
+        if (mouse_look_)
         {
-            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
-            if (movement)
-            {
-                drag_yaw_ = static_cast<Real>(movement->x_.rel_) * -0.005f;
-                net_dirty_ = true;
-            } else if (drag_yaw_ != 0)
-            {
-                drag_yaw_ = 0;
-                net_dirty_ = true;
-            }
+            drag_yaw_ = static_cast <Real> (movement_.x_.rel_) * -0.005f;
+            net_dirty_ = true;
+            movement_.x_.rel_ = 0;
         }
+        else if (drag_yaw_ != 0)
+        {
+            drag_yaw_ = 0;
+            net_dirty_ = true;
+        }
+        else
+        {}
 
         //! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
         Scene::ScenePtr scene = framework_->GetScene("World");

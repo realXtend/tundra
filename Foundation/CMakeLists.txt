@@ -4,7 +4,7 @@ init_target (Foundation)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES QtFrameworkEngine.h)
+file (GLOB MOC_FILES FrameworkQtApplication.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.

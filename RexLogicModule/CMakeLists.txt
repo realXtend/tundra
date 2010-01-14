@@ -49,16 +49,14 @@ use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (OPENJPEG)
-use_package (OIS)
 use_package (XMLRPC)
 
-use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule UiModule HttpUtilities RpcUtilities ProtocolUtilities InputModuleOIS ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon QtModule UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
-link_package (OIS)
 link_package (OGRE)
 link_package (BOOST)
 link_package (POCO)

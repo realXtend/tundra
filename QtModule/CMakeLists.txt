@@ -29,19 +29,15 @@ add_definitions (-DQT_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (OGRE)
-use_package (OIS) # ///\todo Remove.
 use_package (QT4)
 use_package (POCO)
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule InputModuleOIS UiModule)
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule UiModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule InputModuleOIS UiModule)
-link_package (OIS)
+link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule UiModule)
 link_package (OGRE)
 link_package (BOOST)
-link_package (OGRE)
-link_package (OIS) # ///\todo Remove.
 link_package (QT4)
 link_package (POCO)
 

@@ -10,11 +10,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager RexCommon QtModule)
+use_modules (Core Foundation Interfaces SceneManager RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon QtModule)
+link_modules (Core Foundation Interfaces SceneManager RexCommon)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

@@ -317,7 +317,7 @@ namespace Environment
                             return false; 
                        
                      
-                        QChar empty(char(' '));
+                        const QChar empty(' ');
                         StringVector sun_light_direction = SplitString(parameters[0].c_str(), empty.toAscii() );
                         StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
                         StringVector ambient_light_color = SplitString(parameters[2].c_str(), empty.toAscii());
