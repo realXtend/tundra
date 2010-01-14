@@ -8,6 +8,8 @@
 macro (configure_boost)
     if (MSVC)
         set (Boost_USE_STATIC_LIBS ON)
+    elif (APPLE)
+        set (Boost_USE_STATIC_LIBS ON)
     else ()
         set (Boost_USE_STATIC_LIBS OFF)
     endif ()
@@ -16,6 +18,11 @@ macro (configure_boost)
         NAMES Boost boost
         COMPONENTS date_time filesystem system thread program_options unit_test_framework
         PREFIXES ${ENV_NAALI_DEP_PATH})
+
+    if (APPLE)
+        set (BOOST_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/lib)
+        set (BOOST_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/include)
+    endif()
 
     # boost library naming is complex, and FindBoost.cmake is preferred to 
     # find the correct names. however on windows it appears to not find the
@@ -59,7 +66,6 @@ macro (configure_qt4)
         set (QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
-            ${QT_QTDBUS_INCLUDE_DIR}
             ${QT_QTGUI_INCLUDE_DIR}
             ${QT_QTUITOOLS_INCLUDE_DIR}
             ${QT_QTNETWORK_INCLUDE_DIR}
@@ -67,6 +73,12 @@ macro (configure_qt4)
             ${QT_QTSCRIPT_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR})
             #${QT_PHONON_INCLUDE_DIR})
+
+	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
+	    # nothing
+        else ()
+            LIST(APPEND QT4_INCLUDE_DIRS ${QT_QTDBUS_INCLUDE_DIR})
+        endif()
 		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
@@ -74,7 +86,6 @@ macro (configure_qt4)
         set (QT4_LIBRARIES 
             ${QT_LIBRARIES}
             ${QT_QTCORE_LIBRARY}
-            ${QT_QTDBUS_LIBRARY}
             ${QT_QTGUI_LIBRARY}
             ${QT_QTUITOOLS_LIBRARY}
             ${QT_QTNETWORK_LIBRARY}
@@ -82,6 +93,13 @@ macro (configure_qt4)
             ${QT_QTSCRIPT_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
             ${QT_PHONON_LIBRARY})
+
+	if (APPLE)
+	    # nothing
+        else ()
+            LIST(APPEND QT4_LIBRARIES ${QT_QTDBUS_LIBRARY})
+        endif()
+		
     endif ()
     
     sagase_configure_report (QT4)
@@ -132,10 +150,16 @@ macro (configure_ois)
 endmacro (configure_ois)
 
 macro (configure_ogre)
-    sagase_configure_package (OGRE 
-        NAMES Ogre OgreSDK ogre OGRE
-        COMPONENTS Ogre ogre OGRE OgreMain 
-        PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
+    if (APPLE)
+	FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
+	set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
+	set (OGRE_LIBRARIES ${OGRE_LIBRARY})
+    else ()
+        sagase_configure_package (OGRE 
+          NAMES Ogre OgreSDK ogre OGRE
+          COMPONENTS Ogre ogre OGRE OgreMain 
+          PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
+    endif ()
 
     sagase_configure_report (OGRE)
 endmacro (configure_ogre)

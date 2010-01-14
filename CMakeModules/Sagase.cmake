@@ -29,7 +29,7 @@ function (sagase_generate_paths INCLUDE_PATHS LIBRARY_PATHS)
     if (MSVC)
         set (path_prefixes ${path_prefixes} "C:/")
     elseif (APPLE)
-        message (FATAL_ERROR "sagase: MacOS Support incomplete")
+        set (path_prefixes ${path_prefixes} "/usr" "/usr/local" "/opt" "$ENV{NAALI_DEP_PATH}")
     elseif (UNIX)
         set (path_prefixes ${path_prefixes} "/usr" "/usr/local" "/opt")
     else ()
@@ -145,10 +145,10 @@ macro (sagase_configure_package PREFIX)
             if (MSVC)
                 # MS has no automatic module management
 
-            elseif (APPLE)
-                # I don't know how to use Apple "Framework"
-                message (FATAL_ERROR "sagase: " ${PREFIX} ": MacOS Support incomplete")
-
+#            elseif (APPLE)
+#                # I don't know how to use Apple "Framework"
+#                message (FATAL_ERROR "sagase: " ${PREFIX} ": MacOS Support incomplete")
+#
             elseif (UNIX)
                 # what else is there besides pkg-config?
                 # non-linux OSes may be a problem
@@ -195,7 +195,7 @@ macro (sagase_configure_package PREFIX)
             set (LIB_POSTFIXES ".lib")
         elseif (UNIX)
             set (LIB_PREFIX "lib")
-            set (LIB_POSTFIXES ".so" ".a")
+            set (LIB_POSTFIXES ".so" ".a" ".dylib")
         else ()
             message (FATAL_ERROR "sagase: " ${PREFIX} ": Unable to detect OS type")
         endif ()
@@ -209,6 +209,7 @@ macro (sagase_configure_package PREFIX)
             # get header path
             foreach (pathnames_ ${${PREFIX}_PATH_NAMES})
                 foreach (header_extension_ ${HEADER_POSTFIXES})
+		    #message (STATUS "looking in " ${pathnames_}/${component_}${header_extension_} " - " ${include_paths})
                     find_path (${PREFIX}_${component_}_INCLUDE_DIR 
                         ${pathnames_}/${component_}${header_extension_} 
                         ${include_paths})
