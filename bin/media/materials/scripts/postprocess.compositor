@@ -137,6 +137,68 @@ compositor Glass
     }
 }
 
+compositor "Motion Blur"
+{
+	technique
+	{
+	
+		texture rt0 target_width target_height PF_A8R8G8B8
+		texture previous_render target_width target_height PF_A8R8G8B8
+		texture temp target_width target_height PF_A8R8G8B8
+		
+		target rt0
+		{
+			input previous
+		}
+		
+		target previous_render
+		{
+			only_initial on
+			input previous
+		}
+		
+		target temp
+		{
+			input none
+			
+			pass render_quad
+			{
+				material Ogre/Compositor/MotionBlur
+				input 0 rt0
+				input 1 previous_render
+			}
+		
+		}
+	
+	
+		target previous_render
+		{
+			input none
+			
+			pass render_quad
+			{
+				material Ogre/Compositor/Copy
+				input 0 temp
+			}
+			
+		}
+		
+		target_output
+        {
+            // Start with clear output
+            input none
+
+            pass render_quad
+            {
+                material Ogre/Compositor/Copy
+                input 0 temp
+            }
+        }
+	
+	}
+
+
+}
 
 
 // Black and white effect

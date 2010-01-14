@@ -36,8 +36,10 @@ namespace OgreRenderer
         postprocess_effects_.push_back("HDR");
         postprocess_effects_.push_back("Strong HDR");
         postprocess_effects_.push_back("Gaussian Blur");
+        postprocess_effects_.push_back("Motion Blur");
         postprocess_effects_.push_back("Radial Blur");
         postprocess_effects_.push_back("WetLens");
+        
 
         framework_ = framework;
         default_vp_ = vp;
