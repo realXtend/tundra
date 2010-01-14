@@ -258,8 +258,8 @@ namespace RexLogic
 
         QWheelEvent *e = static_cast <QWheelEvent *> (event);
 
-        scroll.z_.rel_ = e-> delta() / 2.0f;
-        scroll.z_.abs_ = e-> delta() / 2.0f;
+        scroll.z_.rel_ = e-> delta();
+        scroll.z_.abs_ = e-> delta();
 
         eventmgr-> SendEvent (catid, Input::Events::SCROLL, &scroll);
     }
@@ -342,8 +342,12 @@ namespace RexLogic
         //gesture.drag.push_back (info);
         
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
+        gesture.last_x = e-> x();
+        gesture.last_y = e-> y();
+                
+        // Do not send relative movement yet on gesture start
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
         movement.x_.abs_ = e-> globalX();
         movement.y_.abs_ = e-> globalY();
 
@@ -410,11 +414,13 @@ namespace RexLogic
         //gesture.drag.push_back (info);
         
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
+        movement.x_.rel_ = e-> x() - gesture.last_x;
+        movement.y_.rel_ = e-> y() - gesture.last_y; 
         movement.x_.abs_ = e-> globalX();
         movement.y_.abs_ = e-> globalY();
-
+        gesture.last_x = e-> x();
+        gesture.last_y = e-> y();   
+                
         eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
     }
     

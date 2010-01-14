@@ -70,7 +70,7 @@ namespace Input
         static const event_id_t SWITCH_CAMERA_STATE = 30;
         static const event_id_t SWITCH_CAMERA_STATE_REL = 31;
 
-        //! Mouse dragged input event. Not used currently.
+        //! Mouse dragged input event.
         static const event_id_t MOUSELOOK = 32;
         static const event_id_t MOUSELOOK_STOPPED = 33;
 

@@ -77,7 +77,9 @@ namespace RexLogic
 
     struct GestureInfo
     {
-        DragList drag;
+        //DragList drag;
+        int last_x;
+        int last_y;
     };
 
 
