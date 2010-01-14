@@ -938,6 +938,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     {
         // If can't get the parent entity yet, add to pending parent list
         pending_parents_[parentid].insert(entityid);
+        return;
     }   
     
     Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
