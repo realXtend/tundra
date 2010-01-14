@@ -4,6 +4,7 @@
 #define incl_Environment_EnvironmentEditor_h
 
 #include <Foundation.h>
+#include "EC_OgreSky.h"
 
 #include <QObject>
 #include <QPair>

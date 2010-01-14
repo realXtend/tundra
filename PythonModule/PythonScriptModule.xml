@@ -2,5 +2,4 @@
 	<entry>PythonScriptModule</entry>
 	<dependency>SupportModules</dependency>
 	<dependency>RexLogicModule</dependency>
-    <dependency>QtModule</dependency> <!-- when using PythonQt UICanvas -->
 </config>

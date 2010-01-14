@@ -3,5 +3,4 @@
     <entry>EnvironmentModule</entry>
     <dependency>UiModule</dependency>
     <dependency>OgreRenderingModule</dependency>
-    <dependency>QtModule</dependency>
 </config>

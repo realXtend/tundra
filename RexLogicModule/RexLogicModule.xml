@@ -6,5 +6,4 @@
    <dependency>OpenALAudioModule</dependency>
    <dependency>OgreRenderingModule</dependency>
    <dependency>UiModule</dependency>
-   <dependency>QtModule</dependency>
 </config>
