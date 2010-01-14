@@ -22,8 +22,6 @@
 #include "ModuleInterface.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
-#include "QtModuleWrapper.h"
-
 
 namespace Foundation
 {
@@ -150,8 +148,6 @@ namespace PythonScript
 
     static PythonScriptModule* pythonscriptmodule_;
     static PythonScriptModule* self() { return pythonscriptmodule_; }
-    static PythonScript::QtModuleWrapper *wrappedModule;
-    static PythonScript::QtModuleWrapper* GetWrappedQtModule() { return wrappedModule; }
 
     //the impl for this func - not py specific, should be in rexlogic or qtmodule or somewhere.
     //void _ApplyUICanvasToSubmeshesWithTexture(QtUI::UICanvas* canvas, RexUUID textureuuid);

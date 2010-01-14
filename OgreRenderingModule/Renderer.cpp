@@ -240,7 +240,7 @@ namespace OgreRenderer
         
         if (renderwindow_)
         {
-            OgreRenderingModule::LogDebug("Initliazing resources, may take a while...");
+            OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
             renderwindow_->setDeactivateOnFocusChange(false);            
             SetupResources();
             SetupScene();
