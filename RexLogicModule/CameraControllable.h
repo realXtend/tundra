@@ -4,6 +4,7 @@
 #define incl_RexLogic_CameraControllable_h
 
 #include "RexTypes.h"
+#include "InputEvents.h"
 
 namespace RexLogic
 {
@@ -119,7 +120,10 @@ namespace RexLogic
         //! Action to translation map in free look mode
         ActionTransMap action_trans_;
 
-        Foundation::Framework *framework_;
+        Foundation::Framework *framework_;       
+
+        //! Mouse-look movement
+        Input::Events::Movement movement_;
     };
 }
 

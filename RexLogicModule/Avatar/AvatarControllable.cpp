@@ -157,13 +157,10 @@ namespace RexLogic
             // relative coordinates: relative to last movement
             // absolute coordinate: window coordinates
 
-            int windowx = m->x_.rel_;
-            int windowy = m->y_.rel_;
-
-            movement_.x_.rel_ = windowx - movement_.x_.abs_;
-            movement_.y_.rel_ = windowy - movement_.y_.abs_;
-            movement_.x_.abs_ = windowx;
-            movement_.y_.abs_ = windowy;
+            movement_.x_.rel_ = m->x_.rel_;
+            movement_.y_.rel_ = m->y_.rel_;
+            movement_.x_.abs_ = m->x_.abs_;
+            movement_.y_.abs_ = m->y_.abs_;
 
             mouse_look_ = true;
         }
@@ -253,20 +250,6 @@ namespace RexLogic
         if (current_state_ == InActive)
             return;
 
-        //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        //if (input)
-        //{
-        //    boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
-        //    if (movement)
-        //    {
-        //        drag_yaw_ = static_cast<Real>(movement->x_.rel_) * -0.005f;
-        //        net_dirty_ = true;
-        //    } else if (drag_yaw_ != 0)
-        //    {
-        //        drag_yaw_ = 0;
-        //        net_dirty_ = true;
-        //    }
-        //}
         if (mouse_look_)
         {
             drag_yaw_ = static_cast <Real> (movement_.x_.rel_) * -0.005f;

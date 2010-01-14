@@ -26,7 +26,7 @@ namespace RexLogic
       , current_state_(ThirdPerson)
       , firstperson_pitch_(0)
       , firstperson_yaw_(0)
-      , drag_pitch_(0)
+      , drag_pitch_(0)     
       , drag_yaw_(0)
     {
         camera_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "default_distance", 20.f);
@@ -50,6 +50,9 @@ namespace RexLogic
         action_trans_[RexTypes::Actions::MoveRight] = Vector3df::UNIT_X;
         action_trans_[RexTypes::Actions::MoveUp] = Vector3df::UNIT_Y;
         action_trans_[RexTypes::Actions::MoveDown] = Vector3df::NEGATIVE_UNIT_Y;
+        
+        movement_.x_.rel_ = 0;
+        movement_.y_.rel_ = 0;
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -96,6 +99,16 @@ namespace RexLogic
                 framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
         }
 
+        if (event_id == Input::Events::MOUSELOOK)
+        {    
+            Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
+                            
+            movement_.x_.rel_ = m->x_.rel_;
+            movement_.y_.rel_ = m->y_.rel_;
+            movement_.x_.abs_ = m->x_.abs_;
+            movement_.y_.abs_ = m->y_.abs_;
+        }
+
         return false;
     }
 
@@ -137,22 +150,12 @@ namespace RexLogic
     }
 
     void CameraControllable::AddTime(f64 frametime)
-    {
-        boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (input)
-        {
-            boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
-            if (movement)
-            {
-                drag_yaw_ = static_cast<Real>(movement->x_.rel_) * -0.005f;
-                drag_pitch_ = static_cast<Real>(movement->y_.rel_) * -0.005f;
-            } else if (drag_pitch_ != 0 || drag_yaw_ != 0)
-            {
-                drag_yaw_ = 0;
-                drag_pitch_ = 0;
-            }
-        }
-
+    {   
+        drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
+        drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
+        movement_.x_.rel_ = 0;
+        movement_.y_.rel_ = 0;
+            
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
