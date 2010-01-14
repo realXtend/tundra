@@ -37,9 +37,20 @@ namespace OgreRenderer
 
     void QOgreUIView::Initialize_()
     {
-        bool is_win7 = false;
+        // Setup QGrapchicsView
+        setUpdatesEnabled(false);
+        setAutoFillBackground(false);
+        setFocusPolicy (Qt::StrongFocus);
+        setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+        setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
 
         #ifdef Q_WS_WIN
+        // Get rid of extra white layers under widgets
+        QPalette p;
+        p.setColor(QPalette::Window, Qt::transparent); 
+        p.setColor(QPalette::Base, Qt::transparent);
+        setPalette(p);
         // Determine if we are running under windows 7 that has certain paint issues with Qt 4.6 in a QGraphicsView
         // If we are under win 7 we do some dirty hacks to go around this as a temp solution
         OSVERSIONINFOEX os_version_info;
@@ -47,38 +58,8 @@ namespace OgreRenderer
         os_version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
         if (GetVersionEx((OSVERSIONINFO *)&os_version_info))
             if ( os_version_info.dwMajorVersion == 6 && os_version_info.dwMinorVersion == 1)
-                is_win7 = true;
+                setAttribute(Qt::WA_DontShowOnScreen, true);
         #endif
-
-        QPalette p;
-        // Get rid of extra white layers under widgets
-        p.setColor(QPalette::Background, Qt::transparent); 
-        p.setColor(QPalette::Base, Qt::transparent);
-        setPalette(p);
-
-        // Setup QGrapchicsView
-        setUpdatesEnabled (false); // Turn off paintEvents, reduces flicker and overpaint
-        setFocusPolicy (Qt::StrongFocus);
-        setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
-        setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
-        setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
-
-        if (is_win7)
-        {
-            // Setup QGrapchicsView some more
-            setAutoFillBackground(false);
-            setAttribute(Qt::WA_OpaquePaintEvent, false);
-            setAttribute(Qt::WA_NoSystemBackground, true);
-            setAttribute(Qt::WA_DontShowOnScreen, true); // Hover will stop working but will get rid of the white paint (win7)
-
-            // Setup Viewport
-            QWidget *vp = viewport();
-            vp->setUpdatesEnabled (false);
-            vp->setAutoFillBackground(false);
-            vp->setPalette(p);
-            vp->setAttribute(Qt::WA_OpaquePaintEvent, false);
-            vp->setAttribute(Qt::WA_NoSystemBackground, true);
-        }
     }    
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 

@@ -6,32 +6,56 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>691</width>
-    <height>127</height>
+    <width>685</width>
+    <height>70</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>70</height>
+   </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>127</height>
+    <height>70</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>LoginProgressBarWidget</string>
   </property>
   <property name="styleSheet">
-   <string>QWidget#LoginProgress {
-	background-color: rgba(255, 255, 255, 0);
+   <string notr="true">QWidget#LoginProgress {
+	background-color: none;
 }
 
 QFrame#MainFrame {
-	padding: 25px;
-	background-color: qconicalgradient(cx:0, cy:0, angle:85.7, stop:0.460227 rgba(0, 0, 0, 255), stop:0.75 rgba(0, 169, 255, 255));
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(222, 227, 236, 100), stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
+	padding-bottom: 5px;
+
 }
 
-QLabel  {
-	color: rgb(255, 255, 255);
-}</string>
+QLabel {
+	font-size: 12px;
+	font: bold;
+}
+
+QProgressBar {
+	color: rgb(0, 0, 0);
+    border: 1px solid black;
+	border-radius: 8px;
+	text-align: center;
+}
+
+ QProgressBar::chunk {
+/*
+	background-color: qlineargradient(spread:pad, x1:0.489, y1:0, x2:0.5, y2:1, stop:0 rgba(0, 169, 255, 200), stop:1 rgba(0, 0, 0, 255));
+*/
+	background-color: qlineargradient(spread:pad, x1:0.528, y1:0, x2:0.528818, y2:0.978, stop:0.295455 rgba(231, 231, 231, 255), stop:1 rgba(194, 194, 194, 255));
+	border-bottom-left-radius: 7px;
+	border-top-left-radius: 7px;
+ }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -48,20 +72,7 @@ QLabel  {
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
-      <item>
-       <spacer name="verticalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="spacing">
@@ -69,15 +80,6 @@ QLabel  {
         </property>
         <item>
          <widget class="QLabel" name="statusLabel">
-          <property name="font">
-           <font>
-            <family>Estrangelo Edessa</family>
-            <pointsize>14</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string/>
-          </property>
           <property name="text">
            <string>Status label</string>
           </property>
@@ -88,20 +90,6 @@ QLabel  {
         </item>
         <item>
          <widget class="QProgressBar" name="progressBar">
-          <property name="styleSheet">
-           <string>QProgressBar {
-	color: rgb(0, 0, 0);
-    border: 1px solid white;
-	border-radius: 8px;
-	text-align: center;
-}
-
- QProgressBar::chunk {
-	background-color: qlineargradient(spread:pad, x1:0.489, y1:0, x2:0.5, y2:1, stop:0 rgba(0, 169, 255, 200), stop:1 rgba(0, 0, 0, 255));
-	border-bottom-left-radius: 7px;
-	border-top-left-radius: 7px;
- }</string>
-          </property>
           <property name="value">
            <number>0</number>
           </property>
@@ -111,19 +99,6 @@ QLabel  {
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>

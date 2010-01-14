@@ -40,8 +40,6 @@ namespace CoreUi
             radiobutton_opensim_ = inworld_login_widget_->findChild<QRadioButton *>("radioButton_OpenSim");
             radiobutton_realxtend_ = inworld_login_widget_->findChild<QRadioButton *>("radioButton_realXtend");
 
-            label_auth_address_ = inworld_login_widget_->findChild<QLabel *>("label_AuthenticationServer");
-            line_edit_auth_address_ = inworld_login_widget_->findChild<QLineEdit *>("lineEdit_AuthenticationAddress");
             line_edit_username_ = inworld_login_widget_->findChild<QLineEdit *>("lineEdit_Username");
             line_edit_password_ = inworld_login_widget_->findChild<QLineEdit *>("lineEdit_Password");
 
@@ -72,27 +70,22 @@ namespace CoreUi
 
         configKey = QString("auth_server");
         value = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
-        line_edit_auth_address_->setText(value);
         realxtend_authserver_ = value;
     }
 
     void InworldLoginDialog::ToggleLoginShowMode()
     {
-        bool show_rex_auth = false;
         if (radiobutton_opensim_->isChecked() == true)
         {
-            show_rex_auth = false;
-            if (line_edit_username_->text() == realxtend_username_)
+            if (line_edit_username_->text() == QString("%1@%2").arg(realxtend_username_, realxtend_authserver_))
                 line_edit_username_->setText(opensim_username_);
+
         }
         else if (radiobutton_realxtend_->isChecked() == true)
         {
-            show_rex_auth = true;
             if (line_edit_username_->text() == opensim_username_)
-                line_edit_username_->setText(realxtend_username_);
+                line_edit_username_->setText(QString("%1@%2").arg(realxtend_username_, realxtend_authserver_));
         }
-        label_auth_address_->setVisible(show_rex_auth);
-        line_edit_auth_address_->setVisible(show_rex_auth);
         line_edit_password_->clear();
     }
 
@@ -118,16 +111,26 @@ namespace CoreUi
                 else
                     status_message_label_->setText(QString("Your OpenSim username must be 'Firstname Lastname', you gave '%1'").arg(map["Username"]));
             }
-            else if (radiobutton_realxtend_->isChecked() == true && 
-                     !line_edit_auth_address_->text().isEmpty() )
+            else if (radiobutton_realxtend_->isChecked() == true)
             {
                 map["AuthType"] = "RealXtend";
-                map["AuthenticationAddress"] = line_edit_auth_address_->text();
-                inworld_login_widget_->close();
-                emit TryLogin(map);
+                if (map["Username"].count("@") == 1 && map["Username"].count(" ") == 0)
+                {
+                    QString username_input = map["Username"];
+                    int at_index = username_input.indexOf("@");
+                    QString rex_username = username_input.midRef(0, at_index).toString();
+                    QString rex_auth_address = username_input.midRef(at_index+1).toString();
+
+                    map["Username"] = rex_username;
+                    map["AuthenticationAddress"] = rex_auth_address;
+                    inworld_login_widget_->close();
+                    emit TryLogin(map);
+                }
+                else
+                    status_message_label_->setText(QString("Your realXtend username must be 'user@server:port', you gave '%1'").arg(map["Username"]));
             }
-            else
-                status_message_label_->setText("Authentication address cant be empty");
         }
+        else
+            status_message_label_->setText("Username or Password fields are required");
     }
 }

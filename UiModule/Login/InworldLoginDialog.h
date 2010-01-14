@@ -30,12 +30,10 @@ namespace CoreUi
         
         QRadioButton *radiobutton_opensim_;
         QRadioButton *radiobutton_realxtend_;
-        
-        QLineEdit *line_edit_auth_address_;
+
         QLineEdit *line_edit_username_;
         QLineEdit *line_edit_password_;
 
-        QLabel *label_auth_address_;
         QLabel *status_message_label_;
 
         QString current_server_address_;

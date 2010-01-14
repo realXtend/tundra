@@ -41,8 +41,6 @@ namespace CoreUi
         QRadioButton *radiobutton_realxtend_;
         QPushButton *pushbutton_connect_;
         QPushButton *pushbutton_close_;
-        QLabel *label_auth_address_;
-        QLineEdit *line_edit_auth_address_;
         QLineEdit *line_edit_world_address_;
         QLineEdit *line_edit_username_;
         QLineEdit *line_edit_password_;
