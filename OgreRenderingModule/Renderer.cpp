@@ -188,7 +188,7 @@ namespace OgreRenderer
         rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
         #else
         // X11/MAC default to OpenGL
-        std::string rendersystem_name = "OpenGL Rendering Subsystem";
+        rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
         #endif
 
