@@ -35,12 +35,14 @@ namespace RexLogic
         buttons = rhs.buttons;
         wheel_delta = rhs.wheel_delta; wheel_orientation = rhs.wheel_orientation;
         global_x = rhs.global_x; global_y = rhs.global_y; x = rhs.x; y = rhs.y;
+		return *this;
     }
 
     MouseInfo &MouseInfo::operator= (const QMouseEvent *e)
     {
         buttons = e-> buttons();
         global_x = e-> globalX(); global_y = e-> globalY(); x = e-> x(); y = e-> y();
+		return *this;
     }
 
     MouseInfo &MouseInfo::operator= (const QWheelEvent *e)
@@ -48,6 +50,7 @@ namespace RexLogic
         buttons = e-> buttons();
         wheel_delta = e-> delta(); wheel_orientation = e-> orientation();
         global_x = e-> globalX(); global_y = e-> globalY(); x = e-> x(); y = e-> y();
+		return *this;
     }
 
     //=========================================================================
@@ -651,5 +654,7 @@ namespace RexLogic
             case QEvent::Close:
                 return new QCloseEvent (*static_cast <QCloseEvent *> (event));
         }
+
+		return 0;
     }
 }
