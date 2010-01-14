@@ -69,12 +69,12 @@ namespace RexLogic
 
     void State::onEntry (QEvent *e)
     {
-        std::cout << "State::onEntry: " << qPrintable (objectName()) << std::endl;
+        //std::cout << "State::onEntry: " << qPrintable (objectName()) << std::endl;
     }
 
     void State::onExit (QEvent *e)
     {
-        std::cout << "State::onExit: " << qPrintable (objectName()) << std::endl;
+        //std::cout << "State::onExit: " << qPrintable (objectName()) << std::endl;
     }
 
     //=========================================================================
@@ -88,12 +88,12 @@ namespace RexLogic
     void FinalState::onEntry (QEvent *e)
     {
         QFinalState::onEntry (e);
-        std::cout << "FinalState::onEntry: " << qPrintable (objectName()) << std::endl;
+        //std::cout << "FinalState::onEntry: " << qPrintable (objectName()) << std::endl;
     }
 
     void FinalState::onExit (QEvent *e)
     {
-        std::cout << "FinalState::onExit: " << qPrintable (objectName()) << std::endl;
+        //std::cout << "FinalState::onExit: " << qPrintable (objectName()) << std::endl;
         QFinalState::onExit (e);
     }
 
