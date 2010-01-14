@@ -6,28 +6,35 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>860</width>
-    <height>66</height>
+    <width>804</width>
+    <height>60</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>66</height>
+    <height>60</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>150</height>
+    <height>75</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Inworld controls</string>
   </property>
   <property name="styleSheet">
-   <string>QWidget#inworldControls {
-	background-color: qlineargradient(spread:pad, x1:0.466, y1:0, x2:0.472, y2:1, stop:0 rgba(0, 0, 0, 255), stop:0.517045 rgba(0, 169, 255, 255));
+   <string notr="true">QWidget#inworldControls {
+/*		background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 110), stop:1 rgba(222, 227, 236, 100));*/
+	background-color: rgba(179, 183, 196, 110);
 }
 
 QPushButton {
@@ -69,9 +76,6 @@ QPushButton::pressed {
        <property name="topMargin">
         <number>0</number>
        </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
        <item>
         <layout class="QHBoxLayout" name="topcontrols">
          <item>
@@ -95,29 +99,19 @@ QPushButton::pressed {
            <property name="sizeHint" stdset="0">
             <size>
              <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>30</height>
+             <height>1</height>
             </size>
            </property>
           </spacer>
          </item>
          <item>
           <widget class="QPushButton" name="buttonLogout">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Logout</string>
            </property>
@@ -128,6 +122,12 @@ QPushButton::pressed {
          </item>
          <item>
           <widget class="QPushButton" name="buttonQuit">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Quit</string>
            </property>
@@ -192,7 +192,7 @@ QPushButton#navigate_button:hover {
             <item>
              <widget class="QComboBox" name="navigate_address">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -204,6 +204,18 @@ QPushButton#navigate_button:hover {
             </item>
             <item>
              <widget class="QPushButton" name="navigate_connect">
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>55</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="text">
                <string> Connect</string>
               </property>
@@ -218,14 +230,14 @@ QPushButton#navigate_button:hover {
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>1</width>
+           <height>1</height>
           </size>
          </property>
         </spacer>

@@ -48,9 +48,9 @@ namespace UiServices
     }
 
     UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
-    {
+    {       
         UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
-        
+
         if (AddProxyWidget(proxy_widget))
             return proxy_widget;
         else
@@ -59,6 +59,7 @@ namespace UiServices
 
 	bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *widget)
     {
+
         if (ui_view_)
         {
             UiWidgetProperties properties = widget->getWidgetProperties();

@@ -34,12 +34,10 @@ namespace Ogre
 namespace OgreRenderer
 {
     class OgreRenderingModule;
-    class EventListener;
     class LogListener;
     class ResourceHandler;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<EventListener> EventListenerPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     
@@ -49,7 +47,6 @@ namespace OgreRenderer
     */
     class OGRE_MODULE_API Renderer : public Foundation::RenderServiceInterface
     {
-        friend class EventListener;
         
     public:
         //! Constructor
@@ -188,6 +185,13 @@ namespace OgreRenderer
         CompositionHandler& GetCompositionHandler(){ return c_handler_; }
 
     private:
+
+        //! Initialises Qt
+        void InitializeQt();
+
+        //! Initialises the events related info for this module
+        void InitializeEvents();
+
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
          */
@@ -224,9 +228,6 @@ namespace OgreRenderer
         
         //! Framework we belong to
         Foundation::Framework* framework_;
-        
-        //! Ogre event listener
-        EventListenerPtr listener_;
 
         //! Ogre log listener
         OgreLogListenerPtr log_listener_;

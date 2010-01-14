@@ -12,6 +12,8 @@
 
 #include <Ogre.h>
 
+#include <QApplication>
+#include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
 
@@ -22,47 +24,6 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
-    //! Responds to Ogre's window events and manages the realXtend world render window.
-
-    //! REMOVE THIS WITH NEW QT INTEGRATION
-    class EventListener : public Ogre::WindowEventListener
-    {
-    public:
-        EventListener(Renderer* renderer) :
-            renderer_(renderer)
-        {
-        }
-
-        ~EventListener() 
-        {
-        }
-        
-        void windowResized(Ogre::RenderWindow* rw)
-        {
-            if (rw == renderer_->renderwindow_)
-            {
-                if (renderer_->camera_)
-                    renderer_->camera_->setAspectRatio(Ogre::Real(rw->getWidth() / Ogre::Real(rw->getHeight())));
-
-                Events::WindowResized data(rw->getWidth(), rw->getHeight());
-                renderer_->framework_->GetEventManager()->SendEvent(renderer_->renderercategory_id_, Events::WINDOW_RESIZED, &data);         
-            }
-        }
-    
-        void windowClosed(Ogre::RenderWindow* rw)
-        {
-            if (rw == renderer_->renderwindow_)
-            {
-                renderer_->OnWindowClosed();
-            }
-        }
-        
-    private:
-        Renderer* renderer_;
-    };
-
-/////////////////////////////////////////////////////////////
-
     //! Ogre log listener, for passing ogre log messages
     class LogListener : public Ogre::LogListener
     {
@@ -109,7 +70,6 @@ namespace OgreRenderer
         object_id_(0),
         group_id_(0),
         main_window_handle_(0),
-        listener_(EventListenerPtr(new EventListener(this))),
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
         plugins_filename_ (plugins),
@@ -118,22 +78,8 @@ namespace OgreRenderer
         main_window_(0),
         q_ogre_ui_view_(0)
     {
-        main_window_ = new QWidget();
-        q_ogre_ui_view_ = new QOgreUIView(main_window_, new QGraphicsScene());
-
-        main_window_->setLayout(new QVBoxLayout(main_window_));
-        main_window_->layout()->setMargin(0);
-        main_window_->layout()->addWidget(q_ogre_ui_view_);
-
-        // Ownership of uiview passed to framework
-        framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
-
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        
-        renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
-        event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
-        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
-        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_RESIZED, "WindowResized");
+        InitializeQt();
+        InitializeEvents();
     }
     
     Renderer::~Renderer()
@@ -153,15 +99,14 @@ namespace OgreRenderer
             unsigned int width, height, depth;
             int left, top;
             renderwindow_->getMetrics(width, height, depth, left, top);
+            // Read position from qt not ogre (ogre not aware of position due we are not actually moving it)
+            // window size can be read from ogre for now as it seems to be working properly
+            left = main_window_->geometry().x();
+            top = main_window_->geometry().y();
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
-        }
-
-        if (initialized_)
-        {
-            Ogre::WindowEventUtilities::removeWindowEventListener(renderwindow_, listener_.get());
         }
 
         resource_handler_.reset();
@@ -177,56 +122,89 @@ namespace OgreRenderer
         }        
     }
     
+    void Renderer::InitializeQt()
+    {
+        main_window_ = new QWidget();
+        q_ogre_ui_view_ = new QOgreUIView(main_window_, new QGraphicsScene());
+
+        // Lets disable icon for now, put real one here when one is created for Naali
+        QPixmap pm(16,16);
+        pm.fill(Qt::transparent);
+        main_window_->setWindowIcon(QIcon(pm));
+        main_window_->setLayout(new QVBoxLayout(main_window_));
+        main_window_->layout()->setMargin(0);
+        main_window_->layout()->addWidget(q_ogre_ui_view_);
+
+        // Ownership of uiview passed to framework
+        framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
+    }
+
+    void Renderer::InitializeEvents()
+    {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
+        event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
+        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
+        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_RESIZED, "WindowResized");
+    }
+
     void Renderer::Initialize()
     {
         if (initialized_)
             return;
 
+        std::string logfilepath;
+        std::string rendersystem_name;
+        Ogre::RenderSystem *rendersystem;
+
+        // Some pretty printing
         OgreRenderingModule::LogDebug("\n\nINITIALIZING OGRE \n================================================================\n");
 
-        std::string logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
+        // Create Ogre root with logfile
+        logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
-
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
-        //Setting low logging level can potentially make things like mesh/skeleton loading faster
-        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
 
+        // Setup Ogre logger (use LL_NORMAL for more prints of init)
+        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
         log_listener_ = OgreLogListenerPtr(new LogListener);   
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
-        LoadPlugins(plugins_filename_);
-        
-#ifdef _WINDOWS
-        std::string rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
-#else
-        std::string rendersystem_name = "OpenGL Rendering Subsystem";
-        framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
-#endif
+        // Read naali config
         int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
         int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
-        
-        if (window_left < 0)
-            window_left = 0;
-        if (window_top < 25)
-            window_top = 25;
+        // Be sure that window is not out of boundaries        
+        if (window_left < 0) window_left = 0;
+        if (window_top < 25) window_top = 25;
 
-        Ogre::RenderSystem* rendersystem = root_->getRenderSystemByName(rendersystem_name);
-#ifdef _WINDOWS
-        // OpenGL fallback
+        // Load plugins
+        LoadPlugins(plugins_filename_);
+        
+        #ifdef _WINDOWS
+        // WIN default to DirectX
+        rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
+        #else
+        // X11/MAC default to OpenGL
+        std::string rendersystem_name = "OpenGL Rendering Subsystem";
+        framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
+        #endif
+
+        // Ask Ogre if rendering system is available
+        rendersystem = root_->getRenderSystemByName(rendersystem_name);
+        
+        #ifdef _WINDOWS
+        // If windows did not have DirectX fallback to OpenGL
         if (!rendersystem)
-        {
             rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
-        }
-#endif
+        #endif
         
         if (!rendersystem)
-        {
             throw Exception("Could not find Ogre rendersystem.");
-        }
 
+        /* THIS IS PROLLY IRRELEVANT UNDER QT */
         // GTK's pango/cairo/whatever's font rendering doesn't work if the floating point mode is not set to strict.
         // This however creates undefined behavior for D3D (refrast + D3DX), but we aren't using those anyway.
         // Note: GTK is currently not used in the main UI, but don't know what gstreamer requires
@@ -234,21 +212,23 @@ namespace OgreRenderer
         if (map.find("Floating-point mode") != map.end())
             rendersystem->setConfigOption("Floating-point mode", "Consistent");
         
+        // Set the found rendering system
         root_->setRenderSystem(rendersystem);
+        // Initialise but dont create rendering window yet
         root_->initialise(false);
-
-        Ogre::NameValuePairList params;
 
         try
         {
+            // Setup Qts mainwindow with title and geometry
             main_window_->setWindowTitle(QString(window_title_.c_str()));
             main_window_->setGeometry(window_left, window_top, width, height);
             q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
             main_window_->show();
 
-            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow
-                (window_title_, width, height, window_left, window_top, fullscreen);           
+            // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering
+            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, fullscreen);           
 
+            // Create QOgreWorldView that controls ogres window and ui overlay
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
             q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
             q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
@@ -260,20 +240,16 @@ namespace OgreRenderer
         
         if (renderwindow_)
         {
-            renderwindow_->setDeactivateOnFocusChange(false);
-
             OgreRenderingModule::LogDebug("Initliazing resources, may take a while...");
+            renderwindow_->setDeactivateOnFocusChange(false);            
             SetupResources();
             SetupScene();
-
-            Ogre::WindowEventUtilities::addWindowEventListener(renderwindow_, listener_.get());
             initialized_ = true;          
         }
         else
-        {
             throw Exception("Could not create Ogre rendering window");
-        }
 
+        // Some pretty formatting
         OgreRenderingModule::LogDebug("\n"); 
     }
 
@@ -769,8 +745,8 @@ namespace OgreRenderer
                 if (placeable)
                 {
                     current_priority = placeable->GetSelectPriority();
-//                    if (current_priority < closest_priority)
-//                        continue;
+                    //if (current_priority < closest_priority)
+                    //  continue;
                 }
             }
 
