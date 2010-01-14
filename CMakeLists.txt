@@ -22,7 +22,7 @@ include (ConfigurePackages)
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 # Use Caelum, but not Hydrax for now.
-SET (CAELUM 1)
+SET (CAELUM 0)
 SET (HYDRAX 0)
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
@@ -49,13 +49,13 @@ file (TO_CMAKE_PATH "$ENV{QT_DIR}" ENV_QT_DIR)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
 # Find needed external libraries, abort on error
+configure_ogre ()
 configure_boost ()
 configure_poco ()
 configure_qt4 ()
-configure_python ()
-configure_python_qt ()
+#configure_python ()
+#configure_python_qt ()
 #configure_ois ()
-configure_ogre ()
 configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()

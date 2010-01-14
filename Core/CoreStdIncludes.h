@@ -17,6 +17,14 @@
 #define NOMINMAX
 #endif
 
+#if defined(__APPLE__)
+#include <Carbon/Carbon.h>
+#ifdef check
+#undef check /* mac <AssertMacros.h> conflict with boost exceptions */
+#endif
+#endif
+
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

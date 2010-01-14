@@ -3,6 +3,8 @@
 #ifndef incl_OgreRenderer_QOgreUIView_h
 #define incl_OgreRenderer_QOgreUIView_h
 
+#include "StableHeaders.h"
+
 #include "QOgreWorldView.h"
 
 #include <Ogre.h>
