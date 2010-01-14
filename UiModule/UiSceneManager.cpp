@@ -99,7 +99,7 @@ namespace UiServices
         ui_view_->scene()->addItem(container_widget_);
 
         main_panel_ = new CoreUi::MainPanel(framework_);
-        main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("Login", true));
+        main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("MainPanel", true));
     }
 
     void UiSceneManager::SceneRectChanged(const QRectF &new_scene_rect)

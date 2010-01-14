@@ -37,7 +37,7 @@ namespace UiServices
         QGraphicsItemAnimation *show_animation_;
 
     private slots:
-        void AnimationStep(int step);
+        void AnimationStep(qreal step);
 
     signals:
         void Visible(bool);
