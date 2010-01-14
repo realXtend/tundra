@@ -127,9 +127,7 @@ void ClassicLoginWidget::ShowSelectedMode()
     else if (radiobutton_realxtend_->isChecked() == true)
     {
         if (line_edit_username_->text() == opensim_username_)
-        {
             line_edit_username_->setText(QString("%1@%2").arg(realxtend_username_, realxtend_authserver_));
-        }
         if (line_edit_world_address_->text() == opensim_server_)
             line_edit_world_address_->setText(realxtend_server_);
     }
@@ -145,7 +143,7 @@ void ClassicLoginWidget::ParseInputAndConnect()
     QStringList missingFields;
     QString errorMessage;
 
-    if (!line_edit_world_address_->text().isEmpty() && !line_edit_username_->text().isEmpty() && !line_edit_password_->text().isEmpty())
+    if (!line_edit_world_address_->text().isEmpty() && !line_edit_username_->text().isEmpty())
     {
         QMap<QString, QString> map;
         map["WorldAddress"] = line_edit_world_address_->text();
@@ -183,9 +181,6 @@ void ClassicLoginWidget::ParseInputAndConnect()
 
     if (line_edit_world_address_->text().isEmpty())
         missingFields.append("World address");
-
-    if (line_edit_password_->text().isEmpty())
-        missingFields.append("Password");
 
     if (missingFields.count() >= 3)
     {
