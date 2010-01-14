@@ -494,16 +494,20 @@ namespace RexLogic
 
     bool WorldInputLogic::eventFilter (QObject *obj, QEvent *event)
     {
+		// route select Qt events to the state machine
         switch (event-> type())
         {
-            // route select Qt events to the state machine
+			case QEvent::KeyPress:
+            case QEvent::KeyRelease:
+				if (static_cast <QKeyEvent *> (event)->isAutoRepeat())
+					break;
+				// else fall-through
+
             case QEvent::Close:
             case QEvent::MouseMove:
             case QEvent::MouseButtonPress:
             case QEvent::MouseButtonRelease:
             case QEvent::Wheel:
-            case QEvent::KeyPress:
-            case QEvent::KeyRelease:
                 postEvent (clone_event_ (event));
                 break;
         }
