@@ -1,0 +1,12 @@
+sampler RT : register(s0);
+sampler previous_render : register(s1);
+
+uniform float blur;
+
+float4 main_ps(float2 iTexCoord : TEXCOORD0) : COLOR
+{
+	float4 prev_color = tex2D(previous_render, iTexCoord);
+	float4 color = tex2D(RT, iTexCoord);
+	return (blur*prev_color + (1-blur)*color);
+	
+}
