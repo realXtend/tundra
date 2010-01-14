@@ -9,11 +9,9 @@
 #include "InventoryTreeView.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
-//#include "OpenSimInventoryDataModel.h"
 
 #include <QWidget>
 #include <QDragEnterEvent>
-#include <QApplication>
 #include <QUrl>
 
 namespace Inventory
@@ -91,11 +89,9 @@ void InventoryTreeView::dropEvent(QDropEvent *event)
         }
 
         QStringList filenames, itemnames;
-        QList<QUrl> urlList = data->urls();
-
-        QListIterator<QUrl> it(urlList);
+        QListIterator<QUrl> it(data->urls());
         while(it.hasNext())
-            filenames << it.next().path().remove(0, 1);
+            filenames << it.next().path().remove(0, 1); // remove '/' from the beginning
 
         if (!filenames.isEmpty())
             m->UploadFiles(filenames, itemnames, 0);

@@ -9,7 +9,6 @@
 #define incl_InventoryModule_InventoryTreeView_h
 
 #include <QTreeView>
-#include <QPoint>
 
 class QWidget;
 
