@@ -69,28 +69,7 @@ namespace RexLogic
             return;
                         
         avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor"));
-   
-        // Set scrollbar steps on controls
-        // Currently commented out to show clipping bugs better
-        
-        //QScrollArea* scroll = avatar_widget_->findChild<QScrollArea*>("scroll_attachments");
-        //if (scroll)
-        //{
-        //    scroll->verticalScrollBar()->setSingleStep(20);
-        //    scroll->verticalScrollBar()->setPageStep(40);
-        //    QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
-        //}
-        //scroll = avatar_widget_->findChild<QScrollArea*>("scroll_materials");
-        //if (scroll)
-        //{
-        //    scroll->verticalScrollBar()->setSingleStep(20);
-        //    scroll->verticalScrollBar()->setPageStep(40);
-        //    QObject::connect(scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));
-        //}
-   
-	    // Add to control bar
-		/*qt_module->AddCanvasToControlBar(canvas_, QString("Avatar Editor"));*/
-			           
+   			           
         // Connect signals            
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
@@ -107,21 +86,6 @@ namespace RexLogic
         button = avatar_widget_->findChild<QPushButton *>("but_attachment");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
-    }
-    
-    void AvatarEditor::QuantizeScrollBar(int value)
-    {
-        QScrollBar* scroll = qobject_cast<QScrollBar*>(sender());
-        if (!scroll)
-            return;
-        // Do nothing if already quantized
-        if ((value % 20) == 0)
-            return;
-            
-        int quantized_value = (value + 10 / 20) * 20;
-        if (quantized_value > scroll->maximum())
-            quantized_value = (value / 20) * 20;
-        scroll->setValue(quantized_value);
     }
                 
     void AvatarEditor::RebuildEditView()
@@ -485,11 +449,7 @@ namespace RexLogic
         QScrollArea* tab_scroll = new QScrollArea();
         QWidget* tab_panel = new QWidget();
         
-        tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        // Currently commented out to show clipping bugs better
-        // tab_scroll->verticalScrollBar()->setSingleStep(20);
-        // tab_scroll->verticalScrollBar()->setPageStep(20);
-        // QObject::connect(tab_scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(QuantizeScrollBar(int)));     
+        tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);    
         tab_scroll->setWidgetResizable(false);
         tab_scroll->resize(tabs->contentsRect().size());            
         tab_scroll->setWidget(tab_panel);    

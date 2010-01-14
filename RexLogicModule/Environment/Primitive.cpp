@@ -1683,4 +1683,10 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     return false;
 }
 
+void Primitive::HandleLogout()
+{
+    prim_resource_request_tags_.clear();
+    pending_rexprimdata_.clear();
+}
+
 } // namespace RexLogic
