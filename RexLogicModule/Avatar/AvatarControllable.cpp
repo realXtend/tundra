@@ -158,21 +158,6 @@ namespace RexLogic
             // absolute coordinate: window coordinates
 
             movement_.x_.rel_ = m->x_.rel_;
-            movement_.y_.rel_ = m->y_.rel_;
-            movement_.x_.abs_ = m->x_.abs_;
-            movement_.y_.abs_ = m->y_.abs_;
-
-            mouse_look_ = true;
-        }
-
-        if (event_id == Input::Events::MOUSELOOK_STOPPED)
-        {
-            movement_.x_.rel_ = 0;
-            movement_.x_.abs_ = 0;
-            movement_.y_.rel_ = 0;
-            movement_.y_.abs_ = 0;
-
-            mouse_look_ = false;
         }
 
         // send action events corresponding to input events
@@ -250,7 +235,7 @@ namespace RexLogic
         if (current_state_ == InActive)
             return;
 
-        if (mouse_look_)
+        if (movement_.x_.rel_ != 0)
         {
             drag_yaw_ = static_cast <Real> (movement_.x_.rel_) * -0.005f;
             net_dirty_ = true;

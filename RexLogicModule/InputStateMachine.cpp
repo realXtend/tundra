@@ -361,7 +361,10 @@ namespace RexLogic
         movement.x_.screen_ = e-> globalX();
         movement.y_.screen_ = e-> globalY();
 
-        eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
+        if (e->buttons() == Qt::LeftButton)
+            eventmgr-> SendEvent (catid, Input::Events::MOUSEDRAG, &movement);
+        if (e->buttons() == Qt::RightButton)
+            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);        
     }
 
     void GestureActiveState::onExit (QEvent *event)
@@ -370,6 +373,7 @@ namespace RexLogic
         //gesture.drag.push_back (info);
 
         eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK_STOPPED, 0);
+        eventmgr-> SendEvent (catid, Input::Events::MOUSEDRAG_STOPPED, 0);
 
         QState::onExit (event);
     }
@@ -433,7 +437,10 @@ namespace RexLogic
         gesture.last_x = e-> x();
         gesture.last_y = e-> y();   
                 
-        eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
+        if (e->buttons() == Qt::LeftButton)
+            eventmgr-> SendEvent (catid, Input::Events::MOUSEDRAG, &movement);
+        if (e->buttons() == Qt::RightButton)
+            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);   
     }
     
     //=========================================================================

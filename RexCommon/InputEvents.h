@@ -70,7 +70,7 @@ namespace Input
         static const event_id_t SWITCH_CAMERA_STATE = 30;
         static const event_id_t SWITCH_CAMERA_STATE_REL = 31;
 
-        //! Mouse dragged input event.
+        //! Mouse dragged with right button input event.
         static const event_id_t MOUSELOOK = 32;
         static const event_id_t MOUSELOOK_STOPPED = 33;
 
@@ -101,6 +101,10 @@ namespace Input
         /// Test events for rezzing prims.
         static const event_id_t INWORLD_CLICK_BUILD = 47;
         static const event_id_t INWORLD_CLICK_BUILD_REL = 48;
+
+        //! Mouse dragged with left button input event.
+        static const event_id_t MOUSEDRAG = 49;
+        static const event_id_t MOUSEDRAG_STOPPED = 50;
 
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
