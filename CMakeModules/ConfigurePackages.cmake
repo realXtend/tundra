@@ -302,6 +302,12 @@ macro (configure_openal)
         NAMES OpenAL openal
         COMPONENTS al OpenAL32
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenAL ${ENV_NAALI_DEP_PATH}/OpenAL/libs/Win32)
+
+        if (OPENAL_FOUND)
+            set (OPENAL_LIBRARIES ${OPENAL_LIBRARY})
+            set (OPENAL_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
+        endif()
+
         # Force include dir on MSVC
         if (MSVC)
   		   set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
