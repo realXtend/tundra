@@ -10,6 +10,7 @@
 #include "Poco/Base64Encoder.h"
 
 #include <QByteArray>
+#include <QUrl>
 
 using namespace RexTypes;
 
@@ -51,13 +52,14 @@ namespace RexLogic
         ReplaceSubstringInplace(request->avatar_xml_, "<", "&lt;");
         ReplaceSubstringInplace(request->avatar_xml_, ">", "&gt;");
         
-        std::size_t pos = request->authserver_.rfind(":");
-        if (pos != std::string::npos)
-            request->authserver_ = request->authserver_.substr(0,pos) + ":" + request->authserver_.substr(pos+1);
-        else
-            request->authserver_ = request->authserver_ + ":10001";
-
-        // Authenticate first, to get an uptodate sessionhash
+        QUrl authserver_url(QString::fromStdString(request->authserver_));
+        if (authserver_url.port() == -1)
+        {
+            authserver_url.setPort(10001);
+            request->authserver_ = authserver_url.toString().toStdString();
+        }
+        
+        // Authenticate first to get an uptodate sessionhash
         boost::timer export_timer; // For checking if we should refresh the hash further on
         std::string sessionhash;
         std::string avatar_url;
