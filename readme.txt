@@ -29,15 +29,14 @@ After a succesful connection the login window disappears and logout and quit but
 
 Controls
 --------
-W, A, S, D             Navigate in the world
+W, A, S, D or ARROWS   Navigate in the world
 F                      Toggle the fly mode
 SPACE                  Jump / fly upwards in fly mode
 C                      Crouch (doesn't work in ModRex server) / fly downwards in the fly mode
 MOUSE WHEEL            Move the camera closer / further off the avatar
 TAB                    Toggle the free-look mode
 LEFT MOUSE             Touch object
-RIGHT MOUSE            Look around in mouse-look mode (see below)
-APOSTROPHE / SECTION   Toggle console
+RIGHT MOUSE            Rotate avatar, or look around in mouse-look mode (see below)
 
 You can enter the mouse-look mode by zooming "into" the avatar with mouse wheel. In mouse-look and free-look modes, hold down the right mouse button to look around and, if you are moving simultaneously, to steer the avatar.
 
@@ -48,11 +47,6 @@ Avatar editor
 You can load avatars or attachments from any directory by pressing the New Avatar & New Attach buttons, but you should have all the files needed by a single avatar or attachment (.xml, .mesh, .skeleton, .material and texture files) in the same directory.
 
 Note that currently saving the avatar (and thus making it visible to others) works only when used with the legacy reX authentication & reX avatarstorage servers. 
-
-
-Console
--------
-Toggle the console overlay by pressing the button above TAB: apostrophe (´) on US keyboard layout and section sign (§) on scandic layout. Write "help" to get the summary of the available console commands.
 
 
 Python
