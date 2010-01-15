@@ -11,7 +11,6 @@ material Rex/SkyPlane
 			texture_unit
 			{
 				texture clouds.jpg
-				scroll_anim 0.02 0
 			}
 		}
 	}
