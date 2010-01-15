@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QPair>
+#include <QTimer>
 
 class QImage;
 class QColor;
@@ -128,6 +129,8 @@ namespace Environment
         //! Called when QMouseEvent event is generated inside the terrain map image label.
         void HandleMouseEvent(QMouseEvent *ev);
 
+        void TerrainEditTimerTick();
+
         //! Called when brush size option has changed.
         void BrushSizeChanged();
 
@@ -225,8 +228,16 @@ namespace Environment
 
         //! sky type in use.
         OgreRenderer::SkyType sky_type_;
+
+        //! Timer for terrain painting so that terrain is painted certain time.
+        QTimer terrain_pain_timer_;
         //! Mouse press flags
         //u8 mouse_press_flag_;
+        
+        //! Only use with terrain paint to keep track where mouse is locating.
+        int mouse_position_[2];
+
+        bool edit_terrain_;
 
         /// 
         //Real start_height_;
