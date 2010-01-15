@@ -78,7 +78,6 @@ namespace Environment
     {
         for(int i=0; i< effects.size();i++)
         {
-            
             std::string effect_name = effects.at(i);
             NamedCheckBox* c_box = new NamedCheckBox(effect_name.c_str(), this);
             c_box->setObjectName(effect_name.c_str());
@@ -91,9 +90,6 @@ namespace Environment
     NamedCheckBox::NamedCheckBox(const QString &text, QWidget *parent) : QCheckBox(text, parent)
     {
         QObject::connect(this, SIGNAL(toggled(bool)), this, SLOT(ButtonToggled(bool)));
-        setStyleSheet("");
-        setStyleSheet("QLabel, QLabel:hover { background-color: rgba(0,0,0,0); color: rgb(255,255,255); } QCheckBox { background-color: rgba(0,0,0,0);"
-            "color: rgb(255,255,255); } QCheckBox:hover { background-color: rgba(0,0,0,0); color: rgb(255,255,255); }");
     }
 
     NamedCheckBox::~NamedCheckBox()

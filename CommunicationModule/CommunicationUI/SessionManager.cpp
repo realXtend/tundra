@@ -65,6 +65,7 @@ namespace UiManagers
         // FILE MENU
         QMenu *file_menu = new QMenu("File", main_parent_);
         file_menu->addAction("Hide", this, SLOT( Hide() ));
+        file_menu->setEnabled(false); // Can't support hide on external mode
 
         // STATUS menu
         QMenu *status_menu = new QMenu("Status", main_parent_);

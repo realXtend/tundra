@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Login Controller</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="margin">
@@ -149,10 +149,11 @@ QPushButton:hover {
      border: 1px solid #9B9B9B;
      border-top-left-radius: 4px;
      border-top-right-radius: 4px;
-     min-width: 8ex;
+     min-width: 12ex;
      padding: 2px;
-     padding-right: 7px;
-     padding-left: 5px;
+     padding-right: 5px;
+     padding-left: 3px;
+	 font: 11px;
  }
 
  QTabBar::tab:selected, QTabBar::tab:hover {
@@ -164,6 +165,7 @@ QPushButton:hover {
  QTabBar::tab:selected {
      border-color: #9B9B9B;
      border-bottom-color: rgba(0,0,0,0); /* same as pane color */
+	 border-bottom: 0px;
  }
 
  QTabBar::tab:!selected {
@@ -192,14 +194,9 @@ QPushButton:hover {
        <property name="currentIndex">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="tab_1">
+       <widget class="QWidget" name="Login">
         <attribute name="title">
-         <string>asdasda</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>dlkajslkdjas</string>
+         <string>temp</string>
         </attribute>
        </widget>
       </widget>
