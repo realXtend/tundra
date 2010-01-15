@@ -65,14 +65,8 @@ namespace OgreRenderer
         */
         virtual Foundation::RaycastResult Raycast(int x, int y);
 
-        //! Resizes the window
-        virtual void Resize(uint width, uint height);
-
         //! Renders the screen
         virtual void Render();
-
-        //! Returns window handle, or 0 if no render window
-        virtual size_t GetWindowHandle() const;
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -108,17 +102,6 @@ namespace OgreRenderer
          */
         virtual void RemoveResource(const std::string& id, const std::string& type);                    
         
-        //! Callback when renderwindow closed
-        /*! Sends event and exits the framework main loop
-         */
-        void OnWindowClosed();
-
-        //! Sets external window parameter, for embedding the Ogre renderwindow. Usually a child window.
-        void SetExternalWindowParameter(const std::string& param) { external_window_parameter_ = param; }
-
-        //! set handle for the main window. This is for the top level window.
-        void SetMainWindowHandle(uint hndl) { main_window_handle_ = hndl; }
-
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -244,12 +227,6 @@ namespace OgreRenderer
         //! Counter for unique resource group creation
         uint group_id_;
 
-        //! External window parameter, to be used when embedding the renderwindow
-        std::string external_window_parameter_;
-
-        //! handle for the main window
-        uint main_window_handle_;
-
         //! filename for the Ogre3D configuration file
         std::string config_filename_;
         
@@ -276,6 +253,13 @@ namespace OgreRenderer
 
         //! handler for post-processing effects
 		CompositionHandler c_handler_;
+		
+		//! last window size used in rendering ui
+		int last_width_;
+		int last_height_;
+		
+		//! resized dirty count
+		int resized_dirty_;
     };
 }
 

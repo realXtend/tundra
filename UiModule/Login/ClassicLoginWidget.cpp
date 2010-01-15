@@ -94,7 +94,7 @@ void ClassicLoginWidget::ReadConfig()
     configKey = QString("auth_name");
     realxtend_username_ = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
     if (realxtend_username_.isEmpty())
-        realxtend_username_ = "account@";
+        realxtend_username_ = "account";
 
     configKey = QString("rex_server");
     realxtend_server_ = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
