@@ -90,6 +90,8 @@ namespace RexLogic
 
         virtual void onEntry (QEvent *e);
         virtual void onExit (QEvent *e);
+                
+        bool active;
     };
 
     struct FinalState : public QFinalState
@@ -396,6 +398,7 @@ namespace RexLogic
             WorldInputLogic (Foundation::Framework *fw);
 
             void Update (f64 frametime);
+            const State *GetState (QString name);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);

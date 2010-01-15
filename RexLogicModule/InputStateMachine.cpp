@@ -4,6 +4,10 @@
 
 namespace RexLogic
 {
+    // keep a manifest of all known named states
+    typedef std::map <QString, const State *> StateMap_;
+    static StateMap_ state_registry_;
+
     //=========================================================================
     //
     MouseInfo::MouseInfo () 
@@ -56,25 +60,29 @@ namespace RexLogic
     //=========================================================================
     //
     State::State (QString name, QState *parent) 
-        : QState (parent) 
+        : QState (parent), active (false)
     { 
         setObjectName (name); 
+        state_registry_.insert (std::make_pair (name, this));
     }
 
     State::State (QString name, QState::ChildMode mode, QState *parent) 
-        : QState (mode, parent) 
+        : QState (mode, parent), active (false)
     { 
         setObjectName (name); 
+        state_registry_.insert (std::make_pair (name, this));
     }
 
     void State::onEntry (QEvent *e)
     {
         //std::cout << "State::onEntry: " << qPrintable (objectName()) << std::endl;
+        active = true;
     }
 
     void State::onExit (QEvent *e)
     {
         //std::cout << "State::onExit: " << qPrintable (objectName()) << std::endl;
+        active = false;
     }
 
     //=========================================================================
@@ -100,8 +108,7 @@ namespace RexLogic
     //=========================================================================
     //
     KeyState::KeyState (QKeyEvent *e, QState *p)
-        : State ("KeyState: "+e->text(), p), 
-        active (false), 
+        : State ("key state "+e->text(), p), 
         event (new QKeyEvent (*e)), 
         bindings (0)
     {
@@ -109,8 +116,7 @@ namespace RexLogic
     }
 
     KeyState::KeyState (QKeyEvent *e, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p)
-        : State ("KeyState: "+e->text(), p), 
-        active (false), 
+        : State ("key state "+e->text(), p), 
         event (new QKeyEvent (*e)), 
         bindings (b), 
         eventmgr (m)
@@ -126,7 +132,6 @@ namespace RexLogic
     {
         int eid;
 
-        active = true;
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid, 0);
 
@@ -137,7 +142,6 @@ namespace RexLogic
     {
         int eid;
 
-        active = false;
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid+1, 0);
 
@@ -463,14 +467,12 @@ namespace RexLogic
             case QEvent::KeyPress:
                 e = static_cast <QKeyEvent *> (event);
                 s = get_key_state (e);
-                s-> active = true;
                 s-> onEntry (e);
                 return true;
 
             case QEvent::KeyRelease:
                 e = static_cast <QKeyEvent *> (event);
                 s = get_key_state (e);
-                s-> active = false;
                 s-> onExit (e);
                 return true;
         }
@@ -538,6 +540,13 @@ namespace RexLogic
         }
 
         return QObject::eventFilter (obj, event);
+    }
+
+    const State *WorldInputLogic::GetState (QString name)
+    {
+        StateMap_::const_iterator i = state_registry_.find (name);
+        StateMap_::const_iterator e = state_registry_.end ();
+        return (i != e)? i-> second : 0;
     }
 
     void WorldInputLogic::Update (f64 frametime)
