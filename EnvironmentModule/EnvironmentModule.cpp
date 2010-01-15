@@ -284,6 +284,13 @@ namespace Environment
                         if ( parameters.size() < 5)
                             return false;
 
+                        // may have , instead of . so replace
+                        ReplaceCharInplace(parameters[0], ',', '.');
+                        ReplaceCharInplace(parameters[1], ',', '.');
+                        ReplaceCharInplace(parameters[2], ',', '.');    
+                        ReplaceCharInplace(parameters[3], ',', '.');
+                        ReplaceCharInplace(parameters[4], ',', '.');                       
+                                               
                         float fogStart = 0.0, fogEnd = 0.0, fogC_r = 0.0, fogC_g = 0.0, fogC_b = 0.0;
 
                         try
@@ -316,7 +323,11 @@ namespace Environment
                         if ( parameters.size() < 3)
                             return false; 
                        
-                     
+                        // may have , instead of . so replace
+                        ReplaceCharInplace(parameters[0], ',', '.');
+                        ReplaceCharInplace(parameters[1], ',', '.');
+                        ReplaceCharInplace(parameters[2], ',', '.');    
+                              
                         const QChar empty(' ');
                         StringVector sun_light_direction = SplitString(parameters[0].c_str(), empty.toAscii() );
                         StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
