@@ -276,6 +276,7 @@ namespace TelepathyIM
 	{
 	    if (op->isError())
 		{
+            QString error_name = op->errorName(); // == Tp::ConnectionStatusReasonAuthenticationFailed)
 			state_ = STATE_ERROR;
 			reason_ = op->errorMessage();
 			emit( ConnectionError(*this) );
@@ -338,14 +339,7 @@ namespace TelepathyIM
 			if ( !tp_connection_->isReady(Tp::Connection::FeatureCore) )
 				LogDebug("  * Core ");
 		}   
-        tp_pending_connection_ = tp_connection_->becomeReady(features);
-        connect(tp_pending_connection_,
-		                 SIGNAL(finished(Tp::PendingOperation *)),
-				         SLOT(OnConnectionReady(Tp::PendingOperation *)));
 
-        connect(tp_connection_.data(), SIGNAL( statusChanged(uint , uint) ), SLOT( OnConnectionStatusChanged(uint , uint ) ) );
-        connect(tp_connection_.data(), SIGNAL( selfHandleChanged(uint) ), SLOT( OnSelfHandleChanged(uint) ));
-		
         if (tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES))
         {
 			Tp::CapabilityPair capability = {
@@ -360,6 +354,10 @@ namespace TelepathyIM
 			tp_connection_->capabilitiesInterface()->AdvertiseCapabilities( Tp::CapabilityPairList() << capability, QStringList());
             LogDebug("Advertise capabilities.");
 		}
+        else
+        {
+            LogWarning("Capabilities interface is not supported!");
+        }
 
 		if( tp_connection_->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS) )
 		{
@@ -367,6 +365,18 @@ namespace TelepathyIM
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                 SLOT(OnNewChannels(const Tp::ChannelDetailsList&)));
 		}
+        else
+        {
+            LogWarning("Requests interface is not supported!");
+        }
+
+        tp_pending_connection_ = tp_connection_->becomeReady(features);
+        connect(tp_pending_connection_,
+		                 SIGNAL(finished(Tp::PendingOperation *)),
+				         SLOT(OnConnectionReady(Tp::PendingOperation *)));
+
+        connect(tp_connection_.data(), SIGNAL( statusChanged(uint , uint) ), SLOT( OnConnectionStatusChanged(uint , uint ) ) );
+        connect(tp_connection_.data(), SIGNAL( selfHandleChanged(uint) ), SLOT( OnSelfHandleChanged(uint) ));
 	}
 
 	void Connection::OnConnectionReady(Tp::PendingOperation *op)
@@ -383,12 +393,7 @@ namespace TelepathyIM
 			return;
 		}
         
-     	Tp::Features features;
-		features.insert(Tp::Connection::FeatureSimplePresence);
-		features.insert(Tp::Connection::FeatureRoster);
-		features.insert(Tp::Connection::FeatureSelfContact);
-        features.insert(Tp::Connection::FeatureCore);
-        if (!tp_connection_->isReady(features))
+        if (!tp_connection_->isReady( tp_connection_->requestedFeatures() ))
         {
             state_ = STATE_ERROR;
             
@@ -402,8 +407,10 @@ namespace TelepathyIM
 
 		self_contact_ = new Contact(tp_connection_->selfContact());
 
+
 		connect(tp_connection_.data(), SIGNAL( statusChanged(uint, uint) ), SLOT( OnTpConnectionStatusChanged(uint, uint) ));
 		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
+
         ContactVector new_contacts = HandleAllKnownTpContacts();
         for (ContactVector::iterator i = new_contacts.begin(); i != new_contacts.end(); ++i)
         {
@@ -598,6 +605,7 @@ namespace TelepathyIM
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST && !requested)
 			{
 				LogDebug("Contact list channel");
+                //TextChannelPtr tp_text_channel = Tp::TextChannel::create(tp_connection_, details.channel.path(), details.properties);
 			}
 
 			if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA && !requested)

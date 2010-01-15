@@ -210,7 +210,17 @@ namespace TelepathyIM
     {
         try
         {
-            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "directsoundsink", "autovideosrc");  // AUTO VIDEO
+            // todo: for linux use "autoaudiosrc" for audio_src_name
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");  // AUTO VIDEO
+            if ( !farsight_channel_->IsAudioSupported() )
+            {
+                QString message = QString("Cannot initialize audio features.");
+                reason_ = message;
+                LogError(message.toStdString());
+                state_ = STATE_ERROR;
+                emit StateChanged(state_);
+                return;
+            }
         }
         catch(Exception &e) 
         {
@@ -223,6 +233,7 @@ namespace TelepathyIM
         }
 
         connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOvewflow(int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -233,8 +244,15 @@ namespace TelepathyIM
             SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
         connect(farsight_channel_,
-            SIGNAL(statusChanged(TelepathyIM::FarsightChannel::Status)),
+            SIGNAL(StatusChanged(TelepathyIM::FarsightChannel::Status)),
             SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)));
+
+        connect(farsight_channel_,
+            SIGNAL( AudioStreamReceived() ),
+            SLOT( OnFarsightChannelAudioStreamReceived() ));
+        connect(farsight_channel_,
+            SIGNAL( VideoStreamReceived() ),
+            SLOT( OnFarsightChannelVideoStreamReceived() ));
     }
 
     void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)
@@ -633,11 +651,8 @@ namespace TelepathyIM
         return 0;
     }
 
-    void VoiceSession::OnFarsightAudioDataAvailable(int rate)
+    void VoiceSession::OnFarsightAudioDataAvailable(int count)
     {       
-        bool stereo = false; // fix this
-        int sample_width = 16; // fix this
-
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
             return;
@@ -650,14 +665,24 @@ namespace TelepathyIM
         if (!farsight_channel_)
             return;
 
-        int data_size = 0;
-        u8* data = farsight_channel_->GetAudioData(data_size);
+        int size = farsight_channel_->GetAudioData(audio_buffer, AUDIO_BUFFER_SIZE);   
 
-        if (data && data_size > 0)
-        {
-            soundsystem->PlayAudioData(data, data_size, rate, sample_width, stereo, positional_voice_enabled_, 0);
-            delete [] data;
-        }
+        bool stereo = false;
+        int channel_count = farsight_channel_->GetChannelCount();
+        if (channel_count == 2)
+            stereo = true;
+        int sample_width = farsight_channel_->GetSampleWidth();
+        int sample_rate = farsight_channel_->GetSampleRate();
+        int channel_id = 0; // todo: fix this when audio module supports more than one channel
+
+        if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
+            soundsystem->PlayAudioData(audio_buffer, size, sample_rate,sample_width , stereo, positional_voice_enabled_, channel_id);
+    }
+
+    void VoiceSession::OnFarsightAudioBufferOverflow(int count)
+    {
+        QString message = QString("Farsight audio buffer overflow. %1 bytes lost.").arg(QString::number(count));
+        LogWarning(message.toStdString());
     }
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetAudioStreamState() const
@@ -807,6 +832,16 @@ namespace TelepathyIM
         else
             qDebug() << "Voice Session >> Spatial tracking disabled";
         positional_voice_enabled_ = enabled;
+    }
+
+    void VoiceSession::OnFarsightChannelAudioStreamReceived()
+    {
+        emit ReceivingAudioData(true);
+    }
+
+    void VoiceSession::OnFarsightChannelVideoStreamReceived()
+    {
+        emit ReceivingVideoData(true);
     }
 
 } // end of namespace: TelepathyIM
