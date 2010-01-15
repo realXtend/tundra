@@ -128,9 +128,6 @@ namespace RexLogic
 
         Foundation::Framework *framework_;
 
-        //! Mouse-look flag
-        bool mouse_look_;
-
         //! Mouse-look movement
         Input::Events::Movement movement_;
     };
