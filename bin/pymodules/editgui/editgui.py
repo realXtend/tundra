@@ -202,7 +202,7 @@ class EditGUI(Component):
         #self.widget.setMesh.connect('clicked()', self.setMesh)
         self.widget.duplicate.connect('clicked()', self.duplicate)
         self.widget.undo.connect('clicked()', self.undo)
-        self.widget.redo.connect('clicked()', self.redo)
+        #self.widget.redo.connect('clicked()', self.redo)
         self.widget.move_button.connect('clicked()', self.manipulator_move)
         self.widget.scale_button.connect('clicked()', self.manipulator_scale)
         self.widget.rotate_button.connect('clicked()', self.manipulator_rotate)
@@ -429,17 +429,17 @@ class EditGUI(Component):
             self.update_guivals()
             self.modified = False
 
-    def redo(self):
-        #print "redo clicked"
-        ent = self.sel
-        if ent is not None:
-            #print ent.uuid
-            #worldstream = r.getServerConnection()
-            self.worldstream.SendObjectRedoPacket(ent.uuid)
-            #self.hideArrows()
-            #self.sel = None
-            self.update_guivals()
-            self.modified = False
+    #~ def redo(self):
+        #~ #print "redo clicked"
+        #~ ent = self.sel
+        #~ if ent is not None:
+            #~ #print ent.uuid
+            #~ #worldstream = r.getServerConnection()
+            #~ self.worldstream.SendObjectRedoPacket(ent.uuid)
+            #~ #self.hideArrows()
+            #~ #self.sel = None
+            #~ self.update_guivals()
+            #~ self.modified = False
             
     def duplicate(self):
         #print "duplicate clicked"
@@ -488,11 +488,13 @@ class EditGUI(Component):
             applymesh(self.sel, meshUUID)
 
     def select(self, ent):
+        #print "at select", ent.id, r.getUserAvatarId()
         arrows = False
         if self.move_arrows.id == ent.id:
             arrows = True
-
+        #print arrows
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
+            #print "inside if"
             self.sel = ent
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
@@ -512,10 +514,11 @@ class EditGUI(Component):
             
             self.update_selection()
             
-            qprim = r.getQPrim(ent.id)
-            self.propedit.setObject(qprim)
-            self.propedit.show()
-           #print "Set propedit object to:", qprim, dir(qprim)
+            #~ qprim = r.getQPrim(ent.id)
+            #~ self.propedit.setObject(qprim)
+            #~ self.propedit.show()
+
+            #print "Set propedit object to:", qprim, dir(qprim)
     
     def deselect(self):
         if self.sel is not None:
@@ -631,6 +634,7 @@ class EditGUI(Component):
             self.selection_box.pos = 0.0, 0.0, 0.0
             
     def LeftMouseDown(self, mouseinfo):
+        #print "LeftMouseDown", mouseinfo, mouseinfo.x, mouseinfo.y
         self.left_button_down = True
         #ent = r.rayCast(mouseinfo.x, mouseinfo.y)
         results = []
@@ -720,8 +724,8 @@ class EditGUI(Component):
         self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
-        #print "MouseMove", mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
         if self.active: #XXXnot self.canvas.IsHidden():
+            #print "MouseClick in editmode", click_id, mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
             #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
             #print "Point!"
             if self.mouse_events.has_key(click_id):
@@ -733,7 +737,7 @@ class EditGUI(Component):
     def on_mousemove(self, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
-
+        
         if self.active: #XXX not self.canvas.IsHidden():
             if self.left_button_down :
                 #print "on_mousemove + hold:", mouseinfo

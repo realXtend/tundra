@@ -104,20 +104,20 @@ class ComponentRunner(Component):
             self.m.send(Key(keycode, keymod, self.callback), "on_keyup")
         return self.eventhandled
             
-    def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
+    def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         #print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         self.m.send(MouseMove(self.mouseinfo, self.callback), "on_mousemove")
         return self.eventhandled
-    
-    def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
-        #print "CircuitsManager got a mouse click", mb_click 
+        
+    def MOUSE_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
+        #print "CircuitsManager got a mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        self.m.send(MouseClick(mb_click, self.mouseinfo, self.callback), "on_mouseclick")
+        self.m.send(MouseClick(event, self.mouseinfo, self.callback), "on_mouseclick")
         return self.eventhandled
-
+        
     def SCENE_EVENT(self, evid, entid):
         self.m.send(EntityUpdate(evid, entid), "on_scene")
         

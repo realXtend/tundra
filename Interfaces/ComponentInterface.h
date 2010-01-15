@@ -42,6 +42,7 @@ namespace Foundation
         ComponentInterface(const ComponentInterface &rhs);
         virtual ~ComponentInterface();
         virtual const std::string &Name() const = 0;
+		const Foundation::Framework* GetFramework() { return framework_; }
 
     protected:
         ComponentInterface();

@@ -770,3 +770,32 @@ if 0:
     #~ for thingie in mats.iteritems():
         #~ print thingie
     #print data
+    
+if 0:
+    from PythonQt.QtUiTools import QUiLoader
+    from PythonQt.QtCore import QFile, QSize
+    loader = QUiLoader()
+    uifile = QFile("pymodules/editgui/materials.ui")
+    ui = loader.load(uifile)
+    width = ui.size.width()
+    height = ui.size.height()
+    uism = r.getUiSceneManager()
+    uiprops = r.createUiWidgetProperty()
+    uiprops.show_at_toolbar_ = False
+    uiprops.widget_name_ = "Material and Texture"
+    uiprops.my_size_ = QSize(width, height)
+    #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
+    pw = r.createUiProxyWidget(ui, uiprops)
+    uism.AddProxyWidget(pw)
+    widget = ui.verticalLayoutWidget
+    r.widget = widget
+    r.pw = pw
+    #~ #print dir(r.pw), r.widget
+    
+    #~ from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
+    #~ box = r.widget.findChild("QVBoxLayout")
+    #~ print box, dir(box), box.name
+    #~ line = QLineEdit()
+    #~ box.addWidget(line)
+    dia = r.pw.Dialog
+    print dia

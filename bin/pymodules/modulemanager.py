@@ -22,12 +22,14 @@ class ModuleManager:
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         pass
         #print "Manager got key_input event:", evid, keycode, keymod
-    def MOUSE_MOVEMENT(self, x_abs, y_abs, x_rel, y_rel):
+    def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         pass
         #print "Manager got mouse movement", x_abs, y_abs, x_rel, y_rel
     def MOUSE_CLICK(self, mb_click, x_abs, y_abs, x_rel, y_rel):
         pass
         #print "Manager got mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
+    def MOUSE_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
+        pass
     def ENTITY_UPDATED(self, id):
         pass
         #print "Manager got an entity updated", id
