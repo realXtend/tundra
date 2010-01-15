@@ -105,7 +105,7 @@ else
     if test -d $what; then
 	svn update $what
     else
-	svn co $viewerdeps_svnroot/trunk/$what $what
+	svn co $viewerdeps_svn/trunk/$what $what
     fi
     cd $what
     cmake .
@@ -141,11 +141,11 @@ build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
 build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
 build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
 build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
-build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.16
+build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
 build-regular http://farsight.freedesktop.org/releases/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
 build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
-build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.12
-build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.0
+build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
+build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
 build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
 
 if test "$1" = "--depsonly"; then
