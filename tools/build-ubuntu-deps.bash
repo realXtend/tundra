@@ -10,6 +10,7 @@ set -x
 
 deps=$HOME/src/rex-deps
 viewer=$deps/../rex-viewer
+viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
 tarballs=$deps/tarballs
@@ -95,8 +96,6 @@ else
     touch $tags/$what-done
 fi
 
-viewerdeps_svnroot=http://dev.realxtend.org/svn/viewerdeps
-
 cd $build
 what=poco
 if test -f $tags/$what-done; then
@@ -106,7 +105,7 @@ else
     if test -d $what; then
 	svn update $what
     else
-	svn co $viewerdeps_svnroot/trunk/$what $what
+	svn co $viewerdeps_svn/trunk/$what $what
     fi
     cd $what
     ./configure --prefix=$prefix --no-tests --no-samples --omit=Data/MySQL,Data/ODBC,Zip
@@ -141,7 +140,7 @@ else
     if test -d $what; then
 	svn update $what
     else
-	svn co $viewerdeps_svnroot/trunk/$what $what
+	svn co $viewerdeps_svn/trunk/$what $what
     fi
     cd $what
     qmake
