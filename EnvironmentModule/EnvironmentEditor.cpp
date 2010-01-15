@@ -41,6 +41,7 @@ namespace Environment
     brush_size_(Small),
     sky_type_(OgreRenderer::SKYTYPE_NONE),
     ambient_(false),
+    edit_terrain_(false),
     sun_color_picker_(0),
     ambient_color_picker_(0)
     //mouse_press_flag_(no_button)
@@ -164,6 +165,8 @@ namespace Environment
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
         QObject::connect(tab_widget, SIGNAL(currentChanged(int)), this, SLOT(TabWidgetChanged(int)));
+
+        QObject::connect(&terrain_pain_timer_, SIGNAL(timeout()), this, SLOT(TerrainEditTimerTick()));
     }
 
     void EnvironmentEditor::InitTerrainTabWindow()
@@ -236,27 +239,6 @@ namespace Environment
         QObject::connect(line_edit_two, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_three, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
         QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
-
-        // Double spin box signals
-        QDoubleSpinBox *double_spin_one = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_1");
-        QDoubleSpinBox *double_spin_two = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_2");
-        QDoubleSpinBox *double_spin_three = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_3");
-        QDoubleSpinBox *double_spin_four = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_doubleSpinBox_4");
-
-        QObject::connect(double_spin_one, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_two, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_three, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_four, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-
-        double_spin_one = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_1");
-        double_spin_two = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_2");
-        double_spin_three = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_3");
-        double_spin_four = editor_widget_->findChild<QDoubleSpinBox *>("Texture_height_range_doubleSpinBox_4");
-
-        QObject::connect(double_spin_one, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_two, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_three, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
-        QObject::connect(double_spin_four, SIGNAL(valueChanged(double)), this, SLOT(HeightValueChanged(double)));
     }
 
     void EnvironmentEditor::InitWaterTabWindow()
@@ -1502,12 +1484,17 @@ namespace Environment
 
     void EnvironmentEditor::HandleMouseEvent(QMouseEvent *ev)
     {
+        /*assert(environment_module_);
+        TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(!terrain.get())
+            return;*/
+
         // Ugly this need to be removed when mouse move events are working corretly in Rex UICanvas.
         // Check if mouse has pressed.
         /*if(ev->type() == QEvent::MouseButtonPress)
         {
             QPoint position = ev->pos();
-            Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
+            Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
             EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
             start_height_ = terrain_component->GetPoint(position.x(), position.y());
 
@@ -1529,7 +1516,7 @@ namespace Environment
             switch(ev->button())
             {
                 case Qt::LeftButton:
-                    mouse_press_flag_ -= left_button;
+                    mouse_press_flag_ -= (mouse_press_flag_ & left_button);
                     break;
                 case Qt::RightButton:
                     mouse_press_flag_ -= right_button;
@@ -1540,47 +1527,65 @@ namespace Environment
             }
         }
 
-        if(mouse_press_flag_ & button_mask > 0)
+        if((mouse_press_flag_ & button_mask) > 0)
         {
-                QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
-                const QPixmap *pixmap = label->pixmap();
-                QImage image = pixmap->toImage();
-                image.setPixel(ev->pos(), qRgb(255, 255, 255));
-                label->setPixmap(QPixmap::fromImage(image));
-                label->show();
+            int time = terrain_pain_timer_.restart();
+            if(time <= 0)
+                terrain_pain_timer_.start();
 
-                QPoint position = ev->pos();
-                Scene::EntityPtr entity = terrain_->GetTerrainEntity().lock();
-                EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-                environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, start_height_);
+            float time_in_ms = time / 1000.0f;
+            // update mouse position.
+            mouse_position_[0] = ev->pos().x();
+            mouse_position_[1] = ev->pos().y();
+
+            QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
+            const QPixmap *pixmap = label->pixmap();
+            QImage image = pixmap->toImage();
+            image.setPixel(ev->pos(), qRgb(255, 255, 255));
+            label->setPixmap(QPixmap::fromImage(image));
+            label->show();
+
+            QPoint position = ev->pos();
+            Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
+            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
+            environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.3, terrain_component->GetPoint(position.x(), position.y())); 
         }*/
 
         if(ev->type() == QEvent::MouseButtonPress || ev->type() == QEvent::MouseMove)
         {
+            mouse_position_[0] = ev->pos().x();
+            mouse_position_[1] = ev->pos().y();
             if(ev->button() == Qt::LeftButton)
             {
-                // Draw a white point where we have clicked.
-                /*QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
-                const QPixmap *pixmap = label->pixmap();
-                QImage image = pixmap->toImage();
-                image.setPixel(ev->pos(), qRgb(255, 255, 255));
-                label->setPixmap(QPixmap::fromImage(image));
-                label->show();*/
-
-                // Send modify land message into the server.
-                assert(environment_module_);
-                TerrainPtr terrain = environment_module_->GetTerrainHandler();
-                if(!terrain.get())
-                    return;
-                QPoint position = ev->pos();
-
-                Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
-                EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-                if(!terrain_component)
-                    return;
-
-                environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.15f, terrain_component->GetPoint(position.x(), position.y()));
+                edit_terrain_ = true;
+                terrain_pain_timer_.start(250);
             }
+        }
+        else if(ev->type() == QEvent::MouseButtonRelease)
+        {
+            if(ev->button() == Qt::LeftButton)
+            {
+                terrain_pain_timer_.stop();
+                edit_terrain_ = false;
+            }
+        }
+    }
+
+    void EnvironmentEditor::TerrainEditTimerTick()
+    {
+        if(edit_terrain_)
+        {
+            assert(environment_module_);
+            TerrainPtr terrain = environment_module_->GetTerrainHandler();
+            if(!terrain.get())
+                return;
+
+            Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
+            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
+            if(!terrain_component)
+                return;
+
+            environment_module_->SendModifyLandMessage(mouse_position_[0], mouse_position_[1], brush_size_, action_, 0.25, terrain_component->GetPoint(mouse_position_[0], mouse_position_[1])); 
         }
     }
 
