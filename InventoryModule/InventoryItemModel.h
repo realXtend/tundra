@@ -18,6 +18,46 @@ class QItemSelection;
 
 namespace Inventory
 {
+    /// Drag and Drop data structure
+    ///\todo Move somewhere else, because other modules cannot depend directly on InventoryModule.
+    struct DragAndDropData
+    {
+    public:
+        DragAndDropData(QString &mimedata) : valid_(false)
+        {
+            QStringList list = mimedata.split(";", QString::SkipEmptyParts);
+            if (list.size() == 4)
+            {
+                assetType = list.at(0);
+                itemId = list.at(1);
+                name = list.at(2);  
+                assetReference = list.at(3);
+                valid_ = true;
+            }
+            else
+                valid_ = false;
+        }
+
+        /// Is the data valid (all parameters exist).
+        bool IsValid() const { return valid_; }
+
+        /// Asset type.
+        QString assetType;
+
+        /// Item id.
+        QString itemId;
+
+        /// Item name.
+        QString name;
+
+        /// Asset reference (can be uuid or url).
+        QString assetReference;
+
+    private:
+        /// Is the data valid.
+        bool valid_;
+    };
+
     class AbstractInventoryItem;
     class AbstractInventoryDataModel;
 
@@ -125,7 +165,7 @@ namespace Inventory
         /// Data model pointer.
         AbstractInventoryDataModel *dataModel_;
 
-        /// @param index Index of the wanted item.
+        /// @param index Model index of the wanted item.
         /// @return pointer to inventory item.
         AbstractInventoryItem *GetItem(const QModelIndex &index) const;
 

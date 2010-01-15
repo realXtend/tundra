@@ -32,20 +32,20 @@ namespace RexLogic
     class EC_Controllable : public Foundation::ComponentInterface
     {
         Q_OBJECT
-            
+
         DECLARE_EC(EC_Controllable);
     public:
         virtual ~EC_Controllable() {}
 
         //! Add a new action for this controllable
         void AddAction(int action)
-        { 
+        {
             assert(actions_.find(action) == actions_.end() && "Action already added to this controller.");
             actions_.insert(action);
         }
 
         void RemoveAction(int action)
-        { 
+        {
             assert(actions_.find(action) != actions_.end() && "Action not present in this controller.");
             actions_.erase(action);
         }
@@ -89,7 +89,6 @@ namespace RexLogic
     {
         namespace
         {
-            
             //! A helper function for assigning common actions to a controllable. For an example of how to use, see AvatarControllable.
             /*! Returns default mappings from input events to actions which can be used for convinience by controllables.
 
@@ -113,7 +112,7 @@ namespace RexLogic
                 controllable->AddAction(RotateDown);
 
                 ActionInputMap input_map;
- 
+
                 input_map[Input::Events::MOVE_FORWARD_PRESSED] = MoveForward;
                 input_map[Input::Events::MOVE_FORWARD_RELEASED] = MoveForward + 1;
                 input_map[Input::Events::MOVE_BACK_PRESSED] = MoveBackward;
@@ -135,9 +134,6 @@ namespace RexLogic
                 input_map[Input::Events::ROTATE_UP_RELEASED] = RotateUp + 1;
                 input_map[Input::Events::ROTATE_DOWN_PRESSED] = RotateUp;
                 input_map[Input::Events::ROTATE_DOWN_RELEASED] = RotateUp + 1;
-
-
-                
 
                 return input_map;
             }

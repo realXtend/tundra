@@ -13,13 +13,6 @@
 #include "ModuleInterface.h"
 #include "RexUUID.h"
 
-#include <QMap>
-#include <QPair>
-
-QT_BEGIN_NAMESPACE
-class QObject;
-QT_END_NAMESPACE
-
 namespace Foundation
 {
     class EventDataInterface;
@@ -28,6 +21,7 @@ namespace Foundation
 namespace OgreAssetEditor
 {
     class MaterialWizard;
+    class EditorManager;
 
     class OgreAssetEditorModule : public Foundation::ModuleInterfaceImpl
     {
@@ -58,9 +52,6 @@ namespace OgreAssetEditor
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
 
-        typedef QMap<QPair<RexUUID, request_tag_t>, QObject *> AssetEditorMap;
-        typedef QMapIterator<QPair<RexUUID, request_tag_t>, QObject *> AssetEditorMapIter;
-
     private:
         OgreAssetEditorModule(const OgreAssetEditorModule &);
         void operator=(const OgreAssetEditorModule &);
@@ -77,8 +68,8 @@ namespace OgreAssetEditor
         /// Resource event category.
         event_category_id_t resourceEventCategory_;
 
-        /// Asset editors
-        AssetEditorMap assetEditors_;
+        /// Editor manager.
+        EditorManager *editorManager_;
 
         /// Material wizard.
         MaterialWizard *materialWizard_;

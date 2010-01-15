@@ -14,7 +14,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <QObject>
-#include <QTableWidget>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -38,40 +37,7 @@ namespace Foundation
 namespace OgreAssetEditor
 {
     class OgreMaterialProperties;
-
-    /// PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
-    class PropertyTableWidget : public QTableWidget
-    {
-    public:
-        /// Default constuctor.
-        /// @param parent Parent widget.
-        explicit PropertyTableWidget(QWidget *parent = 0);
-
-        /// Constuctor.
-        /// @param rows Number of rows.
-        /// @param columns Number of columns.
-        /// @param parent Parent widget.
-        PropertyTableWidget(int rows, int columns, QWidget *parent = 0);
-
-        /// Destructor.
-        ~PropertyTableWidget();
-
-    protected:
-        Q_DISABLE_COPY(PropertyTableWidget);
-
-        /// QTableWidget override.
-        QStringList mimeTypes() const;
-
-        /// QTableWidget override.
-        bool dropMimeData (int row, int column, const QMimeData *data, Qt::DropAction action);
-
-        /// QTableWidget override.
-        Qt::DropActions supportedDropActions() const;
-
-    private:
-        /// Convenience function for initializing the widget.
-        void InitWidget();
-    };
+    class PropertyTableWidget;
 
     class OgreScriptEditor : public QObject
     {
@@ -83,11 +49,15 @@ namespace OgreAssetEditor
         /// @param asset_type Asset type.
         /// @param name Name.
         OgreScriptEditor(Foundation::Framework *framework,
+            const QString &inventory_id,
             const RexTypes::asset_type_t &asset_type,
             const QString &name);
 
         /// Destructor.
         virtual ~OgreScriptEditor();
+
+        /// @return ProxyWidget pointer.
+        UiServices::UiProxyWidget *GetProxyWidget() const { return proxyWidget_; }
 
     public slots:
         /// Handles the asset data for script.
@@ -108,6 +78,10 @@ namespace OgreAssetEditor
         /// @param row Row of the cell.
         /// @param column Column of the cell.
         void PropertyChanged(int row, int column);
+
+    signals:
+        /// This signal is emitted when the editor is closed.
+        void Closed(const QString &inventory_id, RexTypes::asset_type_t asset_type);
 
     private:
         Q_DISABLE_COPY(OgreScriptEditor);
@@ -143,8 +117,10 @@ namespace OgreAssetEditor
         QTextEdit *textEdit_;
 
         /// Table widget for editing material properties.
-        //QTableWidget 
         PropertyTableWidget *propertyTable_;
+
+        /// Inventory id.
+        QString inventoryId_;
 
         /// Asset type.
         const RexTypes::asset_type_t assetType_;

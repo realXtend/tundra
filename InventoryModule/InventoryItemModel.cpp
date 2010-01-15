@@ -533,7 +533,6 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
         QString filename = it.next();
         if (!filename.isEmpty())
             dataModel_->UploadFile(filename, parentItem);
-        std::cout << filename.toStdString() << std::endl;
     }
 }
 

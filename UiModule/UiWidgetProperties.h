@@ -5,8 +5,10 @@
 
 #include "UiModuleApi.h"
 
-#include <QtGui>
-#include <QtCore>
+#include <QObject>
+#include <QSize>
+#include <QPointF>
+#include <QString>
 
 namespace UiServices
 {
@@ -21,19 +23,19 @@ namespace UiServices
     class UI_MODULE_API UiWidgetProperties : public QObject
     {
         Q_OBJECT
-        Q_PROPERTY(QSize my_size_ READ getSize WRITE setSize)
-        Q_PROPERTY(QPointF position_ READ getPosition WRITE setPosition)
-        Q_PROPERTY(Qt::WindowFlags window_type_ READ getWindowStyle WRITE setWindowStyle)
-        Q_PROPERTY(QString widget_name_ READ getWidgetName WRITE setWidgetName)
-        Q_PROPERTY(bool show_at_toolbar_ READ isShownAtToolbar WRITE setShowAtToolbar)
-        Q_PROPERTY(bool fullscreen_ READ isFullscreen WRITE setFullscreen)
-        Q_PROPERTY(AnimationType animation_type_ READ getAnimationType WRITE setAnimationType)
+        Q_PROPERTY(QSize my_size_ READ GetSize WRITE SetSize)
+        Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
+        Q_PROPERTY(Qt::WindowFlags window_type_ READ GetWindowStyle WRITE SetWindowStyle)
+        Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
+        Q_PROPERTY(bool show_at_toolbar_ READ IsShownAtToolbar WRITE SetShowAtToolbar)
+        Q_PROPERTY(bool fullscreen_ READ IsFullscreen WRITE SetFullscreen)
+        Q_PROPERTY(AnimationType animation_type_ READ GetAnimationType WRITE SetAnimationType)
 
     public:
         //! Constructors
         /*
-         * Do not use fullsceen = true if you know what you are doing. Normal module widgets are not fullscreen_ and will have qt made dialog frames around them.
-         * Only CoreUi can use layout without going through the normal dialog phase first.
+         * Do not use fullsceen = true if you know what you are doing. Normal module widgets are not fullscreen_ and will
+         * have qt made dialog frames around them. Only CoreUi can use layout without going through the normal dialog phase first.
          */
         UiWidgetProperties(const QString &widget_name, AnimationType animation_type = SlideFromTop, const QSize &size = QSize(200,200))
             : QObject(),
@@ -45,7 +47,8 @@ namespace UiServices
               fullscreen_(false),
               animation_type_(animation_type) {}
 
-        UiWidgetProperties(const QString &widget_name, bool core_layout_widget, AnimationType animation_type = SlideFromTop, const QSize &size = QSize(200,200))
+        UiWidgetProperties(const QString &widget_name, bool core_layout_widget, AnimationType animation_type = SlideFromTop,
+            const QSize &size = QSize(200,200))
             : QObject(),
               my_size_(size),
               position_(QPointF(10.0, 60.0)),
@@ -61,7 +64,9 @@ namespace UiServices
                 window_type_ = Qt::Dialog;
         }
 
-        UiWidgetProperties(const QPointF &position = QPointF(10.0, 60.0), const QSize &size = QSize(200,200), const Qt::WindowFlags window_type = Qt::Dialog, const QString &widget_name = QString("UiProxyWidget"), bool show_in_toolbar = true, bool fullscreen = false, AnimationType animation_type = SlideFromTop)
+        UiWidgetProperties(const QPointF &position = QPointF(10.0, 60.0), const QSize &size = QSize(200,200),
+            const Qt::WindowFlags window_type = Qt::Dialog, const QString &widget_name = QString("UiProxyWidget"),
+            bool show_in_toolbar = true, bool fullscreen = false, AnimationType animation_type = SlideFromTop)
             : QObject(),
               my_size_(size),
               position_(position),
@@ -72,34 +77,34 @@ namespace UiServices
               animation_type_(animation_type) {}
 
         UiWidgetProperties(const UiWidgetProperties &in_widget_properties)
-            : position_(in_widget_properties.getPosition()),
-              my_size_(in_widget_properties.getSize()),
-              window_type_(in_widget_properties.getWindowStyle()),
-              widget_name_(in_widget_properties.getWidgetName()),
-              show_at_toolbar_(in_widget_properties.isShownAtToolbar()),
-              fullscreen_(in_widget_properties.isFullscreen()),
-              animation_type_(in_widget_properties.getAnimationType()) {}
+            : position_(in_widget_properties.GetPosition()),
+              my_size_(in_widget_properties.GetSize()),
+              window_type_(in_widget_properties.GetWindowStyle()),
+              widget_name_(in_widget_properties.GetWidgetName()),
+              show_at_toolbar_(in_widget_properties.IsShownAtToolbar()),
+              fullscreen_(in_widget_properties.IsFullscreen()),
+              animation_type_(in_widget_properties.GetAnimationType()) {}
 
         //! Deconstructor
         ~UiWidgetProperties() {}
-        
+
         //! Setters for properties
-        void setSize(const QSize size) { my_size_ = size; }
-        void setPosition(const QPointF position) {position_ = position; }
-        void setWindowStyle(const Qt::WindowFlags window_type) { window_type_ = window_type; }
-        void setWidgetName(const QString &widget_name) { widget_name_ = widget_name; }
-        void setShowAtToolbar(const bool show_at_toolbar) { show_at_toolbar_ = show_at_toolbar; }
-        void setFullscreen(const bool fullscreen) { fullscreen_ = fullscreen; }
-        void setAnimationType(AnimationType animation_type) { animation_type_ = animation_type; }
+        void SetSize(const QSize &size) { my_size_ = size; }
+        void SetPosition(const QPointF &position) {position_ = position; }
+        void SetWindowStyle(const Qt::WindowFlags &window_type) { window_type_ = window_type; }
+        void SetWidgetName(const QString &widget_name) { widget_name_ = widget_name; }
+        void SetShowAtToolbar(const bool &show_at_toolbar) { show_at_toolbar_ = show_at_toolbar; }
+        void SetFullscreen(const bool &fullscreen) { fullscreen_ = fullscreen; }
+        void SetAnimationType(AnimationType animation_type) { animation_type_ = animation_type; }
 
         //! Getters for properties
-        const QSize getSize() const { return my_size_; }
-        const QPointF getPosition() const { return position_; }
-        const Qt::WindowFlags getWindowStyle() const { return window_type_; }
-        const QString getWidgetName() const { return widget_name_; }
-        bool isShownAtToolbar() const { return show_at_toolbar_; }
-        bool isFullscreen() const { return fullscreen_; }
-        AnimationType getAnimationType() const { return animation_type_; }
+        const QSize GetSize() const { return my_size_; }
+        const QPointF GetPosition() const { return position_; }
+        const Qt::WindowFlags GetWindowStyle() const { return window_type_; }
+        const QString GetWidgetName() const { return widget_name_; }
+        bool IsShownAtToolbar() const { return show_at_toolbar_; }
+        bool IsFullscreen() const { return fullscreen_; }
+        AnimationType GetAnimationType() const { return animation_type_; }
 
     private:
         QSize my_size_;
@@ -109,7 +114,6 @@ namespace UiServices
         bool show_at_toolbar_;
         bool fullscreen_;
         AnimationType animation_type_;
-
     };
 }
 

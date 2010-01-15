@@ -11,6 +11,7 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
+#include "PropertyTableWidget.h"
 
 #include <Framework.h>
 #include <Inventory/InventoryEvents.h>
@@ -34,109 +35,9 @@
 namespace OgreAssetEditor
 {
 
-/*************** PropertyTableWidget ***************/
-
-PropertyTableWidget::PropertyTableWidget(QWidget *parent) :
-    QTableWidget(parent)
-{
-    InitWidget();
-}
-
-PropertyTableWidget::PropertyTableWidget(int rows, int columns, QWidget *parent) :
-    QTableWidget(rows, columns, parent)
-{
-    InitWidget();
-}
-
-PropertyTableWidget::~PropertyTableWidget()
-{
-}
-
-QStringList PropertyTableWidget::mimeTypes() const
-{
-    QStringList types;
-    types << "application/vnd.inventory.item";
-    return types;
-}
-
-void PropertyTableWidget::InitWidget()
-{
-    // Set up drop functionality.
-    setAcceptDrops(true);
-    setDragEnabled(false);
-    setDragDropMode(QAbstractItemView::DropOnly);
-    setAcceptDrops(true);
-    setDropIndicatorShown(true);
-    setDragDropOverwriteMode(true);
-
-    // Set up headers and size.
-    setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
-    verticalHeader()->setVisible(false);
-    resizeColumnToContents(0);
-    horizontalHeader()->setStretchLastSection(true);
-    horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-}
-
-bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action)
-{
-    if (action == Qt::IgnoreAction)
-        return true;
-
-    if (!data->hasFormat("application/vnd.inventory.item"))
-        return false;
-
-    QByteArray encodedData = data->data("application/vnd.inventory.item");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
-
-    QString asset_id;
-    bool valid = false;
-    while(!stream.atEnd())
-    {
-        ///\todo Make convience function for parsing data.
-        QString mimedata, asset_type, item_id, name;
-        stream >> mimedata;
-
-        QStringList list = mimedata.split(";", QString::SkipEmptyParts);
-        if (list.size() < 4)
-            continue;
-
-        asset_type = list.at(0);
-        if (asset_type.toInt(&valid) != RexTypes::RexAT_Texture)
-            continue;
-
-        item_id = list.at(1);
-        if (!RexUUID::IsValid(item_id.toStdString()))
-            continue;
-
-        name = list.at(2);
-        asset_id = list.at(3);
-    }
-
-    if (!valid || !RexUUID::IsValid(asset_id.toStdString()))
-        return false;
-
-    QTableWidgetItem *item = this->item(row, column);
-    if (!item)
-        return false;
-
-    if (item->flags() & Qt::ItemIsDropEnabled)
-        item->setData(Qt::DisplayRole, asset_id);
-    else
-        return false;
-
-    return true;
-}
-
-Qt::DropActions PropertyTableWidget::supportedDropActions() const
-{
-    return Qt::CopyAction;
-}
-
-/*************** OgreScriptEditor ***************/
-
 OgreScriptEditor::OgreScriptEditor(
     Foundation::Framework *framework,
+    const QString &inventory_id,
     const RexTypes::asset_type_t &asset_type,
     const QString &name) :
     framework_(framework),
@@ -147,6 +48,7 @@ OgreScriptEditor::OgreScriptEditor(
     buttonCancel_(0),
     textEdit_(0),
     propertyTable_(0),
+    inventoryId_(inventory_id),
     assetType_(asset_type),
     name_(name),
     materialProperties_(0)
@@ -159,6 +61,9 @@ OgreScriptEditor::OgreScriptEditor(
 // virtual
 OgreScriptEditor::~OgreScriptEditor()
 {
+    if (proxyWidget_->isVisible())
+        proxyWidget_->hide();
+
     SAFE_DELETE(textEdit_);
     SAFE_DELETE(propertyTable_);
     SAFE_DELETE(materialProperties_);
@@ -201,8 +106,14 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 
 void OgreScriptEditor::Close()
 {
-    ///\todo This destroys only the canvas. Delete the editor instance also.
-    proxyWidget_->close();
+    proxyWidget_->hide();
+    /*
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxyWidget_);
+    proxyWidget_ = 0;
+    */
+    emit Closed(inventoryId_, assetType_);
 }
 
 void OgreScriptEditor::SaveAs()
@@ -339,6 +250,9 @@ void OgreScriptEditor::InitEditorWindow()
     // Add widget to UI via ui services module
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
         mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "OGRE Script Editor", false));
+
+    QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
+
     proxyWidget_->show();
 }
 
@@ -399,7 +313,6 @@ void OgreScriptEditor::CreatePropertyEditor()
         ++row;
     }
 
-    propertyTable_->resize(propertyTable_->parentWidget()->size());
     propertyTable_->show();
 
     QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
