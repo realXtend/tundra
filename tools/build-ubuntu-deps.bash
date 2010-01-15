@@ -2,11 +2,9 @@
 set -e
 set -x
 
-# script to build most deps. omitted at least (= use ones from distro)
-# * build tools
-# * Qt 4
-# * glib 2
-# * boost
+# script to build naali and most deps. first manually add the
+# following ppa sources using add-apt-repository or the software
+# sources gui tool: ppa:mapopa/qt4.6 ppa:andrewfenn/ogredev
 
 deps=$HOME/src/rex-deps
 viewer=$deps/../rex-viewer
@@ -15,6 +13,8 @@ prefix=$deps/install
 build=$deps/build
 tarballs=$deps/tarballs
 tags=$deps/tags
+
+
 
 # -j<n> param for make, for how many processes to run concurrently
 
@@ -97,23 +97,6 @@ else
 fi
 
 cd $build
-what=poco
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-
-    if test -d $what; then
-	svn update $what
-    else
-	svn co $viewerdeps_svn/trunk/$what $what
-    fi
-    cd $what
-    ./configure --prefix=$prefix --no-tests --no-samples --omit=Data/MySQL,Data/ODBC,Zip
-    make install
-    touch $tags/$what-done
-fi
-
-cd $build
 what=propertyeditor
 if test -f $tags/$what-done; then
     echo $what is done
@@ -163,6 +146,11 @@ build-regular http://farsight.freedesktop.org/releases/gst-plugins-farsight/ gst
 build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
 build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.12
 build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.0
+build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
+
+if test "$1" = "--depsonly"; then
+    exit 0
+fi
 
 cd $viewer
 cat > ccache-g++-wrapper <<EOF
