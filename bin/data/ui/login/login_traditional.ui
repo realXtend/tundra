@@ -443,10 +443,7 @@ OpenSim login requires you to have a existing account created into the server. J
 
 realXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, basically this means the OpenSim server must be running our ModreX server component.
 
-Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from above and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. And of course you can type the login url of the server to the Naali web browser manually. Web based authentications give you the possibility to login with your OpenID, Google and Yahoo accounts.
-
-
-// Todo: someon write proper welcome/help text here, check spelling, links to wiki login helpers etc.</string>
+Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from above and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. And of course you can type the login url of the server to the Naali web browser manually. Web based authentications give you the possibility to login with your OpenID, Google and Yahoo accounts.</string>
               </property>
               <property name="textInteractionFlags">
                <set>Qt::NoTextInteraction</set>

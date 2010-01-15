@@ -1,1242 +1,1797 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>EnvironmentEditor</class>
+ <widget class="QWidget" name="EnvironmentEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>418</height>
+    <width>396</width>
+    <height>388</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Environment Editor</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Containers */
+QWidget#EnvironmentEditor {
+	background-color: none;
+}
+
+QFrame#MainFrame {
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 110), stop:1 rgba(222, 227, 236, 100));
+	padding: 5px;
+}
+
+QGroupBox {
+     border: 0px solid rgba(0,0,0,100);
+     border-radius: 5px;
+     margin-top: 2ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+	padding: 0 3px;
+	subcontrol-origin: margin;
+	subconstrol-position: top;
+}
+
+ QTabWidget::pane { /* The tab widget frame */
+	border: 1px solid #9B9B9B;
+ }
+
+ QTabWidget::tab-bar {
+    /* left: 5px;   move to the right by 5px */
+ }
+
+ /* Style the tab using the tab sub-control. Note that
+     it reads QTabBar _not_ QTabWidget */
+ QTabBar::tab {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
+                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
+     border: 1px solid #9B9B9B;
+     border-top-left-radius: 4px;
+     border-top-right-radius: 4px;
+     min-width: 10ex;
+     padding: 1px;
+     padding-right: 5px;
+     padding-left: 5px;
+ }
+
+ QTabBar::tab:selected, QTabBar::tab:hover {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+ }
+
+ QTabBar::tab:selected {
+     border-color: #9B9B9B;
+     border-bottom: 0px;
+ }
+
+ QTabBar::tab:!selected {
+     margin-top: 3px; /* make non-selected tabs look smaller */
+ }
+
+ /* make use of negative margins for overlapping tabs */
+ QTabBar::tab:selected {
+     /* expand/overlap to the left and right by 4px */
+     margin-left: -2px;
+     margin-right: -2px;
+ }
+
+QTabBar::tab:first {
+	padding-left: 5px;
+}
+ QTabBar::tab:first:selected {
+     margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
+ }
+
+ QTabBar::tab:last:selected {
+     margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
+ }
+
+ QTabBar::tab:only-one {
+     margin: 0; /* if there is only one tab, we don't want overlapping margins */
+ }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="margin">
     <number>0</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
+    <widget class="QFrame" name="MainFrame">
+     <property name="lineWidth">
       <number>0</number>
      </property>
-     <item>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="edit_terrain">
-        <attribute name="title">
-         <string>Terrain</string>
-        </attribute>
-        <widget class="QWidget" name="verticalLayoutWidget_3">
-         <property name="geometry">
-          <rect>
-           <x>280</x>
-           <y>110</y>
-           <width>101</width>
-           <height>171</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QLabel" name="action_text">
-            <property name="text">
-             <string>Action</string>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="edit_terrain">
+           <attribute name="title">
+            <string> Terrain</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="topMargin">
+             <number>9</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_flatten">
-            <property name="text">
-             <string>Flatten</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_raise">
-            <property name="text">
-             <string>Raise</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_lower">
-            <property name="text">
-             <string>Lower</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_smooth">
-            <property name="text">
-             <string>Smooth</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_roughen">
-            <property name="text">
-             <string>Roughen</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_revert">
-            <property name="text">
-             <string>Revert</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QPushButton" name="button_update">
-         <property name="geometry">
-          <rect>
-           <x>280</x>
-           <y>290</y>
-           <width>81</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Update</string>
-         </property>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget_2">
-         <property name="geometry">
-          <rect>
-           <x>280</x>
-           <y>10</y>
-           <width>101</width>
-           <height>88</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QLabel" name="brush_text">
-            <property name="text">
-             <string>Brush size</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_small">
-            <property name="text">
-             <string>Small</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_medium">
-            <property name="text">
-             <string>Medium</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rad_button_large">
-            <property name="text">
-             <string>Large</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="map_widget" native="true">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>256</width>
-           <height>256</height>
-          </rect>
-         </property>
-         <property name="cursor">
-          <cursorShape>CrossCursor</cursorShape>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="edit_terrain_texture">
-        <attribute name="title">
-         <string>Terrain texture</string>
-        </attribute>
-        <widget class="QWidget" name="gridLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>381</width>
-           <height>262</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="texture_line_edit_1"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="apply_texture_button_1">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Apply</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_1"/>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="texture_height_label_3">
-            <property name="text">
-             <string>Start Height / Range</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="texture_label_1">
-            <property name="text">
-             <string>Texture 1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_1"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="texture_label_2">
-            <property name="text">
-             <string>Texture 2</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLineEdit" name="texture_line_edit_2"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_2"/>
-          </item>
-          <item row="4" column="2">
-           <widget class="QPushButton" name="apply_texture_button_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Apply</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_2"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="texture_label_3">
-            <property name="text">
-             <string>Texture 3</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLineEdit" name="texture_line_edit_3"/>
-          </item>
-          <item row="6" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_3"/>
-          </item>
-          <item row="6" column="2">
-           <widget class="QPushButton" name="apply_texture_button_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Apply</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_3"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="texture_label_4">
-            <property name="text">
-             <string>Texture 4</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLineEdit" name="texture_line_edit_4"/>
-          </item>
-          <item row="8" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_4"/>
-          </item>
-          <item row="8" column="2">
-           <widget class="QPushButton" name="apply_texture_button_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Apply</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="1">
-           <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_4"/>
-          </item>
-          <item row="12" column="0">
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>225</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="12" column="2">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="12" column="1">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="gridLayoutWidget_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>260</y>
-           <width>381</width>
-           <height>121</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QLabel" name="terrain_texture_label_1">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-            <property name="margin">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="texture_label_5">
-            <property name="text">
-             <string>Texture 1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="terrain_texture_label_2">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="texture_label_6">
-            <property name="text">
-             <string>Texture 2</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="terrain_texture_label_3">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="texture_label_8">
-            <property name="text">
-             <string>Texture 3</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="terrain_texture_label_4">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="texture_label_7">
-            <property name="text">
-             <string>Texture 4</string>
-            </property>
-            <property name="scaledContents">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="4">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Expanding</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>64</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="4">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="edit_water">
-        <attribute name="title">
-         <string>Water</string>
-        </attribute>
-        <widget class="QPushButton" name="water_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>40</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="water_toggle_box">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>110</y>
-           <width>70</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>water</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="water_remove_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>80</y>
-           <width>111</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Enable water</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="water_height_doublespinbox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>40</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="decimals">
-          <number>2</number>
-         </property>
-        </widget>
-        <widget class="QLabel" name="water_height_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>121</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Water height (meters)</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="edit_sky">
-        <attribute name="title">
-         <string>Sky</string>
-        </attribute>
-        <widget class="QCheckBox" name="use_caelum_check_box">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>10</y>
-           <width>72</width>
-           <height>18</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Caelum</string>
-         </property>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>30</y>
-           <width>381</width>
-           <height>351</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
-          <item>
-           <widget class="QFrame" name="sky_edit_frame">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <widget class="QComboBox" name="sky_type_combo">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>60</y>
-               <width>121</width>
-               <height>21</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="sky_height_label">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>0</y>
-               <width>71</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Enable sky</string>
-             </property>
-            </widget>
-            <widget class="QScrollArea" name="scroll_sky_options">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>120</y>
-               <width>361</width>
-               <height>221</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="sizeIncrement">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
-             <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAsNeeded</enum>
-             </property>
-             <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAsNeeded</enum>
-             </property>
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="panel_materials">
-              <property name="enabled">
-               <bool>true</bool>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <property name="topMargin">
+               <number>0</number>
               </property>
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>359</width>
-                <height>219</height>
-               </rect>
+              <property name="rightMargin">
+               <number>0</number>
               </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <item>
+                   <widget class="QWidget" name="map_widget" native="true">
+                    <property name="minimumSize">
+                     <size>
+                      <width>256</width>
+                      <height>256</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>256</width>
+                      <height>256</height>
+                     </size>
+                    </property>
+                    <property name="cursor">
+                     <cursorShape>CrossCursor</cursorShape>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">border: 1px solid rgba(0,0,0,100);</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_6">
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QGroupBox" name="groupBox">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="title">
+                     <string>Brush Size</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_3">
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_small">
+                       <property name="styleSheet">
+                        <string notr="true">padding-top: 5px;</string>
+                       </property>
+                       <property name="text">
+                        <string>Small</string>
+                       </property>
+                       <property name="checked">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_medium">
+                       <property name="text">
+                        <string>Medium</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_large">
+                       <property name="text">
+                        <string>Large</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QGroupBox" name="groupBox_2">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="title">
+                     <string>Edit Action</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_4">
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_flatten">
+                       <property name="styleSheet">
+                        <string notr="true">padding-top: 5px;</string>
+                       </property>
+                       <property name="text">
+                        <string>Flatten</string>
+                       </property>
+                       <property name="checked">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_raise">
+                       <property name="text">
+                        <string>Raise</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_lower">
+                       <property name="text">
+                        <string>Lower</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_smooth">
+                       <property name="text">
+                        <string>Smooth</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_roughen">
+                       <property name="text">
+                        <string>Roughen</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="rad_button_revert">
+                       <property name="text">
+                        <string>Revert</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_3">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_update">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Update</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="edit_terrain_texture">
+           <attribute name="title">
+            <string> Terrain texture </string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="1" column="0">
+               <widget class="QLineEdit" name="texture_line_edit_1"/>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="apply_texture_button_1">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="texture_height_label_3">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Start Height / Range</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="texture_label_1">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Texture 1</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_1"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="texture_label_2">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Texture 2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLineEdit" name="texture_line_edit_2"/>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_2"/>
+              </item>
+              <item row="4" column="2">
+               <widget class="QPushButton" name="apply_texture_button_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_2"/>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="texture_label_3">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Texture 3</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLineEdit" name="texture_line_edit_3"/>
+              </item>
+              <item row="6" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_3"/>
+              </item>
+              <item row="6" column="2">
+               <widget class="QPushButton" name="apply_texture_button_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_3"/>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="texture_label_4">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Texture 4</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLineEdit" name="texture_line_edit_4"/>
+              </item>
+              <item row="8" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_4"/>
+              </item>
+              <item row="8" column="2">
+               <widget class="QPushButton" name="apply_texture_button_4">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_range_doubleSpinBox_4"/>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="Texture_height_doubleSpinBox_1"/>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QLabel" name="terrain_texture_label_1">
+                <property name="minimumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+                <property name="margin">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="texture_label_5">
+                <property name="text">
+                 <string>Texture 1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="terrain_texture_label_2">
+                <property name="minimumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="texture_label_6">
+                <property name="text">
+                 <string>Texture 2</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QLabel" name="terrain_texture_label_3">
+                <property name="minimumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLabel" name="texture_label_8">
+                <property name="text">
+                 <string>Texture 3</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <widget class="QLabel" name="terrain_texture_label_4">
+                <property name="minimumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>65</width>
+                  <height>65</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QLabel" name="texture_label_7">
+                <property name="text">
+                 <string>Texture 4</string>
+                </property>
+                <property name="scaledContents">
+                 <bool>false</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="edit_water">
+           <attribute name="title">
+            <string> Water </string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <spacer name="verticalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-              <property name="baseSize">
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
                <size>
-                <width>0</width>
-                <height>0</height>
+                <width>20</width>
+                <height>10</height>
                </size>
               </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="water_toggle_box">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Enable Water</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_13">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_14">
+              <item>
+               <widget class="QLabel" name="water_height_label">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Water Height (meters)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="water_height_doublespinbox">
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_14">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <spacer name="horizontalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="water_apply_button">
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="edit_sky">
+           <attribute name="title">
+            <string>Sky</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="use_caelum_check_box">
+                <property name="text">
+                 <string>Enable Caelum</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="sky_edit_frame">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QFrame {
+	
+	background-color: rgb(234, 234, 234);
+}</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_14">
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_13">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="sky_toggle_box">
+                     <property name="text">
+                      <string>Enable Sky</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_6">
+                     <item>
+                      <widget class="QLabel" name="label">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="text">
+                        <string>Sky type</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QComboBox" name="sky_type_combo">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="properties_frame">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>100</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="sky_texture_label">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Textures</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QScrollArea" name="scroll_sky_options">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="sizeIncrement">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Sunken</enum>
+                     </property>
+                     <property name="verticalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="horizontalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="widgetResizable">
+                      <bool>true</bool>
+                     </property>
+                     <widget class="QWidget" name="panel_materials">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
+                      <property name="geometry">
+                       <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>338</width>
+                        <height>69</height>
+                       </rect>
+                      </property>
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="baseSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QPlainTextEdit" name="plainTextEdit">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: transparent;</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="lineWidth">
+               <number>0</number>
+              </property>
+              <property name="plainText">
+               <string>Note: You can only edit Ogre sky properties if Caelum is disabled. It's not yet possible to disable it when Naali is running.</string>
+              </property>
              </widget>
-            </widget>
-            <widget class="QLabel" name="label">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>40</y>
-               <width>46</width>
-               <height>14</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Sky type</string>
-             </property>
-            </widget>
-            <widget class="QFrame" name="properties_frame">
-             <property name="geometry">
-              <rect>
-               <x>140</x>
-               <y>0</y>
-               <width>231</width>
-               <height>121</height>
-              </rect>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="sky_toggle_box">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>20</y>
-               <width>72</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Sky</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="sky_texture_label">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>100</y>
-               <width>46</width>
-               <height>14</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Textures</string>
-             </property>
-            </widget>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="edit_fog">
-        <attribute name="title">
-         <string>Fog</string>
-        </attribute>
-        <widget class="QDoubleSpinBox" name="fog_water_blue_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>120</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_green_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>70</x>
-           <y>110</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_blue_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>130</x>
-           <y>110</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_green_label">
-         <property name="geometry">
-          <rect>
-           <x>70</x>
-           <y>220</y>
-           <width>41</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Green</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_red_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_red_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>220</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Red</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_red_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>110</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_red_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>90</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Red</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_start_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>300</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_override_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>131</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Enable fog color override</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_water_distance_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>190</x>
-           <y>300</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_end_distance_label">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>280</y>
-           <width>91</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Fog end distance</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_start_distance_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>150</y>
-           <width>101</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> Fog start distance</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_controls_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>200</y>
-           <width>101</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Fog water controls</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_controls_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>70</y>
-           <width>121</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Fog ground controls</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_end_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>300</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_start_distance_label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>280</y>
-           <width>91</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Fog start distance</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_ground_distance_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>190</x>
-           <y>170</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_water_green_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>70</x>
-           <y>240</y>
-           <width>42</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_green_label">
-         <property name="geometry">
-          <rect>
-           <x>70</x>
-           <y>90</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Green</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_ground_color_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>190</x>
-           <y>110</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="fog_override_checkBox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>40</y>
-           <width>111</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>override fog color</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_blue_label">
-         <property name="geometry">
-          <rect>
-           <x>130</x>
-           <y>90</y>
-           <width>31</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Blue</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_ground_end_distance_label">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>150</y>
-           <width>91</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Fog end distance</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="fog_water_blue_label">
-         <property name="geometry">
-          <rect>
-           <x>120</x>
-           <y>220</y>
-           <width>41</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Blue</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_end_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>170</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="fog_ground_start_distance_dSpinBox">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>170</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fog_water_color_apply_button">
-         <property name="geometry">
-          <rect>
-           <x>190</x>
-           <y>240</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="ambient_light">
-        <attribute name="title">
-         <string>Ambient light</string>
-        </attribute>
-        <widget class="QLabel" name="label_5">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>90</y>
-           <width>71</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sun light color</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_4">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>40</y>
-           <width>46</width>
-           <height>13</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> Z</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="sun_direction_y">
-         <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>60</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="sun_direction_x">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>60</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>141</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sun light direction (vector)</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>40</y>
-           <width>46</width>
-           <height>13</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> X</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="sun_direction_z">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>60</y>
-           <width>62</width>
-           <height>22</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QWidget" name="horizontalLayoutWidget_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>120</y>
-           <width>158</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <layout class="QHBoxLayout" name="sun_color_horizontal_layout">
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="sun_color_img">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="sun_color_change_button">
-            <property name="text">
-             <string>Change</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QLabel" name="label_9">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>190</y>
-           <width>91</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Ambient light color</string>
-         </property>
-        </widget>
-        <widget class="QWidget" name="horizontalLayoutWidget_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>230</y>
-           <width>158</width>
-           <height>41</height>
-          </rect>
-         </property>
-         <layout class="QHBoxLayout" name="ambient_color_horizontal_layout">
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="ambient_color_img">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="ambient_color_change_button">
-            <property name="text">
-             <string>Change</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QLabel" name="label_6">
-         <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>40</y>
-           <width>46</width>
-           <height>13</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string> Y</string>
-         </property>
-        </widget>
-       </widget>
-      </widget>
-     </item>
-    </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="edit_fog">
+           <attribute name="title">
+            <string>Fog</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_15">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_9">
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="fog_override_checkBox">
+                <property name="text">
+                 <string>Enable Fog Color Override</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>15</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QFrame" name="ground_controls">
+                <property name="styleSheet">
+                 <string notr="true">QFrame#ground_controls { 
+	background-color: rgb(234, 234, 234);
+	border: 1px solid rgba(0,0,0,100);
+	border-radius: 8px;
+}</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_17">
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_16">
+                   <item>
+                    <widget class="QLabel" name="fog_ground_controls_label">
+                     <property name="font">
+                      <font>
+                       <weight>75</weight>
+                       <bold>true</bold>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Fog ground controls</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_7">
+                     <item>
+                      <widget class="QLabel" name="fog_ground_red_label">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Red</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_ground_red_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_ground_green_label">
+                       <property name="text">
+                        <string>Green</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_ground_green_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_ground_blue_label">
+                       <property name="text">
+                        <string>Blue</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_ground_blue_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_8">
+                     <item>
+                      <widget class="QLabel" name="fog_ground_start_distance_label">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string> Fog start distance</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_ground_start_distance_dSpinBox">
+                       <property name="decimals">
+                        <number>0</number>
+                       </property>
+                       <property name="maximum">
+                        <double>10000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_ground_end_distance_label">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>94</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Fog end distance</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_ground_end_distance_dSpinBox">
+                       <property name="decimals">
+                        <number>0</number>
+                       </property>
+                       <property name="maximum">
+                        <double>10000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_2">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_12">
+                     <item>
+                      <spacer name="horizontalSpacer_8">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="fog_ground_color_apply_button">
+                       <property name="minimumSize">
+                        <size>
+                         <width>85</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Apply Color</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="fog_ground_distance_apply_button">
+                       <property name="minimumSize">
+                        <size>
+                         <width>85</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Apply Distance</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>15</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QFrame" name="water_controls">
+                <property name="styleSheet">
+                 <string notr="true">QFrame#water_controls { 
+	background-color: rgb(234, 234, 234);
+	border: 1px solid rgba(0,0,0,100);
+	border-radius: 8px;
+}</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_19">
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_18">
+                   <item>
+                    <widget class="QLabel" name="fog_water_controls_label">
+                     <property name="font">
+                      <font>
+                       <weight>75</weight>
+                       <bold>true</bold>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Fog water controls</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_9">
+                     <item>
+                      <widget class="QLabel" name="fog_water_red_label">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Red</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_water_red_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_water_green_label">
+                       <property name="text">
+                        <string>Green</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_water_green_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_water_blue_label">
+                       <property name="text">
+                        <string>Blue</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_water_blue_dSpinBox">
+                       <property name="decimals">
+                        <number>2</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.010000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_3">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_10">
+                     <item>
+                      <widget class="QLabel" name="fog_water_start_distance_label">
+                       <property name="minimumSize">
+                        <size>
+                         <width>90</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Fog start distance</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_water_start_distance_dSpinBox">
+                       <property name="decimals">
+                        <number>0</number>
+                       </property>
+                       <property name="maximum">
+                        <double>10000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="fog_water_end_distance_label">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>94</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Fog end distance</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="fog_water_end_distance_dSpinBox">
+                       <property name="decimals">
+                        <number>0</number>
+                       </property>
+                       <property name="maximum">
+                        <double>10000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_4">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_13">
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <spacer name="horizontalSpacer_9">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="fog_water_color_apply_button">
+                       <property name="minimumSize">
+                        <size>
+                         <width>85</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Apply Color</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="fog_water_distance_apply_button">
+                       <property name="minimumSize">
+                        <size>
+                         <width>85</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Apply Distance</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>1</width>
+                  <height>1</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="ambient_light">
+           <attribute name="title">
+            <string>Ambient light</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_21">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_20">
+              <property name="bottomMargin">
+               <number>20</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">padding-top: 10px;</string>
+                </property>
+                <property name="text">
+                 <string>Sun light direction (vector)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <item>
+                 <widget class="QLabel" name="label_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string> X</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="sun_direction_x"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_6">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string> Y</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="sun_direction_y"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string> Z</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="sun_direction_z"/>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_5">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">padding-top: 10px;</string>
+                </property>
+                <property name="text">
+                 <string>Sun light color</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="sun_color_horizontal_layout">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="sun_color_img">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="sun_color_change_button">
+                  <property name="text">
+                   <string>Change</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_11">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">padding-top: 10px;</string>
+                </property>
+                <property name="text">
+                 <string>Ambient light color</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="ambient_color_horizontal_layout">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="ambient_color_img">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="ambient_color_change_button">
+                  <property name="text">
+                   <string>Change</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_12">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

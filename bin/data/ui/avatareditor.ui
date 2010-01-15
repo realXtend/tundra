@@ -6,18 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
-    <height>385</height>
+    <width>336</width>
+    <height>245</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>Avatar Editor</string>
+  </property>
   <property name="styleSheet">
-   <string>/* Containers */
+   <string notr="true">/* Containers */
+QWidget#AvatarEditor {
+	background-color: none;
+}
+
 QFrame#MainFrame {
-		background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
 	padding: 5px;
 }
 
-</string>
+QLabel {
+	padding-bottom: 3px;
+}</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -52,8 +61,69 @@ QFrame#MainFrame {
           <height>0</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true"> QTabWidget::pane { /* The tab widget frame */
+	border: 0px solid #9B9B9B;
+ }
+
+ QTabWidget::tab-bar {
+    /* left: 5px;   move to the right by 5px */
+ }
+
+ /* Style the tab using the tab sub-control. Note that
+     it reads QTabBar _not_ QTabWidget */
+ QTabBar::tab {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
+                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
+     border: 1px solid #9B9B9B;
+     border-top-left-radius: 4px;
+     border-top-right-radius: 4px;
+     min-width: 10ex;
+     padding: 1px;
+     padding-right: 5px;
+     padding-left: 5px;
+ }
+
+ QTabBar::tab:selected, QTabBar::tab:hover {
+     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+ }
+
+ QTabBar::tab:selected {
+     border-color: #9B9B9B;
+     border-bottom: 0px;
+ }
+
+ QTabBar::tab:!selected {
+     margin-top: 3px; /* make non-selected tabs look smaller */
+ }
+
+ /* make use of negative margins for overlapping tabs */
+ QTabBar::tab:selected {
+     /* expand/overlap to the left and right by 4px */
+     margin-left: -2px;
+     margin-right: -2px;
+ }
+
+QTabBar::tab:first {
+	padding-left: 5px;
+}
+ QTabBar::tab:first:selected {
+     margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
+ }
+
+ QTabBar::tab:last:selected {
+     margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
+ }
+
+ QTabBar::tab:only-one {
+     margin: 0; /* if there is only one tab, we don't want overlapping margins */
+ }</string>
+        </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>-1</number>
         </property>
        </widget>
       </item>
@@ -64,13 +134,6 @@ QFrame#MainFrame {
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-        <property name="styleSheet">
-         <string>
-            color: rgb(255, 255, 255);
-            padding-bottom: 3px;
-            background-color: rgba(255, 255, 255, 0);
-          </string>
         </property>
         <property name="text">
          <string>Textures</string>
@@ -136,11 +199,7 @@ QFrame#MainFrame {
          </sizepolicy>
         </property>
         <property name="styleSheet">
-         <string>
-            color: rgb(255, 255, 255);
-            padding-bottom: 3px;
-            background-color: rgba(255, 255, 255, 0);
-          </string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>Attachments</string>
@@ -188,18 +247,28 @@ QFrame#MainFrame {
       <item>
        <widget class="QWidget" name="widget" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="leftMargin">
+         <property name="margin">
           <number>0</number>
          </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item>
           <widget class="QPushButton" name="but_load">
            <property name="text">

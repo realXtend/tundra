@@ -1,56 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainWidget</class>
- <widget class="QWidget" name="mainWidget">
+ <class>MaterialWizard</class>
+ <widget class="QWidget" name="MaterialWizard">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>404</height>
+    <width>422</width>
+    <height>349</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>Material Wizard</string>
+  </property>
   <property name="styleSheet">
-   <string>
-    /* Containers */
+   <string notr="true">QWidget#MaterialWizard {
+	 background-color: none
+}
 
-    QWidget#mainWidget {
-        background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255),
-        stop:0.465909 rgba(0, 0, 0, 255));
-    }
+QFrame#MainFrame {
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
+}
 
-    QLabel {
-        color: rgb(255,255,255);
-    }
+QGroupBox {
+     border: 0px solid rgba(0,0,0,100);
+     border-radius: 5px;
+     margin-top: 2ex; /* leave space at the top for the title */
+}
 
-    /* QABSTRACTBUTTON */
-    QAbstractButton
-    {
-        color: rgb(255,255,255);
-    }
-
-    /* QPUSHBUTTON */
-    QPushButton {
-        color: rgb(0, 0, 0);
-        min-width: 60px;
-        font-size: 12px;
-        border: 1px solid;
-        border-color: rgb(48, 48, 48);
-        border-radius: 8px;
-        border-top-left-radius: 0px;
-        border-bottom-right-radius: 0px;
-        padding: 2px 5px;
-        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
-        stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
-    }
-
-    QPushButton:hover {
-        border-color: rgba(0, 0, 0, 255);
-        color: rgb(0,0,0);
-        background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1,
-        stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
-    }
-    </string>
+QGroupBox::title {
+	padding: 0 3px;
+	subcontrol-origin: margin;
+	subconstrol-position: top;
+}</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -85,295 +67,346 @@
       </property>
       <item>
        <widget class="QWidget" name="widget" native="true">
-        <widget class="QWidget" name="verticalLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>191</width>
-           <height>88</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayoutDiff">
-          <item>
-           <widget class="QLabel" name="labelDiff">
-            <property name="text">
-             <string>Diffuse:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioDiffSolidParam">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>solid color</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioDiffRgbTexParam">
-            <property name="text">
-             <string>rgb texture</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxDiffModulateParam">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>modulate diffuse with vertex color</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget_2">
-         <property name="geometry">
-          <rect>
-           <x>210</x>
-           <y>10</y>
-           <width>160</width>
-           <height>88</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayoutSpec">
-          <item>
-           <widget class="QLabel" name="labelSpec">
-            <property name="text">
-             <string>Specular:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioSpecNoneParam">
-            <property name="text">
-             <string>none</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioSpecSolidParam">
-            <property name="text">
-             <string>solid color</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioSpecRgbTexParam">
-            <property name="text">
-             <string>rgb texture</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget_3">
-         <property name="geometry">
-          <rect>
-           <x>210</x>
-           <y>120</y>
-           <width>181</width>
-           <height>151</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayoutAplha">
-          <item>
-           <widget class="QLabel" name="labelAlpha">
-            <property name="text">
-             <string>Alpha:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioAlphaNoneParam">
-            <property name="text">
-             <string>none</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioAlphaSolidParam">
-            <property name="text">
-             <string>solid (single) alpha value</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioAlphaSeparateParam">
-            <property name="text">
-             <string>separate grayscale texture</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioAlphaUseChanFromDiffMapParam">
-            <property name="text">
-             <string>use the alpha channel from the 
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <layout class="QVBoxLayout" name="main_layout">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="labelTemplate">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Template</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelCurrent">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupBox">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string>Diffuse</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <item>
+                   <widget class="QRadioButton" name="radioDiffSolidParam">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true"/>
+                    </property>
+                    <property name="text">
+                     <string>solid color</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioDiffRgbTexParam">
+                    <property name="text">
+                     <string>rgb texture</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxDiffModulateParam">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>modulate diffuse with vertex color</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string>Specular</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_4">
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                  <item>
+                   <widget class="QRadioButton" name="radioSpecNoneParam">
+                    <property name="text">
+                     <string>none</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioSpecSolidParam">
+                    <property name="text">
+                     <string>solid color</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioSpecRgbTexParam">
+                    <property name="text">
+                     <string>rgb texture</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string>Miscellaneous</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_5">
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayoutMisc">
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxShadowParam">
+                    <property name="text">
+                     <string>receives shadows</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxNormalParam">
+                    <property name="text">
+                     <string>normal mapping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxLumParam">
+                    <property name="text">
+                     <string>luminance mapping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxLightParam">
+                    <property name="text">
+                     <string>light mapping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxReflParam">
+                    <property name="text">
+                     <string>2D reflection mapping</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxAnimParam">
+                    <property name="text">
+                     <string>Apply OGRE animation to UV set 0</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_3">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string>Alpha</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_3">
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayoutAplha">
+                  <item>
+                   <widget class="QRadioButton" name="radioAlphaNoneParam">
+                    <property name="text">
+                     <string>none</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioAlphaSolidParam">
+                    <property name="text">
+                     <string>solid (single) alpha value</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioAlphaSeparateParam">
+                    <property name="text">
+                     <string>separate grayscale texture</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioAlphaUseChanFromDiffMapParam">
+                    <property name="text">
+                     <string>use the alpha channel from the 
 alpha layer of the diffuse map</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxAlphaMaskingParam">
-            <property name="text">
-             <string>Alpha masking</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="verticalLayoutWidget_4">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>120</y>
-           <width>190</width>
-           <height>160</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayoutMisc">
-          <item>
-           <widget class="QLabel" name="labelMisc">
-            <property name="text">
-             <string>Miscellaneous</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxShadowParam">
-            <property name="text">
-             <string>receives shadows</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxNormalParam">
-            <property name="text">
-             <string>normal mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxLumParam">
-            <property name="text">
-             <string>luminance mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxLightParam">
-            <property name="text">
-             <string>light mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxReflParam">
-            <property name="text">
-             <string>2D reflection mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkBoxAnimParam">
-            <property name="text">
-             <string>Apply OGRE animation to UV set 0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="formLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>290</y>
-           <width>381</width>
-           <height>51</height>
-          </rect>
-         </property>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelName">
-            <property name="text">
-             <string>Name:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelTemplate">
-            <property name="text">
-             <string>Template:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEditName"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="labelCurrent">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widgetButtons" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="buttonCreate">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Create</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="buttonCancel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Cancel</string>
-           </property>
-          </widget>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxAlphaMaskingParam">
+                    <property name="text">
+                     <string>Alpha masking</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="labelName">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Material Name</string>
+               </property>
+               <property name="indent">
+                <number>6</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditName"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="buttonCreate">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Create</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="buttonCancel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Cancel</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

@@ -38,8 +38,8 @@ namespace OgreRenderer
     void QOgreUIView::Initialize_()
     {
         // Setup QGrapchicsView
-        setUpdatesEnabled(false);
-        setAutoFillBackground(false);
+        setUpdatesEnabled (false);
+        setAutoFillBackground (false);
         setFocusPolicy (Qt::StrongFocus);
         setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
         setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
@@ -59,10 +59,10 @@ namespace OgreRenderer
         ZeroMemory(&os_version_info, sizeof(OSVERSIONINFOEX));
         os_version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
         if (GetVersionEx((OSVERSIONINFO *)&os_version_info))
-            if ( os_version_info.dwMajorVersion == 6 && os_version_info.dwMinorVersion == 1)
+            if (os_version_info.dwMajorVersion == 6 && os_version_info.dwMinorVersion == 1)
                 setAttribute(Qt::WA_DontShowOnScreen, true);
         #endif
-    }    
+    }
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 
     { 

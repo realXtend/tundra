@@ -14,10 +14,10 @@ namespace CoreUi
         setFlat(true);
         setStyleSheet(QString("QPushButton { min-width: 50px; padding-left: 5px; padding-right: 5px; font-size: 11px;"
             "color: rgb(61, 80, 255); background-color: rgba(255, 255, 255, 0); }").append(
-            "QPushButton::hover { color: rgb(85, 170, 255); } QPushButton::!hover { color: rgb(255, 255, 255); }"
-            "QPushButton::pressed { color: rgba(85, 170, 255, 100); border: 0px; }"));
-        setMaximumHeight(20);
-        setMinimumHeight(20);
+            "QPushButton::hover { color: black; background-color: rgba(255,255,255,150); border-radius: 5px; } QPushButton::!hover { color: rgb(255, 255, 255); }"
+            "QPushButton::pressed { color: darkgrey; border: 0px; }"));
+        setMaximumHeight(15);
+        setMinimumHeight(15);
         QObject::connect(this, SIGNAL( clicked() ), this, SLOT( ToggleShow() )); 
     }
 

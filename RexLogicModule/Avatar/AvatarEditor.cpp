@@ -434,9 +434,12 @@ namespace RexLogic
     
     QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)
     {
+        // Fix small clipping issue for first tab, just put space on front
+        QString name_with_space = " ";
+        name_with_space.append(name.c_str());
         for (uint i = 0; i < tabs->count(); ++i)
         {
-            if (tabs->tabText(i).toStdString() == name)
+            if (tabs->tabText(i) == name_with_space)
             {
                 QScrollArea* tab_scroll = qobject_cast<QScrollArea*>(tabs->widget(i));
                 if (!tab_scroll)
@@ -451,9 +454,9 @@ namespace RexLogic
         
         tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         tab_scroll->setWidgetResizable(false);
-        tab_scroll->resize(tabs->contentsRect().size());
+        tab_scroll->resize(tabs->contentsRect().size());            
         tab_scroll->setWidget(tab_panel);
-        tabs->addTab(tab_scroll, QString::fromStdString(name));
+        tabs->addTab(tab_scroll, name_with_space);
         return tab_panel;
     }
 
