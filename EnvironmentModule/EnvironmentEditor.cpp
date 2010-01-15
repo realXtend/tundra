@@ -1220,7 +1220,7 @@ namespace Environment
 
         if(sky_type_ == OgreRenderer::SKYTYPE_BOX)
         {
-            for(uint i = 0; i < sky->skyBoxTextureCount; i++)
+            for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
             {
                 QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
                 QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
