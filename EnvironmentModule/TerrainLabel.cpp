@@ -7,12 +7,12 @@ namespace Environment
 {
     TerrainLabel::TerrainLabel(QWidget *parent, Qt::WindowFlags f): QLabel(parent, f)
     {
-        setMouseTracking(true);
+
     }
 
     TerrainLabel::TerrainLabel(const QString &text, QWidget *parent, Qt::WindowFlags f): QLabel(text, parent, f)
     {
-        setMouseTracking(true);
+
     }
 
     TerrainLabel::~TerrainLabel()
@@ -20,21 +20,18 @@ namespace Environment
 
     }
 
-    void TerrainLabel::mousePressEvent(QMouseEvent *ev)
+    void TerrainLabel::mousePressEvent(QMouseEvent *event)
     {
-        emit SendMouseEvent(ev);
-        QLabel::mousePressEvent(ev);
+        emit SendMouseEvent(event);
     }
 
-    void TerrainLabel::mouseMoveEvent(QMouseEvent *ev)
+    void TerrainLabel::mouseMoveEvent(QMouseEvent *event)
     {
-        emit SendMouseEvent(ev);
-        QLabel::mouseMoveEvent(ev);
+        emit SendMouseEvent(event);
     }
 
-    void TerrainLabel::mouseReleaseEvent(QMouseEvent *ev)
+    void TerrainLabel::mouseReleaseEvent(QMouseEvent *event)
     {
-        emit SendMouseEvent(ev);
-        QLabel::mouseReleaseEvent(ev);
+        emit SendMouseEvent(event);
     }
 }

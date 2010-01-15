@@ -4,9 +4,17 @@
 #ifndef incl_Terrain_h
 #define incl_Terrain_h
 
-#include "Entity.h"
 #include "EC_Terrain.h"
 #include "EnvironmentModuleApi.h"
+
+#include <QObject>
+
+namespace Scene
+{
+    class Entity;
+    typedef boost::weak_ptr<Entity> EntityWeakPtr;
+    typedef boost::shared_ptr<Entity> EntityPtr;
+}
 
 namespace Resource
 {
@@ -23,13 +31,15 @@ namespace ProtocolUtilities
 
 namespace Environment
 {
-
+class EnvironmentModule;
 struct DecodedTerrainPatch;
 
 //! Handles the logic related to the OpenSim Terrain. Note - partially lacks support for multiple scenes - the Terrain object is not instantiated
 //! per-scene, but it contains data that should be stored per-scene. This doesn't affect anything unless we will some day actually have several scenes.
-class ENVIRONMENT_MODULE_API Terrain
+class ENVIRONMENT_MODULE_API Terrain: public QObject
 {
+    Q_OBJECT
+
 public:
     Terrain(EnvironmentModule *owner_);
     ~Terrain();
@@ -62,9 +72,20 @@ public:
     //! Get terrain texture ids.
     const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
 
+    //! Get terrain texture start height in meters.
+    //! @param switch texture height value need to change.
     const Real &GetTerrainTextureStartHeight(int index) const;
 
+    //! Get terrain texture height ranges in meters.
+    //! @param switch texture height value need to change.
     const Real &GetTerrainTextureHeightRange(int index) const;
+
+signals:
+    //! Signal is sended when height map values have changed.
+    void HeightmapUpdated();
+
+    //! Signal is sended when some of the terrain textures have changed.
+    void TerrainTextureChanged();
 
 private:
     EnvironmentModule *owner_;
@@ -74,7 +95,6 @@ private:
     //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
     RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
 
-    //! lowest point where the fist texture is blended
     Real start_heights_[num_terrain_textures];
     Real height_ranges_[num_terrain_textures];
 

@@ -214,6 +214,9 @@ namespace Environment
                     }
                     else if(methodname == "RexSky" && sky_.get())
                     {
+                        /* 
+                         * 
+                         */
                         return GetSkyHandler()->HandleRexGM_RexSky(netdata);
                     }
                     else if (methodname == "RexWaterHeight")
@@ -432,16 +435,6 @@ namespace Environment
             terrain_->SetTerrainHeightValues(TerrainStartHeights, TerrainStartRanges);
         }
 
-        return false;
-    }
-
-    bool EnvironmentModule::HandleNetworkEvent(Foundation::EventDataInterface* data)
-    {
-        return false;
-    }
-
-    bool EnvironmentModule::HandleNetworkStateEvent(Foundation::EventDataInterface* data)
-    {
         return false;
     }
 

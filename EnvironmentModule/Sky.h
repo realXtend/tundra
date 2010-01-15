@@ -106,8 +106,19 @@ namespace Environment
         /// Return all generic sky parameters from EC_Ogresky entity.
         OgreRenderer::SkyBoxParameters GetSkyBoxParameters();
 
+        /// Update sky dome parameters.
+        /// @param params contain all information that is need to create a new ogre sky geometry.
+        /// @param update_sky do we need to recreate a new sky.
         void SetSkyDomeParameters(const OgreRenderer::SkyDomeParameters &params, bool update_sky = true);
+
+        /// Update sky plane parameters.
+        /// @param params contain all information that is need to create a new ogre sky geometry.
+        /// @param update_sky do we need to recreate a new sky.
         void SetSkyPlaneParameters(const OgreRenderer::SkyPlaneParameters &params, bool update_sky = true);
+
+        /// Update sky box parameters.
+        /// @param params contain all information that is need to create a new ogre sky geometry.
+        /// @param update_sky do we need to recreate a new sky.
         void SetSkyBoxParameters(const OgreRenderer::SkyBoxParameters &params, bool update_sky = true);
 
     signals:

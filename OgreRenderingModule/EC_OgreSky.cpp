@@ -124,7 +124,7 @@ void EC_OgreSky::CreateSky(bool show)
     }
 }
 
-bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
+/*bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
 {
     if (renderer_.expired())
         return false;
@@ -145,7 +145,7 @@ bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
     
     skyEnabled_ = true;
     return true;
-}
+}*/
 
 std::vector<std::string> EC_OgreSky::GetMaterialTextureNames()
 {

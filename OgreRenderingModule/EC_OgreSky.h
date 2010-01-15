@@ -190,8 +190,9 @@ namespace OgreRenderer
          *  @return true if successful
          *  @todo use material/texture asset reference when asset system exists
          */
-        bool SetSkyBox(const std::string& material_name, Real distance);
-        
+        //bool SetSkyBox(const std::string& material_name, Real distance);
+
+        /// @return material texture string array.
         std::vector<std::string> GetMaterialTextureNames();
 
         /// Sets the sky material.
@@ -252,8 +253,9 @@ namespace OgreRenderer
         SkyType GetSkyType() const;
 
         /// Change sky type into new one and create new sky if wanted.
-        /// @param sky type.
+        /// @param sky type (Skybox, skydome and skyplane).
         void SetSkyType(SkyType type, bool update_sky = true);
+
     private:
         /// Constructor
         /// @param module ModuleInterface pointer.
