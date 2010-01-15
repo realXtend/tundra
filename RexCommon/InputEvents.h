@@ -153,17 +153,19 @@ namespace Input
                 {
                     rel_ = other.rel_;
                     abs_ = other.abs_;
+                    screen_ = other.screen_;
                 }
                 return *this;
             }
-            bool operator == (const Axis &other) const { return (rel_ == other.rel_ && abs_ == other.abs_); }
+            bool operator == (const Axis &other) const { return (rel_ == other.rel_ && abs_ == other.abs_ && screen_ == other.screen_); }
             bool operator != (const Axis &other) const { return !(*this == other); }
-
 
             //! relative movement
             int rel_;
-            //! absolute movement
+            //! absolute coords within window
             int abs_;
+            //! screen coords
+            int screen_;
         };
 
         //! input position that contains both relative and absolute movement for single axis. \ingroup Input_group

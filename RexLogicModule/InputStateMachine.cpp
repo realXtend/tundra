@@ -170,10 +170,12 @@ namespace RexLogic
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
 
         eventmgr-> SendEvent (catid, Input::Events::INWORLD_CLICK, &movement);
         eventmgr-> SendEvent (catid, Input::Events::LEFT_MOUSECLICK_PRESSED, &movement);
@@ -182,10 +184,12 @@ namespace RexLogic
     void LeftButtonActiveState::onExit (QEvent *event)
     {
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
 
         eventmgr-> SendEvent (catid, Input::Events::LEFT_MOUSECLICK_RELEASED, &movement);
 
@@ -205,10 +209,12 @@ namespace RexLogic
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
 
         eventmgr-> SendEvent (catid, Input::Events::RIGHT_MOUSECLICK_PRESSED, &movement);
     }
@@ -218,10 +224,12 @@ namespace RexLogic
         eventmgr-> SendEvent (catid, Input::Events::RIGHT_MOUSECLICK_RELEASED, &movement);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        movement.x_.rel_ = e-> x();
-        movement.y_.rel_ = e-> y();
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
 
         State::onExit (event);
     }
@@ -259,7 +267,7 @@ namespace RexLogic
         QWheelEvent *e = static_cast <QWheelEvent *> (event);
 
         scroll.z_.rel_ = e-> delta();
-        scroll.z_.abs_ = e-> delta();
+        scroll.z_.abs_ = e-> orientation();
 
         eventmgr-> SendEvent (catid, Input::Events::SCROLL, &scroll);
     }
@@ -348,8 +356,10 @@ namespace RexLogic
         // Do not send relative movement yet on gesture start
         movement.x_.rel_ = 0;
         movement.y_.rel_ = 0;
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
 
         eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
     }
@@ -416,8 +426,10 @@ namespace RexLogic
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
         movement.x_.rel_ = e-> x() - gesture.last_x;
         movement.y_.rel_ = e-> y() - gesture.last_y; 
-        movement.x_.abs_ = e-> globalX();
-        movement.y_.abs_ = e-> globalY();
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
         gesture.last_x = e-> x();
         gesture.last_y = e-> y();   
                 
