@@ -106,6 +106,9 @@ namespace Input
         static const event_id_t MOUSEDRAG = 49;
         static const event_id_t MOUSEDRAG_STOPPED = 50;
 
+		static const event_id_t PY_RESTART = 71;
+		static const event_id_t PY_RUN_COMMAND = 73;
+
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.

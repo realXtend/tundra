@@ -19,7 +19,6 @@ class KeyCommander(Component):
     
     def __init__(self):
         Component.__init__(self)
-        
         """
         This dictionary has the keyboard commands, well the
         event ids for different keys that are currently enabled
@@ -38,6 +37,8 @@ class KeyCommander(Component):
         For example both 'w' and 'uparrow' keypresses cause a MoveForwardPressed input event.
         """
         self.inputmap = {
+            r.PyRestart: self.restart_modulemanager,
+            r.PyRunCommand: self.run_commandpy
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
         }
         

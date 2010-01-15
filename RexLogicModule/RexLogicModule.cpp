@@ -126,6 +126,9 @@ void RexLogicModule::Initialize()
     eventmgr-> RegisterEvent (eid, Input::Events::MOVE_FORWARD_PRESSED, "MoveForwardPressed");
     eventmgr-> RegisterEvent (eid, Input::Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
 
+	eventmgr-> RegisterEvent (eid, Input::Events::PY_RESTART, "PyRestart");
+	eventmgr-> RegisterEvent (eid, Input::Events::PY_RUN_COMMAND, "PyRunCommand");
+
     eventmgr-> RegisterEvent (eid, Input::Events::KEY_PRESSED, "KeyPressed");
     eventmgr-> RegisterEvent (eid, Input::Events::KEY_RELEASED, "KeyReleased");
 

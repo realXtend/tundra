@@ -611,27 +611,33 @@ class EditGUI(Component):
         self.move_arrows.orientation = ort
   
     def hideArrows(self):
-        #print "Hiding arrows!"
-        if self.move_arrows is not None:
-            #pos = self.move_arrows.pos #very ugly hack... seems to correct the annoying error with grabbing an object the first time
-            #scale = self.move_arrows.scale
-            #print self.move_arrows.scale, self.move_arrows.pos
-            self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
-            self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
-        
-        self.arrow_grabbed_axis = None
-        self.arrow_grabbed = False
-        self.manipulator_state = self.MANIPULATE_NONE
-        
-        self.widget.move_button.setChecked(False)
-        self.widget.rotate_button.setChecked(False)
-        self.widget.scale_button.setChecked(False)
-        #XXX todo: change these after theres a ent.hide type way
+        try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
+            #print "Hiding arrows!"
+            if self.move_arrows is not None:
+                #pos = self.move_arrows.pos #very ugly hack... seems to correct the annoying error with grabbing an object the first time
+                #scale = self.move_arrows.scale
+                #print self.move_arrows.scale, self.move_arrows.pos
+                self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
+                self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
+            
+            self.arrow_grabbed_axis = None
+            self.arrow_grabbed = False
+            self.manipulator_state = self.MANIPULATE_NONE
+            
+            self.widget.move_button.setChecked(False)
+            self.widget.rotate_button.setChecked(False)
+            self.widget.scale_button.setChecked(False)
+            #XXX todo: change these after theres a ent.hide type way
+        except RuntimeError, e:
+            r.logDebug("hideArrows failed")
         
     def hideSelector(self):
-        if self.selection_box is not None:
-            self.selection_box.scale = 0.0, 0.0, 0.0
-            self.selection_box.pos = 0.0, 0.0, 0.0
+        try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
+            if self.selection_box is not None:
+                self.selection_box.scale = 0.0, 0.0, 0.0
+                self.selection_box.pos = 0.0, 0.0, 0.0
+        except RuntimeError, e:
+            r.logDebug("hideArrows failed")
             
     def LeftMouseDown(self, mouseinfo):
         #print "LeftMouseDown", mouseinfo, mouseinfo.x, mouseinfo.y
