@@ -129,11 +129,20 @@ void EC_OpenSimPrim::setMaterials(QVariantMap qvmap)
     QVariantMap::Iterator it = qvmap.begin();
     while(it != qvmap.end())
     {
-        //myProcessing(*it);
-        QString str = it.key();
+		QString key = it.key();
         QStringList strlist = it.value().toStringList();
+		MaterialData data;
+		data.Type = strlist[0].toUInt();
+		data.asset_id = strlist[1].toStdString();
+		Materials[key.toUInt()] = data;
         ++it;
     }
+	//RexLogic::SendRexPrimData(LocalId);
+	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        rexlogic_->SendRexPrimData(LocalId);
+	}
 }
 
 #ifdef _DEBUG
