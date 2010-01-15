@@ -1,10 +1,12 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 
+#include "EnvironmentEditor.h"
 #include "EnvironmentModule.h"
 #include "Entity.h"
 #include "TerrainDecoder.h"
 #include "Terrain.h"
-#include "EnvironmentEditor.h"
 #include "TerrainLabel.h"
 #include "Water.h"
 
@@ -19,7 +21,8 @@
 #include <UiWidgetProperties.h>
 
 #include <QUiLoader>
-/*#include <QPushButton>
+#include <QFile>
+#include <QPushButton>
 #include <QImage>
 #include <QLabel>
 #include <QColor>
@@ -30,7 +33,9 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <QColorDialog>
-#include <QComboBox>*/
+#include <QComboBox>
+#include <QCheckBox>
+#include <QScrollArea>
 
 namespace Environment
 {

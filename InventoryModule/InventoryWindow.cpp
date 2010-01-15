@@ -49,14 +49,17 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     buttonUpload_(0),
     buttonAddFolder_(0),
     buttonDeleteItem_(0),
-    buttonRename_(0),
+    buttonRename_(0)
+    /*,
     actionMenu_(0),
     actionDelete_(0),
     actionRename_(0),
     actionCut_(0),
     actionPaste_(0),
     actionNewFolder_(0),
-    actionOpen_(0)
+    actionOpen_(0),
+    actionCopyAssetId(0)
+    */
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
@@ -106,6 +109,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     // Connect selectionChanged
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+
+//    QObject::connect(treeView_, SIGNAL(itemClicked(QListWidgetItem *)), SLOT(FriendClicked(QListWidgetItem *)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -273,6 +278,7 @@ void InventoryWindow::InitInventoryWindow()
 
     // Actions
 /*
+    actionMenu_ = new QMenu();
     QObject::connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
     QObject::connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
     QObject::connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
@@ -280,6 +286,7 @@ void InventoryWindow::InitInventoryWindow()
     QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(removeColumn()));
     QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));}
     QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
+    actionCopyAssetId
 */
 }
 

@@ -6,8 +6,10 @@
 #include "UiModuleApi.h"
 #include "UiWidgetProperties.h"
 
-#include <QtGui>
-#include <QtCore>
+#include <QGraphicsProxyWidget>
+
+class QTimeLine;
+class QGraphicsItemAnimation;
 
 namespace UiServices
 {
@@ -15,19 +17,20 @@ namespace UiServices
 
     class UI_MODULE_API UiProxyWidget : public QGraphicsProxyWidget
     {
-    
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties);
         ~UiProxyWidget();
 
+        //! @return UiWidgetProperties.
+        UiWidgetProperties getWidgetProperties() const { return widget_properties_; }
+
+    protected:
         //! QGraphicsProxyWidget override functions
         void showEvent(QShowEvent *show_event);
         void hideEvent(QHideEvent *hide_event);
-
-        //! Getters
-        UiWidgetProperties getWidgetProperties();
+        void closeEvent(QCloseEvent *close_event);
 
     private:
         void InitAnimations();
@@ -40,6 +43,7 @@ namespace UiServices
         void AnimationStep(qreal step);
 
     signals:
+        void Closed();
         void Visible(bool);
     };
 

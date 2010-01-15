@@ -23,6 +23,7 @@
 #include <QRadioButton>
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QLabel>
 
 // Useful defines
 #define ENABLE(p) p->setEnabled(true);
@@ -35,7 +36,8 @@ MaterialWizard::MaterialWizard(Foundation::Framework *framework) :
     framework_(framework),
     proxyWidget_(0),
     mainWidget_(0),
-    currentOptions_(Material_None)
+    currentOptions_(Material_None),
+    scriptName_("")
 {
     InitWindow();
 }
@@ -197,7 +199,6 @@ void MaterialWizard::RefreshWidgets()
 
     QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
     labelCurrent->setText(GetCurrentMaterialFilename());
-
 
 
     /* OLD SHIT STARTS HERE
@@ -442,6 +443,7 @@ void MaterialWizard::InitWindow()
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
         mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "Material Wizard", true));
 
+    buttonCreate->setEnabled(false);
     RefreshWidgets();
 }
 

@@ -6,6 +6,7 @@
 #include "SoundServiceInterface.h"
 
 #include <QUiLoader>
+#include <QFile>
 #include <QAbstractSlider>
 
 #include "UiModule.h"
@@ -18,13 +19,13 @@ namespace OpenALAudio
     SoundSettings::SoundSettings(Foundation::Framework* framework) :
         framework_(framework)
     {
-        InitWindow();    
+        InitWindow();
     }
     
     SoundSettings::~SoundSettings()
     {
         SAFE_DELETE(settings_widget_);
-        settings_proxy_widget_ = 0;    
+        settings_proxy_widget_ = 0;
     }
 
     void SoundSettings::InitWindow()
@@ -47,7 +48,7 @@ namespace OpenALAudio
         settings_widget_ = loader.load(&file); 
         if (!settings_widget_)
             return;
-                        
+
         settings_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(settings_widget_, UiServices::UiWidgetProperties("Sound Settings", UiServices::SlideFromTop, settings_widget_->size()));
 
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();

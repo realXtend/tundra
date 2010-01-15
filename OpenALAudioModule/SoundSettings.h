@@ -20,26 +20,25 @@ namespace OpenALAudio
     class SoundSettings : public QObject
     {
         Q_OBJECT
-        
+
     public:
         SoundSettings(Foundation::Framework* framework);
         ~SoundSettings();
-        
+
     public slots:
         void MasterGainChanged(int value);
         void TriggeredGainChanged(int value);
         void AmbientGainChanged(int value);
-        
+
     private:
         void InitWindow();
-        
+
         Foundation::Framework* framework_;
-        
+
         //! Widget for sound settings
         QWidget *settings_widget_;
 
         //! Proxy Widget of ui
-        UiServices::UiProxyWidget *settings_proxy_widget_;        
+        UiServices::UiProxyWidget *settings_proxy_widget_;
     };
 }
-    

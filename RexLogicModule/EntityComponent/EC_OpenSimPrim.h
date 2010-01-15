@@ -175,13 +175,13 @@ namespace RexLogic
         //! Primitive texture entry data
         RexTypes::RexAssetID PrimDefaultTextureID;
         TextureMap PrimTextures; //not a property
-        
+
         Color PrimDefaultColor; //not a property
         ColorMap PrimColors; //not a property
-        
+
         uint8_t PrimDefaultMaterialType;
         MaterialTypeMap PrimMaterialTypes; //not a property
-        
+
         Real PrimDefaultRepeatU;
         Real PrimDefaultRepeatV;
         Real PrimDefaultOffsetU;

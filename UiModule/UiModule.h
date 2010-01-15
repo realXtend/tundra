@@ -8,6 +8,9 @@
 #include "UiModuleApi.h"
 #include "UiSceneManager.h"
 
+#include <QStringList>
+#include <QMap>
+
 namespace OgreRenderer
 {
     class QOgreUIView;

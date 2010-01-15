@@ -8,7 +8,6 @@
 #ifndef incl_InventoryModule_InventoryFolder_h
 #define incl_InventoryModule_InventoryFolder_h
 
-//#include "StableHeaders.h"
 #include "AbstractInventoryItem.h"
 
 namespace Inventory

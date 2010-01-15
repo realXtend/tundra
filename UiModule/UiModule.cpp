@@ -43,7 +43,7 @@ void UiModule::Initialize()
     if (ui_view_)
     {
         ui_scene_manager_ = new UiSceneManager(GetFramework(), ui_view_);
-        LogDebug("Accuired Ogre QGraphicsView shared pointer");
+        LogDebug("Acquired Ogre QGraphicsView shared pointer");
     }
 }
 
@@ -58,7 +58,6 @@ void UiModule::Update(f64 frametime)
 bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     QString category = service_category_identifiers_.keys().value(service_category_identifiers_.values().indexOf(category_id));
-
     if (category == "Framework")
     {
         switch (event_id)
@@ -76,7 +75,7 @@ bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         switch (event_id)
         {
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-            ui_scene_manager_->Disconnected();
+            ui_scene_manager_->Disconnect();
             break;
         default:
             break;
@@ -87,7 +86,7 @@ bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         switch (event_id)
         {
         case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
-            ui_scene_manager_->Connected();
+            ui_scene_manager_->Connect();
             break;
         default:
             break;

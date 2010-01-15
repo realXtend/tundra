@@ -9,7 +9,6 @@
 #define incl_InventoryModule_OpenSimInventoryDataModel_h
 
 #include "AbstractInventoryDataModel.h"
-//#include "CoreTypes.h"
 #include "RexTypes.h"
 #include "WorldStream.h"
 
@@ -137,10 +136,12 @@ namespace Inventory
         /// @param data Event data.
 //        void HandleResourceReady(Foundation::EventDataInterface *data);
 
-        /// Handles ASSET_READY event.
+        /// Handles ASSET_READY event for items to be downloaded (i.e. saved to disk).
         /// @param data Event data.
         void HandleAssetReadyForDownload(Foundation::EventDataInterface *data);
 
+        /// Handles ASSET_READY event for items to be opened.
+        /// @param data Event data.
         void HandleAssetReadyForOpen(Foundation::EventDataInterface *data);
 
 #ifdef _DEBUG
@@ -148,7 +149,7 @@ namespace Inventory
         void DebugDumpInventoryFolderStructure();
 #endif
 
-        typedef QMap<QPair<request_tag_t, RexTypes::asset_type_t>, QString> AssetRequestMap;
+        typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);

@@ -10,25 +10,31 @@
 
 #include <QOgreUIView.h>
 
+#include <QRectF>
+#include <QGraphicsItem>
+#include <QGraphicsLinearLayout>
+#include <QGraphicsWidget>
+
 namespace UiServices
 {
-    UiSceneManager::UiSceneManager(Foundation::Framework *framework, QGraphicsView *ui_view)
-        : QObject(),
-          framework_(framework),
-          ui_view_(ui_view),
-          container_widget_(new QGraphicsWidget())
+    UiSceneManager::UiSceneManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
+        QObject(),
+        framework_(framework),
+        ui_view_(ui_view),
+        container_widget_(new QGraphicsWidget())
     {
         if (ui_view_)
         {
-            InitMasterLayout();       
+            InitMasterLayout();
             SceneRectChanged(ui_view_->scene()->sceneRect());
-            QObject::connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ), this, SLOT( SceneRectChanged(const QRectF &) ));
+            QObject::connect(ui_view_->scene(), SIGNAL(sceneRectChanged(const QRectF &)),
+                this, SLOT(SceneRectChanged(const QRectF &)));
         }
         else
         {
             SAFE_DELETE(container_widget_);
             SAFE_DELETE(container_layout_);
-            UiModule::LogInfo("UiSceneManager >> Could not accuire UIView, skipping scene creation");
+            UiModule::LogError("UiSceneManager >> Could not acquire UIView, skipping scene creation");
         }
     }
 
@@ -41,14 +47,14 @@ namespace UiServices
     }
 
     /*************** UI Scene Manager Services ***************/
-    
+
     UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget)
     {
         return AddWidgetToCurrentScene(widget, UiWidgetProperties());
     }
 
     UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
-    {       
+    {
         UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
 
         if (AddProxyWidget(proxy_widget))
@@ -57,18 +63,17 @@ namespace UiServices
             return 0;
     }
 
-	bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *widget)
+    bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *widget)
     {
-
         if (ui_view_)
         {
             UiWidgetProperties properties = widget->getWidgetProperties();
-            if (properties.isShownAtToolbar())
-                main_panel_->AddWidget(widget, properties.getWidgetName());
+            if (properties.IsShownAtToolbar())
+                main_panel_->AddWidget(widget, properties.GetWidgetName());
 
-            if (properties.isFullscreen())
+            if (properties.IsFullscreen())
             {
-                if (properties.getWidgetName() == "Login")
+                if (properties.GetWidgetName() == "Login")
                     login_widget_ = widget;
                 container_layout_->addItem(widget);
             }
@@ -85,7 +90,7 @@ namespace UiServices
 
     /*************** UI Scene Manager Private functions ***************/
 
-    void UiSceneManager::RemoveProxyWidgetFromCurrentScene(const UiProxyWidget *widget)
+    void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)
     {
         ui_view_->scene()->removeItem((QGraphicsItem *)widget);
     }
@@ -108,28 +113,32 @@ namespace UiServices
             container_widget_->setGeometry(new_scene_rect);
     }
 
-    void UiSceneManager::Connected()
+    void UiSceneManager::Connect()
     {
         ClearContainerLayout();
         container_layout_->insertItem(0, main_panel_proxy_widget_);
         login_widget_->hide();
         main_panel_proxy_widget_->show();
+
+        emit Connected();
     }
 
-    void UiSceneManager::Disconnected()
+    void UiSceneManager::Disconnect()
     {
         ClearContainerLayout();
         container_layout_->insertItem(0, login_widget_);
         main_panel_proxy_widget_->hide();
         login_widget_->show();
-        
+
         if (ui_view_)
             SceneRectChanged(ui_view_->scene()->sceneRect());
+
+        emit Disconnected();
     }
 
     void UiSceneManager::ClearContainerLayout()
     {
-        for (int index = 0; index < container_layout_->count(); ++index)
+        for(int index = 0; index < container_layout_->count(); ++index)
             container_layout_->removeAt(index);
     }
 
@@ -139,7 +148,7 @@ namespace UiServices
         if (ui_view_)
         {
             QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
-            foreach (QGraphicsItem *widget, graphics_items)
+            foreach(QGraphicsItem *widget, graphics_items)
             {
                 UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
                 if (proxy_widget)
@@ -159,12 +168,12 @@ namespace UiServices
         if (ui_view_)
         {
             QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
-            foreach (QGraphicsItem *widget, graphics_items)
+            foreach(QGraphicsItem *widget, graphics_items)
             {
                 UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
                 if (proxy_widget)
                 {
-                    if (proxy_widget->getWidgetProperties().getWidgetName() == widget_name)
+                    if (proxy_widget->getWidgetProperties().GetWidgetName() == widget_name)
                         return proxy_widget;
                 }
             }

@@ -40,7 +40,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
-    
+
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
@@ -50,6 +50,10 @@ namespace OgreRenderer
         
     public:
         //! Constructor
+        //! \param framework Framework pointer.
+        //! \param config Config filename.
+        //! \param plugins Plugins filename.
+        //! \param window_title Renderer window title.
         Renderer(Foundation::Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title);
 
         //! Destructor
@@ -76,10 +80,10 @@ namespace OgreRenderer
 
         //! Subscribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
-        
+
         //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
-        
+
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
             \param id Resource id
@@ -87,21 +91,21 @@ namespace OgreRenderer
             \return pointer to resource, or null if not found
          */
         virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);   
-        
+
         //! Requests a renderer-specific resource to be downloaded from the asset system
         /*! A RESOURCE_READY event will be sent when the resource is ready to use
             \param id Resource id
             \param type Resource type
             \return Request tag, or 0 if request could not be queued
-         */        
-        virtual request_tag_t RequestResource(const std::string& id, const std::string& type);   
-        
+         */
+        virtual request_tag_t RequestResource(const std::string& id, const std::string& type);
+
         //! Removes a renderer-specific resource
         /*! \param id Resource id
             \param type Resource type
          */
-        virtual void RemoveResource(const std::string& id, const std::string& type);                    
-        
+        virtual void RemoveResource(const std::string& id, const std::string& type);
+
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -113,14 +117,14 @@ namespace OgreRenderer
 
         //! Returns Ogre scenemanager
         Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
-        
+
         //! Returns Ogre viewport
         Ogre::Viewport* GetViewport() const { return viewport_; }
-        
+
         //! Returns active camera
         /*! Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
             and use the EC_OgreCamera entity component + its placeable
-         */ 
+         */
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
@@ -131,10 +135,10 @@ namespace OgreRenderer
 
         //! Returns resource handler
         ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }
-        
+
         //! Removes log listener
         void RemoveLogListener();
-        
+
         //! Initializes renderer. Called by OgreRenderingModule
         /*! Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
          */
@@ -156,8 +160,8 @@ namespace OgreRenderer
          */
         void SetCurrentCamera(Ogre::Camera* camera);
 
-		//! Takes a screenshot and saves it to a file.
-		void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
+        //! Takes a screenshot and saves it to a file.
+        void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
 
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
@@ -168,7 +172,6 @@ namespace OgreRenderer
         CompositionHandler& GetCompositionHandler(){ return c_handler_; }
 
     private:
-
         //! Initialises Qt
         void InitializeQt();
 
@@ -179,45 +182,45 @@ namespace OgreRenderer
         /*! \param plugin_filename path & filename of the Ogre plugins file
          */
         void LoadPlugins(const std::string& plugin_filename);
-        
+
         //! Sets up Ogre resources based on resources.cfg
         void SetupResources();
-        
+
         //! Creates scenemanager & camera
         void SetupScene();
-    
+
         boost::mutex renderer_;
 
         //! Successfully initialized flag
         bool initialized_;
-        
+
         //! Ogre root object
         OgreRootPtr root_;
-        
+
         //! Scene manager
         Ogre::SceneManager* scenemanager_;
-        
+
         //! Default camera, used when no other camera exists
         Ogre::Camera* default_camera_;
 
         //! Current camera
         Ogre::Camera* camera_;
-        
+
         //! Viewport
         Ogre::Viewport* viewport_;
-        
+
         //! Rendering window
         Ogre::RenderWindow* renderwindow_;
-        
+
         //! Framework we belong to
         Foundation::Framework* framework_;
 
         //! Ogre log listener
         OgreLogListenerPtr log_listener_;
-        
+
         //! Resource handler
         ResourceHandlerPtr resource_handler_;
-        
+
         //! Renderer event category
         event_category_id_t renderercategory_id_;
 
@@ -229,16 +232,16 @@ namespace OgreRenderer
 
         //! filename for the Ogre3D configuration file
         std::string config_filename_;
-        
+
         //! filename for the Ogre3D plugins file
         std::string plugins_filename_;
 
         //! ray for raycasting, reusable
         Ogre::RaySceneQuery *ray_query_;
-        
+
         //! window title to be used when creating renderwindow
         std::string window_title_;
-        
+
         //! added resource directories
         StringVector added_resource_directories_;
 
@@ -252,7 +255,7 @@ namespace OgreRenderer
         QOgreWorldView *q_ogre_world_view_;
 
         //! handler for post-processing effects
-		CompositionHandler c_handler_;
+        CompositionHandler c_handler_;
 		
 		//! last window size used in rendering ui
 		int last_width_;

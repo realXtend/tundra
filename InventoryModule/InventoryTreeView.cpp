@@ -13,6 +13,7 @@
 #include <QWidget>
 #include <QDragEnterEvent>
 #include <QUrl>
+#include <QMenu>
 
 namespace Inventory
 {
@@ -26,11 +27,32 @@ InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
     setSelectionBehavior(QAbstractItemView::SelectItems);
     setAnimated(true);
     setAllColumnsShowFocus(true);
+    //CreateActions();
 }
 
 // virtual
 InventoryTreeView::~InventoryTreeView()
 {
+}
+
+void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
+{
+/*
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    //model()->flags(index);
+    QMenu *menu = new QMenu(this);
+    menu->addAction(actionDelete_);
+    menu->addAction(actionRename_);
+    menu->addAction(actionCut_);
+    menu->addAction(actionPaste_);
+    menu->addAction(actionNewFolder_);
+    menu->addAction(actionOpen_);
+    menu->addAction(actionCopyAssetId_);
+    menu->popup(event->globalPos());
+*/
 }
 
 void InventoryTreeView::dragEnterEvent(QDragEnterEvent *event)
@@ -98,6 +120,49 @@ void InventoryTreeView::dropEvent(QDropEvent *event)
     }
     else
         QTreeView::dropEvent(event);
+}
+
+void InventoryTreeView::Test()
+{
+    std::cout << "test" << std::endl;
+}
+
+void InventoryTreeView::CreateActions()
+{
+    actionDelete_ = new QAction(tr("&Delete"), this);
+    actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionDelete_->setStatusTip(tr("Delete this item"));
+    connect(actionDelete_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionRename_ = new QAction(tr("&Rename"), this);
+    //actionDelete_->setShortcuts();
+    actionDelete_->setStatusTip(tr("Rename this item"));
+    connect(actionRename_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionCut_ = new QAction(tr("&Cut"), this);
+    actionDelete_->setShortcuts(QKeySequence::Cut);
+    actionDelete_->setStatusTip(tr("Cut this item"));
+    connect(actionCut_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionPaste_ = new QAction(tr("&Patse"), this);
+    actionDelete_->setShortcuts(QKeySequence::Paste);
+    actionDelete_->setStatusTip(tr("Paste this item"));
+    connect(actionPaste_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionNewFolder_ = new QAction(tr("&New Folder"), this);
+    actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionDelete_->setStatusTip(tr("Create new folder"));
+    connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionOpen_ = new QAction(tr("&Open"), this);
+    actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionDelete_->setStatusTip(tr("Open this item"));
+    connect(actionOpen_, SIGNAL(triggered()), this, SLOT(Test()));
+
+    actionCopyAssetId_ = new QAction(tr("&Copy asset reference"), this);
+    //actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionDelete_->setStatusTip(tr("Delete this item"));
+    connect(actionCopyAssetId_, SIGNAL(triggered()), this, SLOT(Test()));
 }
 
 }

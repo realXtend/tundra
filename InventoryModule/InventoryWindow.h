@@ -21,8 +21,6 @@ class QPushButton;
 class QTreeWidgetItem;
 class QItemSelection;
 class QModelIndex;
-class QMenu;
-class QAction;
 QT_END_NAMESPACE
 
 namespace Foundation
@@ -147,27 +145,6 @@ namespace Inventory
 
         /// Rename button.
         QPushButton *buttonRename_;
-
-        /// Action menu.
-        QMenu *actionMenu_;
-
-        /// Delete action.
-        QAction *actionDelete_;
-
-        /// Rename action.
-        QAction *actionRename_;
-
-        /// Cut action.
-        QAction *actionCut_;
-
-        /// Paste action.
-        QAction *actionPaste_;
-
-        /// New Folder action.
-        QAction *actionNewFolder_;
-
-        /// Open action.
-        QAction *actionOpen_;
 
         /// Proxy Widget for ui
         UiServices::UiProxyWidget *proxyWidget_;

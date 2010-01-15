@@ -19,7 +19,7 @@ namespace Environment
     class EC_Water : public Foundation::ComponentInterface
     {
         Q_OBJECT
-        
+
         DECLARE_EC(EC_Water);
     public:
         virtual ~EC_Water();
@@ -33,7 +33,7 @@ namespace Environment
 
     private:
         EC_Water(Foundation::ModuleInterface* module);
-  
+
         void CreateOgreWaterObject();
 
         /// Just need to have this here to be able to destroy the Ogre data. 
@@ -42,8 +42,8 @@ namespace Environment
         //! Ogre scene node
         Ogre::SceneNode *scene_node_;
 
+        //! Ogre entity.
         Ogre::Entity *entity_;
-
     };
 }
 

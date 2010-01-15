@@ -10,9 +10,10 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreScriptEditor.h"
 #include "MaterialWizard.h"
+#include "EditorManager.h"
 
 #include <Inventory/InventoryEvents.h>
-#include <AssetEvents.h>
+#include <UiModule.h>
 
 #include <QStringList>
 #include <QVector>
@@ -25,7 +26,8 @@ OgreAssetEditorModule::OgreAssetEditorModule() :
     inventoryEventCategory_(0),
     assetEventCategory_(0),
     resourceEventCategory_(0),
-    materialWizard_(0)
+    materialWizard_(0),
+    editorManager_(0)
 {
 }
 
@@ -65,18 +67,19 @@ void OgreAssetEditorModule::PostInitialize()
     if (resourceEventCategory_ == 0)
         LogError("Failed to query \"Resource\" event category");
 
-     materialWizard_ = new MaterialWizard(framework_);
+    materialWizard_ = new MaterialWizard(framework_);
+    editorManager_ = new EditorManager();
+
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+        QObject::connect(ui_module->GetSceneManager(), SIGNAL(Disconnected()), editorManager_, SLOT(DeleteAll()));
 }
 
 void OgreAssetEditorModule::Uninitialize()
 {
-    AssetEditorMapIter it(assetEditors_);
-    while(it.hasNext())
-    {
-        QObject *editor = it.next().value();
-        SAFE_DELETE(editor);
-    }
-
+    SAFE_DELETE(materialWizard_);
+    SAFE_DELETE(editorManager_);
     LogInfo("System " + Name() + " uninitialized.");
 }
 
@@ -98,27 +101,22 @@ bool OgreAssetEditorModule::HandleEvent(
             switch(at)
             {
             case RexTypes::RexAT_ParticleScript:
-            {
-                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(downloaded->inventoryId, downloaded->requestTag));
-                if (it == assetEditors_.end())
-                {
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, downloaded->name.c_str());
-                    assetEditors_[qMakePair(downloaded->inventoryId, downloaded->requestTag)] = editor;
-                    editor->HandleAssetReady(downloaded->asset);
-                    downloaded->handled = true;
-                }
-                break;
-            }
             case RexTypes::RexAT_MaterialScript:
             {
-                AssetEditorMap::iterator it = assetEditors_.find(qMakePair(downloaded->inventoryId, downloaded->requestTag));
-                if (it == assetEditors_.end())
+                // Create new editor if it doesn't already exist.
+                if (!editorManager_->Exists(QString(downloaded->inventoryId.ToString().c_str()), downloaded->assetType))
                 {
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, at, downloaded->name.c_str());
-                    assetEditors_[qMakePair(downloaded->inventoryId, downloaded->requestTag)] = editor;
+                    QString id = downloaded->inventoryId.ToString().c_str();
+                    QString name = downloaded->name.c_str();
+
+                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, name);
+                    QObject::connect(editor, SIGNAL(Closed(const QString &, RexTypes::asset_type_t)),
+                        editorManager_, SLOT(Delete(const QString &, RexTypes::asset_type_t)));
+
+                    editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
-                    downloaded->handled = true;
                 }
+                downloaded->handled = true;
                 break;
             }
             default:

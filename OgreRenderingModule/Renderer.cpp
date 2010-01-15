@@ -64,14 +64,14 @@ namespace OgreRenderer
         framework_(framework),
         scenemanager_(0),
         default_camera_(0),
-        camera_(0),       
+        camera_(0),
         renderwindow_(0),
         viewport_(0),
         object_id_(0),
         group_id_(0),
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
-        config_filename_ (config),
-        plugins_filename_ (plugins),
+        config_filename_(config),
+        plugins_filename_(plugins),
         ray_query_(0),
         window_title_(window_title),
         main_window_(0),
@@ -114,16 +114,16 @@ namespace OgreRenderer
         resource_handler_.reset();
         root_.reset();
     }
-    
+
     void Renderer::RemoveLogListener()
     {
         if (log_listener_.get())
         {
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();
-        }        
+        }
     }
-    
+
     void Renderer::InitializeQt()
     {
         main_window_ = new QWidget();
@@ -155,9 +155,8 @@ namespace OgreRenderer
         if (initialized_)
             return;
 
-        std::string logfilepath;
-        std::string rendersystem_name;
-        Ogre::RenderSystem *rendersystem;
+        std::string logfilepath, rendersystem_name;
+        Ogre::RenderSystem *rendersystem = 0;
 
         // Some pretty printing
         OgreRenderingModule::LogDebug("\n\nINITIALIZING OGRE \n================================================================\n");
@@ -178,34 +177,37 @@ namespace OgreRenderer
         int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
-        // Be sure that window is not out of boundaries        
-        if (window_left < 0) window_left = 0;
-        if (window_top < 25) window_top = 25;
+
+        // Be sure that window is not out of boundaries.
+        if (window_left < 0)
+            window_left = 0;
+        if (window_top < 25)
+            window_top = 25;
 
         // Load plugins
         LoadPlugins(plugins_filename_);
-        
-        #ifdef _WINDOWS
+
+#ifdef _WINDOWS
         // WIN default to DirectX
         rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
-        #else
+#else
         // X11/MAC default to OpenGL
         rendersystem_name = "OpenGL Rendering Subsystem";
         framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
-        #endif
+#endif
 
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
-        
-        #ifdef _WINDOWS
+
+#ifdef _WINDOWS
         // If windows did not have DirectX fallback to OpenGL
         if (!rendersystem)
             rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
-        #endif
-        
+#endif
+
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
-        
+
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
         // Initialise but dont create rendering window yet
@@ -235,10 +237,10 @@ namespace OgreRenderer
         if (renderwindow_)
         {
             OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
-            renderwindow_->setDeactivateOnFocusChange(false);            
+            renderwindow_->setDeactivateOnFocusChange(false);
             SetupResources();
             SetupScene();
-            initialized_ = true;          
+            initialized_ = true;
         }
         else
             throw Exception("Could not create Ogre rendering window");
@@ -292,7 +294,7 @@ namespace OgreRenderer
             }
         }
     }
-    
+
     void Renderer::SetupResources()
     {
         Ogre::ConfigFile cf;
@@ -300,7 +302,7 @@ namespace OgreRenderer
 
         Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
         Ogre::String sec_name, type_name, arch_name;
-        
+
         while(seci.hasMoreElements())
         {
             sec_name = seci.peekNextKey();
@@ -313,16 +315,16 @@ namespace OgreRenderer
                 Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, sec_name);
             }
         }
-        
+
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
-    
+
     void Renderer::SetupScene()
     {
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
-        default_camera_ = scenemanager_->createCamera("DefaultCamera");       
-        viewport_ = renderwindow_->addViewport(default_camera_);       
-                
+        default_camera_ = scenemanager_->createCamera("DefaultCamera");
+        viewport_ = renderwindow_->addViewport(default_camera_);
+
         default_camera_->setNearClipDistance(0.1f);
         default_camera_->setFarClipDistance(2000.f);
         default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
@@ -370,9 +372,9 @@ namespace OgreRenderer
     
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
     {
-        if (!camera) 
+        if (!camera)
             camera = default_camera_;
-            
+
         if (viewport_)
         {
             viewport_->setCamera(camera);
@@ -400,14 +402,15 @@ namespace OgreRenderer
 
             // Compositing back buffer
             QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
-            #ifdef _DEBUG
+
+#ifdef _DEBUG
             buffer.fill(Qt::transparent);
-            #endif
+#endif
 
             // Paint ui view into buffer
             QPainter painter(&buffer);
             q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
-            
+
             // Blit ogre view into buffer
             Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
             Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
@@ -436,17 +439,18 @@ namespace OgreRenderer
         }
         return 0; // should never happen
     }
-    
+
     // Get the mesh information for the given mesh. Version which supports animation
     // Adapted from http://www.ogre3d.org/wiki/index.php/Raycasting_to_the_polygon_level
-    void GetMeshInformation(Ogre::Entity *entity,
-                                    std::vector<Ogre::Vector3>& vertices,
-                                    std::vector<Ogre::Vector2>& texcoords,
-                                    std::vector<uint>& indices,
-                                    std::vector<uint>& submeshstartindex,                                  
-                                    const Ogre::Vector3 &position,
-                                    const Ogre::Quaternion &orient,
-                                    const Ogre::Vector3 &scale)
+    void GetMeshInformation(
+        Ogre::Entity *entity,
+        std::vector<Ogre::Vector3>& vertices,
+        std::vector<Ogre::Vector2>& texcoords,
+        std::vector<uint>& indices,
+        std::vector<uint>& submeshstartindex,
+        const Ogre::Vector3 &position,
+        const Ogre::Quaternion &orient,
+        const Ogre::Vector3 &scale)
     {
         bool added_shared = false;
         size_t current_offset = 0;
@@ -455,28 +459,23 @@ namespace OgreRenderer
         size_t index_offset = 0;
         size_t vertex_count = 0;
         size_t index_count = 0;
+        Ogre::MeshPtr mesh = entity->getMesh();
 
-       Ogre::MeshPtr mesh = entity->getMesh();
+        bool useSoftwareBlendingVertices = entity->hasSkeleton();
 
-
-       bool useSoftwareBlendingVertices = entity->hasSkeleton();
-
-       if (useSoftwareBlendingVertices)
-       {
-          entity->_updateAnimation();
-       }
+        if (useSoftwareBlendingVertices)
+            entity->_updateAnimation();
 
         submeshstartindex.resize(mesh->getNumSubMeshes());
-        
+
         // Calculate how many vertices and indices we're going to need
         for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh( i );
-
             // We only need to add the shared vertices once
-            if(submesh->useSharedVertices)
+            if (submesh->useSharedVertices)
             {
-                if( !added_shared )
+                if (!added_shared)
                 {
                     vertex_count += mesh->sharedVertexData->vertexCount;
                     added_shared = true;
@@ -497,29 +496,28 @@ namespace OgreRenderer
         vertices.resize(vertex_count);
         texcoords.resize(vertex_count);
         indices.resize(index_count);
-   
+
         added_shared = false;
 
         // Run through the submeshes again, adding the data into the arrays
-        for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+        for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh(i);
 
-          //----------------------------------------------------------------
-          // GET VERTEXDATA
-          //----------------------------------------------------------------
+            //----------------------------------------------------------------
+            // GET VERTEXDATA
+            //----------------------------------------------------------------
 
             //Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-          Ogre::VertexData* vertex_data;
+            Ogre::VertexData* vertex_data;
 
-          //When there is animation:
-          if(useSoftwareBlendingVertices)
-             vertex_data = submesh->useSharedVertices ? entity->_getSkelAnimVertexData() : entity->getSubEntity(i)->_getSkelAnimVertexData();
-          else
-             vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+            //When there is animation:
+            if (useSoftwareBlendingVertices)
+                vertex_data = submesh->useSharedVertices ? entity->_getSkelAnimVertexData() : entity->getSubEntity(i)->_getSkelAnimVertexData();
+            else
+                vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
 
-
-            if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
+            if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
             {
                 if(submesh->useSharedVertices)
                 {
@@ -531,7 +529,7 @@ namespace OgreRenderer
                     vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
                 const Ogre::VertexElement *texElem = 
                     vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
-         
+
                 Ogre::HardwareVertexBufferSharedPtr vbuf =
                     vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
 
@@ -542,9 +540,9 @@ namespace OgreRenderer
                 //  as second argument. So make it float, to avoid trouble when Ogre::Real will
                 //  be comiled/typedefed as double:
                 //      Ogre::Real* pReal;
-                float* pReal;
+                float* pReal = 0;
 
-                for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+                for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
                 {
                     posElem->baseVertexPointerToElement(vertex, &pReal);
 
@@ -553,7 +551,7 @@ namespace OgreRenderer
                     vertices[current_offset + j] = (orient * (pt * scale)) + position;
                     if (texElem)
                     {
-                        texElem->baseVertexPointerToElement(vertex, &pReal);  
+                        texElem->baseVertexPointerToElement(vertex, &pReal);
                         texcoords[current_offset + j] = Ogre::Vector2(pReal[0], pReal[1]);
                     }
                     else
@@ -563,7 +561,6 @@ namespace OgreRenderer
                 vbuf->unlock();
                 next_offset += vertex_data->vertexCount;
             }
-
 
             Ogre::IndexData* index_data = submesh->indexData;
             size_t numTris = index_data->indexCount / 3;
@@ -577,57 +574,54 @@ namespace OgreRenderer
 
             size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
 
-            if ( use32bitindexes )
-            {
+            if (use32bitindexes)
                 for ( size_t k = 0; k < numTris*3; ++k)
-                {
                     indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
-                }
-            }
             else
-            {
                 for ( size_t k = 0; k < numTris*3; ++k)
-                {
-                    indices[index_offset++] = static_cast<uint>(pShort[k]) +
-                        static_cast<unsigned long>(offset);
-                }
-            }
+                    indices[index_offset++] = static_cast<uint>(pShort[k]) + static_cast<unsigned long>(offset);
 
             ibuf->unlock();
             current_offset = next_offset;
         }
-    } 
-    
-    Ogre::Vector2 FindUVs(const Ogre::Ray& ray, float distance, const std::vector<Ogre::Vector3>& vertices, const std::vector<Ogre::Vector2>& texcoords, const std::vector<uint> indices, uint foundindex)
+    }
+
+    Ogre::Vector2 FindUVs(
+        const Ogre::Ray& ray,
+        float distance,
+        const std::vector<Ogre::Vector3>& vertices,
+        const std::vector<Ogre::Vector2>& texcoords,
+        const std::vector<uint> indices, uint foundindex)
     {
         Ogre::Vector3 point = ray.getPoint(distance);
-         
+
         Ogre::Vector3 t1 = vertices[indices[foundindex]];
         Ogre::Vector3 t2 = vertices[indices[foundindex+1]];
         Ogre::Vector3 t3 = vertices[indices[foundindex+2]];
-         
+
         Ogre::Vector3 v1 = point - t1;
         Ogre::Vector3 v2 = point - t2;
         Ogre::Vector3 v3 = point - t3;
-        
+
         float area1 = (v2.crossProduct(v3)).length() / 2.0f;
         float area2 = (v1.crossProduct(v3)).length() / 2.0f;
         float area3 = (v1.crossProduct(v2)).length() / 2.0f;
         float sum_area = area1 + area2 + area3;
         if (sum_area == 0.0)
             return Ogre::Vector2(0.0f, 0.0f);
-        
+
         Ogre::Vector3 bary(area1 / sum_area, area2 / sum_area, area3 / sum_area);
-        Ogre::Vector2 t = texcoords[indices[foundindex]] * bary.x + texcoords[indices[foundindex+1]] * bary.y + texcoords[indices[foundindex+2]] * bary.z;  
+        Ogre::Vector2 t = texcoords[indices[foundindex]] * bary.x + texcoords[indices[foundindex+1]] * bary.y + texcoords[indices[foundindex+2]] * bary.z;
 
         return t;
-    }  
+    }
 
     Foundation::RaycastResult Renderer::Raycast(int x, int y)
     {
         Foundation::RaycastResult result;
         result.entity_ = 0; 
-        if (!initialized_) return result;
+        if (!initialized_)
+            return result;
 
         Real screenx = x / (Real)renderwindow_->getWidth();
         Real screeny = y / (Real)renderwindow_->getHeight();
@@ -646,7 +640,7 @@ namespace OgreRenderer
             Ogre::RaySceneQueryResultEntry &entry = results[i];
             if (!entry.movable)
                 continue;
-                
+
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;
@@ -655,15 +649,16 @@ namespace OgreRenderer
             try
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
-            } catch (Ogre::InvalidParametersException)
+            }
+            catch (Ogre::InvalidParametersException)
             {
                 continue;
             }
-                
+
             EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
             if (!placeable)
                 continue;
-                            
+
             int current_priority = placeable->GetSelectPriority();
             if (current_priority > best_priority)
                 best_priority = current_priority;
@@ -684,29 +679,26 @@ namespace OgreRenderer
             Ogre::RaySceneQueryResultEntry &entry = results[i];
             // Stop checking if we have found a raycast hit that is closer
             // than all remaining entities, and the priority found is best possible
-            if ((closest_distance >= 0.0f) &&
-                (closest_distance < entry.distance) && (closest_priority >= best_priority))
-            {
+            if ((closest_distance >= 0.0f) && (closest_distance < entry.distance) && (closest_priority >= best_priority))
                 break;
-            }
 
             if (!entry.movable)
                 continue;
-                
+
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;
-                
-            
+
             Scene::Entity *entity = 0;
             try
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
-            } catch (Ogre::InvalidParametersException)
+            }
+            catch (Ogre::InvalidParametersException)
             {
                 continue;
             }
-                
+
             int current_priority = minimum_priority;
             {
                 EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
@@ -723,13 +715,13 @@ namespace OgreRenderer
             {
                 Ogre::Entity* ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
                 assert(ogre_entity != 0);
-            
+
                 // get the mesh information
-                GetMeshInformation( ogre_entity, vertices, texcoords, indices, submeshstartindex,
-                            ogre_entity->getParentNode()->_getDerivedPosition(),
-                            ogre_entity->getParentNode()->_getDerivedOrientation(),
-                            ogre_entity->getParentNode()->_getDerivedScale());
-        
+                GetMeshInformation(ogre_entity, vertices, texcoords, indices, submeshstartindex,
+                    ogre_entity->getParentNode()->_getDerivedPosition(),
+                    ogre_entity->getParentNode()->_getDerivedOrientation(),
+                    ogre_entity->getParentNode()->_getDerivedScale());
+
                 // test for hitting individual triangles on the mesh
                 for (uint j = 0; j < indices.size(); j += 3)
                 {
@@ -745,15 +737,15 @@ namespace OgreRenderer
                                 // this is the closest/best so far, save it
                                 closest_distance = hit.second;
                                 closest_priority = current_priority;
-                                
+
                                 Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
                                 Ogre::Vector3 point = ray.getPoint(closest_distance);
-                                
+
                                 result.entity_ = entity;
                                 result.pos_ = Vector3df(point.x, point.y, point.z);
                                 result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
                                 result.u_ = uv.x;
-                                result.v_ = uv.y;                
+                                result.v_ = uv.y;
                             }
                         }
                     }
@@ -769,9 +761,9 @@ namespace OgreRenderer
                         // this is the closest/best so far, save it
                         closest_distance = entry.distance;
                         closest_priority = current_priority;
-                        
+
                         Ogre::Vector3 point = ray.getPoint(closest_distance);
-                        
+
                         result.entity_ = entity;
                         result.pos_ = Vector3df(point.x, point.y, point.z);
                         result.submesh_ = 0;
@@ -781,10 +773,10 @@ namespace OgreRenderer
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     std::string Renderer::GetUniqueObjectName()
     {
         return "obj" + ToString<uint>(object_id_++);
@@ -794,41 +786,40 @@ namespace OgreRenderer
     {
         return resource_handler_->GetResource(id, type);
     }
-    
-    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)   
+
+    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)
     {
         return resource_handler_->RequestResource(id, type);
     }
-    
+
     void Renderer::RemoveResource(const std::string& id, const std::string& type)
     {
-        return resource_handler_->RemoveResource(id, type);    
+        return resource_handler_->RemoveResource(id, type);
     }
 
-	void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
-	{
-		if (renderwindow_) 
-		{
-			Ogre::String file = filePath + fileName;
-			renderwindow_->writeContentsToFile(file);
-			//std::cout << "Took a screenshot!" << std::endl;
-		}
-	}
-	
-	void Renderer::AddResourceDirectory(const std::string& directory)
-	{       
+    void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
+    {
+        if (renderwindow_)
+        {
+            Ogre::String file = filePath + fileName;
+            renderwindow_->writeContentsToFile(file);
+        }
+    }
+
+    void Renderer::AddResourceDirectory(const std::string& directory)
+    {
         // Check to not add the same directory more than once
         for (uint i = 0; i < added_resource_directories_.size(); ++i)
         {
             if (added_resource_directories_[i] == directory)
                 return;
         }
-        
+
         Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
 
         std::string groupname = "grp" + ToString<uint>(group_id_++);
-        
-        // Check if resource group already exists (should not)        
+
+        // Check if resource group already exists (should not).
         bool exists = false;
         Ogre::StringVector groups = resgrpmgr.getResourceGroups();
         for (uint i = 0; i < groups.size(); ++i)
@@ -857,7 +848,7 @@ namespace OgreRenderer
             resgrpmgr.initialiseResourceGroup(groupname);
         }
         catch (...) {}
-        
+
         added_resource_directories_.push_back(directory);
     }
 }

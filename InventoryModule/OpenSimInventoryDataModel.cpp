@@ -292,7 +292,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         if (!itemOpen.overrideDefaultHandler)
         {
             emit DownloadStarted(asset_id.c_str());
-            openRequests_[qMakePair(tag, asset_type)] = asset->GetID();
+            openRequests_[qMakePair(tag, asset->GetID())] = asset->GetName();
         }
     }
 
@@ -363,7 +363,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag)
             {
-                downloadRequests_[qMakePair(tag, asset_type)] = fullFilename;
+                downloadRequests_[qMakePair(tag, asset->GetID())] = fullFilename;
                 emit DownloadStarted(id.c_str());
             }
         }
@@ -437,7 +437,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, asset_type));
+    AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_)));
     if (i == downloadRequests_.end())
         return;
 
@@ -479,7 +479,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    AssetRequestMap::iterator i = openRequests_.find(qMakePair(tag, asset_type));
+    AssetRequestMap::iterator i = openRequests_.find(qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_)));
     if (i == openRequests_.end())
         return;
 
@@ -496,11 +496,11 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     itemDownloaded.asset = assetReady->asset_;
     itemDownloaded.requestTag = tag;
     itemDownloaded.assetType = asset_type;
+    itemDownloaded.name = i.value().toStdString();
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-    if (!itemDownloaded.handled)
-        ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
-        std::cout << "jep" << std::endl;
+    ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
+    //if (!itemDownloaded.handled)
 
     openRequests_.erase(i);
 }
