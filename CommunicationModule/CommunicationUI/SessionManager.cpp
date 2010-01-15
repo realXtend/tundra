@@ -64,8 +64,8 @@ namespace UiManagers
         
         // FILE MENU
         QMenu *file_menu = new QMenu("File", main_parent_);
-        file_menu->addAction("Hide", this, SLOT( Hide() ));
-        file_menu->setEnabled(false); // Can't support hide on external mode
+        QAction *hide_action = file_menu->addAction("Hide", this, SLOT( Hide() ));
+        hide_action->setEnabled(false); // Can't support hide on external mode
 
         // STATUS menu
         QMenu *status_menu = new QMenu("Status", main_parent_);
@@ -78,7 +78,7 @@ namespace UiManagers
         extended_away_status = status_menu->addAction("Extended Away", this, SLOT( StatusExtendedAway() ));
         busy_status = status_menu->addAction("Busy", this, SLOT( StatusBusy() ));
         hidden_status = status_menu->addAction("Hidden", this, SLOT( StatusHidden() ));
-        
+
 		set_status_message->setIcon(QIcon(":images/iconRename.png"));
         available_status->setCheckable(true);
         available_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("available"));
