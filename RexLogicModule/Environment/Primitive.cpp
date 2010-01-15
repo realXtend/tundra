@@ -867,11 +867,16 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
         while (j != tex_requests.end())
         {
             std::string texname = (*j);
-            request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
+            
+            // Request texture if don't have it yet
+            if (!renderer->GetResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic()))
+            {
+                request_tag_t tag = renderer->RequestResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic());
              
-            // Remember that we are going to get a resource event for this entity
-            if (tag)
-                prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
+                // Remember that we are going to get a resource event for this entity
+                if (tag)
+                    prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
+            }
             
             ++j;
         }
