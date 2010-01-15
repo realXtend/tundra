@@ -87,8 +87,6 @@ namespace Environment
         //! Handle resource ready event that will return the texture that has been requested.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
 
-        //void SetTerrainTextureID();
-
         static const int cHeightmapImageWidth  = 256;
         static const int cHeightmapImageHeight = 256;
         static const int cNumberOfTerrainTextures = 4;
@@ -97,8 +95,11 @@ namespace Environment
         //! Create new terrain heightmap texture using terrain height information.
         void UpdateTerrain();
 
-        //! Get new height ranges for each terrain texture.
+        //! Get new height ranges for a each terrain texture.
         void UpdateTerrainTextureRanges();
+
+        //! Get new terrain texture asset ids from the terrain object and send a asset request to the texture decoder.
+        void UpdateTerrainTextures();
 
         void UpdateWaterGeometry(int state);
         void UpdateWaterHeight();
@@ -115,9 +116,10 @@ namespace Environment
         //! Reads new texture names from line-edit fields and change those textures in EC_OgreSky if they have changed.
         void ChangeSkyTextures();
 
-        //! Get new sky texture names from sky object.
+        //! Get new sky texture names from sky object and insert them into texture lineedit fields.
         void UpdateSkyTextureNames();
 
+        //! Reads sky properties values from QSpinboxes and send them to EC_Sky object.
         void ChangeSkyProperties();
 
         //! Change state of sky enable check box.
@@ -141,12 +143,8 @@ namespace Environment
         //! Called when apply button have been pressed on terrain texture tab window.
         void ChangeTerrainTexture();
 
-        //! Called when user change some of the height values.
-        void HeightValueChanged(double height);
-
         //! Adjust Water check button.
         void ToggleWaterCheckButton();
-
 
         void UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
 
@@ -200,7 +198,7 @@ namespace Environment
         //! Asset_tags for terrain texture requests.
         std::vector<request_tag_t> terrain_texture_requests_;
 
-        //! Terrain texture id list.
+        //! Terrain texture asset id list.
         std::vector<std::string> terrain_texture_id_list_;
 
         //! Return heightmap smallest and largest value (first = min and second = max).

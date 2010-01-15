@@ -54,8 +54,7 @@ namespace Environment
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-        bool HandleNetworkEvent(Foundation::EventDataInterface* data);
-        bool HandleNetworkStateEvent(Foundation::EventDataInterface* data);
+        /// Get terrain texture ids, terrain height and water height values.
         bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
 
         /// @return The terrain handler object that manages reX terrain logic.
@@ -73,6 +72,9 @@ namespace Environment
         /// @return The water handler.
         WaterPtr GetWaterHandler();
 
+        /// Sends new terrain texture into the server.
+        /// @param new_texture_id texture asset id that we want to use.
+        /// @param texture_index switch texture we want to change range [0 - 3].
         void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
         /// Change new terrain height value,
@@ -81,7 +83,7 @@ namespace Environment
         /// @Param corner what texture height we want to change.
         void SendTextureHeightMessage(Real start_height, Real height_range, uint corner);
 
-        /*! Modify land message Used to send a to server.
+        /*! Sends modify land message into the server.
          *  @param x coordinate of terrain texture.
          *  @param y coordinate of terrain texture.
          *  @param brush brush size OpenSim supports following brush sizes (small = 0, medium = 1 and large = 2)
@@ -164,16 +166,11 @@ namespace Environment
         /// PostProcess dialog pointer
         PostProcessWidgetPtr postprocess_dialog_;
 
+        /// WorldStream will handle those network messages that we are wishing to send.
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 
+        /// Wait for new terrain heightmap information.
         bool waiting_for_regioninfomessage_;
-
-        /// Active scene ptr
-        //Scene::ScenePtr activeScene_;
-       
-        
-
-
     };
 }
 

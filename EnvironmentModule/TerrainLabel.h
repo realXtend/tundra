@@ -18,13 +18,13 @@ namespace Environment
         virtual ~TerrainLabel();
 
     signals:
-        //! Emitted when mouse event has happened inside this label.
+        //! Emitted when mouse event has triggered inside this label.
         void SendMouseEvent(QMouseEvent *ev);
 
     protected:
-        void mousePressEvent(QMouseEvent *ev);
-        void mouseMoveEvent(QMouseEvent *ev);
-        void mouseReleaseEvent(QMouseEvent *ev);
+        void mousePressEvent(QMouseEvent *event);
+        void mouseMoveEvent(QMouseEvent *event);
+        void mouseReleaseEvent(QMouseEvent *event);
     };
 }
 

@@ -20,11 +20,12 @@
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"
-//#include "RexLogicModule.h"
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
+
+#include "Entity.h"
 
 namespace Environment
 {
@@ -76,6 +77,8 @@ namespace
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
         assert(terrainMaterial.get());
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName);
+
+        emit TerrainTextureChanged();
     }
 
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)

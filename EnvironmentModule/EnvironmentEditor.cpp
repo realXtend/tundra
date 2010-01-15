@@ -1,6 +1,7 @@
 #include "StableHeaders.h"
 
 #include "EnvironmentModule.h"
+#include "Entity.h"
 #include "TerrainDecoder.h"
 #include "Terrain.h"
 #include "EnvironmentEditor.h"
@@ -18,7 +19,7 @@
 #include <UiWidgetProperties.h>
 
 #include <QUiLoader>
-#include <QPushButton>
+/*#include <QPushButton>
 #include <QImage>
 #include <QLabel>
 #include <QColor>
@@ -29,7 +30,7 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <QColorDialog>
-#include <QComboBox>
+#include <QComboBox>*/
 
 namespace Environment
 {
@@ -37,6 +38,7 @@ namespace Environment
     environment_module_(environment_module),
     editor_widget_(0),
     action_(Flatten),
+    brush_size_(Small),
     sky_type_(OgreRenderer::SKYTYPE_NONE),
     ambient_(false),
     sun_color_picker_(0),
@@ -172,7 +174,7 @@ namespace Environment
         QWidget *map_widget = editor_widget_->findChild<QWidget *>("map_widget");
         if(map_widget)
         {
-            TerrainLabel *label = new TerrainLabel(map_widget, 0);
+            TerrainLabel *label = new TerrainLabel(map_widget);
             label->setObjectName("map_label");
             QObject::connect(label, SIGNAL(SendMouseEvent(QMouseEvent*)), this, SLOT(HandleMouseEvent(QMouseEvent*)));
 
@@ -726,7 +728,7 @@ namespace Environment
                 d_spin_box->setValue(param.distance);
 
                 text_label = new QLabel(properties_frame);
-                text_label->setText("Tilling");
+                text_label->setText("Tiling");
                 text_label->move(10, 45);
                 text_label->show();
 
@@ -852,7 +854,7 @@ namespace Environment
                 d_spin_box->setValue(param.curvature);
 
                 text_label = new QLabel(properties_frame);
-                text_label->setText("Tilling");
+                text_label->setText("Tiling");
                 text_label->move(70, 45);
                 text_label->show();
 
@@ -1372,6 +1374,34 @@ namespace Environment
         }
     }
 
+    void EnvironmentEditor::UpdateTerrainTextures()
+    {
+        TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(!terrain.get())
+            return;
+
+        QLineEdit *line_edit = 0;
+        for(uint i = 0; i < cNumberOfTerrainTextures; i++)
+        {
+            //Get terrain texture asset ids so that we can request those image resources.
+            RexTypes::RexAssetID terrain_id = terrain->GetTerrainTextureID(i);
+            QString line_edit_name("texture_line_edit_" + QString("%1").arg(i + 1));
+
+            // Check if terrain texture hasn't changed for last time, if not we dont need to request a new texture resource and we can continue on next texture.
+            if(terrain_texture_id_list_[i] == terrain_id)
+                continue;
+
+            terrain_texture_id_list_[i] = terrain_id;
+
+            line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
+            if(!line_edit)
+                continue;
+            line_edit->setText(QString::fromStdString(terrain_id));
+
+            terrain_texture_requests_[i] = RequestTerrainTexture(i);
+        }
+    }
+
     void EnvironmentEditor::LineEditReturnPressed()
     {
         assert(environment_module_);
@@ -1453,11 +1483,6 @@ namespace Environment
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
-    void EnvironmentEditor::HeightValueChanged(double height)
-    {
-        //environment_module_->SendTextureHeightMessage();
-    }
-
     void EnvironmentEditor::UpdateTerrain()
     {
         assert(environment_module_);
@@ -1471,6 +1496,7 @@ namespace Environment
         if(!terrain.get())
             return;
 
+        QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         CreateHeightmapImage();
     }
 
@@ -1614,11 +1640,19 @@ namespace Environment
 
     void EnvironmentEditor::TabWidgetChanged(int index)
     {
-        if(index == 0) // Map tab
+        const QTabWidget *sender = qobject_cast<QTabWidget *>(QObject::sender());
+        if(!sender)
+            return;
+
+        QWidget *tab = sender->currentWidget();
+        if(!tab)
+            return;
+
+        if(tab->objectName() == "edit_terrain") // Map tab
         {
             UpdateTerrain();
         }
-        else if(index == 1) // Texture tab
+        else if(tab->objectName() == "edit_terrain_texture") // Texture tab
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
