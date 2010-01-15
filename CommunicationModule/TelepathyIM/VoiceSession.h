@@ -28,6 +28,8 @@ namespace TelepathyIM
 		Q_OBJECT
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        static const int AUDIO_BUFFER_SIZE = 1024;
+
 
 	public:
 		VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel);
@@ -50,8 +52,6 @@ namespace TelepathyIM
         virtual bool IsSendingVideoData() const;
         virtual bool IsReceivingAudioData() const;
         virtual bool IsReceivingVideoData() const;
-
-        
 
     public slots:
         //! Close the session
@@ -113,12 +113,16 @@ namespace TelepathyIM
         void OnStreamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
         void OnAudioStreamCreated(Tp::PendingOperation *op);
         void OnVideoStreamCreated(Tp::PendingOperation *op);
-        void OnFarsightAudioDataAvailable(int rate);
+        void OnFarsightAudioDataAvailable(int count);
+        void OnFarsightAudioBufferOverflow(int count);
+        void OnFarsightChannelAudioStreamReceived();
+        void OnFarsightChannelVideoStreamReceived();
 
     private:
         QByteArray *stream_buffer_;
         int ms_buffer_size_;
         bool positional_voice_enabled_;
+        u8 audio_buffer[AUDIO_BUFFER_SIZE];
 
     signals:
 

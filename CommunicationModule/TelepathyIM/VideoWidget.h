@@ -48,11 +48,11 @@ namespace TelepathyIM
         gulong on_element_added_g_signal_;
         gulong on_sync_message_g_signal_;
 
-        
         //! Qt variables
         WId window_id_; 
         QString name_;
     };
+    //typedef boost::shared_ptr<VideoWidget> VideoWidgetPtr;
 
 } // End of namespace: TelepathyIM
 

@@ -50,8 +50,7 @@ namespace TelepathyIM
     {
         std::string fs_plugin_path = Poco::Path::current();
         fs_plugin_path.append("gstreamer\\lib\\farsight2-0.0");
-        Poco::Environment env;
-        env.set("FS_PLUGIN_PATH", fs_plugin_path);        
+        Poco::Environment::set("FS_PLUGIN_PATH", fs_plugin_path);        
 
         QString gst_plugin_path("--gst-plugin-path=\\gstreamer\\lib\\gstreamer-0.10;");
         int argc=1;

@@ -9,9 +9,9 @@ namespace TelepathyIM
 {
     FarsightChannel::FarsightChannel(const Tp::StreamedMediaChannelPtr &channel, 
                                      const QString &audio_src_name, 
-                                     const QString &audio_sink_name, 
-                                     const QString &video_src_name) 
-                                     : QObject(0),
+                                     const QString &video_src_name,
+                                     const QString &video_sink_name) :
+//                                     : QObject(0),
                                      tp_channel_(channel),
                                      tf_channel_(0),
                                      bus_(0),
@@ -34,7 +34,12 @@ namespace TelepathyIM
                                      bus_watch_(0),
                                      locally_captured_video_playback_element_(0),
                                      video_input_bin_(0),
-                                     total_audio_queue_size_(0)
+                                     total_audio_queue_size_(0),
+                                     read_cursor_(0),
+                                     write_cursor_(0),
+                                     available_audio_data_length_(0),
+                                     audio_supported_(false),
+                                     video_supported_(false)
     {
         //GstElementFactory* factory =  gst_element_factory_find ("fakesrc");
         //if (!factory)
@@ -45,17 +50,19 @@ namespace TelepathyIM
         CreateTfChannel();
         CreatePipeline();
         CreateAudioInputElement(audio_src_name);
-        CreateAudioPlaybackElement(audio_sink_name);
+        CreateAudioPlaybackElement();
+        audio_supported_ = true;
 
         if( video_src_name.length() != 0)
         {
-            CreateVideoWidgets();
+            CreateVideoWidgets(video_sink_name);
             CreateVideoInputElement(video_src_name);
+            video_supported_ = true;
         }
 
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
         status_ = StatusConnecting;
-        emit statusChanged(status_);
+        emit StatusChanged(status_);
     }
 
     FarsightChannel::~FarsightChannel()
@@ -161,7 +168,7 @@ namespace TelepathyIM
             throw Exception("Cannot create GStreamer audio input element.");
     }
 
-    void FarsightChannel::CreateAudioPlaybackElement(const QString &audio_sink_name)
+    void FarsightChannel::CreateAudioPlaybackElement()
     {
         audio_playback_bin_ = gst_bin_new("audio-output-bin");
         if (audio_playback_bin_ == 0)
@@ -219,12 +226,12 @@ namespace TelepathyIM
         gst_object_sink(audio_playback_bin_);
     }
 
-    void FarsightChannel::CreateVideoWidgets()
+    void FarsightChannel::CreateVideoWidgets(const QString &video_sink_name)
     {
-        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", "autovideosink");
+        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", video_sink_name);
         locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
 
-        received_video_widget_ = new VideoWidget(bus_, 0, "received_video", "autovideosink");
+        received_video_widget_ = new VideoWidget(bus_, 0, "received_video", video_sink_name);
         received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
     }
 
@@ -364,15 +371,6 @@ namespace TelepathyIM
         gst_structure_get_int(structure, "width", &width);
 	    gst_caps_unref(caps);
 
-        // Remove this ?
-        if ( rate != 8000 && rate != 16000)
-        {
-            LogInfo("Drop fakesink buffer: wrong audio rate.");
-            gst_buffer_unref(buffer);
-            g_static_mutex_unlock (&mutex);
-            return;
-        }
-
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
             LogInfo("Drop fakesink buffer: Preroll audio data packet.");
@@ -414,49 +412,49 @@ namespace TelepathyIM
         u8* data = GST_BUFFER_DATA(buffer);
         u32 size = GST_BUFFER_SIZE(buffer);
 
-        self->HandleAudioData(data, size, rate);
+        self->HandleAudioData(data, size, rate, width, channels);
         gst_buffer_unref(buffer);
         g_static_mutex_unlock (&mutex);
     }
 
-    u8* FarsightChannel::GetAudioData(int &size)
+    void FarsightChannel::HandleAudioData(u8* data, int size, int rate, int width, int channels)
     {
         boost::mutex::scoped_lock lock(audio_queue_mutex_);
 
-        size = total_audio_queue_size_;
-        u8* data = new u8[size];
-        int offset = 0;
-        for(int i = 0; i < audio_queue_.size(); ++i)
+        int available_buffer_size = AUDIO_BUFFER_SIZE - available_audio_data_length_;
+        if (available_buffer_size < size)
         {
-            memcpy(data+offset, audio_queue_[i], audio_queue_sizes_[i]);
-            offset += audio_queue_sizes_[i];
-            delete [] audio_queue_[i];
-            audio_queue_[i] = 0;
-        }
-        audio_queue_.clear();
-        audio_queue_sizes_.clear();
-        total_audio_queue_size_ = 0;
-
-        return data;
-    }
-
-    void FarsightChannel::HandleAudioData(u8* data, int size, int rate)
-    {
-         boost::mutex::scoped_lock lock(audio_queue_mutex_);
-
-        int max_buffer_length_ms = 2500;
-        if (1000*total_audio_queue_size_/rate/2 > max_buffer_length_ms)
-        {
-            return;
+            emit AudioBufferOverflow( size - available_buffer_size );
+            size = available_buffer_size;
         }
 
-        u8* temp = new u8[size];
-        memcpy(temp, data, size);
-        audio_queue_.push_back(temp);
-        audio_queue_sizes_.push_back(size);
-        total_audio_queue_size_ += size;
+        if (write_cursor_ + size >= AUDIO_BUFFER_SIZE)
+        {
+            // The data must be copied in to two sections
+            int size_at_end_of_the_buffer = AUDIO_BUFFER_SIZE - write_cursor_;
+            int size_at_begin_of_the_buffer = size - size_at_end_of_the_buffer;
 
-        emit AudioDataAvailable(rate);
+            memcpy(audio_buffer_ + write_cursor_, data, size_at_end_of_the_buffer);
+            write_cursor_ = (write_cursor_ + size_at_end_of_the_buffer) % AUDIO_BUFFER_SIZE;
+            assert( write_cursor_ == 0 );
+
+            memcpy(audio_buffer_ + write_cursor_, data + size_at_end_of_the_buffer, size_at_begin_of_the_buffer);
+            write_cursor_ += size_at_begin_of_the_buffer;
+            assert( write_cursor_ < AUDIO_BUFFER_SIZE );
+        }
+        else
+        {
+            memcpy(audio_buffer_ + write_cursor_, data, size);
+            write_cursor_ += size;
+            assert( write_cursor_ < AUDIO_BUFFER_SIZE );
+        }
+
+        received_sample_rate_ = rate;
+        received_sample_width_ = width;
+        received_channel_count_ = channels;
+
+        available_audio_data_length_ += size;
+        emit AudioDataAvailable(size);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
@@ -515,7 +513,7 @@ namespace TelepathyIM
     void FarsightChannel::onClosed(TfChannel *tfChannel, FarsightChannel *self)
     {
         self->status_ = StatusDisconnected;
-        emit self->statusChanged(self->status_);
+        emit self->StatusChanged(self->status_);
     }
 
     void FarsightChannel::onSessionCreated(TfChannel *tfChannel, FsConference *conference, FsParticipant *participant, FarsightChannel *self)
@@ -636,7 +634,16 @@ namespace TelepathyIM
         gst_element_set_state(output_element, GST_STATE_PLAYING);
 
         self->status_ = StatusConnected;
-        emit self->statusChanged(self->status_);
+        emit self->StatusChanged(self->status_);
+        switch (media_type)
+        {
+            case TP_MEDIA_STREAM_TYPE_AUDIO:
+                emit self->AudioStreamReceived();
+                break;
+            case TP_MEDIA_STREAM_TYPE_VIDEO:
+                emit self->VideoStreamReceived();
+                break;
+        }
     }
 
     gboolean FarsightChannel::onRequestResource(TfStream *stream, guint direction, gpointer data)
@@ -661,6 +668,59 @@ namespace TelepathyIM
         // - create new widget
         // - link new widget
         return received_video_widget_;
+    }
+
+    int FarsightChannel::GetSampleRate() const
+    {
+        return received_sample_rate_;
+    }
+
+    int FarsightChannel::GetSampleWidth() const
+    {
+        return received_sample_width_;
+    }
+    
+    int FarsightChannel::GetChannelCount() const
+    {
+        return received_channel_count_;
+    }
+    
+    int FarsightChannel::GetAvailableAudioDataLength() const
+    {
+        return available_audio_data_length_;
+    }
+
+    int FarsightChannel::GetAudioData(u8* buffer, int max)
+    {
+        boost::mutex::scoped_lock lock(audio_queue_mutex_);
+        
+        int size = 0;
+        if (available_audio_data_length_ <= max)
+            size = available_audio_data_length_;
+        else
+            size = max;
+
+        if (read_cursor_ + size > AUDIO_BUFFER_SIZE)
+        {
+            // we have to copy audio data from two segments
+            int size_at_end_of_buffer = AUDIO_BUFFER_SIZE - read_cursor_; 
+            int size_at_begin_of_buffer = size - size_at_end_of_buffer;
+            memcpy(buffer , audio_buffer_ + read_cursor_, size_at_end_of_buffer);
+            read_cursor_ = (read_cursor_ + size_at_end_of_buffer) % AUDIO_BUFFER_SIZE;
+            assert( read_cursor_ == 0 );
+
+            memcpy(buffer + size_at_end_of_buffer, audio_buffer_ + read_cursor_, size_at_begin_of_buffer);
+            read_cursor_ += size_at_begin_of_buffer;
+            assert( read_cursor_ >= AUDIO_BUFFER_SIZE );
+        }
+        else
+        {
+            memcpy(buffer , audio_buffer_ + read_cursor_, size);
+            read_cursor_ += size;
+            assert( read_cursor_ >= AUDIO_BUFFER_SIZE );
+        }
+        available_audio_data_length_ -= size;
+        return size;
     }
 
 } // end of namespace: TelepathyIM
