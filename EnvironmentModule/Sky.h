@@ -26,6 +26,9 @@ namespace Environment
 {
     class EnvironmentModule;
 
+    /// The OGRE SkyBox has 6 textures: front, back, left, right, top and bottom.
+    const int SKYBOX_TEXTURE_COUNT = 6;
+
     /// Sky component
     class ENVIRONMENT_MODULE_API Sky : public QObject
     {
@@ -34,9 +37,6 @@ namespace Environment
     public:
         Sky(EnvironmentModule *owner);
         virtual ~Sky();
-
-        /// The OGRE SkyBox has 6 textures: front, back, left, right, top and bottom.
-        static const int skyBoxTextureCount = 6;
 
         /// Handler for the "RexSky" generic message.
         /// @param data Event data pointer.
@@ -68,7 +68,7 @@ namespace Environment
 
         /// Sets the SkyBox textures.
         /// @param textures array of texture UUID's.
-        void SetSkyBoxTextures(const RexTypes::RexAssetID textures[skyBoxTextureCount]);
+        void SetSkyBoxTextures(const RexTypes::RexAssetID textures[SKYBOX_TEXTURE_COUNT]);
 
         /// Looks through all the entities in RexLogic's currently active scene to find the Sky
         /// entity. Caches it internally. Use GetSkyEntity to obtain it afterwards.    
@@ -131,7 +131,7 @@ namespace Environment
         bool skyEnabled_;
 
         /// Texture resource request tags for skybox.
-        request_tag_t skyBoxTextureRequests_[skyBoxTextureCount];
+        request_tag_t skyBoxTextureRequests_[SKYBOX_TEXTURE_COUNT];
 
         /// Texture resource request tag for skydome.
         request_tag_t skyDomeTextureRequest_;
@@ -140,7 +140,7 @@ namespace Environment
         request_tag_t skyPlaneTextureRequest_;
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
-        RexTypes::RexAssetID skyBoxTextures_[skyBoxTextureCount];
+        RexTypes::RexAssetID skyBoxTextures_[SKYBOX_TEXTURE_COUNT];
 
         /// UUID of the texture asset the skydome uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID skyDomeTexture_;

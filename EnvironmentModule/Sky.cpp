@@ -12,7 +12,7 @@
 
 namespace Environment
 {
-
+        
 Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
 {
 }
@@ -99,7 +99,7 @@ void Sky::UpdateSky(const OgreRenderer::SkyType &type, std::vector<std::string> 
     currentSkyBoxImageCount_ = 0;
     skyBoxImageCount_ = 0;
 
-    size_t max = std::min(images.size(), (size_t)skyBoxTextureCount);
+    size_t max = std::min(images.size(), (size_t)SKYBOX_TEXTURE_COUNT);
     for(size_t n = 0; n < max; ++n)
     {
         std::string image_str = images[n];
@@ -222,7 +222,7 @@ void Sky::RequestSkyTextures()
     switch(type_)
     {
     case OgreRenderer::SKYTYPE_BOX:
-        for(int i = 0; i < skyBoxTextureCount; ++i)
+        for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
             skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i],
                 OgreRenderer::OgreTextureResource::GetTypeStatic());
         break;
@@ -257,7 +257,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     switch(type_)
     {
     case OgreRenderer::SKYTYPE_BOX:
-        for(int i = 0; i < skyBoxTextureCount; ++i)
+        for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
             if (tex->tag_ == skyBoxTextureRequests_[i])
                 sky_component->SetSkyBoxMaterialTexture(i, tex->id_.c_str(), skyBoxImageCount_);
         break;
@@ -291,7 +291,7 @@ void Sky::SetSkyTexture(const RexAssetID &texture_id)
     }
 }
     
-void Sky::SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount])
+void Sky::SetSkyBoxTextures(const RexAssetID textures[SKYBOX_TEXTURE_COUNT])
 {
     if (type_ != OgreRenderer::SKYTYPE_BOX)
     {
@@ -301,7 +301,7 @@ void Sky::SetSkyBoxTextures(const RexAssetID textures[skyBoxTextureCount])
 
     skyBoxImageCount_ = 0;
 
-    for(int i = 0; i < skyBoxTextureCount; ++i)
+    for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
     {
         if(skyBoxTextures_[i] != textures[i] && textures[i] != "")
         {
@@ -357,7 +357,7 @@ void Sky::ChangeSkyType(OgreRenderer::SkyType type, bool update_sky)
         switch(type_)
         {
         case OgreRenderer::SKYTYPE_BOX:
-            for(uint i = 0; i < skyBoxTextureCount; i++)
+            for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
                 skyBoxTextures_[i] = sky_component->GetSkyBoxTextureID(i);
             break;
         case OgreRenderer::SKYTYPE_PLANE:
@@ -375,7 +375,7 @@ void Sky::ChangeSkyType(OgreRenderer::SkyType type, bool update_sky)
 RexTypes::RexAssetID Sky::GetSkyTextureID(OgreRenderer::SkyType sky_type, int index) const
 {
     if(index < 0) index = 0;
-    else if(index > skyBoxTextureCount - 1) index = skyBoxTextureCount - 1;
+    else if(index > SKYBOX_TEXTURE_COUNT - 1) index = SKYBOX_TEXTURE_COUNT - 1;
 
     if(sky_type == OgreRenderer::SKYTYPE_BOX)
     {
