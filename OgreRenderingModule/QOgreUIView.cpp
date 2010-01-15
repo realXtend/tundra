@@ -144,7 +144,7 @@ namespace OgreRenderer
         }
         
         if (scene())
-            scene()->setSceneRect(viewport()->rect());
+            scene()->setSceneRect(viewport()->rect());          
     }
 
     void QOgreUIView::SceneChange()

@@ -51,13 +51,6 @@ namespace Foundation
             \return Raycast result structure
         */
         virtual RaycastResult Raycast(int x, int y) = 0;
-        //! Resizes the rendering window
-        /*! \param width New window width
-            \param height New window height
-         */
-        virtual void Resize(uint width, uint height) = 0;
-        //! Returns render window handle, or 0 if no window is opened
-        virtual size_t GetWindowHandle() const = 0;
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
         //! Returns render window height, or 0 if no window is opened

@@ -69,14 +69,16 @@ namespace OgreRenderer
         viewport_(0),
         object_id_(0),
         group_id_(0),
-        main_window_handle_(0),
         resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
         config_filename_ (config),
         plugins_filename_ (plugins),
         ray_query_(0),
         window_title_(window_title),
         main_window_(0),
-        q_ogre_ui_view_(0)
+        q_ogre_ui_view_(0),
+        last_width_(0),
+        last_height_(0),
+        resized_dirty_(0)
     {
         InitializeQt();
         InitializeEvents();
@@ -203,14 +205,6 @@ namespace OgreRenderer
         
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
-
-        /* THIS IS PROLLY IRRELEVANT UNDER QT */
-        // GTK's pango/cairo/whatever's font rendering doesn't work if the floating point mode is not set to strict.
-        // This however creates undefined behavior for D3D (refrast + D3DX), but we aren't using those anyway.
-        // Note: GTK is currently not used in the main UI, but don't know what gstreamer requires
-        Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
-        if (map.find("Floating-point mode") != map.end())
-            rendersystem->setConfigOption("Floating-point mode", "Consistent");
         
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
@@ -344,21 +338,6 @@ namespace OgreRenderer
         c_handler_.Initialize(framework_ ,viewport_);
     }
 
-    size_t Renderer::GetWindowHandle() const
-    {
-        size_t window_handle = 0;
-
-        if (external_window_parameter_.empty())
-        {
-            if (renderwindow_)
-                renderwindow_->getCustomAttribute("WINDOW", &window_handle);
-        } else
-        {
-            window_handle = main_window_handle_;
-        }
-
-        return window_handle;
-    }
     int Renderer::GetWindowWidth() const
     {
         int size = 0;
@@ -389,21 +368,6 @@ namespace OgreRenderer
         Ogre::WindowEventUtilities::messagePump();
     }
     
-    void Renderer::Resize(uint width, uint height)
-    {
-        if (renderwindow_)
-        {
-            renderwindow_->resize(width, height);
-            renderwindow_->windowMovedOrResized();
-
-            if (camera_)
-                camera_->setAspectRatio(Ogre::Real(renderwindow_->getWidth() / Ogre::Real(renderwindow_->getHeight())));
-
-            Events::WindowResized data(renderwindow_->getWidth(), renderwindow_->getHeight()); 
-            framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_RESIZED, &data);
-        }
-    }
-
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
     {
         if (!camera) 
@@ -415,19 +379,21 @@ namespace OgreRenderer
             camera_ = camera;
         }
     }
-    
-    void Renderer::OnWindowClosed()
-    {
-        framework_->Exit();
-        framework_->GetEventManager()->SendEvent(renderercategory_id_, Events::WINDOW_CLOSED, 0);
-    }
 
     void Renderer::Render()
     {
         if (!initialized_) 
             return;
+            
+        // If rendering into different size window, dirty the UI view for now & next frame
+        if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
+        {
+            last_width_ = GetWindowWidth();
+            last_height_ = GetWindowHeight();
+            resized_dirty_ = 2;
+        }            
 
-        if (q_ogre_ui_view_->isDirty())
+        if (q_ogre_ui_view_->isDirty() || resized_dirty_)
         {
             QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
             QRect viewrect(QPoint(0, 0), viewsize);
@@ -447,6 +413,8 @@ namespace OgreRenderer
             Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
 
             q_ogre_world_view_->OverlayUI(bufbox);
+            if (resized_dirty_ > 0)
+                resized_dirty_--;
         }
 
         q_ogre_world_view_->RenderOneFrame();
