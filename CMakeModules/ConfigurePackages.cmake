@@ -2,13 +2,11 @@
 # per-dependency configuration macros
 #
 # All per-dependency configuration (or hacks) should go here. All per-module
-# build instructions should go in <Module>/CMakeLists.txt. The rest should 
+# build instructions should go in <Module>/CMakeLists.txt. The rest should
 # remain generic.
 
 macro (configure_boost)
-    if (MSVC)
-        set (Boost_USE_STATIC_LIBS ON)
-    elif (APPLE)
+    if (MSVC OR APPLE)
         set (Boost_USE_STATIC_LIBS ON)
     else ()
         set (Boost_USE_STATIC_LIBS OFF)
