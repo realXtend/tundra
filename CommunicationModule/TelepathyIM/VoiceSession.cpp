@@ -202,8 +202,11 @@ namespace TelepathyIM
 
         CreateFarsightChannel();
 
-        state_ = STATE_RINGING_REMOTE;
-        emit StateChanged(state_);
+        if (state_ == STATE_INITIALIZING)
+        {
+            state_ = STATE_RINGING_REMOTE;
+            emit StateChanged(state_);
+        }
 	}
 
     void VoiceSession::CreateFarsightChannel()
@@ -214,6 +217,7 @@ namespace TelepathyIM
             farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");  // AUTO VIDEO
             if ( !farsight_channel_->IsAudioSupported() )
             {
+                SAFE_DELETE(farsight_channel_);
                 QString message = QString("Cannot initialize audio features.");
                 reason_ = message;
                 LogError(message.toStdString());

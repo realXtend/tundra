@@ -16,7 +16,6 @@ namespace TelepathyIM
         
         g_main_loop_run (g_main_loop_);
         LogDebug("g_main_loop ended.");
-       
     }
 
     void GMainLoopThread::StopLoop()

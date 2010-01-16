@@ -39,6 +39,9 @@ namespace TelepathyIM
 		//! @return State of the session
 		virtual Communication::VoiceSessionInterface::State GetState() const;
 
+		//! @return reason of current state eg. error message
+        virtual QString GetReason() const { return reason_; };
+
 		//! @return all known participants of the chat session inlcuding the user
 		virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
 
@@ -81,8 +84,6 @@ namespace TelepathyIM
         void CreateVideoStream();
         void CreateFarsightChannel();
         void DeleteChannels();
-
-        QString GetReason() const { return reason_; };
 
         Tp::MediaStreamPtr GetAudioMediaStream() const;
         Tp::MediaStreamPtr GetVideoMediaStream() const; 

@@ -299,6 +299,9 @@ namespace Communication
 		//! @return State of the session
 		virtual State GetState() const = 0;
 
+		//! @return reason of current state eg. error message
+		virtual QString GetReason() const = 0;
+
 		//! @return all known participants of the chat session inlcuding the user
 		virtual VoiceSessionParticipantVector GetParticipants() const = 0;
 
