@@ -40,6 +40,8 @@ namespace TelepathyIM
                         const QString &video_sink_name = "");
         ~FarsightChannel();
 
+        void Close();
+
         bool IsAudioSupported() const { return audio_supported_; } 
         bool IsVideoSupported() const { return video_supported_; }
 

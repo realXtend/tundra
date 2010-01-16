@@ -47,16 +47,32 @@ namespace TelepathyIM
 
         //}
 
-        CreateTfChannel();
-        CreatePipeline();
-        CreateAudioInputElement(audio_src_name);
-        CreateAudioPlaybackElement();
-        audio_supported_ = true;
+        try
+        {
+            CreateTfChannel();
+            CreatePipeline();
+            CreateAudioInputElement(audio_src_name);
+            CreateAudioPlaybackElement();
+        }
+        catch(Exception &e)
+        {
+            Close();
+            throw e;
+        }
+        audio_supported_ = true; 
 
         if( video_src_name.length() != 0)
         {
-            CreateVideoWidgets(video_sink_name);
-            CreateVideoInputElement(video_src_name);
+            try
+            {
+                CreateVideoWidgets(video_sink_name);
+                CreateVideoInputElement(video_src_name);
+            }
+            catch(Exception &e)
+            {
+                Close();
+                throw e;
+            }
             video_supported_ = true;
         }
 
@@ -66,6 +82,11 @@ namespace TelepathyIM
     }
 
     FarsightChannel::~FarsightChannel()
+    {
+        Close();
+    }
+
+    void FarsightChannel::Close()
     {
         // TODO: CHECK Proper cleanup with unref
         if (locally_captured_video_widget_)
