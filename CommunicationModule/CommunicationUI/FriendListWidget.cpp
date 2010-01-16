@@ -98,7 +98,16 @@ namespace CommunicationUI
         friend_actions_menu->addSeparator();
         //friend_actions_menu->addAction(QIcon(":images/iconRename.png"), "Rename"); // Add later if this is possible to do in the backend
         friend_actions_menu->addAction(QIcon(":images/iconRemove.png"), "Remove contact", this, SLOT( RemoveContact() ));
-        friend_actions_menu->popup(QCursor::pos());
+
+        // Menu popup got weird after putting inside scene
+        // QCurson::pos() wont give correct position anymore
+        // here is somewhat better solutions, please feel free to fix menu.popup() to current mouse position
+        QPoint widget_pos = mapFromGlobal(QCursor::pos());
+        QPoint mouse_pos = QCursor::pos();
+        int calx = mouse_pos.x() - widget_pos.x();
+        int caly = mouse_pos.y() - widget_pos.y();
+        QPoint position(calx, caly);
+        friend_actions_menu->popup(position);
     }
 
     void FriendListWidget::SetStatus(const QString &status_code)

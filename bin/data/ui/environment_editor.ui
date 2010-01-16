@@ -33,7 +33,6 @@ QGroupBox {
 QGroupBox::title {
 	padding: 0 3px;
 	subcontrol-origin: margin;
-	subconstrol-position: top;
 }
 
  QTabWidget::pane { /* The tab widget frame */
@@ -1199,7 +1198,7 @@ QTabBar::tab:first {
                        </property>
                        <property name="minimumSize">
                         <size>
-                         <width>94</width>
+                         <width>102</width>
                          <height>0</height>
                         </size>
                        </property>
@@ -1455,7 +1454,7 @@ QTabBar::tab:first {
                        </property>
                        <property name="minimumSize">
                         <size>
-                         <width>94</width>
+                         <width>102</width>
                          <height>0</height>
                         </size>
                        </property>

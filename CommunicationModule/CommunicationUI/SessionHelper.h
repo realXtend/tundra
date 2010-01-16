@@ -42,6 +42,7 @@ namespace UiHelpers
         //! Setters
         void SetOwnName(const QString &my_name) { my_name_ = my_name; }
         void SetStatusMessage();
+        void StatusMessageInputGiven();
         void SetMyStatus(const QString &status_code);
         void SetMyStatusMessage(const QString &status_message);
         
@@ -58,6 +59,7 @@ namespace UiHelpers
 
         //! Doers
         void SendFriendRequest();
+        void FriendAddInputGiven();
         void CloseChatTab(const QString &chat_friends_name);
         void CloseVideoTab(const QString &chat_friends_name);
         void CreateNewChatSessionWidget(Communication::ChatSessionInterface *chat_session, QString &chat_friends_name);

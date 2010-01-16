@@ -8,9 +8,6 @@
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
 #include "OgreModuleApi.h"
-
-#include "QOgreUIView.h"
-#include "QOgreWorldView.h"
 #include "CompositionHandler.h"
 
 #include <QWidget>
@@ -36,6 +33,8 @@ namespace OgreRenderer
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
+    class QOgreUIView;
+    class QOgreWorldView;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;

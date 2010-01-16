@@ -49,6 +49,9 @@ namespace CommunicationUI
 
         void ChangeContext(UiDefines::UiStates::ConnectionState new_state = UiDefines::UiStates::NoStateChange);
 
+    protected:
+        void hideEvent(QHideEvent *hide_event);
+
     private:
         void InitializeSelf();
         QSize CleanSelf();
@@ -57,6 +60,10 @@ namespace CommunicationUI
         Ui::LoginWidget *login_ui_;
         Ui::LoadingWidget *loading_ui_;
         Ui::SessionManagerWidget *session_manager_ui_;
+
+        QWidget *login_widget_;
+        QWidget *loading_widget_;
+        QWidget *session_manager_widget_;
 
         UiDefines::UiStates::ConnectionState ui_state_;
 
@@ -67,7 +74,7 @@ namespace CommunicationUI
         EventHandler *event_handler_;
 
         QSize current_size_;
-        QStringList to_be_deleted_;
+        QStringList to_be_removed_;
     };
 }
 

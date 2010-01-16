@@ -3,13 +3,15 @@
 #include "StableHeaders.h"
 #include "SessionManager.h"
 
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+
 #include <QDebug>
-#include <QInputDialog>
 #include <QMessageBox>
 
 namespace UiManagers
 {
-    SessionManager::SessionManager(CommunicationUI::MasterWidget *parent)
+    SessionManager::SessionManager(CommunicationUI::MasterWidget *parent, Foundation::Framework *framework)
         : QObject(),
           main_parent_(parent),
           session_manager_ui_(0),
@@ -17,7 +19,8 @@ namespace UiManagers
           friend_list_widget_(0),
           im_connection_(0),
           menu_bar_(0),
-          spatial_voice_manager_widget_(0)
+          spatial_voice_manager_widget_(0),
+          framework_(framework)
     {
 
     }
@@ -35,6 +38,8 @@ namespace UiManagers
     {
         // Init internals
         assert(session_manager_ui_);
+        session_manager_ui_->inputFrame->hide();
+
         session_helper_ = new UiHelpers::SessionHelper(main_parent_, im_connection, event_handler);
         session_helper_->SetupManagerUi(session_manager_ui_);
         event_handler_ = event_handler;
@@ -52,6 +57,9 @@ namespace UiManagers
         session_helper_->SetMyStatus("available");
         session_helper_->SetMyStatusMessage(im_connection_->GetPresenceMessage());
 
+        // Connect input system cancel button
+        connect(session_manager_ui_->inputQuestionButtonCancel, SIGNAL( clicked() ),
+                session_manager_ui_->inputFrame, SLOT( hide() ));
         // Connect slots to ConnectionInterface
         connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), SLOT( ChatSessionReceived(Communication::ChatSessionInterface&) ));
         connect(im_connection_, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT( VideoSessionReceived(Communication::VoiceSessionInterface&) ));
@@ -65,7 +73,7 @@ namespace UiManagers
         // FILE MENU
         QMenu *file_menu = new QMenu("File", main_parent_);
         QAction *hide_action = file_menu->addAction("Hide", this, SLOT( Hide() ));
-        hide_action->setEnabled(false); // Can't support hide on external mode
+        //hide_action->setEnabled(false); // Can't support hide on external mode
 
         // STATUS menu
         QMenu *status_menu = new QMenu("Status", main_parent_);
@@ -137,6 +145,14 @@ namespace UiManagers
         SAFE_DELETE(friend_list_widget_);
         friend_list_widget_ = new CommunicationUI::FriendListWidget(im_connection_, session_helper_);
 
+        // Add friend list to scene, no toolbar button
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+        {
+            UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SlideFromTop, friend_list_widget_->size());
+            widget_properties.SetShowAtToolbar(false);
+            ui_module->GetSceneManager()->AddWidgetToCurrentScene(friend_list_widget_, widget_properties);
+        }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),
                 session_helper_, SLOT( SetMyStatus(const QString &) ));
         connect(friend_list_widget_, SIGNAL( NewChatSessionStarted(Communication::ChatSessionInterface *, QString &) ),
@@ -175,13 +191,29 @@ namespace UiManagers
 
     void SessionManager::JoinChatRoom()
     {
-        bool ok = false;
-        QString chat_room_name = QInputDialog::getText(0, "Join Chat Room", "Give chat room name (usually room@conference.server)", QLineEdit::Normal, "", &ok);
-        if (ok)
+        session_manager_ui_->inputQuestionLabel->setText("Give chat room name");
+        session_manager_ui_->inputQuestionLineEdit->clear();
+        session_manager_ui_->inputFrame->show();
+
+        session_manager_ui_->inputQuestionButtonOk->disconnect(SIGNAL(clicked()));
+        session_manager_ui_->inputQuestionLineEdit->disconnect(SIGNAL(returnPressed()));
+        connect(session_manager_ui_->inputQuestionButtonOk, SIGNAL( clicked() ),
+                this, SLOT( JoinChatRoomInputGiven() ));
+        connect(session_manager_ui_->inputQuestionLineEdit, SIGNAL( returnPressed() ),
+                this, SLOT( JoinChatRoomInputGiven() ));
+    }
+
+    void SessionManager::JoinChatRoomInputGiven()
+    {
+        QString chat_room_name = session_manager_ui_->inputQuestionLineEdit->text();
+        if (!chat_room_name.isEmpty())
         {
             Communication::ChatSessionInterface *chat_session = im_connection_->OpenChatSession(chat_room_name);
             session_helper_->CreateNewChatSessionWidget(chat_session, chat_room_name);
+            session_manager_ui_->inputFrame->hide();
         }
+        else
+            session_manager_ui_->inputQuestionLineEdit->setText("Input can't be empty");
     }
 
     void SessionManager::SignOut()

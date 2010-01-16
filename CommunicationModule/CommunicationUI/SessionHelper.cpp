@@ -10,7 +10,6 @@
 #include <QDebug>
 #include <QPair>
 #include <QPixmap>
-#include <QInputDialog>
 
 namespace UiHelpers
 {
@@ -38,10 +37,22 @@ namespace UiHelpers
 
     void SessionHelper::SetStatusMessage()
     {
-        bool ok = false;
-        QString new_status_message = QInputDialog::getText(0, "New Status Message", "Give your new status message", QLineEdit::Normal, "", &ok);
-        if (ok)
-            SetMyStatusMessage(new_status_message);
+        session_manager_ui_->inputQuestionLabel->setText("New Status Message");
+        session_manager_ui_->inputQuestionLineEdit->clear();
+        session_manager_ui_->inputFrame->show();
+
+        session_manager_ui_->inputQuestionButtonOk->disconnect(SIGNAL(clicked()));
+        session_manager_ui_->inputQuestionLineEdit->disconnect(SIGNAL(returnPressed()));
+        connect(session_manager_ui_->inputQuestionButtonOk, SIGNAL( clicked() ),
+                this, SLOT( StatusMessageInputGiven() ));
+        connect(session_manager_ui_->inputQuestionLineEdit, SIGNAL( returnPressed() ),
+                this, SLOT( StatusMessageInputGiven() ));
+    }
+
+    void SessionHelper::StatusMessageInputGiven()
+    {
+        SetMyStatusMessage(session_manager_ui_->inputQuestionLineEdit->text());
+        session_manager_ui_->inputFrame->hide();
     }
 
     void SessionHelper::SetMyStatus(const QString &status_code)
@@ -158,13 +169,30 @@ namespace UiHelpers
 
     void SessionHelper::SendFriendRequest()
     {
-        bool ok = false;
-		QString request_address = QInputDialog::getText(0, "Add New Friend", "Give friends IM address", QLineEdit::Normal, "", &ok);
-        if (ok)
+        session_manager_ui_->inputQuestionLabel->setText("Give new friends IM address");
+        session_manager_ui_->inputQuestionLineEdit->clear();
+        session_manager_ui_->inputFrame->show();
+
+        session_manager_ui_->inputQuestionButtonOk->disconnect(SIGNAL(clicked()));
+        session_manager_ui_->inputQuestionLineEdit->disconnect(SIGNAL(returnPressed()));
+        connect(session_manager_ui_->inputQuestionButtonOk, SIGNAL( clicked() ),
+                this, SLOT( FriendAddInputGiven() ));
+        connect(session_manager_ui_->inputQuestionLineEdit, SIGNAL( returnPressed() ),
+                this, SLOT( FriendAddInputGiven() ));
+    }
+
+    void SessionHelper::FriendAddInputGiven()
+    {
+        QString request_address = session_manager_ui_->inputQuestionLineEdit->text();
+        if (!request_address.isEmpty() && request_address.count(" ") == 0 && request_address.count("@") == 1)
         {
             im_connection_->SendFriendRequest(request_address, "");
+            session_manager_ui_->inputFrame->hide();
         }
+        else
+            session_manager_ui_->inputQuestionLineEdit->setText("Please give valid email (no spaces and has @)");
     }
+
 
     void SessionHelper::CloseChatTab(const QString &chat_friends_name)
     {
@@ -175,7 +203,7 @@ namespace UiHelpers
             session_manager_ui_->sessionsTabWidget->removeTab(index);
             chat_sessions_pointers_map_.remove(chat_friends_name);
     
-            SAFE_DELETE(found_tab_widget);
+            //SAFE_DELETE(found_tab_widget); // lets not delete this due it has a parent and will be deleted later
             TabWidgetPostStateCheck();
         }
     }
@@ -189,7 +217,7 @@ namespace UiHelpers
             session_manager_ui_->sessionsTabWidget->removeTab(index);
             video_sessions_pointers_map_.remove(chat_friends_name);
 
-            SAFE_DELETE(found_tab_widget);
+            //SAFE_DELETE(found_tab_widget); // lets not delete this due it has a parent and will be deleted later
             TabWidgetPostStateCheck();
         }
     }

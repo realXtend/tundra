@@ -21,14 +21,21 @@ namespace CommunicationUI
           ui_state_(UiDefines::UiStates::Disconnected),
           login_helper_(new UiHelpers::LoginHelper),
           config_helper_(new UiHelpers::ConfigHelper(framework)),
-          session_manager_(new UiManagers::SessionManager(this)),
+          session_manager_(new UiManagers::SessionManager(this, framework)),
           login_ui_(new Ui::LoginWidget),
           loading_ui_(new Ui::LoadingWidget),
           session_manager_ui_(new Ui::SessionManagerWidget()),
           event_handler_(new EventHandler(framework)),
-          to_be_deleted_()
+          to_be_removed_(),
+          login_widget_(0),
+          loading_widget_(0),
+          session_manager_widget_(0)
+
     {
 		setWindowIcon(QIcon(":/images/iconUsers.png"));
+        setLayout(new QVBoxLayout(this));
+        layout()->setMargin(0);
+
         ChangeContext();
         InitializeSelf();
     }
@@ -42,54 +49,6 @@ namespace CommunicationUI
         SAFE_DELETE(login_ui_);
         SAFE_DELETE(loading_ui_);
         SAFE_DELETE(session_manager_ui_);
-    }
-
-    void MasterWidget::ChangeContext(UiDefines::UiStates::ConnectionState new_state)
-    {
-        ui_state_ = (new_state == UiDefines::UiStates::NoStateChange ? ui_state_ : new_state);
-        current_size_ = CleanSelf();
-
-        switch (ui_state_)
-        {
-            case UiDefines::UiStates::Disconnected:
-            {
-                login_ui_->setupUi(this);
-                to_be_deleted_ << "login_ui_";
-
-                config_helper_->SetPreviousData(login_ui_, login_helper_->GetPreviousCredentials());
-                login_ui_->passwordLineEdit->setFocus(Qt::MouseFocusReason);
-                if (!login_helper_->GetErrorMessage().isEmpty())
-                    login_ui_->statusLabel->setText(login_helper_->GetErrorMessage());
-                
-                connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
-                connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
-                break;
-            }
-            case UiDefines::UiStates::Connecting:
-            {
-                loading_ui_->setupUi(this);
-                to_be_deleted_ << "loading_ui_";
-
-                connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
-                break;
-            }
-            case UiDefines::UiStates::Connected:
-            {
-                config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
-                session_manager_ui_->setupUi(this);
-                to_be_deleted_ << "session_manager_ui_";
-
-                connect(session_manager_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
-                session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface(), event_handler_);
-                break;
-            }
-            case UiDefines::UiStates::Exit:
-            {
-                hide();
-                return;
-            }
-        }
-        resize(current_size_);
     }
 
     void MasterWidget::InitializeSelf()
@@ -114,30 +73,79 @@ namespace CommunicationUI
         resize(350, 120);
     }
 
+    void MasterWidget::ChangeContext(UiDefines::UiStates::ConnectionState new_state)
+    {
+        ui_state_ = (new_state == UiDefines::UiStates::NoStateChange ? ui_state_ : new_state);
+        current_size_ = CleanSelf();
+
+        switch (ui_state_)
+        {
+            case UiDefines::UiStates::Disconnected:
+            {
+                login_widget_ = new QWidget(this);
+                login_ui_->setupUi(login_widget_);
+                layout()->addWidget(login_widget_);
+                to_be_removed_ << "login_ui_";
+
+                config_helper_->SetPreviousData(login_ui_, login_helper_->GetPreviousCredentials());
+                login_ui_->passwordLineEdit->setFocus(Qt::MouseFocusReason);
+                if (!login_helper_->GetErrorMessage().isEmpty())
+                    login_ui_->statusLabel->setText(login_helper_->GetErrorMessage());
+                
+                connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
+                connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
+                break;
+            }
+            case UiDefines::UiStates::Connecting:
+            {
+                loading_widget_ = new QWidget(this);
+                loading_ui_->setupUi(loading_widget_);
+                layout()->addWidget(loading_widget_);
+                to_be_removed_ << "loading_ui_";
+
+                connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
+                break;
+            }
+            case UiDefines::UiStates::Connected:
+            {
+                config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
+                session_manager_widget_ = new QWidget(this);
+                session_manager_ui_->setupUi(session_manager_widget_);
+                layout()->addWidget(session_manager_widget_);
+                to_be_removed_ << "session_manager_ui_";
+
+                connect(session_manager_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
+                session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface(), event_handler_);
+                break;
+            }
+            case UiDefines::UiStates::Exit:
+            {
+                hide();
+                return;
+            }
+        }
+        resize(current_size_);
+    }
+
     QSize MasterWidget::CleanSelf()
     {
-        setObjectName("");
-
-        foreach (QString ui_class, to_be_deleted_)
+        foreach (QString ui_class, to_be_removed_)
         {
             if (ui_class == "login_ui_")
-			{
-				SAFE_DELETE(login_ui_->verticalLayout_2);
-				SAFE_DELETE(login_ui_->connectPushButton);
-				SAFE_DELETE(login_ui_->MainFrame);
-			}
-            if (ui_class == "loading_ui_")
-            {
-                SAFE_DELETE(loading_ui_->verticalLayout_2);
-				SAFE_DELETE(loading_ui_->cancelPushButton);
-				SAFE_DELETE(loading_ui_->label);
-                SAFE_DELETE(loading_ui_->MainFrame);
-            }
-            if (ui_class == "session_manager_ui_")
-                SAFE_DELETE(session_manager_ui_->mainVerticalLayout);
+                layout()->removeWidget(login_widget_);
+            else if (ui_class == "loading_ui_")
+                layout()->removeWidget(loading_widget_);
+            else if (ui_class == "session_manager_ui_")
+                layout()->removeWidget(session_manager_widget_);
         }
-        to_be_deleted_.clear();
-
+        to_be_removed_.clear();
         return size();
+    }
+
+    void MasterWidget::hideEvent(QHideEvent *hide_event)
+    {
+        QWidget::hideEvent(hide_event);
+        if (session_manager_)
+            session_manager_->HideFriendListWidget();
     }
 }

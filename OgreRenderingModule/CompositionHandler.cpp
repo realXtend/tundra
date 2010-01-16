@@ -3,6 +3,8 @@
 #include "CompositionHandler.h"
 #include "OgreRenderingModule.h"
 
+#include <Ogre.h>
+
 namespace OgreRenderer
 {
     CompositionHandler::CompositionHandler():

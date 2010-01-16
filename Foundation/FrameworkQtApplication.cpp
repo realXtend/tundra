@@ -4,6 +4,7 @@
 
 #include "Framework.h"
 #include "FrameworkQtApplication.h"
+#include "QNaaliProxyStyle.h"
 
 namespace Foundation
 {
@@ -11,6 +12,7 @@ namespace Foundation
     FrameworkQtApplication::FrameworkQtApplication (Framework *framework, int &argc, char** argv) : 
         QApplication (argc, argv), framework_ (framework)
     {
+        setStyle(new QNaaliProxyStyle());
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
@@ -30,9 +32,6 @@ namespace Foundation
     void FrameworkQtApplication::Go()
     {
         QObject::connect(&frame_update_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
-
-        // with single shot and start(0) processor usage = 90-98% no matter the size of window
-        // with start(20) its <50% all the time
         frame_update_timer_.setSingleShot (true);
         frame_update_timer_.start (0); 
 
@@ -48,4 +47,5 @@ namespace Foundation
 
         frame_update_timer_.start (0); 
     }
+
 }

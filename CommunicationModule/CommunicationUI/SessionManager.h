@@ -28,13 +28,15 @@ namespace UiManagers
     Q_OBJECT
         
     public:
-        SessionManager(CommunicationUI::MasterWidget *parent);
+        SessionManager(CommunicationUI::MasterWidget *parent, Foundation::Framework *framework);
         virtual ~SessionManager();
 
         //! Setup ui
         void SetupUi(Ui::SessionManagerWidget *session_manager_ui) { SAFE_DELETE(session_manager_ui_); session_manager_ui_ = session_manager_ui; }
         //! Start the ui manager
         void Start(const QString &username, Communication::ConnectionInterface *im_connection, CommunicationUI::EventHandler *event_handler);      
+        //! Hide Friend List Widget
+        void HideFriendListWidget() { if (friend_list_widget_) return friend_list_widget_->hide(); }
 
     private:
         QWidget *spatial_voice_manager_widget_;
@@ -53,10 +55,12 @@ namespace UiManagers
         CommunicationUI::FriendListWidget   *friend_list_widget_;
         CommunicationUI::EventHandler       *event_handler_;
 
+        Foundation::Framework *framework_;
+
     public slots:
         void StatusChangedOutSideMenuBar(const QString &status_code);
-
         void UpdateAvatarList();
+        void JoinChatRoomInputGiven();
         void StartTrackingSelectedAvatar();
         void StopTrackingSelectedAvatar();
 
@@ -66,7 +70,7 @@ namespace UiManagers
 
         void SignOut();
         void Show3DSoundManager();
-        void Hide()               { main_parent_->hide(); friend_list_widget_->hide(); }
+        void Hide()               { main_parent_->hide(); }
         void StatusAvailable()    { emit StatusChange(QString("available")); }
         void StatusChatty()       { emit StatusChange(QString("chat"));      }
         void StatusAway()         { emit StatusChange(QString("away"));      }
