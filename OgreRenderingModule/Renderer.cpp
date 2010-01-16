@@ -6,11 +6,13 @@
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "EC_OgrePlaceable.h"
-
 #include "SceneEvents.h"
 #include "Entity.h"
 
 #include <Ogre.h>
+
+#include "QOgreUIView.h"
+#include "QOgreWorldView.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -58,6 +60,8 @@ namespace OgreRenderer
         //! list of subscribed listeners
         ListenerList listeners_;
     };
+
+///////////////////////////////////////////////////////////////////
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),

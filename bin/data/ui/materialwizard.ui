@@ -31,7 +31,6 @@ QGroupBox {
 QGroupBox::title {
 	padding: 0 3px;
 	subcontrol-origin: margin;
-	subconstrol-position: top;
 }</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
