@@ -102,7 +102,10 @@ namespace UiServices
     void UiSceneManager::BringToFront(UiProxyWidget *widget)
     {
         if (ui_view_)
+        {
             ui_view_->scene()->setActiveWindow(widget);
+            ui_view_->scene()->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+        }
     }
 
     void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)

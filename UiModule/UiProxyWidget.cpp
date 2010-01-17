@@ -53,6 +53,11 @@ namespace UiServices
         setOpacity(step);
     }
 
+    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
+    {
+        control_button_ = control_button;
+    }
+
     void UiProxyWidget::showEvent(QShowEvent *show_event)
     {
         emit Visible(true);
@@ -65,8 +70,10 @@ namespace UiServices
     {
         emit Visible(false);
         QGraphicsProxyWidget::hideEvent(hide_event);
+
         if (widget_properties_.GetWidgetName() != "Login loader") // fix
             setOpacity(0.0);
+
         if (control_button_)
             control_button_->ControlledWidgetHidden();
     }
@@ -77,8 +84,17 @@ namespace UiServices
         emit Closed();
     }
 
-    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
+    void UiProxyWidget::focusInEvent(QFocusEvent *focus_event)
     {
-        control_button_ = control_button;
+        QGraphicsProxyWidget::focusInEvent(focus_event);
+        if (control_button_)
+            control_button_->ControlledWidgetFocusIn();
+    }
+
+    void UiProxyWidget::focusOutEvent(QFocusEvent *focus_event)
+    {
+        QGraphicsProxyWidget::focusOutEvent(focus_event);
+        if (control_button_)
+            control_button_->ControlledWidgetFocusOut();
     }
 }
