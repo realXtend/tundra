@@ -25,7 +25,6 @@ namespace CoreUi
     public slots:
         void ToggleShow();
         void ControlledWidgetHidden();
-        void Hide();
     
     private:
         QString widget_name_;

@@ -16,12 +16,13 @@ namespace UiServices
         QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
         widget_properties_(in_widget_properties),
         show_timeline_(new QTimeLine(300, this)),
-        show_animation_(new QGraphicsItemAnimation(this)),
         control_button_(0)
     {
+        // QWidget setup
         widget->setWindowFlags(widget_properties_.GetWindowStyle());
         widget->setWindowTitle(widget_properties_.GetWidgetName());
 
+        // QGraphicsProxyWidget setup
         setWidget(widget);
         setPos(widget_properties_.GetPosition().x(), widget_properties_.GetPosition().y());
         setGeometry(QRectF(widget_properties_.GetPosition(), QSizeF(widget_properties_.GetSize())));
@@ -31,13 +32,6 @@ namespace UiServices
 
     UiProxyWidget::~UiProxyWidget()
     {
-        SAFE_DELETE(show_timeline_);
-        SAFE_DELETE(show_animation_);
-    }
-
-    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
-    {
-        control_button_ = control_button;
     }
 
     void UiProxyWidget::InitAnimations()
@@ -64,6 +58,7 @@ namespace UiServices
         emit Visible(true);
         QGraphicsProxyWidget::showEvent(show_event);
         show_timeline_->start();
+        emit BringToFrontRequest(this);
     }
 
     void UiProxyWidget::hideEvent(QHideEvent *hide_event)
@@ -80,5 +75,10 @@ namespace UiServices
     {
         QGraphicsProxyWidget::closeEvent(close_event);
         emit Closed();
+    }
+
+    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
+    {
+        control_button_ = control_button;
     }
 }
