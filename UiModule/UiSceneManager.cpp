@@ -69,7 +69,10 @@ namespace UiServices
         {
             UiWidgetProperties properties = widget->getWidgetProperties();
             if (properties.IsShownAtToolbar())
-                main_panel_->AddWidget(widget, properties.GetWidgetName());
+            {
+                CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(widget, properties.GetWidgetName());
+                widget->SetControlButton(control_button);
+            }
 
             if (properties.IsFullscreen())
             {

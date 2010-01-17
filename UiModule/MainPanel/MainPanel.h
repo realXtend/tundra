@@ -26,7 +26,8 @@ namespace CoreUi
         //! Adds a widget to the ControlBar
         /// @param UiProxyWidget
         /// @param Widget name
-        void AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name);
+        /// @return MainPanelButton
+        MainPanelButton *AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name);
 
         //! Returns the QWidget of the ui
         QWidget *GetWidget() { return panel_widget_; }

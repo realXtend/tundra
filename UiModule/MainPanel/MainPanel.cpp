@@ -27,12 +27,14 @@ namespace CoreUi
         all_proxy_widgets_.clear();
     }
 
-    void MainPanel::AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name)
+    MainPanelButton *MainPanel::AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name)
     {
         if (all_proxy_widgets_.indexOf(widget) == -1)
         {
-            layout_->addWidget(new MainPanelButton(panel_widget_, widget, QString(" " + widget_name)));
+            MainPanelButton *control_button = new MainPanelButton(panel_widget_, widget, QString(" " + widget_name));
+            layout_->addWidget(control_button);
             all_proxy_widgets_.append(widget);
+            return control_button;
         }
     }
 
