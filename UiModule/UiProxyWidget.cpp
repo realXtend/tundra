@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "UiProxyWidget.h"
 
+#include "MainPanel/MainPanelButton.h"
+
 #include <QTimeLine>
 #include <QGraphicsItemAnimation>
 #include <QWidget>
@@ -14,7 +16,8 @@ namespace UiServices
         QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
         widget_properties_(in_widget_properties),
         show_timeline_(new QTimeLine(300, this)),
-        show_animation_(new QGraphicsItemAnimation(this))
+        show_animation_(new QGraphicsItemAnimation(this)),
+        control_button_(0)
     {
         widget->setWindowFlags(widget_properties_.GetWindowStyle());
         widget->setWindowTitle(widget_properties_.GetWidgetName());
@@ -30,6 +33,11 @@ namespace UiServices
     {
         SAFE_DELETE(show_timeline_);
         SAFE_DELETE(show_animation_);
+    }
+
+    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
+    {
+        control_button_ = control_button;
     }
 
     void UiProxyWidget::InitAnimations()
@@ -64,6 +72,8 @@ namespace UiServices
         QGraphicsProxyWidget::hideEvent(hide_event);
         if (widget_properties_.GetWidgetName() != "Login loader") // fix
             setOpacity(0.0);
+        if (control_button_)
+            control_button_->ControlledWidgetHidden();
     }
 
     void UiProxyWidget::closeEvent(QCloseEvent *close_event)

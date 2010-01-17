@@ -12,13 +12,10 @@ namespace CoreUi
         widget_name_(widget_name)
     {
         setFlat(true);
-        setStyleSheet(QString("QPushButton { min-width: 50px; padding-left: 5px; padding-right: 5px; font-size: 11px;"
-            "color: rgb(61, 80, 255); background-color: rgba(255, 255, 255, 0); }").append(
-            "QPushButton::hover { color: black; background-color: rgba(255,255,255,150); border-radius: 5px; } QPushButton::!hover { color: rgb(255, 255, 255); }"
-            "QPushButton::pressed { color: darkgrey; border: 0px; }"));
         setMaximumHeight(15);
         setMinimumHeight(15);
-        QObject::connect(this, SIGNAL( clicked() ), this, SLOT( ToggleShow() )); 
+
+        QObject::connect(this, SIGNAL( clicked() ), this, SLOT( ToggleShow() ));
     }
 
     MainPanelButton::~MainPanelButton()
@@ -28,9 +25,20 @@ namespace CoreUi
     void MainPanelButton::ToggleShow()
     {
         if (controlled_widget_->isVisible())
+        {
             controlled_widget_->hide();
+            setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
+        }
         else
+        {
             controlled_widget_->show();
+            setStyleSheet(QString("QPushButton { color: black; background-color: rgba(255,255,255,100); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
+        }
+    }
+
+    void MainPanelButton::ControlledWidgetHidden()
+    {
+        setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
     }
 
     void MainPanelButton::Hide()

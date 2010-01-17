@@ -11,6 +11,11 @@
 class QTimeLine;
 class QGraphicsItemAnimation;
 
+namespace CoreUi
+{
+    class MainPanelButton;
+}
+
 namespace UiServices
 {
     /*************** UiProxyWidget : QGraphicsProxyWidget -> QGraphicsWidget -> QGraphicsItem ***************/
@@ -25,6 +30,7 @@ namespace UiServices
 
         //! @return UiWidgetProperties.
         UiWidgetProperties getWidgetProperties() const { return widget_properties_; }
+        void SetControlButton(CoreUi::MainPanelButton *control_button);
 
     protected:
         //! QGraphicsProxyWidget override functions
@@ -38,6 +44,7 @@ namespace UiServices
         UiWidgetProperties widget_properties_;
         QTimeLine *show_timeline_;
         QGraphicsItemAnimation *show_animation_;
+        CoreUi::MainPanelButton *control_button_;
 
     private slots:
         void AnimationStep(qreal step);
