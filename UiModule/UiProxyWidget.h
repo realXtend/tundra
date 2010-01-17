@@ -37,6 +37,8 @@ namespace UiServices
         void showEvent(QShowEvent *show_event);
         void hideEvent(QHideEvent *hide_event);
         void closeEvent(QCloseEvent *close_event);
+        void focusInEvent(QFocusEvent *focus_event);
+        void focusOutEvent(QFocusEvent *focus_event);
 
     private:
         void InitAnimations();
