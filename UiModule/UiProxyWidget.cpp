@@ -5,10 +5,10 @@
 
 #include "MainPanel/MainPanelButton.h"
 
-#include <QTimeLine>
-#include <QGraphicsItemAnimation>
 #include <QWidget>
+#include <QTimeLine>
 #include <QGraphicsEffect>
+#include <QGraphicsScene>
 
 namespace UiServices
 {
@@ -96,5 +96,22 @@ namespace UiServices
         QGraphicsProxyWidget::focusOutEvent(focus_event);
         if (control_button_)
             control_button_->ControlledWidgetFocusOut();
+    }
+
+    QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)
+    {
+        if (change == QGraphicsItem::ItemPositionChange && scene()) 
+        {
+            QPointF new_position = value.toPointF();
+            QRectF scene_rect = scene()->sceneRect();
+            scene_rect.setRight(scene_rect.right()-20.0); // Right margin
+            if (!scene_rect.contains(new_position))
+            {
+                new_position.setX(qMin(scene_rect.right(), qMax(new_position.x(), scene_rect.left())));
+                new_position.setY(qMin(scene_rect.bottom(), qMax(new_position.y(), scene_rect.top()+20))); // Top margin
+                return new_position;
+            }
+        }
+        return QGraphicsProxyWidget::itemChange(change, value);
     }
 }

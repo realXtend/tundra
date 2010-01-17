@@ -39,6 +39,7 @@ namespace UiServices
         void closeEvent(QCloseEvent *close_event);
         void focusInEvent(QFocusEvent *focus_event);
         void focusOutEvent(QFocusEvent *focus_event);
+        QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     private:
         void InitAnimations();
