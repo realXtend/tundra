@@ -27,23 +27,18 @@ namespace CoreUi
         if (controlled_widget_->isVisible())
         {
             controlled_widget_->hide();
-            setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
+            setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,160); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
         }
         else
         {
             controlled_widget_->show();
-            setStyleSheet(QString("QPushButton { color: black; background-color: rgba(255,255,255,100); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
+            setStyleSheet(QString("QPushButton { color: black; background-color: rgba(255,255,255,125); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,160); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
         }
     }
 
     void MainPanelButton::ControlledWidgetHidden()
     {
-        setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,150); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
-    }
-
-    void MainPanelButton::Hide()
-    {
-        controlled_widget_->hide();
+        setStyleSheet(QString("QPushButton { color: white; background-color: rgba(255,255,255,0); border-radius: 5px; } QPushButton::hover { color: black; background-color: rgba(255,255,255,160); } QPushButton::pressed { color: darkgrey; border: 0px; }"));
     }
 
 }

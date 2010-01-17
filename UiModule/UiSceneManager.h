@@ -40,11 +40,11 @@ namespace UiServices
     public slots:
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! The caller of this function is the owner of the proxy widget.
-        //! \param widget Widget to be added to the scene.
+        //! \param widget QWidget to be added to the scene.
         UiProxyWidget* AddWidgetToCurrentScene(QWidget *widget);
 
         //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
-        //! \param widget Widget to be added to the scene.
+        //! \param widget QWidget to be added to the scene.
         //! \param widget_properties Properties for the widget.
         UiProxyWidget* AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties);
 
@@ -67,41 +67,44 @@ namespace UiServices
         //! \return Pointer to the widget, or null if not found.
         UiProxyWidget *GetProxyWidget(const QString &widget_name);
 
-        //!
+        //! Slot for keeping full screen core widgets properly sized
         void SceneRectChanged(const QRectF &new_scene_rect);
 
-        //!
+        //! Inits the ui for connected state
         void Connect();
 
-        //!
+        //! Inits the ui for disconnected state
         void Disconnect();
 
+        //! Brings the UiProxyWidget on to front in the scene and set focus to it
+        void BringToFront(UiProxyWidget *widget);
+
     signals:
-        //!
+        //! Emits when connected for modules to utilise
         void Connected();
 
-        //!
+        //! Emits when disconnected for modules to utilise
         void Disconnected();
 
     private:
         Q_DISABLE_COPY(UiSceneManager);
 
-        //!
+        //! Inits the full screen widget and its layout
         void InitMasterLayout();
 
-        //!
+        //! Removes all widgets from the full screen widget layout
         void ClearContainerLayout();
 
-        //!
+        //! Pointer to main QGraphicsView
         QGraphicsView *ui_view_;
 
-        //!
+        //! Main layout for full screen widgets
         QGraphicsLinearLayout *container_layout_;
 
-        //!
+        //! Bottom container widget for main layout
         QGraphicsWidget *container_widget_;
 
-        //! Main panel.
+        //! Main panel (inworld panel)
         CoreUi::MainPanel *main_panel_;
 
         //! Proxy widget for the login ui.

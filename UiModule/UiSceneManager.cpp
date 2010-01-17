@@ -21,28 +21,33 @@ namespace UiServices
         QObject(),
         framework_(framework),
         ui_view_(ui_view),
-        container_widget_(new QGraphicsWidget())
+        container_widget_(new QGraphicsWidget()),
+        container_layout_(0),
+        main_panel_(0)
     {
         if (ui_view_)
         {
             InitMasterLayout();
             SceneRectChanged(ui_view_->scene()->sceneRect());
-            QObject::connect(ui_view_->scene(), SIGNAL(sceneRectChanged(const QRectF &)),
-                this, SLOT(SceneRectChanged(const QRectF &)));
+            connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ),
+                    this, SLOT( SceneRectChanged(const QRectF &) ));
         }
         else
         {
             SAFE_DELETE(container_widget_);
-            SAFE_DELETE(container_layout_);
+            container_layout_ = 0;
             UiModule::LogError("UiSceneManager >> Could not acquire UIView, skipping scene creation");
         }
     }
 
     UiSceneManager::~UiSceneManager()
     {
-        SAFE_DELETE(main_panel_);
+        if (main_panel_)
+            SAFE_DELETE(main_panel_);
         main_panel_proxy_widget_ = 0;
-        SAFE_DELETE(container_widget_);
+
+        if (container_widget_)
+            SAFE_DELETE(container_widget_);
         container_layout_ = 0;
     }
 
@@ -72,6 +77,7 @@ namespace UiServices
             {
                 CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(widget, properties.GetWidgetName());
                 widget->SetControlButton(control_button);
+                connect(widget, SIGNAL( BringToFrontRequest(UiProxyWidget*) ), this, SLOT( BringToFront(UiProxyWidget*) ));
             }
 
             if (properties.IsFullscreen())
@@ -93,9 +99,16 @@ namespace UiServices
 
     /*************** UI Scene Manager Private functions ***************/
 
+    void UiSceneManager::BringToFront(UiProxyWidget *widget)
+    {
+        if (ui_view_)
+            ui_view_->scene()->setActiveWindow(widget);
+    }
+
     void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)
     {
-        ui_view_->scene()->removeItem((QGraphicsItem *)widget);
+        if (ui_view_)
+            ui_view_->scene()->removeItem((QGraphicsItem *)widget);
     }
 
     void UiSceneManager::InitMasterLayout()

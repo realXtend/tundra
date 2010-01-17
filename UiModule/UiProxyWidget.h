@@ -42,9 +42,8 @@ namespace UiServices
         void InitAnimations();
 
         UiWidgetProperties widget_properties_;
-        QTimeLine *show_timeline_;
-        QGraphicsItemAnimation *show_animation_;
         CoreUi::MainPanelButton *control_button_;
+        QTimeLine *show_timeline_;
 
     private slots:
         void AnimationStep(qreal step);
@@ -52,6 +51,7 @@ namespace UiServices
     signals:
         void Closed();
         void Visible(bool);
+        void BringToFrontRequest(UiProxyWidget*);
     };
 
 }
