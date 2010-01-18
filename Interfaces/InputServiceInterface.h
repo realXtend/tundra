@@ -4,94 +4,44 @@
 #define incl_Interfaces_InputServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "State.h"
 
 namespace Input
 {
-    //! input state. See InputModuleOIS for more information
+    /*! input state. The input system is modelled as a Finite State Machine, 
+     * and implemented using Qt's State Machine framework.
+     *
+     * States within the machine are named, and can be queried by name.
+     */
+    
     /*!
         \ingroup Input_group
     */
-    enum State
-    {
-        //! unknown state. For internal use!
-        State_Unknown = 0,
-        //! all states, useful if you want a key to correspond to one event on all states
-        State_All,
-        //! 1st person camera, camera is attached to the avatar
-        State_FirstPerson,
-        //! 3rd person camera, camera is focused on the avatar
-        State_ThirdPerson,
-        //! Free ghostcamera, the camera may move around freely separate from avatar
-        State_FreeCamera,
-        //! Buffered state, for direct key input (UI and such)
-        State_Buffered,
-        // add new states here
-
-        //! number of different states
-        State_Count
-    };
-
+    
     //! A service for input events.
-    /*! Many input events are launched as actual events, so
-        they can be handled as any other events, but it is not
-        practical for all input events. This service can be used
-        to query the status of such input events.
-
-        Input also has a state. Keys map to different
-        input events in different states, f.ex. in 3rd person
-        state 'A' and 'D' keys may rotate the camera, but
-        in free camera state, the keys may slide the camera
-        left or right.
-
-        For more info, see \ref Input_page "Handling input".
-
-        \ingroup Services_group
-        \ingroup Input_group
-    */
+    /*! There are two ways to discover what inputs are active: polling and events. 
+     *
+     * Callbacks can be added to named states by querying the state by name, 
+     * and connecting a Qt slot to its onEntry or onExit signals.
+     *
+     * Events come in duals, and are fired when the named state enters or 
+     * exist respectively. Which events fire is stored dynamically and 
+     * can be configured by file.
+     * 
+     * \ingroup Services_group 
+     * \ingroup Input_group
+     */
     class InputServiceInterface : public Foundation::ServiceInterface
     {
     public:
         InputServiceInterface() {}
         virtual ~InputServiceInterface() {}
 
-        //! Polls input based on the event id, returns true if the event is true
-        /*! Standard way of handling input is with events. There are two issues with this:
-                - Event handling code can get messy if many different types of events are handled.
-                - Event_released - types of events may not always get launched properly, f.ex.
-                  if user holds a key down, then moves the focus away from the Viewer window. In
-                  this case the Event_released is launched only when the window regains the focus.
+        //! Returns the input state requested by name.
+        virtual const Foundation::State *GetState (const std::string &name) const = 0;
 
-            Polling presents another way of handling input. This function returns true if conditions
-            specific to the input event are true, false otherwise.
-        */
-        virtual bool Poll(event_id_t input_event) const = 0;
-
-        //! Returns a slider movement corresponding to the specified event, but only if the slider is currently being dragged.
-        /*! If more than one slider matching the event is being dragged, one is chosen arbitrarily.
-            Returns empty optional() if no slider matching the event is being dragged.
-
-            Returns both absolute and relative position in 3 dimensions. Not all dimensions are supported in all
-            input devices, for example mouse only supports 2 dimensions.
-
-            \note Currently may not be thread safe.
-
-            \param dragged_event event corresponding to a slider
-            \return Absolute and relative position in 3 dimensions
-        */
-        virtual boost::optional<const Input::Events::Movement&> PollSlider(event_id_t dragged_event) const = 0;
-
-        //! Sets the current input state. State determines which events are lauched by which h/w input events.
-        /*!
-            if state parameter is omitted, restores the previous unbuffered state. This is useful for
-            temporarily setting the state to buffered with SetState(State_Buffered) and then later restoring
-            the previous state with SetState().
-
-            \param state Optional input state
-        */
-        virtual void SetState(State state = State_Unknown) = 0;
-
-        //! Returns the current input state
-        virtual State GetState() const = 0;
+        //! Fires events on entry or exit respectively.
+        virtual void AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const = 0;
     };
 }
 

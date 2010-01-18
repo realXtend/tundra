@@ -5,9 +5,9 @@
 namespace RexLogic
 {
     // keep a manifest of all known named states
-    typedef std::map <QString, const State *> StateMap_;
-    static StateMap_ state_registry_;
-
+    // used by WorldInputLogic to fetch states
+    static Foundation::StateMap input_state_registry_;
+    
     //=========================================================================
     //
     MouseInfo::MouseInfo () 
@@ -56,59 +56,24 @@ namespace RexLogic
         global_x = e-> globalX(); global_y = e-> globalY(); x = e-> x(); y = e-> y();
 		return *this;
     }
-
+    
+    
     //=========================================================================
     //
-    State::State (QString name, QState *parent) 
-        : QState (parent), active (false)
+    InputState::InputState (QString name, QState *parent) 
+        : State (name, input_state_registry_, parent)
     { 
-        setObjectName (name); 
-        state_registry_.insert (std::make_pair (name, this));
     }
 
-    State::State (QString name, QState::ChildMode mode, QState *parent) 
-        : QState (mode, parent), active (false)
+    InputState::InputState (QString name, QState::ChildMode mode, QState *parent) 
+        : State (name, input_state_registry_, mode, parent)
     { 
-        setObjectName (name); 
-        state_registry_.insert (std::make_pair (name, this));
-    }
-
-    void State::onEntry (QEvent *e)
-    {
-        //std::cout << "State::onEntry: " << qPrintable (objectName()) << std::endl;
-        active = true;
-    }
-
-    void State::onExit (QEvent *e)
-    {
-        //std::cout << "State::onExit: " << qPrintable (objectName()) << std::endl;
-        active = false;
-    }
-
-    //=========================================================================
-    //
-    FinalState::FinalState (QString name, QState *p) 
-        : QFinalState (p) 
-    { 
-        setObjectName (name); 
-    }
-
-    void FinalState::onEntry (QEvent *e)
-    {
-        QFinalState::onEntry (e);
-        //std::cout << "FinalState::onEntry: " << qPrintable (objectName()) << std::endl;
-    }
-
-    void FinalState::onExit (QEvent *e)
-    {
-        //std::cout << "FinalState::onExit: " << qPrintable (objectName()) << std::endl;
-        QFinalState::onExit (e);
     }
 
     //=========================================================================
     //
     KeyState::KeyState (QKeyEvent *e, QState *p)
-        : State ("key state "+e->text(), p), 
+        : InputState ("key state "+e->text(), p), 
         event (new QKeyEvent (*e)), 
         bindings (0)
     {
@@ -116,7 +81,7 @@ namespace RexLogic
     }
 
     KeyState::KeyState (QKeyEvent *e, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p)
-        : State ("key state "+e->text(), p), 
+        : InputState ("key state "+e->text(), p), 
         event (new QKeyEvent (*e)), 
         bindings (b), 
         eventmgr (m)
@@ -164,7 +129,7 @@ namespace RexLogic
     //=========================================================================
     //
     LeftButtonActiveState::LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
-        : State (name, p), eventmgr (m)
+        : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
@@ -203,7 +168,7 @@ namespace RexLogic
     //=========================================================================
     //
     RightButtonActiveState::RightButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
-        : State (name, p), eventmgr (m)
+        : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
@@ -241,7 +206,7 @@ namespace RexLogic
     //=========================================================================
     //
     MidButtonActiveState::MidButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
-        : State (name, p), eventmgr (m)
+        : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
@@ -259,7 +224,7 @@ namespace RexLogic
     //=========================================================================
     //
     WheelActiveState::WheelActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
-        : State (name, p), eventmgr (m)
+        : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
@@ -285,7 +250,7 @@ namespace RexLogic
     //=========================================================================
     //
     InputActiveState::InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p) 
-        : State (name, m, p), view (v)
+        : InputState (name, m, p), view (v)
     { 
 #ifdef Q_WS_X11
         XGetKeyboardControl (view-> x11Info().display(), &x11_key_state);
@@ -319,7 +284,7 @@ namespace RexLogic
     //=========================================================================
     //
     ButtonActiveState::ButtonActiveState (QString name, MouseInfo &m, QState *p)
-        : State (name, p), mouse (m) 
+        : InputState (name, p), mouse (m) 
     {}
 
     void ButtonActiveState::onEntry (QEvent *event)
@@ -341,7 +306,7 @@ namespace RexLogic
     //=========================================================================
     //
     GestureActiveState::GestureActiveState (QString name, GestureInfo &g, Foundation::EventManagerPtr m, QState *p)
-        : State (name, p), gesture (g), eventmgr (m)
+        : InputState (name, p), gesture (g), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
@@ -385,7 +350,7 @@ namespace RexLogic
     //=========================================================================
     //
     FirstPersonActiveState::FirstPersonActiveState (QString name, KeyEventMap **s, QState *p)
-        : State (name, p), map (s)
+        : InputState (name, p), map (s)
     {}
 
     void FirstPersonActiveState::onEntry (QEvent *event)
@@ -397,7 +362,7 @@ namespace RexLogic
     //=========================================================================
     //
     ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyEventMap **s, QState *p)
-        : State (name, p), map (s)
+        : InputState (name, p), map (s)
     {}
 
     void ThirdPersonActiveState::onEntry (QEvent *event)
@@ -409,7 +374,7 @@ namespace RexLogic
     //=========================================================================
     //
     FreeCameraActiveState::FreeCameraActiveState (QString name, KeyEventMap **s, QState *p)
-        : State (name, p), map (s)
+        : InputState (name, p), map (s)
     {}
 
     void FreeCameraActiveState::onEntry (QEvent *event)
@@ -542,10 +507,11 @@ namespace RexLogic
         return QObject::eventFilter (obj, event);
     }
 
-    const State *WorldInputLogic::GetState (QString name)
+    const Foundation::State *WorldInputLogic::GetState (QString name)
     {
-        StateMap_::const_iterator i = state_registry_.find (name);
-        StateMap_::const_iterator e = state_registry_.end ();
+        using Foundation::StateMap;
+        StateMap::const_iterator i = input_state_registry_.find (name);
+        StateMap::const_iterator e = input_state_registry_.end ();
         return (i != e)? i-> second : 0;
     }
 
@@ -571,9 +537,9 @@ namespace RexLogic
 
     void WorldInputLogic::init_statemachine_ ()
     {
-        FinalState *exit;
+        QFinalState *exit;
 
-        State *active, *unfocused, 
+        InputState *active, *unfocused, 
               *mouse, *keyboard, *perspective, 
               *wheel, *wheel_waiting,
               *left_button, *right_button, *mid_button,
@@ -592,46 +558,46 @@ namespace RexLogic
         ThirdPersonActiveState  *third_person;
         FreeCameraActiveState   *free_camera;
 
-        exit = new FinalState ("exit", this); 
-        active = new State ("active", this);
+        exit = new QFinalState (this); 
+        active = new InputState ("active", this);
         this-> setInitialState (active);
 
-        unfocused = new State ("unfocused", active);
+        unfocused = new InputState ("unfocused", active);
         active-> setInitialState (unfocused);
 
         focused = new InputActiveState ("focused", view_, QState::ParallelStates, active);
 
-        mouse = new State ("mouse", QState::ParallelStates, focused);
-        keyboard = new State ("keyboard", QState::ParallelStates, focused);
-        perspective = new State ("perspective", focused);
+        mouse = new InputState ("mouse", QState::ParallelStates, focused);
+        keyboard = new InputState ("keyboard", QState::ParallelStates, focused);
+        perspective = new InputState ("perspective", focused);
 
-        wheel = new State ("wheel", mouse);
+        wheel = new InputState ("wheel", mouse);
         wheel_active = new WheelActiveState ("wheel active", eventmgr_, wheel);
-        wheel_waiting = new State ("wheel waiting", wheel);
+        wheel_waiting = new InputState ("wheel waiting", wheel);
         wheel-> setInitialState (wheel_waiting);
 
-        left_button = new State ("left button", mouse);
+        left_button = new InputState ("left button", mouse);
         left_button_active = new LeftButtonActiveState ("left button active", eventmgr_, left_button);
-        left_button_waiting = new State ("left button waiting", left_button);
+        left_button_waiting = new InputState ("left button waiting", left_button);
         left_button-> setInitialState (left_button_waiting);
 
-        right_button = new State ("right button", mouse);
+        right_button = new InputState ("right button", mouse);
         right_button_active = new RightButtonActiveState ("right button active", eventmgr_, right_button);
-        right_button_waiting = new State ("right button waiting", right_button);
+        right_button_waiting = new InputState ("right button waiting", right_button);
         right_button-> setInitialState (right_button_waiting);
 
-        mid_button = new State ("middle button", mouse);
+        mid_button = new InputState ("middle button", mouse);
         mid_button_active = new MidButtonActiveState ("middle button active", eventmgr_, mid_button);
-        mid_button_waiting = new State ("middle button waiting", mid_button);
+        mid_button_waiting = new InputState ("middle button waiting", mid_button);
         mid_button-> setInitialState (mid_button_waiting);
 
-        button = new State ("button", mouse);
+        button = new InputState ("button", mouse);
         button_active = new ButtonActiveState ("button active", mouse_state_, button);
-        button_waiting = new State ("mouse waiting", button);
+        button_waiting = new InputState ("mouse waiting", button);
         button-> setInitialState (button_waiting);
 
         gesture_active = new GestureActiveState ("gesture active", gesture_state_, eventmgr_, button_active);
-        gesture_waiting = new State ("gesture waiting", button_active);
+        gesture_waiting = new InputState ("gesture waiting", button_active);
         button_active-> setInitialState (gesture_waiting);
 
         first_person = new FirstPersonActiveState ("first person", &key_binding_, perspective);
