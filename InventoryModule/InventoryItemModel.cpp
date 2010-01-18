@@ -21,6 +21,8 @@
 #include <QPointer>
 #include <QIcon>
 #include <QItemSelection>
+#include <QApplication>
+#include <QClipboard>
 
 namespace Inventory
 {
@@ -341,6 +343,11 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
     return false;
 }
 
+AbstractInventoryItem::InventoryItemType InventoryItemModel::GetItemType(const QModelIndex &index) const
+{
+    return GetItem(index)->GetItemType();
+}
+
 bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, const QString &name)
 {
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
@@ -534,6 +541,19 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
         if (!filename.isEmpty())
             dataModel_->UploadFile(filename, parentItem);
     }
+}
+
+void InventoryItemModel::CopyAssetReferenceToClipboard(const QModelIndex &index)
+{
+    if (!index.isValid())
+        return;
+
+    InventoryAsset *asset = dynamic_cast<InventoryAsset *>(GetItem(index));
+    if (!asset)
+        return;
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(asset->GetAssetReference(), QClipboard::Clipboard);
 }
 
 AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const

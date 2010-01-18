@@ -15,6 +15,8 @@ class QAction;
 
 namespace Inventory
 {
+    class InventoryWindow;
+
     class InventoryTreeView : public QTreeView
     {
         Q_OBJECT
@@ -22,15 +24,16 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param parent Parent widget.
+        /// @param inventory_window Inventory window.
         InventoryTreeView(QWidget *parent = 0);
 
         /// Destructor.
         virtual ~InventoryTreeView();
 
-    public slots:
-        void Test();
-
     protected:
+        /// QAbstractItemView override.
+//        void mousePressEvent(QMouseEvent *event);
+
         /// QAbstractItemView override.
         void contextMenuEvent(QContextMenuEvent *event);
 
@@ -42,34 +45,6 @@ namespace Inventory
 
         /// QAbstractItemView override.
         void dropEvent(QDropEvent *event);
-
-    private:
-        /// Creates the context menu actions.
-        void CreateActions();
-
-        /// Action menu.
-        QMenu *actionMenu_;
-
-        /// Delete action.
-        QAction *actionDelete_;
-
-        /// Rename action.
-        QAction *actionRename_;
-
-        /// Cut action.
-        QAction *actionCut_;
-
-        /// Paste action.
-        QAction *actionPaste_;
-
-        /// New Folder action.
-        QAction *actionNewFolder_;
-
-        /// Open action.
-        QAction *actionOpen_;
-
-        /// Copy asset UUID action.
-        QAction *actionCopyAssetId_;
     };
 }
 

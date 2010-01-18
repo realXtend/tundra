@@ -47,11 +47,11 @@ namespace OgreAssetEditor
         /// @return Editor object or null if not found.
         QObject *GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type);
 
-        ///
+        /// Returns true if the editor with matching id and asset type exists
         /// @param inventory_id Inventory id.
         /// @param asset_type Asset type.
-        /// @return True if the editor with matching id and asset type exists.
-        bool Exists(const QString &inventory_id, RexTypes::asset_type_t asset_type);
+        /// @return True if the editor with matching id and asset type exists, false otherwise.
+        bool Exists(const QString &inventory_id, RexTypes::asset_type_t asset_type) const;
 
         /// Deletes editor.
         /// @param inventory_id Inventory id.

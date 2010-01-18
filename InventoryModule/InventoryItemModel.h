@@ -8,6 +8,8 @@
 #ifndef incl_InventoryModule_InventoryItemModel_h
 #define incl_InventoryModule_InventoryItemModel_h
 
+#include "AbstractInventoryItem.h"
+
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVector>
@@ -58,7 +60,6 @@ namespace Inventory
         bool valid_;
     };
 
-    class AbstractInventoryItem;
     class AbstractInventoryDataModel;
 
     class InventoryItemModel : public QAbstractItemModel
@@ -118,7 +119,12 @@ namespace Inventory
         /// QAbstractItemModel override.
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-        // AbstractInventoryDataModel API
+        // InventoryItemModel API
+
+        /// Returns the type of the item at the spesific index.
+        /// @param index Model index.
+        /// @return Type of the item.
+        AbstractInventoryItem::InventoryItemType GetItemType(const QModelIndex &index) const;
 
         /// Inserts new empty folder to the model.
         /// @param position
@@ -157,6 +163,10 @@ namespace Inventory
         /// @param index Upload destination index.
         /// @param filenames List of filenames.
         void Upload(const QModelIndex &index, QStringList filenames);
+
+        /// Copies the asset reference of the item at current index to the clipboard.
+        /// @param index Model inedx.
+        void CopyAssetReferenceToClipboard(const QModelIndex &index);
 
     private:
         /// Sets up view from data.

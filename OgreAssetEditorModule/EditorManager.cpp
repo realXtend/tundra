@@ -39,7 +39,7 @@ QObject *EditorManager::GetEditor(const QString &inventory_id, RexTypes::asset_t
         return 0;
 }
 
-bool EditorManager::Exists(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+bool EditorManager::Exists(const QString &inventory_id, RexTypes::asset_type_t asset_type) const
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     return editors_.contains(key);
