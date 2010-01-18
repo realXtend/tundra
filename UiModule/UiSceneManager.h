@@ -43,7 +43,7 @@ namespace UiServices
         //! \param widget QWidget to be added to the settings widget
         //! \param tab_name QString name of the tab shown in widget
         //! \return trued if add succesfull, false otherwise
-        bool UiSceneManager::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name);
+        bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name);
 
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! The caller of this function is the owner of the proxy widget.
