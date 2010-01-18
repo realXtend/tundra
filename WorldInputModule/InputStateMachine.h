@@ -48,6 +48,9 @@ namespace Input
     struct DragInfo;
     struct KeyState;
 
+    // list of state structure codes
+    typedef std::vector <KeyState *> KeyStateList;
+
     // maps Qt::Key codes to info and state structures
     typedef std::map <int, KeyState *> KeyStateMap;
 
@@ -126,6 +129,17 @@ namespace Input
     };
 
     
+    struct KeyActiveState : public InputState
+    {
+        KeyActiveState (QString name, QState::ChildMode m, QState *p = 0);
+
+        void onEntry (QEvent *event);
+        void onExit (QEvent *event);
+
+        KeyStateList    active;
+    };
+
+
     struct ButtonActiveState : public InputState
     {
         ButtonActiveState (QString name, MouseInfo &m, QState *p = 0);
@@ -370,6 +384,11 @@ namespace Input
         void onTransition (QEvent *event);
 
         KeyState *get_key_state (QKeyEvent *e);
+
+        void press_active (KeyState *e);
+        void release_active (KeyState *e);
+
+        KeyActiveState  *parent;
 
         KeyStateMap &key_states;
         KeyEventMap **bindings;
