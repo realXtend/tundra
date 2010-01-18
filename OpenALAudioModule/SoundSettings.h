@@ -9,11 +9,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
-
 namespace OpenALAudio
 {
     //! Sound settings editing window. Owned by OpenALAudioModule.
@@ -38,7 +33,5 @@ namespace OpenALAudio
         //! Widget for sound settings
         QWidget *settings_widget_;
 
-        //! Proxy Widget of ui
-        UiServices::UiProxyWidget *settings_proxy_widget_;
     };
 }
