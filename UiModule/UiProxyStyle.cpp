@@ -7,8 +7,11 @@
 
 namespace UiServices
 {
+    //TODO tweak the following values for other windowing systems
+
     int UiProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
     {
+#ifndef Q_WS_X11
         switch (metric)
         {
             case QStyle::PM_TitleBarHeight:
@@ -20,11 +23,13 @@ namespace UiServices
                 if (title_bar_option)
                     return 0; // Disable dialog title bar icon
         }
+#endif 
         return QProxyStyle::pixelMetric(metric, option, widget);
     }
 
     QRect UiProxyStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget) const
     {
+#ifndef Q_WS_X11
         // We are only interested in modifying the TitleBar subcontrol rects
         if (control == QStyle::CC_TitleBar)
         {
@@ -45,6 +50,7 @@ namespace UiServices
                     return rect;
             }
         }
+#endif
         return QProxyStyle::subControlRect(control, option, subControl, widget);
     }
 }
