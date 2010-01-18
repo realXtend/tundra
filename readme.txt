@@ -51,7 +51,7 @@ Note that currently saving the avatar (and thus making it visible to others) wor
 
 Python
 ------
-It is possible to run arbitary Python code within the viewer. A way is to put the code to bin/pymodules/usr/command.py and then press the alt and the period key (alt-.) in the viewer window. See bin/pymodules/readme.txt for info about how to make own modules, bind arbitary keys etc.
+It is possible to run arbitary Python code within the viewer. A way is to put the code to bin/pymodules/usr/command.py and then the period key (.) in the viewer window. See bin/pymodules/readme.txt for info about how to make own modules, bind arbitary keys etc.
 
 IM communication
 ----------------
