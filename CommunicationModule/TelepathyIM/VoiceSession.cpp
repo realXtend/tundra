@@ -237,12 +237,13 @@ namespace TelepathyIM
         }
 
         connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ) );
-        connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOvewflow(int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOverflow(int ) ) );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
              SLOT( OnStreamFeatureReady(Tp::PendingOperation*) ));
 
+        // todo: Move away from this method
         connect(tp_channel_.data(),
             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
             SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
