@@ -6,16 +6,16 @@
 #include "KeyBindings.h"
 #include <Qt>
 
-namespace RexLogic
+namespace Input
 {
     KeyBinding::KeyBinding ()
     {
         using std::make_pair;
 
-        map.insert (make_pair (Qt::Key_Tab,     Input::Events::SWITCH_CAMERA_STATE));
-		map.insert (make_pair (Qt::Key_Period,     Input::Events::PY_RUN_COMMAND));
-		map.insert (make_pair (Qt::Key_Backspace,     Input::Events::PY_RESTART));
-        //map.insert (make_pair (Qt::Key_GRAVE,   Input::Events::SHOW_DEBUG_CONSOLE));
+        map.insert (make_pair (Qt::Key_Tab,         Input::Events::SWITCH_CAMERA_STATE));
+		map.insert (make_pair (Qt::Key_Period,      Input::Events::PY_RUN_COMMAND));
+		map.insert (make_pair (Qt::Key_Backspace,   Input::Events::PY_RESTART));
+        //map.insert (make_pair (Qt::Key_GRAVE,     Input::Events::SHOW_DEBUG_CONSOLE));
     }
 
     FirstPersonBindings::FirstPersonBindings ()

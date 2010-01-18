@@ -2,7 +2,7 @@
 #include "StableHeaders.h"
 #include "InputStateMachine.h"
 
-namespace RexLogic
+namespace Input
 {
     // keep a manifest of all known named states
     // used by WorldInputLogic to fetch states

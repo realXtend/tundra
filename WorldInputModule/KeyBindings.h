@@ -1,13 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_KeyBindings_h
-#define incl_RexLogic_KeyBindings_h
+#ifndef incl_Input_KeyBindings_h
+#define incl_Input_KeyBindings_h
 
-// maps Qt::Keys to Input::Events
-typedef std::map <int, int> KeyBindingMap;
-
-namespace RexLogic
+namespace Input
 {
+    // maps Qt::Keys to Input::Events
+    typedef std::map <int, int> KeyBindingMap;
+
     struct KeyBinding
     {
         KeyBinding ();
