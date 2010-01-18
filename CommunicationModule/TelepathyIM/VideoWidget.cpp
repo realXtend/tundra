@@ -97,11 +97,11 @@ namespace TelepathyIM
         palette.setColor(QPalette::Background, Qt::black);
         palette.setColor(QPalette::Window, Qt::black);
         setPalette(palette);
-        setAutoFillBackground(true);
-        setAttribute(Qt::WA_NoSystemBackground, true);
-        setAttribute(Qt::WA_PaintOnScreen, true);
-        resize(322, 240);
-        setMinimumSize(322, 240);
+        //setAutoFillBackground(true);
+        //setAttribute(Qt::WA_NoSystemBackground, true);
+        //setAttribute(Qt::WA_PaintOnScreen, true);
+        resize(1, 1);
+        setMinimumSize(1, 1);
     }
 
     VideoWidget::~VideoWidget()
@@ -196,7 +196,9 @@ namespace TelepathyIM
             // Get window id from this widget and set it for video sink
             // so it renders to our widget id and does not open separate window (that is the default behaviour)
             qDebug() << name_ << " >> SetOverlay() called";
-			window_id_ = winId();
+            if (isVisible())
+			    window_id_ = winId();
+
             if (window_id_)
             {
                 qDebug() << name_ << " >> Giving x overlay widgets window id " << window_id_;
