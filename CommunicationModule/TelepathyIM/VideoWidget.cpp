@@ -36,7 +36,7 @@ namespace TelepathyIM
 
         // Element notifier init
         notifier_ = fs_element_added_notifier_new();
-        on_element_added_g_signal_ = g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
+//        on_element_added_g_signal_ = g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
 
 // UNIX -> autovideosink
 #ifdef Q_WS_X11
@@ -170,8 +170,8 @@ namespace TelepathyIM
         const GstStructure *s = gst_message_get_structure(message);
         if (gst_structure_has_name(s, "prepare-xwindow-id") && self->video_overlay_)
         {
-            qDebug() << self->name_ << " >> sync-message CALLBACK >> found 'prepare-xwindow-id' from GstMessage";
-            QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
+            //qDebug() << self->name_ << " >> sync-message CALLBACK >> found 'prepare-xwindow-id' from GstMessage";
+            //QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
         }
     }
 
