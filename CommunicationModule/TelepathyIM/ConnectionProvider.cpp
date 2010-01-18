@@ -32,9 +32,10 @@ namespace TelepathyIM
         InitializeDBusAndGabble();
         InitializeGLib();
         InitializeGStreamer();
+        g_main_loop_.start();
 
      //   g_main_loop_.setPriority(QThread::Priority::LowPriority);
-        g_main_loop_.start();
+        
 
 #else
       	InitializeTelepathyConnectionManager("gabble");
@@ -48,14 +49,33 @@ namespace TelepathyIM
 
     void ConnectionProvider::InitializeGStreamer()
     {
+        const int ARGC = 5;
+        
         std::string fs_plugin_path = Poco::Path::current();
         fs_plugin_path.append("gstreamer\\lib\\farsight2-0.0");
         Poco::Environment::set("FS_PLUGIN_PATH", fs_plugin_path);        
 
-        QString gst_plugin_path("--gst-plugin-path=\\gstreamer\\lib\\gstreamer-0.10;");
-        int argc=1;
-        char* argv[1];
-        argv[0] = (char*)gst_plugin_path.toStdString().c_str();
+        QString gst_plugin_path = QString(Poco::Path::current().c_str()).append("gstreamer\\lib\\gstreamer-0.10");
+        QString arg_gst_plugin_path(QString("--gst-plugin-path=").append(gst_plugin_path).append(""));
+        QString arg_gst_disable_registry_update("--gst-disable-registry-update");
+        QString arg_gst_disable_registry_fork("--gst-disable-registry-fork");
+
+        Poco::Environment::set("GST_PLUGIN_PATH", gst_plugin_path.toStdString().c_str());        
+
+        int argc = ARGC;
+        char* argv[ARGC];
+        std::string args[ARGC];
+        args[0] = "";
+        args[1] = arg_gst_plugin_path.toStdString();
+        args[2] = ""; //arg_gst_disable_registry_update.toStdString();
+        args[3] = "--gst-plugin-spew"; //arg_gst_disable_registry_fork.toStdString();
+        args[4] = ""; // "--gst-debug-level=3"; //arg_gst_disable_registry_fork.toStdString();
+        for (int i=0; i < ARGC; ++i)
+        {
+            argv[i] = (char*)args[i].c_str();
+            QString message = QString("gstreamer init arg: ").append(QString(args[i].c_str()));
+            LogDebug(message.toStdString());
+        }
         char** p_argv = &argv[0];
         GError error;
         GError *p_error = &error;
