@@ -128,6 +128,84 @@ namespace Input
     
     //=========================================================================
     //
+    InputActiveState::InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p) 
+        : InputState (name, m, p), view (v)
+    { 
+#ifdef Q_WS_X11
+        XGetKeyboardControl (view-> x11Info().display(), &x11_key_state);
+#endif
+    }
+
+    void InputActiveState::onEntry (QEvent *e)
+    {
+        State::onEntry (e);
+#ifdef Q_WS_X11
+        if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
+            XAutoRepeatOff (view-> x11Info().display());
+#endif
+    }
+
+    void InputActiveState::onExit (QEvent *e)
+    {
+#ifdef Q_WS_X11
+        //if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
+        XAutoRepeatOn (view-> x11Info().display());
+#endif
+        State::onExit (e);
+    }
+
+    QGraphicsView   *view;
+#ifdef Q_WS_X11
+    XKeyboardState  x11_key_state;
+#endif
+
+
+    //=========================================================================
+    //
+    KeyActiveState::KeyActiveState (QString name, QState::ChildMode m, QState *p)
+        : InputState (name, m, p)
+    {}
+
+    void KeyActiveState::onEntry (QEvent *event)
+    {
+        State::onEntry (event);
+    }
+    
+    void KeyActiveState::onExit (QEvent *event)
+    {
+        // cancel any active key presses
+        KeyStateList::iterator i = active.begin();
+        KeyStateList::iterator e = active.end();
+        for (; i != e; ++i) (*i)-> onExit (event);
+
+        State::onExit (event);
+    }
+
+
+    //=========================================================================
+    //
+    ButtonActiveState::ButtonActiveState (QString name, MouseInfo &m, QState *p)
+        : InputState (name, p), mouse (m) 
+    {}
+
+    void ButtonActiveState::onEntry (QEvent *event)
+    {
+        State::onEntry (event);
+        
+        QMouseEvent *e = static_cast <QMouseEvent *> (event);
+        mouse = e;
+    }
+
+    void ButtonActiveState::onExit (QEvent *event)
+    {
+        QMouseEvent *e = static_cast <QMouseEvent *> (event);
+        mouse = e;
+
+        QState::onExit (event);
+    }
+    
+    //=========================================================================
+    //
     LeftButtonActiveState::LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
         : InputState (name, p), eventmgr (m)
     {
@@ -249,62 +327,6 @@ namespace Input
 
     //=========================================================================
     //
-    InputActiveState::InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p) 
-        : InputState (name, m, p), view (v)
-    { 
-#ifdef Q_WS_X11
-        XGetKeyboardControl (view-> x11Info().display(), &x11_key_state);
-#endif
-    }
-
-    void InputActiveState::onEntry (QEvent *e)
-    {
-        State::onEntry (e);
-#ifdef Q_WS_X11
-        if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
-            XAutoRepeatOff (view-> x11Info().display());
-#endif
-    }
-
-    void InputActiveState::onExit (QEvent *e)
-    {
-#ifdef Q_WS_X11
-        //if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
-        XAutoRepeatOn (view-> x11Info().display());
-#endif
-        State::onExit (e);
-    }
-
-    QGraphicsView   *view;
-#ifdef Q_WS_X11
-    XKeyboardState  x11_key_state;
-#endif
-
-
-    //=========================================================================
-    //
-    ButtonActiveState::ButtonActiveState (QString name, MouseInfo &m, QState *p)
-        : InputState (name, p), mouse (m) 
-    {}
-
-    void ButtonActiveState::onEntry (QEvent *event)
-    {
-        State::onEntry (event);
-        
-        QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        mouse = e;
-    }
-
-    void ButtonActiveState::onExit (QEvent *event)
-    {
-        QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        mouse = e;
-
-        QState::onExit (event);
-    }
-
-    //=========================================================================
-    //
     GestureActiveState::GestureActiveState (QString name, GestureInfo &g, Foundation::EventManagerPtr m, QState *p)
         : InputState (name, p), gesture (g), eventmgr (m)
     {
@@ -418,6 +440,7 @@ namespace Input
     KeyListener::KeyListener (KeyStateMap &s, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p)
         : QAbstractTransition (p), key_states (s), bindings (b), eventmgr (m)
     {
+        parent = static_cast <KeyActiveState *> (p);
         setTargetState (0);
     }
 
@@ -432,22 +455,26 @@ namespace Input
             case QEvent::KeyPress:
                 e = static_cast <QKeyEvent *> (event);
                 s = get_key_state (e);
+
                 s-> onEntry (e);
+                press_active (s);
+
                 return true;
 
             case QEvent::KeyRelease:
                 e = static_cast <QKeyEvent *> (event);
                 s = get_key_state (e);
+                
                 s-> onExit (e);
+                release_active (s);
+
                 return true;
         }
 
         return false;
     }
 
-    void KeyListener::onTransition (QEvent *event) 
-    {
-    }
+    void KeyListener::onTransition (QEvent *e) {}
 
     KeyState *KeyListener::get_key_state (QKeyEvent *event)
     {
@@ -467,6 +494,18 @@ namespace Input
 
         return state;
     }
+
+    void KeyListener::press_active (KeyState *state)
+    {
+        parent-> active.push_back (state);
+    }
+
+    void KeyListener::release_active (KeyState *state)
+    {
+        parent-> active.erase 
+            (std::find (parent-> active.begin(), parent-> active.end(), state));
+    }
+
 
     //=========================================================================
     //
@@ -540,13 +579,13 @@ namespace Input
         QFinalState *exit;
 
         InputState *active, *unfocused, 
-              *mouse, *keyboard, *perspective, 
-              *wheel, *wheel_waiting,
+              *mouse, *keyboard, *perspective, *wheel, *wheel_waiting,
               *left_button, *right_button, *mid_button,
               *left_button_waiting, *right_button_waiting, *mid_button_waiting,
               *button, *button_waiting, *gesture_waiting;
 
         InputActiveState        *focused;
+        KeyActiveState          *key_active;
         ButtonActiveState       *button_active;
         WheelActiveState        *wheel_active;
         LeftButtonActiveState   *left_button_active;
@@ -568,8 +607,9 @@ namespace Input
         focused = new InputActiveState ("focused", view_, QState::ParallelStates, active);
 
         mouse = new InputState ("mouse", QState::ParallelStates, focused);
-        keyboard = new InputState ("keyboard", QState::ParallelStates, focused);
         perspective = new InputState ("perspective", focused);
+        
+        key_active = new KeyActiveState ("keyboard", QState::ParallelStates, focused);
 
         wheel = new InputState ("wheel", mouse);
         wheel_active = new WheelActiveState ("wheel active", eventmgr_, wheel);
@@ -609,7 +649,7 @@ namespace Input
         (new EventTransition <QEvent::FocusIn> (unfocused))-> setTargetState (focused);
         (new EventTransition <QEvent::FocusOut> (focused))-> setTargetState (unfocused);
 
-        (new KeyListener (key_states_, &key_binding_, eventmgr_, keyboard));
+        (new KeyListener (key_states_, &key_binding_, eventmgr_, key_active));
 
         (new EventTransition <QEvent::Wheel> (wheel_waiting))-> setTargetState (wheel_active);
         (new UnconditionalTransition (wheel_active))-> setTargetState (wheel_waiting);
