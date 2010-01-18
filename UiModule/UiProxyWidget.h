@@ -7,9 +7,7 @@
 #include "UiWidgetProperties.h"
 
 #include <QGraphicsProxyWidget>
-
-class QTimeLine;
-class QGraphicsItemAnimation;
+#include <QTimeLine>
 
 namespace CoreUi
 {
@@ -28,9 +26,18 @@ namespace UiServices
         UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties);
         ~UiProxyWidget();
 
-        //! @return UiWidgetProperties.
+        //! Get this proxys widget properties
+        /// \return UiWidgetProperties.
         UiWidgetProperties getWidgetProperties() const { return widget_properties_; }
+
+        //! Set control button for this proxy
         void SetControlButton(CoreUi::MainPanelButton *control_button);
+
+        //! Set new opacity
+        void SetUnfocusedOpacity(int new_opacity);
+
+        //! Set new show animation speed
+        void SetShowAnimationSpeed(int new_speed);
 
     protected:
         //! QGraphicsProxyWidget override functions
@@ -47,6 +54,8 @@ namespace UiServices
         UiWidgetProperties widget_properties_;
         CoreUi::MainPanelButton *control_button_;
         QTimeLine *show_timeline_;
+        qreal unfocus_opacity_;
+        bool show_animation_enabled_;
 
     private slots:
         void AnimationStep(qreal step);

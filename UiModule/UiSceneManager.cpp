@@ -141,12 +141,19 @@ namespace UiServices
 
         // Init settings widget, add control button to mainpanel
         settings_widget_ = new CoreUi::SettingsWidget();
+
         UiWidgetProperties widget_properties("Settings", UiServices::SlideFromTop, settings_widget_->size());
         widget_properties.SetShowAtToolbar(false);
         settings_widget_proxy_widget_ = new UiProxyWidget(settings_widget_, widget_properties);
         CoreUi::MainPanelButton *control_button = main_panel_->SetSettingsWidget(settings_widget_proxy_widget_, "Settings");
         settings_widget_proxy_widget_->SetControlButton(control_button);
+
         AddProxyWidget(settings_widget_proxy_widget_);
+
+        connect(settings_widget_proxy_widget_, SIGNAL( BringToFrontRequest(UiProxyWidget*) ), 
+                this, SLOT( BringToFront(UiProxyWidget*) ));
+        connect(settings_widget_, SIGNAL( NewUserInterfaceSettingsApplied(int, int) ),
+                this, SLOT( ApplyNewProxySettings(int, int) ));
     }
 
     void UiSceneManager::SceneRectChanged(const QRectF &new_scene_rect)
@@ -221,5 +228,18 @@ namespace UiServices
             }
         }
         return 0;
+    }
+
+    void UiSceneManager::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
+    {
+        if (main_panel_)
+        {
+            QList<UiProxyWidget *> all_proxy_widgets_ = main_panel_->GetProxyWidgetList();
+            foreach(UiProxyWidget *widget, all_proxy_widgets_)
+            {
+                widget->SetUnfocusedOpacity(new_opacity);
+                widget->SetShowAnimationSpeed(new_animation_speed);
+            }
+        }
     }
 }

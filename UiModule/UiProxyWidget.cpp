@@ -6,7 +6,6 @@
 #include "MainPanel/MainPanelButton.h"
 
 #include <QWidget>
-#include <QTimeLine>
 #include <QGraphicsEffect>
 #include <QGraphicsScene>
 
@@ -16,7 +15,9 @@ namespace UiServices
         QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
         widget_properties_(in_widget_properties),
         show_timeline_(new QTimeLine(300, this)),
-        control_button_(0)
+        control_button_(0),
+        unfocus_opacity_(1.0),
+        show_animation_enabled_(true)
     {
         // QWidget setup
         widget->setWindowFlags(widget_properties_.GetWindowStyle());
@@ -58,12 +59,33 @@ namespace UiServices
         control_button_ = control_button;
     }
 
+    void UiProxyWidget::SetUnfocusedOpacity(int new_opacity)
+    {
+        unfocus_opacity_ = new_opacity;
+        unfocus_opacity_ /= 100;
+        if (isVisible() && !hasFocus())
+            setOpacity(unfocus_opacity_);
+    }
+
+    void UiProxyWidget::SetShowAnimationSpeed(int new_speed)
+    {
+        if (new_speed == 0)
+            show_animation_enabled_ = false;
+        else if (show_timeline_->state() == QTimeLine::NotRunning)
+        {
+            show_timeline_->setDuration(new_speed);
+            show_animation_enabled_ = true;
+        }
+    }
+
     void UiProxyWidget::showEvent(QShowEvent *show_event)
     {
         emit Visible(true);
         QGraphicsProxyWidget::showEvent(show_event);
-        show_timeline_->start();
         emit BringToFrontRequest(this);
+
+        if (show_animation_enabled_)
+            show_timeline_->start();
     }
 
     void UiProxyWidget::hideEvent(QHideEvent *hide_event)
@@ -87,15 +109,21 @@ namespace UiServices
     void UiProxyWidget::focusInEvent(QFocusEvent *focus_event)
     {
         QGraphicsProxyWidget::focusInEvent(focus_event);
+
         if (control_button_)
             control_button_->ControlledWidgetFocusIn();
+        if (isVisible() && show_timeline_->state() != QTimeLine::Running)
+            setOpacity(1.0);
     }
 
     void UiProxyWidget::focusOutEvent(QFocusEvent *focus_event)
     {
         QGraphicsProxyWidget::focusOutEvent(focus_event);
+
         if (control_button_)
             control_button_->ControlledWidgetFocusOut();
+        if (!widget_properties_.IsFullscreen())
+            setOpacity(unfocus_opacity_);
     }
 
     QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)

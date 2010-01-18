@@ -21,8 +21,15 @@ namespace CoreUi
     public slots:
         void AddWidget(QWidget *widget, const QString &tab_name);
 
+    private slots:
+        void OpacitySliderChanged(int new_value);
+        void ApplySettings();
+
     private:
-        Ui::SettingsWidget setting_ui_;
+        Ui::SettingsWidget settings_ui_;
+
+    signals:
+        void NewUserInterfaceSettingsApplied(int new_opacity, int new_animation_speed);
     };
 }
 
