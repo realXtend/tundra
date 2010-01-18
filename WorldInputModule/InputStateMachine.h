@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogicInputStateMachine_h
-#define incl_RexLogicInputStateMachine_h
+#ifndef incl_Input_InputStateMachine_h
+#define incl_Input_InputStateMachine_h
 
 #include "State.h"
 #include "InputEvents.h"
@@ -40,7 +40,7 @@ extern "C"
 #define AutoRepeatModeOn	1
 #endif
 
-namespace RexLogic
+namespace Input
 {
 
     struct KeyInfo;

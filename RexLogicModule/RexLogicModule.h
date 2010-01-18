@@ -300,9 +300,6 @@ namespace RexLogic
 
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
-
-        //! Input handling state machine
-        WorldInputLogic *input_state_machine_;
     };
 }
 
