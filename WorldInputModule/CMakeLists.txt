@@ -9,11 +9,15 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 add_definitions (-DWORLDINPUT_MODULE_EXPORTS)
 
+use_package (BOOST)
+use_package (POCO)
 use_package (QT4)
 use_modules (Core Foundation Interfaces RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 
+link_package (BOOST)
+link_package (POCO)
 link_package (QT4)
 link_modules (Core Foundation Interfaces)
 
