@@ -21,6 +21,8 @@ class QPushButton;
 class QTreeWidgetItem;
 class QItemSelection;
 class QModelIndex;
+class QMenu;
+class QAction;
 QT_END_NAMESPACE
 
 namespace Foundation
@@ -52,6 +54,8 @@ namespace Inventory
     class InventoryWindow : public QObject
     {
         Q_OBJECT
+
+        friend class InventoryTreeView;
 
     public:
         /// Constructor.
@@ -95,6 +99,9 @@ namespace Inventory
         /// File download.
         void Download();
 
+        /// Copies asset reference (UUID or URL) to the clipboard.
+        void CopyAssetReference();
+
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
 
@@ -115,6 +122,9 @@ namespace Inventory
 
         /// Initializes the inventory UI.
         void InitInventoryWindow();
+
+        /// Creates the context menu actions.
+        void CreateActions();
 
         /// Framework pointer.
         Foundation::Framework *framework_;
@@ -148,6 +158,30 @@ namespace Inventory
 
         /// Proxy Widget for ui
         UiServices::UiProxyWidget *proxyWidget_;
+
+        /// Action menu.
+        QMenu *actionMenu_;
+
+        /// Delete action.
+        QAction *actionDelete_;
+
+        /// Rename action.
+        QAction *actionRename_;
+
+        /// Cut action.
+        QAction *actionCut_;
+
+        /// Paste action.
+        QAction *actionPaste_;
+
+        /// New Folder action.
+        QAction *actionNewFolder_;
+
+        /// Open action.
+        QAction *actionOpen_;
+
+        /// Copy asset reference action.
+        QAction *actionCopyAssetReference_;
     };
 }
 

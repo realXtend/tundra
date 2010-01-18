@@ -31,7 +31,6 @@
 #include <QModelIndex>
 #include <QAbstractItemView>
 #include <QModelIndex>
-#include <QInputDialog>
 #include <QFileDialog>
 #include <QMenu>
 #include <QAction>
@@ -49,8 +48,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     buttonUpload_(0),
     buttonAddFolder_(0),
     buttonDeleteItem_(0),
-    buttonRename_(0)
-    /*,
+    buttonRename_(0),
     actionMenu_(0),
     actionDelete_(0),
     actionRename_(0),
@@ -58,8 +56,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionPaste_(0),
     actionNewFolder_(0),
     actionOpen_(0),
-    actionCopyAssetId(0)
-    */
+    actionCopyAssetReference_(0)
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
@@ -68,6 +65,8 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
         InitInventoryWindow();
         proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
             inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
+
+        CreateActions();
     }
 }
 
@@ -153,6 +152,13 @@ void InventoryWindow::AddFolder()
 
 void InventoryWindow::DeleteItem()
 {
+    ///\todo Delete for multiple items.
+/*
+    const QItemSelection &selection = treeView_->selectionModel()->selection();
+    if (selection.isEmpty())
+        return;
+*/
+
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
@@ -177,7 +183,7 @@ void InventoryWindow::Upload()
     if (names.empty())
         return;
 
-    // Convert to QStringList ///\todo Use QStringList all the way...
+    // Convert to QStringList ///\todo Use QStringList all the way.
     QStringList filenames;
     for (StringList::iterator it = names.begin(); it != names.end(); ++it)
         filenames << QString((*it).c_str());
@@ -206,9 +212,23 @@ void InventoryWindow::Download()
     inventoryItemModel_->Download(storePath, selection);
 }
 
+void InventoryWindow::CopyAssetReference()
+{
+    inventoryItemModel_->CopyAssetReferenceToClipboard(treeView_->selectionModel()->currentIndex());
+}
+
 void InventoryWindow::UpdateActions()
 {
-    ///\todo Utilize this function properly.
+    QModelIndex index = treeView_->selectionModel()->currentIndex();
+
+    bool editable = treeView_->model()->flags(index) & Qt::ItemIsEditable;
+    actionDelete_->setEnabled(editable);
+    actionRename_->setEnabled(editable);
+//    actionCut_->setEnabled(editable);
+
+    bool is_asset = inventoryItemModel_->GetItemType(index) == AbstractInventoryItem::Type_Asset;
+    actionCopyAssetReference_->setEnabled(is_asset);
+    actionOpen_->setEnabled(is_asset);
 
 //    bool hasSelection = !view->selectionModel()->selection().isEmpty();
     //removeRowAction->setEnabled(hasSelection);
@@ -286,8 +306,55 @@ void InventoryWindow::InitInventoryWindow()
     QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(removeColumn()));
     QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));}
     QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
-    actionCopyAssetId
+    QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(OpenItem()));
 */
+}
+
+void InventoryWindow::CreateActions()
+{
+    actionDelete_ = new QAction(tr("&Delete"), this);
+    //actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionDelete_->setStatusTip(tr("Delete this item"));
+    QObject::connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
+    treeView_->addAction(actionDelete_);
+
+    actionRename_ = new QAction(tr("&Rename"), this);
+    //actionRename_->setShortcuts();
+    actionRename_->setStatusTip(tr("Rename this item"));
+    QObject::connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
+    treeView_->addAction(actionRename_);
+
+/*
+    actionCut_ = new QAction(tr("&Cut"), this);
+    actionDelete_->setShortcuts(QKeySequence::Cut);
+    actionDelete_->setStatusTip(tr("Cut this item"));
+    QObject::connect(actionCut_, SIGNAL(triggered()), inventory_window, SLOT(Test()));
+    treeView_->addAction(actionCut_);
+
+    actionPaste_ = new QAction(tr("&Paste"), this);
+    actionDelete_->setShortcuts(QKeySequence::Paste);
+    actionDelete_->setStatusTip(tr("Paste this item"));
+    QObject::connect(actionPaste_, SIGNAL(triggered()), inventory_window, SLOT(Test()));
+    treeView_->addAction(actionPaste_);
+*/
+
+    actionNewFolder_ = new QAction(tr("&New folder"), this);
+    //actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionNewFolder_->setStatusTip(tr("Create new folder"));
+    QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));
+    treeView_->addAction(actionNewFolder_);
+
+    actionOpen_ = new QAction(tr("&Open"), this);
+    //actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionOpen_->setStatusTip(tr("Open this item"));
+    QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
+    treeView_->addAction(actionOpen_);
+
+    actionCopyAssetReference_ = new QAction(tr("&Copy asset reference"), this);
+    //actionDelete_->setShortcuts(QKeySequence::Delete);
+    actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
+    QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
+    treeView_->addAction(actionCopyAssetReference_);
 }
 
 } // namespace Inventory
