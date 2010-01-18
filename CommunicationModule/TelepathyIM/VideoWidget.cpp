@@ -185,7 +185,8 @@ namespace TelepathyIM
 
 	void VideoWidget::closeEvent(QCloseEvent *closeEvent)
 	{
-		gst_element_set_state(video_overlay_, GST_STATE_NULL);
+        if ( video_overlay_ )
+		    gst_element_set_state(video_overlay_, GST_STATE_NULL);
 		QWidget::closeEvent(closeEvent);
 	}
 
