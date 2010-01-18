@@ -177,6 +177,7 @@ namespace Input
         KeyStateList::iterator i = active.begin();
         KeyStateList::iterator e = active.end();
         for (; i != e; ++i) (*i)-> onExit (event);
+        active.erase (active.begin(), active.end());
 
         State::onExit (event);
     }
@@ -502,8 +503,10 @@ namespace Input
 
     void KeyListener::release_active (KeyState *state)
     {
-        parent-> active.erase 
-            (std::find (parent-> active.begin(), parent-> active.end(), state));
+        KeyStateList::iterator b = parent-> active.begin();
+        KeyStateList::iterator e = parent-> active.end();
+        KeyStateList::iterator i = std::find (b, e, state);
+        if (i != e) parent-> active.erase (i);
     }
 
 
