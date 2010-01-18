@@ -73,10 +73,20 @@ namespace TelepathyIM
                 Close();
                 throw e;
             }
-            video_supported_ = true;
+            if (locally_captured_video_playback_element_ && received_video_playback_element_ && video_input_bin_)
+                video_supported_ = true;
+            else
+            {
+                LogError("Cannot create video elements.");
+            }
         }
 
-        gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+        GstStateChangeReturn ret = gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+        if (ret == GST_STATE_CHANGE_FAILURE)
+        {
+            LogError("Cannot start pipeline.");
+        }
+
         status_ = StatusConnecting;
         emit StatusChanged(status_);
     }
