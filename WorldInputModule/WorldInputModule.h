@@ -7,11 +7,10 @@
 #include "InputServiceInterface.h"
 
 #include "WorldInputModuleApi.h"
-#include "InputStateMachine.h"
 
 namespace Input
 {
-    class InputStateMachine;
+    class WorldInputLogic;
 
     /*! Input module for handling inplicit user interface with "The World", 
      * that is anything that is that isn't an explicity Qt-based graphical 

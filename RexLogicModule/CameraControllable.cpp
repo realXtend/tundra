@@ -90,11 +90,28 @@ namespace RexLogic
             firstperson_pitch_ = 0.0f;
         }
 
-        if (event_id == Input::Events::SCROLL)
+        if (event_id == Input::Events::SCROLL || 
+            event_id == Input::Events::ZOOM_IN || 
+            event_id == Input::Events::ZOOM_OUT)
         {
             CameraZoomEvent event_data;
             event_data.entity = camera_entity_.lock();
-            event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+
+            switch (event_id)
+            {
+                case Input::Events::SCROLL:
+                    event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+                    break;
+
+                case Input::Events::ZOOM_IN:
+                    event_data.amount = 100;
+                    break;
+
+                case Input::Events::ZOOM_OUT:
+                    event_data.amount = -100;
+                    break;
+            }
+
             if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
                 framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
         }
