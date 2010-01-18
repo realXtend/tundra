@@ -7,6 +7,7 @@
 #include "UiWidgetProperties.h"
 
 #include "MainPanel/MainPanel.h"
+#include "MainPanel/SettingsWidget.h"
 
 #include <QOgreUIView.h>
 
@@ -52,6 +53,17 @@ namespace UiServices
     }
 
     /*************** UI Scene Manager Services ***************/
+
+    bool UiSceneManager::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name)
+    {
+        if (settings_widget_)
+        {
+            settings_widget_->AddWidget(settings_widget, tab_name);
+            return true;
+        }
+        else
+            return false;
+    }
 
     UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget)
     {
@@ -116,14 +128,25 @@ namespace UiServices
 
     void UiSceneManager::InitMasterLayout()
     {
+        // Init layout and container widget for CoreUi widgets
         container_layout_ = new QGraphicsLinearLayout(Qt::Vertical, container_widget_);
         container_layout_->setContentsMargins(0,0,0,0);
         container_layout_->setSpacing(0);
         container_widget_->setLayout(container_layout_);
         ui_view_->scene()->addItem(container_widget_);
 
+        // Init main panel
         main_panel_ = new CoreUi::MainPanel(framework_);
         main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("MainPanel", true));
+
+        // Init settings widget, add control button to mainpanel
+        settings_widget_ = new CoreUi::SettingsWidget();
+        UiWidgetProperties widget_properties("Settings", UiServices::SlideFromTop, settings_widget_->size());
+        widget_properties.SetShowAtToolbar(false);
+        settings_widget_proxy_widget_ = new UiProxyWidget(settings_widget_, widget_properties);
+        CoreUi::MainPanelButton *control_button = main_panel_->SetSettingsWidget(settings_widget_proxy_widget_, "Settings");
+        settings_widget_proxy_widget_->SetControlButton(control_button);
+        AddProxyWidget(settings_widget_proxy_widget_);
     }
 
     void UiSceneManager::SceneRectChanged(const QRectF &new_scene_rect)

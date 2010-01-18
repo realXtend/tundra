@@ -10,8 +10,6 @@
 #include <QAbstractSlider>
 
 #include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 namespace OpenALAudio
 {
@@ -25,7 +23,6 @@ namespace OpenALAudio
     SoundSettings::~SoundSettings()
     {
         SAFE_DELETE(settings_widget_);
-        settings_proxy_widget_ = 0;
     }
 
     void SoundSettings::InitWindow()
@@ -49,7 +46,7 @@ namespace OpenALAudio
         if (!settings_widget_)
             return;
 
-        settings_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(settings_widget_, UiServices::UiWidgetProperties("Sound Settings", UiServices::SlideFromTop, settings_widget_->size()));
+        ui_module->GetSceneManager()->AddSettingsWidget(settings_widget_, "Sound");
 
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())

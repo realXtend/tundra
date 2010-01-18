@@ -144,7 +144,7 @@ QComboBox {
                </size>
               </property>
               <property name="text">
-               <string>Logout</string>
+               <string> Logout</string>
               </property>
               <property name="flat">
                <bool>true</bool>

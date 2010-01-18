@@ -38,6 +38,17 @@ namespace CoreUi
         }
     }
 
+    MainPanelButton *MainPanel::SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name)
+    {
+        if (all_proxy_widgets_.indexOf(settings_widget) == -1)
+        {
+            MainPanelButton *control_button = new MainPanelButton(panel_widget_, settings_widget, QString(" " + widget_name));
+            topcontrols_->insertWidget(2, control_button);
+            all_proxy_widgets_.append(settings_widget);
+            return control_button;
+        }
+    }
+
     void MainPanel::initialize_()
     {
         QUiLoader loader;
@@ -48,6 +59,7 @@ namespace CoreUi
             panel_widget_->hide();
 
             layout_ = panel_widget_->findChild<QHBoxLayout *>("contolBarLayout");
+            topcontrols_ = panel_widget_->findChild<QHBoxLayout *>("topcontrols");
             logout_button = panel_widget_->findChild<QPushButton *>("buttonLogout");
             quit_button = panel_widget_->findChild<QPushButton *>("buttonQuit");
 
@@ -66,6 +78,9 @@ namespace CoreUi
             QObject::connect(inworld_login_dialog_, SIGNAL( TryLogin(QMap<QString,QString> &) ), this, SLOT( ParseAndEmitLogin(QMap<QString,QString> &) ));
 
             InitBookmarks();
+
+            // Settings widget
+
         }
     }
 

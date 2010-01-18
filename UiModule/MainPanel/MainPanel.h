@@ -6,6 +6,7 @@
 #include "Foundation.h"
 #include "UiProxyWidget.h"
 #include "Login/InworldLoginDialog.h"
+#include "SettingsWidget.h"
 
 #include <QWidget>
 #include <QPushButton>
@@ -25,9 +26,15 @@ namespace CoreUi
 
         //! Adds a widget to the ControlBar
         /// @param UiProxyWidget
-        /// @param Widget name
+        /// @param QString widget name
         /// @return MainPanelButton
         MainPanelButton *AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name);
+
+        //! Adds the CoreUi settings widget to this bar. Done by scenemanager
+        /// @param SettingsWidget
+        /// @param QString Widget name
+        /// @return MainPanelButton
+        MainPanelButton *SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name);
 
         //! Returns the QWidget of the ui
         QWidget *GetWidget() { return panel_widget_; }
@@ -42,6 +49,7 @@ namespace CoreUi
 
         QWidget *panel_widget_;
         QHBoxLayout *layout_;
+        QHBoxLayout *topcontrols_;
         QList<UiServices::UiProxyWidget *> all_proxy_widgets_;
 
         //! Navigation frame of this widget and its elements
@@ -57,6 +65,9 @@ namespace CoreUi
 
         //! Pointer to inworld login dialog
         CoreUi::InworldLoginDialog *inworld_login_dialog_;
+
+        //! Settings Widget
+        SettingsWidget settings_widget_;
 
     private slots:
         void HideWidgets();

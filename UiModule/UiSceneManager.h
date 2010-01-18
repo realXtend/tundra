@@ -17,6 +17,7 @@ class QGraphicsWidget;
 namespace CoreUi
 {
     class MainPanel;
+    class SettingsWidget;
 }
 
 namespace UiServices
@@ -38,6 +39,12 @@ namespace UiServices
         ~UiSceneManager();
 
     public slots:
+        //! Adds a Qt Widget to the settings widget as its own tab
+        //! \param widget QWidget to be added to the settings widget
+        //! \param tab_name QString name of the tab shown in widget
+        //! \return trued if add succesfull, false otherwise
+        bool UiSceneManager::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name);
+
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! The caller of this function is the owner of the proxy widget.
         //! \param widget QWidget to be added to the scene.
@@ -104,14 +111,14 @@ namespace UiServices
         //! Bottom container widget for main layout
         QGraphicsWidget *container_widget_;
 
-        //! Main panel (inworld panel)
+        //! CoreUi Widgets
         CoreUi::MainPanel *main_panel_;
+        CoreUi::SettingsWidget *settings_widget_;
 
-        //! Proxy widget for the login ui.
+        //! Proxy widgets
         UiProxyWidget *login_widget_;
-
-        //! Proxy widget for the main panel.
         UiProxyWidget *main_panel_proxy_widget_;
+        UiProxyWidget *settings_widget_proxy_widget_;
 
         //! Framework pointer.
         Foundation::Framework *framework_;
