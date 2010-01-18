@@ -134,7 +134,7 @@ class EditGUI(Component):
         if not DEV:
             uism = r.getUiSceneManager()
             uiprops = r.createUiWidgetProperty()
-            uiprops.widget_name_ = "World Edit"
+            uiprops.widget_name_ = "Object Edit"
             uiprops.my_size_ = QSize(width, height)
             #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
             self.proxywidget = r.createUiProxyWidget(ui, uiprops)
