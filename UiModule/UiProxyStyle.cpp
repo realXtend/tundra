@@ -1,13 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "QNaaliProxyStyle.h"
+#include "UiProxyStyle.h"
 
 #include <QStyleOptionTitleBar>
 
-namespace Foundation
+namespace UiServices
 {
-    int QNaaliProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
+    int UiProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
     {
         switch (metric)
         {
@@ -23,7 +23,7 @@ namespace Foundation
         return QProxyStyle::pixelMetric(metric, option, widget);
     }
 
-    QRect QNaaliProxyStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget) const
+    QRect UiProxyStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget) const
     {
         // We are only interested in modifying the TitleBar subcontrol rects
         if (control == QStyle::CC_TitleBar)
