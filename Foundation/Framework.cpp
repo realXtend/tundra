@@ -333,7 +333,12 @@ namespace Foundation
         PROFILE(FW_Go);
         PostInitialize();
 
-        engine_->Go();     
+        engine_->Go();   
+        
+        // If exiting by window close button, exit_signal_ is false, which means we might still try to do frame update after this
+        // so make sure it is true now
+        exit_signal_ = true;
+                  
         UnloadModules();
     }
 
@@ -359,7 +364,7 @@ namespace Foundation
     }
 
     void Framework::UnloadModules()
-    {
+    {        
         default_scene_.reset();
         scenes_.clear();            
             
