@@ -106,6 +106,12 @@ namespace Input
         static const event_id_t MOUSEDRAG = 49;
         static const event_id_t MOUSEDRAG_STOPPED = 50;
 
+        //! Keyboard zoom in and out
+        static const event_id_t ZOOM_IN = 51;
+        static const event_id_t ZOOM_IN_RELEASED = 52;
+        static const event_id_t ZOOM_OUT = 53;
+        static const event_id_t ZOOM_OUT_RELEASED = 54;
+
 		static const event_id_t PY_RESTART = 71;
 		static const event_id_t PY_RUN_COMMAND = 73;
 

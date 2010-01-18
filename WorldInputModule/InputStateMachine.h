@@ -53,11 +53,8 @@ namespace Input
 
     // maps Qt::Key codes to info and state structures
     typedef std::map <int, KeyState *> KeyStateMap;
-
-    // maps Qt::Key codes to Naali events
-    typedef std::map <int, int> KeyEventMap;
-
     
+
     struct MouseInfo
     {
         MouseInfo ();
@@ -95,7 +92,7 @@ namespace Input
     struct KeyState : public InputState
     {
         KeyState (QKeyEvent *event, QState *p = 0);
-        KeyState (QKeyEvent *event, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p = 0);
+        KeyState (QKeyEvent *event, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
         ~KeyState ();
 
         void onEntry (QEvent *event);
@@ -108,7 +105,7 @@ namespace Input
         bool                        active;
         std::auto_ptr <QKeyEvent>   event;
         
-        KeyEventMap                 **bindings;
+        KeyBindingMap               **bindings;
 
         event_category_id_t         catid;
         Foundation::EventManagerPtr eventmgr;
@@ -225,33 +222,33 @@ namespace Input
 
     struct FirstPersonActiveState : public InputState
     {
-        FirstPersonActiveState (QString name, KeyEventMap **m, QState *p = 0);
+        FirstPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyEventMap         **map;
+        KeyBindingMap       **map;
         FirstPersonBindings bindings;
     };
 
 
     struct ThirdPersonActiveState : public InputState
     {
-        ThirdPersonActiveState (QString name, KeyEventMap **m, QState *p = 0);
+        ThirdPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyEventMap         **map;
+        KeyBindingMap       **map;
         ThirdPersonBindings bindings;
     };
 
 
     struct FreeCameraActiveState : public InputState
     {
-        FreeCameraActiveState (QString name, KeyEventMap **m, QState *p = 0);
+        FreeCameraActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyEventMap         **map;
+        KeyBindingMap       **map;
         FreeCameraBindings  bindings;
     };
 
@@ -378,7 +375,7 @@ namespace Input
     
     struct KeyListener : public QAbstractTransition 
     {
-        KeyListener (KeyStateMap &s, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p = 0);
+        KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
 
         bool eventTest (QEvent *event);
         void onTransition (QEvent *event);
@@ -390,8 +387,8 @@ namespace Input
 
         KeyActiveState  *parent;
 
-        KeyStateMap &key_states;
-        KeyEventMap **bindings;
+        KeyStateMap     &key_states;
+        KeyBindingMap   **bindings;
 
         Foundation::EventManagerPtr eventmgr;
     };
@@ -424,7 +421,7 @@ namespace Input
             GestureInfo     gesture_state_;
 
             KeyStateMap     key_states_;
-            KeyEventMap     *key_binding_;
+            KeyBindingMap   *key_binding_;
     };
 }
 

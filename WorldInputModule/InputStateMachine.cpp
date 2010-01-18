@@ -80,7 +80,7 @@ namespace Input
         catid = eventmgr-> QueryEventCategory ("Input");
     }
 
-    KeyState::KeyState (QKeyEvent *e, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p)
+    KeyState::KeyState (QKeyEvent *e, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
         : InputState ("key state "+e->text(), p), 
         event (new QKeyEvent (*e)), 
         bindings (b), 
@@ -93,30 +93,31 @@ namespace Input
     {
     }
 
-    void KeyState::onEntry (QEvent *event)
+    void KeyState::onEntry (QEvent *e)
     {
         int eid;
 
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid, 0);
-
-        State::onEntry (event);
+        
+        State::onEntry (e);
     }
 
-    void KeyState::onExit (QEvent *event)
+    void KeyState::onExit (QEvent *e)
     {
         int eid;
 
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid+1, 0);
 
-        State::onExit (event);
+        State::onExit (e);
     }
 
     int KeyState::get_event_id ()
     {
-        KeyEventMap::const_iterator i = (*bindings)-> find (event-> key());
-        KeyEventMap::const_iterator e = (*bindings)-> end ();
+        QKeySequence sequence (event-> key());
+        KeyBindingMap::const_iterator i = (*bindings)-> find (sequence);
+        KeyBindingMap::const_iterator e = (*bindings)-> end ();
         return (i != e)? i-> second : 0;
     }
         
@@ -372,7 +373,7 @@ namespace Input
 
     //=========================================================================
     //
-    FirstPersonActiveState::FirstPersonActiveState (QString name, KeyEventMap **s, QState *p)
+    FirstPersonActiveState::FirstPersonActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
     {}
 
@@ -384,7 +385,7 @@ namespace Input
     
     //=========================================================================
     //
-    ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyEventMap **s, QState *p)
+    ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
     {}
 
@@ -396,7 +397,7 @@ namespace Input
     
     //=========================================================================
     //
-    FreeCameraActiveState::FreeCameraActiveState (QString name, KeyEventMap **s, QState *p)
+    FreeCameraActiveState::FreeCameraActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
     {}
 
@@ -438,7 +439,7 @@ namespace Input
     //=========================================================================
     //
     
-    KeyListener::KeyListener (KeyStateMap &s, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p)
+    KeyListener::KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
         : QAbstractTransition (p), key_states (s), bindings (b), eventmgr (m)
     {
         parent = static_cast <KeyActiveState *> (p);

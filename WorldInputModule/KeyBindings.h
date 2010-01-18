@@ -3,10 +3,12 @@
 #ifndef incl_Input_KeyBindings_h
 #define incl_Input_KeyBindings_h
 
+#include <QKeySequence>
+
 namespace Input
 {
     // maps Qt::Keys to Input::Events
-    typedef std::map <int, int> KeyBindingMap;
+    typedef std::map <QKeySequence, int> KeyBindingMap;
 
     struct KeyBinding
     {
