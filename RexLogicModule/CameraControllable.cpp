@@ -29,7 +29,7 @@ namespace RexLogic
       , drag_pitch_(0)     
       , drag_yaw_(0)
     {
-        camera_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "default_distance", 20.f);
+        camera_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "default_distance", 10.f);
         camera_min_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "min_distance", 1.f);
         camera_max_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "max_distance", 50.f);
 
