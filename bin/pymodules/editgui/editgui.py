@@ -157,7 +157,7 @@ class EditGUI(Component):
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
-        box = self.widget.findChild("QVBoxLayout", "horizontalLayout_9")
+        box = self.widget.findChild("QHBoxLayout", "horizontalLayout_9")
         if box is not None:
             line = MeshAssetidEditline(self) 
             box.addWidget(line)
