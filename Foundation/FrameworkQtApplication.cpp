@@ -4,7 +4,6 @@
 
 #include "Framework.h"
 #include "FrameworkQtApplication.h"
-#include "QNaaliProxyStyle.h"
 
 namespace Foundation
 {
@@ -12,7 +11,6 @@ namespace Foundation
     FrameworkQtApplication::FrameworkQtApplication (Framework *framework, int &argc, char** argv) : 
         QApplication (argc, argv), framework_ (framework)
     {
-        setStyle(new QNaaliProxyStyle());
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()

@@ -1,13 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_QNaaliProxyStyle_h
-#define incl_Foundation_QNaaliProxyStyle_h
+#ifndef incl_Foundation_UiProxyStyle_h
+#define incl_Foundation_UiProxyStyle_h
 
 #include <QProxyStyle>
 
-namespace Foundation
+namespace UiServices
 {
-    class QNaaliProxyStyle : public QProxyStyle
+    //! Custom QProxyStyle for modifying the paint information of scene widgets 
+    class UiProxyStyle : public QProxyStyle
     {
 
     public:
@@ -17,4 +18,4 @@ namespace Foundation
     };
 }
 
-#endif // incl_Foundation_QNaaliProxyStyle_h
+#endif // incl_Foundation_UiProxyStyle_h

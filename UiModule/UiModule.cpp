@@ -4,10 +4,13 @@
 #include "UiModule.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
+#include "UiProxyStyle.h"
 
 #include <QOgreUIView.h>
 #include <NetworkEvents.h>
 #include <SceneEvents.h>
+
+#include <QApplication>
 
 namespace UiServices
 {
@@ -28,7 +31,8 @@ UiModule::~UiModule()
 
 void UiModule::Load()
 {
-    event_query_categories_ << "Framework" << "Scene";
+    QApplication::setStyle(new UiProxyStyle());
+    event_query_categories_ << "Framework" << "Scene";    
 }
 
 void UiModule::Unload()
