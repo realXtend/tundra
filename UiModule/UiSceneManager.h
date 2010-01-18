@@ -122,6 +122,10 @@ namespace UiServices
 
         //! Framework pointer.
         Foundation::Framework *framework_;
+
+    private slots:
+        void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
+
     };
 }
 

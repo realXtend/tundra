@@ -39,6 +39,9 @@ namespace CoreUi
         //! Returns the QWidget of the ui
         QWidget *GetWidget() { return panel_widget_; }
 
+        //! Returns the list that contains all the proxy widgets
+        QList<UiServices::UiProxyWidget *> GetProxyWidgetList() { return all_proxy_widgets_; }
+
         QPushButton *logout_button;
         QPushButton *quit_button;
 

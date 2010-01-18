@@ -36,6 +36,7 @@ namespace CoreUi
             all_proxy_widgets_.append(widget);
             return control_button;
         }
+        return 0;
     }
 
     MainPanelButton *MainPanel::SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name)
@@ -47,6 +48,7 @@ namespace CoreUi
             all_proxy_widgets_.append(settings_widget);
             return control_button;
         }
+        return 0;
     }
 
     void MainPanel::initialize_()
