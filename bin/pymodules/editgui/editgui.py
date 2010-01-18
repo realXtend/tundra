@@ -157,7 +157,7 @@ class EditGUI(Component):
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
-        box = self.widget.findChild("QVBoxLayout")
+        box = self.widget.findChild("QVBoxLayout", "horizontalLayout_9")
         if box is not None:
             line = MeshAssetidEditline(self) 
             box.addWidget(line)
@@ -197,15 +197,18 @@ class EditGUI(Component):
         self.widget.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
         #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
-        self.widget.newObject.connect('clicked()', self.createObject)
-        self.widget.deleteObject.connect('clicked()', self.deleteObject)
+        self.widget.findChild("QPushButton", "newObject").connect('clicked()', self.createObject)
+        self.widget.findChild("QPushButton", "deleteObject").connect('clicked()', self.deleteObject)
+        self.widget.findChild("QPushButton", "duplicate").connect('clicked()', self.duplicate)
+        
+        self.widget.findChild("QPushButton", "undo").connect('clicked()', self.undo)
+        
         #self.widget.setMesh.connect('clicked()', self.setMesh)
-        self.widget.duplicate.connect('clicked()', self.duplicate)
-        self.widget.undo.connect('clicked()', self.undo)
         #self.widget.redo.connect('clicked()', self.redo)
-        self.widget.move_button.connect('clicked()', self.manipulator_move)
-        self.widget.scale_button.connect('clicked()', self.manipulator_scale)
-        self.widget.rotate_button.connect('clicked()', self.manipulator_rotate)
+        
+        self.widget.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
+        self.widget.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
+        self.widget.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
         
         self.widgetList = {}
         
@@ -221,7 +224,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
