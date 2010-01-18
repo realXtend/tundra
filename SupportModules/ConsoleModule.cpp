@@ -86,14 +86,14 @@ namespace Console
 
             if (event_id == Input::Events::SHOW_DEBUG_CONSOLE_REL)
             {
-                boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-                if (input)
-                {
-                    if (manager_->IsActive())
-                        input->SetState(Input::State_Buffered);
-                    else
-                        input->SetState();
-                }
+                //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+                //if (input)
+                //{
+                //    if (manager_->IsActive())
+                //        input->SetState(Input::State_Buffered);
+                //    else
+                //        input->SetState();
+                //}
 
                 return true;
             }

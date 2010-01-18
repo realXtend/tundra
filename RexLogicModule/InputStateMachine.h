@@ -3,6 +3,7 @@
 #ifndef incl_RexLogicInputStateMachine_h
 #define incl_RexLogicInputStateMachine_h
 
+#include "State.h"
 #include "InputEvents.h"
 #include "KeyBindings.h"
 
@@ -82,28 +83,13 @@ namespace RexLogic
         int last_y;
     };
 
-
-    struct State : public QState
+    struct InputState : public Foundation::State
     {
-        State (QString name, QState *parent = 0);
-        State (QString name, QState::ChildMode mode, QState *parent = 0);
-
-        virtual void onEntry (QEvent *e);
-        virtual void onExit (QEvent *e);
-                
-        bool active;
+        InputState (QString name, QState *parent = 0);
+        InputState (QString name, QState::ChildMode mode, QState *parent = 0);
     };
 
-    struct FinalState : public QFinalState
-    {
-        FinalState (QString name, QState *p = 0);
-
-        virtual void onEntry (QEvent *e);
-        virtual void onExit (QEvent *e);
-    };
-
-
-    struct KeyState : public State
+    struct KeyState : public InputState
     {
         KeyState (QKeyEvent *event, QState *p = 0);
         KeyState (QKeyEvent *event, KeyEventMap **b, Foundation::EventManagerPtr m, QState *p = 0);
@@ -126,7 +112,7 @@ namespace RexLogic
     };
 
 
-    struct InputActiveState : public State
+    struct InputActiveState : public InputState
     {
         InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p = 0);
 
@@ -140,7 +126,7 @@ namespace RexLogic
     };
 
     
-    struct ButtonActiveState : public State
+    struct ButtonActiveState : public InputState
     {
         ButtonActiveState (QString name, MouseInfo &m, QState *p = 0);
 
@@ -151,7 +137,7 @@ namespace RexLogic
     };
 
 
-    struct LeftButtonActiveState : public State
+    struct LeftButtonActiveState : public InputState
     {
         LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
 
@@ -165,7 +151,7 @@ namespace RexLogic
     };
 
 
-    struct RightButtonActiveState : public State
+    struct RightButtonActiveState : public InputState
     {
         RightButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
 
@@ -179,7 +165,7 @@ namespace RexLogic
     };
 
 
-    struct MidButtonActiveState : public State
+    struct MidButtonActiveState : public InputState
     {
         MidButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
 
@@ -193,7 +179,7 @@ namespace RexLogic
     };
 
 
-    struct WheelActiveState : public State
+    struct WheelActiveState : public InputState
     {
         WheelActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
 
@@ -207,7 +193,7 @@ namespace RexLogic
     };
 
 
-    struct GestureActiveState : public State
+    struct GestureActiveState : public InputState
     {
         GestureActiveState (QString name, GestureInfo &g, Foundation::EventManagerPtr m, QState *p = 0);
 
@@ -223,7 +209,7 @@ namespace RexLogic
     };
 
 
-    struct FirstPersonActiveState : public State
+    struct FirstPersonActiveState : public InputState
     {
         FirstPersonActiveState (QString name, KeyEventMap **m, QState *p = 0);
 
@@ -234,7 +220,7 @@ namespace RexLogic
     };
 
 
-    struct ThirdPersonActiveState : public State
+    struct ThirdPersonActiveState : public InputState
     {
         ThirdPersonActiveState (QString name, KeyEventMap **m, QState *p = 0);
 
@@ -245,7 +231,7 @@ namespace RexLogic
     };
 
 
-    struct FreeCameraActiveState : public State
+    struct FreeCameraActiveState : public InputState
     {
         FreeCameraActiveState (QString name, KeyEventMap **m, QState *p = 0);
 
@@ -398,7 +384,7 @@ namespace RexLogic
             WorldInputLogic (Foundation::Framework *fw);
 
             void Update (f64 frametime);
-            const State *GetState (QString name);
+            const Foundation::State *GetState (QString name);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
