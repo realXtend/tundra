@@ -761,33 +761,23 @@ if 0:
     r.c.proxywidget.hide()
     
 if 0:
-    qprim = r.getQPrim(720259)
+    qprim = r.getQPrim(1680221423)
     mats = qprim.Materials
     print mats
-    qprim.Materials = mats
     
-    edited_mats = mats
+    #~ qprim.Materials = mats
     
-    keys = {}
-    id = 0
-    for key in mats.iterkeys():
-        keys[id] = key
-        id += 1
+    #~ edited_mats = mats
     
-    #print keys, mats.keys(), mats[keys[0]]
+    #~ keys = {}
+    #~ id = 0
+    for key in mats.itervalues():
+        if key[1] == "":
+            print "swoot"
+        #~ id += 1
     
-    PRIMTYPES = {
-        0: "Texture", 
-        45: "Material"
-    }
-
+    #~ #print keys, mats.keys(), mats[keys[0]]
     
-
-    #print mats
-    #~ keys = qprim.Materials.keys()
-    #~ for thingie in mats.iteritems():
-        #~ print thingie
-    #print data
 if 0:
     r.tag = False
 
@@ -849,7 +839,7 @@ if 0:
             #~ r.elements.append((label, line))
             #~ r.formwidget.formLayout.addRow(label, line)
         
-        print r.elements
+        #print r.elements
         #~ #print dir(r.formwidget)
         #~ stuff =  r.formwidget.children()
         #~ for thingie in stuff:

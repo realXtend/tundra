@@ -458,14 +458,17 @@ class EditGUI(Component):
         #for tuple in sorted(mats.itervalues()):
         for i in range(len(mats)):
             tuple = mats[str(i)]
-            
             line = UUIDEditLine(self)#QLineEdit()
             line.text = tuple[1]
             
             label = QLabel()
-            label.text = PRIMTYPES[tuple[0]]
+            if tuple[1] != "": #this happens when we don't have anything in the prim
+                label.text = PRIMTYPES[tuple[0]]
+            else:
+                label.text = "n/a"
+                #r.logDebug("Nothing found")
+            
             self.dialogElements.append((label, line))
-                
             self.materialDialogFormWidget.formLayout.addRow(label, line)
             
     def dialogClosed(self):
