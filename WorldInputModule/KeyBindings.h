@@ -8,7 +8,7 @@
 namespace Input
 {
     // maps Qt::Keys to Input::Events
-    typedef std::map <QKeySequence, int> KeyBindingMap;
+    typedef std::map <QKeySequence, std::pair <int,int> > KeyBindingMap;
 
     struct KeyBinding
     {
