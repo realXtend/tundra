@@ -566,12 +566,16 @@ namespace Input
         return QObject::eventFilter (obj, event);
     }
 
-    const Foundation::State *WorldInputLogic::GetState (QString name)
+    const Foundation::State *WorldInputLogic::GetState (const std::string &name) const
     {
         using Foundation::StateMap;
-        StateMap::const_iterator i = input_state_registry_.find (name);
+        StateMap::const_iterator i = input_state_registry_.find (QString (name.c_str()));
         StateMap::const_iterator e = input_state_registry_.end ();
         return (i != e)? i-> second : 0;
+    }
+
+    void WorldInputLogic::AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const
+    {
     }
 
     void WorldInputLogic::Update (f64 frametime)
@@ -599,7 +603,7 @@ namespace Input
         QFinalState *exit;
 
         InputState *active, *unfocused,
-            *mouse, /**keyboard,*/ *perspective, *wheel, *wheel_waiting,
+            *mouse, *perspective, *wheel, *wheel_waiting,
             *left_button, *right_button, *mid_button,
             *left_button_waiting, *right_button_waiting, *mid_button_waiting,
             *button, *button_waiting, *gesture_waiting;
