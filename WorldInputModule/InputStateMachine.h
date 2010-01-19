@@ -6,6 +6,7 @@
 #include "State.h"
 #include "InputEvents.h"
 #include "KeyBindings.h"
+#include "InputServiceInterface.h"
 
 #include <QGraphicsView>
 
@@ -37,7 +38,7 @@ extern "C"
     extern int XAutoRepeatOn(Display*);
 }
 
-#define AutoRepeatModeOn 1
+#define AutoRepeatModeOn	1
 #endif
 
 namespace Input
@@ -146,7 +147,7 @@ namespace Input
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
-    
+
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
@@ -172,7 +173,7 @@ namespace Input
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
-        
+
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
@@ -200,7 +201,7 @@ namespace Input
         void onExit (QEvent *event);
 
         GestureInfo &gesture;
-        
+
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
@@ -268,7 +269,7 @@ namespace Input
     };
 
     template <int EventType>
-    struct EventTransition : public QAbstractTransition
+        struct EventTransition : public QAbstractTransition
     {
         EventTransition (QState *p = 0) : QAbstractTransition (p) {}
 
@@ -376,34 +377,37 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-    class WorldInputLogic : public QStateMachine
+
+    class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
-    public:
-        WorldInputLogic (Foundation::Framework *fw);
+        public:
+            WorldInputLogic (Foundation::Framework *fw);
 
-        void Update (f64 frametime);
-        const Foundation::State *GetState (QString name);
+            void Update (f64 frametime);
 
-    protected:
-        bool eventFilter (QObject *obj, QEvent *event);
+            const Foundation::State *GetState (const std::string &name) const;
+            void AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const;
 
-    private:
-        void init_statemachine_ ();
+        protected:
+            bool eventFilter (QObject *obj, QEvent *event);
 
-        QEvent *clone_event_ (QEvent *event);
+        private:
+            void init_statemachine_ ();
 
-    private:
-        Foundation::Framework       *framework_;
-        Foundation::EventManagerPtr eventmgr_;
+            QEvent *clone_event_ (QEvent *event);
 
-        QGraphicsView   *view_;
-        bool            has_focus_;
+        private:
+            Foundation::Framework       *framework_;
+            Foundation::EventManagerPtr eventmgr_;
 
-        MouseInfo       mouse_state_;
-        GestureInfo     gesture_state_;
+            QGraphicsView   *view_;
+            bool            has_focus_;
 
-        KeyStateMap     key_states_;
-        KeyBindingMap   *key_binding_;
+            MouseInfo       mouse_state_;
+            GestureInfo     gesture_state_;
+
+            KeyStateMap     key_states_;
+            KeyBindingMap   *key_binding_;
     };
 }
 

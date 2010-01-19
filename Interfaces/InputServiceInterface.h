@@ -6,7 +6,7 @@
 #include "ServiceInterface.h"
 #include "State.h"
 
-namespace Input
+namespace Foundation
 {
     /*! input state. The input system is modelled as a Finite State Machine, 
      * and implemented using Qt's State Machine framework.

@@ -11,6 +11,7 @@
 namespace Input
 {
     class WorldInputLogic;
+    typedef boost::shared_ptr <WorldInputLogic> StateMachinePtr;
 
     /*! Input module for handling inplicit user interface with "The World", 
      * that is anything that is that isn't an explicity Qt-based graphical 
@@ -22,7 +23,7 @@ namespace Input
      *
      * See \ref Input_page "Handling input" for more information.  
      */
-    class  WorldInputModule : public Foundation::ModuleInterfaceImpl
+    class WorldInputModule : public Foundation::ModuleInterfaceImpl
     {
         MODULE_LOGGING_FUNCTIONS
 
@@ -54,7 +55,7 @@ namespace Input
         private:
 
             //! Input handling state machine
-            WorldInputLogic *state_machine_;
+            StateMachinePtr state_machine_;
     };
 }
 #endif

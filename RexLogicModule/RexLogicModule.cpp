@@ -9,6 +9,7 @@
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
 #include "SoundServiceInterface.h"
+#include "InputServiceInterface.h"
 #include "SceneManager.h"
 #include "Avatar/AvatarControllable.h"
 #include "CameraControllable.h"
