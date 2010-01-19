@@ -105,7 +105,7 @@ class DragDroppableEditline(QLineEdit):
 class MeshAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, ref, asset_type):
         print "doaction in MeshAssetidEditline-class..."
-        applymesh(ent, asset_ref)
+        applymesh(ent, ref)
         self.text = inv_name
     
 class UUIDEditLine(DragDroppableEditline):
