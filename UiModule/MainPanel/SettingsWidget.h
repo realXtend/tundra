@@ -11,9 +11,8 @@ namespace CoreUi
 {
     class SettingsWidget : public QWidget
     {
-    
-    Q_OBJECT
-    
+        Q_OBJECT
+
     public:
         SettingsWidget();
         virtual ~SettingsWidget();

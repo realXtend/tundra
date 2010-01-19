@@ -12,7 +12,6 @@
 
 namespace ProtocolUtilities
 {
-
       /// Protocol type enumeration.
     enum ProtocolType
     {
@@ -48,7 +47,7 @@ namespace ProtocolUtilities
             std::string avatarStorageUrl = "";
             std::string seedCapabilities = "";
             //inventory.reset();
-            if ( buddy_list )
+            if (buddy_list)
                 buddy_list->Clear();
         }
 

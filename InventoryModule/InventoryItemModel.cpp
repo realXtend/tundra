@@ -116,14 +116,15 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
         return flags;
 
     AbstractInventoryItem *item = GetItem(index);
-    if (item->GetItemType() == AbstractInventoryItem::Type_Asset)
+    AbstractInventoryItem::InventoryItemType type = item->GetItemType();
+    if (type == AbstractInventoryItem::Type_Asset)
     {
         if (!item->IsLibraryItem())
             flags |= Qt::ItemIsDropEnabled;
         flags |= Qt::ItemIsDragEnabled;
     }
 
-    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+    if (type == AbstractInventoryItem::Type_Folder)
         if (!item->IsLibraryItem())
             flags |= Qt::ItemIsDropEnabled;
 
@@ -132,7 +133,7 @@ Qt::ItemFlags InventoryItemModel::flags(const QModelIndex &index) const
 
     flags |= Qt::ItemIsSelectable;
 
-    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+    if (type == AbstractInventoryItem::Type_Folder)
         flags |= Qt::ItemIsDragEnabled;
 
     flags |= Qt::ItemIsEditable;
@@ -346,6 +347,11 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
 AbstractInventoryItem::InventoryItemType InventoryItemModel::GetItemType(const QModelIndex &index) const
 {
     return GetItem(index)->GetItemType();
+}
+
+bool InventoryItemModel::IsLibraryItem(const QModelIndex &index) const
+{
+    return GetItem(index)->IsLibraryItem();
 }
 
 bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, const QString &name)

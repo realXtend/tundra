@@ -32,9 +32,6 @@ namespace Inventory
 
     protected:
         /// QAbstractItemView override.
-//        void mousePressEvent(QMouseEvent *event);
-
-        /// QAbstractItemView override.
         void contextMenuEvent(QContextMenuEvent *event);
 
         /// QAbstractItemView override.

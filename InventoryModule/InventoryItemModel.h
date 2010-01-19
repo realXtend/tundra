@@ -126,6 +126,11 @@ namespace Inventory
         /// @return Type of the item.
         AbstractInventoryItem::InventoryItemType GetItemType(const QModelIndex &index) const;
 
+        /// Returns if item at the spesific index is library item.
+        /// @param index Model index.
+        /// @return Is the item at the spesific index is library item.
+        bool IsLibraryItem(const QModelIndex &index) const;
+
         /// Inserts new empty folder to the model.
         /// @param position
         /// @param parent Index of the parent folder.

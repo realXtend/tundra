@@ -43,12 +43,6 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     inventoryWidget_(0),
     inventoryItemModel_(0),
     treeView_(0),
-    buttonClose_(0),
-    buttonDownload_(0),
-    buttonUpload_(0),
-    buttonAddFolder_(0),
-    buttonDeleteItem_(0),
-    buttonRename_(0),
     actionMenu_(0),
     actionDelete_(0),
     actionRename_(0),
@@ -56,7 +50,9 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionPaste_(0),
     actionNewFolder_(0),
     actionOpen_(0),
-    actionCopyAssetReference_(0)
+    actionCopyAssetReference_(0),
+    actionUpload_(0),
+    actionDownload_(0)
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
@@ -108,8 +104,6 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     // Connect selectionChanged
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
-
-//    QObject::connect(treeView_, SIGNAL(itemClicked(QListWidgetItem *)), SLOT(FriendClicked(QListWidgetItem *)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -219,23 +213,22 @@ void InventoryWindow::CopyAssetReference()
 
 void InventoryWindow::UpdateActions()
 {
+    ///\todo Cut, Copy, Paste: actionCut_, actionCopy_, actionCut_
+
     QModelIndex index = treeView_->selectionModel()->currentIndex();
+
+    bool canAddFolder = !inventoryItemModel_->IsLibraryItem(index);
+    actionNewFolder_->setEnabled(canAddFolder);
 
     bool editable = treeView_->model()->flags(index) & Qt::ItemIsEditable;
     actionDelete_->setEnabled(editable);
     actionRename_->setEnabled(editable);
-//    actionCut_->setEnabled(editable);
 
     bool is_asset = inventoryItemModel_->GetItemType(index) == AbstractInventoryItem::Type_Asset;
     actionCopyAssetReference_->setEnabled(is_asset);
     actionOpen_->setEnabled(is_asset);
 
-//    bool hasSelection = !view->selectionModel()->selection().isEmpty();
-    //removeRowAction->setEnabled(hasSelection);
-    //removeColumnAction->setEnabled(hasSelection);
-
     bool hasCurrent = treeView_->selectionModel()->currentIndex().isValid();
-    //insertRowAction->setEnabled(hasCurrent);
 
     if (hasCurrent)
         treeView_->closePersistentEditor(treeView_->selectionModel()->currentIndex());
@@ -263,55 +256,56 @@ void InventoryWindow::InitInventoryWindow()
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory.ui");
     inventoryWidget_ = loader.load(&uiFile, 0);
-    inventoryWidget_->resize(300, 350);
     uiFile.close();
 
     // Get controls
-    buttonClose_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Close");
+/*
     buttonDownload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Download");
     buttonUpload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Upload");
     buttonAddFolder_ = inventoryWidget_->findChild<QPushButton *>("pushButton_AddFolder");
     buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton *>("pushButton_DeleteItem");
     buttonRename_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Rename");
+*/
 
     // Create inventory tree view.
     treeView_ = new InventoryTreeView;
     QHBoxLayout *hlayout = inventoryWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
     hlayout->addWidget(treeView_);
 
-//    QWidget *tw = inventoryWidget_->findChild<QWidget *>("widgeTreeView");
-//    QVBoxLayout *vlayout = inventoryWidget_->findChild<QVBoxLayout *>("verticalLayout_RightContainer");
-//    hlayout->addLayout(vlayout);
-
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
 //    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
+/*
     // Buttons
-    QObject::connect(buttonClose_, SIGNAL(clicked()), this, SLOT(Hide()));
     QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
     QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
     QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
     QObject::connect(buttonUpload_, SIGNAL(clicked(bool)), this, SLOT(Upload()));
     QObject::connect(buttonDownload_, SIGNAL(clicked(bool)), this, SLOT(Download()));
-
-    // Actions
-/*
-    actionMenu_ = new QMenu();
-    QObject::connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
-    QObject::connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
-    QObject::connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
-    QObject::connect(actionCut_, SIGNAL(triggered()), this, SLOT(removeRow()));
-    QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(removeColumn()));
-    QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));}
-    QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
-    QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(OpenItem()));
 */
 }
 
 void InventoryWindow::CreateActions()
 {
+/*
+    itemMenu_ = new QMenu(this);
+    fileTransferMenu_ = new QMenu(this);
+    QObject::connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
+*/
+    // File transfer actions
+    actionUpload_= new QAction(tr("&Upload"), this);
+    actionUpload_->setStatusTip(tr("Upload file to your inventory"));
+    QObject::connect(actionUpload_, SIGNAL(triggered()), this, SLOT(Upload()));
+    treeView_->addAction(actionUpload_);
+
+    actionDownload_= new QAction(tr("&Download"), this);
+    actionDownload_->setStatusTip(tr("Download assets to your hard drive"));
+    QObject::connect(actionDownload_, SIGNAL(triggered()), this, SLOT(Download()));
+    treeView_->addAction(actionDownload_);
+
+    // Inventory item actions.
     actionDelete_ = new QAction(tr("&Delete"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionDelete_->setStatusTip(tr("Delete this item"));
@@ -328,13 +322,13 @@ void InventoryWindow::CreateActions()
     actionCut_ = new QAction(tr("&Cut"), this);
     actionDelete_->setShortcuts(QKeySequence::Cut);
     actionDelete_->setStatusTip(tr("Cut this item"));
-    QObject::connect(actionCut_, SIGNAL(triggered()), inventory_window, SLOT(Test()));
+    QObject::connect(actionCut_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionCut_);
 
     actionPaste_ = new QAction(tr("&Paste"), this);
     actionDelete_->setShortcuts(QKeySequence::Paste);
     actionDelete_->setStatusTip(tr("Paste this item"));
-    QObject::connect(actionPaste_, SIGNAL(triggered()), inventory_window, SLOT(Test()));
+    QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionPaste_);
 */
 
