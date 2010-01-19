@@ -33,12 +33,12 @@ namespace OpenSimProtocol
     /// OpenSimProtocolModule exposes other modules with the funtionality of
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
-	class OSPROTO_MODULE_API ProtocolModuleOpenSim 
-		: public Foundation::ModuleInterfaceImpl, 
-		  public ProtocolUtilities::INetMessageListener, 
-		  public ProtocolUtilities::ProtocolModuleInterface
+    class OSPROTO_MODULE_API ProtocolModuleOpenSim  :
+        public Foundation::ModuleInterfaceImpl,
+        public ProtocolUtilities::INetMessageListener,
+        public ProtocolUtilities::ProtocolModuleInterface
     {
-    public: 
+    public:
         ProtocolModuleOpenSim();
         virtual ~ProtocolModuleOpenSim();
 
@@ -47,7 +47,7 @@ namespace OpenSimProtocol
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-		
+
         MODULE_LOGGING_FUNCTIONS
 
         //! Returns name of this module. Needed for logging.
@@ -63,35 +63,34 @@ namespace OpenSimProtocol
         virtual void OnNetworkMessageSent(const ProtocolUtilities::NetOutMessage *msg);
 
         /// Dumps network message to the console.
-		void DumpNetworkMessage(ProtocolUtilities::NetMsgID id, ProtocolUtilities::NetInMessage *msg);
+        void DumpNetworkMessage(ProtocolUtilities::NetMsgID id, ProtocolUtilities::NetInMessage *msg);
 
-		/// Gets the modules loginworker
-		/// @return loginworker_
-		OpenSimLoginThread* GetLoginWorker() { return &loginWorker_; }
+        /// Gets the modules loginworker
+        /// @return loginworker_
+        OpenSimLoginThread* GetLoginWorker() { return &loginWorker_; }
 
-		////////////////////////////////////////////////
-		/*** ProtocolModuleInterface implementation ***/
-		
-		//! Function for registering network event
-		virtual void RegisterNetworkEvents();
-		
-		//! Function for uniregistering networking
-		virtual void UnregisterNetworkEvents();
+        /*** ProtocolModuleInterface implementation ***/
+
+        //! Function for registering network event
+        virtual void RegisterNetworkEvents();
+
+        //! Function for uniregistering networking
+        virtual void UnregisterNetworkEvents();
 
         /// Creates the UDP connection to the server.
         ///@ return True, if the connection was succesfull, false otherwise.
         virtual bool CreateUdpConnection(const char *address, int port);
 
         ///@return Connection::State enum of the connection state.
-		virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
+        virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
 
         ///@return Connection::State enum of the connection state.
         virtual std::string &GetConnectionErrorMessage() const { return loginWorker_.GetErrorMessage(); }
-       
-		/// Returns client parameters of current connection
-		virtual const ProtocolUtilities::ClientParameters& GetClientParameters() const { return clientParameters_; }
 
-		/// Sets new capability.
+        /// Returns client parameters of current connection
+        virtual const ProtocolUtilities::ClientParameters& GetClientParameters() const { return clientParameters_; }
+
+        /// Sets new capability.
         /// @param name Name of capability.
         /// @param url URL of the capability.
         virtual void SetCapability(const std::string &name, const std::string &url);
@@ -100,27 +99,30 @@ namespace OpenSimProtocol
         /// @param name Name of the capability.
         /// @return Capability URL.
         virtual std::string GetCapability(const std::string &name);
-		
-		/// Sets Authentication type
-		/// @params authentivation type ProtocolUtilities::AuthenticationType
-		virtual void SetAuthenticationType(ProtocolUtilities::AuthenticationType aType) { authenticationType_ = aType; }
+        
+        /// Sets Authentication type
+        /// @params authentivation type ProtocolUtilities::AuthenticationType
+        virtual void SetAuthenticationType(ProtocolUtilities::AuthenticationType aType) { authenticationType_ = aType; }
 
         ///@return True if connection exists.
         virtual bool IsConnected() const { return connected_; }
 
         /// Disconnects from a reX server.
         virtual void DisconnectFromServer();
-        
-		/// Start building a new outbound message.
+
+        /// Start building a new outbound message.
         /// @return An empty message holder where the message can be built.
-		virtual ProtocolUtilities::NetOutMessage *StartMessageBuilding(ProtocolUtilities::NetMsgID msgId);
+        virtual ProtocolUtilities::NetOutMessage *StartMessageBuilding(ProtocolUtilities::NetMsgID msgId);
 
         /// Finishes (sends) the message. The passed msg pointer will be invalidated after calling this, so don't
         /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
         /// this class.
         virtual void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
-	private:
+    private:
+        ProtocolModuleOpenSim(const ProtocolModuleOpenSim &);
+        void operator=(const ProtocolModuleOpenSim &);
+
         /// Requests capabilities from the server.
         /// @param seed Seed capability URL.
         void RequestCapabilities(const std::string &seed);
@@ -136,7 +138,7 @@ namespace OpenSimProtocol
         OpenSimLoginThread loginWorker_;
 
         /// Handles the UDP communications with the reX server.
-		boost::shared_ptr<ProtocolUtilities::NetMessageManager> networkManager_;
+        boost::shared_ptr<ProtocolUtilities::NetMessageManager> networkManager_;
 
         /// State of the network connection.
         bool connected_;
@@ -166,7 +168,6 @@ namespace OpenSimProtocol
         /// Server-spesific capabilities.
         caps_map_t capabilities_;
     };
-
     /// @}
 }
 

@@ -14,13 +14,8 @@
 
 #include <QPointer>
 #include <QObject>
-#include <QMap>
 
 QT_BEGIN_NAMESPACE
-class QPushButton;
-class QTreeWidgetItem;
-class QItemSelection;
-class QModelIndex;
 class QMenu;
 class QAction;
 QT_END_NAMESPACE
@@ -54,8 +49,6 @@ namespace Inventory
     class InventoryWindow : public QObject
     {
         Q_OBJECT
-
-        friend class InventoryTreeView;
 
     public:
         /// Constructor.
@@ -138,24 +131,6 @@ namespace Inventory
         // Inventory tree view widget
         InventoryTreeView *treeView_;
 
-        /// Close button.
-        QPushButton *buttonClose_;
-
-        /// Download button.
-        QPushButton *buttonDownload_;
-
-        /// Upload button.
-        QPushButton *buttonUpload_;
-
-        /// Add folder button.
-        QPushButton *buttonAddFolder_;
-
-        /// Delete item button.
-        QPushButton *buttonDeleteItem_;
-
-        /// Rename button.
-        QPushButton *buttonRename_;
-
         /// Proxy Widget for ui
         UiServices::UiProxyWidget *proxyWidget_;
 
@@ -182,6 +157,12 @@ namespace Inventory
 
         /// Copy asset reference action.
         QAction *actionCopyAssetReference_;
+
+        /// Upload action.
+        QAction *actionUpload_;
+
+        /// Download action.
+        QAction *actionDownload_;
     };
 }
 

@@ -140,7 +140,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewAsset(
 
 bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *item)
 {
-    if(item->GetItemType() != AbstractInventoryItem::Type_Folder)
+    if (item->GetItemType() != AbstractInventoryItem::Type_Folder)
         return false;
 
     ///\note    Due to some server-side mystery behaviour we must send the same packet twise: once
@@ -363,7 +363,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag)
             {
-                downloadRequests_[qMakePair(tag, asset->GetID())] = fullFilename;
+                downloadRequests_[qMakePair(tag, asset->GetAssetReference())] = fullFilename;
                 emit DownloadStarted(id.c_str());
             }
         }

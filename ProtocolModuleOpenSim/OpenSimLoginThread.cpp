@@ -14,7 +14,6 @@
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
 #include "Md5.h"
-//#include "Platform.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
@@ -22,7 +21,6 @@
 #include <algorithm>
 
 #include "Md5.h"
-//#include "Poco/MD5Engine.h"
 
 namespace OpenSimProtocol
 {
@@ -68,12 +66,13 @@ namespace OpenSimProtocol
         }
     }
 
-    void OpenSimLoginThread::PrepareOpenSimLogin(const QString &first_name,
-                                                 const QString &last_name,
-                                                 const QString &password,
-                                                 const QString &worldAddress,
-                                                 const QString &worldPort,
-                                                 ProtocolUtilities::ConnectionThreadState *thread_state)
+    void OpenSimLoginThread::PrepareOpenSimLogin(
+        const QString &first_name,
+        const QString &last_name,
+        const QString &password,
+        const QString &worldAddress,
+        const QString &worldPort,
+        ProtocolUtilities::ConnectionThreadState *thread_state)
     {
         firstName_ = first_name.toStdString();
         lastName_ = last_name.toStdString();
@@ -90,13 +89,14 @@ namespace OpenSimProtocol
         start_login_ = true;
     }
 
-    void OpenSimLoginThread::PrepareRealXtendLogin(const QString& password,
-                                                   const QString& worldAddress,
-                                                   const QString& worldPort,
-                                                   ProtocolUtilities::ConnectionThreadState *thread_state,
-                                                   const QString& authentication_login,
-                                                   const QString& authentication_address,
-                                                   const QString& authentication_port)
+    void OpenSimLoginThread::PrepareRealXtendLogin(
+        const QString& password,
+        const QString& worldAddress,
+        const QString& worldPort,
+        ProtocolUtilities::ConnectionThreadState *thread_state,
+        const QString& authentication_login,
+        const QString& authentication_address,
+        const QString& authentication_port)
     {
         password_ = password.toStdString();
         worldAddress_ = worldAddress.toStdString();

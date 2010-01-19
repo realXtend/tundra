@@ -21,7 +21,7 @@ namespace Inventory
 
 InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
 {
-    setEditTriggers(QAbstractItemView::EditKeyPressed);
+    setEditTriggers(QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DragDrop);
     setDragEnabled(true);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -29,6 +29,7 @@ InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
     setAnimated(true);
     setAllColumnsShowFocus(true);
     setDefaultDropAction(Qt::MoveAction);
+    setDropIndicatorShown(true);
 }
 
 // virtual
@@ -36,22 +37,14 @@ InventoryTreeView::~InventoryTreeView()
 {
 }
 
-/*
-void InventoryTreeView::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::RightButton)
-    {
-        QModelIndex index = selectionModel()->currentIndex();
-        if (index.isValid())
-            selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
-    }
-
-    QTreeView::mousePressEvent(event);
-}
-*/
-
 void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
 {
+    // Do mousePressEvent so that the item gets selected first.
+    QMouseEvent mouseEvent(QEvent::MouseButtonPress, event->pos(), event->globalPos(),
+        Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+
+    mousePressEvent(&mouseEvent);
+
     QModelIndex index = selectionModel()->currentIndex();
     if (!index.isValid())
         return;
@@ -63,9 +56,12 @@ void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
         QAction *action = it.next();
         if (action->isEnabled())
             menu->addAction(action);
+        if (action->text() == "&Download")
+            menu->addSeparator();
     }
 
-    menu->popup(event->globalPos());
+    if (menu->actions().size() > 0)
+        menu->popup(event->globalPos());
 }
 
 void InventoryTreeView::dragEnterEvent(QDragEnterEvent *event)

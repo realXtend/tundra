@@ -61,13 +61,14 @@ namespace OpenSimProtocol
          * @param authentication_address is a address to authentication server without port number. 
          * @param authentication_port is a port of authentication server.
          */
-        void PrepareRealXtendLogin(const QString &password,
-                                   const QString &worldAddress,
-                                   const QString &worldPort,
-                                   ProtocolUtilities::ConnectionThreadState *thread_state,
-                                   const QString &authentication_login,
-                                   const QString &authentication_address,
-                                   const QString &authentication_port);
+        void PrepareRealXtendLogin(
+            const QString &password,
+            const QString &worldAddress,
+            const QString &worldPort,
+            ProtocolUtilities::ConnectionThreadState *thread_state,
+            const QString &authentication_login,
+            const QString &authentication_address,
+            const QString &authentication_port);
 
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
@@ -83,7 +84,7 @@ namespace OpenSimProtocol
         std::string &GetErrorMessage() const;
 
         ///@return The client parameters retreived from the XML-RPC reply.
-		const ProtocolUtilities::ClientParameters &GetClientParameters() const { return threadState_->parameters; }
+        const ProtocolUtilities::ClientParameters &GetClientParameters() const { return threadState_->parameters; }
 
         ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
@@ -99,7 +100,7 @@ namespace OpenSimProtocol
         bool ready_;
 
         /// Information which is received via the XML-RPC reply from the server.
-		ProtocolUtilities::ConnectionThreadState *threadState_;
+        ProtocolUtilities::ConnectionThreadState *threadState_;
 
         /// Framework pointer
         Foundation::Framework* framework_;
