@@ -765,37 +765,97 @@ if 0:
     mats = qprim.Materials
     print mats
     qprim.Materials = mats
+    
+    edited_mats = mats
+    
+    keys = {}
+    id = 0
+    for key in mats.iterkeys():
+        keys[id] = key
+        id += 1
+    
+    #print keys, mats.keys(), mats[keys[0]]
+    
+    PRIMTYPES = {
+        0: "Texture", 
+        45: "Material"
+    }
+
+    
+
     #print mats
     #~ keys = qprim.Materials.keys()
     #~ for thingie in mats.iteritems():
         #~ print thingie
     #print data
-    
 if 0:
-    from PythonQt.QtUiTools import QUiLoader
-    from PythonQt.QtCore import QFile, QSize
-    loader = QUiLoader()
-    uifile = QFile("pymodules/editgui/materials.ui")
-    ui = loader.load(uifile)
-    width = ui.size.width()
-    height = ui.size.height()
-    uism = r.getUiSceneManager()
-    uiprops = r.createUiWidgetProperty()
-    uiprops.show_at_toolbar_ = False
-    uiprops.widget_name_ = "Material and Texture"
-    uiprops.my_size_ = QSize(width, height)
-    #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
-    pw = r.createUiProxyWidget(ui, uiprops)
-    uism.AddProxyWidget(pw)
-    widget = ui.verticalLayoutWidget
-    r.widget = widget
-    r.pw = pw
-    #~ #print dir(r.pw), r.widget
-    
-    #~ from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
-    #~ box = r.widget.findChild("QVBoxLayout")
-    #~ print box, dir(box), box.name
-    #~ line = QLineEdit()
-    #~ box.addWidget(line)
-    dia = r.pw.Dialog
-    print dia
+    r.tag = False
+
+if 0:
+    r.tag = not r.tag
+    if r.tag: #stupid double command run... what gives...
+        print "Test"
+        PRIMTYPES = {
+            "0": "Texture", 
+            "45": "Material"
+        }
+        
+        def swoot():
+            print "booyah!"
+        
+        def noswoot():
+            print "!booyah!"
+            
+        from PythonQt.QtUiTools import QUiLoader
+        from PythonQt.QtCore import QFile, QSize
+        from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel
+        
+        #~ loader = QUiLoader()
+        #~ uifile = QFile("pymodules/editgui/materials.ui")
+        #~ ui = loader.load(uifile)
+        #~ uism = r.getUiSceneManager()
+        #~ uiprops = r.createUiWidgetProperty()
+        #~ uiprops.show_at_toolbar_ = False
+        #~ uiprops.widget_name_ = "Material and Texture"
+        #~ uiprops.my_size_ = QSize(ui.size.width(), ui.size.height())
+        #~ pw = r.createUiProxyWidget(ui, uiprops)
+        #~ uism.AddProxyWidget(pw)
+        #~ r.buttonbox = ui.buttonBox
+        #~ r.formwidget = ui.formLayoutWidget
+        #~ r.buttonbox.connect('accepted()', swoot)
+        #~ r.buttonbox.connect('rejected()', noswoot)
+        #~ r.pw = pw
+        #~ r.pw.show()
+        
+        qprim = r.getQPrim(720259)
+        mats = qprim.Materials
+        print mats#, r.formwidget.formLayout.children() 
+        #qprim.Materials = mats
+        #~ r.elements = []
+        #~ indx = 1
+        #~ for tuple in mats.itervalues():
+            
+            #~ print tuple, tuple[0] == "45"
+            #combo = QComboBox()
+            #combo.addItem("Material")
+            #combo.addItem("Texture")
+            #~ line = QLineEdit()
+            #~ line.text = tuple[1]
+            #~ line.name = "lineEdit_"+str(indx)
+            #~ indx += 1
+            #~ label = QLabel()
+            #~ label.name = PRIMTYPES[tuple[0]]#tuple[0]
+            #~ label.text = PRIMTYPES[tuple[0]]
+            #~ r.elements.append((label, line))
+            #~ r.formwidget.formLayout.addRow(label, line)
+        
+        print r.elements
+        #~ #print dir(r.formwidget)
+        #~ stuff =  r.formwidget.children()
+        #~ for thingie in stuff:
+            #~ print thingie.name#, thingie.name == "formLayout"
+            #~ if thingie.name != "formLayout":
+                #~ thingie.delete()
+
+
+        #~ r.pw.show()
