@@ -69,6 +69,9 @@ class DragDroppableEditline(QLineEdit):
 
     def accept(self, ev):
         return ev.mimeData().hasFormat("application/vnd.inventory.item")
+    #XXX shouldn't accept any items, but just the right asset types
+    #or better yet: accept drop to anywhere in the window and 
+    #determine what to do based on the type?
 
     def dragEnterEvent(self, ev):
         if self.accept(ev):
@@ -94,10 +97,18 @@ class DragDroppableEditline(QLineEdit):
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
         if ent is not None:
             self.doaction(ent, asset_type, inv_id, inv_name, asset_ref)
-        else:
-            self.text = "(no scene entity selected)"
+
+        self.update_text(inv_name)
 
         ev.acceptProposedAction()
+
+    def update_text(self, name):
+        """called also from main/parent.select() when sel changed"""
+        ent = self.mainedit.sel
+        if ent is not None:
+            self.text = name #XXX add querying inventory for name
+        else:
+            self.text = "(no scene entity selected)"
 
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         pass
@@ -106,12 +117,19 @@ class MeshAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         #print "doaction in MeshAssetidEditline-class..."
         applymesh(ent, asset_ref)
-        self.text = inv_name
     
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        tuple = (asset_type, asset_ref)
-        self.mainedit.updatePrimMaterial(ent, tuple, self.name)
+        matinfo = (asset_type, asset_ref)
+        self.applyMaterial(ent, matinfo, self.name)
+
+    def applyMaterial(self, ent, matinfo, index):
+        qprim = r.getQPrim(ent.id)
+        mats = qprim.Materials
+        mats[index]  = matinfo
+        qprim.Materials = mats
+        r.sendRexPrimData(ent.id)
+
         
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
@@ -189,10 +207,10 @@ class EditGUI(Component):
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
+        self.meshline = MeshAssetidEditline(self) 
         box = self.widget.findChild("QHBoxLayout", "horizontalLayout_9")
         if box is not None:
-            line = MeshAssetidEditline(self) 
-            box.addWidget(line)
+            box.addWidget(self.meshline)
             
         self.propedit = r.getPropertyEditor()
         #print pe, pe.setObject, pe.show
@@ -466,7 +484,7 @@ class EditGUI(Component):
             
             label = QLabel()
             if tuple[1] != "": #this happens when we don't have anything in the prim
-                label.text = PRIMTYPES[tuple[0]]
+                label.text = PRIMTYPES[tuple[0]] #XXX check for key errors
             else:
                 label.text = "n/a"
                 #r.logDebug("Nothing found")
@@ -487,13 +505,6 @@ class EditGUI(Component):
             if child.name != "formLayout": #dont want to remove the actual form layout from the widget
                 child.delete()
                 
-    def updatePrimMaterial(self, ent, tuple, index):
-        qprim = r.getQPrim(ent.id)
-        mats = qprim.Material
-        mats[index]  = tuple
-        qprim.Material = mats
-        r.sendRexPrimData(ent.id)
-        
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
@@ -589,8 +600,12 @@ class EditGUI(Component):
                 
                 self.widgetList[str(id)] = (ent, tWid)
             
-            self.widget.label.text = ent.id
+            """show the id and name of the object. name is sometimes empty it seems"""
+            self.widget.label.text = "%d (name: %s)" % (ent.id, ent.name)
             
+            self.meshline.update_text(ent.mesh)
+
+            """update material dialog"""
             if self.materialDialog.visible:
                 self.clearDialogForm()
                 self.updateMaterialDialog(ent)
