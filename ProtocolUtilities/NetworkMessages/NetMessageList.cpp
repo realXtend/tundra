@@ -109,7 +109,7 @@ char *LoadFileToString(const char *filename)
 {
     unsigned long len;
     char *data;
-    std::fstream filestr(filename, fstream::in | fstream::out);
+    std::fstream filestr(filename, fstream::in);
     
     if (!filestr)
         return 0;
