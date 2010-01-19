@@ -72,17 +72,17 @@ namespace Input
 
     //=========================================================================
     //
-    KeyState::KeyState (QKeyEvent *e, QState *p)
-        : InputState ("key state "+e->text(), p), 
-        event (new QKeyEvent (*e)), 
+    KeyState::KeyState (const QKeySequence &s, QState *p)
+        : InputState ("key state " + s.toString(), p), 
+        sequence (s),
         bindings (0)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
     }
 
-    KeyState::KeyState (QKeyEvent *e, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
-        : InputState ("key state "+e->text(), p), 
-        event (new QKeyEvent (*e)), 
+    KeyState::KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
+        : InputState ("key state " + s.toString(), p), 
+        sequence (s),
         bindings (b), 
         eventmgr (m)
     {
@@ -96,7 +96,6 @@ namespace Input
     void KeyState::onEntry (QEvent *e)
     {
         int eid;
-
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid, 0);
         
@@ -106,7 +105,6 @@ namespace Input
     void KeyState::onExit (QEvent *e)
     {
         int eid;
-
         if (bindings && (eid = get_event_id ()))
             eventmgr-> SendEvent (catid, eid+1, 0);
 
@@ -115,7 +113,6 @@ namespace Input
 
     int KeyState::get_event_id ()
     {
-        QKeySequence sequence (event-> key());
         KeyBindingMap::const_iterator i = (*bindings)-> find (sequence);
         KeyBindingMap::const_iterator e = (*bindings)-> end ();
         return (i != e)? i-> second : 0;
@@ -123,7 +120,7 @@ namespace Input
         
     bool KeyState::operator== (const KeyState &rhs)
     {
-        return event-> key() == rhs.event-> key();
+        return sequence == rhs.sequence;
     }
 
     
@@ -451,26 +448,30 @@ namespace Input
         // this is preferrable to 3 states + 2 transitions for each key
         // plus a look-up tree if you want to discover the current state any way 
         
-        QKeyEvent *e; KeyState *s;
         switch (event-> type())
         {
             case QEvent::KeyPress:
-                e = static_cast <QKeyEvent *> (event);
-                s = get_key_state (e);
+                {
+                    QKeyEvent *e = static_cast <QKeyEvent *> (event);
+                    KeyState *s = get_key_state 
+                        (QKeySequence (e-> key() + (e-> modifiers() & ~Qt::ShiftModifier)));
 
-                s-> onEntry (e);
-                press_active (s);
-
+                    s-> onEntry (e);
+                    press_active (s);
+                }
                 return true;
 
             case QEvent::KeyRelease:
-                e = static_cast <QKeyEvent *> (event);
-                s = get_key_state (e);
-                
-                s-> onExit (e);
-                release_active (s);
+                {
+                    QKeyEvent *e = static_cast <QKeyEvent *> (event);
+                    KeyState *s = get_key_state 
+                        (QKeySequence (e-> key() + (e-> modifiers() & ~Qt::ShiftModifier)));
 
-                return true;
+                    s-> onExit (e);
+                    release_active (s);
+
+                    return true;
+                }
         }
 
         return false;
@@ -478,18 +479,16 @@ namespace Input
 
     void KeyListener::onTransition (QEvent *e) {}
 
-    KeyState *KeyListener::get_key_state (QKeyEvent *event)
+    KeyState *KeyListener::get_key_state (const QKeySequence &sequence)
     {
-        int code = event-> key();
-
         KeyState *state;
-        KeyStateMap::const_iterator i = key_states.find (code);
+        KeyStateMap::const_iterator i = key_states.find (sequence);
         KeyStateMap::const_iterator e = key_states.end ();
 
         if (i == e) 
         {
-            state = new KeyState (event, bindings, eventmgr);
-            key_states.insert (std::make_pair (code, state));
+            state = new KeyState (sequence, bindings, eventmgr);
+            key_states.insert (std::make_pair (sequence, state));
         }
         else
             state = i-> second;

@@ -52,7 +52,7 @@ namespace Input
     typedef std::vector <KeyState *> KeyStateList;
 
     // maps Qt::Key codes to info and state structures
-    typedef std::map <int, KeyState *> KeyStateMap;
+    typedef std::map <QKeySequence, KeyState *> KeyStateMap;
     
 
     struct MouseInfo
@@ -91,20 +91,18 @@ namespace Input
 
     struct KeyState : public InputState
     {
-        KeyState (QKeyEvent *event, QState *p = 0);
-        KeyState (QKeyEvent *event, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
+        KeyState (const QKeySequence &s, QState *p = 0);
+        KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
         ~KeyState ();
 
-        void onEntry (QEvent *event);
+        void onEntry (QEvent *e);
         void onExit (QEvent *event);
 
         int get_event_id ();
 
         bool operator== (const KeyState &rhs);
 
-        bool                        active;
-        std::auto_ptr <QKeyEvent>   event;
-        
+        QKeySequence                sequence;
         KeyBindingMap               **bindings;
 
         event_category_id_t         catid;
@@ -116,8 +114,8 @@ namespace Input
     {
         InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p = 0);
 
-        void onEntry (QEvent *e);
-        void onExit (QEvent *e);
+        void onEntry (QEvent *event);
+        void onExit (QEvent *event);
 
         QGraphicsView   *view;
 #ifdef Q_WS_X11
@@ -380,7 +378,7 @@ namespace Input
         bool eventTest (QEvent *event);
         void onTransition (QEvent *event);
 
-        KeyState *get_key_state (QKeyEvent *e);
+        KeyState *get_key_state (const QKeySequence &s);
 
         void press_active (KeyState *e);
         void release_active (KeyState *e);
