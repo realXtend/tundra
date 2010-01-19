@@ -93,24 +93,25 @@ class DragDroppableEditline(QLineEdit):
 
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
         if ent is not None:
-            self.doaction(ent, asset_ref, asset_type)
+            self.doaction(asset_type, inv_id, inv_name, asset_ref)
         else:
             self.text = "(no scene entity selected)"
 
         ev.acceptProposedAction()
 
-    def doaction(self, ent, ref):
+    def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         pass
         
 class MeshAssetidEditline(DragDroppableEditline):
-    def doaction(self, ent, ref, asset_type):
-        print "doaction in MeshAssetidEditline-class..."
-        applymesh(ent, ref)
+    def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
+        #print "doaction in MeshAssetidEditline-class..."
+        applymesh(ent, asset_ref)
         self.text = inv_name
     
 class UUIDEditLine(DragDroppableEditline):
-    def doaction(self, ent, ref, asset_type):
+    def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         print "whee"
+        tuple = (asset_type, asset_ref)
         
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
