@@ -15,8 +15,8 @@ namespace Input
         map.insert (make_pair (QKeySequence (Qt::Key_Tab),         Input::Events::SWITCH_CAMERA_STATE));
 		map.insert (make_pair (QKeySequence (Qt::Key_Period),      Input::Events::PY_RUN_COMMAND));
 		map.insert (make_pair (QKeySequence (Qt::Key_Backspace),   Input::Events::PY_RESTART));
-		map.insert (make_pair (QKeySequence (Qt::Key_Plus),        Input::Events::ZOOM_IN));
-		map.insert (make_pair (QKeySequence (Qt::Key_Minus),       Input::Events::ZOOM_OUT));
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Plus),        Input::Events::ZOOM_IN));
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Minus),       Input::Events::ZOOM_OUT));
         //map.insert (make_pair (QKeySequence (Qt::Key_GRAVE),     Input::Events::SHOW_DEBUG_CONSOLE));
     }
 
