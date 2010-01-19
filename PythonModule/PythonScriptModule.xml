@@ -2,4 +2,5 @@
 	<entry>PythonScriptModule</entry>
 	<dependency>SupportModules</dependency>
 	<dependency>RexLogicModule</dependency>
+	<dependency>UiModule</dependency>
 </config>

@@ -149,7 +149,7 @@ namespace Asset
         }        
         
         providers_.push_back(asset_provider);
-        AssetModule::LogWarning("Asset provider " + asset_provider->Name()  + " registered");        
+        AssetModule::LogInfo("Asset provider " + asset_provider->Name()  + " registered");        
         return true;
     }
     

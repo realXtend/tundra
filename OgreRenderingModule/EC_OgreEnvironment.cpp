@@ -25,6 +25,15 @@ const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
 
 namespace OgreRenderer
 {
+    void ClampFog(Real& start, Real& end, Real farclip)
+    {
+        if (farclip < 10.0) 
+            farclip = 10.0;
+        if (end > farclip - 10.0)
+            end = farclip - 10.0;
+        if (start > farclip/3.0)
+            start = farclip/3.0;            
+    }
 
 EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -43,13 +52,13 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
     useHydrax_(false),
     sunColorMultiplier_(MAX_SUNLIGHT_MULTIPLIER),
     fogStart_(100.f),
-    fogEnd_(500.f),
+    fogEnd_(2000.f),
     waterFogStart_(1.f),
     waterFogEnd_(50.f),
     fogColor_(),
     waterFogColor_(0.2f, 0.4f, 0.35f),
     cameraNearClip_(0.5f),
-    cameraFarClip_(500.f), 
+    cameraFarClip_(2000.f), 
     fog_color_override_(false),
     override_flags_(None)
 {
@@ -66,6 +75,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
 #endif
 
     InitShadows();
+    cameraFarClip_ = renderer_.lock()->GetViewDistance();
 }
 
 EC_OgreEnvironment::~EC_OgreEnvironment()
@@ -317,25 +327,35 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 
     Ogre::Entity* water = 0;
     
+    cameraFarClip_ = renderer->GetViewDistance();
+    
     if ( sceneManager->hasEntity("WaterEntity") )
         water = sceneManager->getEntity("WaterEntity");
               
     if (!water)
     {
         // No water entity, set fog value.
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
+        Real fogStart = fogStart_;
+        Real fogEnd = fogEnd_;
+        ClampFog(fogStart, fogEnd, cameraFarClip_);
+        
+        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart, fogEnd);
         viewport->setBackgroundColour(fogColor_);
         camera->setFarClipDistance(cameraFarClip_);
     }
     else 
     {
         if(camera->getDerivedPosition().z >= water->getParentNode()->getPosition().z)
-        {
+        {        
             // We're above the water.
+            Real fogStart = fogStart_;
+            Real fogEnd = fogEnd_;
+            ClampFog(fogStart, fogEnd, cameraFarClip_);
+        
 #ifdef CAELUM
             caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
 #endif
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart_, fogEnd_);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor_);
             camera->setFarClipDistance(cameraFarClip_);
             cameraUnderWater_ = false;
@@ -343,13 +363,19 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         else
         {
             // We're below the water.
+            Real fogStart = waterFogStart_;
+            Real fogEnd = waterFogEnd_;
+            Real farClip = waterFogEnd_ + 10.f;
+            if (farClip > cameraFarClip_)
+                farClip = cameraFarClip_;            
+            ClampFog(fogStart, fogEnd, farClip);            
 #ifdef CAELUM
             // Hide the Caelum subsystems.
             caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, waterFogStart_, waterFogEnd_);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor_ * waterFogColor_);
-            camera->setFarClipDistance(waterFogEnd_ + 10.f);
+            camera->setFarClipDistance(farClip);
             cameraUnderWater_ = true;
         }
     }

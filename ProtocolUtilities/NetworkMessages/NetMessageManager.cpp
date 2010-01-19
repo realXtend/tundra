@@ -203,8 +203,12 @@ namespace ProtocolUtilities
         if (!ResendQueueIsEmpty())
             ProcessResendQueue();
         
+        // Process network messages for max. 0.1 seconds, to prevent lack of rendering/mainloop execution during heavy processing
+        static const double MAX_PROCESS_TIME = 0.1;
+        boost::timer timer;
+        
         PROFILE(NetMessageManager_WhilePacketsAvailable);
-        while(connection->PacketsAvailable())
+        while(connection->PacketsAvailable() && timer.elapsed() < MAX_PROCESS_TIME)
         {
             const int cMaxPayload = 2048;
             std::vector<uint8_t> data(cMaxPayload, 0);

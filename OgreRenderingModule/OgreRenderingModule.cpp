@@ -23,6 +23,7 @@
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
+#include "RendererSettings.h"
 
 
 namespace OgreRenderer
@@ -100,6 +101,8 @@ namespace OgreRenderer
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
         LogInfo("Module " + Name() + " initialized.");
+        
+        renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
     // virtual
@@ -186,6 +189,7 @@ namespace OgreRenderer
         if (renderer_)
             renderer_->RemoveLogListener();
 
+        renderer_settings_.reset();
         renderer_.reset();
         
         LogInfo("Module " + Name() + " uninitialized.");

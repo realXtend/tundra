@@ -60,6 +60,11 @@ namespace Foundation
         //! unsubsribe a listener to renderer log
         virtual void UnsubscribeLogListener(const LogListenerPtr &listener) = 0;
              
+        //! set maximum view distance
+        virtual void SetViewDistance(Real distance) = 0;
+        //! get maximum view distance
+        virtual Real GetViewDistance() = 0;
+        
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
             \param id Resource id

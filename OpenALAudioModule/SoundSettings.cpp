@@ -15,7 +15,8 @@ namespace OpenALAudio
 {
 
     SoundSettings::SoundSettings(Foundation::Framework* framework) :
-        framework_(framework)
+        framework_(framework),
+        settings_widget_(0)
     {
         InitWindow();
     }

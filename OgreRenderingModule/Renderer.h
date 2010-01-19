@@ -105,6 +105,11 @@ namespace OgreRenderer
          */
         virtual void RemoveResource(const std::string& id, const std::string& type);
 
+        //! set maximum view distance
+        virtual void SetViewDistance(Real distance);
+        //! get maximum view distance
+        virtual Real GetViewDistance();
+        
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -205,6 +210,9 @@ namespace OgreRenderer
         //! Current camera
         Ogre::Camera* camera_;
 
+        //! Maximum view distance
+        Real view_distance_;
+        
         //! Viewport
         Ogre::Viewport* viewport_;
 
