@@ -22,7 +22,7 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit
+from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit, QLabel
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 from circuits import Component
@@ -55,9 +55,14 @@ OIS_KEY_Z = 44
 OIS_KEY_ESC = 1
 OIS_KEY_DEL = 211
 
+PRIMTYPES = {
+    "0": "Texture", 
+    "45": "Material"
+}
+
 DEV = False #if this is false, the canvas is added to the controlbar
 
-class MeshAssetidEditline(QLineEdit):
+class DragDroppableEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
@@ -88,13 +93,25 @@ class MeshAssetidEditline(QLineEdit):
 
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
         if ent is not None:
-            applymesh(ent, asset_ref)
-            self.text = inv_name
+            self.doaction(ent, asset_ref, asset_type)
         else:
             self.text = "(no scene entity selected)"
 
         ev.acceptProposedAction()
 
+    def doaction(self, ent, ref):
+        pass
+        
+class MeshAssetidEditline(DragDroppableEditline):
+    def doaction(self, ent, ref, asset_type):
+        print "doaction in MeshAssetidEditline-class..."
+        applymesh(ent, asset_ref)
+        self.text = inv_name
+    
+class UUIDEditLine(DragDroppableEditline):
+    def doaction(self, ent, ref, asset_type):
+        print "whee"
+        
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
     #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
@@ -131,21 +148,35 @@ class EditGUI(Component):
         width = ui.size.width()
         height = ui.size.height()
         
-        if not DEV:
-            uism = r.getUiSceneManager()
-            uiprops = r.createUiWidgetProperty()
-            uiprops.widget_name_ = "Object Edit"
-            uiprops.my_size_ = QSize(width, height)
-            #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
-            self.proxywidget = r.createUiProxyWidget(ui, uiprops)
-            #print widget, dir(widget)
-            if not uism.AddProxyWidget(self.proxywidget):
-                print "Adding the ProxyWidget to the bar failed."
-            #modu.AddCanvasToControlBar(ui, "World Edit")
-            #XXX change to te new signal. self.proxywidget.connect('Hidden()', self.on_hide)
-            self.proxywidget.connect('Visible(bool)', self.on_hide)
-        else:
-            ui.show()
+        #if not DEV:
+        uism = r.getUiSceneManager()
+        uiprops = r.createUiWidgetProperty()
+        uiprops.widget_name_ = "Object Edit"
+        uiprops.my_size_ = QSize(width, height)
+        #self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
+        self.proxywidget = r.createUiProxyWidget(ui, uiprops)
+        #print widget, dir(widget)
+        if not uism.AddProxyWidget(self.proxywidget):
+            print "Adding the ProxyWidget to the bar failed."
+        #modu.AddCanvasToControlBar(ui, "World Edit")
+        #XXX change to te new signal. self.proxywidget.connect('Hidden()', self.on_hide)
+        self.proxywidget.connect('Visible(bool)', self.on_hide)
+        #else:
+         #   ui.show()
+
+        muifile = QFile("pymodules/editgui/materials.ui")
+        mui = loader.load(muifile)
+        uiprops = r.createUiWidgetProperty()
+        uiprops.show_at_toolbar_ = False
+        uiprops.widget_name_ = "Materials and Textures"
+        uiprops.my_size_ = QSize(mui.size.width(), mui.size.height())
+        self.materialDialog = r.createUiProxyWidget(mui, uiprops)
+        uism.AddProxyWidget(self.materialDialog)
+        self.materialDialogFormWidget = mui.formLayoutWidget
+        
+        mui.closeButton.connect('clicked()', self.dialogClosed)
+
+        self.dialogElements = []
         
         #self.canvas.SetSize(width, height)
         #self.canvas.SetPosition(30, 30)
@@ -203,6 +234,7 @@ class EditGUI(Component):
         
         self.widget.findChild("QPushButton", "undo").connect('clicked()', self.undo)
         
+        self.widget.findChild("QPushButton", "materials").connect('clicked()', self.showMaterials)
         #self.widget.setMesh.connect('clicked()', self.setMesh)
         #self.widget.redo.connect('clicked()', self.redo)
         
@@ -411,7 +443,44 @@ class EditGUI(Component):
 
                 self.move_arrows.orientation = ort
                 self.selection_box.orientation = ort
+    
+    def showMaterials(self):
+        ent = self.sel
+        if ent is not None:
+            self.updateMaterialDialog(ent)
+            self.materialDialog.show()
             
+    def updateMaterialDialog(self, ent):
+        qprim = r.getQPrim(ent.id)
+        mats = qprim.Materials
+        #print mats#, r.formwidget.formLayout.children() 
+
+        #for tuple in sorted(mats.itervalues()):
+        for i in range(len(mats)):
+            tuple = mats[str(i)]
+            
+            line = UUIDEditLine(self)#QLineEdit()
+            line.text = tuple[1]
+            
+            label = QLabel()
+            label.text = PRIMTYPES[tuple[0]]
+            self.dialogElements.append((label, line))
+                
+            self.materialDialogFormWidget.formLayout.addRow(label, line)
+            
+    def dialogClosed(self):
+        #print "dialog Closed"
+        self.materialDialog.hide()
+        self.clearDialogForm()
+
+    def clearDialogForm(self):
+        self.dialogElements = []
+        children = self.materialDialogFormWidget.children()
+        for child in children:
+            #print child.name#, child.name == "formLayout"
+            if child.name != "formLayout": #dont want to remove the actual form layout from the widget
+                child.delete()
+                
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
@@ -497,26 +566,27 @@ class EditGUI(Component):
             arrows = True
         #print arrows
         if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
-            #print "inside if"
-            self.sel = ent
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
             
-            if not self.widgetList.has_key(str(self.sel.id)):
+            if not self.widgetList.has_key(str(ent.id)):
                 tWid = QTreeWidgetItem(self.widget.treeWidget)
-                id = self.sel.id
+                id = ent.id
                 tWid.setText(0, id)
                 
                 self.widgetList[str(id)] = (ent, tWid)
-
-            #print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
-
-            #update the gui vals to show what the newly selected entity has
-            self.update_guivals()
+            
             self.widget.label.text = ent.id
             
+            if self.materialDialog.visible:
+                self.clearDialogForm()
+                self.updateMaterialDialog(ent)
+            self.sel = ent
+            #print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
+            #update the gui vals to show what the newly selected entity has
+            self.update_guivals()
             self.update_selection()
-            
+
             #~ qprim = r.getQPrim(ent.id)
             #~ self.propedit.setObject(qprim)
             #~ self.propedit.show()
