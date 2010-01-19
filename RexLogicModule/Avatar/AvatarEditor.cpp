@@ -69,7 +69,7 @@ namespace RexLogic
         if (!avatar_widget_)
             return;
 
-        avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor"));
+        avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor"));
 
         // Connect signals.
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");

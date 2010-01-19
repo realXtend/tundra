@@ -67,7 +67,7 @@ namespace QtUI
         if (!editor_widget_)
             return;
 
-        editor_widget_proxy_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "3D GUI"));
+        editor_widget_proxy_ = ui_module->GetSceneManager()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(60,60), editor_widget_->size(), Qt::Dialog, "3D GUI"));
 
 		// Connect signals   
         QPushButton *button = editor_widget_->findChild<QPushButton *>("but_bind");
@@ -111,7 +111,7 @@ namespace QtUI
                 UiServices::UiProxyWidget *proxy_widget = ui_module->GetSceneManager()->GetProxyWidget(proxy_widget_name);
                 if (proxy_widget)
                 {
-                    ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxy_widget);
+                    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxy_widget);
                     proxy_widget->widget()->setWindowFlags(Qt::Widget);
                     canvas = qt_ui->CreateCanvas(QtUI::UICanvas::Internal).lock();
                     canvas->SetSize(proxy_widget->size().width(), proxy_widget->size().height());

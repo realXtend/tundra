@@ -12,6 +12,11 @@ macro (MocFolder)
     source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro (MocFolder)
 
+macro (UiFolder)
+    file (GLOB GENERATED_UI_H ui_*.h)
+    source_group ("Generated UI" FILES ${GENERATED_UI_H})
+endmacro (UiFolder)
+
 #############################################################################################
 
 # Define target name and output directory
@@ -29,8 +34,10 @@ AddSourceFolder (Login)
 AddSourceFolder (MainPanel)
 AddSourceFolder (Notify)
 
-# Qt4 Moc files to subgroup "CMake Moc"
+# Qt4 Moc files to "CMake Moc" subgroup
+# and ui_*.h generated .h files to "Generated UI" subgroup
 MocFolder ()
+UiFolder ()
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

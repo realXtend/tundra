@@ -30,7 +30,7 @@ class MediaURLHandler(Component):
         #uiprops = r.createUiWidgetProperty()
         #uiprops.widget_name_ = "MediaURL"
         ##uiprops.my_size_ = QSize(width, height)
-        ##self.proxywidget = uism.AddWidgetToCurrentScene(ui, uiprops)
+        ##self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
         #self.proxywidget = r.createUiProxyWidget(self.wv, uiprops)
         ##print widget, dir(widget)
         #uism.AddProxyWidget(self.proxywidget)

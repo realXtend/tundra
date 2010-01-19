@@ -59,7 +59,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     if (ui_module.get())
     {
         InitInventoryWindow();
-        proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
+        proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
             inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
 
         CreateActions();

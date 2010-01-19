@@ -20,7 +20,8 @@ namespace UiServices
 
     class UI_MODULE_API UiProxyWidget : public QGraphicsProxyWidget
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
         UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties);
@@ -66,7 +67,7 @@ namespace UiServices
     signals:
         void Closed();
         void Visible(bool);
-        void BringToFrontRequest(UiProxyWidget*);
+        void BringProxyToFrontRequest(UiProxyWidget*);
     };
 
 }

@@ -162,12 +162,12 @@ namespace Communication
             if (name == "World Chat")
             {
                 UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, opensim_chat_ui_->size());
-                opensim_chat_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(opensim_chat_ui_, widget_properties);
+                opensim_chat_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(opensim_chat_ui_, widget_properties);
             }
             else if (name == "IM")
             {
                 UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, im_ui_->size());
-                im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(im_ui_, widget_properties);
+                im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(im_ui_, widget_properties);
             }
         }
     }
@@ -176,7 +176,7 @@ namespace Communication
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
-            ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxy_widget);
+            ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxy_widget);
     }
 
 }

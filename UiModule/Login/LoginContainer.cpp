@@ -132,7 +132,7 @@ void LoginContainer::InitLoginUI(RexLogic::OpenSimLoginHandler *os_login_handler
         tabWidget_->addTab(classic_login_widget_, " Login"); // FIX: tab clipping without spaces :(
         tabWidget_->addTab(web_login_widget_, " Web Login"); // FIX: tab clipping without spaces :(
 
-        login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToCurrentScene(login_widget_, UiServices::UiWidgetProperties("Login", true));
+        login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_widget_, UiServices::UiWidgetProperties("Login", true));
         login_is_in_progress_ = false;
 
         QObject::connect(hide_message_button_, SIGNAL( clicked() ), this, SLOT( HideMessageFromUser() ));
@@ -154,7 +154,7 @@ void LoginContainer::StartLoginProgressUI()
         login_progress_bar_ = login_progress_widget_->findChild<QProgressBar *>("progressBar");
         uiFile.close();
 
-        login_progress_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToCurrentScene(login_progress_widget_, UiServices::UiWidgetProperties("Login loader", true, UiServices::SlideFromBottom));
+        login_progress_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_progress_widget_, UiServices::UiWidgetProperties("Login loader", true, UiServices::SlideFromBottom));
         login_progress_proxy_widget_->show();
         login_is_in_progress_ = true;
     }

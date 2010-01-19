@@ -73,7 +73,7 @@ void OgreAssetEditorModule::PostInitialize()
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
-        QObject::connect(ui_module->GetSceneManager(), SIGNAL(Disconnected()), editorManager_, SLOT(DeleteAll()));
+        QObject::connect(ui_module->GetSceneManager(), SIGNAL(UiStateChangeDisconnected()), editorManager_, SLOT(DeleteAll()));
 }
 
 void OgreAssetEditorModule::Uninitialize()

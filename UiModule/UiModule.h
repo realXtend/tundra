@@ -6,7 +6,10 @@
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "UiModuleApi.h"
+
+// UiModule Service includes
 #include "UiSceneManager.h"
+#include "UiNotificationManager.h"
 
 #include <QStringList>
 #include <QMap>
@@ -41,10 +44,12 @@ namespace UiServices
 
         /*************** UiModule Services ***************/
 
-        /*  UiSceneManager will give you a QObject derived class that will give you all
-         *  the UI related services like adding your own QWidgets into the 2D scene 
-         */
+        //! UiSceneManager will give you a QObject derived class that will give you all
+        //! the UI related services like adding your own QWidgets into the 2D scene 
+        //! \return UiSceneManager The scene manager with scene services
         UiServices::UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
+
+        UiServices::UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
 
         /*************** Logging ***************/
 
@@ -69,8 +74,11 @@ namespace UiServices
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;
 
-        //! UiSceneManager
+        //! UiSceneManager pointer
         UiSceneManager *ui_scene_manager_;
+
+        //! UiNotificationManager pointer
+        UiNotificationManager *ui_notification_manager_;
     };
 }
 

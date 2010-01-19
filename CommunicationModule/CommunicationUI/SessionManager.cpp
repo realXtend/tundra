@@ -151,7 +151,7 @@ namespace UiManagers
         {
             UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SlideFromTop, friend_list_widget_->size());
             widget_properties.SetShowAtToolbar(false);
-            ui_module->GetSceneManager()->AddWidgetToCurrentScene(friend_list_widget_, widget_properties);
+            ui_module->GetSceneManager()->AddWidgetToScene(friend_list_widget_, widget_properties);
         }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),
                 session_helper_, SLOT( SetMyStatus(const QString &) ));
