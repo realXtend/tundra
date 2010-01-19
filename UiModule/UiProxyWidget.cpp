@@ -33,6 +33,7 @@ namespace UiServices
 
     UiProxyWidget::~UiProxyWidget()
     {
+        int test = 1;
     }
 
     void UiProxyWidget::InitAnimations()
@@ -95,7 +96,6 @@ namespace UiServices
 
         if (widget_properties_.GetWidgetName() != "Login loader") // fix
             setOpacity(0.0);
-
         if (control_button_)
             control_button_->ControlledWidgetHidden();
     }

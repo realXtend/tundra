@@ -116,7 +116,7 @@ namespace UiServices
         CoreUi::SettingsWidget *settings_widget_;
 
         //! Proxy widgets
-        UiProxyWidget *login_widget_;
+        UiProxyWidget *login_proxy_widget_;
         UiProxyWidget *main_panel_proxy_widget_;
         UiProxyWidget *settings_widget_proxy_widget_;
 

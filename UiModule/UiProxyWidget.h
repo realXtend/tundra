@@ -28,10 +28,13 @@ namespace UiServices
 
         //! Get this proxys widget properties
         /// \return UiWidgetProperties.
-        UiWidgetProperties getWidgetProperties() const { return widget_properties_; }
+        UiWidgetProperties GetWidgetProperties() const { return widget_properties_; }
 
         //! Set control button for this proxy
         void SetControlButton(CoreUi::MainPanelButton *control_button);
+
+        //! Get control button for this proxy
+        CoreUi::MainPanelButton *GetControlButton() { if (control_button_) return control_button_; else return 0; }
 
         //! Set new opacity
         void SetUnfocusedOpacity(int new_opacity);
