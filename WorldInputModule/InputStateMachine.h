@@ -37,12 +37,11 @@ extern "C"
     extern int XAutoRepeatOn(Display*);
 }
 
-#define AutoRepeatModeOn	1
+#define AutoRepeatModeOn 1
 #endif
 
 namespace Input
 {
-
     struct KeyInfo;
     struct MouseInfo;
     struct DragInfo;
@@ -53,7 +52,6 @@ namespace Input
 
     // maps Qt::Key codes to info and state structures
     typedef std::map <QKeySequence, KeyState *> KeyStateMap;
-    
 
     struct MouseInfo
     {
@@ -109,7 +107,6 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-
     struct InputActiveState : public InputState
     {
         InputActiveState (QString name, QGraphicsView *v, QState::ChildMode m, QState *p = 0);
@@ -123,7 +120,6 @@ namespace Input
 #endif
     };
 
-    
     struct KeyActiveState : public InputState
     {
         KeyActiveState (QString name, QState::ChildMode m, QState *p = 0);
@@ -134,7 +130,6 @@ namespace Input
         KeyStateList    active;
     };
 
-
     struct ButtonActiveState : public InputState
     {
         ButtonActiveState (QString name, MouseInfo &m, QState *p = 0);
@@ -144,7 +139,6 @@ namespace Input
 
         MouseInfo   &mouse;
     };
-
 
     struct LeftButtonActiveState : public InputState
     {
@@ -159,7 +153,6 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-
     struct RightButtonActiveState : public InputState
     {
         RightButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
@@ -172,7 +165,6 @@ namespace Input
         event_category_id_t         catid;
         Foundation::EventManagerPtr eventmgr;
     };
-
 
     struct MidButtonActiveState : public InputState
     {
@@ -187,7 +179,6 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-
     struct WheelActiveState : public InputState
     {
         WheelActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
@@ -200,7 +191,6 @@ namespace Input
         event_category_id_t         catid;
         Foundation::EventManagerPtr eventmgr;
     };
-
 
     struct GestureActiveState : public InputState
     {
@@ -217,7 +207,6 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-
     struct FirstPersonActiveState : public InputState
     {
         FirstPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
@@ -227,7 +216,6 @@ namespace Input
         KeyBindingMap       **map;
         FirstPersonBindings bindings;
     };
-
 
     struct ThirdPersonActiveState : public InputState
     {
@@ -239,7 +227,6 @@ namespace Input
         ThirdPersonBindings bindings;
     };
 
-
     struct FreeCameraActiveState : public InputState
     {
         FreeCameraActiveState (QString name, KeyBindingMap **m, QState *p = 0);
@@ -250,7 +237,6 @@ namespace Input
         FreeCameraBindings  bindings;
     };
 
-    
     enum InputEventType
     {
         FirstPersonEventType = QEvent::User,
@@ -272,7 +258,6 @@ namespace Input
     {
         FreeCameraEvent () : QEvent ((QEvent::Type) FreeCameraEventType) {}
     };
-
 
     struct UnconditionalTransition : public QAbstractTransition
     {
@@ -301,7 +286,7 @@ namespace Input
                 (static_cast <QMouseEvent *> (e)-> button() & Qt::LeftButton);
         }
     };
-    
+
     struct RightButtonPress : public EventTransition <QEvent::MouseButtonPress>
     {
         RightButtonPress (QState *p = 0) : EventTransition <QEvent::MouseButtonPress> (p) {}
@@ -312,7 +297,7 @@ namespace Input
                 (static_cast <QMouseEvent *> (e)-> button() & Qt::RightButton);
         }
     };
-    
+
     struct MidButtonPress : public EventTransition <QEvent::MouseButtonPress>
     {
         MidButtonPress (QState *p = 0) : EventTransition <QEvent::MouseButtonPress> (p) {}
@@ -323,7 +308,7 @@ namespace Input
                 (static_cast <QMouseEvent *> (e)-> button() & Qt::MidButton);
         }
     };
-    
+
     struct LeftButtonRelease : public EventTransition <QEvent::MouseButtonRelease>
     {
         LeftButtonRelease (QState *p = 0) : EventTransition <QEvent::MouseButtonRelease> (p) {}
@@ -334,7 +319,7 @@ namespace Input
                 (static_cast <QMouseEvent *> (e)-> button() & Qt::LeftButton);
         }
     };
-    
+
     struct RightButtonRelease : public EventTransition <QEvent::MouseButtonRelease>
     {
         RightButtonRelease (QState *p = 0) : EventTransition <QEvent::MouseButtonRelease> (p) {}
@@ -345,7 +330,7 @@ namespace Input
                 (static_cast <QMouseEvent *> (e)-> button() & Qt::RightButton);
         }
     };
-    
+
     struct MidButtonRelease : public EventTransition <QEvent::MouseButtonRelease>
     {
         MidButtonRelease (QState *p = 0) : EventTransition <QEvent::MouseButtonRelease> (p) {}
@@ -364,13 +349,13 @@ namespace Input
         void onTransition (QEvent *e);
 
         GestureInfo &gesture;
-        
+
         Input::Events::Movement     movement;
-        
+
         event_category_id_t         catid;
         Foundation::EventManagerPtr eventmgr;
     };
-    
+
     struct KeyListener : public QAbstractTransition 
     {
         KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
@@ -391,35 +376,34 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-    
     class WorldInputLogic : public QStateMachine
     {
-        public:
-            WorldInputLogic (Foundation::Framework *fw);
+    public:
+        WorldInputLogic (Foundation::Framework *fw);
 
-            void Update (f64 frametime);
-            const Foundation::State *GetState (QString name);
+        void Update (f64 frametime);
+        const Foundation::State *GetState (QString name);
 
-        protected:
-            bool eventFilter (QObject *obj, QEvent *event);
+    protected:
+        bool eventFilter (QObject *obj, QEvent *event);
 
-        private:
-            void init_statemachine_ ();
+    private:
+        void init_statemachine_ ();
 
-            QEvent *clone_event_ (QEvent *event);
+        QEvent *clone_event_ (QEvent *event);
 
-        private:
-            Foundation::Framework       *framework_;
-            Foundation::EventManagerPtr eventmgr_;
+    private:
+        Foundation::Framework       *framework_;
+        Foundation::EventManagerPtr eventmgr_;
 
-            QGraphicsView   *view_;
-            bool            has_focus_;
+        QGraphicsView   *view_;
+        bool            has_focus_;
 
-            MouseInfo       mouse_state_;
-            GestureInfo     gesture_state_;
+        MouseInfo       mouse_state_;
+        GestureInfo     gesture_state_;
 
-            KeyStateMap     key_states_;
-            KeyBindingMap   *key_binding_;
+        KeyStateMap     key_states_;
+        KeyBindingMap   *key_binding_;
     };
 }
 
