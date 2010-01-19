@@ -17,6 +17,8 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
+    class RendererSettings;
+    typedef boost::shared_ptr<RendererSettings> RendererSettingsPtr;
 
     //! \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
     
@@ -62,6 +64,9 @@ namespace OgreRenderer
     private:
         //! renderer
         RendererPtr renderer_;
+        
+        //! renderer settings
+        RendererSettingsPtr renderer_settings_;
 
         //! asset event category
         event_category_id_t asset_event_category_;

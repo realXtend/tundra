@@ -82,7 +82,8 @@ namespace OgreRenderer
         q_ogre_ui_view_(0),
         last_width_(0),
         last_height_(0),
-        resized_dirty_(0)
+        resized_dirty_(0),
+        view_distance_(500.0)        
     {
         InitializeQt();
         InitializeEvents();
@@ -113,6 +114,7 @@ namespace OgreRenderer
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
         }
 
         resource_handler_.reset();
@@ -181,6 +183,7 @@ namespace OgreRenderer
         int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
+        view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
 
         // Be sure that window is not out of boundaries.
         if (window_left < 0)
@@ -854,6 +857,16 @@ namespace OgreRenderer
         catch (...) {}
 
         added_resource_directories_.push_back(directory);
+    }
+    
+    void Renderer::SetViewDistance(Real distance)
+    {
+        view_distance_ = distance;
+    }
+    
+    Real Renderer::GetViewDistance()
+    {
+        return view_distance_;
     }
 }
 

@@ -9,12 +9,11 @@
 #include "MainPanel/MainPanel.h"
 #include "MainPanel/SettingsWidget.h"
 
-#include <QOgreUIView.h>
-
 #include <QRectF>
 #include <QGraphicsItem>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsWidget>
+#include <QGraphicsView>
 
 namespace UiServices
 {

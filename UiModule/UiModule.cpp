@@ -6,7 +6,6 @@
 #include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
 
-#include <QOgreUIView.h>
 #include <NetworkEvents.h>
 #include <SceneEvents.h>
 

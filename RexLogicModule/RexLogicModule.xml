@@ -3,7 +3,6 @@
    <dependency>ProtocolModuleOpenSim</dependency>
    <dependency>ProtocolModuleTaiga</dependency>
    <dependency>SupportModules</dependency>
-   <dependency>OpenALAudioModule</dependency>
    <dependency>OgreRenderingModule</dependency>
    <dependency>UiModule</dependency>
 </config>

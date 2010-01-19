@@ -68,6 +68,12 @@ namespace OgreRenderer
     
     void EC_OgreCamera::SetFarClip(Real farclip)
     {
+        // Enforce that farclip doesn't go past renderer's view distance
+        if (renderer_.expired())
+            return;   
+        Renderer* renderer = renderer_.lock().get();
+        if (farclip > renderer->GetViewDistance())
+            farclip = renderer->GetViewDistance();
         camera_->setFarClipDistance(farclip);
     }
     
