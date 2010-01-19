@@ -93,7 +93,7 @@ class DragDroppableEditline(QLineEdit):
 
         ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
         if ent is not None:
-            self.doaction(asset_type, inv_id, inv_name, asset_ref)
+            self.doaction(ent, asset_type, inv_id, inv_name, asset_ref)
         else:
             self.text = "(no scene entity selected)"
 
@@ -110,8 +110,8 @@ class MeshAssetidEditline(DragDroppableEditline):
     
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        print "whee"
         tuple = (asset_type, asset_ref)
+        self.mainedit.updatePrimMaterial(ent, tuple, self.name)
         
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
@@ -458,9 +458,11 @@ class EditGUI(Component):
 
         #for tuple in sorted(mats.itervalues()):
         for i in range(len(mats)):
-            tuple = mats[str(i)]
+            index = str(i)
+            tuple = mats[index]
             line = UUIDEditLine(self)#QLineEdit()
             line.text = tuple[1]
+            line.name = index
             
             label = QLabel()
             if tuple[1] != "": #this happens when we don't have anything in the prim
@@ -485,6 +487,13 @@ class EditGUI(Component):
             if child.name != "formLayout": #dont want to remove the actual form layout from the widget
                 child.delete()
                 
+    def updatePrimMaterial(self, ent, tuple, index):
+        qprim = r.getQPrim(ent.id)
+        mats = qprim.Material
+        mats[index]  = tuple
+        qprim.Material = mats
+        r.sendRexPrimData(ent.id)
+        
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
