@@ -84,7 +84,7 @@ namespace UiServices
     {
         if (ui_view_)
         {
-            UiWidgetProperties properties = widget->getWidgetProperties();
+            UiWidgetProperties properties = widget->GetWidgetProperties();
             if (properties.IsShownAtToolbar())
             {
                 CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(widget, properties.GetWidgetName());
@@ -95,7 +95,7 @@ namespace UiServices
             if (properties.IsFullscreen())
             {
                 if (properties.GetWidgetName() == "Login")
-                    login_widget_ = widget;
+                    login_proxy_widget_ = widget;
                 container_layout_->addItem(widget);
             }
             else
@@ -109,6 +109,16 @@ namespace UiServices
             return false;
     }
 
+    void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)
+    {
+        if (ui_view_)
+        {
+            if (main_panel_ && widget->GetWidgetProperties().IsShownAtToolbar())
+                main_panel_->RemoveWidget(widget);
+            ui_view_->scene()->removeItem(widget);
+        }
+    }
+
     /*************** UI Scene Manager Private functions ***************/
 
     void UiSceneManager::BringToFront(UiProxyWidget *widget)
@@ -118,12 +128,6 @@ namespace UiServices
             ui_view_->scene()->setActiveWindow(widget);
             ui_view_->scene()->setFocusItem(widget, Qt::ActiveWindowFocusReason);
         }
-    }
-
-    void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)
-    {
-        if (ui_view_)
-            ui_view_->scene()->removeItem((QGraphicsItem *)widget);
     }
 
     void UiSceneManager::InitMasterLayout()
@@ -166,7 +170,7 @@ namespace UiServices
     {
         ClearContainerLayout();
         container_layout_->insertItem(0, main_panel_proxy_widget_);
-        login_widget_->hide();
+        login_proxy_widget_->hide();
         main_panel_proxy_widget_->show();
 
         emit Connected();
@@ -175,9 +179,9 @@ namespace UiServices
     void UiSceneManager::Disconnect()
     {
         ClearContainerLayout();
-        container_layout_->insertItem(0, login_widget_);
+        container_layout_->insertItem(0, login_proxy_widget_);
         main_panel_proxy_widget_->hide();
-        login_widget_->show();
+        login_proxy_widget_->show();
 
         if (ui_view_)
             SceneRectChanged(ui_view_->scene()->sceneRect());
@@ -187,7 +191,7 @@ namespace UiServices
 
     void UiSceneManager::ClearContainerLayout()
     {
-        for(int index = 0; index < container_layout_->count(); ++index)
+        for (int index = 0; index < container_layout_->count(); ++index)
             container_layout_->removeAt(index);
     }
 
@@ -206,7 +210,7 @@ namespace UiServices
         }
 
         widget_list.removeAt(widget_list.indexOf(main_panel_proxy_widget_));
-        widget_list.removeAt(widget_list.indexOf(login_widget_));
+        widget_list.removeAt(widget_list.indexOf(login_proxy_widget_));
 
         return widget_list;
     }
@@ -222,7 +226,7 @@ namespace UiServices
                 UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
                 if (proxy_widget)
                 {
-                    if (proxy_widget->getWidgetProperties().GetWidgetName() == widget_name)
+                    if (proxy_widget->GetWidgetProperties().GetWidgetName() == widget_name)
                         return proxy_widget;
                 }
             }

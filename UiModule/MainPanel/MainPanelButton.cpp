@@ -15,7 +15,7 @@ namespace CoreUi
         setMaximumHeight(15);
         setMinimumHeight(15);
 
-        QObject::connect(this, SIGNAL( clicked() ), this, SLOT( ToggleShow() ));
+        connect(this, SIGNAL( clicked() ), this, SLOT( ToggleShow() ));
     }
 
     MainPanelButton::~MainPanelButton()
@@ -24,13 +24,16 @@ namespace CoreUi
 
     void MainPanelButton::ToggleShow()
     {
-        if (controlled_widget_->isVisible())
+        if (controlled_widget_)
         {
-            controlled_widget_->hide();
-            ControlledWidgetHidden();
+            if (controlled_widget_->isVisible())
+            {
+                controlled_widget_->hide();
+                ControlledWidgetHidden();
+            }
+            else
+                controlled_widget_->show();
         }
-        else
-            controlled_widget_->show();
     }
 
     void MainPanelButton::ControlledWidgetHidden()

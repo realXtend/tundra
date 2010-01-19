@@ -27,30 +27,6 @@ namespace CoreUi
         all_proxy_widgets_.clear();
     }
 
-    MainPanelButton *MainPanel::AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name)
-    {
-        if (all_proxy_widgets_.indexOf(widget) == -1)
-        {
-            MainPanelButton *control_button = new MainPanelButton(panel_widget_, widget, QString(" " + widget_name));
-            layout_->addWidget(control_button);
-            all_proxy_widgets_.append(widget);
-            return control_button;
-        }
-        return 0;
-    }
-
-    MainPanelButton *MainPanel::SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name)
-    {
-        if (all_proxy_widgets_.indexOf(settings_widget) == -1)
-        {
-            MainPanelButton *control_button = new MainPanelButton(panel_widget_, settings_widget, QString(" " + widget_name));
-            topcontrols_->insertWidget(2, control_button);
-            all_proxy_widgets_.append(settings_widget);
-            return control_button;
-        }
-        return 0;
-    }
-
     void MainPanel::initialize_()
     {
         QUiLoader loader;
@@ -80,11 +56,59 @@ namespace CoreUi
             QObject::connect(inworld_login_dialog_, SIGNAL( TryLogin(QMap<QString,QString> &) ), this, SLOT( ParseAndEmitLogin(QMap<QString,QString> &) ));
 
             InitBookmarks();
-
-            // Settings widget
-
         }
     }
+
+    // Public services
+
+    MainPanelButton *MainPanel::AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name)
+    {
+        if (all_proxy_widgets_.indexOf(widget) == -1)
+        {
+            MainPanelButton *control_button = new MainPanelButton(panel_widget_, widget, QString(" " + widget_name));
+            layout_->addWidget(control_button);
+            all_proxy_widgets_.append(widget);
+            return control_button;
+        }
+        return 0;
+    }
+
+    MainPanelButton *MainPanel::SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name)
+    {
+        if (all_proxy_widgets_.indexOf(settings_widget) == -1)
+        {
+            MainPanelButton *control_button = new MainPanelButton(panel_widget_, settings_widget, QString(" " + widget_name));
+            topcontrols_->insertWidget(2, control_button);
+            all_proxy_widgets_.append(settings_widget);
+            return control_button;
+        }
+        return 0;
+    }
+
+    bool MainPanel::RemoveWidget(UiServices::UiProxyWidget *widget)
+    {
+        int found_index = all_proxy_widgets_.indexOf(widget);
+        if (found_index != -1)
+        {
+            // Remove from widget list
+            all_proxy_widgets_.removeAt(found_index);
+
+            // Remove from toolbar and delete button
+            MainPanelButton *control_button = widget->GetControlButton();
+            int button_index = layout_->indexOf(control_button);
+            if (button_index != -1)
+            {
+                layout_->removeItem(layout_->itemAt(button_index));
+                SAFE_DELETE(control_button);
+                widget->SetControlButton(0); // To be sure its not used internally after this
+            }
+            return true;
+        }
+        else
+            return false;
+    }
+
+    // Private functions
 
     void MainPanel::InitBookmarks()
     {

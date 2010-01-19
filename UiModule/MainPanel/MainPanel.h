@@ -24,22 +24,26 @@ namespace CoreUi
         MainPanel(Foundation::Framework *framework);
         virtual ~MainPanel();
 
-        //! Adds a widget to the ControlBar
+        //! Adds a widget to the main panel.
         /// @param UiProxyWidget
         /// @param QString widget name
         /// @return MainPanelButton
         MainPanelButton *AddWidget(UiServices::UiProxyWidget *widget, const QString &widget_name);
 
-        //! Adds the CoreUi settings widget to this bar. Done by scenemanager
+        //! Adds the CoreUi settings widget to this bar. Done by scenemanager.
         /// @param SettingsWidget
         /// @param QString Widget name
         /// @return MainPanelButton
         MainPanelButton *SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name);
 
-        //! Returns the QWidget of the ui
+        //! Removes a widget from the main panel
+        /// @param UiProxyWidget
+        bool RemoveWidget(UiServices::UiProxyWidget *widget);
+
+        //! Returns the QWidget of the ui. Retrieved by scene manager to insert into layout when inworld.
         QWidget *GetWidget() { return panel_widget_; }
 
-        //! Returns the list that contains all the proxy widgets
+        //! Returns the list that contains all the proxy widgets.
         QList<UiServices::UiProxyWidget *> GetProxyWidgetList() { return all_proxy_widgets_; }
 
         QPushButton *logout_button;

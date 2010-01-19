@@ -13,8 +13,10 @@ namespace Communication
 
 	CommunicationModule::CommunicationModule(void) 
         : ModuleInterfaceImpl("CommunicationModule"), 
-          im_ui_(0), 
+          im_ui_(0),
+          im_ui_proxy_widget_(0),
           opensim_chat_ui_(0),
+          opensim_chat_proxy_widget_(0),
           communication_service_(0), 
           test_(0), 
           event_category_networkstate_(0), 
@@ -107,9 +109,12 @@ namespace Communication
                     opensim_chat_ui_ = new CommunicationUI::OpenSimChatWidget(client_params);
                     AddWidgetToUi("World Chat");
                 }
-            } else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
+            } 
+            else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
-               SAFE_DELETE(opensim_chat_ui_);
+                if (opensim_chat_proxy_widget_)
+                    RemoveProxyWidgetFromUi(opensim_chat_proxy_widget_);
+                SAFE_DELETE(opensim_chat_ui_);
             }
         }
 
@@ -165,6 +170,13 @@ namespace Communication
                 im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(im_ui_, widget_properties);
             }
         }
+    }
+
+    void CommunicationModule::RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget)
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+            ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxy_widget);
     }
 
 }
