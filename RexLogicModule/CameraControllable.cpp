@@ -91,8 +91,8 @@ namespace RexLogic
         }
 
         if (event_id == Input::Events::SCROLL || 
-            event_id == Input::Events::ZOOM_IN || 
-            event_id == Input::Events::ZOOM_OUT)
+            event_id == Input::Events::ZOOM_IN_PRESSED || 
+            event_id == Input::Events::ZOOM_OUT_PRESSED)
         {
             CameraZoomEvent event_data;
             event_data.entity = camera_entity_.lock();
@@ -103,11 +103,11 @@ namespace RexLogic
                     event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
                     break;
 
-                case Input::Events::ZOOM_IN:
+                case Input::Events::ZOOM_IN_PRESSED:
                     event_data.amount = 100;
                     break;
 
-                case Input::Events::ZOOM_OUT:
+                case Input::Events::ZOOM_OUT_PRESSED:
                     event_data.amount = -100;
                     break;
             }
