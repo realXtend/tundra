@@ -97,7 +97,7 @@ namespace Input
         void onEntry (QEvent *e);
         void onExit (QEvent *event);
 
-        int get_event_id ();
+        std::pair <int,int> get_event_ids ();
 
         bool operator== (const KeyState &rhs);
 

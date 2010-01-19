@@ -100,27 +100,29 @@ namespace Input
 
     void KeyState::onEntry (QEvent *e)
     {
-        int eid;
-        if (bindings && (eid = get_event_id ()))
-            eventmgr-> SendEvent (catid, eid, 0);
+        std::pair <int,int> eid = get_event_ids ();
+
+        if (bindings && eid.first)
+            eventmgr-> SendEvent (catid, eid.first, 0);
         
         State::onEntry (e);
     }
 
     void KeyState::onExit (QEvent *e)
     {
-        int eid;
-        if (bindings && (eid = get_event_id ()))
-            eventmgr-> SendEvent (catid, eid+1, 0);
+        std::pair <int,int> eid = get_event_ids ();
 
-        State::onExit (e);
+        if (bindings && eid.second)
+            eventmgr-> SendEvent (catid, eid.second, 0);
+        
+        State::onEntry (e);
     }
 
-    int KeyState::get_event_id ()
+    std::pair <int,int> KeyState::get_event_ids ()
     {
         KeyBindingMap::const_iterator i = (*bindings)-> find (sequence);
         KeyBindingMap::const_iterator e = (*bindings)-> end ();
-        return (i != e)? i-> second : 0;
+        return (i != e)? i-> second : std::make_pair (0, 0);
     }
 
     bool KeyState::operator== (const KeyState &rhs)

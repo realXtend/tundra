@@ -11,71 +11,170 @@ namespace Input
     KeyBinding::KeyBinding ()
     {
         using std::make_pair;
-        map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Tab),   Input::Events::SWITCH_CAMERA_STATE));
-		map.insert (make_pair (QKeySequence (Qt::Key_Period),           Input::Events::PY_RUN_COMMAND));
-		map.insert (make_pair (QKeySequence (Qt::Key_Backspace),        Input::Events::PY_RESTART));
+
+        map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Tab),   
+                    make_pair (Input::Events::SWITCH_CAMERA_STATE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::Key_Period),           
+                    make_pair (Input::Events::PY_RUN_COMMAND, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::Key_Backspace),        
+                    make_pair (Input::Events::PY_RESTART, 0)));
+
         //map.insert (make_pair (QKeySequence (Qt::Key_GRAVE),            Input::Events::SHOW_DEBUG_CONSOLE));
     }
 
     FirstPersonBindings::FirstPersonBindings ()
     {
         using std::make_pair;
-		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Plus),  Input::Events::ZOOM_IN_PRESSED));
-		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Minus), Input::Events::ZOOM_OUT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_W),                Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_S),                Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_A),                Input::Events::MOVE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_D),                Input::Events::MOVE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Up),               Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Down),             Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Space),            Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_C),                Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Left),             Input::Events::MOVE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Right),            Input::Events::MOVE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_F),                Input::Events::TOGGLE_FLYMODE));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_F), 
+                    make_pair (Input::Events::TOGGLE_FLYMODE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Plus),  
+                    make_pair (Input::Events::ZOOM_IN_PRESSED, Input::Events::ZOOM_IN_RELEASED)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Minus), 
+                    make_pair (Input::Events::ZOOM_OUT_PRESSED, Input::Events::ZOOM_OUT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_W),                
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_S),                
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_A),                
+                    make_pair (Input::Events::MOVE_LEFT_PRESSED, Input::Events::MOVE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_D),                
+                    make_pair (Input::Events::MOVE_RIGHT_PRESSED, Input::Events::MOVE_RIGHT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Up),               
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Down),             
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Space),            
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_C),                
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Left),             
+                    make_pair (Input::Events::MOVE_LEFT_PRESSED, Input::Events::MOVE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Right),            
+                    make_pair (Input::Events::MOVE_RIGHT_PRESSED, Input::Events::MOVE_RIGHT_RELEASED)));
     }
 
     ThirdPersonBindings::ThirdPersonBindings ()
     {
         using std::make_pair;
-		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Plus),  Input::Events::ZOOM_IN_PRESSED));
-		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Minus), Input::Events::ZOOM_OUT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_W),                Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_S),                Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_A),                Input::Events::MOVE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_D),                Input::Events::MOVE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Up),               Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Down),             Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Space),            Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_C),                Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Left),             Input::Events::ROTATE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Right),            Input::Events::ROTATE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_F),                Input::Events::TOGGLE_FLYMODE));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_F),                
+                    make_pair (Input::Events::TOGGLE_FLYMODE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Plus),  
+                    make_pair (Input::Events::ZOOM_IN_PRESSED, Input::Events::ZOOM_IN_RELEASED)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Minus), 
+                    make_pair (Input::Events::ZOOM_OUT_PRESSED, Input::Events::ZOOM_OUT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_W),                
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_S),                
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_A),                
+                    make_pair (Input::Events::MOVE_LEFT_PRESSED, Input::Events::MOVE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_D),                
+                    make_pair (Input::Events::MOVE_RIGHT_PRESSED, Input::Events::MOVE_RIGHT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Up),               
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Down),             
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Space),            
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_C),                
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Left),             
+                    make_pair (Input::Events::ROTATE_LEFT_PRESSED, Input::Events::ROTATE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Right),            
+                    make_pair (Input::Events::ROTATE_RIGHT_PRESSED, Input::Events::ROTATE_RIGHT_RELEASED)));
     }
 
     FreeCameraBindings::FreeCameraBindings ()
     {
         using std::make_pair;
-        map.insert (make_pair (QKeySequence (Qt::Key_W),                Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_S),                Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_A),                Input::Events::MOVE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_D),                Input::Events::MOVE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Up),               Input::Events::MOVE_FORWARD_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Down),             Input::Events::MOVE_BACK_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Space),            Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_C),                Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           Input::Events::MOVE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         Input::Events::MOVE_DOWN_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Left),             Input::Events::ROTATE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_Right),            Input::Events::ROTATE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_J),                Input::Events::ROTATE_LEFT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_L),                Input::Events::ROTATE_RIGHT_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_I),                Input::Events::ROTATE_UP_PRESSED));
-        map.insert (make_pair (QKeySequence (Qt::Key_K),                Input::Events::ROTATE_DOWN_PRESSED));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_W),                
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_S),                
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_A),                
+                    make_pair (Input::Events::MOVE_LEFT_PRESSED, Input::Events::MOVE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_D),                
+                    make_pair (Input::Events::MOVE_RIGHT_PRESSED, Input::Events::MOVE_RIGHT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Up),               
+                    make_pair (Input::Events::MOVE_FORWARD_PRESSED, Input::Events::MOVE_FORWARD_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Down),             
+                    make_pair (Input::Events::MOVE_BACK_PRESSED, Input::Events::MOVE_BACK_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Space),            
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_C),                
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageUp),           
+                    make_pair (Input::Events::MOVE_UP_PRESSED, Input::Events::MOVE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_PageDown),         
+                    make_pair (Input::Events::MOVE_DOWN_PRESSED, Input::Events::MOVE_DOWN_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Left),             
+                    make_pair (Input::Events::ROTATE_LEFT_PRESSED, Input::Events::ROTATE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_Right),            
+                    make_pair (Input::Events::ROTATE_RIGHT_PRESSED, Input::Events::ROTATE_RIGHT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_J),                
+                    make_pair (Input::Events::ROTATE_LEFT_PRESSED, Input::Events::ROTATE_LEFT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_L),                
+                    make_pair (Input::Events::ROTATE_RIGHT_PRESSED, Input::Events::ROTATE_RIGHT_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_I),                
+                    make_pair (Input::Events::ROTATE_UP_PRESSED, Input::Events::ROTATE_UP_RELEASED)));
+
+        map.insert (make_pair (QKeySequence (Qt::Key_K),                
+                    make_pair (Input::Events::ROTATE_DOWN_PRESSED, Input::Events::ROTATE_DOWN_RELEASED)));
     }
 }
 
