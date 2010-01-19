@@ -36,7 +36,7 @@ namespace TelepathyIM
 
         // Element notifier init
         notifier_ = fs_element_added_notifier_new();
-//        on_element_added_g_signal_ = g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
+        on_element_added_g_signal_ = g_signal_connect(notifier_, "element-added", G_CALLBACK(&VideoWidget::OnElementAdded), this);
 
 // UNIX -> autovideosink
 #ifdef Q_WS_X11
@@ -97,11 +97,15 @@ namespace TelepathyIM
         palette.setColor(QPalette::Background, Qt::black);
         palette.setColor(QPalette::Window, Qt::black);
         setPalette(palette);
+        
+        // Show nothing and lets put qwidgets as normal external windows
         //setAutoFillBackground(true);
         //setAttribute(Qt::WA_NoSystemBackground, true);
         //setAttribute(Qt::WA_PaintOnScreen, true);
-        resize(1, 1);
-        setMinimumSize(1, 1);
+
+        setWindowFlags(Qt::Dialog);
+        resize(322, 240);
+        setMinimumSize(322, 240);
     }
 
     VideoWidget::~VideoWidget()
@@ -170,8 +174,8 @@ namespace TelepathyIM
         const GstStructure *s = gst_message_get_structure(message);
         if (gst_structure_has_name(s, "prepare-xwindow-id") && self->video_overlay_)
         {
-            //qDebug() << self->name_ << " >> sync-message CALLBACK >> found 'prepare-xwindow-id' from GstMessage";
-            //QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
+            qDebug() << self->name_ << " >> sync-message CALLBACK >> found 'prepare-xwindow-id' from GstMessage";
+            QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
         }
     }
 
@@ -192,14 +196,12 @@ namespace TelepathyIM
 
     void VideoWidget::SetOverlay()
     {
-        if (video_overlay_ && GST_IS_X_OVERLAY(video_overlay_))
+        if (isVisible() && video_overlay_ && GST_IS_X_OVERLAY(video_overlay_))
         {
             // Get window id from this widget and set it for video sink
             // so it renders to our widget id and does not open separate window (that is the default behaviour)
-            qDebug() << name_ << " >> SetOverlay() called";
-            if (isVisible())
-			    window_id_ = winId();
-
+            qDebug() << name_ << " >> SetOverlay() called from showEvent()";
+			window_id_ = winId();
             if (window_id_)
             {
                 qDebug() << name_ << " >> Giving x overlay widgets window id " << window_id_;
@@ -207,9 +209,9 @@ namespace TelepathyIM
                     QApplication::syncX();
                 #endif
                 gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(video_overlay_), (gulong)window_id_);
+                WindowExposed();
             }
         }
-        WindowExposed();
     }
 
     void VideoWidget::WindowExposed()

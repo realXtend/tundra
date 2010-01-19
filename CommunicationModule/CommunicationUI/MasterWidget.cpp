@@ -49,6 +49,10 @@ namespace CommunicationUI
         SAFE_DELETE(login_ui_);
         SAFE_DELETE(loading_ui_);
         SAFE_DELETE(session_manager_ui_);
+
+        SAFE_DELETE(login_widget_);
+        SAFE_DELETE(loading_widget_);
+        SAFE_DELETE(session_manager_widget_);
     }
 
     void MasterWidget::InitializeSelf()
@@ -82,7 +86,7 @@ namespace CommunicationUI
         {
             case UiDefines::UiStates::Disconnected:
             {
-                login_widget_ = new QWidget(this);
+                login_widget_ = new QWidget();
                 login_ui_->setupUi(login_widget_);
                 layout()->addWidget(login_widget_);
                 to_be_removed_ << "login_ui_";
@@ -98,7 +102,7 @@ namespace CommunicationUI
             }
             case UiDefines::UiStates::Connecting:
             {
-                loading_widget_ = new QWidget(this);
+                loading_widget_ = new QWidget();
                 loading_ui_->setupUi(loading_widget_);
                 layout()->addWidget(loading_widget_);
                 to_be_removed_ << "loading_ui_";
@@ -109,7 +113,7 @@ namespace CommunicationUI
             case UiDefines::UiStates::Connected:
             {
                 config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
-                session_manager_widget_ = new QWidget(this);
+                session_manager_widget_ = new QWidget();
                 session_manager_ui_->setupUi(session_manager_widget_);
                 layout()->addWidget(session_manager_widget_);
                 to_be_removed_ << "session_manager_ui_";
@@ -132,11 +136,20 @@ namespace CommunicationUI
         foreach (QString ui_class, to_be_removed_)
         {
             if (ui_class == "login_ui_")
+            {
                 layout()->removeWidget(login_widget_);
+                //SAFE_DELETE(login_widget_);
+            }
             else if (ui_class == "loading_ui_")
+            {
                 layout()->removeWidget(loading_widget_);
+                //SAFE_DELETE(loading_widget_);
+            }
             else if (ui_class == "session_manager_ui_")
+            {
                 layout()->removeWidget(session_manager_widget_);
+                //SAFE_DELETE(session_manager_widget_);
+            }
         }
         to_be_removed_.clear();
         return size();
