@@ -110,7 +110,7 @@ void OgreScriptEditor::Close()
     /*
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    ui_module->GetSceneManager()->RemoveProxyWidgetFromCurrentScene(proxyWidget_);
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
     proxyWidget_ = 0;
     */
     emit Closed(inventoryId_, assetType_);
@@ -248,7 +248,7 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     // Add widget to UI via ui services module
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToCurrentScene(
+    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
         mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "OGRE Script Editor", false));
 
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));

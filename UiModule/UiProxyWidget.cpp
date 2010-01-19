@@ -47,7 +47,7 @@ namespace UiServices
         }
 
         if (widget_properties_.GetWidgetName() != "Login loader") // fix
-            QObject::connect(show_timeline_, SIGNAL(valueChanged(qreal)), SLOT(AnimationStep(qreal)));
+            connect(show_timeline_, SIGNAL(valueChanged(qreal)), SLOT(AnimationStep(qreal)));
     }
 
     void UiProxyWidget::AnimationStep(qreal step)
@@ -83,7 +83,7 @@ namespace UiServices
     {
         emit Visible(true);
         QGraphicsProxyWidget::showEvent(show_event);
-        emit BringToFrontRequest(this);
+        emit BringProxyToFrontRequest(this);
 
         if (show_animation_enabled_)
             show_timeline_->start();

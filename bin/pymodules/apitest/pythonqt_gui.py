@@ -26,7 +26,7 @@ class TestGui(Component):
         lineedit = QLineEdit()
         lineedit.show()
         #uiprops = UiWidgetProperties("PythonQt Test")
-        uism.AddWidgetToCurrentScene(lineedit) #uiprops) #self.canvas.AddWidget(lineedit)
+        uism.AddWidgetToScene(lineedit) #uiprops) #self.canvas.AddWidget(lineedit)
         #self.canvas.Show()
 
         #QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")

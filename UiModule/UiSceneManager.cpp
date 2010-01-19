@@ -17,13 +17,13 @@
 
 namespace UiServices
 {
-    UiSceneManager::UiSceneManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
-        QObject(),
-        framework_(framework),
-        ui_view_(ui_view),
-        container_widget_(new QGraphicsWidget()),
-        container_layout_(0),
-        main_panel_(0)
+    UiSceneManager::UiSceneManager(Foundation::Framework *framework, QGraphicsView *ui_view) 
+        : QObject(),
+          framework_(framework),
+          ui_view_(ui_view),
+          container_widget_(new QGraphicsWidget()),
+          container_layout_(0),
+          main_panel_(0)
     {
         if (ui_view_)
         {
@@ -51,7 +51,7 @@ namespace UiServices
         container_layout_ = 0;
     }
 
-    /*************** UI Scene Manager Services ***************/
+    /*************** UI Scene Manager Public Services ***************/
 
     bool UiSceneManager::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name)
     {
@@ -64,12 +64,12 @@ namespace UiServices
             return false;
     }
 
-    UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget)
+    UiProxyWidget* UiSceneManager::AddWidgetToScene(QWidget *widget)
     {
-        return AddWidgetToCurrentScene(widget, UiWidgetProperties());
+        return AddWidgetToScene(widget, UiWidgetProperties());
     }
 
-    UiProxyWidget* UiSceneManager::AddWidgetToCurrentScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
+    UiProxyWidget* UiSceneManager::AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
     {
         UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
 
@@ -79,48 +79,69 @@ namespace UiServices
             return 0;
     }
 
-    bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *widget)
+    bool UiSceneManager::AddProxyWidget(UiServices::UiProxyWidget *proxy_widget)
     {
         if (ui_view_)
         {
-            UiWidgetProperties properties = widget->GetWidgetProperties();
-            if (properties.IsShownAtToolbar())
-            {
-                CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(widget, properties.GetWidgetName());
-                widget->SetControlButton(control_button);
-                connect(widget, SIGNAL( BringToFrontRequest(UiProxyWidget*) ), this, SLOT( BringToFront(UiProxyWidget*) ));
-            }
-
+            UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
+            
+            // Add to scene
             if (properties.IsFullscreen())
             {
                 if (properties.GetWidgetName() == "Login")
-                    login_proxy_widget_ = widget;
-                container_layout_->addItem(widget);
+                    login_proxy_widget_ = proxy_widget;
+                container_layout_->addItem(proxy_widget);
             }
             else
             {
-                widget->hide();
-                ui_view_->scene()->addItem(widget);
+                proxy_widget->hide();
+                ui_view_->scene()->addItem(proxy_widget);
             }
+
+            // Add a button to toolbar
+            if (properties.IsShownAtToolbar())
+            {
+                CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(proxy_widget, properties.GetWidgetName());
+                proxy_widget->SetControlButton(control_button);
+                connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
+            }
+
             return true;
         }
         else
             return false;
     }
 
-    void UiSceneManager::RemoveProxyWidgetFromCurrentScene(UiProxyWidget *widget)
+    void UiSceneManager::RemoveProxyWidgetFromScene(UiProxyWidget *proxy_widget)
     {
         if (ui_view_)
         {
-            if (main_panel_ && widget->GetWidgetProperties().IsShownAtToolbar())
-                main_panel_->RemoveWidget(widget);
-            ui_view_->scene()->removeItem(widget);
+            if (main_panel_ && proxy_widget->GetWidgetProperties().IsShownAtToolbar())
+                main_panel_->RemoveWidget(proxy_widget);
+            ui_view_->scene()->removeItem(proxy_widget);
         }
     }
 
-    /*************** UI Scene Manager Private functions ***************/
+    UiProxyWidget *UiSceneManager::GetProxyWidget(const QString &widget_name)
+    {
+        QList<UiProxyWidget *> widget_list = QList<UiProxyWidget *>();
+        if (ui_view_)
+        {
+            QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
+            foreach(QGraphicsItem *widget, graphics_items)
+            {
+                UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
+                if (proxy_widget)
+                {
+                    if (proxy_widget->GetWidgetProperties().GetWidgetName() == widget_name)
+                        return proxy_widget;
+                }
+            }
+        }
+        return 0;
+    }
 
-    void UiSceneManager::BringToFront(UiProxyWidget *widget)
+    void UiSceneManager::BringProxyToFront(UiProxyWidget *widget)
     {
         if (ui_view_)
         {
@@ -128,6 +149,41 @@ namespace UiServices
             ui_view_->scene()->setFocusItem(widget, Qt::ActiveWindowFocusReason);
         }
     }
+
+    /*************** Public Functions But Use With Caution ****************/
+    /** As in don't touch if you are not 100% sure on what you are doing **/
+
+    void UiSceneManager::Connected()
+    {
+        ClearContainerLayout();
+        container_layout_->insertItem(0, main_panel_proxy_widget_);
+        login_proxy_widget_->hide();
+        main_panel_proxy_widget_->show();
+
+        emit UiStateChangeConnected();
+    }
+
+    void UiSceneManager::Disconnected()
+    {
+        ClearContainerLayout();
+        container_layout_->insertItem(0, login_proxy_widget_);
+        main_panel_proxy_widget_->hide();
+        login_proxy_widget_->show();
+
+        if (ui_view_)
+            SceneRectChanged(ui_view_->scene()->sceneRect());
+
+        emit UiStateChangeDisconnected();
+    }
+
+    CoreUi::MainPanel *UiSceneManager::GetMainPanel() const
+    {
+        if (main_panel_)
+            return main_panel_;
+        return 0;
+    }
+
+    /*************** UI Scene Manager Private functions ***************/
 
     void UiSceneManager::InitMasterLayout()
     {
@@ -153,39 +209,10 @@ namespace UiServices
 
         AddProxyWidget(settings_widget_proxy_widget_);
 
-        connect(settings_widget_proxy_widget_, SIGNAL( BringToFrontRequest(UiProxyWidget*) ), 
-                this, SLOT( BringToFront(UiProxyWidget*) ));
+        connect(settings_widget_proxy_widget_, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), 
+                this, SLOT( BringProxyToFront(UiProxyWidget*) ));
         connect(settings_widget_, SIGNAL( NewUserInterfaceSettingsApplied(int, int) ),
                 this, SLOT( ApplyNewProxySettings(int, int) ));
-    }
-
-    void UiSceneManager::SceneRectChanged(const QRectF &new_scene_rect)
-    {
-        if (container_widget_)
-            container_widget_->setGeometry(new_scene_rect);
-    }
-
-    void UiSceneManager::Connect()
-    {
-        ClearContainerLayout();
-        container_layout_->insertItem(0, main_panel_proxy_widget_);
-        login_proxy_widget_->hide();
-        main_panel_proxy_widget_->show();
-
-        emit Connected();
-    }
-
-    void UiSceneManager::Disconnect()
-    {
-        ClearContainerLayout();
-        container_layout_->insertItem(0, login_proxy_widget_);
-        main_panel_proxy_widget_->hide();
-        login_proxy_widget_->show();
-
-        if (ui_view_)
-            SceneRectChanged(ui_view_->scene()->sceneRect());
-
-        emit Disconnected();
     }
 
     void UiSceneManager::ClearContainerLayout()
@@ -194,55 +221,48 @@ namespace UiServices
             container_layout_->removeAt(index);
     }
 
-    QList<UiProxyWidget *> UiSceneManager::GetAllProxyWidgets()
-    {
-        QList<UiProxyWidget *> widget_list = QList<UiProxyWidget *>();
-        if (ui_view_)
-        {
-            QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
-            foreach(QGraphicsItem *widget, graphics_items)
-            {
-                UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
-                if (proxy_widget)
-                    widget_list.append(proxy_widget);
-            }
-        }
-
-        widget_list.removeAt(widget_list.indexOf(main_panel_proxy_widget_));
-        widget_list.removeAt(widget_list.indexOf(login_proxy_widget_));
-
-        return widget_list;
-    }
-
-    UiProxyWidget *UiSceneManager::GetProxyWidget(const QString &widget_name)
-    {
-        QList<UiProxyWidget *> widget_list = QList<UiProxyWidget *>();
-        if (ui_view_)
-        {
-            QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
-            foreach(QGraphicsItem *widget, graphics_items)
-            {
-                UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
-                if (proxy_widget)
-                {
-                    if (proxy_widget->GetWidgetProperties().GetWidgetName() == widget_name)
-                        return proxy_widget;
-                }
-            }
-        }
-        return 0;
-    }
+    /*************** UI Scene Manager Private slots ***************/
 
     void UiSceneManager::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
     {
         if (main_panel_)
         {
             QList<UiProxyWidget *> all_proxy_widgets_ = main_panel_->GetProxyWidgetList();
-            foreach(UiProxyWidget *widget, all_proxy_widgets_)
+            foreach (UiProxyWidget *widget, all_proxy_widgets_)
             {
                 widget->SetUnfocusedOpacity(new_opacity);
                 widget->SetShowAnimationSpeed(new_animation_speed);
             }
         }
     }
+
+    void UiSceneManager::SceneRectChanged(const QRectF &new_scene_rect)
+    {
+        if (container_widget_)
+            container_widget_->setGeometry(new_scene_rect);
+    }
+
+    // Disabled because QtModule used this for 3D widgets and is presently disaled
+    // We should not even allow anyone to get all the proxys, this means they can go and delete other
+    // peoples widgets from scene. Left the code for reference
+
+    //QList<UiProxyWidget *> UiSceneManager::GetAllProxyWidgets()
+    //{
+    //    QList<UiProxyWidget *> widget_list = QList<UiProxyWidget *>();
+    //    if (ui_view_)
+    //    {
+    //        QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
+    //        foreach(QGraphicsItem *widget, graphics_items)
+    //        {
+    //            UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
+    //            if (proxy_widget)
+    //                widget_list.append(proxy_widget);
+    //        }
+    //    }
+
+    //    widget_list.removeAt(widget_list.indexOf(main_panel_proxy_widget_));
+    //    widget_list.removeAt(widget_list.indexOf(login_proxy_widget_));
+
+    //    return widget_list;
+    //}
 }
