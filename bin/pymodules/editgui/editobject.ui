@@ -166,7 +166,7 @@ QPushButton::pressed{
                </font>
               </property>
               <property name="text">
-               <string>MeshID</string>
+               <string>Mesh</string>
               </property>
              </widget>
             </item>
