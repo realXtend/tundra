@@ -120,8 +120,12 @@ namespace CommunicationUI
             }
             case Communication::VoiceSessionInterface::STATE_ERROR:
             {
+                QLabel *error_label = new QLabel(QString("Connection failed with reason %1").arg(video_session_->GetReason()),this);
+                error_label->setAlignment(Qt::AlignCenter);
+                video_session_ui_.infoBarFrame->hide();
                 video_session_ui_.mainVerticalLayout->insertSpacerItem(0, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
-                video_session_ui_.connectionStatus->setText("Connection failed");
+                video_session_ui_.mainVerticalLayout->insertWidget(1, error_label);
+                video_session_ui_.mainVerticalLayout->insertSpacerItem(2, new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
                 break;
             }
             case Communication::VoiceSessionInterface::STATE_INITIALIZING:
@@ -332,28 +336,34 @@ namespace CommunicationUI
 
         // Local video and controls
         local_video_ = video_session_->GetLocallyCapturedVideo();
+        local_video_->setWindowTitle(QString("Sending video %1").arg(my_name_));
+        local_video_->setGeometry(7, 30, 322, 240);
+        local_video_->show();
         controls_local_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         local_status_label_ = new QLabel("Preview of captured video", this);
         local_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        local_status_label_->setAlignment(Qt::AlignCenter);
-        local_status_label_->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
+        local_status_label_->setAlignment(Qt::AlignLeft);
+        local_status_label_->setStyleSheet(QString("font: bold; font-size: 10px; color: rgba(0,0,0,160);"));
         local_status_label_->setMaximumHeight(20);
+        internal_v_layout_local_->setSpacing(3);
         internal_v_layout_local_->addWidget(local_status_label_);
-        if (local_video_)
-            internal_v_layout_local_->addWidget(local_video_);
+        internal_v_layout_local_->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Preferred, QSizePolicy::Expanding));
         internal_v_layout_local_->addWidget(controls_local_widget_);
 
         // Remote video and contols
         remote_video_ = video_session_->GetReceivedVideo();
+        remote_video_->setWindowTitle(QString("Receiving video %1)").arg(his_name_));
+        remote_video_->setGeometry(338, 30, 322, 240);
+        remote_video_->show();
         controls_remote_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         remote_status_label_ = new QLabel("Friend is currently not sending video", this);
         remote_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        remote_status_label_->setAlignment(Qt::AlignCenter);
-        remote_status_label_->setStyleSheet(QString("font: 12pt 'Estrangelo Edessa'; color: rgb(69, 159, 255);"));
+        remote_status_label_->setAlignment(Qt::AlignRight);
+        remote_status_label_->setStyleSheet(QString("font: bold; font-size: 10px; color: rgba(0,0,0,160);"));
         remote_status_label_->setMaximumHeight(20);
+        internal_v_layout_remote_->setSpacing(3);
         internal_v_layout_remote_->addWidget(remote_status_label_);
-        if (remote_video_)
-           internal_v_layout_remote_->addWidget(remote_video_);
+        internal_v_layout_remote_->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Preferred, QSizePolicy::Expanding));
         internal_v_layout_remote_->addWidget(controls_remote_widget_);
 
         // But our video containers to the main horizontal layout
