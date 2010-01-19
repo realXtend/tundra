@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 #include "InputStateMachine.h"
@@ -7,46 +8,50 @@ namespace Input
     // keep a manifest of all known named states
     // used by WorldInputLogic to fetch states
     static Foundation::StateMap input_state_registry_;
-    
+
     //=========================================================================
     //
-    MouseInfo::MouseInfo () 
-        : buttons (0), 
-        wheel_delta (0), wheel_orientation (0), 
-        global_x (0), global_y (0), x (0), y (0) 
-    {}
+    MouseInfo::MouseInfo ()
+        : buttons (0),
+        wheel_delta (0), wheel_orientation (0),
+        global_x (0), global_y (0), x (0), y (0)
+    {
+    }
 
     MouseInfo::MouseInfo (const MouseInfo &rhs) 
         : buttons (rhs.buttons), 
         wheel_delta (rhs.wheel_delta), wheel_orientation (rhs.wheel_orientation),
         global_x (rhs.global_x), global_y (rhs.global_y), x (rhs.x), y (rhs.y) 
-    {}
+    {
+    }
 
     MouseInfo::MouseInfo (const QMouseEvent *e) 
         : buttons (e->buttons()), 
         wheel_delta (0), wheel_orientation (0),
         global_x (e->globalX()), global_y (e->globalY()), x (e->x()), y (e->y()) 
-    {}
+    {
+    }
 
     MouseInfo::MouseInfo (const QWheelEvent *e) 
         : buttons (e->buttons()), 
         wheel_delta (e->delta()), wheel_orientation (e->orientation()),
         global_x (e->globalX()), global_y (e->globalY()), x (e->x()), y (e->y()) 
-    {}
+    {
+    }
 
     MouseInfo &MouseInfo::operator= (const MouseInfo &rhs) 
     {
         buttons = rhs.buttons;
         wheel_delta = rhs.wheel_delta; wheel_orientation = rhs.wheel_orientation;
         global_x = rhs.global_x; global_y = rhs.global_y; x = rhs.x; y = rhs.y;
-		return *this;
+        return *this;
     }
 
     MouseInfo &MouseInfo::operator= (const QMouseEvent *e)
     {
         buttons = e-> buttons();
         global_x = e-> globalX(); global_y = e-> globalY(); x = e-> x(); y = e-> y();
-		return *this;
+        return *this;
     }
 
     MouseInfo &MouseInfo::operator= (const QWheelEvent *e)
@@ -54,7 +59,7 @@ namespace Input
         buttons = e-> buttons();
         wheel_delta = e-> delta(); wheel_orientation = e-> orientation();
         global_x = e-> globalX(); global_y = e-> globalY(); x = e-> x(); y = e-> y();
-		return *this;
+        return *this;
     }
     
     
@@ -62,12 +67,12 @@ namespace Input
     //
     InputState::InputState (QString name, QState *parent) 
         : State (name, input_state_registry_, parent)
-    { 
+    {
     }
 
     InputState::InputState (QString name, QState::ChildMode mode, QState *parent) 
         : State (name, input_state_registry_, mode, parent)
-    { 
+    {
     }
 
     //=========================================================================
@@ -117,7 +122,7 @@ namespace Input
         KeyBindingMap::const_iterator e = (*bindings)-> end ();
         return (i != e)? i-> second : 0;
     }
-        
+
     bool KeyState::operator== (const KeyState &rhs)
     {
         return sequence == rhs.sequence;
@@ -162,7 +167,8 @@ namespace Input
     //
     KeyActiveState::KeyActiveState (QString name, QState::ChildMode m, QState *p)
         : InputState (name, m, p)
-    {}
+    {
+    }
 
     void KeyActiveState::onEntry (QEvent *event)
     {
@@ -174,7 +180,8 @@ namespace Input
         // cancel any active key presses
         KeyStateList::iterator i = active.begin();
         KeyStateList::iterator e = active.end();
-        for (; i != e; ++i) (*i)-> onExit (event);
+        for (; i != e; ++i)
+            (*i)-> onExit (event);
         active.erase (active.begin(), active.end());
 
         State::onExit (event);
@@ -185,7 +192,8 @@ namespace Input
     //
     ButtonActiveState::ButtonActiveState (QString name, MouseInfo &m, QState *p)
         : InputState (name, p), mouse (m) 
-    {}
+    {
+    }
 
     void ButtonActiveState::onEntry (QEvent *event)
     {
@@ -264,7 +272,7 @@ namespace Input
 
         eventmgr-> SendEvent (catid, Input::Events::RIGHT_MOUSECLICK_PRESSED, &movement);
     }
-    
+
     void RightButtonActiveState::onExit (QEvent *event)
     {
         eventmgr-> SendEvent (catid, Input::Events::RIGHT_MOUSECLICK_RELEASED, &movement);
@@ -292,7 +300,7 @@ namespace Input
     {
         State::onEntry (event);
     }
-    
+
     void MidButtonActiveState::onExit (QEvent *event)
     {
         State::onExit (event);
@@ -338,11 +346,11 @@ namespace Input
 
         //MouseInfo info (static_cast <QMouseEvent *> (event));
         //gesture.drag.push_back (info);
-        
+
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
         gesture.last_x = e-> x();
         gesture.last_y = e-> y();
-                
+
         // Do not send relative movement yet on gesture start
         movement.x_.rel_ = 0;
         movement.y_.rel_ = 0;
@@ -354,7 +362,7 @@ namespace Input
         if (e->buttons() == Qt::LeftButton)
             eventmgr-> SendEvent (catid, Input::Events::MOUSEDRAG, &movement);
         if (e->buttons() == Qt::RightButton)
-            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);        
+            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
     }
 
     void GestureActiveState::onExit (QEvent *event)
@@ -372,38 +380,41 @@ namespace Input
     //
     FirstPersonActiveState::FirstPersonActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
-    {}
+    {
+    }
 
     void FirstPersonActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
         *map = &bindings.map;
     }
-    
+
     //=========================================================================
     //
     ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
-    {}
+    {
+    }
 
     void ThirdPersonActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
         *map = &bindings.map;
     }
-    
+
     //=========================================================================
     //
     FreeCameraActiveState::FreeCameraActiveState (QString name, KeyBindingMap **s, QState *p)
         : InputState (name, p), map (s)
-    {}
+    {
+    }
 
     void FreeCameraActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
         *map = &bindings.map;
     }
-    
+
     //=========================================================================
     //
     GestureActive::GestureActive (GestureInfo &g, Foundation::EventManagerPtr m, QState *p)
@@ -416,7 +427,7 @@ namespace Input
     {
         //MouseInfo info (static_cast <QMouseEvent *> (event)); 
         //gesture.drag.push_back (info);
-        
+
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
         movement.x_.rel_ = e-> x() - gesture.last_x;
         movement.y_.rel_ = e-> y() - gesture.last_y; 
@@ -425,17 +436,17 @@ namespace Input
         movement.x_.screen_ = e-> globalX();
         movement.y_.screen_ = e-> globalY();
         gesture.last_x = e-> x();
-        gesture.last_y = e-> y();   
-                
+        gesture.last_y = e-> y();
+
         if (e->buttons() == Qt::LeftButton)
             eventmgr-> SendEvent (catid, Input::Events::MOUSEDRAG, &movement);
         if (e->buttons() == Qt::RightButton)
-            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);   
+            eventmgr-> SendEvent (catid, Input::Events::MOUSELOOK, &movement);
     }
-    
+
     //=========================================================================
     //
-    
+
     KeyListener::KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
         : QAbstractTransition (p), key_states (s), bindings (b), eventmgr (m)
     {
@@ -472,12 +483,15 @@ namespace Input
 
                     return true;
                 }
-        }
 
-        return false;
+            default:
+                return false;
+        }
     }
 
-    void KeyListener::onTransition (QEvent *e) {}
+    void KeyListener::onTransition (QEvent *e)
+    {
+    }
 
     KeyState *KeyListener::get_key_state (const QKeySequence &sequence)
     {
@@ -506,17 +520,18 @@ namespace Input
         KeyStateList::iterator b = parent-> active.begin();
         KeyStateList::iterator e = parent-> active.end();
         KeyStateList::iterator i = std::find (b, e, state);
-        if (i != e) parent-> active.erase (i);
+        if (i != e)
+            parent-> active.erase (i);
     }
 
 
     //=========================================================================
     //
     WorldInputLogic::WorldInputLogic (Foundation::Framework *fw)
-        : framework_ (fw), 
-        view_ (framework_-> GetUIView()), 
+        : framework_ (fw),
+        view_ (framework_-> GetUIView()),
         eventmgr_ (framework_-> GetEventManager()),
-        has_focus_ (false), 
+        has_focus_ (false),
         key_binding_ (0)
     {
         init_statemachine_();
@@ -525,17 +540,16 @@ namespace Input
         view_-> viewport()-> installEventFilter (this);
     }
 
-
     bool WorldInputLogic::eventFilter (QObject *obj, QEvent *event)
     {
-		// route select Qt events to the state machine
+        // route select Qt events to the state machine
         switch (event-> type())
         {
-			case QEvent::KeyPress:
+            case QEvent::KeyPress:
             case QEvent::KeyRelease:
-				if (static_cast <QKeyEvent *> (event)->isAutoRepeat())
-					break;
-				// else fall-through
+                if (static_cast <QKeyEvent *> (event)->isAutoRepeat())
+                    break;
+                // else fall-through
 
             case QEvent::Close:
             case QEvent::MouseMove:
@@ -543,6 +557,9 @@ namespace Input
             case QEvent::MouseButtonRelease:
             case QEvent::Wheel:
                 postEvent (clone_event_ (event));
+                break;
+
+            default:
                 break;
         }
 
@@ -567,7 +584,7 @@ namespace Input
                 has_focus_ = false;
             }
         }
-        else 
+        else
         {
             if (!has_focus_)
             {
@@ -581,11 +598,11 @@ namespace Input
     {
         QFinalState *exit;
 
-        InputState *active, *unfocused, 
-              *mouse, *keyboard, *perspective, *wheel, *wheel_waiting,
-              *left_button, *right_button, *mid_button,
-              *left_button_waiting, *right_button_waiting, *mid_button_waiting,
-              *button, *button_waiting, *gesture_waiting;
+        InputState *active, *unfocused,
+            *mouse, /**keyboard,*/ *perspective, *wheel, *wheel_waiting,
+            *left_button, *right_button, *mid_button,
+            *left_button_waiting, *right_button_waiting, *mid_button_waiting,
+            *button, *button_waiting, *gesture_waiting;
 
         InputActiveState        *focused;
         KeyActiveState          *key_active;
@@ -611,7 +628,7 @@ namespace Input
 
         mouse = new InputState ("mouse", QState::ParallelStates, focused);
         perspective = new InputState ("perspective", focused);
-        
+
         key_active = new KeyActiveState ("keyboard", QState::ParallelStates, focused);
 
         wheel = new InputState ("wheel", mouse);
@@ -700,8 +717,9 @@ namespace Input
 
             case QEvent::Close:
                 return new QCloseEvent (*static_cast <QCloseEvent *> (event));
-        }
 
-		return 0;
+            default:
+                return 0;
+        }
     }
 }
