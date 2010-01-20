@@ -121,9 +121,9 @@ namespace Input
 #endif
     };
 
-    struct KeyActiveState : public InputState
+    struct KeyboardActiveState : public InputState
     {
-        KeyActiveState (QString name, QState::ChildMode m, QState *p = 0);
+        KeyboardActiveState (QString name, QState::ChildMode m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -131,14 +131,11 @@ namespace Input
         KeyStateList    active;
     };
 
-    struct ButtonActiveState : public InputState
+    struct MouseActiveState : public InputState
     {
-        ButtonActiveState (QString name, MouseInfo &m, QState *p = 0);
+        MouseActiveState (QString name, QGraphicsScene *s, QState::ChildMode m, QState *p = 0);
 
-        void onEntry (QEvent *event);
-        void onExit (QEvent *event);
-
-        MouseInfo   &mouse;
+        QGraphicsScene  *scene;
     };
 
     struct LeftButtonActiveState : public InputState
@@ -369,10 +366,10 @@ namespace Input
         void press_active (KeyState *e);
         void release_active (KeyState *e);
 
-        KeyActiveState  *parent;
+        KeyboardActiveState *parent;
 
-        KeyStateMap     &key_states;
-        KeyBindingMap   **bindings;
+        KeyStateMap         &key_states;
+        KeyBindingMap       **bindings;
 
         Foundation::EventManagerPtr eventmgr;
     };
