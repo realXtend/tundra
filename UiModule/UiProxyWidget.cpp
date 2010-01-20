@@ -33,7 +33,6 @@ namespace UiServices
 
     UiProxyWidget::~UiProxyWidget()
     {
-        int test = 1;
     }
 
     void UiProxyWidget::InitAnimations()
