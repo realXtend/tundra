@@ -151,6 +151,9 @@ namespace Inventory
 
         typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
+    public slots:
+        void SendNotification(const QString &text);
+    
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 

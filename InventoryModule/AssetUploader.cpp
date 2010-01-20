@@ -16,6 +16,8 @@
 
 #include <QStringList>
 #include <QVector>
+#include <QTime>
+#include <QDir>
 
 namespace Inventory
 {
@@ -278,7 +280,6 @@ bool AssetUploader::UploadBuffer(
         event_mgr->SendDelayedEvent<Inventory::InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
     }
     
-
     InventoryModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
     return true;
 }
@@ -348,6 +349,9 @@ std::string AssetUploader::CreateNameFromFilename(std::string filename)
 
 void AssetUploader::ThreadedUploadFiles(StringList filenames, StringList item_names)
 {
+    // For notifications
+    QTime timer;
+
     // Iterate trought every asset.
     int asset_count = 0;
     StringList::iterator name_it = item_names.begin();
@@ -384,9 +388,25 @@ void AssetUploader::ThreadedUploadFiles(StringList filenames, StringList item_na
             InventoryModule::LogError("Inventory folder for this type of file doesn't exists. File can't be uploaded.");
             continue;
         }
+ 
+        // Start notification
+        QString real_filename = QString::fromStdString(filename);
+        real_filename = real_filename.midRef(real_filename.lastIndexOf(QDir::separator())+1).toString();
+        emit NewNotification(QString("Uploading %1").arg(QString::fromStdString(filename)));
+        timer.start();
 
         if (UploadFile(asset_type, filename, name, description, folder_id))
+        {
+            // Send succesfull notification
+            qreal elapsed(timer.elapsed());
+            emit NewNotification(QString("%1 uploaded succesfully to %2 in %3 seconds").arg(real_filename, QString::fromStdString(cat_name), QString::number(elapsed/1000, 102, 2)));
             ++asset_count;
+        }
+        else
+        {
+            // Send fail notification
+            emit NewNotification(QString("Upload failed for %1").arg(real_filename));
+        }
     }
 
     InventoryModule::LogInfo("Multiupload:" + ToString(asset_count) + " assets succesfully uploaded.");
