@@ -336,9 +336,12 @@ namespace CommunicationUI
 
         // Local video and controls
         local_video_ = video_session_->GetLocallyCapturedVideo();
-        local_video_->setWindowTitle(QString("Sending video %1").arg(my_name_));
-        local_video_->setGeometry(7, 30, 322, 240);
-        local_video_->show();
+        if (local_video_)
+        {
+            local_video_->setWindowTitle(QString("Sending video %1").arg(my_name_));
+            local_video_->setGeometry(7, 30, 322, 240);
+            local_video_->show();
+        }
         controls_local_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         local_status_label_ = new QLabel("Preview of captured video", this);
         local_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -352,9 +355,12 @@ namespace CommunicationUI
 
         // Remote video and contols
         remote_video_ = video_session_->GetReceivedVideo();
-        remote_video_->setWindowTitle(QString("Receiving video %1)").arg(his_name_));
-        remote_video_->setGeometry(338, 30, 322, 240);
-        remote_video_->show();
+        if (remote_video_)
+        {
+            remote_video_->setWindowTitle(QString("Receiving video %1)").arg(his_name_));
+            remote_video_->setGeometry(338, 30, 322, 240);
+            remote_video_->show();
+        }
         controls_remote_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         remote_status_label_ = new QLabel("Friend is currently not sending video", this);
         remote_status_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
