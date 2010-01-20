@@ -7,7 +7,8 @@
 #include "UiWidgetProperties.h"
 
 #include <QGraphicsProxyWidget>
-#include <QTimeLine>
+
+class QTimeLine;
 
 namespace CoreUi
 {
@@ -20,11 +21,15 @@ namespace UiServices
 
     class UI_MODULE_API UiProxyWidget : public QGraphicsProxyWidget
     {
-        
-    Q_OBJECT
+        Q_OBJECT
 
     public:
+        //! Constructor.
+        //! \param widget
+        //! \param in_widget_properties
         UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties);
+
+        //! Destructor.
         ~UiProxyWidget();
 
         //! Get this proxys widget properties
@@ -35,7 +40,7 @@ namespace UiServices
         void SetControlButton(CoreUi::MainPanelButton *control_button);
 
         //! Get control button for this proxy
-        CoreUi::MainPanelButton *GetControlButton() { if (control_button_) return control_button_; else return 0; }
+        CoreUi::MainPanelButton *GetControlButton() const { return control_button_ ? control_button_ : 0; }
 
         //! Set new opacity
         void SetUnfocusedOpacity(int new_opacity);

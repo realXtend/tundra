@@ -24,7 +24,6 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param parent Parent widget.
-        /// @param inventory_window Inventory window.
         InventoryTreeView(QWidget *parent = 0);
 
         /// Destructor.

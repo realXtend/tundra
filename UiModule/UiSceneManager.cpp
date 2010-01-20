@@ -178,9 +178,7 @@ namespace UiServices
 
     CoreUi::MainPanel *UiSceneManager::GetMainPanel() const
     {
-        if (main_panel_)
-            return main_panel_;
-        return 0;
+        return main_panel_ ? main_panel_ : 0;
     }
 
     /*************** UI Scene Manager Private functions ***************/

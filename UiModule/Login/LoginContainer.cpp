@@ -24,6 +24,9 @@ LoginContainer::LoginContainer(
     framework_(framework),
     os_login_handler_(os_login_handler),
     taiga_login_handler_(taiga_login_handler),
+    classic_login_widget_(0),
+    web_login_widget_(0),
+    tabWidget_(0),
     login_widget_(0),
     login_progress_widget_(0),
     progress_bar_timer_(0),
@@ -39,7 +42,7 @@ LoginContainer::LoginContainer(
     }
     else
     {
-        UiServices::UiModule::LogDebug("CoreUi::LoginContainer >> Could not accuire UiServices module, skipping UI creation");
+        UiServices::UiModule::LogDebug("CoreUi::LoginContainer >> Could not acquire UiServices module, skipping UI creation");
     }
 }
 
@@ -154,7 +157,8 @@ void LoginContainer::StartLoginProgressUI()
         login_progress_bar_ = login_progress_widget_->findChild<QProgressBar *>("progressBar");
         uiFile.close();
 
-        login_progress_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_progress_widget_, UiServices::UiWidgetProperties("Login loader", true, UiServices::SlideFromBottom));
+        login_progress_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(
+            login_progress_widget_, UiServices::UiWidgetProperties("Login loader", true, UiServices::SlideFromBottom));
         login_progress_proxy_widget_->show();
         login_is_in_progress_ = true;
     }
@@ -222,7 +226,7 @@ void LoginContainer::UpdateLoginProgressUI(const QString &status, int progress, 
 void LoginContainer::AnimateProgressBar(int new_value)
 {
     if (new_value > login_progress_bar_->value() && new_value != 100)
-        for (int i=login_progress_bar_->value(); i<=new_value; i++)
+        for(int i=login_progress_bar_->value(); i<=new_value; i++)
             login_progress_bar_->setValue(i);
 }
 
@@ -284,7 +288,7 @@ void LoginContainer::HideMessageFromUser()
 
 void LoginContainer::UpdateAutoHide()
 {
-    if ( autohide_count_ > 0 )
+    if (autohide_count_ > 0)
     {
         autohide_label_->setText(QString("Autohide in %1").arg(QString::number(autohide_count_)));
         --autohide_count_;

@@ -25,7 +25,6 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QTreeView>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QModelIndex>
@@ -34,6 +33,7 @@
 #include <QFileDialog>
 #include <QMenu>
 #include <QAction>
+#include <QMessageBox>
 
 namespace Inventory
 {
@@ -52,7 +52,9 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionOpen_(0),
     actionCopyAssetReference_(0),
     actionUpload_(0),
-    actionDownload_(0)
+    actionDownload_(0),
+    actionSeparator_(0),
+    offset_(0)
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
@@ -70,8 +72,27 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
 InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
+    SAFE_DELETE(treeView_);
     SAFE_DELETE(inventoryWidget_);
-    proxyWidget_ = 0;
+    SAFE_DELETE(actionMenu_);
+    SAFE_DELETE(actionDelete_);
+    SAFE_DELETE(actionRename_);
+    SAFE_DELETE(actionCut_);
+    SAFE_DELETE(actionPaste_);
+    SAFE_DELETE(actionNewFolder_);
+    SAFE_DELETE(actionOpen_);
+    SAFE_DELETE(actionCopyAssetReference_);
+    SAFE_DELETE(actionUpload_);
+    SAFE_DELETE(actionDownload_);
+    SAFE_DELETE(actionSeparator_);
+
+    QMutableMapIterator<QString, QMessageBox *> it(downloadDialogs_);
+    while(it.hasNext())
+    {
+        QMessageBox *msgBox = it.next().value();
+        SAFE_DELETE(msgBox);
+        it.remove();
+    }
 }
 
 void InventoryWindow::Hide()
@@ -92,8 +113,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     treeView_->setModel(inventoryItemModel_);
 
     // Connect download progress signals.
-    QObject::connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &)),
-        this, SLOT(OpenDownloadProgess(const QString &)));
+    QObject::connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &, const QString &)),
+        this, SLOT(OpenDownloadProgess(const QString &, const QString &)));
 
     QObject::connect(inventory_model.get(), SIGNAL(DownloadAborted(const QString &)),
         this, SLOT(AbortDownload(const QString &)));
@@ -203,7 +224,7 @@ void InventoryWindow::Download()
     if (storePath.isEmpty())
         return;
 
-    inventoryItemModel_->Download(storePath, selection);
+       inventoryItemModel_->Download(storePath, selection);
 }
 
 void InventoryWindow::CopyAssetReference()
@@ -234,10 +255,26 @@ void InventoryWindow::UpdateActions()
         treeView_->closePersistentEditor(treeView_->selectionModel()->currentIndex());
 }
 
-void InventoryWindow::OpenDownloadProgess(const QString &asset_id)
+void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString &name)
 {
-//    QMessageBox *box = new QMessageBox(inventoryWidget_);
-    ///\todo
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "", "Downloading asset " + asset_id, QMessageBox::Ok);
+    msgBox->setModal(false);
+    downloadDialogs_[asset_id] = msgBox;
+
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+    {
+        QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
+        pos.setX(pos.x() + offset_);
+        pos.setY(pos.y() + offset_);
+        offset_ += 20;
+
+        ui_module->GetSceneManager()->AddWidgetToScene(
+            msgBox, UiServices::UiWidgetProperties(pos, msgBox->size(), Qt::Dialog, "Download: " + name, false));
+    }
+
+    msgBox->show();
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -247,7 +284,9 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
 
 void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
 {
-    ///\todo
+    QMessageBox *msgBox = downloadDialogs_.take(asset_id);
+    if (msgBox)
+        delete msgBox;
 }
 
 void InventoryWindow::InitInventoryWindow()
@@ -304,6 +343,11 @@ void InventoryWindow::CreateActions()
     actionDownload_->setStatusTip(tr("Download assets to your hard drive"));
     QObject::connect(actionDownload_, SIGNAL(triggered()), this, SLOT(Download()));
     treeView_->addAction(actionDownload_);
+
+    // Add separator
+    actionSeparator_= new QAction(this);
+    actionSeparator_->setSeparator(true);
+    treeView_->addAction(actionSeparator_);
 
     // Inventory item actions.
     actionDelete_ = new QAction(tr("&Delete"), this);

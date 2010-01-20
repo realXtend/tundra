@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QGraphicsEffect>
 #include <QGraphicsScene>
+#include <QTimeLine>
 
 namespace UiServices
 {

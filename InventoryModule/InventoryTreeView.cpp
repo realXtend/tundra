@@ -30,6 +30,31 @@ InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
     setAllColumnsShowFocus(true);
     setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
+    setStyleSheet(
+    "QTreeView::branch:has-siblings:!adjoins-item"
+    "{"
+        "border-image: url(:/images/iconBranchVLine.png) 0;"
+    "}"
+    "QTreeView::branch:has-siblings:adjoins-item"
+    "{"
+        "border-image: url(:/images/iconBranchMore.png) 0;"
+    "}"
+    "QTreeView::branch:!has-children:!has-siblings:adjoins-item"
+    "{"
+        "border-image: url(:/images/iconBranchEnd.png) 0;"
+    "}"
+    "QTreeView::branch:has-children:!has-siblings:closed,"
+    "QTreeView::branch:closed:has-children:has-siblings"
+    "{"
+        "border-image: none;"
+        "image: url(:/images/iconBranchClosed.png);"
+    "}"
+    "QTreeView::branch:open:has-children:!has-siblings,"
+    "QTreeView::branch:open:has-children:has-siblings"
+    "{"
+        "border-image: none;"
+        "image: url(:/images/iconBranchOpen.png);"
+    "}");
 }
 
 // virtual
@@ -56,11 +81,9 @@ void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
         QAction *action = it.next();
         if (action->isEnabled())
             menu->addAction(action);
-        if (action->text() == "&Download")
-            menu->addSeparator();
     }
 
-    if (menu->actions().size() > 0)
+    if (menu->actions().size() > 1) // separator "action" is always enabled
         menu->popup(event->globalPos());
 }
 
