@@ -167,17 +167,17 @@ namespace Input
 
     //=========================================================================
     //
-    KeyActiveState::KeyActiveState (QString name, QState::ChildMode m, QState *p)
+    KeyboardActiveState::KeyboardActiveState (QString name, QState::ChildMode m, QState *p)
         : InputState (name, m, p)
     {
     }
 
-    void KeyActiveState::onEntry (QEvent *event)
+    void KeyboardActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
     }
     
-    void KeyActiveState::onExit (QEvent *event)
+    void KeyboardActiveState::onExit (QEvent *event)
     {
         // cancel any active key presses
         KeyStateList::iterator i = active.begin();
@@ -192,27 +192,11 @@ namespace Input
 
     //=========================================================================
     //
-    ButtonActiveState::ButtonActiveState (QString name, MouseInfo &m, QState *p)
-        : InputState (name, p), mouse (m) 
+    MouseActiveState::MouseActiveState (QString name, QGraphicsScene *s, QState::ChildMode m, QState *p)
+        : InputState (name, m, p), scene (s)
     {
     }
 
-    void ButtonActiveState::onEntry (QEvent *event)
-    {
-        State::onEntry (event);
-        
-        QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        mouse = e;
-    }
-
-    void ButtonActiveState::onExit (QEvent *event)
-    {
-        QMouseEvent *e = static_cast <QMouseEvent *> (event);
-        mouse = e;
-
-        QState::onExit (event);
-    }
-    
     //=========================================================================
     //
     LeftButtonActiveState::LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
@@ -233,7 +217,11 @@ namespace Input
         movement.x_.screen_ = e-> globalX();
         movement.y_.screen_ = e-> globalY();
 
-        eventmgr-> SendEvent (catid, Input::Events::INWORLD_CLICK, &movement);
+        // click may cause loss of focus
+        QState *p = parentState()-> parentState(); // "mouse active" state has scene
+        if (!static_cast <MouseActiveState *> (p)-> scene-> focusItem())
+            eventmgr-> SendEvent (catid, Input::Events::INWORLD_CLICK, &movement);
+
         eventmgr-> SendEvent (catid, Input::Events::LEFT_MOUSECLICK_PRESSED, &movement);
     }
     
@@ -452,7 +440,7 @@ namespace Input
     KeyListener::KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
         : QAbstractTransition (p), key_states (s), bindings (b), eventmgr (m)
     {
-        parent = static_cast <KeyActiveState *> (p);
+        parent = static_cast <KeyboardActiveState *> (p);
         setTargetState (0);
     }
 
@@ -605,14 +593,14 @@ namespace Input
         QFinalState *exit;
 
         InputState *active, *unfocused,
-            *mouse, *perspective, *wheel, *wheel_waiting,
+            *perspective, *wheel, *wheel_waiting,
             *left_button, *right_button, *mid_button,
             *left_button_waiting, *right_button_waiting, *mid_button_waiting,
-            *button, *button_waiting, *gesture_waiting;
+            *button, *button_active, *button_waiting, *gesture_waiting;
 
         InputActiveState        *focused;
-        KeyActiveState          *key_active;
-        ButtonActiveState       *button_active;
+        KeyboardActiveState     *keyboard_active;
+        MouseActiveState        *mouse_active;
         WheelActiveState        *wheel_active;
         LeftButtonActiveState   *left_button_active;
         RightButtonActiveState  *right_button_active;
@@ -631,34 +619,33 @@ namespace Input
         active-> setInitialState (unfocused);
 
         focused = new InputActiveState ("focused", view_, QState::ParallelStates, active);
-
-        mouse = new InputState ("mouse", QState::ParallelStates, focused);
         perspective = new InputState ("perspective", focused);
 
-        key_active = new KeyActiveState ("keyboard", QState::ParallelStates, focused);
+        keyboard_active = new KeyboardActiveState ("keyboard", QState::ParallelStates, focused);
+        mouse_active = new MouseActiveState ("mouse active", view_-> scene(), QState::ParallelStates, focused);
 
-        wheel = new InputState ("wheel", mouse);
+        wheel = new InputState ("wheel", mouse_active);
         wheel_active = new WheelActiveState ("wheel active", eventmgr_, wheel);
         wheel_waiting = new InputState ("wheel waiting", wheel);
         wheel-> setInitialState (wheel_waiting);
 
-        left_button = new InputState ("left button", mouse);
+        left_button = new InputState ("left button", mouse_active);
         left_button_active = new LeftButtonActiveState ("left button active", eventmgr_, left_button);
         left_button_waiting = new InputState ("left button waiting", left_button);
         left_button-> setInitialState (left_button_waiting);
 
-        right_button = new InputState ("right button", mouse);
+        right_button = new InputState ("right button", mouse_active);
         right_button_active = new RightButtonActiveState ("right button active", eventmgr_, right_button);
         right_button_waiting = new InputState ("right button waiting", right_button);
         right_button-> setInitialState (right_button_waiting);
 
-        mid_button = new InputState ("middle button", mouse);
+        mid_button = new InputState ("middle button", mouse_active);
         mid_button_active = new MidButtonActiveState ("middle button active", eventmgr_, mid_button);
         mid_button_waiting = new InputState ("middle button waiting", mid_button);
         mid_button-> setInitialState (mid_button_waiting);
 
-        button = new InputState ("button", mouse);
-        button_active = new ButtonActiveState ("button active", mouse_state_, button);
+        button = new InputState ("button", mouse_active);
+        button_active = new InputState ("button active", button);
         button_waiting = new InputState ("mouse waiting", button);
         button-> setInitialState (button_waiting);
 
@@ -675,7 +662,7 @@ namespace Input
         (new EventTransition <QEvent::FocusIn> (unfocused))-> setTargetState (focused);
         (new EventTransition <QEvent::FocusOut> (focused))-> setTargetState (unfocused);
 
-        (new KeyListener (key_states_, &key_binding_, eventmgr_, key_active));
+        (new KeyListener (key_states_, &key_binding_, eventmgr_, keyboard_active));
 
         (new EventTransition <QEvent::Wheel> (wheel_waiting))-> setTargetState (wheel_active);
         (new UnconditionalTransition (wheel_active))-> setTargetState (wheel_waiting);
