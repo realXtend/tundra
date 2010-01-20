@@ -113,6 +113,8 @@ namespace Inventory
         /// @param asset_id Asset id.
         void CloseDownloadProgess(const QString &asset_id);
 
+        void SendNotification(const QString &text);
+
     private:
         Q_DISABLE_COPY(InventoryWindow);
 

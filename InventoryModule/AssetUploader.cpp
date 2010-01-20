@@ -358,9 +358,13 @@ void AssetUploader::ThreadedUploadFiles(StringList filenames, StringList item_na
     for(StringList::iterator it = filenames.begin(); it != filenames.end(); ++it)
     {
         std::string filename = *it;
+        QString real_filename = QString::fromStdString(filename);
+        real_filename = real_filename.midRef(real_filename.lastIndexOf(QDir::separator())+1).toString();
+
         RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename);
         if (asset_type == RexAT_None)
         {
+            emit NewNotification(QString("Could not upload %1 Invalid file type").arg(real_filename));
             InventoryModule::LogError("Invalid file extension. File can't be uploaded: " + filename);
             continue;
         }
@@ -390,8 +394,6 @@ void AssetUploader::ThreadedUploadFiles(StringList filenames, StringList item_na
         }
  
         // Start notification
-        QString real_filename = QString::fromStdString(filename);
-        real_filename = real_filename.midRef(real_filename.lastIndexOf(QDir::separator())+1).toString();
         emit NewNotification(QString("Uploading %1").arg(QString::fromStdString(filename)));
         timer.start();
 
