@@ -150,13 +150,19 @@ QPushButton::pressed{
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <layout class="QHBoxLayout" name="meshLine">
             <item>
              <widget class="QLabel" name="label_scale_3">
               <property name="minimumSize">
                <size>
-                <width>50</width>
+                <width>40</width>
                 <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>40</width>
+                <height>23</height>
                </size>
               </property>
               <property name="font">
@@ -169,9 +175,6 @@ QPushButton::pressed{
                <string>Mesh</string>
               </property>
              </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="bottomLayout"/>
             </item>
            </layout>
           </item>
