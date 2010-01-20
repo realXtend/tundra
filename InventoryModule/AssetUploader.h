@@ -133,6 +133,10 @@ namespace Inventory
 
         /// Inventory data model pointer.
         OpenSimInventoryDataModel *dataModel_;
+
+    signals:
+        void NewNotification(const QString &text);
+
     };
 }
 

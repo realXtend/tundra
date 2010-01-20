@@ -26,6 +26,8 @@
 #include <OgreImage.h>
 #include <OgreException.h>
 
+#include <UiModule.h>
+
 namespace Inventory
 {
 
@@ -39,6 +41,7 @@ OpenSimInventoryDataModel::OpenSimInventoryDataModel(
 {
     SetupModelData(inventory_skeleton);
     assetUploader_ = new AssetUploader(framework_, this);
+    connect(assetUploader_, SIGNAL( NewNotification(const QString &) ), this, SLOT( SendNotification(const QString &) ));
 }
 
 OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
@@ -592,6 +595,13 @@ void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkele
     worldLibraryOwnerId_ = STD_TO_QSTR(inventory_skeleton->worldLibraryOwnerId.ToString());
 
     CreateNewFolderFromFolderSkeleton(0, inventory_skeleton->GetRoot());
+}
+
+void OpenSimInventoryDataModel::SendNotification(const QString &text)
+{
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+        ui_module->GetNotificationManager()->ShowInformationString(text, 9000);
 }
 
 } // namespace Inventory

@@ -10,8 +10,6 @@
 
 #include <QLabel>
 
-#include <QDebug>
-
 namespace UiServices
 {
     UiNotificationManager::UiNotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view) 
