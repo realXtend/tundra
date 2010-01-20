@@ -70,7 +70,7 @@ namespace UiServices
         //! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
         //! Note: Does not delete the proxy widget, after this is done its safe to delete your QWidget (this will delete the proxy also)
         //! \param widget Proxy widget.
-        void RemoveProxyWidgetFromScene(UiProxyWidget *proxy_widget);
+        void RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget);
 
         //! Get proxy widget pointer by name
         //! \return Pointer to the proxy widget or 0 if not found.
