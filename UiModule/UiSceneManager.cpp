@@ -112,7 +112,7 @@ namespace UiServices
             return false;
     }
 
-    void UiSceneManager::RemoveProxyWidgetFromScene(UiProxyWidget *proxy_widget)
+    void UiSceneManager::RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget)
     {
         if (ui_view_)
         {
