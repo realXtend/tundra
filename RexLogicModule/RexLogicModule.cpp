@@ -426,8 +426,7 @@ void RexLogicModule::UpdateSoundListener()
         listener_pos = placeable->GetPosition();
     }
 
-    soundsystem->SetListener(listener_pos, GetCameraOrientation()
-    );
+    soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
 // virtual
