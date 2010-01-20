@@ -537,19 +537,29 @@ namespace Input
         {
             case QEvent::KeyPress:
             case QEvent::KeyRelease:
-                if (static_cast <QKeyEvent *> (event)->isAutoRepeat())
-                    break;
-                // else fall-through
+                {
+                    QKeyEvent *e = static_cast <QKeyEvent *> (event);
 
-            case QEvent::Close:
-            case QEvent::MouseMove:
-            case QEvent::MouseButtonPress:
-            case QEvent::MouseButtonRelease:
-            case QEvent::Wheel:
-                postEvent (clone_event_ (event));
+                    if (has_focus_ && !e->isAutoRepeat())
+                        postEvent (clone_event_ (event));
+                }
                 break;
 
-            default:
+            case QEvent::MouseButtonPress:
+            case QEvent::MouseButtonRelease:
+                {
+                    QMouseEvent *e = static_cast <QMouseEvent *> (event);
+                    mouse_state_ = e; // record mouse state for focus handling
+                }
+                // fall through
+            
+            case QEvent::MouseMove:
+            case QEvent::Wheel:
+            case QEvent::Close:
+                {
+                    if (has_focus_) 
+                        postEvent (clone_event_ (event));
+                }
                 break;
         }
 
@@ -574,19 +584,21 @@ namespace Input
         {
             if (has_focus_)
             {
-                postEvent (new QFocusEvent (QEvent::FocusOut));
                 has_focus_ = false;
+                postEvent (new QFocusEvent (QEvent::FocusOut));
             }
         }
         else
         {
             if (!has_focus_)
             {
-                postEvent (new QFocusEvent (QEvent::FocusIn));
                 has_focus_ = true;
+                postEvent (new QFocusEvent (QEvent::FocusIn));
+                post_simulated_focus_click();
             }
         }
     }
+
 
     void WorldInputLogic::init_statemachine_ ()
     {
@@ -714,5 +726,17 @@ namespace Input
             default:
                 return 0;
         }
+    }
+    
+    void WorldInputLogic::post_simulated_focus_click ()
+    {
+        // called when focus is gained, which replays the mouse click that delivered the focus
+        // (which has been lost because we weren't focused)
+
+        postEvent (new QMouseEvent (QEvent::MouseButtonPress, QPoint (mouse_state_.x, mouse_state_.y), 
+                    Qt::LeftButton, (Qt::MouseButtons)mouse_state_.buttons, Qt::NoModifier));
+        
+        postEvent (new QMouseEvent (QEvent::MouseButtonRelease, QPoint (mouse_state_.x, mouse_state_.y), 
+                    Qt::LeftButton, (Qt::MouseButtons)mouse_state_.buttons, Qt::NoModifier));
     }
 }
