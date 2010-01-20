@@ -48,7 +48,7 @@ class TestGui(Component):
         r.logInfo("TestGui inited.")
 
     def changed(self, text):
-        r.logInfo("TestGui LineEdit changed to: %s" % text)
+        r.logInfo("TestGui LineEdit changed: %s" % text)
                 
     def on_exit(self):
         r.logInfo("TestGui starting exit...")
