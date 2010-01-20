@@ -202,21 +202,33 @@ class EditGUI(Component):
         self.meshline = MeshAssetidEditline(self) 
         self.meshline.name = "meshLineEdit"
         
-        button = QPushButton()
+        button_ok = QPushButton()
         icon = QIcon("pymodules/editgui/ok.png")
         icon.actualSize(QSize(16, 16))
-        button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        button.setMaximumSize(QSize(16, 16))
-        button.setMinimumSize(QSize(16, 16))
-        button.text = ""
-        button.name = "Apply"
-        button.setIcon(icon)
-        button.setFlat(True)
+        button_ok.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        button_ok.setMaximumSize(QSize(16, 16))
+        button_ok.setMinimumSize(QSize(16, 16))
+        button_ok.text = ""
+        button_ok.name = "Apply"
+        button_ok.setIcon(icon)
+        button_ok.setFlat(True)
+        
+        button_cancel = QPushButton()
+        icon = QIcon("pymodules/editgui/cancel.png")
+        icon.actualSize(QSize(16, 16))
+        button_cancel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        button_cancel.setMaximumSize(QSize(16, 16))
+        button_cancel.setMinimumSize(QSize(16, 16))
+        button_cancel.text = ""
+        button_cancel.name = "Apply"
+        button_cancel.setIcon(icon)
+        button_cancel.setFlat(True)
         
         box = self.widget.findChild("QHBoxLayout", "meshLine")
         if box is not None:
             box.addWidget(self.meshline)
-            box.addWidget(button)            
+            box.addWidget(button_ok)
+            box.addWidget(button_cancel)
         
         #self.propedit = r.getPropertyEditor()
         #print pe, pe.setObject, pe.show
