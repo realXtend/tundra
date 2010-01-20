@@ -48,24 +48,25 @@ else:
 #~ usr.keycommands = load_module("usr.keycommands")
 
 try:
-    editgui
+    editgui.editgui #only_layout
 except: #first run
     try:
-        import editgui
+        import editgui.editgui #only_layout
     except ImportError, e:
         print "couldn't load edigui:", e
 else:
     r.logDebug("   reloading editgui")
-    editgui = reload(editgui)
+    editgui.editgui = reload(editgui.editgui) #only_layout)
 
 #~ editgui = load_module("editgui")
 
-#~ try:
-    #~ apitest.pythonqt_gui
-#~ except: #first run
-    #~ import apitest.pythonqt_gui
-#~ else:
-    #~ pythonqt_gui = reload(apitest.pythonqt_gui)
+try:
+    apitest.pythonqt_gui
+except: #first run
+    import apitest.pythonqt_gui
+else:
+    r.logDebug("   reloading apitest.pythonqt_gui")
+    apitest.pythonqt_gui = reload(apitest.pythonqt_gui)
 
 try:
     usr.sleeper
@@ -83,14 +84,14 @@ else:
     #~ r.logDebug("   reloading usr.mousecontrol")
     #~ usr.mousecontrol = reload(usr.mousecontrol)
     
-#~ try:
-    #~ headtrack.control
-#~ except: #first run
-    #~ import headtrack.control
-#~ else:
-    #~ r.logDebug("   reloading headtrack.control")
-    #~ headtrack.control = reload(headtrack.control)
-#~ import headtrack.control
+#try:
+#    headtrack.control
+#except: #first run
+#    import headtrack.control
+#else:
+#    r.logDebug("   reloading headtrack.control")
+#    headtrack.control = reload(headtrack.control)
+#import headtrack.control
 
 try:
     import webserver.webcontroller
@@ -109,9 +110,9 @@ modules = [
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    editgui.EditGUI,
+    editgui.editgui.EditGUI, #only_layout.OnlyLayout,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
-    #apitest.pythonqt_gui.TestGui,
+    apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
     #apitest.testrunner.TestLoginLogoutExit,

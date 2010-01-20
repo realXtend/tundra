@@ -158,7 +158,6 @@ class EditGUI(Component):
         #mode = INTERNAL
         #if DEV:
         #    mode = EXTERNAL
-        #self.canvas = r.createCanvas(mode) #old way before qt refactor
          
         self.move_arrows = None
         uifile = QFile(self.UIFILE)
@@ -177,12 +176,12 @@ class EditGUI(Component):
         #print widget, dir(widget)
         if not uism.AddProxyWidget(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        #modu.AddCanvasToControlBar(ui, "World Edit")
-        #XXX change to te new signal. self.proxywidget.connect('Hidden()', self.on_hide)
-        self.proxywidget.connect('Visible(bool)', self.on_hide)
         #else:
          #   ui.show()
 
+        self.proxywidget.connect('Visible(bool)', self.on_hide)
+
+        #XXX move the material dialog to an own class
         muifile = QFile("pymodules/editgui/materials.ui")
         mui = loader.load(muifile)
         uiprops = r.createUiWidgetProperty()
@@ -197,13 +196,6 @@ class EditGUI(Component):
 
         self.dialogElements = []
         
-        #self.canvas.SetSize(width, height)
-        #self.canvas.SetPosition(30, 30)
-        #self.canvas.SetResizable(False)
-
-        #ui.resize(width, height)
-
-        #self.canvas.AddWidget(ui)
         self.widget = ui.MainFrame
         self.widget.label.text = "<none>"
 
@@ -212,7 +204,7 @@ class EditGUI(Component):
         if box is not None:
             box.addWidget(self.meshline)
             
-        self.propedit = r.getPropertyEditor()
+        #self.propedit = r.getPropertyEditor()
         #print pe, pe.setObject, pe.show
         #self.propedit.show()
         
@@ -275,7 +267,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -632,7 +624,7 @@ class EditGUI(Component):
             self.canmove = False
             self.arrow_grabbed_axis = None
             self.arrow_grabbed = False
-            self.propedit.hide()
+            #self.propedit.hide()
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
@@ -674,7 +666,7 @@ class EditGUI(Component):
         self.widget.rot_z.setValue(euler[2])        
          
         self.selection_box.pos = self.sel.pos
-        self.selection_box.orientation =self.sel.orientation
+        self.selection_box.orientation = self.sel.orientation
         
             #~ if self.cam is None and ogreroot:
                 #~ rs = root.getRenderSystem()
@@ -700,7 +692,7 @@ class EditGUI(Component):
         
     def createArrows(self):
         #print "\nCreating arrows!\n"
-        ent = r.createEntity("axes.mesh", 606847240)
+        ent = r.createEntity("axes.mesh", 606847240) #XXX make creation assign a free ID
         return ent
         
     def showArrow(self, pos, scale, ort):
@@ -966,7 +958,7 @@ class EditGUI(Component):
         #print "editgui got an inbound network event:", id, name
 
     def on_exit(self):
-        r.logDebug("EditGUI exiting...")
+        r.logInfo("EditGUI exiting...")
         
         if r.restart:
             r.logDebug("...restarting...")
@@ -974,13 +966,13 @@ class EditGUI(Component):
         #~ else:
             #~ r.logDebug("...not restarting...")
         
-        self.proxywidget.hide() #prevent a crash at exit
-        
-        if 0: #XXX self.canvas is not None:
-            modu = r.getQtModule()
-            modu.DeleteCanvas(self.canvas)
+        #self.proxywidget.hide() #prevent a crash at exit
+        uism = r.getUiSceneManager()
+        uism.RemoveProxyWidgetFromScene(self.materialDialog)
+        r.logInfo("EditGUI removed material diag...")
+        uism.RemoveProxyWidgetFromScene(self.proxywidget)
 
-        #r.logDebug("   ...exit done.")
+        r.logInfo("   ...exit done.")
 
     def on_hide(self, shown):
         self.active = shown
