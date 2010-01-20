@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QGraphicsView>
+#include <QTimer>
 
 namespace CoreUi
 {
@@ -34,8 +35,12 @@ namespace UiServices
         virtual ~UiNotificationManager();
 
     public slots:
-        void ShowInformationString(const QString &text);
+        void ShowInformationString(const QString &text, int duration_msec = 5000);
+        void DestroyNotifyLabel(CoreUi::NotifyLabel *notification);
 
+    private slots:
+        void ResizeAndPositionNotifyArea();
+    
     private:
         QWidget *notification_widget_;
         CoreUi::NotifyProxyWidget *notification_proxy_widget_;
@@ -45,7 +50,6 @@ namespace UiServices
         QGraphicsView *ui_view_;
 
         int visible_notifications_;
-
     };
 }
 

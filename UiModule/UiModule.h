@@ -79,6 +79,9 @@ namespace UiServices
 
         //! UiNotificationManager pointer
         UiNotificationManager *ui_notification_manager_;
+
+        QString current_avatar_;
+        QString current_server_;
     };
 }
 

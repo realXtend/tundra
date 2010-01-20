@@ -14,6 +14,8 @@ namespace OgreRenderer
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "Avatar/AvatarAppearance.h"
 
+#include <QStringList>
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -102,6 +104,10 @@ namespace RexLogic
         
         //! Avatar appearance controller
         AvatarAppearance avatar_appearance_;
+
+        //! Trying to avoid double notifications, somehow for every avatar we go twice to 
+        /// HandleOSNE_ObjectUpdate() when there are already avatars inworld
+        QStringList sent_avatar_notifications_;
     };
 }
 #endif

@@ -29,6 +29,8 @@
 #include "Poco/DOM/AutoPtr.h"
 #include "Poco/SAX/InputSource.h"
 
+#include <UiModule.h>
+
 namespace RexLogic
 {
     Avatar::Avatar(RexLogicModule *rexlogicmodule) :
@@ -187,6 +189,16 @@ namespace RexLogic
                 // For some reason the avatar/connection ID might not be in sync before (when setting the appearance for first time),
                 // which causes the edit view to not be initially rebuilt. Force build now
                 rexlogicmodule_->GetAvatarEditor()->RebuildEditView();         
+            } 
+            else if (presence->FullId != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            {
+                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
+                boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                if (ui_module.get() && !sent_avatar_notifications_.contains(QString::fromStdString(presence->GetFullName()), Qt::CaseInsensitive))
+                {
+                    ui_module->GetNotificationManager()->ShowInformationString(QString("%1 joined the world").arg(QString::fromStdString(presence->GetFullName())));
+                    sent_avatar_notifications_.append(QString::fromStdString(presence->GetFullName()));
+                }
             }
 
             ShowAvatarNameOverlay(presence->LocalId);
@@ -343,6 +355,16 @@ namespace RexLogic
         if (presence)
         {
             fullid = presence->FullId;
+            if (fullid != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            {
+                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
+                boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                if (ui_module.get())
+                {
+                    ui_module->GetNotificationManager()->ShowInformationString(QString("%1 logged out").arg(QString::fromStdString(presence->GetFullName())));
+                    sent_avatar_notifications_.removeOne(QString::fromStdString(presence->GetFullName()));
+                }
+            }
         }
         
         scene->RemoveEntity(objectid);
