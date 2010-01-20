@@ -4,7 +4,6 @@
 #define incl_UiModule_NotifyLabel_h
 
 #include <QLabel>
-#include <QTimeLine>
 
 namespace CoreUi
 {
@@ -14,17 +13,14 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        NotifyLabel(const QString &text);
+        NotifyLabel(const QString &text, int duration_msec);
         virtual ~NotifyLabel();
-
-    private slots:
-        void UpdateOpacity(qreal step);
+    
+    public slots:
+        void TimeOut();
 
     signals:
         void DestroyMe(CoreUi::NotifyLabel *me);
-
-    private:
-        QTimeLine *hide_timeline_;
 
     };
 }

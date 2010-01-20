@@ -11,6 +11,8 @@
 
 #include <QApplication>
 
+#include <QTimer>
+
 namespace UiServices
 {
 
@@ -70,34 +72,52 @@ namespace UiServices
         {
             switch (event_id)
             {
-            case Foundation::NETWORKING_REGISTERED:
-                event_query_categories_ << "NetworkState";
-                SubscribeToEventCategories();
-                break;
-            default:
-                break;
+                case Foundation::NETWORKING_REGISTERED:
+                    event_query_categories_ << "NetworkState";
+                    SubscribeToEventCategories();
+                    break;
+                default:
+                    break;
             }
         }
         else if (category == "NetworkState")
         {
             switch (event_id)
             {
-            case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-                ui_scene_manager_->Disconnected();
-                break;
-            default:
-                break;
+                case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+                    ui_scene_manager_->Disconnected();
+                    break;
+                case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
+                {
+                    ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+                    if (auth_data)
+                    {
+                        current_avatar_ = QString::fromStdString(auth_data->identityUrl);
+                        current_server_ = QString::fromStdString(auth_data->hostUrl);
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
         }
         else if (category == "Scene")
         {
             switch (event_id)
             {
-            case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
-                ui_scene_manager_->Connected();
-                break;
-            default:
-                break;
+                case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
+                {
+                    ui_scene_manager_->Connected();
+                    QString welcome_message;
+                    if (!current_avatar_.isEmpty())
+                        welcome_message = current_avatar_ + " welcome to " + current_server_;
+                    else
+                        welcome_message = "Welcome to " + current_server_;
+                    ui_notification_manager_->ShowInformationString(welcome_message, 10000);
+                    break;
+                }
+                default:
+                    break;
             }
         }
 

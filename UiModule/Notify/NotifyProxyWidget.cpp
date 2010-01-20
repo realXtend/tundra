@@ -46,8 +46,8 @@ namespace CoreUi
             return;
 
         QPointF lock_position;
-        lock_position.setX(new_scene_rect.right()-size().width());
-        lock_position.setY(25);
+        lock_position.setX(0);
+        lock_position.setY(new_scene_rect.bottom()-widget()->height());
         setPos(lock_position);
     }
 }

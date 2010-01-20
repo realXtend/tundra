@@ -3,24 +3,24 @@
 #include "StableHeaders.h"
 #include "NotifyLabel.h"
 
+#include <QTimer>
+
 namespace CoreUi
 {
 
-    NotifyLabel::NotifyLabel(const QString &text)
-        : QLabel(text),
-          hide_timeline_(new QTimeLine(5000, this))
+    NotifyLabel::NotifyLabel(const QString &text, int duration_msec)
+        : QLabel(text)
     {
-        connect(hide_timeline_, SIGNAL(valueChanged(qreal)), SLOT(UpdateOpacity(qreal)));
-        //hide_timeline_->start();
+        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QTimer::singleShot(duration_msec, this, SLOT(TimeOut()));
     }
 
     NotifyLabel::~NotifyLabel()
     {
-
     }
 
-    void NotifyLabel::UpdateOpacity(qreal step)
+    void NotifyLabel::TimeOut()
     {
-        setWindowOpacity(1.0-step);
+        emit DestroyMe(this);
     }
 }
