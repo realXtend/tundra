@@ -293,7 +293,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        r.c = self
+        #r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -506,7 +506,7 @@ class EditGUI(Component):
             else:
                 label.text = "n/a"
                 #r.logDebug("Nothing found")
-            
+
             self.dialogElements.append((label, line))
             self.materialDialogFormWidget.formLayout.addRow(label, line)
             
