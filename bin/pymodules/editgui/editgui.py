@@ -22,7 +22,7 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit, QLabel
+from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit, QLabel, QSizePolicy, QIcon, QPushButton
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 from circuits import Component
@@ -200,10 +200,24 @@ class EditGUI(Component):
         self.widget.label.text = "<none>"
 
         self.meshline = MeshAssetidEditline(self) 
-        box = self.widget.findChild("QHBoxLayout", "horizontalLayout_9")
+        self.meshline.name = "meshLineEdit"
+        
+        button = QPushButton()
+        icon = QIcon("pymodules/editgui/ok.png")
+        icon.actualSize(QSize(16, 16))
+        button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        button.setMaximumSize(QSize(16, 16))
+        button.setMinimumSize(QSize(16, 16))
+        button.text = ""
+        button.name = "Apply"
+        button.setIcon(icon)
+        button.setFlat(True)
+        
+        box = self.widget.findChild("QHBoxLayout", "meshLine")
         if box is not None:
             box.addWidget(self.meshline)
-            
+            box.addWidget(button)            
+        
         #self.propedit = r.getPropertyEditor()
         #print pe, pe.setObject, pe.show
         #self.propedit.show()
@@ -267,7 +281,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         

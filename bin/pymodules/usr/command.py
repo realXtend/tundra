@@ -849,3 +849,26 @@ if 0:
 
 
         #~ r.pw.show()
+        
+if 0:
+    from PythonQt.QtCore import QFile, QSize
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon
+    
+    box = r.c.widget.findChild("QHBoxLayout", "meshLine")
+    #print box.layoutSpacing
+    button = QPushButton()
+
+    icon = QIcon("pymodules/editgui/ok.png")
+    icon.actualSize(QSize(16, 16))
+    
+    button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    button.setMaximumSize(QSize(16, 16))
+    button.setMinimumSize(QSize(16, 16))
+
+    button.text = ""
+    button.name = "Apply"
+    button.setIcon(icon)
+    box.addWidget(button)
+    
+    #~ line = r.c.widget.findChild("QLineEdit", "meshLineEdit")
+    #~ print line.sizePolicy.horizontalPolicy(), QSizePolicy.Expanding
