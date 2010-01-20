@@ -393,6 +393,8 @@ namespace Input
 
             QEvent *clone_event_ (QEvent *event);
 
+            void post_simulated_focus_click ();
+
         private:
             Foundation::Framework       *framework_;
             Foundation::EventManagerPtr eventmgr_;
