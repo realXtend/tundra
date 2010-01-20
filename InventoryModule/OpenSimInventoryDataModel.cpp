@@ -19,6 +19,7 @@
 #include "TextureInterface.h"
 #include "AssetServiceInterface.h"
 
+#include <QDir>
 #include <QFile>
 #include <QImage>
 #include <QStringList>
@@ -471,6 +472,23 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
         file.close();
     }
 
+    QString real_path;
+    QString real_filename = i.value();
+    int last_sep_index = real_filename.lastIndexOf(QDir::separator());
+    // There is something fishy here, sometimes the paths (in filename, should not happen!) include 
+    // unix separators even when uploading from windows. Lets do a fallback here
+    if (last_sep_index != -1)
+    {
+        real_path = real_filename.midRef(0, last_sep_index).toString();
+        real_filename = real_filename.midRef(last_sep_index+1).toString();
+    }
+    else
+    {
+        last_sep_index = real_filename.lastIndexOf("/");
+        real_path = real_filename.midRef(0, last_sep_index).toString();
+        real_filename = real_filename.midRef(last_sep_index+1).toString();
+    }
+    SendNotification(QString("%1 downloaded succesfully to %2").arg(real_filename, real_path));
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);

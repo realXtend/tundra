@@ -257,24 +257,29 @@ void InventoryWindow::UpdateActions()
 
 void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString &name)
 {
-    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "", "Downloading asset " + asset_id, QMessageBox::Ok);
-    msgBox->setModal(false);
-    downloadDialogs_[asset_id] = msgBox;
+    // Make one custom widget as download manager, untill then disable this because its quite intrusive for a user to pop up dialogs
+    // and they dont atm come to from and the position is calculated with inv window or something strange
 
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-    {
-        QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
-        pos.setX(pos.x() + offset_);
-        pos.setY(pos.y() + offset_);
-        offset_ += 20;
+    //QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "", "Downloading asset " + asset_id, QMessageBox::Ok);
+    //msgBox->setModal(false);
+    //downloadDialogs_[asset_id] = msgBox;
 
-        ui_module->GetSceneManager()->AddWidgetToScene(
-            msgBox, UiServices::UiWidgetProperties(pos, msgBox->size(), Qt::Dialog, "Download: " + name, false));
-    }
+    //boost::shared_ptr<UiServices::UiModule> ui_module =
+    //    framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    //if (ui_module.get())
+    //{
+    //    QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
+    //    pos.setX(pos.x() + offset_);
+    //    pos.setY(pos.y() + offset_);
+    //    offset_ += 20;
 
-    msgBox->show();
+    //    ui_module->GetSceneManager()->AddWidgetToScene(
+    //        msgBox, UiServices::UiWidgetProperties(pos, msgBox->size(), Qt::Dialog, "Download: " + name, false));
+    //}
+
+    //msgBox->show();
+
+    SendNotification(QString("Downloading %1").arg(name));
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -284,9 +289,9 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
 
 void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
 {
-    QMessageBox *msgBox = downloadDialogs_.take(asset_id);
-    if (msgBox)
-        delete msgBox;
+    //QMessageBox *msgBox = downloadDialogs_.take(asset_id);
+    //if (msgBox)
+    //    delete msgBox;
 }
 
 void InventoryWindow::InitInventoryWindow()
@@ -393,6 +398,13 @@ void InventoryWindow::CreateActions()
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
     QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
     treeView_->addAction(actionCopyAssetReference_);
+}
+
+void InventoryWindow::SendNotification(const QString &text)
+{
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+        ui_module->GetNotificationManager()->ShowInformationString(text, 9000);
 }
 
 } // namespace Inventory
