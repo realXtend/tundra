@@ -163,11 +163,23 @@ namespace TelepathyIM
 
     void VideoWidget::OnSyncMessage(GstBus *bus, GstMessage *message, VideoWidget *self)
     {
+        //return; // Seems to work even with this ?
+
+        if (!self->video_overlay_)
+            return;
+
         // Return if we are not interested in the message content
         if (GST_MESSAGE_TYPE(message) != GST_MESSAGE_ELEMENT)
             return;
         if (GST_MESSAGE_SRC(message) != (GstObject *)self->video_overlay_)
+        {
+            const GstStructure *s = gst_message_get_structure(message);
+            QString message_name(gst_structure_get_name(s));
+            QString note("VideoWidget::OnSyncMessage, name=");
+            note.append(message_name);
+            qDebug() << note;
             return;
+        }
 
         // If message is about preparing xwindow id its from the current video sink
         // and we want to set our own qt widget window id where we want to render video
@@ -175,7 +187,15 @@ namespace TelepathyIM
         if (gst_structure_has_name(s, "prepare-xwindow-id") && self->video_overlay_)
         {
             qDebug() << self->name_ << " >> sync-message CALLBACK >> found 'prepare-xwindow-id' from GstMessage";
+            //GstState state, pending_state;
+            //GstClockTime timeout_ns = 1000000;
+            //gst_element_get_state(self->video_overlay_, &state, &pending_state, timeout_ns);
+            //if (state == GST_STATE_PLAYING)
             QMetaObject::invokeMethod(self, "SetOverlay", Qt::QueuedConnection);
+
+            // we only need to get this message once.
+            //if (self->bus_)
+            //    g_signal_handler_disconnect(self->bus_, self->on_sync_message_g_signal_); // todo: method to call for this
         }
     }
 

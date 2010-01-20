@@ -67,15 +67,9 @@ namespace TelepathyIM
             {
                 CreateVideoWidgets(video_sink_name);
                 CreateVideoInputElement(video_src_name);
+                video_supported_ = true;
             }
             catch(Exception &e)
-            {
-                Close();
-                throw e;
-            }
-            if (locally_captured_video_playback_element_ && received_video_playback_element_ && video_input_bin_)
-                video_supported_ = true;
-            else
             {
                 LogError("Cannot create video elements.");
             }
@@ -257,9 +251,9 @@ namespace TelepathyIM
         video_input_bin_ = gst_bin_new("video-input-bin");
         if (!video_input_bin_)
         {
-            QString error_message = "Cannot create bin for video input";
+            QString error_message("Cannot create bin for video input");
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
         
         GstElement *scale = gst_element_factory_make("videoscale", NULL);
@@ -267,7 +261,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create scale element for video input";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
 
         GstElement *rate = gst_element_factory_make("videorate", NULL);
@@ -275,7 +269,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create rate element for video input";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
 
         GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
@@ -283,7 +277,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create colorspace element for video input";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
 
         GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
@@ -291,7 +285,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create capsfilter element for video input";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
 
         GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
@@ -306,8 +300,9 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create video src element for video input";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
+        QString test = gst_element_get_name(video_input_);
 
         gst_bin_add_many(GST_BIN(video_input_bin_), video_input_, scale, rate, colorspace, capsfilter, NULL);
         bool ok = gst_element_link_many(video_input_, scale, rate, colorspace, capsfilter, NULL);
@@ -315,7 +310,7 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot link: video_input_ ! scale ! rate ! colorspace ! capsfilter ";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
 
         GstPad *src = gst_element_get_static_pad(capsfilter, "src");
@@ -324,14 +319,14 @@ namespace TelepathyIM
         {
             QString error_message = "Cannot create ghost bad for video_input_bin_";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
         ok = gst_element_add_pad(GST_ELEMENT(video_input_bin_), ghost);
         if (!ok)
         {
             QString error_message = "Cannot add ghost pad to video_input_bin_";
             LogError(error_message.toStdString());
-            return;
+            throw(Exception(error_message.toStdString().c_str()));
         }
         gst_object_unref(G_OBJECT(src));
         gst_object_ref(video_input_bin_);
@@ -348,7 +343,7 @@ namespace TelepathyIM
                 QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ! locally_captured_video_playback_element_";
                 LogError(error_message.toStdString());
                 gst_bin_remove_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, locally_captured_video_playback_element_, NULL);
-                return;
+                throw(Exception(error_message.toStdString().c_str()));
             }
         }
         else
@@ -363,7 +358,7 @@ namespace TelepathyIM
                 QString error_message = "Cannot link: video_input_bin_ ! video_tee_ ";
                 LogError(error_message.toStdString());
                 gst_bin_remove_many(GST_BIN(pipeline_), video_input_bin_, video_tee_, NULL);
-                return;
+                throw(Exception(error_message.toStdString().c_str()));
             }
         }
     }
@@ -456,14 +451,12 @@ namespace TelepathyIM
             assert( write_cursor_ == 0 );
 
             memcpy(audio_buffer_ + write_cursor_, data + size_at_end_of_the_buffer, size_at_begin_of_the_buffer);
-            write_cursor_ += size_at_begin_of_the_buffer;
-            assert( write_cursor_ < AUDIO_BUFFER_SIZE );
+            write_cursor_ = (write_cursor_ + size_at_begin_of_the_buffer ) % AUDIO_BUFFER_SIZE;
         }
         else
         {
             memcpy(audio_buffer_ + write_cursor_, data, size);
-            write_cursor_ += size;
-            assert( write_cursor_ < AUDIO_BUFFER_SIZE );
+            write_cursor_ = (write_cursor_ + size) % AUDIO_BUFFER_SIZE;
         }
 
         received_sample_rate_ = rate;
@@ -599,6 +592,12 @@ namespace TelepathyIM
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
             {
+                if (!self->video_supported_)
+                {
+                    LogInfo("Got incoming VIDEO stream but ignore that because lack of video support.");
+                    return;
+                }
+
                 output_element = self->received_video_playback_element_;
                 if (self->video_in_src_pad_)
                     sink_already_linked = true;
@@ -613,6 +612,7 @@ namespace TelepathyIM
 
         if (sink_already_linked)
         {
+            LogInfo("FarsightChannel: another Src pad added with same type.");
 
         }
         else
@@ -671,19 +671,15 @@ namespace TelepathyIM
 
     VideoWidget* FarsightChannel::GetLocallyCapturedVideoWidget()
     {
-        // todo: 
-        // - unlink previous widget
-        // - create new widget
-        // - link new widget
+        if (!video_supported_)
+            return 0;
         return locally_captured_video_widget_;
     }
 
     VideoWidget* FarsightChannel::GetReceivedVideoWidget()
     {
-        // todo: 
-        // - unlink previous widget
-        // - create new widget
-        // - link new widget
+        if (!video_supported_)
+            return 0;
         return received_video_widget_;
     }
 
@@ -717,7 +713,7 @@ namespace TelepathyIM
         else
             size = max;
 
-        if (read_cursor_ + size > AUDIO_BUFFER_SIZE)
+        if (read_cursor_ + size >= AUDIO_BUFFER_SIZE)
         {
             // we have to copy audio data from two segments
             int size_at_end_of_buffer = AUDIO_BUFFER_SIZE - read_cursor_; 
@@ -727,14 +723,12 @@ namespace TelepathyIM
             assert( read_cursor_ == 0 );
 
             memcpy(buffer + size_at_end_of_buffer, audio_buffer_ + read_cursor_, size_at_begin_of_buffer);
-            read_cursor_ += size_at_begin_of_buffer;
-            assert( read_cursor_ >= AUDIO_BUFFER_SIZE );
+            read_cursor_ = (read_cursor_ + size_at_begin_of_buffer) % AUDIO_BUFFER_SIZE;
         }
         else
         {
             memcpy(buffer , audio_buffer_ + read_cursor_, size);
-            read_cursor_ += size;
-            assert( read_cursor_ >= AUDIO_BUFFER_SIZE );
+            read_cursor_ = (read_cursor_ +size ) % AUDIO_BUFFER_SIZE;
         }
         available_audio_data_length_ -= size;
         return size;

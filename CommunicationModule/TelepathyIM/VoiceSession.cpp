@@ -214,7 +214,9 @@ namespace TelepathyIM
         try
         {
             // todo: for linux use "autoaudiosrc" for audio_src_name
-            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");  // AUTO VIDEO
+            //       CURRENT IMPLEMENTATION WORKS ONLY ON WINDOWS
+            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "dshowvideosrc", "autovideosink"); 
             if ( !farsight_channel_->IsAudioSupported() )
             {
                 SAFE_DELETE(farsight_channel_);
@@ -338,12 +340,10 @@ namespace TelepathyIM
 
     void VoiceSession::OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message)
     {
-        // TODO: CRASH HERE !!!
         QString log_message = QString(" VoiceSession::OnChannelInvalidated - ").append(error).append(" - ").append(message);
         LogInfo(log_message.toStdString());
         state_ = STATE_CLOSED;
         reason_ = message;
-//        emit Closed(this);
         emit StateChanged(state_);
     }
 
@@ -394,7 +394,6 @@ namespace TelepathyIM
             LogInfo("VoiceSession: Call FarsightChannel status = terminated.");
             state_ = STATE_CLOSED;
             tp_channel_->requestClose();
-//            emit Closed(this);
             emit StateChanged(state_);
             break;
         }

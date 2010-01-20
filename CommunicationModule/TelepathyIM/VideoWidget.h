@@ -25,6 +25,7 @@ namespace TelepathyIM
         //! Getters
         virtual bool VideoAvailable();
         GstElement *GetVideoPlaybackElement() const;
+        GstElement *video_overlay_; // todo: get method
 
         //! Glib callbacks
         static void OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self);
@@ -34,7 +35,7 @@ namespace TelepathyIM
         void showEvent(QShowEvent *showEvent);
 		void closeEvent(QCloseEvent *closeEvent);
 
-    private slots:
+    public slots:
         void SetOverlay();
         void WindowExposed();
 
@@ -43,7 +44,6 @@ namespace TelepathyIM
         GstBus *bus_;
         GstElement *video_bin_;
         GstElement *video_playback_element_;
-        GstElement *video_overlay_;
         FsElementAddedNotifier *notifier_;
         gulong on_element_added_g_signal_;
         gulong on_sync_message_g_signal_;
