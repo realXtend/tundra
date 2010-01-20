@@ -26,6 +26,7 @@ namespace TelepathyIM
                                      audio_stream_in_clock_rate_(0),
                                      audio_capsfilter_(0),
                                      audio_convert_(0),
+                                     audio_playback_bin_(0),
                                      locally_captured_video_widget_(0),
                                      received_video_widget_(0),
                                      on_closed_g_signal_(0),
@@ -34,7 +35,6 @@ namespace TelepathyIM
                                      bus_watch_(0),
                                      locally_captured_video_playback_element_(0),
                                      video_input_bin_(0),
-                                     total_audio_queue_size_(0),
                                      read_cursor_(0),
                                      write_cursor_(0),
                                      available_audio_data_length_(0),
@@ -123,11 +123,6 @@ namespace TelepathyIM
             g_object_unref(video_input_bin_);
             video_input_bin_ = 0;
         }
-        if (pipeline_) 
-		{
-            g_object_unref(pipeline_);
-            pipeline_ = 0;
-        }
         if (audio_input_) 
 		{
 			//g_object_unref(audio_input_);
@@ -138,20 +133,11 @@ namespace TelepathyIM
 			//g_object_unref(audio_playback_bin_);
             audio_playback_bin_ = 0;
         }
-
-        //if (audio_output_) {
-        //    g_object_unref(audio_output_);
-        //    audio_output_ = 0;
-        //}
-
-        for(int i = 0; i < audio_queue_.size(); ++i)
-        {
-            delete [] audio_queue_[i];
-            audio_queue_[i] = 0;
+        if (pipeline_) 
+		{
+            g_object_unref(pipeline_);
+            pipeline_ = 0;
         }
-        audio_queue_.clear();
-        audio_queue_sizes_.clear();
-        total_audio_queue_size_ = 0;
     }
 
 	void FarsightChannel::ClearPipeline()

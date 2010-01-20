@@ -165,10 +165,6 @@ namespace TelepathyIM
         gulong on_session_created_g_signal_;
         gulong on_stream_created_g_signal_;
 
-        std::vector<u8*> audio_queue_;
-        std::vector<u32> audio_queue_sizes_;
-        int total_audio_queue_size_;
-
         Mutex audio_queue_mutex_;
 
         u8 audio_buffer_[AUDIO_BUFFER_SIZE];  // a ring buffer for received audio data
