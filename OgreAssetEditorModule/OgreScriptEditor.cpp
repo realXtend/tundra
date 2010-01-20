@@ -64,9 +64,16 @@ OgreScriptEditor::~OgreScriptEditor()
     if (proxyWidget_->isVisible())
         proxyWidget_->hide();
 
-    SAFE_DELETE(textEdit_);
-    SAFE_DELETE(propertyTable_);
-    SAFE_DELETE(materialProperties_);
+/*
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+*/
+
+//    SAFE_DELETE(textEdit_);
+//    SAFE_DELETE(propertyTable_);
+//    SAFE_DELETE(materialProperties_);
+//    SAFE_DELETE(mainWidget_);
 }
 
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
@@ -107,12 +114,6 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 void OgreScriptEditor::Close()
 {
     proxyWidget_->hide();
-    /*
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
-    proxyWidget_ = 0;
-    */
     emit Closed(inventoryId_, assetType_);
 }
 
@@ -234,7 +235,7 @@ void OgreScriptEditor::InitEditorWindow()
         return;
     }
 
-    mainWidget_ = loader.load(&file, 0);
+    mainWidget_ = loader.load(&file);
     file.close();
 
     // Get controls

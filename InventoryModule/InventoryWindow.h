@@ -14,10 +14,12 @@
 
 #include <QPointer>
 #include <QObject>
+#include <QMap>
 
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QAction;
+class QMessageBox;
 QT_END_NAMESPACE
 
 namespace Foundation
@@ -100,7 +102,8 @@ namespace Inventory
 
         /// Opens download progress dialog.
         /// @param asset_id Asset id.
-        void OpenDownloadProgess(const QString &asset_id);
+        /// @param name Asset name.
+        void OpenDownloadProgess(const QString &asset_id, const QString &name);
 
         /// Aborts download.
         /// @param asset_id Asset id.
@@ -163,6 +166,15 @@ namespace Inventory
 
         /// Download action.
         QAction *actionDownload_;
+
+        /// Separator (action) for the context menu.
+        QAction *actionSeparator_;
+
+        /// Map of active download progress dialogs.
+        QMap<QString, QMessageBox *> downloadDialogs_;
+
+        /// Offset for download dialog positions.
+        size_t offset_;
     };
 }
 

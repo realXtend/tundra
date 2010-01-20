@@ -27,11 +27,9 @@ namespace UiServices
 
     class UI_MODULE_API UiSceneManager : public QObject
     {
-    
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-
         //! Constructor.
         //! \param framework Framework pointer.
         //! \param ui_view UI view for this scene manager.
@@ -41,7 +39,6 @@ namespace UiServices
         ~UiSceneManager();
 
     public slots:
-
         //! Adds a Qt Widget to the settings widget as its own tab
         //! \param widget QWidget to be added to the settings widget
         //! \param tab_name QString name of the tab shown in widget
@@ -79,12 +76,12 @@ namespace UiServices
         //! Brings the UiProxyWidget to front in the scene and set focus to it
         void BringProxyToFront(UiProxyWidget *widget);
 
-        /// NOTE: 
-        /// BELOW FUNCTIONS SHOULD BE USED BY CORE UI (INTERNALLY BY UI MODULE). DONT USE THESE DIRECTLY IF
-        /// YOU ARE NOT 100% SURE WHAT YOU ARE DOING. CHECK ABOVE FOR FUNCTIONS FOR MODULES.
+        ///\note
+        /// THE FOLLOWING FUNCTIONS SHOULD BE USED BY THE CORE UI ONLY (INTERNALLY BY UI MODULE). DON'T USE THESE DIRECTLY IF
+        /// YOU ARE NOT 100% SURE WHAT YOU ARE DOING.
 
         //! Get the inworld controls
-        //! \return MainPanel the main panel pointer or 0 if panel does not exist yet
+        //! \return The main panel pointer or 0 if panel does not exist yet
         CoreUi::MainPanel *GetMainPanel() const;
 
         //! Inits the ui for connected state
@@ -94,7 +91,6 @@ namespace UiServices
         void Disconnected();
 
     private:
-
         Q_DISABLE_COPY(UiSceneManager);
 
         //! Inits the full screen widget and its layout
@@ -125,7 +121,6 @@ namespace UiServices
         Foundation::Framework *framework_;
 
     private slots:
-
         //! Slot for applying new ui settings to all proxy widgets
         void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
 
@@ -133,13 +128,11 @@ namespace UiServices
         void SceneRectChanged(const QRectF &new_scene_rect);
 
     signals:
-
         //! Emits when connected for modules to utilise
         void UiStateChangeConnected();
 
         //! Emits when disconnected for modules to utilise
         void UiStateChangeDisconnected();
-
     };
 }
 

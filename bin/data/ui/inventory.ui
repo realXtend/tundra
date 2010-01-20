@@ -30,79 +30,8 @@
     }
 
     QFrame#MainFrame {
-        background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243,     50), stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 110), stop:1 rgba(222, 227, 236, 100));
-    }
-
-    /* QToolBox */
-    QToolBox::tab {
-        font-size: 10px;
-        border-color: rgba(255, 255, 255, 0);
-        border-bottom: 1px solid grey;
-        border-top: 1px solid grey;
-    }
-
-    QToolBox::tab:hover {
-        background-color: rgb(191, 191, 191);
-    }
-
-    QToolBox::tab:!hover {
-        background-color: rgb(234, 234, 234);
-    }
-
-    QToolBox::tab:selected {
-        background-color: rgb(234, 234, 234);
-        font: bold;
-    }
-    
-    /* QTreeView */
-    QTreeView::branch:has-siblings:!adjoins-item
-    {
-        border-image: url(:/images/iconBranchVLine.png) 0;
-    }
-
-    QTreeView::branch:has-siblings:adjoins-item
-    {
-        border-image: url(:/images/iconBranchMore.png) 0;
-    }
-
-    QTreeView::branch:!has-children:!has-siblings:adjoins-item
-    {
-        border-image: url(:/images/iconBranchEnd.png) 0;
-    }
-
-    QTreeView::branch:has-children:!has-siblings:closed,
-    QTreeView::branch:closed:has-children:has-siblings
-    {
-        border-image: none;
-        image: url(:/images/iconBranchClosed.png);
-    }
-
-    QTreeView::branch:open:has-children:!has-siblings,
-    QTreeView::branch:open:has-children:has-siblings
-    {
-        border-image: none;
-        image: url(:/images/iconBranchOpen.png);
-    }
-
-    /* QPushButton */
-    QPushButton {
-        font-size: 10px;
-        color: rgb(11, 11, 11);
-        background-color: rgb(234, 234, 234);
-        border: rgba(255, 255, 255, 0);
-        padding: 2px;
-    }
-    QPushButton:hover {
-        color: rgb(255, 255, 255);
-        background-color: rgb(149, 149, 149);
-    }
-    QPushButton:hover::pressed {
-        color: rgb(0, 0, 0);
-        background-color: rgb(202, 202, 202);
-    }
-    QPushButton#pushButton_Close {
-        border-top: 1px solid grey;
-        border-bottom: 1px solid grey;
+        background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50),
+        stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 110), stop:1 rgba(222, 227, 236, 100));
     }
    </string>
   </property>

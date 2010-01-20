@@ -291,7 +291,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         ///\todo Open a generic download progress dialog if no handler found.
         if (!itemOpen.overrideDefaultHandler)
         {
-            emit DownloadStarted(asset_id.c_str());
+            emit DownloadStarted(asset_id.c_str(), asset->GetName());
             openRequests_[qMakePair(tag, asset->GetID())] = asset->GetName();
         }
     }
@@ -364,7 +364,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             if (tag)
             {
                 downloadRequests_[qMakePair(tag, asset->GetAssetReference())] = fullFilename;
-                emit DownloadStarted(id.c_str());
+                emit DownloadStarted(id.c_str(), asset->GetName());
             }
         }
         break;

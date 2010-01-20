@@ -128,7 +128,8 @@ namespace Inventory
 
         /// Indicates that asset download has started.
         /// @param asset_id
-        void DownloadStarted(const QString &asset_id);
+        /// @param name
+        void DownloadStarted(const QString &asset_id, const QString &name);
 
         /// Indicates that asset download has aborted.
         /// @param asset_id
