@@ -112,7 +112,7 @@ modules = [
     #usr.sleeper.Sleeper,
     editgui.editgui.EditGUI, #only_layout.OnlyLayout,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
-    apitest.pythonqt_gui.TestGui,
+    #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
     #apitest.testrunner.TestLoginLogoutExit,
