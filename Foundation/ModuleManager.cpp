@@ -21,19 +21,19 @@ namespace Foundation
 {
     namespace Module
     {
-        SharedLibrary::SharedLibrary(const std::string &path)
-        :path_(path)
-        { 
+        SharedLibrary::SharedLibrary(const std::string &path) : path_(path)
+        {
             sl_.load(path); 
             cl_.loadLibrary(path_);
         }
+
         SharedLibrary::~SharedLibrary()
-        { 
+        {
             cl_.unloadLibrary(path_);
         }
 
-        ModuleDeletor::ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library)
-        :entry_(entry), shared_library_(shared_library)
+        ModuleDeletor::ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library) :
+            entry_(entry), shared_library_(shared_library)
         {
         }
 
@@ -44,20 +44,18 @@ namespace Foundation
 
             delete module; // needed for modules not loaded through poco's SharedLibrary (static libs).
         }
-
     }
 
     ModuleManager::ModuleManager(Framework *framework) :
-        framework_(framework)
-            , DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting<std::string>("ModuleManager", "Default_Modules_Path",
-            "./modules"))
+        framework_(framework),
+        DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting<std::string>("ModuleManager", "Default_Modules_Path", "./modules"))
     {
     }
 
     ModuleManager::~ModuleManager()
     {
         //! \todo This might cause problems, investigate.
-		//Unload all loaded modules if object is truely destroyed. 
+        //Unload all loaded modules if object is truely destroyed. 
         UninitializeModules();
         UnloadModules();
     }
@@ -79,12 +77,13 @@ namespace Foundation
                 log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
             else
                 framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
-       
+
             Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
             module->SetFramework(framework_);
             module->LoadInternal();
-        } else
+        }
+        else
         {
             Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
         }
@@ -99,12 +98,13 @@ namespace Foundation
         try
         {
             files = GetXmlFiles(DEFAULT_MODULES_PATH);
-        } catch (Exception)
+        }
+        catch (Exception)
         {
             throw Exception("Failed to load modules, modules directory not found."); // can be considered fatal
         }
 
-        for (size_t i = 0 ; i < files->size() ; ++i)
+        for(size_t i = 0 ; i < files->size() ; ++i)
         {
             const fs::path path((*files)[i]);
 
@@ -122,52 +122,43 @@ namespace Foundation
     void ModuleManager::InitializeModules()
     {
         ModuleInterface *mod;
+        {
+            PROFILE(ModuleManager_PreInitModules);
+            for(size_t i=0 ; i<modules_.size() ; ++i)
+            {
+                mod = modules_[i].module_.get();
+                if (mod->State() != Foundation::Module::MS_Initialized)
+                    PreInitializeModule(mod);
+            }
+        }
 
         {
-        PROFILE(ModuleManager_PreInitModules);
-        for (size_t i=0 ; i<modules_.size() ; ++i)
-        {
-            mod = modules_[i].module_.get();
-            if (mod->State() != Foundation::Module::MS_Initialized)
-                PreInitializeModule(mod);
+            PROFILE(ModuleManager_InitModules);
+            for(size_t i=0 ; i<modules_.size() ; ++i)
+            {
+                mod = modules_[i].module_.get();
+                if (mod->State() != Foundation::Module::MS_Initialized)
+                    InitializeModule(mod);
+            }
         }
-        }
-        
+
         {
-        PROFILE(ModuleManager_InitModules);
-        for (size_t i=0 ; i<modules_.size() ; ++i)
-        {
-            mod = modules_[i].module_.get();
-            if (mod->State() != Foundation::Module::MS_Initialized)
-                InitializeModule(mod);
-        }
-        }
-        
-        {
-        PROFILE(ModuleManager_PostInitModules);
-        for (size_t i=0 ; i<modules_.size() ; ++i)
-        {
-            PostInitializeModule(modules_[i].module_.get());
-        }
+            PROFILE(ModuleManager_PostInitModules);
+            for(size_t i=0 ; i<modules_.size() ; ++i)
+                PostInitializeModule(modules_[i].module_.get());
         }
     }
 
     void ModuleManager::UninitializeModules()
     {
-        for (ModuleVector::reverse_iterator it = modules_.rbegin() ; 
-             it != modules_.rend() ; 
-             ++it)
-        {
+        for(ModuleVector::reverse_iterator it = modules_.rbegin(); it != modules_.rend(); ++it)
             UninitializeModule(it->module_.get());
-        }
     }
 
     void ModuleManager::UpdateModules(f64 frametime)
     {
-        for (size_t i=0 ; i<modules_.size() ; ++i)
-        {
+        for(size_t i=0 ; i<modules_.size() ; ++i)
             modules_[i].module_->Update(frametime);
-        }
     }
 
     bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
@@ -175,7 +166,7 @@ namespace Foundation
         assert (lib.empty() == false);
         assert (module.empty() == false);
 
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
             if (modules_[i].entry_ == module)
             {
@@ -186,11 +177,11 @@ namespace Foundation
 
 
         StringVector current_modules;
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
             current_modules.push_back(modules_[i].entry_);
 
         StringVectorPtr files = GetXmlFiles(DEFAULT_MODULES_PATH);
-        for (size_t i = 0 ; i < files->size() ; ++i)
+        for(size_t i = 0 ; i < files->size() ; ++i)
         {
             fs::path path((*files)[i]);
             const fs::path orig_path = path;
@@ -208,45 +199,44 @@ namespace Foundation
         //!       ModuleA <- ModuleB (A <- B == B depends on A) works, but
         //!       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
         // first initialize dependencies
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+                current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->PreInitializeInternal();
             }
         }
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
             if (modules_[i].entry_ == module)
-            {
                 modules_[i].module_->PreInitializeInternal();
-            }
         }
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+                current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->InitializeInternal();
             }
         }
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
             if (modules_[i].entry_ == module)
-            {
                 modules_[i].module_->InitializeInternal();
-            }
         }
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
+            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+                current_modules.begin(),current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->PostInitializeInternal();
             }
         }
-        for (size_t i = 0 ; i < modules_.size() ; ++i)
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
         {
             if (modules_[i].entry_ == module)
             {
@@ -255,15 +245,12 @@ namespace Foundation
             }
         }
 
-
         return false;
     }
 
     bool ModuleManager::UnloadModuleByName(const std::string &module)
     {
-        for ( ModuleVector::iterator it = modules_.begin() ; 
-             it != modules_.end() ; 
-             ++it )
+        for ( ModuleVector::iterator it = modules_.begin(); it != modules_.end(); ++it)
         {
             if (it->module_->Name() == module)
             {
@@ -299,12 +286,10 @@ namespace Foundation
             {
                 config = new Poco::Util::XMLConfiguration(path.native_directory_string());
                 Poco::Util::AbstractConfiguration::Keys keys;
-	            config->keys(keys);
+                config->keys(keys);
 
-                for ( Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin() ; 
-                      it != keys.end() ;
-                      it++ )
-                {                        
+                for( Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin(); it != keys.end(); it++ )
+                {
                     if ((*it).find("dependency_dir") != std::string::npos)
                         relativePathDependencyAddititions.push_back( config->getString(*it) );
                     else if ((*it).find("dependency") != std::string::npos)
@@ -316,21 +301,19 @@ namespace Foundation
             catch(std::exception)
             {
             }
-            
-            if(!relativePathDependencyAddititions.empty())
+
+            if (!relativePathDependencyAddititions.empty())
                 AddDependenciesToPath(relativePathDependencyAddititions);
 
             if (entries.empty())
                 entries.push_back(modulePath.filename());
-                
+
             // Recurse to load dependencies (if any)
-            for ( StringVector::const_iterator it = dependencies.begin() ; 
-              it != dependencies.end() ; ++it )
+            for(StringVector::const_iterator it = dependencies.begin(); it != dependencies.end(); ++it )
             {
                 bool found = false;
                 // Try to find the dependency from the all module paths list
-                for (StringVector::const_iterator it2 = all_files->begin();
-                    it2 != all_files->end(); ++it2)
+                for (StringVector::const_iterator it2 = all_files->begin(); it2 != all_files->end(); ++it2)
                 {
                     if ((*it2).find((*it)) != std::string::npos)
                     {
@@ -359,30 +342,21 @@ namespace Foundation
         Module::SharedLibraryPtr library;
 
         // See if shared library is already loaded, and if it is, use it
-        for (ModuleVector::const_iterator it = modules_.begin(); 
-                it != modules_.end(); 
-                ++it)
-        {
+        for(ModuleVector::const_iterator it = modules_.begin(); it != modules_.end(); ++it)
             if (it->shared_library_ && it->shared_library_->path_ == path)
-            {
                 library = it->shared_library_;
-            }
-        }
 
         if (!library)
         {
             try
-            {            
+            {
                 library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
-
                 if (!library->sl_.hasSymbol("SetProfiler"))
-                {
                     throw Poco::Exception("Function SetProfiler() need to be exported from the shared library for profiling to work properly!");
-                }
 
                 {
                     SetProfilerFunc setProfiler = (SetProfilerFunc) library->sl_.getSymbol("SetProfiler");
-	                setProfiler(&framework_->GetProfiler());
+                    setProfiler(&framework_->GetProfiler());
                 }
             } 
             catch (Poco::Exception &e)
@@ -393,10 +367,8 @@ namespace Foundation
             }
         }
 
-        for (StringVector::const_iterator it = entries.begin(); 
-                it != entries.end(); 
-                ++it)
-        {   
+        for(StringVector::const_iterator it = entries.begin(); it != entries.end(); ++it)
+        {
             if (HasModuleEntry(*it))
             {
                 Foundation::RootLogDebug(">> " + *it + " already loaded");
@@ -411,12 +383,8 @@ namespace Foundation
 
             Foundation::RootLogDebug(">> Attempting to load module " + *it);
 
-
             if (library->cl_.findClass(*it) == 0)
-            {
                 throw Exception("Entry class not found from module");
-            }
-
 
             ModuleInterface* module = library->cl_.create(*it);
             Module::ModuleDeletor md(*it, library);
@@ -428,13 +396,13 @@ namespace Foundation
 
 #ifndef _DEBUG
                 // make it so debug messages are not logged in release mode
-                
+
                 std::string log_level = "information";
                 if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
                     log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
                 else
                     framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
-                
+
                 Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
 
@@ -446,7 +414,7 @@ namespace Foundation
                 modules_.push_back(entry);
 
                 //Foundation::RootLogInfo("   > " + *it + " loaded");
-            } 
+            }
             else
             {
                 Foundation::RootLogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
@@ -457,12 +425,8 @@ namespace Foundation
 
     void ModuleManager::UnloadModules()
     {
-        for (ModuleVector::reverse_iterator it = modules_.rbegin() ; 
-             it != modules_.rend() ; 
-             ++it)
-        {
+        for(ModuleVector::reverse_iterator it = modules_.rbegin(); it != modules_.rend(); ++it)
             UnloadModule(*it);
-        }
 
         modules_.clear();
         assert (modules_.empty());
@@ -474,7 +438,7 @@ namespace Foundation
         assert(module->State() == Foundation::Module::MS_Loaded);
         module->PreInitializeInternal();
     }
-    
+
     void ModuleManager::InitializeModule(ModuleInterface *module)
     {
         assert(module);
@@ -500,24 +464,17 @@ namespace Foundation
     void ModuleManager::UnloadModule(Module::Entry &entry)
     {
         assert(entry.module_);
-
         entry.module_->UnloadInternal();
-
         entry.module_.reset(); // Triggers the deletion of the ModuleInterface object. (either causes operator delete or Poco's module free to be called)
     }
 
     bool ModuleManager::HasModule(ModuleInterface *module) const
     {
         assert (module);
-
-        
-        for ( ModuleVector::const_iterator it = modules_.begin() ; 
-              it != modules_.end() ; 
-              ++it )
-        {
+        for(ModuleVector::const_iterator it = modules_.begin(); it != modules_.end(); ++it)
             if (it->module_->Name() == module->Name())
                 return true;
-        }
+
         return false;
     }
 
@@ -530,21 +487,19 @@ namespace Foundation
         //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
         //    throw Exception("Path not found!"); // can be considered fatal
         fs::path rel_path(path);
-        if ( !fs::exists( rel_path ) || !fs::is_directory( rel_path ))
+        if (!fs::exists(rel_path) || !fs::is_directory(rel_path))
             throw Exception("Path not found!"); // can be considered fatal
 
         fs::recursive_directory_iterator iter( rel_path );
         fs::recursive_directory_iterator end_iter;
-        for ( ; iter != end_iter ; ++iter )
+        for (; iter != end_iter; ++iter )
         {
-            if ( fs::is_regular_file( iter->status() ) )
+            if (fs::is_regular_file(iter->status()))
             {
                 std::string ext = iter->path().extension();
                 boost::algorithm::to_lower(ext);
                 if (ext == ".xml")
-                {
                     files->push_back(iter->path().string());
-                }
             }
         }
 
@@ -553,16 +508,13 @@ namespace Foundation
 
     void ModuleManager::AddDependenciesToPath(const StringVector &all_additions)
     {
-
-        Poco::Environment env;
-        std::string path = env.get("path");
+        std::string path = Poco::Environment::get("path");
         std::string cwd = Poco::Path::current();
         char separator = Poco::Path::pathSeparator();
 
         // add additions to env
-        for ( StringVector::const_iterator it = all_additions.begin() ; 
-          it != all_additions.end() ; ++it )
-        {   
+        for(StringVector::const_iterator it = all_additions.begin(); it != all_additions.end(); ++it )
+        {
             std::string absolutePath = cwd + (*it);
             absolutePath.push_back(separator);
             path.insert(0, absolutePath);
@@ -570,6 +522,6 @@ namespace Foundation
         }
 
         //set additions to process path
-        env.set("path", path);        
+        Poco::Environment::set("path", path);
     }
 }
