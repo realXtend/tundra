@@ -66,7 +66,7 @@ class DragDroppableEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
-        self.old_text = ""
+        self.old_text = "N\A"
         
         self.buttons = []
 
@@ -109,10 +109,12 @@ class DragDroppableEditline(QLineEdit):
         """called also from main/parent.select() when sel changed"""
         #ent = self.mainedit.sel
         if ent is not None:
-            self.old_text = self.text
             self.text = name #XXX add querying inventory for name
         else:
             self.text = "N/A"
+            
+        self.old_text = name
+        self.deactivateButtons()
 
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         pass
@@ -123,6 +125,9 @@ class DragDroppableEditline(QLineEdit):
     def cancelAction(self):
         #print self, "cancelAction!"
         self.text = self.old_text
+        self.deactivateButtons()
+        
+    def deactivateButtons(self):
         for button in self.buttons:
             button.setEnabled(False)
         
@@ -161,7 +166,6 @@ class PyPushButton(QPushButton):
         
     def lineValueChanged(self):
         if not self.enabled:
-            print "whee"
             self.setEnabled(True)
         
 class EditGUI(Component):
@@ -673,7 +677,7 @@ class EditGUI(Component):
         if self.move_arrows.id == ent.id:
             arrows = True
         #print arrows
-        if ent.id != 0 and ent.id > 10 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 10 should be good
+        if ent.id != 0 and ent.id > 30 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 30 should be good
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
             
