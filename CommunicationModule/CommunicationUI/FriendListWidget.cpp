@@ -8,10 +8,10 @@
 
 namespace CommunicationUI
 {
-    FriendListWidget::FriendListWidget(Communication::ConnectionInterface *im_connection, UiHelpers::SessionHelper *session_helper)
+    FriendListWidget::FriendListWidget(Communication::ConnectionInterface *im_connection, UiHelpers::SessionHelper *session_helper, Foundation::Framework *framework)
         : QWidget(),
           im_connection_(im_connection),
-          friend_helper_(new UiHelpers::FriendHelper),
+          friend_helper_(new UiHelpers::FriendHelper(framework)),
           session_helper_(session_helper),
           friend_list_ui_(new Ui::FrienListWidget),
           clicked_item_(0)
