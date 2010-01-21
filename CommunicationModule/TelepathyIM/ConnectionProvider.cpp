@@ -5,7 +5,6 @@
 #include <QtCore>
 #include <QApplication>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Debug_>
 #include <TelepathyQt4/PendingReady>
 #include "ConnectionProvider.h"
 #include "FarsightChannel.h"
@@ -236,8 +235,6 @@ namespace TelepathyIM
 	void ConnectionProvider::InitializeTelepathyConnectionManager(const QString &name)
 	{
 		Tp::registerTypes();
-		 Tp::enableDebug(true);
-		 Tp::enableWarnings(true);
 
         qRegisterMetaType<TelepathyIM::FarsightChannel::Status>(); // for streamed media
 
