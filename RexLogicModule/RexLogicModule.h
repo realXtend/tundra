@@ -180,6 +180,9 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
+        //! Update avatar overlays. Must be done after other object update
+        void UpdateAvatarOverlays();
+        
         //! Update sound listener position
         /*! Uses current camera for now
          */
@@ -286,6 +289,9 @@ namespace RexLogic
         //! Camera controllable
         CameraControllablePtr camera_controllable_;
 
+        //! Avatar entities found this frame. Needed so that we can update name overlays last, after all other updates
+        std::vector<Scene::EntityWeakPtr> found_avatars_;
+        
         //! current camera state
         CameraState camera_state_;
 

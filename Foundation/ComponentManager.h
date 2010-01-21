@@ -66,64 +66,13 @@ namespace Foundation
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
 
-        //! Removes a single expired component. Should be called once per an expired component.
-        void RemoveExpiredComponents();
 
-        //! Iterator for components
-        /*!
-            \param type component type name for which to return the iterator for
-        */
-        iterator Begin(const std::string &type)
-        {
-            if (components_.find(type) == components_.end())
-                components_[type] = ComponentList();
-
-            return components_[type].begin();
-        }
-        //! Iterator for components
-        /*!
-            \param type component type name for which to return the iterator for
-        */
-        iterator End(const std::string &type)
-        {
-            if (components_.find(type) == components_.end())
-                components_[type] = ComponentList();
- 
-            return components_[type].end();
-        }
-        //! Iterator for components
-        /*!
-            \param type component type name for which to return the iterator for
-        */
-        const_iterator Begin(const std::string &type) const
-        {
-            if (components_.find(type) == components_.end())
-                (const_cast<ComponentTypeMap&>(components_))[type] = ComponentList();
-
-            return components_.find(type)->second.begin();
-        }
-        //! Iterator for components
-        /*!
-            \param type component type name for which to return the iterator for
-        */
-        const_iterator End(const std::string &type) const
-        {
-            if (components_.find(type) == components_.end())
-                (const_cast<ComponentTypeMap&>(components_))[type] = ComponentList();
- 
-            return components_.find(type)->second.end();
-        }
-        
 
     private:
-        typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
-        
+        typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;        
 
         //! map of component factories
         ComponentFactoryMap factories_;
-
-        //! container for all components
-        ComponentTypeMap components_;
 
         Framework *framework_;
     };

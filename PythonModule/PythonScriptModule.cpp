@@ -497,7 +497,6 @@ namespace PythonScript
     //    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
     //    rexlogic_->GetServerConnection()->SendChatFromViewerPacket("x");
-    //    //rexlogic_->GetAvatarHandler()->UpdateAvatarNameOverlayPositions();
 
     //    rexlogic_->GetServerConnection()->IsConnected();
     //    rexlogic_->GetCameraControllable()->GetPitch();

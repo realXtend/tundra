@@ -409,18 +409,7 @@ namespace RexLogic
     {
         avatar_appearance_.Update(frametime);
     }
-        
-    void Avatar::UpdateAvatarNameOverlayPositions()
-    {
-        Foundation::ComponentManager::const_iterator it;
-        for (it = rexlogicmodule_->GetFramework()->GetComponentManager()->Begin("EC_OgreMovableTextOverlay");
-             it != rexlogicmodule_->GetFramework()->GetComponentManager()->End("EC_OgreMovableTextOverlay"); ++it)
-        {
-            OgreRenderer::EC_OgreMovableTextOverlay* name_overlay = static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(it->lock().get());
-            name_overlay->Update();
-        }
-    }
-    
+            
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();

@@ -22,8 +22,6 @@ namespace Foundation
 
         ComponentInterfacePtr component = (*iter->second.get())();
 
-        components_[type].push_back(ComponentWeakPtr(component));
-
         return component;
     }
 
@@ -34,28 +32,7 @@ namespace Foundation
             return ComponentInterfacePtr();
 
         ComponentInterfacePtr newComponent = (*iter->second.get())(component);
-
-        components_[component->Name()].push_back(ComponentWeakPtr(newComponent));
-
+        
         return newComponent;
-    }
-
-    void ComponentManager::RemoveExpiredComponents()
-    {
-        for (ComponentTypeMap::iterator type = components_.begin() ; 
-             type != components_.end() ;
-             ++type)
-        {
-            for (ComponentList::iterator component = type->second.begin() ;
-                 component != type->second.end() ;
-                 ++component)
-            {
-                if (component->expired())
-                {
-                    type->second.erase(component);
-                    break;
-                }
-            }
-        }
     }
 }

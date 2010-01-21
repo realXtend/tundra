@@ -38,9 +38,6 @@ namespace RexLogic
         //! Misc. frame-based update
         void Update(f64 frametime);
         
-        /// Update the avatar name overlay positions.
-        void UpdateAvatarNameOverlayPositions();
-        
         //! Updates running avatar animations
         void UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime);
         

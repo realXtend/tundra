@@ -15,8 +15,6 @@ ComponentInterface::ComponentInterface(const ComponentInterface &rhs) : QObject(
 }
 ComponentInterface::~ComponentInterface()
 {
-    assert(framework_);
-    framework_->GetComponentManager()->RemoveExpiredComponents();
 }
 
 }

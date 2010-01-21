@@ -396,37 +396,12 @@ void RexLogicModule::Update(f64 frametime)
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
 
-            // Update avatar name overlay positions.
-            avatar_->UpdateAvatarNameOverlayPositions();
+            // Update overlays last, after camera update
+            UpdateAvatarOverlays();
         }
     }
 
     RESETPROFILER;
-}
-
-void RexLogicModule::UpdateSoundListener()
-{
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = 
-        framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-    if (!soundsystem)
-        return;
-
-    // In freelook, use camera position. Otherwise use avatar position
-    Vector3df listener_pos;
-    if (camera_controllable_->GetState() == CameraControllable::FreeLook)
-        listener_pos = GetCameraPosition();
-    else
-    {
-        Scene::EntityPtr entity = avatar_->GetUserAvatar();
-        if (!entity)
-            return;
-        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        if (!placeable)
-            return;
-        listener_pos = placeable->GetPosition();
-    }
-
-    soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
 // virtual
@@ -822,6 +797,8 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     if (factor > 1.0) factor = 1.0;
     Real rev_factor = 1.0 - factor;
 
+    found_avatars_.clear();
+    
     for(Scene::SceneManager::iterator iter = activeScene_->begin();
         iter != activeScene_->end(); ++iter)
     {
@@ -870,13 +847,16 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             }
         }
 
+        // If is an avatar, handle update for avatar animations
+        if (entity.GetComponent(EC_OpenSimAvatar::NameStatic()))
+        {
+            found_avatars_.push_back(*iter);
+            avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
+        }
+           
         Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
         if (animctrl_ptr)
         {
-            // If is an avatar, handle update for avatar animations
-            if (entity.GetComponent(EC_OpenSimAvatar::NameStatic()))
-                avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
-
             // General animation controller update
             OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
             animctrl.Update(frametime);
@@ -892,6 +872,45 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             sound.SetPosition(ogrepos.GetPosition());
         }
     }
+}
+
+void RexLogicModule::UpdateAvatarOverlays()
+{
+    for (uint i = 0; i < found_avatars_.size(); ++i)
+    {
+        Scene::Entity* entity = found_avatars_[i].lock().get();
+        if (entity)
+        {
+            OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+            if (overlay)
+                overlay->Update();               
+        }
+    } 
+}
+
+void RexLogicModule::UpdateSoundListener()
+{
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = 
+        framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!soundsystem)
+        return;
+
+    // In freelook, use camera position. Otherwise use avatar position
+    Vector3df listener_pos;
+    if (camera_controllable_->GetState() == CameraControllable::FreeLook)
+        listener_pos = GetCameraPosition();
+    else
+    {
+        Scene::EntityPtr entity = avatar_->GetUserAvatar();
+        if (!entity)
+            return;
+        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        if (!placeable)
+            return;
+        listener_pos = placeable->GetPosition();
+    }
+
+    soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
