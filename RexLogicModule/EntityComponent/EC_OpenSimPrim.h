@@ -282,7 +282,7 @@ namespace RexLogic
         unsigned int getProfileCurve() const { return ProfileCurve; }
 
         void setRegionHandle(QVariant reg) { RegionHandle = reg.toULongLong(); }
-        QVariant getRegionHandle() const { return QVariant(RegionHandle); }
+        QVariant getRegionHandle() const { return QVariant(static_cast<qulonglong>(RegionHandle)); }
 
         void setLocalId(unsigned int lid) { LocalId = (uint32_t)lid; }
         unsigned int getLocalId() const { return LocalId; }
@@ -361,7 +361,7 @@ namespace RexLogic
         void setLOD(double value) { LOD = value; }
 
         void setSelectPriority(QVariant value) { SelectPriority = value.toULongLong(); }
-        QVariant getSelectPriority() const { return QVariant(SelectPriority); }
+        QVariant getSelectPriority() const { return QVariant(static_cast<qulonglong>(SelectPriority)); }
 
         void setParentId(unsigned int value) { ParentId = value; }
         unsigned int getParentId() const { return ParentId; }
