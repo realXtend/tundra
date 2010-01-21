@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "OutgoingFriendRequest.h"
+#include "Contact.h"
 
 namespace TelepathyIM
 {
@@ -14,6 +15,15 @@ namespace TelepathyIM
 				SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
 	}
 
+    OutgoingFriendRequest::~OutgoingFriendRequest()
+    {
+        if(comm_contact_handle_!=NULL)
+        {
+            delete comm_contact_handle_;
+            comm_contact_handle_ = NULL;
+        }
+    }
+
 	QString OutgoingFriendRequest::GetTargetId()
 	{
 		return target_id_;
@@ -23,6 +33,12 @@ namespace TelepathyIM
 	{
 		return target_name_;
 	}
+
+    Contact* OutgoingFriendRequest::GetContact()
+    {
+        return comm_contact_handle_;
+        //return outgoing_contact_handle_;
+    }
 
 	void OutgoingFriendRequest::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
 	{
@@ -39,6 +55,14 @@ namespace TelepathyIM
 		assert( contacts.size() == 1); // We have request only one contact 
 		Tp::ContactPtr contact = contacts.first();
 		target_name_ = contact->alias();
+        //Tp::ContactPtr cPtr = contacts.first();
+        //cPtr.data;
+		//connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
+
+        outgoing_contact_handle_ = contacts.first();
+
+        //contacts[0]->addedToGroup
+
 
 		// Do the presence subscription
 		Tp::PendingOperation* p = contact->requestPresenceSubscription(message_);
@@ -56,6 +80,56 @@ namespace TelepathyIM
 		}
 		state_ = STATE_SENT;
 		emit( Sent(this) );
+
+        connect(outgoing_contact_handle_.data(), SIGNAL( aliasChanged(const QString &)), SLOT( OnAliasChanged(const QString &)));
+        connect(outgoing_contact_handle_.data(), SIGNAL( avatarTokenChanged(const QString &)), SLOT( OnAvatarTokenChanged(const QString &)));
+        connect(outgoing_contact_handle_.data(), SIGNAL( simplePresenceChanged(const QString &, uint, const QString &)), SLOT( OnSimplePresenceChanged(const QString &, uint, const QString &)));
+
+        connect(outgoing_contact_handle_.data(), SIGNAL( subscriptionStateChanged(Tp::Contact::PresenceState)), SLOT( OnSubscriptionStateChanged(Tp::Contact::PresenceState)));
+
+        connect(outgoing_contact_handle_.data(), SIGNAL( publishStateChanged(Tp::Contact::PresenceState)), SLOT( OnPublishStateChanged(Tp::Contact::PresenceState)));
+        connect(outgoing_contact_handle_.data(), SIGNAL( blockStatusChanged(bool)), SLOT( OnBlockStatusChanged(bool)));
+        connect(outgoing_contact_handle_.data(), SIGNAL( addedToGroup(const QString &)), SLOT( OnAddedToGroup(const QString &)));
+        connect(outgoing_contact_handle_.data(), SIGNAL( removedFromGroup(const QString &)), SLOT( OnRemovedFromGroup(const QString &)));
+
 	}
+
+
+    void OutgoingFriendRequest::OnAliasChanged(const QString &alias)
+    {
+    }
+    void OutgoingFriendRequest::OnAvatarTokenChanged(const QString &avatarToken)
+    {
+    }
+    void OutgoingFriendRequest::OnSimplePresenceChanged(const QString &status, uint type, const QString &presenceMessage)
+    {
+    }
+
+    void OutgoingFriendRequest::OnSubscriptionStateChanged(Tp::Contact::PresenceState state)
+    {
+    }
+    void OutgoingFriendRequest::OnPublishStateChanged(Tp::Contact::PresenceState state)
+    {
+        comm_contact_handle_ = new Contact(outgoing_contact_handle_);
+        switch (state) 
+        {
+        case Tp::Contact::PresenceState::PresenceStateYes:
+            emit Accepted(this);
+            break;
+        case Tp::Contact::PresenceState::PresenceStateNo:
+            emit Rejected(this);
+            break;
+        }
+    }
+    void OutgoingFriendRequest::OnBlockStatusChanged(bool blocked)
+    {
+    }
+
+    void OutgoingFriendRequest::OnAddedToGroup(const QString &group)
+    {
+    }
+    void OutgoingFriendRequest::OnRemovedFromGroup(const QString &group)
+    {
+    }
 
 } // end of namespace: TelepathyIM
