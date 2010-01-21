@@ -67,6 +67,8 @@ class DragDroppableEditline(QLineEdit):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
         self.old_text = ""
+        
+        self.buttons = []
 
     def accept(self, ev):
         return ev.mimeData().hasFormat("application/vnd.inventory.item")
@@ -99,18 +101,18 @@ class DragDroppableEditline(QLineEdit):
         if ent is not None:
             self.doaction(ent, asset_type, inv_id, inv_name, asset_ref)
 
-        self.update_text(inv_name)
+            self.update_text(inv_name, ent)
 
         ev.acceptProposedAction()
 
-    def update_text(self, name):
+    def update_text(self, name, ent):
         """called also from main/parent.select() when sel changed"""
-        ent = self.mainedit.sel
+        #ent = self.mainedit.sel
         if ent is not None:
             self.old_text = self.text
             self.text = name #XXX add querying inventory for name
         else:
-            self.text = "(no scene entity selected)"
+            self.text = "N/A"
 
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         pass
@@ -121,7 +123,8 @@ class DragDroppableEditline(QLineEdit):
     def cancelAction(self):
         #print self, "cancelAction!"
         self.text = self.old_text
-        self.old_text = ""
+        for button in self.buttons:
+            button.setEnabled(False)
         
 class MeshAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
@@ -133,8 +136,6 @@ class MeshAssetidEditline(DragDroppableEditline):
         ent = self.mainedit.sel
         if ent is not None:
             applymesh(ent, self.text)
-    
-
         
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
@@ -154,6 +155,15 @@ def applymesh(ent, meshuuid):
     r.sendRexPrimData(ent.id)
     r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
 
+class PyPushButton(QPushButton):
+    def __init__(self, *args):
+        QPushButton.__init__(self, args)
+        
+    def lineValueChanged(self):
+        if not self.enabled:
+            print "whee"
+            self.setEnabled(True)
+        
 class EditGUI(Component):
     EVENTHANDLED = False
     UIFILE = "pymodules/editgui/editobject.ui"
@@ -222,8 +232,11 @@ class EditGUI(Component):
         self.meshline = MeshAssetidEditline(self) 
         self.meshline.name = "meshLineEdit"
         
-        button_ok = self.getButton("Apply", self.ICON_OK, self.meshline.applyAction)
-        button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline.cancelAction)
+        button_ok = self.getButton("Apply", self.ICON_OK, self.meshline, self.meshline.applyAction)
+        button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline, self.meshline.cancelAction)
+        
+        self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
+        self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
         
         box = self.widget.findChild("QHBoxLayout", "meshLine")
         if box is not None:
@@ -482,9 +495,9 @@ class EditGUI(Component):
                 self.move_arrows.orientation = ort
                 self.selection_box.orientation = ort
         
-    def getButton(self, name, iconname, action):
+    def getButton(self, name, iconname, line, action):
         size = QSize(16, 16)
-        button = QPushButton()
+        button = PyPushButton()#QPushButton()
         icon = QIcon(iconname)
         icon.actualSize(size)
         button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -494,8 +507,9 @@ class EditGUI(Component):
         button.name = name
         button.setIcon(icon)
         button.setFlat(True)
-        #button.setEnabled(False)
+        button.setEnabled(False)
         button.connect('clicked()', action)
+        line.buttons.append(button)
         return button
         
     def showMaterials(self):
@@ -505,7 +519,7 @@ class EditGUI(Component):
                 self.updateMaterialDialog(ent)
                 self.materialDialog.show()
         else:
-            self.materialDialog.hide()
+            self.dialogClosed()
             
     def updateMaterialDialog(self, ent):
         qprim = r.getQPrim(ent.id)
@@ -537,8 +551,8 @@ class EditGUI(Component):
                 #print realIndex, asset_type, PRIMTYPES[asset_type]
                 combobox.setCurrentIndex(realIndex)
             
-            applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line.applyAction)
-            cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line.cancelAction)
+            applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line, line.applyAction)
+            cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line, line.cancelAction)
             
             box = QHBoxLayout()
             box.addWidget(line)
@@ -566,12 +580,13 @@ class EditGUI(Component):
         for child in children:
             #print child.name#, child.name == "formLayout"
             if child.name != "formLayout": #dont want to remove the actual form layout from the widget
-                #self.materialDialogFormWidget.formLayout.removeWidget(child)
+                self.materialDialogFormWidget.formLayout.removeWidget(child)
                 child.delete()
         
         children = self.materialDialogFormWidget.findChildren("QHBoxLayout")
         for child in children:
             #print child
+            self.materialDialogFormWidget.formLayout.removeItem(child)
             child.delete()
 
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
@@ -669,10 +684,15 @@ class EditGUI(Component):
                 
                 self.widgetList[str(id)] = (ent, tWid)
             
-            """show the id and name of the object. name is sometimes empty it seems"""
-            self.widget.label.text = "%d (name: %s)" % (ent.id, ent.name)
+            """show the id and name of the object. name is sometimes empty it seems. 
+                swoot: actually, seems like the name just isn't gotten fast enough or 
+                something.. next time you click on the same entity, it has a name."""
+            name = ent.name
+            if name == "":
+                name = "n/a"
+            self.widget.label.text = "%d (name: %s)" % (ent.id, name)
             
-            self.meshline.update_text(ent.mesh)
+            self.meshline.update_text(ent.mesh, ent)
 
             """update material dialog"""
             if self.materialDialog.visible:
