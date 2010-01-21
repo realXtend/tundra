@@ -76,6 +76,7 @@ namespace Environment
         {
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
             EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
+            assert(terrain_component);
 
             if(terrain_component->AllPatchesLoaded())
             {
@@ -88,7 +89,7 @@ namespace Environment
                 if(image.height() != cHeightmapImageHeight || image.width() != cHeightmapImageWidth)
                     return;
 
-                // Generate image based on heightmap values. The Highest value on heightmap will show image as white color and the lowest as black color.
+                // Generate image based on heightmap values. The Highest value on heightmap will show image in white and the lowest in black.
                 MinMaxValue values = GetMinMaxHeightmapValue(*terrain_component);
                 for(int height = 0; height < image.height(); height++)
                 {
@@ -613,7 +614,7 @@ namespace Environment
 
                 QLabel *text_label = new QLabel(properties_frame);
                 text_label->setText("Distance");
-                text_label->move(150, 10);
+                text_label->move(150, 10); 
                 text_label->show();
 
                 QDoubleSpinBox *d_spin_box = new QDoubleSpinBox(properties_frame);
@@ -626,7 +627,7 @@ namespace Environment
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
                 apply_button->setText("Apply");
-                apply_button->move(140, 60);
+                apply_button->move(150, 60);
                 apply_button->resize(40, 20);
                 apply_button->show();
                 QObject::connect(apply_button, SIGNAL(clicked()), this, SLOT(ChangeSkyProperties()));
@@ -741,7 +742,7 @@ namespace Environment
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
                 apply_button->setText("Apply");
-                apply_button->move(140, 60);
+                apply_button->move(150, 60);
                 apply_button->resize(40, 20);
                 apply_button->show();
                 QObject::connect(apply_button, SIGNAL(clicked()), this, SLOT(ChangeSkyProperties()));
@@ -855,7 +856,7 @@ namespace Environment
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
                 apply_button->setText("Apply");
-                apply_button->move(140, 60);
+                apply_button->move(150, 60);
                 apply_button->resize(40, 20);
                 apply_button->show();
                 QObject::connect(apply_button, SIGNAL(clicked()), this, SLOT(ChangeSkyProperties()));
@@ -1715,7 +1716,8 @@ namespace Environment
                     img = ConvertToQImage(*tex);
                     
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
-                texture_label->setPixmap(QPixmap::fromImage(img));
+                if(texture_label && !img.isNull())
+                    texture_label->setPixmap(QPixmap::fromImage(img));
                 //texture_label->show();
             }
         }

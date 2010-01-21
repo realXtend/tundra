@@ -129,18 +129,21 @@ namespace Environment
         //! Called when QMouseEvent event is generated inside the terrain map image label.
         void HandleMouseEvent(QMouseEvent *ev);
 
+        //! When called modify land message is sended into the server. This method is connected with mouse click event and is active,
+        //! when MouseLeftPress event is active (Take a look at HandleMouseEvent-method).
+        //! @todo add parameter that will tell how much time has past when this method was last time called (right now, always using 250ms time.).
         void TerrainEditTimerTick();
 
-        //! Called when brush size option has changed.
+        //! Called when brush size option has changed. Supported sizes are Small, Medium and Large.
         void BrushSizeChanged();
 
-        //! Called when terrain action option has changed.
+        //! Called when terrain action option has changed. Supported actions are Flatten, Raise, Lower, Smooth, Roughen and Revert.
         void PaintActionChanged();
 
-        //! Called when tab windows state has changed.
+        //! Called when editor window's active tab has been changed.
         void TabWidgetChanged(int index);
 
-        //! Called when user has pressed enter or return on editor's LineEdit widget.
+        //! Called when user has pressed enter or return on editor's LineEdit-widget on terrain texture tab window.
         void LineEditReturnPressed();
 
         //! Called when apply button have been pressed on terrain texture tab window.
