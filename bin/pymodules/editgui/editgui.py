@@ -22,7 +22,7 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit, QLabel, QSizePolicy, QIcon, QPushButton
+from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QLineEdit, QLabel, QSizePolicy, QIcon, QPushButton, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 from circuits import Component
@@ -56,8 +56,8 @@ OIS_KEY_ESC = 1
 OIS_KEY_DEL = 211
 
 PRIMTYPES = {
-    "0": "Texture", 
-    "45": "Material"
+    "45": "Material",
+    "0": "Texture"
 }
 
 DEV = False #if this is false, the canvas is added to the controlbar
@@ -66,6 +66,7 @@ class DragDroppableEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
         QLineEdit.__init__(self, *args)
+        self.old_text = ""
 
     def accept(self, ev):
         return ev.mimeData().hasFormat("application/vnd.inventory.item")
@@ -106,6 +107,7 @@ class DragDroppableEditline(QLineEdit):
         """called also from main/parent.select() when sel changed"""
         ent = self.mainedit.sel
         if ent is not None:
+            self.old_text = self.text
             self.text = name #XXX add querying inventory for name
         else:
             self.text = "(no scene entity selected)"
@@ -113,11 +115,27 @@ class DragDroppableEditline(QLineEdit):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         pass
         
+    def applyAction(self):
+        print self, "applyAction (not implemented yet in this class) !"
+    
+    def cancelAction(self):
+        #print self, "cancelAction!"
+        self.text = self.old_text
+        self.old_text = ""
+        
 class MeshAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         #print "doaction in MeshAssetidEditline-class..."
         applymesh(ent, asset_ref)
     
+    def applyAction(self):
+        #print self, "applyAction!"
+        ent = self.mainedit.sel
+        if ent is not None:
+            applymesh(ent, self.text)
+    
+
+        
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         matinfo = (asset_type, asset_ref)
@@ -129,7 +147,6 @@ class UUIDEditLine(DragDroppableEditline):
         mats[index]  = matinfo
         qprim.Materials = mats
         r.sendRexPrimData(ent.id)
-
         
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
@@ -149,6 +166,9 @@ class EditGUI(Component):
     AXIS_X = 0
     AXIS_Y = 1
     AXIS_Z = 2
+    
+    ICON_OK = "pymodules/editgui/ok.png"
+    ICON_CANCEL = "pymodules/editgui/cancel.png"
     
     UPDATE_INTERVAL = 0.05 #how often the networkUpdate will be sent
     
@@ -202,27 +222,8 @@ class EditGUI(Component):
         self.meshline = MeshAssetidEditline(self) 
         self.meshline.name = "meshLineEdit"
         
-        button_ok = QPushButton()
-        icon = QIcon("pymodules/editgui/ok.png")
-        icon.actualSize(QSize(16, 16))
-        button_ok.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        button_ok.setMaximumSize(QSize(16, 16))
-        button_ok.setMinimumSize(QSize(16, 16))
-        button_ok.text = ""
-        button_ok.name = "Apply"
-        button_ok.setIcon(icon)
-        button_ok.setFlat(True)
-        
-        button_cancel = QPushButton()
-        icon = QIcon("pymodules/editgui/cancel.png")
-        icon.actualSize(QSize(16, 16))
-        button_cancel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        button_cancel.setMaximumSize(QSize(16, 16))
-        button_cancel.setMinimumSize(QSize(16, 16))
-        button_cancel.text = ""
-        button_cancel.name = "Apply"
-        button_cancel.setIcon(icon)
-        button_cancel.setFlat(True)
+        button_ok = self.getButton("Apply", self.ICON_OK, self.meshline.applyAction)
+        button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline.cancelAction)
         
         box = self.widget.findChild("QHBoxLayout", "meshLine")
         if box is not None:
@@ -293,7 +294,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #r.c = self
+        #~ r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -480,12 +481,31 @@ class EditGUI(Component):
 
                 self.move_arrows.orientation = ort
                 self.selection_box.orientation = ort
-    
+        
+    def getButton(self, name, iconname, action):
+        size = QSize(16, 16)
+        button = QPushButton()
+        icon = QIcon(iconname)
+        icon.actualSize(size)
+        button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        button.setMaximumSize(size)
+        button.setMinimumSize(size)
+        button.text = ""
+        button.name = name
+        button.setIcon(icon)
+        button.setFlat(True)
+        #button.setEnabled(False)
+        button.connect('clicked()', action)
+        return button
+        
     def showMaterials(self):
-        ent = self.sel
-        if ent is not None:
-            self.updateMaterialDialog(ent)
-            self.materialDialog.show()
+        if not self.materialDialog.visible:
+            ent = self.sel
+            if ent is not None:
+                self.updateMaterialDialog(ent)
+                self.materialDialog.show()
+        else:
+            self.materialDialog.hide()
             
     def updateMaterialDialog(self, ent):
         qprim = r.getQPrim(ent.id)
@@ -499,16 +519,39 @@ class EditGUI(Component):
             line = UUIDEditLine(self)#QLineEdit()
             line.text = tuple[1]
             line.name = index
+            asset_type = tuple[0]
             
-            label = QLabel()
-            if tuple[1] != "": #this happens when we don't have anything in the prim
-                label.text = PRIMTYPES[tuple[0]] #XXX check for key errors
-            else:
-                label.text = "n/a"
-                #r.logDebug("Nothing found")
-
-            self.dialogElements.append((label, line))
-            self.materialDialogFormWidget.formLayout.addRow(label, line)
+            #~ label = QLabel()
+            #~ if tuple[1] != "": #this happens when we don't have anything in the prim
+                #~ label.text = PRIMTYPES[tuple[0]] #XXX check for key errors
+            #~ else:
+                #~ label.text = "n/a"
+                #~ #r.logDebug("Nothing found")
+                
+            combobox = QComboBox()
+            for text in PRIMTYPES.itervalues():
+                combobox.addItem(text)
+            
+            if PRIMTYPES.has_key(asset_type):
+                realIndex = combobox.findText(PRIMTYPES[asset_type])
+                #print realIndex, asset_type, PRIMTYPES[asset_type]
+                combobox.setCurrentIndex(realIndex)
+            
+            applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line.applyAction)
+            cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line.cancelAction)
+            
+            box = QHBoxLayout()
+            box.addWidget(line)
+            box.addWidget(applyButton)
+            box.addWidget(cancelButton)
+            
+            self.dialogElements.append((combobox, box))
+            self.materialDialogFormWidget.formLayout.addRow(combobox, box)
+            #print row
+            #~ self.materialDialogFormWidget.formLayout.addWidget(label, row, 1)
+            #~ self.materialDialogFormWidget.formLayout.addWidget(line, row, 2)
+            #~ self.materialDialogFormWidget.formLayout.addWidget(applyButton, row, 3)
+            #~ self.materialDialogFormWidget.formLayout.addWidget(cancelButton, row, 4)
             
     def dialogClosed(self):
         #print "dialog Closed"
@@ -518,11 +561,19 @@ class EditGUI(Component):
     def clearDialogForm(self):
         self.dialogElements = []
         children = self.materialDialogFormWidget.children()
+        #print children
+        #~ print self.materialDialogFormWidget.findChildren("QHBoxLayout")
         for child in children:
             #print child.name#, child.name == "formLayout"
             if child.name != "formLayout": #dont want to remove the actual form layout from the widget
+                #self.materialDialogFormWidget.formLayout.removeWidget(child)
                 child.delete()
-                
+        
+        children = self.materialDialogFormWidget.findChildren("QHBoxLayout")
+        for child in children:
+            #print child
+            child.delete()
+
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.widget.treeWidget.currentItem()
@@ -650,6 +701,7 @@ class EditGUI(Component):
             self.canmove = False
             self.arrow_grabbed_axis = None
             self.arrow_grabbed = False
+            self.dialogClosed()
             #self.propedit.hide()
         
     def update_selection(self):             

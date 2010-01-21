@@ -777,82 +777,10 @@ if 0:
         #~ id += 1
     
     #~ #print keys, mats.keys(), mats[keys[0]]
-    
-if 0:
-    r.tag = False
-
-if 0:
-    r.tag = not r.tag
-    if r.tag: #stupid double command run... what gives...
-        print "Test"
-        PRIMTYPES = {
-            "0": "Texture", 
-            "45": "Material"
-        }
-        
-        def swoot():
-            print "booyah!"
-        
-        def noswoot():
-            print "!booyah!"
-            
-        from PythonQt.QtUiTools import QUiLoader
-        from PythonQt.QtCore import QFile, QSize
-        from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel
-        
-        #~ loader = QUiLoader()
-        #~ uifile = QFile("pymodules/editgui/materials.ui")
-        #~ ui = loader.load(uifile)
-        #~ uism = r.getUiSceneManager()
-        #~ uiprops = r.createUiWidgetProperty()
-        #~ uiprops.show_at_toolbar_ = False
-        #~ uiprops.widget_name_ = "Material and Texture"
-        #~ uiprops.my_size_ = QSize(ui.size.width(), ui.size.height())
-        #~ pw = r.createUiProxyWidget(ui, uiprops)
-        #~ uism.AddProxyWidget(pw)
-        #~ r.buttonbox = ui.buttonBox
-        #~ r.formwidget = ui.formLayoutWidget
-        #~ r.buttonbox.connect('accepted()', swoot)
-        #~ r.buttonbox.connect('rejected()', noswoot)
-        #~ r.pw = pw
-        #~ r.pw.show()
-        
-        qprim = r.getQPrim(720259)
-        mats = qprim.Materials
-        print mats#, r.formwidget.formLayout.children() 
-        #qprim.Materials = mats
-        #~ r.elements = []
-        #~ indx = 1
-        #~ for tuple in mats.itervalues():
-            
-            #~ print tuple, tuple[0] == "45"
-            #combo = QComboBox()
-            #combo.addItem("Material")
-            #combo.addItem("Texture")
-            #~ line = QLineEdit()
-            #~ line.text = tuple[1]
-            #~ line.name = "lineEdit_"+str(indx)
-            #~ indx += 1
-            #~ label = QLabel()
-            #~ label.name = PRIMTYPES[tuple[0]]#tuple[0]
-            #~ label.text = PRIMTYPES[tuple[0]]
-            #~ r.elements.append((label, line))
-            #~ r.formwidget.formLayout.addRow(label, line)
-        
-        #print r.elements
-        #~ #print dir(r.formwidget)
-        #~ stuff =  r.formwidget.children()
-        #~ for thingie in stuff:
-            #~ print thingie.name#, thingie.name == "formLayout"
-            #~ if thingie.name != "formLayout":
-                #~ thingie.delete()
-
-
-        #~ r.pw.show()
         
 if 0:
     from PythonQt.QtCore import QFile, QSize
-    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout,  QLabel, QPushButton, QSizePolicy, QIcon
     
     box = r.c.widget.findChild("QHBoxLayout", "meshLine")
     #print box.layoutSpacing
@@ -872,3 +800,177 @@ if 0:
     
     #~ line = r.c.widget.findChild("QLineEdit", "meshLineEdit")
     #~ print line.sizePolicy.horizontalPolicy(), QSizePolicy.Expanding
+    
+if 0:
+    print "Test"
+    PRIMTYPES = {
+        "0": "Texture", 
+        "45": "Material"
+    }
+    
+    def swoot():
+        print "booyah!"
+    
+    def noswoot():
+        print "!booyah!"
+        
+    from PythonQt.QtUiTools import QUiLoader
+    from PythonQt.QtCore import QFile, QSize
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel
+    
+    loader = QUiLoader()
+    uifile = QFile("pymodules/editgui/materials.ui")
+    ui = loader.load(uifile)
+    uism = r.getUiSceneManager()
+    uiprops = r.createUiWidgetProperty()
+    uiprops.show_at_toolbar_ = False
+    uiprops.widget_name_ = "Test"
+    uiprops.my_size_ = QSize(ui.size.width(), ui.size.height())
+    pw = r.createUiProxyWidget(ui, uiprops)
+    uism.AddProxyWidget(pw)
+    r.formwidget = ui.gridLayoutWidget
+    r.pw = pw
+    r.pw.show()
+    
+    #print dir(r.formwidget), r.formwidget.rowCount()
+
+    #~ qprim = r.getQPrim(2985471908)
+    #~ mats = qprim.Materials
+    #~ print mats#, r.formwidget.formLayout.children() 
+    #qprim.Materials = mats
+    #~ r.elements = []
+    #~ indx = 1
+    #~ for tuple in mats.itervalues():
+        
+        #~ print tuple, tuple[0] == "45"
+        #combo = QComboBox()
+        #combo.addItem("Material")
+        #combo.addItem("Texture")
+        #~ line = QLineEdit()
+        #~ line.text = tuple[1]
+        #~ line.name = "lineEdit_"+str(indx)
+        #~ indx += 1
+        #~ label = QLabel()
+        #~ label.name = PRIMTYPES[tuple[0]]#tuple[0]
+        #~ label.text = PRIMTYPES[tuple[0]]
+        #~ r.elements.append((label, line))
+        #~ r.formwidget.formLayout.addRow(label, line)
+    
+    #print r.elements
+    #~ #print dir(r.formwidget)
+    #~ stuff =  r.formwidget.children()
+    #~ for thingie in stuff:
+        #~ print thingie.name#, thingie.name == "formLayout"
+        #~ if thingie.name != "formLayout":
+            #~ thingie.delete()
+
+
+    #~ r.pw.show()
+
+if 0:
+    box = r.formwidget.findChild("QGridLayout", "gridLayout")
+    print box.rowCount()
+    
+if 0:
+    from PythonQt.QtCore import QFile, QSize
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon
+    
+    box = r.formwidget.findChild("QGridLayout", "gridLayout")
+    #print box.rowCount()
+
+    label = QLabel()
+    label.text = "n/a"
+    
+    row = 3
+    
+    box.addWidget(label, row, 0)
+    #print r.c.materialDialogFormWidget
+    line = QLineEdit()#QLineEdit()
+    line.text = "whee"
+    line.name = "whee"
+    
+    box.addWidget(line, row, 1)
+
+
+    button = QPushButton()
+    icon = QIcon("pymodules/editgui/ok.png")
+    icon.actualSize(QSize(16, 16))
+    button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    button.setMaximumSize(QSize(16, 16))
+    button.setMinimumSize(QSize(16, 16))
+    button.text = ""
+    button.name = "Apply"
+    button.setIcon(icon)
+    
+    box.addWidget(button, row, 2)
+    
+    
+    button = QPushButton()
+    icon = QIcon("pymodules/editgui/cancel.png")
+    icon.actualSize(QSize(16, 16))
+    button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    button.setMaximumSize(QSize(16, 16))
+    button.setMinimumSize(QSize(16, 16))
+    button.text = ""
+    button.name = "Cancel"
+    button.setIcon(icon)
+    
+    box.addWidget(button, row, 3)
+
+if 0:
+    from PythonQt.QtUiTools import QUiLoader
+    from PythonQt.QtCore import QFile, QSize
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon
+    loader = QUiLoader()
+    uism = r.getUiSceneManager()
+    
+    #~ uifile3 = QFile("pymodules/editgui/tab.ui")
+    #~ ui3 = loader.load(uifile3)
+    #~ uiprops3 = r.createUiWidgetProperty()
+    #~ uiprops3.show_at_toolbar_ = False
+    #~ uiprops3.widget_name_ = "tab"
+    #~ uiprops3.my_size_ = QSize(ui3.size.width(), ui3.size.height())
+    #~ pw3 = r.createUiProxyWidget(ui3, uiprops3)
+    #~ r.pw3 = pw3
+    #~ r.tab_manager = ui3.tabWidget
+    #~ uism.AddProxyWidget(pw3)
+    #~ r.pw3.show()
+
+    uifile = QFile("pymodules/editgui/materials.ui")
+    ui = loader.load(uifile)
+    uiprops = r.createUiWidgetProperty()
+    uiprops.show_at_toolbar_ = False
+    uiprops.widget_name_ = "Test"
+    uiprops.my_size_ = QSize(ui.size.width(), ui.size.height())
+    pw = r.createUiProxyWidget(ui, uiprops)
+    r.pw = pw    
+    
+    uifile2 = QFile("pymodules/editgui/editobject.ui")
+    ui2 = loader.load(uifile2)
+    uiprops2 = r.createUiWidgetProperty()
+    uiprops2.show_at_toolbar_ = False
+    uiprops2.widget_name_ = "editobject"
+    uiprops2.my_size_ = QSize(ui2.size.width(), ui2.size.height())
+    pw2 = r.createUiProxyWidget(ui2, uiprops2)
+    r.pw2 = pw2
+
+    r.tab_manager.addTab(r.pw, QIcon("pymodules/editgui/cancel.png"), "test")
+    r.tab_manager.addTab(r.pw2,  QIcon("pymodules/editgui/cancel.png"),  "editobject")
+    
+if 0:
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout
+    box =  r.c.materialDialogFormWidget.formLayout
+    hor = QHBoxLayout()
+    line = QLineEdit()
+    hor.addWidget(line)
+    print hor
+
+if 0:
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel
+    combo = QComboBox()
+    combo.addItem("aaaa")
+    combo.addItem("bbbb")
+    combo.addItem("cccc")
+    combo.addItem("dddd")
+    
+    print combo.currentIndex, combo.findText("ccCc")
