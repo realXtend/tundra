@@ -19,7 +19,7 @@ namespace CommunicationUI
     Q_OBJECT
 
     public:
-        FriendListWidget(Communication::ConnectionInterface *im_connection, UiHelpers::SessionHelper *session_helper);
+        FriendListWidget(Communication::ConnectionInterface *im_connection, UiHelpers::SessionHelper *session_helper,  Foundation::Framework *framework);
         virtual ~FriendListWidget();
 
         void SetStatus(const QString &status_code);

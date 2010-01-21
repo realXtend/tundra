@@ -15,6 +15,22 @@ namespace CommunicationUI
         chat_session_ui_.setupUi(this);
         ShowMessageHistory(chat_session_->GetMessageHistory());
 
+        Communication::ChatSessionParticipantVector participants = chat_session_->GetParticipants();
+        Communication::ChatSessionParticipantVector::const_iterator itr;
+
+        Communication::ChatSessionParticipantInterface *participant;
+        for (itr=participants.begin(); itr!=participants.end(); itr++)
+        {
+            participant = (Communication::ChatSessionParticipantInterface*)*itr;
+            if (!participant)
+                continue;
+            else if (participant->GetContact()->GetID() != my_name_)
+            {
+                connect(participant->GetContact(), SIGNAL( PresenceStatusChanged(const QString &, const QString &) ), this, SLOT( ContactStateChanged(const QString &, const QString &) ));
+                break; // HACK, ChatSessionParticipantVector HAS THE FRIEND CONTACT TWICE
+            }
+        }
+            
         connect(chat_session_, SIGNAL( MessageReceived(const Communication::ChatMessageInterface&)),
                 this, SLOT( MessageReceived(const Communication::ChatMessageInterface&)));
         connect(chat_session_ui_.sendMessageLineEdit, SIGNAL( returnPressed() ),
@@ -86,7 +102,7 @@ namespace CommunicationUI
 		html.append(status);
 		if ( message.size() > 0 )
 		{
-			html.append(": ");
+			html.append(" with message ");
 			html.append(message);
 		}
 		html.append("</span>");

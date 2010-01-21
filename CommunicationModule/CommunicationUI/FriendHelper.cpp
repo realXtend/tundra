@@ -4,14 +4,18 @@
 #include "FriendHelper.h"
 #include "FriendListItem.h"
 
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+
 #include <QLabel>
 
 namespace UiHelpers
 {
-    FriendHelper::FriendHelper()
+    FriendHelper::FriendHelper(Foundation::Framework *framework)
         : QObject(),
           friend_list_ui_(0),
-          request_manager_widget_(0)
+          request_manager_widget_(0),
+          framework_(framework)
     {
 
     }
@@ -57,7 +61,6 @@ namespace UiHelpers
             request_manager_ui_.gridLayout->addWidget(accept_button, row, 1);
             request_manager_ui_.gridLayout->addWidget(reject_button, row, 2);
 
-
             // For friend request
             connect(accept_button, SIGNAL( clicked() ), friend_request, SLOT( Accept() ));
             connect(reject_button, SIGNAL( clicked() ), friend_request, SLOT( Reject() ));
@@ -77,7 +80,15 @@ namespace UiHelpers
             row++;
         }
 
-        request_manager_widget_->show();
+        // Add friend request manager widget to scene
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+        {
+            UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SlideFromTop, request_manager_widget_->size());
+            widget_properties.SetShowAtToolbar(false);
+            UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(request_manager_widget_, widget_properties);
+            proxy->show();
+        }
     }
 
     void FriendHelper::CheckPendingRequestList()

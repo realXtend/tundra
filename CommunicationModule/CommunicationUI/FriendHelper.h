@@ -21,7 +21,7 @@ namespace UiHelpers
     Q_OBJECT
 
     public:
-        FriendHelper();
+        FriendHelper(Foundation::Framework *framework);
         virtual ~FriendHelper();
 
         //! Setters
@@ -48,6 +48,8 @@ namespace UiHelpers
         QWidget *request_manager_widget_;
         QMap<QString, Communication::ContactInterface*> contacts_map_;
         QMap<QString, Communication::FriendRequestInterface*> pending_friend_requests_;
+
+        Foundation::Framework *framework_;
 
     };
 }
