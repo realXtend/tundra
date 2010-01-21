@@ -157,6 +157,13 @@ namespace TelepathyIM
         virtual void IncomingVoiceSessionReady(VoiceSession *session);
         virtual void OnConnectionStatusChanged(uint status, uint reason);
         virtual void OnSelfHandleChanged(uint handle) ;
+
+		virtual void OnSendingFriendAccepted(OutgoingFriendRequest* request);
+		virtual void OnSendingFriendRejected(OutgoingFriendRequest* request);
+
+		virtual	void OnGroupMembersChanged(const QString &group,
+                                           const Tp::Contacts &groupMembersAdded,
+                                           const Tp::Contacts &groupMembersRemoved);
 	};
 	typedef std::vector<Connection*> ConnectionVector;
 

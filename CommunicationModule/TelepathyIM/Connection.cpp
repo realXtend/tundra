@@ -205,6 +205,9 @@ namespace TelepathyIM
 		OutgoingFriendRequest* request = new OutgoingFriendRequest(target, message, tp_connection_);
 		sent_friend_requests_.push_back(request);
 		connect(request, SIGNAL( Error(OutgoingFriendRequest*) ), SLOT( OnSendingFriendRequestError(OutgoingFriendRequest*) ));
+
+		connect(request, SIGNAL( Accepted(OutgoingFriendRequest*) ), SLOT( OnSendingFriendAccepted(OutgoingFriendRequest*) ));
+		connect(request, SIGNAL( Rejected(OutgoingFriendRequest*) ), SLOT( OnSendingFriendRejected(OutgoingFriendRequest*) ));
 	}
 
 	Communication::FriendRequestVector Connection::GetFriendRequests() const
@@ -410,6 +413,9 @@ namespace TelepathyIM
 
 		connect(tp_connection_.data(), SIGNAL( statusChanged(uint, uint) ), SLOT( OnTpConnectionStatusChanged(uint, uint) ));
 		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
+
+		connect(tp_connection_->contactManager(), SIGNAL( groupMembersChanged(const Tp::Contacts &) ), SLOT( OnGroupMembersChanged(const QString &, const Tp::Contacts &, const Tp::Contacts &) ));
+
 
         ContactVector new_contacts = HandleAllKnownTpContacts();
         for (ContactVector::iterator i = new_contacts.begin(); i != new_contacts.end(); ++i)
@@ -762,6 +768,34 @@ namespace TelepathyIM
     }
 
     void Connection::OnSelfHandleChanged(uint handle) 
+    {
+        // TODO: IMPLEMENT
+    }
+
+    void Connection::OnSendingFriendAccepted(OutgoingFriendRequest* request)
+    {   
+        TelepathyIM::Contact* c = request->GetContact();
+        Contact* contact = new Contact(c->GetTpContact());
+		for (ContactVector::iterator i = contacts_.begin(); i != contacts_.end(); ++i)
+		{
+            Contact* vc = *i;
+            if (vc->GetID().compare(contact->GetID()) == 0)
+            {
+                return;
+            }
+		}
+        contacts_.push_back(contact);
+        emit NewContact(*contact);
+    }
+
+    void Connection::OnSendingFriendRejected(OutgoingFriendRequest* request)
+    {
+        // TODO: IMPLEMENT
+    }
+
+    void Connection::OnGroupMembersChanged(const QString &group,
+                                           const Tp::Contacts &groupMembersAdded,
+                                           const Tp::Contacts &groupMembersRemoved)
     {
         // TODO: IMPLEMENT
     }
