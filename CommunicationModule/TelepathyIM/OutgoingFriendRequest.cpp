@@ -113,10 +113,10 @@ namespace TelepathyIM
         comm_contact_handle_ = new Contact(outgoing_contact_handle_);
         switch (state) 
         {
-        case Tp::Contact::PresenceState::PresenceStateYes:
+        case Tp::Contact::PresenceStateYes:
             emit Accepted(this);
             break;
-        case Tp::Contact::PresenceState::PresenceStateNo:
+        case Tp::Contact::PresenceStateNo:
             emit Rejected(this);
             break;
         }
