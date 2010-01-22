@@ -144,7 +144,8 @@ namespace OpenALAudio
          */
         virtual void SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff); 
 
-        virtual void SetSoundStreamPosition(Vector3df position);
+        //! Updates the sound stream position
+        virtual void SetSoundStreamPosition(Vector3df position, bool positional);
 
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(f64 frametime);

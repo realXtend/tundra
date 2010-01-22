@@ -832,7 +832,7 @@ namespace TelepathyIM
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;
-        soundsystem->SetSoundStreamPosition(position);
+        soundsystem->SetSoundStreamPosition(position, true);
     }
 
     void VoiceSession::TrackingAvatar(bool enabled)

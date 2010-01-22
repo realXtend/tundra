@@ -39,7 +39,7 @@ namespace OpenALAudio
         alSourcef(source_, AL_ROLLOFF_FACTOR, 0.0); // TODO: Check this for spatial playback 
         alSourcef(source_, AL_REFERENCE_DISTANCE, 10.0);
         alSourcei(source_, AL_LOOPING, AL_FALSE);
-        alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+        alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
 
         alGenBuffers(MAX_BUFFER_COUNT, buffers_);
         for (int i = 0; i < MAX_BUFFER_COUNT; i++)
@@ -252,11 +252,14 @@ namespace OpenALAudio
         }
     }
 
-    void SoundStream::SetPosition(const Vector3df &position)
+    void SoundStream::SetPosition(const Vector3df &position, bool positional)
     {
         if (source_)
         {
-            alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+            if (positional)
+                alSourcei(source_, AL_SOURCE_RELATIVE, AL_FALSE);
+            else
+                alSourcei(source_, AL_SOURCE_RELATIVE, AL_TRUE);
             ALfloat sound_pos[] = { position.x, position.y, position.z };
             alSourcefv(source_, AL_POSITION, sound_pos);
         }
