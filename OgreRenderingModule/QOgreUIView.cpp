@@ -56,10 +56,12 @@ namespace OgreRenderer
 
         // Get rid of extra white layers under widgets
         // Qt doesn't respect the above request to not fill background
-        QPalette empty_background;
+        QPalette empty_background = palette ();
         empty_background.setColor (QPalette::Window, Qt::transparent); 
         empty_background.setColor (QPalette::Base, Qt::transparent);
         setPalette (empty_background);
+
+        setAttribute (Qt::WA_OpaquePaintEvent, false);
 
         #ifdef Q_WS_WIN
         // Determine if we are running under windows 7 that has certain paint issues with Qt 4.6 in a QGraphicsView

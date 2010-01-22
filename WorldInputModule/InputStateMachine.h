@@ -82,6 +82,24 @@ namespace Input
         int last_y;
     };
 
+    struct KeyBindingInfo
+    {
+        KeyBindingInfo (QString g, QString s, event_id_t n, event_id_t x)
+            : group (g), sequence (s), enter (n), exit (x)
+        {}
+
+        QString group;
+        QString sequence;
+        event_id_t enter;
+        event_id_t exit;
+
+        private:
+        KeyBindingInfo ();
+
+    };
+
+    typedef std::list <KeyBindingInfo> KeyBindingInfoList;
+
     struct InputState : public Foundation::State
     {
         InputState (QString name, QState *parent = 0);
@@ -205,33 +223,36 @@ namespace Input
         Foundation::EventManagerPtr eventmgr;
     };
 
-    struct FirstPersonActiveState : public InputState
+    struct KeyBindingActiveState : public InputState
+    {
+        KeyBindingActiveState (QString name, KeyBindingMap **m, QState *p = 0);
+        KeyBindingMap   **map;
+    };
+
+    struct FirstPersonActiveState : public KeyBindingActiveState
     {
         FirstPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyBindingMap       **map;
         FirstPersonBindings bindings;
     };
 
-    struct ThirdPersonActiveState : public InputState
+    struct ThirdPersonActiveState : public KeyBindingActiveState
     {
         ThirdPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyBindingMap       **map;
         ThirdPersonBindings bindings;
     };
 
-    struct FreeCameraActiveState : public InputState
+    struct FreeCameraActiveState : public KeyBindingActiveState
     {
         FreeCameraActiveState (QString name, KeyBindingMap **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        KeyBindingMap       **map;
         FreeCameraBindings  bindings;
     };
 
@@ -382,8 +403,9 @@ namespace Input
 
             void Update (f64 frametime);
 
-            const Foundation::State *GetState (const std::string &name) const;
-            void AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const;
+            Foundation::State *GetState (QString name);
+
+            void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
@@ -394,6 +416,8 @@ namespace Input
             QEvent *clone_event_ (QEvent *event);
 
             void post_simulated_focus_click ();
+
+            void update_dynamic_key_bindings_ ();
 
         private:
             Foundation::Framework       *framework_;

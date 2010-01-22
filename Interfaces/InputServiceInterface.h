@@ -5,6 +5,8 @@
 
 #include "ServiceInterface.h"
 #include "State.h"
+#include <QString>
+#include <QKeySequence>
 
 namespace Foundation
 {
@@ -38,10 +40,10 @@ namespace Foundation
         virtual ~InputServiceInterface() {}
 
         //! Returns the input state requested by name.
-        virtual const Foundation::State *GetState (const std::string &name) const = 0;
+        virtual Foundation::State *GetState (QString name) = 0;
 
         //! Fires events on entry or exit respectively.
-        virtual void AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const = 0;
+        virtual void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit) = 0;
     };
 }
 
