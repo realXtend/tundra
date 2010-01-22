@@ -226,11 +226,6 @@ void RexLogicModule::PostInitialize()
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
     login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
     main_panel_handler_->ConnectToLoginHandler();
-
-    boost::shared_ptr <Foundation::InputServiceInterface> inputsrv = GetFramework()-> GetServiceManager()-> 
-        GetService <Foundation::InputServiceInterface> (Foundation::Service::ST_Input).lock();
-
-    inputsrv-> AddKeyEvent ("third person", "P", 4, 5);
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
