@@ -59,6 +59,10 @@ PRIMTYPES = {
     "45": "Material",
     "0": "Texture"
 }
+PRIMTYPES_REVERSED = {
+    "Material": "45", 
+    "Texture": "0"
+}
 
 DEV = False #if this is false, the canvas is added to the controlbar
 
@@ -68,7 +72,9 @@ class DragDroppableEditline(QLineEdit):
         QLineEdit.__init__(self, *args)
         self.old_text = "N\A"
         
+        self.combobox = None #throw into another class...
         self.buttons = []
+        self.index = None 
 
     def accept(self, ev):
         return ev.mimeData().hasFormat("application/vnd.inventory.item")
@@ -154,6 +160,22 @@ class UUIDEditLine(DragDroppableEditline):
         qprim.Materials = mats
         r.sendRexPrimData(ent.id)
         
+    def applyAction(self):
+        ent = self.mainedit.sel
+        if self.combobox is not None and ent is not None:
+            qprim = r.getQPrim(ent.id)
+            mats = qprim.Materials
+            asset_type_text = self.combobox.currentText
+            
+            asset_type = PRIMTYPES_REVERSED[asset_type_text] #need to encode to something else?
+            
+            mats[self.index]  = (asset_type, self.text)
+            #~ print mats 
+            #~ print qprim.Materials
+            qprim.Materials = mats
+            r.sendRexPrimData(ent.id)
+            
+        
 def applymesh(ent, meshuuid):
     ent.mesh = meshuuid
     #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
@@ -214,24 +236,16 @@ class EditGUI(Component):
          #   ui.show()
 
         self.proxywidget.connect('Visible(bool)', self.on_hide)
-
-        #XXX move the material dialog to an own class
-        muifile = QFile("pymodules/editgui/materials.ui")
-        mui = loader.load(muifile)
-        uiprops = r.createUiWidgetProperty()
-        uiprops.show_at_toolbar_ = False
-        uiprops.widget_name_ = "Materials and Textures"
-        uiprops.my_size_ = QSize(mui.size.width(), mui.size.height())
-        self.materialDialog = r.createUiProxyWidget(mui, uiprops)
-        uism.AddProxyWidget(self.materialDialog)
-        self.materialDialogFormWidget = mui.formLayoutWidget
         
-        mui.closeButton.connect('clicked()', self.dialogClosed)
+        self.widget = ui
+        self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
 
-        self.dialogElements = []
-        
-        self.widget = ui.MainFrame
-        self.widget.label.text = "<none>"
+        self.tabwidget.connect('currentChanged(int)', self.tabChanged)
+        self.mainTab = ui.findChild("QWidget", "MainFrame")
+        self.materialTab = ui.findChild("QWidget", "MaterialsTab")
+        self.tabwidget.setTabEnabled(1, False)
+        self.materialTabFormWidget = self.materialTab.formLayoutWidget
+        self.mainTab.label.text = "<none>"
 
         self.meshline = MeshAssetidEditline(self) 
         self.meshline.name = "meshLineEdit"
@@ -242,7 +256,7 @@ class EditGUI(Component):
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
         
-        box = self.widget.findChild("QHBoxLayout", "meshLine")
+        box = self.mainTab.findChild("QHBoxLayout", "meshLine")
         if box is not None:
             box.addWidget(self.meshline)
             box.addWidget(button_ok)
@@ -257,7 +271,7 @@ class EditGUI(Component):
             def pos_at_index(v):
                 self.changepos(i, v)
             return pos_at_index
-        for i, poswidget in enumerate([ui.MainFrame.xpos, ui.MainFrame.ypos, ui.MainFrame.zpos]):
+        for i, poswidget in enumerate([self.mainTab.xpos, self.mainTab.ypos, self.mainTab.zpos]):
             #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))  
             poswidget.connect('valueChanged(double)', poschanger(i))
 
@@ -265,14 +279,14 @@ class EditGUI(Component):
             def rot_at_index(v):
                 self.changerot(i, v)
             return rot_at_index
-        for i, rotwidget in enumerate([ui.MainFrame.rot_x, ui.MainFrame.rot_y, ui.MainFrame.rot_z]):
+        for i, rotwidget in enumerate([self.mainTab.rot_x, self.mainTab.rot_y, self.mainTab.rot_z]):
             rotwidget.connect('valueChanged(double)', rotchanger(i))
         
         def scalechanger(i):
             def scale_at_index(v):
                 self.changescale(i, v)
             return scale_at_index
-        for i, scalewidget in enumerate([ui.MainFrame.scalex, ui.MainFrame.scaley, ui.MainFrame.scalez]):
+        for i, scalewidget in enumerate([self.mainTab.scalex, self.mainTab.scaley, self.mainTab.scalez]):
             scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.sel = None
@@ -280,29 +294,29 @@ class EditGUI(Component):
         self.left_button_down = False
         self.right_button_down = False
                 
-        self.widget.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
-        #self.widget.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
+        self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
+        #self.mainTab.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
-        self.widget.findChild("QPushButton", "newObject").connect('clicked()', self.createObject)
-        self.widget.findChild("QPushButton", "deleteObject").connect('clicked()', self.deleteObject)
-        self.widget.findChild("QPushButton", "duplicate").connect('clicked()', self.duplicate)
+        self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.createObject)
+        self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.deleteObject)
+        self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.duplicate)
         
-        self.widget.findChild("QPushButton", "undo").connect('clicked()', self.undo)
+        self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.undo)
         
-        self.widget.findChild("QPushButton", "materials").connect('clicked()', self.showMaterials)
-        #self.widget.setMesh.connect('clicked()', self.setMesh)
-        #self.widget.redo.connect('clicked()', self.redo)
+        #self.mainTab.setMesh.connect('clicked()', self.setMesh)
+        #self.mainTab.redo.connect('clicked()', self.redo)
         
-        self.widget.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
-        self.widget.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
-        self.widget.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
+        self.mainTab.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
+        self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
+        self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
         
-        self.widgetList = {}
+        self.mainTabList = {}
         
         self.cam = None
         
         self.mouse_events = {
-            r.LeftMouseClickPressed: self.LeftMouseDown,
+            #r.LeftMouseClickPressed: self.LeftMouseDown,
+            r.InWorldClick: self.LeftMouseDown,
             r.LeftMouseClickReleased: self.LeftMouseUp,  
             r.RightMouseClickPressed: self.RightMouseDown,
             r.RightMouseClickReleased: self.RightMouseUp
@@ -349,71 +363,71 @@ class EditGUI(Component):
     def manipulator_move(self):
         if self.keypressed:
             self.keypressed = False
-            if not self.widget.move_button.isChecked():
+            if not self.mainTab.move_button.isChecked():
                 #print "not activated"
-                #print self.widget.move_button, dir(self.widget.move_button)
-                self.widget.move_button.setChecked(True)
+                #print self.mainTab.move_button, dir(self.mainTab.move_button)
+                self.mainTab.move_button.setChecked(True)
             else:
                 #print "activated"
-                self.widget.move_button.setChecked(False)
+                self.mainTab.move_button.setChecked(False)
 
-        if not self.widget.move_button.isChecked():
+        if not self.mainTab.move_button.isChecked():
             self.hideArrows()
         else: #activated
             if self.sel is not None:
                 self.drawMoveArrows(self.sel)
                 self.manipulator_state = self.MANIPULATE_MOVE
-                self.widget.scale_button.setChecked(False)
-                self.widget.rotate_button.setChecked(False)
+                self.mainTab.scale_button.setChecked(False)
+                self.mainTab.rotate_button.setChecked(False)
             else:
                 self.manipulator_state = self.MANIPULATE_NONE
-                self.widget.move_button.setChecked(False)
+                self.mainTab.move_button.setChecked(False)
         
     def manipulator_scale(self):
         if self.keypressed:
             self.keypressed = False
-            if not self.widget.scale_button.isChecked():
+            if not self.mainTab.scale_button.isChecked():
                 #print "not activated"
-                #print self.widget.move_button, dir(self.widget.move_button)
-                self.widget.scale_button.setChecked(True)
+                #print self.mainTab.move_button, dir(self.mainTab.move_button)
+                self.mainTab.scale_button.setChecked(True)
             else:
                 #print "activated"
-                self.widget.scale_button.setChecked(False)
+                self.mainTab.scale_button.setChecked(False)
 
-        if not self.widget.scale_button.isChecked():
+        if not self.mainTab.scale_button.isChecked():
             self.hideArrows()
         else: #activated
-            #self.widget.move_button.toggle()
+            #self.mainTab.move_button.toggle()
             if self.sel is not None:
                 self.manipulator_state = self.MANIPULATE_SCALE
                 self.drawMoveArrows(self.sel)
-                self.widget.move_button.setChecked(False)
-                self.widget.rotate_button.setChecked(False)
+                self.mainTab.move_button.setChecked(False)
+                self.mainTab.rotate_button.setChecked(False)
             else:
-                self.widget.scale_button.setChecked(False)
+                self.mainTab.scale_button.setChecked(False)
                 self.manipulator_state = self.MANIPULATE_NONE
 
     def manipulator_rotate(self):
         if self.keypressed:
             self.keypressed = False
-            if not self.widget.rotate_button.isChecked():
+            if not self.mainTab.rotate_button.isChecked():
                 #print "not activated"
-                #print self.widget.move_button, dir(self.widget.move_button)
-                self.widget.rotate_button.setChecked(True)
+                #print self.mainTab.move_button, dir(self.mainTab.move_button)
+                self.mainTab.rotate_button.setChecked(True)
             else:
                 #print "activated"
-                self.widget.rotate_button.setChecked(False)
+                self.mainTab.rotate_button.setChecked(False)
 
-        if not self.widget.rotate_button.isChecked():
+        if not self.mainTab.rotate_button.isChecked():
             self.hideArrows()
         else: #activated
             if self.sel is not None:
                 self.hideArrows() #remove this when we have the arrows for rotating
                 self.manipulator_state = self.MANIPULATE_ROTATE
-                self.widget.scale_button.setChecked(False)
-                self.widget.move_button.setChecked(False)
+                self.mainTab.scale_button.setChecked(False)
+                self.mainTab.move_button.setChecked(False)
             else:
-                self.widget.rotate_button.setChecked(False) 
+                self.mainTab.rotate_button.setChecked(False) 
                 self.manipulator_state = self.MANIPULATE_NONE
     
     def float_equal(self, a,b):
@@ -441,9 +455,9 @@ class EditGUI(Component):
                 self.move_arrows.pos = pos[0], pos[1], pos[2]
                 #self.selection_box.pos = pos[0], pos[1], pos[2]
 
-                self.widget.xpos.setValue(pos[0])
-                self.widget.ypos.setValue(pos[1])
-                self.widget.zpos.setValue(pos[2])
+                self.mainTab.xpos.setValue(pos[0])
+                self.mainTab.ypos.setValue(pos[1])
+                self.mainTab.zpos.setValue(pos[2])
                 self.modified = True
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -456,7 +470,7 @@ class EditGUI(Component):
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
-                if self.widget.scale_lock.checked:
+                if self.mainTab.scale_lock.checked:
                     diff = scale[i] - oldscale[i]
                     for index in range(len(scale)):
                         #print index, scale[index], index == i
@@ -468,9 +482,9 @@ class EditGUI(Component):
                 if not self.dragging:
                     r.networkUpdate(ent.id)
                 
-                self.widget.scalex.setValue(scale[0])
-                self.widget.scaley.setValue(scale[1])
-                self.widget.scalez.setValue(scale[2])
+                self.mainTab.scalex.setValue(scale[0])
+                self.mainTab.scaley.setValue(scale[1])
+                self.mainTab.scalez.setValue(scale[2])
                 self.modified = True
 
                 self.update_selection()
@@ -516,90 +530,79 @@ class EditGUI(Component):
         line.buttons.append(button)
         return button
         
-    def showMaterials(self):
-        if not self.materialDialog.visible:
-            ent = self.sel
-            if ent is not None:
-                self.updateMaterialDialog(ent)
-                self.materialDialog.show()
-        else:
-            self.dialogClosed()
+    def tabChanged(self, index):
+        if index == 1:
+            #print "Material Tab"#, self.materialTab.formLayoutWidget.materialFormLayout
+            self.updateMaterialDialog()
+        #~ elif index == 0:
+            #~ print "Object Edit"
+        #~ else:
+            #~ print "nothing found!"
             
-    def updateMaterialDialog(self, ent):
-        qprim = r.getQPrim(ent.id)
-        mats = qprim.Materials
-        #print mats#, r.formwidget.formLayout.children() 
+    def updateMaterialDialog(self):
+        ent = self.sel
+        if ent is not None:
+            self.clearDialogForm()
+            qprim = r.getQPrim(ent.id)
+            mats = qprim.Materials
+            #print mats#, r.formwidget.formLayout.children() 
 
-        #for tuple in sorted(mats.itervalues()):
-        for i in range(len(mats)):
-            index = str(i)
-            tuple = mats[index]
-            line = UUIDEditLine(self)#QLineEdit()
-            line.text = tuple[1]
-            line.name = index
-            asset_type = tuple[0]
-            
-            #~ label = QLabel()
-            #~ if tuple[1] != "": #this happens when we don't have anything in the prim
-                #~ label.text = PRIMTYPES[tuple[0]] #XXX check for key errors
-            #~ else:
-                #~ label.text = "n/a"
-                #~ #r.logDebug("Nothing found")
+            #for tuple in sorted(mats.itervalues()):
+            for i in range(len(mats)):
+                index = str(i)
+                tuple = mats[index]
+                line = UUIDEditLine(self)#QLineEdit()
+                line.update_text(tuple[1], ent)
+                line.name = index
+                asset_type = tuple[0]
+                    
+                combobox = QComboBox()
+                for text in PRIMTYPES.itervalues():
+                    combobox.addItem(text)
                 
-            combobox = QComboBox()
-            for text in PRIMTYPES.itervalues():
-                combobox.addItem(text)
-            
-            if PRIMTYPES.has_key(asset_type):
-                realIndex = combobox.findText(PRIMTYPES[asset_type])
-                #print realIndex, asset_type, PRIMTYPES[asset_type]
-                combobox.setCurrentIndex(realIndex)
-            
-            applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line, line.applyAction)
-            cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line, line.cancelAction)
-            
-            box = QHBoxLayout()
-            box.addWidget(line)
-            box.addWidget(applyButton)
-            box.addWidget(cancelButton)
-            
-            self.dialogElements.append((combobox, box))
-            self.materialDialogFormWidget.formLayout.addRow(combobox, box)
-            #print row
-            #~ self.materialDialogFormWidget.formLayout.addWidget(label, row, 1)
-            #~ self.materialDialogFormWidget.formLayout.addWidget(line, row, 2)
-            #~ self.materialDialogFormWidget.formLayout.addWidget(applyButton, row, 3)
-            #~ self.materialDialogFormWidget.formLayout.addWidget(cancelButton, row, 4)
-            
-    def dialogClosed(self):
-        #print "dialog Closed"
-        self.materialDialog.hide()
-        self.clearDialogForm()
+                if PRIMTYPES.has_key(asset_type):
+                    realIndex = combobox.findText(PRIMTYPES[asset_type])
+                    #print realIndex, asset_type, PRIMTYPES[asset_type]
+                    combobox.setCurrentIndex(realIndex)
+                
+                applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line, line.applyAction)
+                cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line, line.cancelAction)
+                line.index = index
+                line.combobox = combobox
+                line.connect('textEdited(QString)', applyButton.lineValueChanged)
+                line.connect('textEdited(QString)', cancelButton.lineValueChanged)
+                
+                box = QHBoxLayout()
+                box.addWidget(line)
+                box.addWidget(applyButton)
+                box.addWidget(cancelButton)
+                
+                self.materialTabFormWidget.materialFormLayout.addRow(combobox, box)
+                
 
     def clearDialogForm(self):
-        self.dialogElements = []
-        children = self.materialDialogFormWidget.children()
+        children = self.materialTabFormWidget.children()
         #print children
-        #~ print self.materialDialogFormWidget.findChildren("QHBoxLayout")
+        #~ print self.materialTabFormWidget.findChildren("QHBoxLayout")
         for child in children:
             #print child.name#, child.name == "formLayout"
-            if child.name != "formLayout": #dont want to remove the actual form layout from the widget
-                self.materialDialogFormWidget.formLayout.removeWidget(child)
+            if child.name != "materialFormLayout": #dont want to remove the actual form layout from the widget
+                self.materialTabFormWidget.materialFormLayout.removeWidget(child)
                 child.delete()
         
-        children = self.materialDialogFormWidget.findChildren("QHBoxLayout")
+        children = self.materialTabFormWidget.findChildren("QHBoxLayout")
         for child in children:
             #print child
-            self.materialDialogFormWidget.formLayout.removeItem(child)
+            self.materialTabFormWidget.materialFormLayout.removeItem(child)
             child.delete()
 
     def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
-        current = self.widget.treeWidget.currentItem()
+        current = self.mainTab.treeWidget.currentItem()
         text = current.text(0)
         #print "Selected:", text
-        if self.widgetList.has_key(text):
-            self.select(self.widgetList[text][0])
+        if self.mainTabList.has_key(text):
+            self.select(self.mainTabList[text][0])
     
     def undo(self):
         #print "undo clicked"
@@ -654,7 +657,7 @@ class EditGUI(Component):
             self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
             self.hideArrows()
             self.hideSelector()
-            id, tWid = self.widgetList.pop(str(ent.id))
+            id, tWid = self.mainTabList.pop(str(ent.id))
             #print tWid, tWid.text(0)
             tWid.delete()
             self.deselect()
@@ -681,12 +684,12 @@ class EditGUI(Component):
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
             
-            if not self.widgetList.has_key(str(ent.id)):
-                tWid = QTreeWidgetItem(self.widget.treeWidget)
+            if not self.mainTabList.has_key(str(ent.id)):
+                tWid = QTreeWidgetItem(self.mainTab.treeWidget)
                 id = ent.id
                 tWid.setText(0, id)
                 
-                self.widgetList[str(id)] = (ent, tWid)
+                self.mainTabList[str(id)] = (ent, tWid)
             
             """show the id and name of the object. name is sometimes empty it seems. 
                 swoot: actually, seems like the name just isn't gotten fast enough or 
@@ -694,14 +697,14 @@ class EditGUI(Component):
             name = ent.name
             if name == "":
                 name = "n/a"
-            self.widget.label.text = "%d (name: %s)" % (ent.id, name)
+            self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
             
             self.meshline.update_text(ent.mesh, ent)
 
             """update material dialog"""
-            if self.materialDialog.visible:
-                self.clearDialogForm()
-                self.updateMaterialDialog(ent)
+            self.updateMaterialDialog()
+            self.tabwidget.setTabEnabled(1, True)
+                
             self.sel = ent
             #print "Selected entity:", self.sel.id, "at", self.sel.pos#, self.sel.name
             #update the gui vals to show what the newly selected entity has
@@ -717,7 +720,7 @@ class EditGUI(Component):
     def deselect(self):
         if self.sel is not None:
             self.sel = None
-            self.widget.label.text = "<none>"
+            self.mainTab.label.text = "<none>"
             self.hideArrows()
             self.hideSelector()
             self.prev_mouse_abs_x = 0
@@ -725,7 +728,7 @@ class EditGUI(Component):
             self.canmove = False
             self.arrow_grabbed_axis = None
             self.arrow_grabbed = False
-            self.dialogClosed()
+            self.tabwidget.setTabEnabled(1, False)
             #self.propedit.hide()
         
     def update_selection(self):             
@@ -751,21 +754,21 @@ class EditGUI(Component):
 
     def update_guivals(self):
         x, y, z = self.sel.pos
-        self.widget.xpos.setValue(x)
-        self.widget.ypos.setValue(y)
-        self.widget.zpos.setValue(z)
+        self.mainTab.xpos.setValue(x)
+        self.mainTab.ypos.setValue(y)
+        self.mainTab.zpos.setValue(z)
             
         x, y, z = self.sel.scale
-        self.widget.scalex.setValue(x)
-        self.widget.scaley.setValue(y)
-        self.widget.scalez.setValue(z)
+        self.mainTab.scalex.setValue(x)
+        self.mainTab.scaley.setValue(y)
+        self.mainTab.scalez.setValue(z)
             
         #from quat to euler x.y,z
         euler = quat_to_euler(self.sel.orientation)
         #print euler
-        self.widget.rot_x.setValue(euler[0])
-        self.widget.rot_y.setValue(euler[1])
-        self.widget.rot_z.setValue(euler[2])        
+        self.mainTab.rot_x.setValue(euler[0])
+        self.mainTab.rot_y.setValue(euler[1])
+        self.mainTab.rot_z.setValue(euler[2])        
          
         self.selection_box.pos = self.sel.pos
         self.selection_box.orientation = self.sel.orientation
@@ -819,9 +822,9 @@ class EditGUI(Component):
             self.arrow_grabbed = False
             self.manipulator_state = self.MANIPULATE_NONE
             
-            self.widget.move_button.setChecked(False)
-            self.widget.rotate_button.setChecked(False)
-            self.widget.scale_button.setChecked(False)
+            self.mainTab.move_button.setChecked(False)
+            self.mainTab.rotate_button.setChecked(False)
+            self.mainTab.scale_button.setChecked(False)
             #XXX todo: change these after theres a ent.hide type way
         except RuntimeError, e:
             r.logDebug("hideArrows failed")
@@ -896,7 +899,7 @@ class EditGUI(Component):
             #print "canmove:", self.canmove
             self.canmove = False
             #~ self.sel = None
-            #~ self.widget.label.text = "<none>"
+            #~ self.mainTab.label.text = "<none>"
             #~ self.hideArrows()
             #~ self.hideSelector()
             #~ self.prev_mouse_abs_x = 0
@@ -1070,8 +1073,6 @@ class EditGUI(Component):
         
         #self.proxywidget.hide() #prevent a crash at exit
         uism = r.getUiSceneManager()
-        uism.RemoveProxyWidgetFromScene(self.materialDialog)
-        r.logInfo("EditGUI removed material diag...")
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
 
         r.logInfo("   ...exit done.")
