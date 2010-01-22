@@ -229,9 +229,7 @@ namespace OpenALAudio
         if (!sound_stream_)
             sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
         if (!positional)
-        {
-            sound_stream_->SetPosition(Vector3df::ZERO);
-        }
+            sound_stream_->SetPosition(Vector3df::ZERO, false);
         sound_stream_->AddData(buffer, buffer_size);
         return 0;
     }
@@ -299,11 +297,11 @@ namespace OpenALAudio
         i->second->SetRange(inner_radius, outer_radius, rolloff);
     }    
 
-    void SoundSystem::SetSoundStreamPosition(Vector3df position)
+    void SoundSystem::SetSoundStreamPosition(Vector3df position, bool positional)
     {
         if (!sound_stream_)
             return;
-        sound_stream_->SetPosition(position);
+        sound_stream_->SetPosition(position, positional);
     }
  
     sound_id_t SoundSystem::GetNextSoundChannelID()

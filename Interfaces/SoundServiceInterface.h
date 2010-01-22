@@ -154,7 +154,7 @@ namespace Foundation
 
             \todo: Merge with exist SetPosition method
          */   
-        virtual void SetSoundStreamPosition(Vector3df position) = 0;
+        virtual void SetSoundStreamPosition(Vector3df position, bool positional) = 0;
 
     };
 }
