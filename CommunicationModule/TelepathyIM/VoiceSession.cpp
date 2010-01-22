@@ -257,6 +257,7 @@ namespace TelepathyIM
         connect(farsight_channel_,
             SIGNAL( AudioStreamReceived() ),
             SLOT( OnFarsightChannelAudioStreamReceived() ));
+
         connect(farsight_channel_,
             SIGNAL( VideoStreamReceived() ),
             SLOT( OnFarsightChannelVideoStreamReceived() ));
@@ -277,8 +278,7 @@ namespace TelepathyIM
 
         connect(tp_channel_.data(), SIGNAL( streamAdded(const Tp::MediaStreamPtr &) ), SLOT( OnStreamAdded(const Tp::MediaStreamPtr &) ));
         connect(tp_channel_.data(), SIGNAL( streamRemoved(const Tp::MediaStreamPtr &) ), SLOT( OnStreamRemoved(const Tp::MediaStreamPtr &) ));
-        connect(tp_channel_.data(), SIGNAL( streamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ),
-                                    SLOT( OnStreamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ));
+        connect(tp_channel_.data(), SIGNAL( streamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ), SLOT( OnStreamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ));
         connect(tp_channel_.data(), SIGNAL( streamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ), SLOT( OnStreamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ));
 
 		Tp::MediaStreams streams = tp_channel_->streams();
@@ -389,6 +389,9 @@ namespace TelepathyIM
             break;
         case FarsightChannel::StatusConnected:
             LogInfo("VoiceSession: FarsightChannel status = Connected.");
+            //state_ = STATE_OPEN;
+            //reason_ = "";
+            //emit StateChanged(state_);
             break;
         case FarsightChannel::StatusDisconnected:
             LogInfo("VoiceSession: Call FarsightChannel status = terminated.");
@@ -657,6 +660,9 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightAudioDataAvailable(int count)
     {       
+        if (count < AUDIO_BUFFER_PLAYBACK_MIN_SIZE)
+            return;
+
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
             return;
@@ -686,7 +692,7 @@ namespace TelepathyIM
     void VoiceSession::OnFarsightAudioBufferOverflow(int count)
     {
         QString message = QString("Farsight audio buffer overflow. %1 bytes lost.").arg(QString::number(count));
-        LogWarning(message.toStdString());
+        LogDebug(message.toStdString());
     }
 
     Communication::VoiceSessionInterface::StreamState VoiceSession::GetAudioStreamState() const

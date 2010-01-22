@@ -464,7 +464,7 @@ namespace TelepathyIM
         received_channel_count_ = channels;
 
         available_audio_data_length_ += size;
-        emit AudioDataAvailable(size);
+        emit AudioDataAvailable(available_audio_data_length_);
     }
 
     GstElement* FarsightChannel::setUpElement(const QString &element_name)
