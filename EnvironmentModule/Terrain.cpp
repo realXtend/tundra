@@ -78,7 +78,7 @@ namespace
         assert(terrainMaterial.get());
         if(terrainMaterial.get())
         {
-            //OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
+            OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
             emit TerrainTextureChanged();
         }
         else
