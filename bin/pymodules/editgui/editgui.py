@@ -107,13 +107,13 @@ class DragDroppableEditline(QLineEdit):
         if ent is not None:
             self.doaction(ent, asset_type, inv_id, inv_name, asset_ref)
 
-            self.update_text(inv_name, ent)
+            self.update_text(inv_name)
 
         ev.acceptProposedAction()
 
-    def update_text(self, name, ent):
+    def update_text(self, name):
         """called also from main/parent.select() when sel changed"""
-        #ent = self.mainedit.sel
+        ent = self.mainedit.sel
         if ent is not None:
             self.text = name #XXX add querying inventory for name
         else:
@@ -552,7 +552,7 @@ class EditGUI(Component):
                 index = str(i)
                 tuple = mats[index]
                 line = UUIDEditLine(self)#QLineEdit()
-                line.update_text(tuple[1], ent)
+                line.update_text(tuple[1])
                 line.name = index
                 asset_type = tuple[0]
                     
@@ -699,7 +699,7 @@ class EditGUI(Component):
                 name = "n/a"
             self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
             
-            self.meshline.update_text(ent.mesh, ent)
+            self.meshline.update_text(ent.mesh)
 
             """update material dialog"""
             self.updateMaterialDialog()
@@ -730,6 +730,10 @@ class EditGUI(Component):
             self.arrow_grabbed = False
             self.tabwidget.setTabEnabled(1, False)
             #self.propedit.hide()
+            
+            self.meshline.update_text("")
+            self.reset_guivals()
+            
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
@@ -782,6 +786,19 @@ class EditGUI(Component):
                 #~ self.drawMoveArrows(ent)
             #~ else:
     
+    def reset_guivals(self):
+        self.mainTab.xpos.setValue(0)
+        self.mainTab.ypos.setValue(0)
+        self.mainTab.zpos.setValue(0)
+
+        self.mainTab.scalex.setValue(0)
+        self.mainTab.scaley.setValue(0)
+        self.mainTab.scalez.setValue(0)
+
+        self.mainTab.rot_x.setValue(0)
+        self.mainTab.rot_y.setValue(0)
+        self.mainTab.rot_z.setValue(0)  
+        
     def drawMoveArrows(self, ent):
         #print "drawMoveArrows", self.move_arrows
         x, y, z = ent.pos
@@ -898,6 +915,7 @@ class EditGUI(Component):
         else:
             #print "canmove:", self.canmove
             self.canmove = False
+            self.deselect()
             #~ self.sel = None
             #~ self.mainTab.label.text = "<none>"
             #~ self.hideArrows()
