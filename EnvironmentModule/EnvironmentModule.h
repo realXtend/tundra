@@ -81,6 +81,9 @@ namespace Environment
         /// @Param start_height what height texture starts at (meters).
         /// @Param height_range how many meters texture will go up from the texture_start_height 
         /// @Param corner what texture height we want to change.
+        /// @todo Seems like older OpenSim server (tested 0.6.5) won't inform all the users that terrain heights has been updated,
+        /// if needed add custom code that will Request a new ReqionInfo message from the server. 
+        /// That message contain all the infomation releated to environment like terrain and water.
         void SendTextureHeightMessage(Real start_height, Real height_range, uint corner);
 
         /*! Sends modify land message into the server.
