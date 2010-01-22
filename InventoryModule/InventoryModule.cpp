@@ -342,7 +342,8 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 
     currentWorldStream_->SendAgentResumePacket();
 
-    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFiles(filenames, QStringList(), 0);
+    QStringList itemNames;
+    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFiles(filenames, itemNames, 0);
 
     return Console::ResultSuccess();
 }

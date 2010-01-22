@@ -208,14 +208,18 @@ void InventoryWindow::Upload()
     if (dir.exists())
         lastUsedPath_ = path;
 
-    inventoryItemModel_->Upload(index, filenames, QStringList());
+    QStringList itemNames;
+    inventoryItemModel_->Upload(index, filenames, itemNames);
 }
 
 void InventoryWindow::UploadFiles(QStringList &filenames)
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    if (!filenames.isEmpty())
-        inventoryItemModel_->Upload(index, filenames, QStringList());
+    if (filenames.isEmpty())
+        return;
+
+    QStringList itemNames;
+    inventoryItemModel_->Upload(index, filenames, itemNames);
 }
 
 void InventoryWindow::Download()
