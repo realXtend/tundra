@@ -40,10 +40,12 @@ class ModuleManager:
     def LOGIN_INFO(self, *args):
         pass
         #print "Login updated", args
+    def SERVER_DISCONNECTED(self, id):
+        pass
+        #print "the server disconnection event."
     def INBOUND_NETWORK(self, evid, name):
         pass
         #print "Manager got a NETWORK_IN event", id, name
-
     def GENERIC_MESSAGE(self, typename, data):
         pass
         

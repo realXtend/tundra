@@ -168,11 +168,9 @@ class UUIDEditLine(DragDroppableEditline):
             asset_type_text = self.combobox.currentText
             
             asset_type = PRIMTYPES_REVERSED[asset_type_text] #need to encode to something else?
-            
             mats[self.index]  = (asset_type, self.text)
-            #~ print mats 
-            #~ print qprim.Materials
             qprim.Materials = mats
+            
             r.sendRexPrimData(ent.id)
             
         
@@ -211,9 +209,6 @@ class EditGUI(Component):
     def __init__(self):
         Component.__init__(self)
         loader = QUiLoader()
-        #mode = INTERNAL
-        #if DEV:
-        #    mode = EXTERNAL
          
         self.move_arrows = None
         uifile = QFile(self.UIFILE)
@@ -227,20 +222,14 @@ class EditGUI(Component):
         uiprops = r.createUiWidgetProperty()
         uiprops.widget_name_ = "Object Edit"
         uiprops.my_size_ = QSize(width, height)
-        #self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)
-        #print widget, dir(widget)
+
         if not uism.AddProxyWidget(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        #else:
-         #   ui.show()
-
-        self.proxywidget.connect('Visible(bool)', self.on_hide)
         
         self.widget = ui
         self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
 
-        self.tabwidget.connect('currentChanged(int)', self.tabChanged)
         self.mainTab = ui.findChild("QWidget", "MainFrame")
         self.materialTab = ui.findChild("QWidget", "MaterialsTab")
         self.tabwidget.setTabEnabled(1, False)
@@ -249,30 +238,24 @@ class EditGUI(Component):
 
         self.meshline = MeshAssetidEditline(self) 
         self.meshline.name = "meshLineEdit"
-        
+
         button_ok = self.getButton("Apply", self.ICON_OK, self.meshline, self.meshline.applyAction)
         button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline, self.meshline.cancelAction)
         
-        self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
-        self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
-        
         box = self.mainTab.findChild("QHBoxLayout", "meshLine")
-        if box is not None:
-            box.addWidget(self.meshline)
-            box.addWidget(button_ok)
-            box.addWidget(button_cancel)
+        box.addWidget(self.meshline)
+        box.addWidget(button_ok)
+        box.addWidget(button_cancel)
         
         #self.propedit = r.getPropertyEditor()
         #print pe, pe.setObject, pe.show
         #self.propedit.show()
-        
-        #~ widget.xpos.connect('valueChanged(double)', self.changed_x)
+
         def poschanger(i):
             def pos_at_index(v):
                 self.changepos(i, v)
             return pos_at_index
         for i, poswidget in enumerate([self.mainTab.xpos, self.mainTab.ypos, self.mainTab.zpos]):
-            #poswidget.connect('valueChanged(double)', lambda v: self.changepos(i, v))  
             poswidget.connect('valueChanged(double)', poschanger(i))
 
         def rotchanger(i):
@@ -295,7 +278,13 @@ class EditGUI(Component):
         self.right_button_down = False
                 
         self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
-        #self.mainTab.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
+        
+        self.proxywidget.connect('Visible(bool)', self.on_hide)
+        self.tabwidget.connect('currentChanged(int)', self.tabChanged)
+
+        
+        self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
+        self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
         
         self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.createObject)
         self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.deleteObject)
@@ -311,8 +300,6 @@ class EditGUI(Component):
         self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
         
         self.mainTabList = {}
-        
-        self.cam = None
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMouseDown,
@@ -340,8 +327,6 @@ class EditGUI(Component):
         
         self.dragging = False
         
-        #~ self.modified = False
-        #~ self.modifying = False
         self.time = 0
         
         self.keypressed = False
@@ -364,11 +349,9 @@ class EditGUI(Component):
         if self.keypressed:
             self.keypressed = False
             if not self.mainTab.move_button.isChecked():
-                #print "not activated"
                 #print self.mainTab.move_button, dir(self.mainTab.move_button)
                 self.mainTab.move_button.setChecked(True)
             else:
-                #print "activated"
                 self.mainTab.move_button.setChecked(False)
 
         if not self.mainTab.move_button.isChecked():
@@ -387,17 +370,13 @@ class EditGUI(Component):
         if self.keypressed:
             self.keypressed = False
             if not self.mainTab.scale_button.isChecked():
-                #print "not activated"
-                #print self.mainTab.move_button, dir(self.mainTab.move_button)
                 self.mainTab.scale_button.setChecked(True)
             else:
-                #print "activated"
                 self.mainTab.scale_button.setChecked(False)
 
         if not self.mainTab.scale_button.isChecked():
             self.hideArrows()
         else: #activated
-            #self.mainTab.move_button.toggle()
             if self.sel is not None:
                 self.manipulator_state = self.MANIPULATE_SCALE
                 self.drawMoveArrows(self.sel)
@@ -411,11 +390,8 @@ class EditGUI(Component):
         if self.keypressed:
             self.keypressed = False
             if not self.mainTab.rotate_button.isChecked():
-                #print "not activated"
-                #print self.mainTab.move_button, dir(self.mainTab.move_button)
                 self.mainTab.rotate_button.setChecked(True)
             else:
-                #print "activated"
                 self.mainTab.rotate_button.setChecked(False)
 
         if not self.mainTab.rotate_button.isChecked():
@@ -533,13 +509,13 @@ class EditGUI(Component):
     def tabChanged(self, index):
         if index == 1:
             #print "Material Tab"#, self.materialTab.formLayoutWidget.materialFormLayout
-            self.updateMaterialDialog()
+            self.updateMaterialTab()
         #~ elif index == 0:
             #~ print "Object Edit"
         #~ else:
             #~ print "nothing found!"
             
-    def updateMaterialDialog(self):
+    def updateMaterialTab(self):
         ent = self.sel
         if ent is not None:
             self.clearDialogForm()
@@ -702,7 +678,7 @@ class EditGUI(Component):
             self.meshline.update_text(ent.mesh)
 
             """update material dialog"""
-            self.updateMaterialDialog()
+            self.updateMaterialTab()
             self.tabwidget.setTabEnabled(1, True)
                 
             self.sel = ent
@@ -733,7 +709,6 @@ class EditGUI(Component):
             
             self.meshline.update_text("")
             self.reset_guivals()
-            
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
@@ -776,15 +751,6 @@ class EditGUI(Component):
          
         self.selection_box.pos = self.sel.pos
         self.selection_box.orientation = self.sel.orientation
-        
-            #~ if self.cam is None and ogreroot:
-                #~ rs = root.getRenderSystem()
-                #~ vp = rs._getViewport()
-                #~ self.cam = vp.getCamera()
-                #~ self.drawMoveArrows(ent)
-            #~ elif self.cam is not None and ogreroot: 
-                #~ self.drawMoveArrows(ent)
-            #~ else:
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)
@@ -822,7 +788,6 @@ class EditGUI(Component):
         #if self.move_arrows is not None:
         self.move_arrows.pos = pos
         self.move_arrows.scale = 0.2, 0.2, 0.2
-        #self.arrow.setOrientation(self.cam.DerivedOrientation)
         self.move_arrows.orientation = ort
   
     def hideArrows(self):
@@ -916,13 +881,7 @@ class EditGUI(Component):
             #print "canmove:", self.canmove
             self.canmove = False
             self.deselect()
-            #~ self.sel = None
-            #~ self.mainTab.label.text = "<none>"
-            #~ self.hideArrows()
-            #~ self.hideSelector()
-            #~ self.prev_mouse_abs_x = 0
-            #~ self.prev_mouse_abs_y = 0
-            
+
     def LeftMouseUp(self, mouseinfo):
         self.left_button_down = False
         
@@ -947,14 +906,9 @@ class EditGUI(Component):
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
         if self.active: #XXXnot self.canvas.IsHidden():
-            #print "MouseClick in editmode", click_id, mouseinfo.x, mouseinfo.y, self.canvas.IsHidden()
-            #print "on_mouseclick", click_id, mouseinfo.x, mouseinfo.y
-            #print "Point!"
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #print "on_mouseclick", click_id, self.mouse_events[click_id]
-            #else:
-                #print "unknown click_id?", self.mouse_events
             
     def on_mousemove(self, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
@@ -1034,7 +988,6 @@ class EditGUI(Component):
                                 mov = lengthy
                                 scale[self.arrow_grabbed_axis] -= mov
                             else:
-                                #mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
                                 mov = lengthx
                                 mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
                                 scale[self.arrow_grabbed_axis] += mov
@@ -1044,25 +997,9 @@ class EditGUI(Component):
                             self.update_selection()
 
                     else: #freemove
-                        #~ oldvec = Vector3(self.sel.pos)
-                        #~ upvec = Vector3(r.getCameraUp())
-                        #~ rightvec = Vector3(r.getCameraRight())
-                        #~ #print "MouseMove:", mouseinfo.x, mouseinfo.y, r.getCameraUp(), r.getCameraRight()
-                        #~ n = 0.1 #is not doing correct raycasting to plane to see pos, this is a multiplier for the crude movement method here now
-                        #~ newvec = oldvec - (upvec * mouseinfo.rel_y * n) + (rightvec * mouseinfo.rel_x * n)
-                        
-                        #~ self.move_arrows.pos = newvec.x, newvec.y, newvec.z
-                        #~ self.sel.pos = newvec.x, newvec.y, newvec.z
-                        #~ #r.networkUpdate(self.sel.id)
-                        #~ #XXX also here the immediate network sync is not good,
-                        #~ #refactor out from pos setter to a separate network_update() call
-
                         newpos = entpos + (amount_x * rightvec) - (amount_y * upvec)
-                        
-                        #print newpos
                         self.sel.pos = newpos.x, newpos.y, newpos.z
-                        #print worldwidth
-                        
+                     
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
                     
@@ -1081,19 +1018,12 @@ class EditGUI(Component):
         #print "editgui got an inbound network event:", id, name
 
     def on_exit(self):
-        r.logInfo("EditGUI exiting...")
-        
-        if r.restart:
-            r.logDebug("...restarting...")
-            self.hideArrows()
-        #~ else:
-            #~ r.logDebug("...not restarting...")
-        
-        #self.proxywidget.hide() #prevent a crash at exit
+        r.logInfo("Object Edit exiting...")
+
         uism = r.getUiSceneManager()
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
 
-        r.logInfo("   ...exit done.")
+        r.logInfo("         ...exit done.")
 
     def on_hide(self, shown):
         self.active = shown
@@ -1132,16 +1062,13 @@ class EditGUI(Component):
                             self.move_arrows.pos = ent_pos
                     except RuntimeError, e:
                         r.logDebug("update: scene not found")
-                        
-                    #~ self.time += time
-                    #~ if self.time >= self.UPDATE_INTERVAL:
-                        #~ #print "hep"
-                        #~ self.time = 0
-                        #~ ent = self.sel
-                        #~ if self.modified and ent is not None:
-                            #~ r.networkUpdate(ent.id)
-                            #~ self.modified = False
-                    
+   
+    def on_logout(self, id):
+        r.logInfo("Object Edit resetting due to Logout.")
+        self.deselect()
+        self.selection_box = None
+        self.move_arrows = None
+        
 #barrel on 0.5 in viila: 
 # Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
 # inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
