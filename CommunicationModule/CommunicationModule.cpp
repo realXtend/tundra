@@ -112,9 +112,12 @@ namespace Communication
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
-                if (opensim_chat_proxy_widget_)
+                if (opensim_chat_ui_ && opensim_chat_proxy_widget_)
+                {
                     RemoveProxyWidgetFromUi(opensim_chat_proxy_widget_);
-                SAFE_DELETE(opensim_chat_ui_);
+                    opensim_chat_proxy_widget_ = 0;
+                    SAFE_DELETE(opensim_chat_ui_);
+                }
             }
         }
 
