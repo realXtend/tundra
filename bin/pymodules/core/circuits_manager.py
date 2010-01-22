@@ -27,6 +27,7 @@ class Exit(Event): pass
 class LoginInfo(Event): pass
 class InboundNetwork(Event): pass
 class GenericMessage(Event): pass
+class Logout(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -49,7 +50,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified']
+        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout']
         ignchannels = [('*', n) for n in ignchannames]
         self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
@@ -137,6 +138,11 @@ class ComponentRunner(Component):
         #self.m.send(LoginInfo(self.callback), "on_login")
         return self.eventhandled
     
+    def SERVER_DISCONNECTED(self, id):
+        #print "Circuits got the server disconnection event."
+        self.m.send(Logout(id), "on_logout")
+        return False
+        
     def INBOUND_NETWORK(self, id, name):
         #print "Circuits got network_in event:", id, name
         self.eventhandled = False
@@ -157,12 +163,12 @@ class ComponentRunner(Component):
         #XXX now that we are using flush() and tick(), does stop() propagate to components too?
         
     def restart(self):
-        r.restart = True
+        #r.restart = True
         r.logInfo("Restarting python module manager, reloading plugin codes")
         self.exit()
         self.start()
         r.logInfo("...done python restart.")
-        r.restart = False
+        #r.restart = False
                 
 #TestModule moved to own file (err, module)
 
