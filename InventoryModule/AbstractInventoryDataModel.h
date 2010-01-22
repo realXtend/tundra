@@ -118,13 +118,24 @@ namespace Inventory
         virtual bool GetUseTrashFolder() const = 0;
 
     signals:
-        /// Indicates that asset upload has started.
-        /// @param asset_id
-        void UploadStarted(const QString &asset_id);
+        /// Indicates that multiupload has started.
+        /// @param file_count Number of files to be uploaded.
+        void MultiUploadStarted(size_t file_count);
 
         /// Indicates that asset upload has started.
-        /// @param asset_id
-        void UploadCompleted(const QString &asset_id);
+        /// @param filename Filename.
+        void UploadStarted(const QString &filename);
+
+        /// Indicates that asset upload has failed.
+        /// @param filename Filename.
+        void UploadFailed(const QString &filename);
+
+        /// Indicates that asset upload has completed.
+        /// @param filename Filename.
+        void UploadCompleted(const QString &filename);
+
+        /// Indicates that multiupload has completed.
+        void MultiUploadCompleted();
 
         /// Indicates that asset download has started.
         /// @param asset_id
@@ -141,7 +152,6 @@ namespace Inventory
 
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
-
     };
 }
 #endif

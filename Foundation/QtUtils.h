@@ -6,9 +6,11 @@
 #ifndef incl_Foundation_QtUtils_h
 #define incl_Foundation_QtUtils_h
 
+#include <QStringList>
+
 namespace Foundation
 {
-    class QtUtils 
+    class QtUtils
     {
     public:
         /// Default constructor.
@@ -40,6 +42,9 @@ namespace Foundation
          *  @return List of absolute paths to the chosen files.
          */
         static StringList GetOpenRexFileNames(const std::string &dir);
+
+        /// Same as GetOpenFileNames but return QStringList instead of std::list<std::string>.
+        static QStringList GetOpenRexFilenames(const std::string &dir);
 
         /// @return The absolute path of the application's current directory.
         static std::string GetCurrentPath();

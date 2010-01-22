@@ -532,7 +532,7 @@ void InventoryItemModel::Download(const QString &store_path, const QItemSelectio
     }
 }
 
-void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
+void InventoryItemModel::Upload(const QModelIndex &index, QStringList &filenames, QStringList &item_names)
 {
     if (!index.isValid())
         return;
@@ -540,6 +540,8 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
     AbstractInventoryItem *parentItem = GetItem(index);
     assert(parentItem);
 
+    dataModel_->UploadFiles(filenames, item_names, parentItem);
+    /*
     QStringListIterator it(filenames);
     while(it.hasNext())
     {
@@ -547,6 +549,7 @@ void InventoryItemModel::Upload(const QModelIndex &index, QStringList filenames)
         if (!filename.isEmpty())
             dataModel_->UploadFile(filename, parentItem);
     }
+    */
 }
 
 void InventoryItemModel::CopyAssetReferenceToClipboard(const QModelIndex &index)

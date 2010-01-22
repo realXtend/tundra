@@ -30,7 +30,6 @@ namespace ProtocolUtilities
 namespace Inventory
 {
     class InventoryFolder;
-    class AssetUploader;
 
     class OpenSimInventoryDataModel : public AbstractInventoryDataModel
     {
@@ -115,18 +114,17 @@ namespace Inventory
         /// OpenSim inventory uses trash folder. Returns true.
         bool GetUseTrashFolder() const { return true; }
 
+        // OpenSimInventoryDataModel API
+
         /// Set World Stream.
         /// @param world_stream WorldStream pointer.
-        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
+        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream) { currentWorldStream_ = world_stream; }
 
         ///@return True if inventory has pending downloads.
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
 
         ///@return True if inventory has pending item open requests.
         bool HasPendingOpenItemRequests() const { return openRequests_.size() > 0; }
-
-        /// @return Asset uploader.
-        AssetUploader *GetAssetUploader() const {return assetUploader_; }
 
         /// Handles INVENTORY_DESCENDENTS event.
         /// @param data Event data.
@@ -144,16 +142,59 @@ namespace Inventory
         /// @param data Event data.
         void HandleAssetReadyForOpen(Foundation::EventDataInterface *data);
 
-#ifdef _DEBUG
-        /// Prints the inventory tree structure to std::cout.
-        void DebugDumpInventoryFolderStructure();
-#endif
+        /** Uploads a file using HTTP.
+         *  @param asset_type_t Asset type.
+         *  @param filename Filename.
+         *  @param name User-defined name.
+         *  @param description User-defined description.
+         *  @param folder_id Id of the destination folder for this item.
+         *  @return true if successful
+         */
+        bool UploadFile(
+            const RexTypes::asset_type_t &asset_type,
+            const std::string &filename,
+            const std::string &name,
+            const std::string &description,
+            const RexUUID &folder_id);
+
+        /** Uploads a buffer using HTTP.
+         *  @param asset_type_t Asset type.
+         *  @param filename Filename (used to decide asset type)
+         *  @param name User-defined name.
+         *  @param description User-defined description.
+         *  @param folder_id Id of the destination folder for this item.
+         *  @param data buffer
+         *  @return true if successful
+         */
+
+        bool UploadBuffer(
+            const RexTypes::asset_type_t &asset_type,
+            const std::string &filename,
+            const std::string &name,
+            const std::string &description,
+            const RexUUID &folder_id,
+            const QVector<uchar>& buffer);
+
+        /// @return Does asset uploader have upload capability set.
+        bool HasUploadCapability() const { return uploadCapability_ != ""; }
+
+        /// Sets the upload capability URL.
+        /// @param url Capability URL.
+        void SetUploadCapability(const std::string &url) { uploadCapability_ = url; }
+
+        /// Utility function for create name for asset from filename.
+        /// @param filename Filename.
+        /// @return Filename without the file extension.
+        QString CreateNameFromFilename(QString filename);
 
         typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
-    public slots:
-        void SendNotification(const QString &text);
-    
+    signals:
+        /// This signal is emitted to show notification on the window.
+        /// @param message Message to be shown.
+        /// @param int duration Duration in milliseconds.
+        void Notification(const QString &message, int duration);
+
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 
@@ -168,6 +209,24 @@ namespace Inventory
         /// @param inventory_skeleton OpenSim inventory skeleton.
         void SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
+        /// Used by UploadFiles.
+        void ThreadedUploadFiles(QStringList &filenames, QStringList &item_names);
+
+        /// Used by UploadBuffers.
+        //void ThreadedUploadBuffers(StringList filenames, std::vector<std::vector<u8> > buffers);
+        void ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers);
+
+        /// Creates NewFileAgentInventory XML message.
+        std::string CreateNewFileAgentInventoryXML(
+            const std::string &asset_type,
+            const std::string &inventory_type,
+            const std::string &folder_id,
+            const std::string &name,
+            const std::string &description);
+
+        /// Creates all the reX-spesific asset folders to the inventory.
+        void CreateRexInventoryFolders();
+
         /// Framework pointer
         Foundation::Framework *framework_;
 
@@ -177,6 +236,9 @@ namespace Inventory
         /// World Library owner id.
         QString worldLibraryOwnerId_;
 
+        /// Upload capability URL.
+        std::string uploadCapability_;
+
         /// Pointer to WorldStream
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 
@@ -185,9 +247,6 @@ namespace Inventory
 
         /// Item open request map.
         AssetRequestMap openRequests_;
-
-        /// Asset uploader.
-        AssetUploader *assetUploader_;
     };
 }
 
