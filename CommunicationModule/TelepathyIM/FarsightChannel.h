@@ -6,7 +6,7 @@
 #include <QString>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/StreamedMediaChannel>
-#include <telepathy-farsight/channel.h>
+#include <TelepathyQt4/Farsight/Channel>
 #include <Foundation.h>
 #include "VideoWidget.h"
 
@@ -28,7 +28,7 @@ namespace TelepathyIM
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
         //! Buffer size for received raw audio data in bytes
-        static const int AUDIO_BUFFER_SIZE = 4096;
+        static const int AUDIO_BUFFER_SIZE = 32768;
 
     public:
 
