@@ -73,16 +73,20 @@ public:
     const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
 
     //! Get terrain texture start height in meters.
-    //! @param switch texture height value need to change.
+    //! @param switch texture height value need to return range[0-3].
     const Real &GetTerrainTextureStartHeight(int index) const;
 
     //! Get terrain texture height ranges in meters.
-    //! @param switch texture height value need to change.
+    //! @param switch texture height value need to return range[0-3].
     const Real &GetTerrainTextureHeightRange(int index) const;
+
+    //! Iterates throught whole heightmap and return the lowest point on that map.
+    Real GetLowestTerrainHeight();
+
 
 signals:
     //! Signal is sended when height map values have changed.
-    void HeightmapUpdated();
+    void HeightmapGeometryUpdated();
 
     //! Signal is sended when some of the terrain textures have changed.
     void TerrainTextureChanged();
@@ -112,6 +116,10 @@ private:
     void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
 
     void SetTerrainMaterialTexture(int index, const char *textureName);
+
+    //! When whole terrain heightmap geometry has been generated, 
+    //! it's time to inform terrain texture blend shader what is the lowest height value on that heightmap.
+    void UpdateTextureShaderLowestHeight();
 };
 
 }

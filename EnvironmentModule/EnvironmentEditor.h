@@ -183,7 +183,7 @@ namespace Environment
         void InitFogTabWindow();
         void InitAmbientTabWindow();
 
-        //! Create a new heightmap image that will show heightmap values in grayscale.format
+        //! Create a new heightmap image that will show heightmap values in grayscale.format.
         void CreateHeightmapImage();
 
         //! Clear old sky properties and create a new one for spesific sky type.
@@ -233,7 +233,7 @@ namespace Environment
         OgreRenderer::SkyType sky_type_;
 
         //! Timer for terrain painting so that terrain is painted certain time.
-        QTimer terrain_pain_timer_;
+        QTimer terrain_paint_timer_;
         //! Mouse press flags
         //u8 mouse_press_flag_;
         

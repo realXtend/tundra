@@ -1,0 +1,145 @@
+#include "Shadow4Tap.cg"
+
+float interp(float val, float min1, float max1, float max2, float min2)
+{
+  return smoothstep(min1, max1, val) * (1 - smoothstep(max2, min2, val));
+}
+                 
+
+void mainVS(float4 pos    : POSITION,
+          float3 normal : NORMAL,
+          float2 tex    : TEXCOORD0,
+          
+          uniform float4x4 worldViewProjMatrix,
+          uniform float4x4 worldMatrix,
+          uniform float4x4 lightViewProjMatrix,
+          uniform float2 scale1,
+          uniform float2 scale2,
+          uniform float2 scale3,
+          uniform float2 scale4,
+
+          //Detail texture regions (height and fade)
+          uniform float4 detailRegion0,
+          uniform float4 detailRegion1,
+          uniform float4 detailRegion2,
+          uniform float4 detailRegion3,
+          
+          //Lowest height to be supported
+          uniform float lowestHeight,
+          
+          //Directional light
+          uniform float4 lightDir0,
+          uniform float4 lightDiffuseColor0,
+          
+          //Point lights
+          uniform float4 lightPos1,
+          uniform float4 lightDiffuseColor1,
+          uniform float4 lightAttenuation1,
+          uniform float4 lightPos2,
+          uniform float4 lightDiffuseColor2,
+          uniform float4 lightAttenuation2,
+
+          //Fog
+          uniform float4 fogParams,
+          uniform float4 fogColor,
+          
+          uniform float4 ambient,
+          
+          out float4 oPos      : POSITION,
+          out float3 oColor    : COLOR,
+          out float3 oDirectionalColor : TEXCOORD7, // Dynamic color based on the single sun directional light.
+          out float2 oTex1     : TEXCOORD0,
+          out float2 oTex2     : TEXCOORD1,
+          out float2 oTex3     : TEXCOORD2,
+          out float2 oTex4     : TEXCOORD3,
+          out float4 oTexVol   : TEXCOORD4,//Texture volumes
+          out float4 oFog      : TEXCOORD5,
+          out float4 oShadowTex : TEXCOORD6) // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
+{
+	oPos = mul(worldViewProjMatrix, pos);
+	
+    oTex1 = tex / scale1;
+    oTex2 = tex / scale2;
+    oTex3 = tex / scale3;
+    oTex4 = tex / scale4;
+    
+    float4 worldPos = mul(worldMatrix, pos);
+	
+    //Used for determining balance between textures
+    float height = worldPos.z;
+    if (height < lowestHeight) height = lowestHeight;
+    oTexVol.x = interp(height, detailRegion0.x, detailRegion0.y, detailRegion0.z, detailRegion0.w);
+    oTexVol.y = interp(height, detailRegion1.x, detailRegion1.y, detailRegion1.z, detailRegion1.w);
+    oTexVol.z = interp(height, detailRegion2.x, detailRegion2.y, detailRegion2.z, detailRegion2.w);
+    oTexVol.w = interp(height, detailRegion3.x, detailRegion3.y, detailRegion3.z, detailRegion3.w);
+
+    //Normalize texture volumes to be a total of 1
+    oTexVol.x = clamp(oTexVol.x, 0, 100);
+    oTexVol.y = clamp(oTexVol.y, 0, 100);
+    oTexVol.z = clamp(oTexVol.z, 0, 100);
+    oTexVol.w = clamp(oTexVol.w, 0, 100);
+    oTexVol /= (oTexVol.x + oTexVol.y + oTexVol.z + oTexVol.w);
+
+    // Calculate point light directions and distances    
+    float3 lightVec1 = lightPos1.xyz - (pos.xyz * lightPos1.w);
+    float dist1 = length(lightVec1);
+    float3 lightDir1 = lightVec1 / dist1;
+    
+    float3 lightVec2 = lightPos2.xyz - (pos.xyz * lightPos2.w);
+    float dist2 = length(lightVec2);
+    float3 lightDir2 = lightVec2 / dist2;
+    
+    //Determine attenuations for lights
+    float lightAtten1 = 1 / (lightAttenuation1.y + (lightAttenuation1.z * dist1) + (lightAttenuation1.w * (dist1*dist1)));
+    float lightAtten2 = 1 / (lightAttenuation2.y + (lightAttenuation2.z * dist2) + (lightAttenuation2.w * (dist2*dist2)));
+    
+    oColor = ambient + (saturate(dot(lightDir1, normal)) * lightDiffuseColor1) * lightAtten1 +
+                       (saturate(dot(lightDir2, normal)) * lightDiffuseColor2) * lightAtten2;
+                       
+	oDirectionalColor = (saturate(dot(lightDir0.xyz, normal)) * lightDiffuseColor0);
+                       
+    //Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
+    //Store fog density to w
+    oFog.w = clamp((fogParams.z-oPos.z)/(fogParams.z-fogParams.y), 0, 1);
+    //And color to xyz
+    oFog.xyz = fogColor.rgb;
+    
+    // Shadow view-proj. Need to output all four coordinates for proper clipping (well, could potentially optimize one away, but not that useful).
+    oShadowTex = mul(lightViewProjMatrix, worldPos);
+}
+
+void mainPS(float4 pos    : POSITION,
+          float3 color  : COLOR,
+          float3 directionalColor : TEXCOORD7,
+          float2 tex1   : TEXCOORD0,
+          float2 tex2   : TEXCOORD1,
+          float2 tex3   : TEXCOORD2,
+          float2 tex4   : TEXCOORD3,
+          float4 texVol : TEXCOORD4, //Texture volumes
+          float4 fog    : TEXCOORD5,
+          float4 shadowTex : TEXCOORD6,
+          uniform sampler2D map1 : register(s0), //Detail0
+          uniform sampler2D map2 : register(s1), //Detail1
+          uniform sampler2D map3 : register(s2), //Detail2
+          uniform sampler2D map4 : register(s3), //Detail3
+          uniform sampler2D shadowMap : register(s4),
+          out float4 col: COLOR)
+{
+    //Get texture and their volumes
+    float3 c1 = tex2D(map1, tex1) * texVol.x;
+    float3 c2 = tex2D(map2, tex2) * texVol.y;
+    float3 c3 = tex2D(map3, tex3) * texVol.z;
+    float3 c4 = tex2D(map4, tex4) * texVol.w;
+
+    // Do shadow. note: shadow color is superceded by fog - intentional to provide a nice fade.
+    float lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+    
+    //Combine textures and the shadow map lighting value.
+    col.rgb = (c1.rgb + c2.rgb + c3.rgb + c4.rgb) * (color + (lightness*0.5f+0.5f) * directionalColor);
+            
+    //Fog
+    //color * fogParams.w + fogParams.xyz * (1.f - fogParams.w);
+
+    col.rgb = col.rgb * fog.w + fog.xyz * (1.f - fog.w);
+    col.a = 1;
+}

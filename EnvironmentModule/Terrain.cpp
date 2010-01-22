@@ -57,8 +57,8 @@ namespace
         EnvironmentModule::LogDebug(ss.str());
     }
 
-    const char terrainMaterialName[] = "TerrainMaterial";
-    //const char terrainMaterialName[] = "Rex/TerrainPCF";
+    //const char terrainMaterialName[] = "TerrainMaterial";
+    const char terrainMaterialName[] = "Rex/TerrainPCF";
     //const char terrainMaterialName[] = "Rex/TerrainBool";
 }
 
@@ -66,7 +66,7 @@ namespace
     void Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
     {
         /// \todo Create a material that uses several terrain textures - for now only the first one is used.
-        if (index != 0)
+        if (index < 0 || index > 4)
             return;
 
         Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
@@ -76,9 +76,53 @@ namespace
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
         assert(terrainMaterial.get());
-        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName);
+        if(terrainMaterial.get())
+        {
+            //OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
+            emit TerrainTextureChanged();
+        }
+        else
+            EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
+    }
 
-        emit TerrainTextureChanged();
+    void Terrain::UpdateTextureShaderLowestHeight()
+    {
+        Scene::EntityPtr entity = GetTerrainEntity().lock();
+        assert(entity.get());
+        if(!entity.get())
+            return;
+
+        EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();
+        assert(terrainComponent);
+        if(!terrainComponent)
+            return;
+
+        if(terrainComponent->AllPatchesLoaded())
+        {
+            Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
+            if(!terrainMaterial.get())
+            {
+                EnvironmentModule::LogWarning("Cannot find " + std::string(terrainMaterialName) + "material.");
+                return;
+            }
+            Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
+            while(iter.hasMoreElements())
+            {
+                Ogre::Technique *tech = iter.getNext();
+                assert(tech);
+                Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+                while(passIter.hasMoreElements())
+                {
+                    Ogre::Pass *pass = passIter.getNext();
+                    Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+                    if(!params.isNull())
+                    {
+                        float lowestHeight = GetLowestTerrainHeight();
+                        params->setNamedConstant("lowestHeight", lowestHeight);
+                    }
+                }
+            }
+        }
     }
 
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
@@ -262,6 +306,9 @@ namespace
         node->attachObject(ogre_entity);
 
         patch.patch_geometry_dirty = false;
+
+        UpdateTextureShaderLowestHeight();
+        emit HeightmapGeometryUpdated();
     }
 
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
@@ -394,8 +441,16 @@ namespace
         assert(tex);
 
         for(int i = 0; i < num_terrain_textures; ++i)
+        {
             if (tex->tag_ == terrain_texture_requests_[i])
-                SetTerrainMaterialTexture(i, tex->id_.c_str());
+            {
+                int index = 0;
+                if(terrain_textures_[i] == tex->id_.c_str())
+                    index = i;
+
+                SetTerrainMaterialTexture(index, tex->id_.c_str());
+            }
+        }
     }
 
     const RexAssetID &Terrain::GetTerrainTextureID(int index) const
@@ -465,6 +520,40 @@ namespace
             start_heights_[i] = start_heights[i];
             height_ranges_[i] = height_ranges[i];
         }
+
+        Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
+        if(!terrainMaterial.get())
+        {
+            EnvironmentModule::LogWarning("Cannot find " + std::string(terrainMaterialName) + "material.");
+            return;
+        }
+        Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+                if(!params.isNull())
+                {
+                    for(uint i = 0; i < num_terrain_textures; i++)
+                    {
+                        Real startHeight = start_heights[i];
+                        Real endHeight = height_ranges[i];
+
+                        Real heightDelta = endHeight - startHeight;
+                        Ogre::Vector4 detailRegion(startHeight, startHeight+heightDelta/4, startHeight+((heightDelta*3)/4), endHeight);
+                        params->setNamedConstant("detailRegion" + Ogre::StringConverter::toString(i), detailRegion);
+                    }
+                }
+            }
+        }
+
+        emit TerrainTextureChanged();
     }
 
     const Real &Terrain::GetTerrainTextureStartHeight(int index) const
@@ -477,6 +566,43 @@ namespace
     {
         if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
         return height_ranges_[index];
+    }
+
+    Real Terrain::GetLowestTerrainHeight()
+    {
+        Real small = 65535;
+        Real current_value = 0;
+        Scene::EntityPtr entity = GetTerrainEntity().lock();
+        assert(entity.get());
+        EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();
+        if (terrainComponent)
+        {
+            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+            return 0;
+        }
+        int paches_per_edge = terrainComponent->cNumPatchesPerEdge;
+        int patch_size = terrainComponent->cPatchSize;
+        if(terrainComponent->AllPatchesLoaded())
+        {
+            for(uint i = 0; i < paches_per_edge; i++)
+            {
+                for(uint j = 0; j < paches_per_edge; j++)
+                {
+                    EC_Terrain::Patch patch = terrainComponent->GetPatch(i, j);
+                    for(uint k = 0; k < patch_size; k++)
+                    {
+                        for(uint l = 0; l < patch_size; l++)
+                        {
+                            int index = (l % patch_size) * patch_size + (k % patch_size);
+                            current_value = patch.heightData[index];
+                            if(current_value < small)
+                                small = current_value;
+                        }
+                    }
+                }
+            }
+        }
+        return small;
     }
 
     void Terrain::FindCurrentlyActiveTerrain()
