@@ -89,7 +89,7 @@ namespace Inventory
 
         /// Uploads files.
         /// @param filenames list of filenames to upload.
-        void UploadFiles(const QStringList &filenames);
+        void UploadFiles(QStringList &filenames);
 
         /// File download.
         void Download();
@@ -113,7 +113,25 @@ namespace Inventory
         /// @param asset_id Asset id.
         void CloseDownloadProgess(const QString &asset_id);
 
-        void SendNotification(const QString &text);
+        /// Opens the upload progress bar window.
+        /// @param file_count Number of files to be uploaded.
+        void OpenUploadProgress(size_t file_count);
+
+        /// Updates the upload progress bar window.
+        /// @param filename Filename.
+        void UploadStarted(const QString &filename);
+
+        ///
+//        void UploadCompleted(const QString &filename);
+
+        ///
+        void CloseUploadProgress();
+
+    signals:
+        /// Use this signal to send notification to the UI.
+        /// @param message Message to be shown.
+        /// @param duration Duration for which the message is visible.
+        void Notification(const QString &message, int duration);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -133,11 +151,17 @@ namespace Inventory
         /// Inventory window widget.
         QWidget *inventoryWidget_;
 
+        /// Upload progress window widget
+        QWidget *uploadWidget_;
+
         // Inventory tree view widget
         InventoryTreeView *treeView_;
 
-        /// Proxy Widget for ui
+        /// Proxy widget for ui
         UiServices::UiProxyWidget *proxyWidget_;
+
+        /// Proxy widget for upload progress ui.
+        UiServices::UiProxyWidget *uploadProxyWidget_;
 
         /// Action menu.
         QMenu *actionMenu_;
@@ -176,7 +200,13 @@ namespace Inventory
         QMap<QString, QMessageBox *> downloadDialogs_;
 
         /// Offset for download dialog positions.
-        size_t offset_;
+//        size_t offset_;
+
+        /// Last file path used when using open file dialog.
+        QString lastUsedPath_;
+
+        /// Counter used for file upload progress window.
+        size_t uploadCount_;
     };
 }
 

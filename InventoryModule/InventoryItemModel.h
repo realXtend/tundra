@@ -167,11 +167,14 @@ namespace Inventory
         /// Uploads an asset.
         /// @param index Upload destination index.
         /// @param filenames List of filenames.
-        void Upload(const QModelIndex &index, QStringList filenames);
+        void Upload(const QModelIndex &index, QStringList &filenames, QStringList &item_names);
 
         /// Copies the asset reference of the item at current index to the clipboard.
         /// @param index Model inedx.
         void CopyAssetReferenceToClipboard(const QModelIndex &index);
+
+    signals:
+        void UploadStarted(const QString &filename);
 
     private:
         /// Sets up view from data.

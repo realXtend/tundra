@@ -34,6 +34,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QMessageBox>
+#include <QProgressBar>
+#include <QLabel>
 
 namespace Inventory
 {
@@ -54,18 +56,11 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionUpload_(0),
     actionDownload_(0),
     actionSeparator_(0),
-    offset_(0)
+//    offset_(0),
+    lastUsedPath_(QDir::currentPath()),
+    uploadCount_(0)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-    {
-        InitInventoryWindow();
-        proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-            inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
-
-        CreateActions();
-    }
+    InitInventoryWindow();
 }
 
 // virtual
@@ -122,6 +117,22 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     QObject::connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
         this, SLOT(CloseDownloadProgess(const QString &)));
 
+    // Connect upload progress signals.
+    QObject::connect(inventory_model.get(), SIGNAL(MultiUploadStarted(size_t)),
+        this, SLOT(OpenUploadProgress(size_t)));
+
+    QObject::connect(inventory_model.get(), SIGNAL(UploadStarted(const QString &)),
+        this, SLOT(UploadStarted(const QString &)));
+
+//    QObject::connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &)),
+//        this, SLOT(UploadProgress(const QString &)));
+
+//    QObject::connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
+//        this, SLOT(UploadProgress(const QString &)));
+
+    QObject::connect(inventory_model.get(), SIGNAL(MultiUploadCompleted()),
+        this, SLOT(CloseUploadProgress()));
+
     // Connect selectionChanged
     QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
@@ -149,14 +160,7 @@ void InventoryWindow::AddFolder()
 
     inventoryItemModel_->Open(index);
 
-    // Next few lines not probably needed, but saved in case we will have multiple columns in the near future.
-    if (model->columnCount(index) == 0)
-        if (!model->insertColumn(0, index))
-            return;
-
-    QString newFolderName = "New Folder";
-
-    if (!inventoryItemModel_->InsertFolder(index.row(), index, newFolderName))
+    if (!inventoryItemModel_->InsertFolder(index.row(), index, "New Folder"))
         return;
 
     treeView_->selectionModel()->setCurrentIndex(model->index(0, 0, index), QItemSelectionModel::ClearAndSelect);
@@ -191,26 +195,27 @@ void InventoryWindow::RenameItem()
 
 void InventoryWindow::Upload()
 {
-//    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(const QStringList &)), 0);
+//    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(QStringList &)), 0);
 
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    StringList names = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
-    if (names.empty())
+    QStringList filenames = Foundation::QtUtils::GetOpenRexFilenames(lastUsedPath_.toStdString());
+    if (filenames.empty())
         return;
 
-    // Convert to QStringList ///\todo Use QStringList all the way.
-    QStringList filenames;
-    for (StringList::iterator it = names.begin(); it != names.end(); ++it)
-        filenames << QString((*it).c_str());
+    QString path = filenames.last();
+    path.remove(path.lastIndexOf('/'), path.size() - path.lastIndexOf('/') + 1);
+    QDir dir(path);
+    if (dir.exists())
+        lastUsedPath_ = path;
 
-    inventoryItemModel_->Upload(index, filenames);
+    inventoryItemModel_->Upload(index, filenames, QStringList());
 }
 
-void InventoryWindow::UploadFiles(const QStringList &filenames)
+void InventoryWindow::UploadFiles(QStringList &filenames)
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     if (!filenames.isEmpty())
-        inventoryItemModel_->Upload(index, filenames);
+        inventoryItemModel_->Upload(index, filenames, QStringList());
 }
 
 void InventoryWindow::Download()
@@ -219,12 +224,11 @@ void InventoryWindow::Download()
     if (selection.isEmpty())
         return;
 
-    QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download",
-        QString(Foundation::QtUtils::GetCurrentPath().c_str()));
+    QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download", lastUsedPath_);
     if (storePath.isEmpty())
         return;
 
-       inventoryItemModel_->Download(storePath, selection);
+    inventoryItemModel_->Download(storePath, selection);
 }
 
 void InventoryWindow::CopyAssetReference()
@@ -260,26 +264,28 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     // Make one custom widget as download manager, untill then disable this because its quite intrusive for a user to pop up dialogs
     // and they dont atm come to from and the position is calculated with inv window or something strange
 
-    //QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "", "Downloading asset " + asset_id, QMessageBox::Ok);
-    //msgBox->setModal(false);
-    //downloadDialogs_[asset_id] = msgBox;
+/*
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "", "Downloading asset " + asset_id, QMessageBox::Ok);
+    msgBox->setModal(false);
+    downloadDialogs_[asset_id] = msgBox;
 
-    //boost::shared_ptr<UiServices::UiModule> ui_module =
-    //    framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    //if (ui_module.get())
-    //{
-    //    QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
-    //    pos.setX(pos.x() + offset_);
-    //    pos.setY(pos.y() + offset_);
-    //    offset_ += 20;
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+    {
+        QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
+        pos.setX(pos.x() + offset_);
+        pos.setY(pos.y() + offset_);
+        offset_ += 20;
 
-    //    ui_module->GetSceneManager()->AddWidgetToScene(
-    //        msgBox, UiServices::UiWidgetProperties(pos, msgBox->size(), Qt::Dialog, "Download: " + name, false));
-    //}
+        ui_module->GetSceneManager()->AddWidgetToScene(
+            msgBox, UiServices::UiWidgetProperties(pos, msgBox->size(), Qt::Dialog, "Download: " + name, false));
+    }
 
-    //msgBox->show();
+    msgBox->show();
+*/
 
-    SendNotification(QString("Downloading %1").arg(name));
+    emit Notification(QString("Downloading %1").arg(name), 9000);
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -289,27 +295,60 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
 
 void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
 {
-    //QMessageBox *msgBox = downloadDialogs_.take(asset_id);
-    //if (msgBox)
-    //    delete msgBox;
+/*
+    QMessageBox *msgBox = downloadDialogs_.take(asset_id);
+    if (msgBox)
+        delete msgBox;
+*/
+}
+
+void InventoryWindow::OpenUploadProgress(size_t file_count)
+{
+    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
+    progressBar->setRange(0, file_count);
+    progressBar->setValue(uploadCount_);
+    uploadProxyWidget_->show();
+}
+
+void InventoryWindow::UploadStarted(const QString &filename)
+{
+    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
+    QLabel *labelFileNumber = uploadWidget_->findChild<QLabel *>("labelFileNumber");
+
+    ++uploadCount_;
+    int max_value = progressBar->maximum();
+    if (uploadCount_ <= max_value)
+    {
+        progressBar->setValue(uploadCount_);
+        labelFileNumber->setText(QString("%1 (%2/%3)").arg(filename, uploadCount_, max_value));
+    }
+}
+
+/*
+void InventoryWindow::UploadCompleted(const QString &filename)
+{
+}
+*/
+
+void InventoryWindow::CloseUploadProgress()
+{
+    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
+    progressBar->reset();
+    uploadCount_ = 0;
+    uploadProxyWidget_->hide();
 }
 
 void InventoryWindow::InitInventoryWindow()
 {
-    // Create widget from ui file
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return;
+
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory.ui");
     inventoryWidget_ = loader.load(&uiFile, 0);
     uiFile.close();
-
-    // Get controls
-/*
-    buttonDownload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Download");
-    buttonUpload_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Upload");
-    buttonAddFolder_ = inventoryWidget_->findChild<QPushButton *>("pushButton_AddFolder");
-    buttonDeleteItem_ = inventoryWidget_->findChild<QPushButton *>("pushButton_DeleteItem");
-    buttonRename_ = inventoryWidget_->findChild<QPushButton *>("pushButton_Rename");
-*/
 
     // Create inventory tree view.
     treeView_ = new InventoryTreeView;
@@ -321,14 +360,20 @@ void InventoryWindow::InitInventoryWindow()
 //    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
-/*
-    // Buttons
-    QObject::connect(buttonAddFolder_, SIGNAL(clicked(bool)), this, SLOT(AddFolder()));
-    QObject::connect(buttonDeleteItem_, SIGNAL(clicked(bool)), this, SLOT(DeleteItem()));
-    QObject::connect(buttonRename_, SIGNAL(clicked(bool)), this, SLOT(RenameItem()));
-    QObject::connect(buttonUpload_, SIGNAL(clicked(bool)), this, SLOT(Upload()));
-    QObject::connect(buttonDownload_, SIGNAL(clicked(bool)), this, SLOT(Download()));
-*/
+    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+        inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
+
+    // Upload progress window
+    QFile file("./data/ui/uploadprogress.ui");
+    uploadWidget_ = loader.load(&file, 0);
+    file.close();
+
+    uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+        uploadWidget_, UiServices::UiWidgetProperties(inventoryWidget_->mapToGlobal(QPoint(0, 0)), uploadWidget_->size(), Qt::Dialog, "Upload", false));
+
+    connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),SLOT(ShowInformationString(const QString &, int)));
+
+    CreateActions();
 }
 
 void InventoryWindow::CreateActions()
@@ -398,13 +443,6 @@ void InventoryWindow::CreateActions()
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
     QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
     treeView_->addAction(actionCopyAssetReference_);
-}
-
-void InventoryWindow::SendNotification(const QString &text)
-{
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-        ui_module->GetNotificationManager()->ShowInformationString(text, 9000);
 }
 
 } // namespace Inventory

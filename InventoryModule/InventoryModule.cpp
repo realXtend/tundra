@@ -8,20 +8,19 @@
  */
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
-
+#include <DebugOperatorNew.h>
 #include "InventoryModule.h"
-#include "RexLogicModule.h"
 #include "InventoryWindow.h"
-#include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
-#include "AssetUploader.h"
-#include "QtUtils.h"
-#include "AssetEvents.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "ResourceInterface.h"
+
+#include <NetworkEvents.h>
+#include <RexLogicModule.h>
+#include <Inventory/InventoryEvents.h>
+#include <QtUtils.h>
+#include <AssetEvents.h>
+#include <ConsoleCommandServiceInterface.h>
+#include <ResourceInterface.h>
 
 #include <QObject>
 #include <QStringList>
@@ -285,10 +284,6 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
     if (inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
 
-    AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
-    if (!uploader)
-        return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
-
     std::string name = "(No Name)";
     std::string description = "(No Description)";
 
@@ -323,7 +318,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
     currentWorldStream_->SendAgentResumePacket();
 
-    uploader->UploadFile(asset_type, filename, name, description, folder_id);
+    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFile(asset_type, filename, name, description, folder_id);
 
     return Console::ResultSuccess();
 }
@@ -339,20 +334,15 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
     if (inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
 
-    AssetUploader *uploader = static_cast<OpenSimInventoryDataModel *>(inventory_.get())->GetAssetUploader();
-    if (!uploader)
-        return Console::ResultFailure("Asset uploader not initialized. Can't upload.");
-
     currentWorldStream_->SendAgentPausePacket();
 
-    StringList filenames = Foundation::QtUtils::GetOpenRexFileNames(Foundation::QtUtils::GetCurrentPath());
+    QStringList filenames = Foundation::QtUtils::GetOpenRexFilenames(Foundation::QtUtils::GetCurrentPath());
     if (filenames.empty())
         return Console::ResultFailure("No files chosen.");
 
     currentWorldStream_->SendAgentResumePacket();
 
-    StringList names;
-    uploader->UploadFiles(filenames, names);
+    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFiles(filenames, QStringList(), 0);
 
     return Console::ResultSuccess();
 }

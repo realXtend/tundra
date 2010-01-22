@@ -37,7 +37,7 @@ StringList QtUtils::GetOpenFileNames(
     QString qdir(dir.c_str());
     QString qfilter(filter.c_str());
     QWidget *parent = 0;
-    std::list<std::string> filelist;
+    StringList filelist;
 
     QStringList filenames = QFileDialog::getOpenFileNames(parent, qcaption, qdir, qfilter);
 
@@ -62,7 +62,7 @@ StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
     QString qcaption("Open");
     QString qdir(dir.c_str());
     QWidget *parent = 0;
-    std::list<std::string> filelist;
+    StringList filelist;
 
     QStringList filenames = QFileDialog::getOpenFileNames(parent, qcaption, qdir, qfilter);
 
@@ -71,6 +71,24 @@ StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
         filelist.push_back(q_it->toStdString());
 
     return filelist;
+}
+
+QStringList QtUtils::GetOpenRexFilenames(const std::string &dir)
+{
+    QString qfilter(
+        "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"
+        "Sounds (*.ogg; *.wav);;"
+        "Ogre 3D Models (*.mesh);;"
+        "Ogre Particle Scripts (*.particle);;"
+        "Ogre Skeleton (*.skeleton);;"
+        "Ogre Material (*.material);;"
+        "Flash Animation (*.swf);;"
+        "All Files (*.*)");
+    QString qcaption("Open");
+    QString qdir(dir.c_str());
+    QWidget *parent = 0;
+
+    return QFileDialog::getOpenFileNames(parent, qcaption, qdir, qfilter);
 }
 
 std::string QtUtils::GetCurrentPath()
