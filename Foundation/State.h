@@ -12,7 +12,7 @@ namespace Foundation
     struct State;
 
     //! Records a manifest of known Named States
-    typedef std::map <QString, const State *> StateMap;
+    typedef std::map <QString, State *> StateMap;
 
     //! Named State structure (based on QState) for building and querying state machines
     struct State : public QState

@@ -9,6 +9,11 @@ namespace Input
     // used by WorldInputLogic to fetch states
     static Foundation::StateMap input_state_registry_;
 
+    // remember key bindings sent when state machine is inactive
+    // this is required because QApp is started after Module init
+    static KeyBindingInfoList key_binding_cache_;
+
+
     //=========================================================================
     //
     MouseInfo::MouseInfo ()
@@ -78,7 +83,7 @@ namespace Input
     //=========================================================================
     //
     KeyState::KeyState (const QKeySequence &s, QState *p)
-        : InputState ("key state " + s.toString(), p), 
+        : InputState (s.toString(), p), 
         sequence (s),
         bindings (0)
     {
@@ -86,7 +91,7 @@ namespace Input
     }
 
     KeyState::KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
-        : InputState ("key state " + s.toString(), p), 
+        : InputState (s.toString(), p), 
         sequence (s),
         bindings (b), 
         eventmgr (m)
@@ -368,41 +373,48 @@ namespace Input
 
     //=========================================================================
     //
-    FirstPersonActiveState::FirstPersonActiveState (QString name, KeyBindingMap **s, QState *p)
-        : InputState (name, p), map (s)
+    KeyBindingActiveState::KeyBindingActiveState (QString name, KeyBindingMap **m, QState *p)
+        : InputState (name, p), map (m)
+    {
+    }
+
+    //=========================================================================
+    //
+    FirstPersonActiveState::FirstPersonActiveState (QString name, KeyBindingMap **m, QState *p)
+        : KeyBindingActiveState (name, m, p)
     {
     }
 
     void FirstPersonActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
-        *map = &bindings.map;
+        *map = &(bindings.map);
     }
 
     //=========================================================================
     //
-    ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyBindingMap **s, QState *p)
-        : InputState (name, p), map (s)
+    ThirdPersonActiveState::ThirdPersonActiveState (QString name, KeyBindingMap **m, QState *p)
+        : KeyBindingActiveState (name, m, p)
     {
     }
 
     void ThirdPersonActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
-        *map = &bindings.map;
+        *map = &(bindings.map);
     }
 
     //=========================================================================
     //
-    FreeCameraActiveState::FreeCameraActiveState (QString name, KeyBindingMap **s, QState *p)
-        : InputState (name, p), map (s)
+    FreeCameraActiveState::FreeCameraActiveState (QString name, KeyBindingMap **m, QState *p)
+        : KeyBindingActiveState (name, m, p)
     {
     }
 
     void FreeCameraActiveState::onEntry (QEvent *event)
     {
         State::onEntry (event);
-        *map = &bindings.map;
+        *map = &(bindings.map);
     }
 
     //=========================================================================
@@ -525,7 +537,7 @@ namespace Input
         key_binding_ (0)
     {
         init_statemachine_();
-
+        
         view_-> installEventFilter (this);
         view_-> viewport()-> installEventFilter (this);
     }
@@ -566,20 +578,23 @@ namespace Input
         return QObject::eventFilter (obj, event);
     }
 
-    const Foundation::State *WorldInputLogic::GetState (const std::string &name) const
+    Foundation::State *WorldInputLogic::GetState (QString name)
     {
         using Foundation::StateMap;
-        StateMap::const_iterator i = input_state_registry_.find (QString (name.c_str()));
-        StateMap::const_iterator e = input_state_registry_.end ();
+        StateMap::iterator i = input_state_registry_.find (QString (name));
+        StateMap::iterator e = input_state_registry_.end ();
         return (i != e)? i-> second : 0;
     }
 
-    void WorldInputLogic::AddEvent (const std::string &state, event_id_t enter, event_id_t exit) const
+    void WorldInputLogic::AddKeyEvent (QString group, QString sequence, event_id_t enter, event_id_t exit)
     {
+        key_binding_cache_.push_back (KeyBindingInfo (group, sequence, enter, exit));
     }
 
     void WorldInputLogic::Update (f64 frametime)
     {
+        update_dynamic_key_bindings_ ();
+
         if (view_-> scene()-> focusItem())
         {
             if (has_focus_)
@@ -739,4 +754,28 @@ namespace Input
         postEvent (new QMouseEvent (QEvent::MouseButtonRelease, QPoint (mouse_state_.x, mouse_state_.y), 
                     Qt::LeftButton, (Qt::MouseButtons)mouse_state_.buttons, Qt::NoModifier));
     }
+    
+    void WorldInputLogic::update_dynamic_key_bindings_ ()
+    {
+        KeyBindingMap *bindings;
+        KeyBindingActiveState *state;
+        KeyBindingInfoList::iterator kb, i, b = key_binding_cache_.begin();
+        KeyBindingInfoList::iterator e = key_binding_cache_.end();
+
+        for (i = b; i != e;)
+        {
+            kb = i++;
+            state = dynamic_cast <KeyBindingActiveState *> (GetState (kb-> group));
+            bindings = (state)? *(state-> map) : 0; 
+
+            if (bindings)
+            {
+                bindings-> insert 
+                    (std::make_pair (QKeySequence (kb-> sequence), std::make_pair (kb-> enter, kb-> exit))); 
+
+                key_binding_cache_.erase (kb);
+            }
+        }
+    }
+
 }
