@@ -40,7 +40,7 @@ namespace UiServices
         void SetControlButton(CoreUi::MainPanelButton *control_button);
 
         //! Get control button for this proxy
-        CoreUi::MainPanelButton *GetControlButton() const { return control_button_ ? control_button_ : 0; }
+        CoreUi::MainPanelButton *GetControlButton() const { return control_button_; }
 
         //! Set new opacity
         void SetUnfocusedOpacity(int new_opacity);
