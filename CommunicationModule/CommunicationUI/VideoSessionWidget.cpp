@@ -83,15 +83,11 @@ namespace CommunicationUI
         if (internal_v_layout_local_ && local_video_)
         {
             local_video_->close();
-            internal_v_layout_local_->removeWidget(local_video_);
-            local_video_->setParent(0);
             local_video_ = 0;
         }
         if (internal_v_layout_remote_ && remote_video_)
         {
             remote_video_->close();
-            internal_v_layout_remote_->removeWidget(remote_video_);
-            remote_video_->setParent(0);
             remote_video_ = 0;
         }
         SAFE_DELETE(internal_widget_);
