@@ -25,7 +25,7 @@ vertex_program Rex/TerrainPCFVS cg
 		param_named_auto lightAttenuation2 light_attenuation 2
 
 		//Ambient
-		param_named_auto ambient derived_ambient_light_colour
+		param_named_auto ambient ambient_light_colour
 
 		//Fog
 		param_named_auto fogParams fog_params
@@ -52,7 +52,7 @@ fragment_program Rex/TerrainPCFFS cg
 
 material Rex/TerrainPCF
 {
-	technique
+	technique TerrainPCF
 	{
 		pass
 		{
@@ -117,4 +117,16 @@ material Rex/TerrainPCF
 			}
 		}
 	}
+
+	// fallback
+	technique Fallback
+	{
+		pass
+		{
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+		}
+      }	
 }

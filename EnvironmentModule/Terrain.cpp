@@ -110,15 +110,21 @@ namespace
             {
                 Ogre::Technique *tech = iter.getNext();
                 assert(tech);
+                if(tech->getName() != "TerrainPCF") // Skip code below if technique isn't right.
+                continue;
+
                 Ogre::Technique::PassIterator passIter = tech->getPassIterator();
                 while(passIter.hasMoreElements())
                 {
                     Ogre::Pass *pass = passIter.getNext();
-                    Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
-                    if(!params.isNull())
+                    if(pass)
                     {
-                        float lowestHeight = GetLowestTerrainHeight();
-                        params->setNamedConstant("lowestHeight", lowestHeight);
+                        Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+                        if(!params.isNull())
+                        {
+                            float lowestHeight = GetLowestTerrainHeight();
+                            params->setNamedConstant("lowestHeight", lowestHeight);
+                        }
                     }
                 }
             }
@@ -532,22 +538,27 @@ namespace
         {
             Ogre::Technique *tech = iter.getNext();
             assert(tech);
+            if(tech->getName() != "TerrainPCF") // Skip code below if technique isn't right.
+                continue;
+
             Ogre::Technique::PassIterator passIter = tech->getPassIterator();
             while(passIter.hasMoreElements())
             {
                 Ogre::Pass *pass = passIter.getNext();
-                
-                Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
-                if(!params.isNull())
+                if(pass)
                 {
-                    for(uint i = 0; i < num_terrain_textures; i++)
+                    Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+                    if(!params.isNull())
                     {
-                        Real startHeight = start_heights[i];
-                        Real endHeight = height_ranges[i];
+                        for(uint i = 0; i < num_terrain_textures; i++)
+                        {
+                            Real startHeight = start_heights[i];
+                            Real endHeight = height_ranges[i];
 
-                        Real heightDelta = endHeight - startHeight;
-                        Ogre::Vector4 detailRegion(startHeight, startHeight+heightDelta/4, startHeight+((heightDelta*3)/4), endHeight);
-                        params->setNamedConstant("detailRegion" + Ogre::StringConverter::toString(i), detailRegion);
+                            Real heightDelta = endHeight - startHeight;
+                            Ogre::Vector4 detailRegion(startHeight, startHeight+heightDelta/4, startHeight+((heightDelta*3)/4), endHeight);
+                            params->setNamedConstant("detailRegion" + Ogre::StringConverter::toString(i), detailRegion);
+                        }
                     }
                 }
             }
