@@ -82,7 +82,7 @@ namespace Foundation
             static const std::string type_strings[MT_Unknown] = {
                  "OgreRenderingModule", "OgreGtkWindowModule", "OpenALAudioModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
-                 "CommunicationModule", "CommunicationUIModule", "InputModuleOIS", "TextureDecoderModule", "InventoryModule",
+                 "CommunicationModule", "CommunicationUIModule", "WorldInput", "TextureDecoderModule", "InventoryModule",
                  "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule" };
 
             return type_strings[type];
