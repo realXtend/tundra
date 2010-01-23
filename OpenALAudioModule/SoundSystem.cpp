@@ -18,10 +18,12 @@ namespace OpenALAudio
     
     SoundSystem::SoundSystem(Foundation::Framework *framework) : 
         framework_(framework),
-        initialized_(false), 
+        initialized_(false),
         master_gain_(1.0f),
-        context_(0), 
-        device_(0), 
+        context_(0),
+        device_(0),
+        capture_device_(0),
+        capture_sample_size_(0),
         next_channel_id_(0),
         sound_cache_size_(DEFAULT_SOUND_CACHE_SIZE),
         update_time_(0),
@@ -30,16 +32,18 @@ namespace OpenALAudio
     {
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
+        // By default, initialize default playback device
         Initialize();
         
         // Create vorbis decoder thread task and let the framework thread task manager handle it
         VorbisDecoder* decoder = new VorbisDecoder();
-        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));     
+        framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));
         
         // Set default master gains for sound types
         master_gain_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "master_gain", 1.0);
         sound_master_gain_[Foundation::SoundServiceInterface::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0);
         sound_master_gain_[Foundation::SoundServiceInterface::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0);
+        sound_master_gain_[Foundation::SoundServiceInterface::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0);
     }
 
     SoundSystem::~SoundSystem()
@@ -49,34 +53,61 @@ namespace OpenALAudio
         framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "master_gain", master_gain_);
         framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "triggered_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Triggered]);
         framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "ambient_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Ambient]);
+        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "voice_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Voice]);
     }
 
-    void SoundSystem::Initialize()
+    StringVector SoundSystem::GetPlaybackDevices()
+    {
+        StringVector names;
+        
+        const char* device_names = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+        if (device_names)
+        {
+            while (*device_names)
+            {
+                names.push_back(std::string(device_names));
+                device_names += strlen(device_names) + 1;
+            }
+        }
+        
+        return names;
+    }
+    
+    bool SoundSystem::Initialize(const std::string& name)
     {
         if (initialized_)
-            return;
-            
-        device_ = alcOpenDevice(NULL); 
+            Uninitialize();
+        
+        if (name.empty())
+            device_ = alcOpenDevice(NULL); 
+        else
+            device_ = alcOpenDevice(name.c_str());
+        
         if (!device_)
         {
-            OpenALAudioModule::LogWarning("Could not open OpenAL sound device");        
-            return;
+            OpenALAudioModule::LogWarning("Could not open OpenAL sound device");
+            return false;
         } 
           
         context_ = alcCreateContext(device_, NULL);
         if (!context_)
         {
-            OpenALAudioModule::LogWarning("Could not create OpenAL sound context");   
-            return;
+            OpenALAudioModule::LogWarning("Could not create OpenAL sound context");
+            return false;
         }
            
         alcMakeContextCurrent(context_);
         initialized_ = true;
-
+        return true;
     }
 
     void SoundSystem::Uninitialize()
-    {    
+    {
+        StopRecording();
+        
+        channels_.clear();
+        sounds_.clear();
+        
         if (context_)
         {
             alcMakeContextCurrent(0);
@@ -88,7 +119,7 @@ namespace OpenALAudio
             alcCloseDevice(device_);
             device_ = 0;
         }
-
+        
         initialized_ = false;
     }
 
@@ -105,7 +136,7 @@ namespace OpenALAudio
         std::vector<sound_id_t> ret;
         
         SoundChannelMap::const_iterator i = channels_.begin();
-        while (i != channels_.end())        
+        while (i != channels_.end())
         {
             if (i->second->GetState() != Foundation::SoundServiceInterface::Stopped)
                 ret.push_back(i->first);
@@ -135,6 +166,9 @@ namespace OpenALAudio
     
     void SoundSystem::Update(f64 frametime)
     {   
+        if (!initialized_)
+            return;
+            
 //        mutex.lock();
         std::vector<SoundChannelMap::iterator> channels_to_delete;
 
@@ -152,7 +186,9 @@ namespace OpenALAudio
         {
             i->second->Update(listener_position_);
             if (i->second->GetState() == Foundation::SoundServiceInterface::Stopped)
+            {
                 channels_to_delete.push_back(i);
+            }
             ++i;
         }
         
@@ -163,7 +199,7 @@ namespace OpenALAudio
      //   mutex.unlock();
         
         // Age the sound cache
-        UpdateCache(frametime);      
+        UpdateCache(frametime);
     }
     
     void SoundSystem::SetListener(const Vector3df& position, const Quaternion& orientation)
@@ -172,11 +208,14 @@ namespace OpenALAudio
             return;
      
         listener_position_ = position;
-        listener_orientation_ = orientation;    
+        listener_orientation_ = orientation;
     }
       
     sound_id_t SoundSystem::PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, sound_id_t channel)
     {
+        if (!initialized_)
+            return 0;
+            
         SoundPtr sound = GetSound(name, local);
         if (!sound)
             return 0;
@@ -192,11 +231,14 @@ namespace OpenALAudio
         i->second->SetPositional(false);
         i->second->Play(sound);
          
-        return i->first;     
+        return i->first;
     }
     
     sound_id_t SoundSystem::PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, Vector3df position, sound_id_t channel)
-    {        
+    {
+        if (!initialized_)
+            return 0;
+            
         SoundPtr sound = GetSound(name, local);
         if (!sound)
             return 0;
@@ -208,13 +250,52 @@ namespace OpenALAudio
                 std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
         }
        
-        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);        
-        i->second->SetPositional(true);        
+        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);
+        i->second->SetPositional(true);
         i->second->SetPosition(position);
-        i->second->Play(sound);            
-                
-        return i->first;     
-    }        
+        i->second->Play(sound);
+        
+        return i->first;
+    }
+
+    sound_id_t SoundSystem::PlaySoundBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type, sound_id_t channel)
+    {
+        if (!initialized_)
+            return 0;
+            
+        SoundChannelMap::iterator i = channels_.find(channel);
+        if (i == channels_.end())
+        {
+            i = channels_.insert(
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
+        }
+        
+        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);
+        i->second->SetPositional(false);
+        i->second->AddBuffer(buffer);
+        
+        return i->first;
+    }
+    
+    sound_id_t SoundSystem::PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type, Vector3df position, sound_id_t channel)
+    {
+        if (!initialized_)
+            return 0;
+            
+        SoundChannelMap::iterator i = channels_.find(channel);
+        if (i == channels_.end())
+        {
+            i = channels_.insert(
+                std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
+        }
+        
+        i->second->SetMasterGain(sound_master_gain_[type] * master_gain_);
+        i->second->SetPositional(true);
+        i->second->SetPosition(position);
+        i->second->AddBuffer(buffer);
+        
+        return i->first;
+    }
 
     sound_id_t SoundSystem::PlayAudioData(u8 *buffer, 
                                           int buffer_size, 
@@ -224,6 +305,9 @@ namespace OpenALAudio
                                           bool positional,
                                           sound_id_t channel)
     {
+        if (!initialized_)
+            return 0;
+            
         // TODO: Make a sound stream map so we can have multiple
         // return id of this stream so you can call its FillBuffer again who ever gets it! 
         if (!sound_stream_)
@@ -247,17 +331,17 @@ namespace OpenALAudio
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;        
+            return;
             
-        i->second->SetPitch(pitch);  
+        i->second->SetPitch(pitch);
     }
     
     void SoundSystem::SetGain(sound_id_t id, Real gain)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;  
-            
+            return;
+        
         i->second->SetGain(gain);
     }
     
@@ -265,7 +349,7 @@ namespace OpenALAudio
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;  
+            return;
             
         i->second->SetLooped(looped);
     }
@@ -274,7 +358,7 @@ namespace OpenALAudio
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;  
+            return;
          
         i->second->SetPositional(positional);
     }
@@ -283,8 +367,8 @@ namespace OpenALAudio
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;  
-            
+            return;
+        
         i->second->SetPosition(position);
     }
     
@@ -292,10 +376,10 @@ namespace OpenALAudio
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
-            return;  
-            
+            return;
+        
         i->second->SetRange(inner_radius, outer_radius, rolloff);
-    }    
+    }
 
     void SoundSystem::SetSoundStreamPosition(Vector3df position, bool positional)
     {
@@ -303,7 +387,7 @@ namespace OpenALAudio
             return;
         sound_stream_->SetPosition(position, positional);
     }
- 
+
     sound_id_t SoundSystem::GetNextSoundChannelID()
     {
         for (;;)
@@ -317,10 +401,13 @@ namespace OpenALAudio
         }
         
         return next_channel_id_;
-    }   
+    }
     
     SoundPtr SoundSystem::GetSound(const std::string& name, bool local)
     {
+        if (!initialized_)
+            return SoundPtr();
+            
         SoundMap::iterator i = sounds_.find(name);
         if (i != sounds_.end())
         {
@@ -329,10 +416,10 @@ namespace OpenALAudio
         }
         
         if (local)
-        {        
+        {
             // Loading of local wav sound
             std::string name_lower = name;
-            boost::algorithm::to_lower(name_lower);                
+            boost::algorithm::to_lower(name_lower);
             if (name_lower.find(".wav") != std::string::npos)
             {
                 SoundPtr new_sound(new Sound(name));
@@ -341,21 +428,21 @@ namespace OpenALAudio
                     sounds_[name] = new_sound;
                     return new_sound;
                 }
-            }        
+            }
             
             // Loading of local ogg sound
             if (name_lower.find(".ogg") != std::string::npos)
             {
                 SoundPtr new_sound(new Sound(name));
                 
-                // See if the file exists. If it does, read it and post a decode request                       
+                // See if the file exists. If it does, read it and post a decode request
                 if (DecodeLocalOggFile(new_sound.get(), name))
                 {
                     // Now the sound exists in cache with no data yet. We'll fill in later
                     sounds_[name] = new_sound;
                     return new_sound;
                 }
-            }   
+            }
         }
         else
         {
@@ -367,21 +454,23 @@ namespace OpenALAudio
                 sounds_[name] = new_sound;
                 
                 // The sound will be filled with data later
-                asset_service->RequestAsset(name, RexTypes::ASSETTYPENAME_SOUNDVORBIS);                                             
+                asset_service->RequestAsset(name, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
                 return new_sound;
             }
-        }  
-                        
+        }
+        
         return SoundPtr();
     }
     
     void SoundSystem::UpdateCache(f64 frametime)
     {
-
+        if (!initialized_)
+            return;
+            
         update_time_ += frametime;
         if (update_time_ < CACHE_CHECK_INTERVAL)
             return;
-            
+        
         uint total_size = 0;
         SoundMap::iterator oldest_sound = sounds_.end();
         f64 oldest_age = 0.0;
@@ -411,7 +500,7 @@ namespace OpenALAudio
     
     bool SoundSystem::DecodeLocalOggFile(Sound* sound, const std::string& name)
     {
-        boost::filesystem::path file_path(name);      
+        boost::filesystem::path file_path(name);
         std::ifstream file(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
         if (!file.is_open())
         {
@@ -428,7 +517,7 @@ namespace OpenALAudio
         pbuf->pubseekpos(0, std::ios::in);
         pbuf->sgetn((char *)&new_request->buffer_[0], size);
         file.close();
-                
+        
         framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);
         return true;
     }
@@ -445,14 +534,21 @@ namespace OpenALAudio
         SoundMap::iterator i = sounds_.find(result->name_);
         if (i == sounds_.end())
             return false;
-                   
+        
         if (!result->buffer_.size())
             return true;
-                    
-        i->second->LoadFromBuffer(&result->buffer_[0], result->buffer_.size(), result->frequency_, true, result->stereo_); 
+        
+        Foundation::SoundServiceInterface::SoundBuffer vorbis_buffer;
+        vorbis_buffer.data_ = &result->buffer_[0];
+        vorbis_buffer.size_ = result->buffer_.size();
+        vorbis_buffer.frequency_ = result->frequency_;
+        vorbis_buffer.sixteenbit_ = true;
+        vorbis_buffer.stereo_ = result->stereo_;
+        
+        i->second->LoadFromBuffer(vorbis_buffer); 
         return true;
     }
-            
+    
     bool SoundSystem::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (event_id != Asset::Events::ASSET_READY)
@@ -466,16 +562,16 @@ namespace OpenALAudio
             // Find the sound from our cache
             SoundMap::iterator i = sounds_.find(event_data->asset_id_);
             if (i == sounds_.end())
-                return false;   
+                return false;
             // If sound already has data, do not queue another decode request
             if (i->second->GetSize() != 0)
                 return false;
             VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
-            new_request->name_ = event_data->asset_id_;                
+            new_request->name_ = event_data->asset_id_;
             new_request->buffer_.resize(event_data->asset_->GetSize());
             //! \todo use asset data directly instead of copying to decode request buffer
             memcpy(&new_request->buffer_[0], event_data->asset_->GetData(), event_data->asset_->GetSize());
-            framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);  
+            framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);
         }
         
         return false;
@@ -510,7 +606,113 @@ namespace OpenALAudio
         {
             i->second->SetMasterGain(master_gain_ * sound_master_gain_[i->second->GetSoundType()]);
             ++i;
-        }  
+        }
     }
-
+    
+    StringVector SoundSystem::GetRecordingDevices()
+    {
+        StringVector names;
+        
+        const char* capture_device_names = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+        if (capture_device_names)
+        {
+            while (*capture_device_names)
+            {
+                std::cout << std::string(capture_device_names) << std::endl;
+                names.push_back(std::string(capture_device_names));
+                capture_device_names += strlen(capture_device_names) + 1;
+            }
+        }
+        
+        return names;
+    }
+    
+    bool SoundSystem::StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size)
+    {
+        if (!initialized_)
+            return false;
+        
+        // Stop old recording if any
+        StopRecording();
+        
+        ALenum openal_format;
+        capture_sample_size_ = 1;
+        if (stereo) 
+            capture_sample_size_ <<= 1;
+        if (sixteenbit) 
+            capture_sample_size_ <<= 1;
+        
+        if (!stereo)
+        {
+            if (!sixteenbit)
+                openal_format = AL_FORMAT_MONO8;
+            else
+                openal_format = AL_FORMAT_MONO16;
+        }
+        else
+        {
+            if (!sixteenbit)
+                openal_format = AL_FORMAT_STEREO8;
+            else
+                openal_format = AL_FORMAT_STEREO16;
+        }
+        
+        const char* capture_device_name;
+        if (name.empty())
+            capture_device_name = alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER);
+        else
+            capture_device_name = name.c_str();
+        if (!capture_device_name)
+        {
+            OpenALAudioModule::LogError("No OpenAL sound recording device name");
+            return false;
+        }
+        
+        capture_device_ = alcCaptureOpenDevice(capture_device_name, frequency, openal_format, buffer_size / capture_sample_size_);
+        if (!capture_device_)
+        {
+            OpenALAudioModule::LogError("Failed to start OpenAL sound recording");
+            return false;
+        }
+        
+        alcCaptureStart(capture_device_);
+        
+        OpenALAudioModule::LogInfo("Started sound recording with device " + std::string(capture_device_name));
+        return true;
+    }
+    
+    void SoundSystem::StopRecording()
+    {
+        if (capture_device_)
+        {
+            alcCaptureStop(capture_device_);
+            alcCaptureCloseDevice(capture_device_);
+            capture_device_ = 0;
+        }
+    }
+    
+    uint SoundSystem::GetRecordedSoundSize()
+    {
+        if (!capture_device_)
+            return 0;
+        
+        ALCint samples;
+        alcGetIntegerv(capture_device_, ALC_CAPTURE_SAMPLES, 1, &samples);
+        return samples * capture_sample_size_;
+    }
+    
+    uint SoundSystem::GetRecordedSoundData(void* buffer, uint size)
+    {
+        if (!capture_device_)
+            return 0;
+        
+        ALCint samples = size / capture_sample_size_;
+        ALCint max_samples = 0;
+        alcGetIntegerv(capture_device_, ALC_CAPTURE_SAMPLES, 1, &max_samples);
+        if (samples > max_samples)
+            samples = max_samples;
+        
+        alcCaptureSamples(capture_device_, buffer, samples);
+        return samples * capture_sample_size_;
+    }
 }

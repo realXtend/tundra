@@ -8,69 +8,66 @@
 namespace OpenALAudio
 {
     OpenALAudioModule::OpenALAudioModule() : ModuleInterfaceImpl(type_static_)
-	{
-	}
+    {
+    }
 
     OpenALAudioModule::~OpenALAudioModule()
-	{
-	}
+    {
+    }
 
     //Virtual
     void OpenALAudioModule::Load()
-	{
-		using namespace OpenALAudio;
-
-		LogInfo("Module " + Name() + " loaded.");
-	}
+    {
+        LogInfo("Module " + Name() + " loaded.");
+    }
 
     //Virtual
     void OpenALAudioModule::Unload()
-	{
-		LogInfo("Module " + Name() + " unloaded.");
-	}
+    {
+        LogInfo("Module " + Name() + " unloaded.");
+    }
 
-	
     void OpenALAudioModule::PreInitialize()
-	{
-	}
-	
+    {
+    }
+
     //Virtual
     void OpenALAudioModule::Initialize()
     {
-		soundsystem_ = SoundSystemPtr(new SoundSystem(framework_));    
+        soundsystem_ = SoundSystemPtr(new SoundSystem(framework_));
         if (!soundsystem_->IsInitialized())
             return;
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
 
         // Sound settings depends on the sound service, so init it last
         soundsettings_ = SoundSettingsPtr(new SoundSettings(framework_));
     }
 
     void OpenALAudioModule::PostInitialize()
-	{
+    {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
         task_event_category_ = event_manager->QueryEventCategory("Task");
-	}
+    }
 
     void OpenALAudioModule::Uninitialize()
-	{
+    {
         framework_->GetServiceManager()->UnregisterService(soundsystem_);
-		soundsystem_.reset();
+        soundsystem_.reset();
 
-		LogInfo("Module " + Name() + " uninitialized.");
-	}
+        LogInfo("Module " + Name() + " uninitialized.");
+    }
 
     void OpenALAudioModule::Update(f64 frametime)
-	{
+    {
         {
             PROFILE(OpenALAudioModule_Update);
             if (soundsystem_)
                 soundsystem_->Update(frametime);
         }
         RESETPROFILER;
-	}
-	
+    }
+
     bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (category_id == asset_event_category_)
