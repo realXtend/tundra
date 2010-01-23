@@ -32,7 +32,6 @@ QGroupBox {
 QGroupBox::title {
 	padding: 0 3px;
 	subcontrol-origin: margin;
-	subconstrol-position: top;
 }
 
 /*
