@@ -85,6 +85,7 @@ namespace TelepathyIM
         void CreateVideoStream();
         void CreateFarsightChannel();
         void DeleteChannels();
+        void ClosePlaybackChannel();
 
         Tp::MediaStreamPtr GetAudioMediaStream() const;
         Tp::MediaStreamPtr GetVideoMediaStream() const; 
@@ -101,6 +102,8 @@ namespace TelepathyIM
         VoiceSessionParticipantVector participants_;
 
         sound_id_t audio_playback_channel_;
+        Vector3df audio_playback_position_;
+        bool spatial_audio_playback_;
 
 	protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
@@ -121,8 +124,6 @@ namespace TelepathyIM
         void OnFarsightChannelVideoStreamReceived();
 
     private:
-        QByteArray *stream_buffer_;
-        int ms_buffer_size_;
         bool positional_voice_enabled_;
         u8 audio_buffer[AUDIO_BUFFER_SIZE];
 

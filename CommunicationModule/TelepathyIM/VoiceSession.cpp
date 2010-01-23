@@ -22,16 +22,26 @@ namespace TelepathyIM
         farsight_channel_(0), 
         pending_video_streams_(0), 
         audio_playback_channel_(0),
-        stream_buffer_(new QByteArray),
-        ms_buffer_size_(0),
-        positional_voice_enabled_(false)
+        positional_voice_enabled_(false),
+        audio_playback_position_( Vector3df(0.0f, 0.0f, 0.0f)),
+        spatial_audio_playback_(false)
+
 	{
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
 	}
 
-	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact): state_(STATE_INITIALIZING), tp_channel_(0), pending_audio_streams_(0), farsight_channel_(0), pending_video_streams_(0), audio_playback_channel_(0)
+	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact):
+        state_(STATE_INITIALIZING),
+        tp_channel_(0),
+        pending_audio_streams_(0),
+        farsight_channel_(0),
+        pending_video_streams_(0),
+        audio_playback_channel_(0),
+        positional_voice_enabled_(false),
+        audio_playback_position_( Vector3df(0.0f, 0.0f, 0.0f)),
+        spatial_audio_playback_(false)
 	{
         tp_contact_ = tp_contact;
 	    QVariantMap request;
@@ -106,10 +116,30 @@ namespace TelepathyIM
 
 	void VoiceSession::Close()
 	{
+        if (audio_playback_channel_)
+            ClosePlaybackChannel();
+
         state_ = STATE_CLOSED;
         DeleteChannels();
         emit StateChanged(state_);
+
 	}
+
+    void VoiceSession::ClosePlaybackChannel()
+    {
+        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
+        if (!framework)
+            return;
+        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        if (!service_manager.get())
+            return;
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            return;   
+
+        soundsystem->StopSound(audio_playback_channel_);
+        audio_playback_channel_ = 0;
+    }
 
     void VoiceSession::Accept()
     {
@@ -683,10 +713,23 @@ namespace TelepathyIM
             stereo = true;
         int sample_width = farsight_channel_->GetSampleWidth();
         int sample_rate = farsight_channel_->GetSampleRate();
-        int channel_id = 0; // todo: fix this when audio module supports more than one channel
 
+        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        sound_buffer.data_ = audio_buffer;
+        sound_buffer.frequency_ = sample_rate;
+        if (sample_width == 16)
+            sound_buffer.sixteenbit_ = true;
+        else
+            sound_buffer.sixteenbit_ = false;
+        sound_buffer.size_ = size;
+        sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
-            soundsystem->PlayAudioData(audio_buffer, size, sample_rate,sample_width , stereo, positional_voice_enabled_, channel_id);
+        {
+            if (spatial_audio_playback_)
+                audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_position_, audio_playback_channel_);
+            else
+                audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
+        }
     }
 
     void VoiceSession::OnFarsightAudioBufferOverflow(int count)
@@ -823,16 +866,12 @@ namespace TelepathyIM
 
     void VoiceSession::UpdateAudioSourcePosition(Vector3df position)
     {
-        Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
-        if (!framework)
-            return;
-        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager.get())
-            return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;
-        soundsystem->SetSoundStreamPosition(position, true);
+        if (!spatial_audio_playback_)
+        {
+            ClosePlaybackChannel();
+            spatial_audio_playback_ = true;
+        }
+        audio_playback_position_ = position;
     }
 
     void VoiceSession::TrackingAvatar(bool enabled)
