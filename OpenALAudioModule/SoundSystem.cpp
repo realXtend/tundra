@@ -85,18 +85,19 @@ namespace OpenALAudio
         
         if (!device_)
         {
-            OpenALAudioModule::LogWarning("Could not open OpenAL sound device");
+            OpenALAudioModule::LogWarning("Could not open OpenAL playback device " + name);
             return false;
         } 
           
         context_ = alcCreateContext(device_, NULL);
         if (!context_)
         {
-            OpenALAudioModule::LogWarning("Could not create OpenAL sound context");
+            OpenALAudioModule::LogWarning("Could not create OpenAL playback context");
             return false;
         }
            
         alcMakeContextCurrent(context_);
+        OpenALAudioModule::LogInfo("Opened OpenAL playback device " + name);
         initialized_ = true;
         return true;
     }
@@ -657,27 +658,20 @@ namespace OpenALAudio
                 openal_format = AL_FORMAT_STEREO16;
         }
         
-        const char* capture_device_name;
         if (name.empty())
-            capture_device_name = alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER);
+            capture_device_ = alcCaptureOpenDevice(NULL, frequency, openal_format, buffer_size / capture_sample_size_);
         else
-            capture_device_name = name.c_str();
-        if (!capture_device_name)
-        {
-            OpenALAudioModule::LogError("No OpenAL sound recording device name");
-            return false;
-        }
+            capture_device_ = alcCaptureOpenDevice(name.c_str(), frequency, openal_format, buffer_size / capture_sample_size_);
         
-        capture_device_ = alcCaptureOpenDevice(capture_device_name, frequency, openal_format, buffer_size / capture_sample_size_);
         if (!capture_device_)
         {
-            OpenALAudioModule::LogError("Failed to start OpenAL sound recording");
+            OpenALAudioModule::LogError("Could not open OpenAL recording device " + name);
             return false;
         }
         
         alcCaptureStart(capture_device_);
         
-        OpenALAudioModule::LogInfo("Started sound recording with device " + std::string(capture_device_name));
+        OpenALAudioModule::LogInfo("Opened OpenAL recording device " + name);
         return true;
     }
     
