@@ -28,7 +28,7 @@ namespace TelepathyIM
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
         //! Buffer size for received raw audio data in bytes
-        static const int AUDIO_BUFFER_SIZE = 32768;
+        static const int AUDIO_BUFFER_SIZE = 8192;
 
     public:
 
