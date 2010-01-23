@@ -19,21 +19,21 @@ namespace OpenALAudio
         DeleteBuffer();
     }
     
-    bool Sound::LoadFromBuffer(u8* data, uint size, uint frequency, bool sixteenbit, bool stereo)
+    bool Sound::LoadFromBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer)
     {
         DeleteBuffer();
         
         ALenum openal_format;
-        if (!stereo)
+        if (!buffer.stereo_)
         {
-            if (!sixteenbit)
+            if (!buffer.sixteenbit_)
                 openal_format = AL_FORMAT_MONO8;
             else
                 openal_format = AL_FORMAT_MONO16;
         }
         else
         {
-            if (!sixteenbit)
+            if (!buffer.sixteenbit_)
                 openal_format = AL_FORMAT_STEREO8;
             else
                 openal_format = AL_FORMAT_STEREO16;
@@ -41,15 +41,22 @@ namespace OpenALAudio
         
         if (!CreateBuffer())
             return false;
-            
-        alBufferData(handle_, openal_format, data, size, frequency);
-        size_ = size; 
-        return true;                
+        
+        alGetError();
+        alBufferData(handle_, openal_format, (u8*)buffer.data_, buffer.size_, buffer.frequency_);
+        ALenum error = alGetError();
+        if (error != AL_NONE)
+        {
+            OpenALAudioModule::LogError("Could not set OpenAL sound buffer data: " + ToString<int>(error));
+            return false;
+        }
+        size_ = buffer.size_;
+        return true;
     }
-            
+    
     bool Sound::CreateBuffer()
     {    
-        if (!handle_)                  
+        if (!handle_)
             alGenBuffers(1, &handle_);
         
         if (!handle_)
@@ -58,7 +65,7 @@ namespace OpenALAudio
             return false;
         } 
         
-        return true;      
+        return true;
     }
         
     void Sound::DeleteBuffer()

@@ -23,15 +23,27 @@ namespace OpenALAudio
     //! Sound service implementation. Owned by OpenALAudioModule.
     class SoundSystem : public Foundation::SoundServiceInterface
     {
-	public:	
+    public:
+        //! Constructor. Initializes OpenAL audio using default device.
         SoundSystem(Foundation::Framework* framework);
-		virtual ~SoundSystem();
-
+        
+        //! Destructor.
+        virtual ~SoundSystem();
+        
+        //! Gets playback device names
+        virtual StringVector GetPlaybackDevices();
+        
+        //! (Re)initializes playback with specified device. Empty name uses default device.
+        /*! \param name Playback device name
+            \return true if successful
+         */
+        virtual bool Initialize(const std::string& name = std::string());
+        
         //! Sets listener position & orientation
         /*! \param position Position
             \param orientation Orientation as quaternion
          */
-        virtual void SetListener(const Vector3df& position, const Quaternion& orientation);       
+        virtual void SetListener(const Vector3df& position, const Quaternion& orientation);
         
         //! Sets master gain of whole sound system
         /*! \param master_gain New master gain, in range 0.0 - 1.0
@@ -64,8 +76,29 @@ namespace OpenALAudio
             \param position Position of sound
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
-         */     
+         */
         virtual sound_id_t PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
+
+        //! Buffers sound data into a non-positional channel
+        /*! Note: use the returned channel id for continuing to feed the sound stream.
+            Call StopSound() with channel id to free the channel, when done.
+            \param buffer Sound buffer structure
+            \param type Sound channel type, decides which mastervolume to use for the channel 
+            \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+            \return nonzero channel id, if successful
+         */
+        virtual sound_id_t PlaySoundBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, sound_id_t channel = 0);
+        
+        //! Buffers sound data into a positional channel
+        /*! Note: use the returned channel id for continuing to feed the sound stream.
+            Call StopSound() with channel id to free the channel, when done.
+            \param buffer Sound buffer structure
+            \param type Sound channel type, decides which mastervolume to use for the channel 
+            \param position Position of sound
+            \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
+         */
+        virtual sound_id_t PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0);
 
         //! Play raw audio data from buffer
         /*! \param buffer pointer to buffer where playable audio data is stored
@@ -79,7 +112,7 @@ namespace OpenALAudio
 
         //! Gets state of channel
         /*! \param id Channel id
-            \return Current state (stopped, loading sound asset, playing)
+            \return Current state (stopped, pending & loading sound asset, playing)
          */
         virtual Foundation::SoundServiceInterface::SoundState GetSoundState(sound_id_t id) const;
         
@@ -147,6 +180,32 @@ namespace OpenALAudio
         //! Updates the sound stream position
         virtual void SetSoundStreamPosition(Vector3df position, bool positional);
 
+        //! Get recording device names
+        virtual StringVector GetRecordingDevices();
+        
+        //! Open sound recording device & start recording
+        /*! \param name Device name, empty for default
+            \param frequency Sound frequency
+            \param sixteenbit Whether to use sixteen bit audio
+            \param stereo Whether to use stereo
+            \param buffer_size Buffer size in bytes. Should be multiple of sample size.
+            \return true if successful
+         */
+        virtual bool StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size);
+        
+        //! Stop recording & close sound recording device
+        virtual void StopRecording();
+        
+        //! Get amount of sound currently in recording buffer, in bytes
+        virtual uint GetRecordedSoundSize();
+        
+        //! Get sound data from recording buffer
+        /*! \param buffer Buffer to receive data
+            \param size How many bytes to receive
+            \return Amount of bytes returned
+         */
+        virtual uint GetRecordedSoundData(void* buffer, uint size);
+        
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(f64 frametime);
         
@@ -160,12 +219,11 @@ namespace OpenALAudio
         bool IsInitialized() const { return initialized_; }
 
     private:
-        //! Initialize OpenAL sound
-		void Initialize();
         //! Uninitialize OpenAL sound
         void Uninitialize();
+        
         //! Return next sound channel ID
-        sound_id_t GetNextSoundChannelID();  
+        sound_id_t GetNextSoundChannelID();
         
         //! Reapply master gain to all existing channels
         void ApplyMasterGain();
@@ -185,17 +243,21 @@ namespace OpenALAudio
         //! Framework
         Foundation::Framework* framework_;
         //! Initialized flag
-        bool initialized_;        
+        bool initialized_;
         //! OpenAL context
-        ALCcontext* context_;        
+        ALCcontext* context_;
         //! OpenAL device
-        ALCdevice* device_;        
+        ALCdevice* device_;
+        //! OpenAL capture device
+        ALCdevice* capture_device_;
+        //! Capture sample size
+        uint capture_sample_size_;
         //! Active channels
-        SoundChannelMap channels_;        
+        SoundChannelMap channels_;
         //! Currently loaded sounds
-        SoundMap sounds_;      
+        SoundMap sounds_;
         //! Sound cache size
-        uint sound_cache_size_;  
+        uint sound_cache_size_;
         //! Update timer (for cache)
         f64 update_time_;
         //! Next channel id

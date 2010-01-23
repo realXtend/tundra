@@ -5,6 +5,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#include "SoundServiceInterface.h"
+
 namespace OpenALAudio
 {
     //! A sound buffer containing sound data. Uses OpenAL
@@ -19,10 +21,10 @@ namespace OpenALAudio
         //! Load raw data from buffer
         /*! Any existing sound data will be erased.
          */
-        bool LoadFromBuffer(u8* data, uint size, uint frequency, bool sixteenbit, bool stereo);
+        bool LoadFromBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer);
 
         //! Return sound name
-        const std::string& GetName() const { return name_; }                        
+        const std::string& GetName() const { return name_; }
         //! Return OpenAL handle
         ALuint GetHandle() const { ResetAge(); return handle_; }
         //! Return datasize of sound in bytes
@@ -33,11 +35,11 @@ namespace OpenALAudio
         //! Reset age of sound (for caching)
         void ResetAge() const { age_ = 0.0; }
         //! Add age to sound (for caching)
-        void AddAge(f64 time) const { age_ += time; }        
+        void AddAge(f64 time) const { age_ += time; }
         
     private:
         //! Create sound buffer if one does not exist
-        bool CreateBuffer();        
+        bool CreateBuffer();
         //! Delete sound buffer
         void DeleteBuffer();
         

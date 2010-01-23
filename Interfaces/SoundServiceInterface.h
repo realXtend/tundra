@@ -11,27 +11,56 @@ namespace Foundation
     class SoundServiceInterface : public ServiceInterface
     {
     public:
+        //! States of sound channels
         enum SoundState
         {
             Stopped = 0,
-            Loading,
+            Pending,
             Playing
         };
        
+        //! Types of sound channels, for adjusting master volume individually
         enum SoundType
         {
             Triggered = 0,
-            Ambient
+            Ambient,
+            Voice
         };
-              
+        
+        //! Buffer description for streamed sound playback.
+        /*! Note: the data is copied into internal structures, so it is not needed after a call returns.
+         */
+        struct SoundBuffer
+        {
+            //! Pointer to sound data
+            void* data_;
+            //! Sound data size
+            uint size_;
+            //! Frequency
+            uint frequency_;
+            //! Sixteenbit flag
+            bool sixteenbit_;
+            //! Stereo flag
+            bool stereo_;
+        };
+        
         SoundServiceInterface() {}
         virtual ~SoundServiceInterface() {}
 
+        //! Gets playback device names
+        virtual StringVector GetPlaybackDevices() = 0;
+        
+        //! (Re)initializes playback with specified device. Empty name uses default device.
+        /*! \param name Playback device name
+            \return true if successful
+         */
+        virtual bool Initialize(const std::string& name = std::string()) = 0;
+        
         //! Sets listener position & orientation
         /*! \param position Position
             \param orientation Orientation as quaternion
          */
-        virtual void SetListener(const Vector3df& position, const Quaternion& orientation) = 0;       
+        virtual void SetListener(const Vector3df& position, const Quaternion& orientation) = 0;
         
         //! Sets master gain of whole sound system
         /*! \param master_gain New master gain, in range 0.0 - 1.0
@@ -48,7 +77,7 @@ namespace Foundation
         virtual Real GetMasterGain() = 0;
         
         //! Sets master gain of certain sound types
-        virtual Real GetSoundMasterGain(SoundType type) = 0;        
+        virtual Real GetSoundMasterGain(SoundType type) = 0;
                 
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
@@ -65,9 +94,30 @@ namespace Foundation
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param position Position of sound
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
-            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
+            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */     
         virtual sound_id_t PlaySound3D(const std::string& name, SoundType type = Triggered, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
+
+        //! Buffers sound data into a non-positional channel
+        /*! Note: use the returned channel id for continuing to feed the sound stream.
+            Call StopSound() with channel id to free the channel, when done.
+            \param buffer Sound buffer structure
+            \param type Sound channel type, decides which mastervolume to use for the channel 
+            \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+            \return nonzero channel id, if successful
+         */
+        virtual sound_id_t PlaySoundBuffer(const SoundBuffer& buffer, SoundType type = Triggered, sound_id_t channel = 0) = 0;
+        
+        //! Buffers sound data into a positional channel
+        /*! Note: use the returned channel id for continuing to feed the sound stream.
+            Call StopSound() with channel id to free the channel, when done.
+            \param buffer Sound buffer structure
+            \param type Sound channel type, decides which mastervolume to use for the channel 
+            \param position Position of sound
+            \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
+            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
+         */     
+        virtual sound_id_t PlaySoundBuffer3D(const SoundBuffer& buffer, SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
 
         //! Play raw audio data from buffer
         /*! \param buffer pointer to buffer where playable audio data is stored
@@ -83,7 +133,7 @@ namespace Foundation
 
         //! Gets state of channel
         /*! \param id Channel id
-            \return Current state (stopped, loading sound asset, playing)
+            \return Current state (stopped, pending & loading sound asset, playing)
          */
         virtual Foundation::SoundServiceInterface::SoundState GetSoundState(sound_id_t id) const = 0;
         
@@ -156,6 +206,32 @@ namespace Foundation
          */   
         virtual void SetSoundStreamPosition(Vector3df position, bool positional) = 0;
 
+        //! Get recording device names
+        virtual StringVector GetRecordingDevices() = 0;
+        
+        //! Open sound recording device & start recording
+        /*! \param name Device name, empty for default
+            \param frequency Sound frequency
+            \param sixteenbit Whether to use sixteen bit audio
+            \param stereo Whether to use stereo
+            \param buffer_size Buffer size in bytes. Should be multiple of sample size.
+            \return true if successful
+         */
+        virtual bool StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size) = 0;
+        
+        //! Stop recording & close sound recording device
+        virtual void StopRecording() = 0;
+        
+        //! Get amount of sound currently in recording buffer, in bytes
+        virtual uint GetRecordedSoundSize() = 0;
+        
+        //! Get sound data from recording buffer
+        /*! \param buffer Buffer to receive data
+            \param size How many bytes to receive
+            \return Amount of bytes returned
+         */
+        virtual uint GetRecordedSoundData(void* buffer, uint size) = 0;
+        
     };
 }
 

@@ -35,7 +35,7 @@ namespace OpenALAudio
 
     bool WavLoader::LoadFromFile(Sound* sound, const std::string& filename)
     {
-        boost::filesystem::path file_path(filename);      
+        boost::filesystem::path file_path(filename);
         std::ifstream file(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
         if (!file.is_open())
         {
@@ -146,6 +146,13 @@ namespace OpenALAudio
         msg << "Loaded WAV sound with " << channels << " channels " << bits << " bits, frequency " << frequency << " datasize " << data_length; 
         OpenALAudioModule::LogDebug(msg.str());
         
-        return sound->LoadFromBuffer(&data[index], data_length, frequency, bits == 16, channels == 2);      
+        Foundation::SoundServiceInterface::SoundBuffer wav_buffer;
+        wav_buffer.data_ = &data[index];
+        wav_buffer.size_ = data_length;
+        wav_buffer.frequency_ = frequency;
+        wav_buffer.sixteenbit_  = (bits == 16);
+        wav_buffer.stereo_ = (channels == 2);
+        
+        return sound->LoadFromBuffer(wav_buffer);
     }
 }
