@@ -38,10 +38,6 @@
 	There exist helper classes for creating worker threads that run in the background, see
 	- \subpage ThreadTask "Threaded task system"
 
-\section ui_GS Viewer user interface
-	For creating and handling user interface, see
-	- \subpage GtkmmUIPage "GtkmmUI module for Gtk".
-    
 \section assets_GS Working with assets and resources
 	- \subpage AssetModule "Using the asset module"
 	- \subpage Resources "Using resources"
@@ -49,18 +45,16 @@
 
 \section renderer_GS Working with the renderer
 	- \subpage OgreRenderingModule "Using the Ogre renderer module"	
-	
+
+\section sound_GS Working with sound
+	- \subpage OpenALAudioModule "Using the sound system"
+
 \section input_GS Working with input
 	- \subpage Input_page "Handling input"
     
 \section python_GS The Python integratation
 	- \subpage PythonScriptModule "Embedded Python interpreter and implementation of the viewer Python API"
-	
-\section debug_GS Development / debug help
-	- \subpage DebugConsole "Debug console"
-	- \subpage DebugStatsPage "DebugStats module"
-	- \subpage NetTestLogicPage "NetTestLogic module"
-	
+
 \section unit_testing_GS Testing and unit tests
 	- \subpage Testing_page "Testing"
 */
