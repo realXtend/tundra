@@ -32,7 +32,7 @@ inline Dst checked_static_cast(Src src)
 #if defined(MODULE_EXPORTS) 
 #define MODULE_API __declspec(dllexport)
 #else
-#define MODULE_API __declspec(dllimport) 
+//#define MODULE_API __declspec(dllimport)
 #endif
 #endif
 

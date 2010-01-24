@@ -25,6 +25,7 @@ namespace Scene
         Q_OBJECT
         
         friend class SceneManager;
+        
     private:
         //! constructor
         Entity(Foundation::Framework* framework);

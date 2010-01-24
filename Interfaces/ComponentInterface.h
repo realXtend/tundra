@@ -24,20 +24,20 @@ namespace Foundation
     class MODULE_API ComponentInterface : public QObject
     {
         Q_OBJECT
-
+        
     public:
         explicit ComponentInterface(Foundation::Framework *framework);
         ComponentInterface(const ComponentInterface &rhs);
         virtual ~ComponentInterface();
         virtual const std::string &Name() const = 0;
-        Foundation::Framework* GetFramework() { return framework_; }
-        void SetParentEntity(Scene::Entity* entity) { parent_entity_ = entity; }
-        Scene::Entity* GetParentEntity() { return parent_entity_; }
+        Foundation::Framework* GetFramework() const { return framework_; }
         
-    protected:
-        ComponentInterface();
-
+        void SetParentEntity(Scene::Entity* entity) { parent_entity_ = entity; }
+        Scene::Entity* GetParentEntity() const { return parent_entity_; }
+        
     private:
+        ComponentInterface();
+        
         //! Pointer to framework
         Foundation::Framework* framework_;
         //! Pointer to parent entity (null if not attached to any entity)
