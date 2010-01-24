@@ -62,6 +62,8 @@ namespace TelepathyIM
 		//! Delete all connection objects
 		void DeleteConnections();
 
+        void StartGMainLoop();
+
     private:
         //! Used ONLY in Windows environment
         //! Ensure that gabble process isn't running 

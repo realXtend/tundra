@@ -11,7 +11,6 @@ namespace TelepathyIM
                                      const QString &audio_src_name, 
                                      const QString &video_src_name,
                                      const QString &video_sink_name) :
-//                                     : QObject(0),
                                      tp_channel_(channel),
                                      tf_channel_(0),
                                      bus_(0),
@@ -41,12 +40,6 @@ namespace TelepathyIM
                                      audio_supported_(false),
                                      video_supported_(false)
     {
-        //GstElementFactory* factory =  gst_element_factory_find ("fakesrc");
-        //if (!factory)
-        //{
-
-        //}
-
         try
         {
             CreateTfChannel();
@@ -92,9 +85,10 @@ namespace TelepathyIM
 
     void FarsightChannel::Close()
     {
-        // TODO: CHECK Proper cleanup with unref
         if (locally_captured_video_widget_)
-            SAFE_DELETE(locally_captured_video_widget_);
+        {
+ 			SAFE_DELETE(locally_captured_video_widget_);
+        }
         if (received_video_widget_)
             SAFE_DELETE(received_video_widget_);
         if (tf_channel_)
@@ -102,7 +96,6 @@ namespace TelepathyIM
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_session_created_g_signal_);
             g_signal_handler_disconnect(tf_channel_, on_stream_created_g_signal_);
-            //g_object_unref(tf_channel_);
             tf_channel_ = 0;
         }
         if (bus_)
@@ -119,12 +112,10 @@ namespace TelepathyIM
         }
         if (audio_input_) 
 		{
-			//g_object_unref(audio_input_);
             audio_input_ = 0;
         }
         if (audio_playback_bin_)
 		{
-			//g_object_unref(audio_playback_bin_);
             audio_playback_bin_ = 0;
         }
         if (pipeline_) 
@@ -432,31 +423,36 @@ namespace TelepathyIM
     void FarsightChannel::HandleAudioData(u8* data, int size, int rate, int width, int channels)
     {
         boost::mutex::scoped_lock lock(audio_queue_mutex_);
+        int audio_buffer_size = AUDIO_BUFFER_SIZE_MS * channels * width / 2 * rate / 1000;
+        if (audio_buffer_size > AUDIO_BUFFER_MAX_SIZE)
+            audio_buffer_size = AUDIO_BUFFER_MAX_SIZE;
 
-        int available_buffer_size = AUDIO_BUFFER_SIZE - available_audio_data_length_;
+        int available_buffer_size = audio_buffer_size - available_audio_data_length_;
+        if (width > 8 && available_buffer_size%2 == 1)
+            available_buffer_size--; // Only full samples to audio buffer
         if (available_buffer_size < size)
         {
             emit AudioBufferOverflow( size - available_buffer_size );
             size = available_buffer_size;
         }
 
-        if (write_cursor_ + size >= AUDIO_BUFFER_SIZE)
+        if (write_cursor_ + size >= AUDIO_BUFFER_MAX_SIZE)
         {
             // The data must be copied in to two sections
-            int size_at_end_of_the_buffer = AUDIO_BUFFER_SIZE - write_cursor_;
+            int size_at_end_of_the_buffer = AUDIO_BUFFER_MAX_SIZE - write_cursor_;
             int size_at_begin_of_the_buffer = size - size_at_end_of_the_buffer;
 
             memcpy(audio_buffer_ + write_cursor_, data, size_at_end_of_the_buffer);
-            write_cursor_ = (write_cursor_ + size_at_end_of_the_buffer) % AUDIO_BUFFER_SIZE;
+            write_cursor_ = (write_cursor_ + size_at_end_of_the_buffer) % AUDIO_BUFFER_MAX_SIZE;
             assert( write_cursor_ == 0 );
 
             memcpy(audio_buffer_ + write_cursor_, data + size_at_end_of_the_buffer, size_at_begin_of_the_buffer);
-            write_cursor_ = (write_cursor_ + size_at_begin_of_the_buffer ) % AUDIO_BUFFER_SIZE;
+            write_cursor_ = (write_cursor_ + size_at_begin_of_the_buffer ) % AUDIO_BUFFER_MAX_SIZE;
         }
         else
         {
             memcpy(audio_buffer_ + write_cursor_, data, size);
-            write_cursor_ = (write_cursor_ + size) % AUDIO_BUFFER_SIZE;
+            write_cursor_ = (write_cursor_ + size) % AUDIO_BUFFER_MAX_SIZE;
         }
 
         received_sample_rate_ = rate;
@@ -713,22 +709,22 @@ namespace TelepathyIM
         else
             size = max;
 
-        if (read_cursor_ + size >= AUDIO_BUFFER_SIZE)
+        if (read_cursor_ + size >= AUDIO_BUFFER_MAX_SIZE)
         {
             // we have to copy audio data from two segments
-            int size_at_end_of_buffer = AUDIO_BUFFER_SIZE - read_cursor_; 
+            int size_at_end_of_buffer = AUDIO_BUFFER_MAX_SIZE - read_cursor_; 
             int size_at_begin_of_buffer = size - size_at_end_of_buffer;
             memcpy(buffer , audio_buffer_ + read_cursor_, size_at_end_of_buffer);
-            read_cursor_ = (read_cursor_ + size_at_end_of_buffer) % AUDIO_BUFFER_SIZE;
+            read_cursor_ = (read_cursor_ + size_at_end_of_buffer) % AUDIO_BUFFER_MAX_SIZE;
             assert( read_cursor_ == 0 );
 
             memcpy(buffer + size_at_end_of_buffer, audio_buffer_ + read_cursor_, size_at_begin_of_buffer);
-            read_cursor_ = (read_cursor_ + size_at_begin_of_buffer) % AUDIO_BUFFER_SIZE;
+            read_cursor_ = (read_cursor_ + size_at_begin_of_buffer) % AUDIO_BUFFER_MAX_SIZE;
         }
         else
         {
             memcpy(buffer , audio_buffer_ + read_cursor_, size);
-            read_cursor_ = (read_cursor_ +size ) % AUDIO_BUFFER_SIZE;
+            read_cursor_ = (read_cursor_ +size ) % AUDIO_BUFFER_MAX_SIZE;
         }
         available_audio_data_length_ -= size;
         return size;

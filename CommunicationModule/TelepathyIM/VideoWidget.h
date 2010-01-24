@@ -17,6 +17,8 @@ namespace TelepathyIM
     {
 
     Q_OBJECT
+        static const int VIDEO_WIDTH = 320;
+        static const int VIDEO_HEIGHT = 200;
     
     public: 
         VideoWidget(GstBus *bus, QWidget *parent, const QString &name, const QString &video_src_name);
@@ -42,7 +44,7 @@ namespace TelepathyIM
     private:
         //! Gst Fs variables
         GstBus *bus_;
-        GstElement *video_bin_;
+        GstElement *video_playback_bin_;
         GstElement *video_playback_element_;
         FsElementAddedNotifier *notifier_;
         gulong on_element_added_g_signal_;
@@ -52,7 +54,7 @@ namespace TelepathyIM
         WId window_id_; 
         QString name_;
     };
-    //typedef boost::shared_ptr<VideoWidget> VideoWidgetPtr;
+    typedef boost::shared_ptr<VideoWidget> VideoWidgetPtr;
 
 } // End of namespace: TelepathyIM
 

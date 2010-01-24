@@ -27,8 +27,13 @@ namespace TelepathyIM
 		MODULE_LOGGING_FUNCTIONS
 		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
-        //! Buffer size for received raw audio data in bytes
-        static const int AUDIO_BUFFER_SIZE = 8192;
+        //! Max size for audio buffer for received raw audio data in bytes
+        //! The whole buffer will be used as a ring buffer.
+        static const int AUDIO_BUFFER_MAX_SIZE = 32768;
+
+        //! The actual efective audio buffer size in bytes will be calculated at run time
+        //! based on this value. 
+        static const int AUDIO_BUFFER_SIZE_MS = 1000;
 
     public:
 
@@ -155,8 +160,8 @@ namespace TelepathyIM
         
         GstPad  *audio_playback_bin_sink_pad_;
         
-        VideoWidget *locally_captured_video_widget_;
-        VideoWidget *received_video_widget_;
+        VideoWidget* locally_captured_video_widget_;
+        VideoWidget* received_video_widget_;
 
         GstElement *locally_captured_video_playback_element_;
         GstElement *received_video_playback_element_;
@@ -167,7 +172,7 @@ namespace TelepathyIM
 
         Mutex audio_queue_mutex_;
 
-        u8 audio_buffer_[AUDIO_BUFFER_SIZE];  // a ring buffer for received audio data
+        u8 audio_buffer_[AUDIO_BUFFER_MAX_SIZE];  // a ring buffer for received audio data
         int read_cursor_;
         int write_cursor_;
         int available_audio_data_length_;
