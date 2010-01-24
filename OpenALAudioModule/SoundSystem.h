@@ -96,7 +96,7 @@ namespace OpenALAudio
             \param type Sound channel type, decides which mastervolume to use for the channel 
             \param position Position of sound
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
-            \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
+            \return nonzero channel id, if successful
          */
         virtual sound_id_t PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0);
 
