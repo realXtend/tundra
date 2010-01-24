@@ -518,7 +518,6 @@ namespace Foundation
             std::string absolutePath = cwd + (*it);
             absolutePath.push_back(separator);
             path.insert(0, absolutePath);
-            path.push_back(separator);
         }
 
         //set additions to process path
