@@ -24,6 +24,7 @@ namespace OpenALAudio
         void MasterGainChanged(int value);
         void TriggeredGainChanged(int value);
         void AmbientGainChanged(int value);
+        void VoiceGainChanged(int value);
 
     private:
         void InitWindow();
