@@ -7,6 +7,10 @@
 	The sound system features include playing 3D positional audio and non-positional audio from both local files (wav and ogg supported) as well
 	as from ogg audio assets loaded from network, adjusting master volume for different categories of sound, as well as recording sound.
 
+    \section threading_OAAM Threading issues
+    
+    Note: although OpenAL itself appears to be thread-safe, the sound service can only be safely accessed from the main thread!
+
 	\section acquiring_OAAM Acquiring the sound service
 
     The sound service should be available if OpenAL was successfully initialized. If not, then the pointer will be null.
