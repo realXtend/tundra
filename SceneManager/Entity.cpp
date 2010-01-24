@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "ComponentInterface.h"
 #include "Entity.h"
 #include "Framework.h"
-#include "ComponentInterface.h"
 #include "SceneManager.h"
 
 namespace Scene
