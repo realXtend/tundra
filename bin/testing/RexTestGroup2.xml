@@ -1,7 +1,0 @@
-<config>
-	<TestGroup2>
-		<test_key2>123456</test_key2>
-		<test_key3>1</test_key3>
-		<test_key4>3.20000005</test_key4>
-	</TestGroup2>
-</config>
