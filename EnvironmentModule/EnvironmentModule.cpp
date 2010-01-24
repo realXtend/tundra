@@ -492,7 +492,7 @@ namespace Environment
         terrain_ = TerrainPtr(new Terrain(this));
 
         Scene::EntityPtr entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
-        entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
+        entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
 
         terrain_->FindCurrentlyActiveTerrain();
     }
@@ -513,7 +513,7 @@ namespace Environment
     {
         sky_ = SkyPtr(new Sky(this));
         Scene::EntityPtr sky_entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
-        sky_entity->AddEntityComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
+        sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
 
         sky_->FindCurrentlyActiveSky();
 

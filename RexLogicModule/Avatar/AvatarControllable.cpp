@@ -81,6 +81,9 @@ namespace RexLogic
         Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
         if (updates_per_second <= 0.f) updates_per_second = 1.f;
         net_updateinterval_ = 1.0f / updates_per_second;
+        
+        movement_.x_.rel_ = 0;
+        movement_.y_.rel_ = 0;
     }
         
     bool AvatarControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -157,7 +160,7 @@ namespace RexLogic
             // relative coordinates: relative to last movement
             // absolute coordinate: window coordinates
 
-            movement_.x_.rel_ = m->x_.rel_;
+            movement_.x_.rel_ += m->x_.rel_;
         }
 
         // send action events corresponding to input events
@@ -249,39 +252,33 @@ namespace RexLogic
         else
         {}
 
-        //! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
-        Scene::ScenePtr scene = framework_->GetScene("World");
-        Scene::SceneManager::iterator it = scene->begin();
-        Foundation::ComponentPtr component;
-        for ( ; it != scene->end() ; ++it)
+        Scene::EntityPtr avatarentity = entity_.lock();
+        if (!avatarentity)
+            return;
+        EC_OpenSimAvatar *avatar = avatarentity->GetComponent<EC_OpenSimAvatar>().get();
+        if (!avatar)
+            return;
+        if (avatar->yaw != 0 || drag_yaw_ != 0)
         {
-            component = (*it)->GetComponent(EC_Controllable::NameStatic());
-            if (IsAvatar(component))
-            {
-                EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
-                if (avatar->yaw != 0 || drag_yaw_ != 0)
-                {
-                    EC_NetworkPosition *netpos = (*it)->GetComponent<EC_NetworkPosition>().get();
+            EC_NetworkPosition *netpos = avatarentity->GetComponent<EC_NetworkPosition>().get();
 
-                    Quaternion rotchange(0, 0, (-avatar->yaw * (Real)frametime + drag_yaw_) * rotation_sensitivity_);
-                    netpos->orientation_ = rotchange * netpos->orientation_;
-                    netpos->Updated();
+            Quaternion rotchange(0, 0, (-avatar->yaw * (Real)frametime + drag_yaw_) * rotation_sensitivity_);
+            netpos->orientation_ = rotchange * netpos->orientation_;
+            netpos->Updated();
 
-                    net_dirty_ = true;
-                }
-
-                //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
-                Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
-                
-                uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
-                if (net_controlflags != avatar->cached_controlflags)
-                    net_dirty_ = true;
-
-                avatar->cached_controlflags = net_controlflags;
-
-                SendScheduledMovementToServer(net_controlflags);
-            }
+            net_dirty_ = true;
         }
+
+        //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
+        Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
+        
+        uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
+        if (net_controlflags != avatar->cached_controlflags)
+            net_dirty_ = true;
+
+        avatar->cached_controlflags = net_controlflags;
+
+        SendScheduledMovementToServer(net_controlflags);
 
         net_movementupdatetime_ += (Real)frametime;
     }

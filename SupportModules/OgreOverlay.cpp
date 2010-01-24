@@ -124,7 +124,7 @@ namespace Console
             Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
 
             console_overlay_ = framework->GetComponentManager()->CreateComponent("EC_OgreConsoleOverlay");
-            entity->AddEntityComponent(console_overlay_);
+            entity->AddComponent(console_overlay_);
 
             max_visible_lines = checked_static_cast<OgreRenderer::EC_OgreConsoleOverlay*>
                 (console_overlay_.get())->GetMaxVisibleLines();

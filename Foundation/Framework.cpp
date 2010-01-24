@@ -326,8 +326,6 @@ namespace Foundation
         //}
     }
 
-
-
     void Framework::Go()
     {
         PROFILE(FW_Go);

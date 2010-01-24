@@ -26,7 +26,7 @@ namespace RexLogic
       , current_state_(ThirdPerson)
       , firstperson_pitch_(0)
       , firstperson_yaw_(0)
-      , drag_pitch_(0)     
+      , drag_pitch_(0)
       , drag_yaw_(0)
     {
         camera_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "default_distance", 10.f);
@@ -80,7 +80,7 @@ namespace RexLogic
 
         if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
         {
-            current_state_ = FirstPerson;         
+            current_state_ = FirstPerson;
             firstperson_pitch_ = 0.0f;
         }
 
@@ -120,8 +120,8 @@ namespace RexLogic
         {    
             Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
                             
-            movement_.x_.rel_ = m->x_.rel_;
-            movement_.y_.rel_ = m->y_.rel_;
+            movement_.x_.rel_ += m->x_.rel_;
+            movement_.y_.rel_ += m->y_.rel_;
             movement_.x_.abs_ = m->x_.abs_;
             movement_.y_.abs_ = m->y_.abs_;
         }
@@ -135,7 +135,7 @@ namespace RexLogic
         {
             Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
 
-            camera_distance_ -= (value * zoom_sensitivity_);
+            camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
             camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
         }
 

@@ -1223,7 +1223,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 		if (prio != 0)
 			ogrepos.SetSelectPriority(prio);
 		OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-		ogremesh.SetPlaceable(placeable, entity.get());
+		ogremesh.SetPlaceable(placeable);
 		ogremesh.SetMesh(meshname, true);
 
         return entity_create(ent_id); //return the py wrapper for the new entity

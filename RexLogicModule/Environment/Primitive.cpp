@@ -4,6 +4,7 @@
 #include "Environment/Primitive.h"
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
+#include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
@@ -59,6 +60,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
+        CheckPendingRexFreeData(entityid);
         return entity;
     }
 
@@ -374,6 +376,30 @@ bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundDa
     return false;
 }
 
+bool Primitive::HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
+    
+    if (params.size() < 2)
+        return false;
+    
+    // First parameter: prim id
+    RexUUID primuuid(params[0]);
+    // Rest of parameters: free data in pieces
+    std::string freedata;
+    for (uint i = 1; i < params.size(); ++i)
+        freedata.append(params[i]);
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
+    // If cannot get the entity, put to pending rexfreedata
+    if (entity)
+        HandleRexFreeData(entity->GetId(), freedata);
+    else
+        pending_rexfreedata_[primuuid] = freedata;
+    
+    return false;
+}
+
 void Primitive::CheckPendingRexPrimData(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -385,6 +411,20 @@ void Primitive::CheckPendingRexPrimData(entity_id_t entityid)
     {
         HandleRexPrimDataBlob(entityid, &i->second[0], i->second.size());
         pending_rexprimdata_.erase(i);
+    }
+}
+
+void Primitive::CheckPendingRexFreeData(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity) return;
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+
+    RexFreeDataMap::iterator i = pending_rexfreedata_.find(prim->FullId);
+    if (i != pending_rexfreedata_.end())
+    {
+        HandleRexFreeData(entityid, i->second);
+        pending_rexfreedata_.erase(i);
     }
 }
 
@@ -464,7 +504,7 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
         WriteNullTerminatedStringToBytes(prim->AnimationPackageID, &buffer[0], idx);
         WriteNullTerminatedStringToBytes(prim->SoundID, &buffer[0], idx);
         i = prim->Materials.begin();
-        while (i != prim->Materials.end())        
+        while (i != prim->Materials.end())
         {
             WriteNullTerminatedStringToBytes(i->second.asset_id, &buffer[0], idx);
             ++i;
@@ -481,7 +521,38 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     conn->SendGenericMessageBinary("RexPrimData", strings, buffer);
     
 }
+
+void Primitive::SendRexFreeData(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    EC_FreeData* free = entity->GetComponent<EC_FreeData>().get();
+    if (!free)
+        return;
     
+    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    if (!conn)
+        return;
+        
+    RexUUID fullid = prim->FullId;
+    StringVector strings;
+    strings.push_back(fullid.ToString());
+    const std::string& freedata = free->FreeData;
+    
+    // Split freedata into chunks of 200
+    for (uint i = 0; i < freedata.length(); i += 200)
+    {
+        uint j = i + 200;
+        if (j > freedata.length())
+            j = freedata.length();
+        strings.push_back(freedata.substr(i, j-i));
+    }
+    conn->SendGenericMessage("RexData", strings);
+}
+
 void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primdata, const int primdata_size)
 {
     int idx = 0;
@@ -585,6 +656,25 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     HandleAmbientSound(entityid);
 }
 
+void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freedata)
+{
+    int idx = 0;
+
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    // Get/create freedata component
+    Foundation::ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::NameStatic());
+    if (!freeptr)
+        return;
+    EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
+    free.FreeData = freedata;
+    // Parse into XML form (may or may not succeed)
+    free.FreeDataXML.clear();
+    free.FreeDataXML.setContent(QString::fromStdString(freedata));
+}
+
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
     Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
@@ -660,12 +750,10 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         // Remove custom object component if exists
         Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
         if (customptr)
-            entity->RemoveEntityComponent(customptr);
+            entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        if (!meshptr)
-            entity->AddEntityComponent(meshptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreMesh::NameStatic()));
+        Foundation::ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         if (!meshptr)
             return;
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
@@ -678,7 +766,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
-            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), entity.get());
+            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
         
         // Change mesh if yet nonexistent/changed
         // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
@@ -729,7 +817,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         // Remove mesh component if exists
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         if (meshptr)
-            entity->RemoveEntityComponent(meshptr);
+            entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
         OgreRenderer::EC_OgreAnimationController* anim = 
             entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
@@ -737,16 +825,14 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             anim->SetMeshEntity(Foundation::ComponentPtr());
 
         // Get/create custom (manual) object component 
-        Foundation::ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-        if (!customptr)
-            entity->AddEntityComponent(customptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()));
+        Foundation::ComponentPtr customptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
         if (!customptr)
             return;
         OgreRenderer::EC_OgreCustomObject& custom = *(checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
 
         // Attach to placeable if not yet attached
         if (!custom.GetPlaceable())
-            custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), entity.get());
+            custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()));
 
         // Set rendering distance/cast shadows setting
         custom.SetDrawDistance(prim.DrawDistance);
@@ -771,10 +857,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if (!RexTypes::IsNull(prim.ParticleScriptID))
     {
         // Create particle system component & attach, if does not yet exist
-        Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
-        if (!particleptr)
-            entity->AddEntityComponent(particleptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic()));
-        if (!particleptr)
+        Foundation::ComponentPtr particleptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
+         if (!particleptr)
             return;
         OgreRenderer::EC_OgreParticleSystem& particle = *(checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
         
@@ -805,7 +889,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         Foundation::ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::NameStatic());
         if (particleptr)
         {
-            entity->RemoveEntityComponent(particleptr);
+            entity->RemoveComponent(particleptr);
         }
     }
     
@@ -1004,8 +1088,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
         case 32: // light
         {
             // If light component doesn't exist, create it.
-            if(!entity->GetComponent(OgreRenderer::EC_OgreLight::NameStatic()).get())
-                entity->AddEntityComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreLight"));
+            entity->GetOrCreateComponent(OgreRenderer::EC_OgreLight::NameStatic());
                 
             // Read the data.
             Color color = ReadColorFromBytes(extra_params_data, idx);
@@ -1535,16 +1618,6 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     }
 }
 
-EC_AttachedSound* Primitive::GetOrCreateAttachedSound(Scene::EntityPtr entity)
-{
-    // Create attachedsound component into the entity, if doesn't exist already
-    Foundation::ComponentPtr attachedsoundptr = entity->GetComponent(EC_AttachedSound::NameStatic());
-    if (!attachedsoundptr)
-        entity->AddEntityComponent(attachedsoundptr = rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_AttachedSound::NameStatic()));    
-    EC_AttachedSound* attachedsound = checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
-
-    return attachedsound;
-}    
     
 void Primitive::HandleAmbientSound(entity_id_t entityid)
 {    
@@ -1569,8 +1642,9 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         }
     }
     else
-    {        
-        EC_AttachedSound* attachedsound = GetOrCreateAttachedSound(entity); 
+    {
+        Foundation::ComponentPtr attachedsoundptr = entity->GetOrCreateComponent(EC_AttachedSound::NameStatic());
+        EC_AttachedSound* attachedsound = checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
         
         // If not already playing the same sound, start it now
         bool same = false;
@@ -1636,7 +1710,8 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     if (!soundsystem)
         return false;
         
-    EC_AttachedSound* attachedsound = GetOrCreateAttachedSound(entity);
+    Foundation::ComponentPtr attachedsoundptr = entity->GetOrCreateComponent(EC_AttachedSound::NameStatic());
+    EC_AttachedSound* attachedsound = checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
     
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Vector3df position(0.0f, 0.0f, 0.0f);
@@ -1692,6 +1767,7 @@ void Primitive::HandleLogout()
 {
     prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
+    pending_rexfreedata_.clear();
 }
 
 } // namespace RexLogic

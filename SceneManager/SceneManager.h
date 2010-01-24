@@ -85,12 +85,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         */
         Scene::EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector());
-        //! Makes a soft clone of the entity. The new entity will be placed in this scene.
-        /*! The entity need not be contained in this scene
 
-            \param entity Entity to be cloned
-        */
-        Scene::EntityPtr CloneEntity(const Scene::EntityPtr &entity);
         //! Returns entity with the specified id
         /*!
             \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,

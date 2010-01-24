@@ -39,15 +39,13 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity)
+    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {
             OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::NameStatic());
             return;
         }
-        
-        parent_entity_ = parent_entity;
         
         DetachEntity();
         placeable_ = placeable;
@@ -79,7 +77,7 @@ namespace OgreRenderer
                 AttachEntity();
                 entity_->setRenderingDistance(draw_distance_);
                 entity_->setCastShadows(cast_shadows_);
-                entity_->setUserAny(Ogre::Any(parent_entity_));
+                entity_->setUserAny(Ogre::Any(GetParentEntity()));
             }
             else
             {
