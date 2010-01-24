@@ -168,7 +168,7 @@ namespace RexLogic
                 Foundation::Framework *fw = rexlogicmodule_->GetFramework();
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::NameStatic()));
 
-                entity->AddEntityComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::NameStatic()));
+                entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::NameStatic()));
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
@@ -454,7 +454,7 @@ namespace RexLogic
         if (!entity)
             return;
             
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());               
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
         Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
@@ -462,7 +462,7 @@ namespace RexLogic
         {
             OgreRenderer::EC_OgreMesh* mesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
             
-            mesh->SetPlaceable(placeableptr, entity.get());
+            mesh->SetPlaceable(placeableptr);
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
         

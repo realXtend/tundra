@@ -3,6 +3,10 @@
 #ifndef incl_SceneEntity_h
 #define incl_SceneEntity_h
 
+#include "Foundation.h"
+
+#include <QObject>
+
 namespace Scene
 {
     class Entity;
@@ -16,25 +20,21 @@ namespace Scene
 
         \ingroup Scene_group
     */
-    class Entity
+    class Entity : public QObject
     {
+        Q_OBJECT
+        
         friend class SceneManager;
     private:
-        //! default constructor
-        Entity();
+        //! constructor
+        Entity(Foundation::Framework* framework);
 
         //! constructor that takes an id for the entity
         /*!
+            \param framework Framework
             \param id unique id for the entity.
-            \param module parent module
         */
-        Entity(uint id);
-
-        //! Copy constructor. Shared components between two entities.
-        Entity(const Entity &other) : id_(other.id_)
-        {
-            components_ = other.components_;
-        }
+        Entity(Foundation::Framework* framework, uint id);
 
         //! Set new id
         void SetNewId(entity_id_t id);
@@ -46,44 +46,27 @@ namespace Scene
         //! destructor
         ~Entity();
 
-        //! Shares components between entities
-        Entity &operator =(const Entity &other)
-        {
-            if (&other != this)
-            {
-                components_ = other.components_;
-            }
-            return *this;
-        }
         //! Returns true if the two entities have the same id, false otherwise
         virtual bool operator == (const Entity &other) const { return GetId() == other.GetId(); }
         //! Returns true if the two entities have differend id, false otherwise
         virtual bool operator != (const Entity &other) const { return !(*this == other); }
         //! comparison by id
         virtual bool operator < (const Entity &other) const { return GetId() < other.GetId(); }
-
-        //! Clones the entity. The new entity will contain the same components as the old one.
-        /*! The components will be shared between the two entities.
-
-            \param scene_name Name of the scene the new entity should be in
-        */
-        Scene::EntityPtr Clone(const ScenePtr &scene) const;
-
+        
         //! Add a new component to this entity.
         /*! Entities can contain any number of components of any type.
             It is also possible to have several components of the same type,
-            although in most cases it is probably not sensible. It is even
-            possible to have the exactly same component more than once.
+            although in most cases it is probably not sensible.
 
             \param component An entity component
         */
-        void AddEntityComponent(const Foundation::ComponentInterfacePtr &component);
+        void AddComponent(const Foundation::ComponentInterfacePtr &component);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveEntityComponent(const Foundation::ComponentInterfacePtr &component);
+        void RemoveComponent(const Foundation::ComponentInterfacePtr &component);
 
         //! Returns a component with name 'name' or empty pointer if component was not found
         /*! If there are several components with the specified name, returns the first component found (arbitrary).
@@ -91,6 +74,12 @@ namespace Scene
             \param name name of the component
         */
         Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
+
+        //! Returns a component with name 'name' or creates & adds it if not found. If could not create, returns empty pointer
+        /*! 
+            \param name name of the component
+        */
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &name);
 
         //! Returns a component with certain type or empty pointer if component was not found, already cast to correct type.
         /*! If there are several components with the specified name, returns the first component found (arbitrary).
@@ -108,12 +97,18 @@ namespace Scene
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const;
 
+        //! Returns framework
+        Foundation::Framework* GetFramework() { return framework_; }
+        
     private:
         //! a list of all components
         ComponentVector components_;
 
         //! Unique id for this entity
         entity_id_t id_;
+        
+        //! Pointer to framework
+        Foundation::Framework* framework_;
    };
 }
 

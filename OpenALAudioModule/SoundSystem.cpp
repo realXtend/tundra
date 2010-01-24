@@ -619,7 +619,6 @@ namespace OpenALAudio
         {
             while (*capture_device_names)
             {
-                std::cout << std::string(capture_device_names) << std::endl;
                 names.push_back(std::string(capture_device_names));
                 capture_device_names += strlen(capture_device_names) + 1;
             }

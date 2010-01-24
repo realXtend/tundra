@@ -35,10 +35,10 @@ namespace Scene
                 newentityid = id;
         }
 
-        Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(newentityid));
+        Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid));
         for (size_t i=0 ; i<components.size() ; ++i)
         {
-            entity->AddEntityComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
         }
         
         entities_[entity->GetId()] = entity;
@@ -48,20 +48,9 @@ namespace Scene
         event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
         framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_ADDED, &event_data);
         
-        return entity;        
+        return entity;
     }
 
-    Scene::EntityPtr SceneManager::CloneEntity(const Scene::EntityPtr &entity)
-    {
-        assert (entity.get());
-    
-        Scene::EntityPtr new_entity = Scene::EntityPtr(new Scene::Entity(*checked_static_cast<Entity*> (entity.get())));
-        checked_static_cast<Scene::Entity*>(new_entity.get())->SetNewId(GetNextFreeId());
-        entities_[new_entity->GetId()] = new_entity;
-
-        return new_entity;
-    }
-    
     Scene::EntityPtr SceneManager::GetEntity(entity_id_t id) const
     {
         EntityMap::const_iterator it = entities_.find(id);

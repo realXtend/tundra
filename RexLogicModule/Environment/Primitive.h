@@ -23,14 +23,15 @@ namespace RexLogic
         bool HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInboundData* data);
                 
         bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundData* data);
         
         bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
-                
+        
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
-                        
+        
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         void HandleLogout();
@@ -39,6 +40,9 @@ namespace RexLogic
 
         // Send RexPrimData of a prim entity to server
         void SendRexPrimData(entity_id_t entityid);
+
+        // Send RexFreeData of a prim entity (if exists) to server
+        void Primitive::SendRexFreeData(entity_id_t entityid);
 
     private:
         //! The owning module.
@@ -53,6 +57,10 @@ namespace RexLogic
         //! @param entityid Entity id.
         void CheckPendingRexPrimData(entity_id_t entityid);
         
+        //! checks if stored pending rexfreedata exists for prim and handles it
+        //! @param entityid Entity id.
+        void CheckPendingRexFreeData(entity_id_t entityid);
+        
         //! parse TextureEntry data from ObjectUpdate
         /*! @param prim Primitive component to receive texture data
             @param data Byte buffer
@@ -63,11 +71,11 @@ namespace RexLogic
         //! handle rexprimdata blob coming from server in a genericmessage
         void HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
         
+        //! handle rexfreedata
+        void HandleRexFreeData(entity_id_t entityid, const std::string& freedata);
+        
         //! handles changes in rex ambient sound parameters.
         void HandleAmbientSound(entity_id_t entityid);
-        
-        //! creates or gets EC_AttachedSound component to entity
-        EC_AttachedSound* GetOrCreateAttachedSound(Scene::EntityPtr entity);
         
         //! handles changes in drawtype (mesh/prim). also handles particle scripts.
         //! @param entityid Entity id.
@@ -130,6 +138,9 @@ namespace RexLogic
         //! us any reliable ordered stream of communication.
         typedef std::map<RexUUID, std::vector<u8> > RexPrimDataMap;
         RexPrimDataMap pending_rexprimdata_;
+        //! pending rexfreedatas
+        typedef std::map<RexUUID, std::string > RexFreeDataMap;
+        RexFreeDataMap pending_rexfreedata_;
     };
 }
 #endif

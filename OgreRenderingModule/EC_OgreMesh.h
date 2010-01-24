@@ -38,9 +38,8 @@ namespace OgreRenderer
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
-            \param parent_entity parent entity, needed for raycasting results
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable, Scene::Entity* parent_entity);
+        void SetPlaceable(Foundation::ComponentPtr placeable);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -240,9 +239,6 @@ namespace OgreRenderer
         
         //! draw distance
         float draw_distance_;
-        
-        //! parent entity
-        Scene::Entity* parent_entity_;
     };
 }
 

@@ -698,18 +698,20 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
 
     // Create camera entity into the scene
     {
-        Foundation::ComponentPtr placeable = GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        Foundation::ComponentPtr camera = GetFramework()->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::NameStatic());                
+        Foundation::Framework* fw = GetFramework();
+        
+        Foundation::ComponentPtr placeable = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        Foundation::ComponentPtr camera = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::NameStatic());
 
         if ((placeable) && (camera))
         {    
-            Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());        
+            Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
             
-            entity->AddEntityComponent(placeable);
-            entity->AddEntityComponent(camera);
+            entity->AddComponent(placeable);
+            entity->AddComponent(camera);
             
             OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
-            camera_ptr->SetPlaceable(placeable);        
+            camera_ptr->SetPlaceable(placeable);
             camera_ptr->SetActive();
             camera_entity_ = entity;
             // Set camera controllable to use this camera entity. Note: it's a weak pointer so will not keep the camera alive needlessly
@@ -883,7 +885,7 @@ void RexLogicModule::UpdateAvatarOverlays()
         {
             OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
             if (overlay)
-                overlay->Update();               
+                overlay->Update();
         }
     } 
 }

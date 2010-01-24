@@ -6,11 +6,11 @@
 namespace Foundation
 {
 
-ComponentInterface::ComponentInterface(const Foundation::Framework *framework) : framework_(framework)
+ComponentInterface::ComponentInterface(Foundation::Framework *framework) : framework_(framework), parent_entity_(0)
 {
 }
 
-ComponentInterface::ComponentInterface(const ComponentInterface &rhs) : QObject(), framework_(rhs.framework_)
+ComponentInterface::ComponentInterface(const ComponentInterface &rhs) : QObject(), framework_(rhs.framework_), parent_entity_(rhs.parent_entity_)
 {
 }
 ComponentInterface::~ComponentInterface()
