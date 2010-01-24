@@ -16,31 +16,22 @@ namespace TelepathyIM
 {
 	ConnectionProvider::ConnectionProvider(Foundation::Framework* framework): framework_(framework), dbus_daemon_(NULL), state_(STATE_INITIALIZING)
 	{
-        //QStringList test;
-        //test.append("TEST"),
-        //test.append("value");
-        //QProcess::setEnvironment(test);
-        
-//        QApplication::set
-//        QApplication::addLibraryPath("./gstreamer/bin");
-
-		// We want to start dbus daemon only on Windows platform
 #ifdef WIN32
-        //! Ensures that gabble and dbus daemon processes are not running 
-        //! and start new dbus daemon process
-
+		// We want to start dbus daemon only on Windows platform
         InitializeDBusAndGabble();
         InitializeGLib();
         InitializeGStreamer();
-        g_main_loop_.start();
-
-     //   g_main_loop_.setPriority(QThread::Priority::LowPriority);
-        
-
+        StartGMainLoop();
 #else
       	InitializeTelepathyConnectionManager("gabble");
 #endif
 	}
+
+    void ConnectionProvider::StartGMainLoop()
+    {
+        g_main_loop_.start();
+        g_main_loop_.setPriority(QThread::NormalPriority);
+    }
 
     void ConnectionProvider::InitializeGLib()
     {
@@ -49,26 +40,25 @@ namespace TelepathyIM
 
     void ConnectionProvider::InitializeGStreamer()
     {
-        const int ARGC = 5;
-        
         std::string fs_plugin_path = Poco::Path::current();
         fs_plugin_path.append("gstreamer\\lib\\farsight2-0.0");
         Poco::Environment::set("FS_PLUGIN_PATH", fs_plugin_path);        
 
         QString gst_plugin_path = QString(Poco::Path::current().c_str()).append("gstreamer\\lib\\gstreamer-0.10");
+        Poco::Environment::set("GST_PLUGIN_PATH", gst_plugin_path.toStdString().c_str());        
+
+        const int ARGC = 5;
         QString arg_gst_plugin_path(QString("--gst-plugin-path=").append(gst_plugin_path).append(""));
         QString arg_gst_disable_registry_update("--gst-disable-registry-update");
         QString arg_gst_disable_registry_fork("--gst-disable-registry-fork");
 
-        Poco::Environment::set("GST_PLUGIN_PATH", gst_plugin_path.toStdString().c_str());        
-
         int argc = ARGC;
         char* argv[ARGC];
         std::string args[ARGC];
-        args[0] = "";
+        args[0] = ""; // first argument will be ignored
         args[1] = arg_gst_plugin_path.toStdString();
         args[2] = ""; //arg_gst_disable_registry_update.toStdString();
-        args[3] = "--gst-plugin-spew"; //arg_gst_disable_registry_fork.toStdString();
+        args[3] = arg_gst_disable_registry_fork.toStdString();
         args[4] = ""; // "--gst-debug-level=3"; //arg_gst_disable_registry_fork.toStdString();
         for (int i=0; i < ARGC; ++i)
         {
@@ -100,7 +90,6 @@ namespace TelepathyIM
         ClearGabble();
     }
 
-
 	ConnectionProvider::~ConnectionProvider()
 	{
 		DeleteConnections();
@@ -109,8 +98,9 @@ namespace TelepathyIM
 #ifdef WIN32
 		StopDBusDaemon();
         
+        g_main_loop_.StopLoop();
         //g_main_loop_quit(g_main_loop_.g_main_loop_);  // hack, should be inside the thread class
-        g_main_loop_.terminate(); // even more evil hack. Thread should exit by it's own
+//        g_main_loop_.terminate(); // even more evil hack. Thread should exit by it's own
 #endif
 	}
                
@@ -172,7 +162,7 @@ namespace TelepathyIM
 		QString arguments = "--config-file=data\\session.conf";
 
 		dbus_daemon_ = new QProcess(this);
-		QStringList env = QProcess::systemEnvironment();
+        QStringList env = QProcess::systemEnvironment();
 		QString env_item = "DBUS_SESSION_BUS_ADDRESS=tcp:host=127.0.0.1,port=";
 		env_item.append( QString(DBUS_SESSION_PORT_, 10));
 		env << env_item;
