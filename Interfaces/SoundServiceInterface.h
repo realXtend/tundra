@@ -34,7 +34,7 @@ namespace Foundation
         {
             //! Pointer to sound data
             void* data_;
-            //! Sound data size
+            //! Sound data size in bytes
             uint size_;
             //! Frequency
             uint frequency_;
@@ -166,19 +166,19 @@ namespace Foundation
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
-         */        
+         */
         virtual void SetGain(sound_id_t id, Real gain) = 0;
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
             \param looped Whether to loop
-         */           
+         */
         virtual void SetLooped(sound_id_t id, bool looped) = 0;
         
         //! Adjusts positional status of channel
         /*! \param id Channel id
             \param positional Positional status
-         */               
+         */
         virtual void SetPositional(sound_id_t id, bool positional) = 0;
         
         //! Sets position of channel
@@ -203,7 +203,7 @@ namespace Foundation
             \param position New position
 
             \todo: Merge with exist SetPosition method
-         */   
+         */
         virtual void SetSoundStreamPosition(Vector3df position, bool positional) = 0;
 
         //! Get recording device names

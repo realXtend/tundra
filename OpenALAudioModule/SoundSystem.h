@@ -61,13 +61,13 @@ namespace OpenALAudio
         
         //! Sets master gain of certain sound types
         virtual Real GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type);        
-                
+        
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
             \param local If true, name is interpreted as filename. Otherwise asset id
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
-         */           
+         */
         virtual sound_id_t PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
         
         //! Plays positional sound. Returns sound id to adjust parameters
@@ -118,7 +118,7 @@ namespace OpenALAudio
         
         //! Gets all non-stopped channels id's
         virtual std::vector<sound_id_t> GetActiveSounds() const;
-                
+        
         //! Gets name of sound played/pending on channel
         /*! \param id Channel id
             \return Sound name, or empty if no sound
@@ -130,7 +130,7 @@ namespace OpenALAudio
             \return Sound type
          */
         virtual Foundation::SoundServiceInterface::SoundType GetSoundType(sound_id_t id) const;
-                
+        
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
          */
@@ -145,25 +145,25 @@ namespace OpenALAudio
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
-         */        
+         */
         virtual void SetGain(sound_id_t id, Real gain);
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
             \param looped Whether to loop
-         */           
+         */
         virtual void SetLooped(sound_id_t id, bool looped);
         
         //! Adjusts positional status of channel
         /*! \param id Channel id
             \param positional Positional status
-         */               
+         */
         virtual void SetPositional(sound_id_t id, bool positional);
         
         //! Sets position of channel
         /*! \param id Channel id
             \param position New position
-         */   
+         */
         virtual void SetPosition(sound_id_t id, Vector3df position);
         
         //! Adjusts range parameters of positional sound channel.
@@ -214,7 +214,7 @@ namespace OpenALAudio
         
         //! Handles a thread task event. Called from OpenALAudioModule.
         bool HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-                
+        
         //! Returns initialized status
         bool IsInitialized() const { return initialized_; }
 
@@ -230,7 +230,7 @@ namespace OpenALAudio
         
         //! Get sound
         /*! Creates new if necessary. Initiates asset decode/download as necessary.
-         */ 
+         */
         SoundPtr GetSound(const std::string& name, bool local);
         //! Posts request for local decode of ogg file
         /* \return true if file could be found & decode initiated. This does not yet tell if the data is valid, though
