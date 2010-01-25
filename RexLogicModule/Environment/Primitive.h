@@ -42,7 +42,7 @@ namespace RexLogic
         void SendRexPrimData(entity_id_t entityid);
 
         // Send RexFreeData of a prim entity (if exists) to server
-        void Primitive::SendRexFreeData(entity_id_t entityid);
+        void SendRexFreeData(entity_id_t entityid);
 
     private:
         //! The owning module.
