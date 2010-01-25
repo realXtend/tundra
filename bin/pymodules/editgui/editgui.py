@@ -720,8 +720,6 @@ class EditGUI(Component):
             
             self.meshline.update_text("")
             self.reset_guivals()
-            
-            self.propeditwidget.hide()
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
