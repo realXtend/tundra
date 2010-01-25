@@ -66,7 +66,7 @@ PRIMTYPES_REVERSED = {
     "Texture": "0"
 }
         
-class EditGUI(Component):
+class ObjectEdit(Component):
     EVENTHANDLED = False
     UIFILE = "pymodules/editgui/editobject.ui"
     
