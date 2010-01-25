@@ -68,7 +68,7 @@ PRIMTYPES_REVERSED = {
         
 class ObjectEdit(Component):
     EVENTHANDLED = False
-    UIFILE = "pymodules/editgui/editobject.ui"
+    UIFILE = "pymodules/objectedit/editobject.ui"
     
     MANIPULATE_NONE = 0
     MANIPULATE_MOVE = 1
@@ -79,8 +79,8 @@ class ObjectEdit(Component):
     AXIS_Y = 1
     AXIS_Z = 2
     
-    ICON_OK = "pymodules/editgui/ok.png"
-    ICON_CANCEL = "pymodules/editgui/cancel.png"
+    ICON_OK = "pymodules/objectedit/ok.png"
+    ICON_CANCEL = "pymodules/objectedit/cancel.png"
     
     UPDATE_INTERVAL = 0.05 #how often the networkUpdate will be sent
     

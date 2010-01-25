@@ -48,15 +48,15 @@ else:
 #~ usr.keycommands = load_module("usr.keycommands")
 
 try:
-    editgui.objectedit #only_layout
+    objectedit.objectedit #only_layout
 except: #first run
     try:
-        import editgui.objectedit #only_layout
+        import objectedit.objectedit #only_layout
     except ImportError, e:
-        print "couldn't load edigui:", e
+        print "couldn't load objectedit:", e
 else:
     r.logDebug("   reloading objectedit")
-    editgui.objectedit = reload(editgui.objectedit) #only_layout)
+    objectedit.objectedit = reload(objectedit.objectedit) #only_layout)
 
 #~ editgui = load_module("editgui")
 
@@ -110,7 +110,7 @@ modules = [
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    editgui.objectedit.ObjectEdit, #only_layout.OnlyLayout,
+    objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
