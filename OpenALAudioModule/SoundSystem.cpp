@@ -39,10 +39,10 @@ namespace OpenALAudio
         framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));
         
         // Set default master gains for sound types
-        master_gain_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "master_gain", 1.0);
-        sound_master_gain_[Foundation::SoundServiceInterface::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0);
-        sound_master_gain_[Foundation::SoundServiceInterface::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0);
-        sound_master_gain_[Foundation::SoundServiceInterface::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0);
+        master_gain_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "master_gain", 1.0f);
+        sound_master_gain_[Foundation::SoundServiceInterface::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0f);
+        sound_master_gain_[Foundation::SoundServiceInterface::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0f);
+        sound_master_gain_[Foundation::SoundServiceInterface::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
     }
 
     SoundSystem::~SoundSystem()
