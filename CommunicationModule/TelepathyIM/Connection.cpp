@@ -413,9 +413,7 @@ namespace TelepathyIM
 
 		connect(tp_connection_.data(), SIGNAL( statusChanged(uint, uint) ), SLOT( OnTpConnectionStatusChanged(uint, uint) ));
 		connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
-
-		connect(tp_connection_->contactManager(), SIGNAL( groupMembersChanged(const Tp::Contacts &) ), SLOT( OnGroupMembersChanged(const QString &, const Tp::Contacts &, const Tp::Contacts &) ));
-
+		connect(tp_connection_->contactManager(), SIGNAL( groupMembersChanged(const QString &, const Tp::Contacts &, const Tp::Contacts &) ), SLOT( OnGroupMembersChanged(const QString &, const Tp::Contacts &, const Tp::Contacts &) ));
 
         ContactVector new_contacts = HandleAllKnownTpContacts();
         for (ContactVector::iterator i = new_contacts.begin(); i != new_contacts.end(); ++i)
@@ -475,6 +473,7 @@ namespace TelepathyIM
 		//! - friend request (received)      ASK             YES
 		//! - banned contact                 NO              *
 		//! - unknow                         (all the other combinations)
+        
 		foreach (const Tp::ContactPtr &tp_contact, tp_connection_->contactManager()->allKnownContacts())
 		{
 			switch ( tp_contact->subscriptionState() )
