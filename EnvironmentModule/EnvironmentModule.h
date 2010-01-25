@@ -137,7 +137,7 @@ namespace Environment
         Foundation::EventManagerPtr event_manager_;
 
         /// Id for Framework event category
-        event_category_id_t framework_evet_category_;
+        event_category_id_t framework_event_category_;
 
         /// Id for Resource event category
         event_category_id_t resource_event_category_;

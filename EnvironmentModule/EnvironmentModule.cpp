@@ -80,8 +80,8 @@ namespace Environment
         if (scene_event_category_ == 0)
             LogError("Failed to query \"Scene\" event category");
 
-        framework_evet_category_ = event_manager_->QueryEventCategory("Framework");
-        if (scene_event_category_ == 0)
+        framework_event_category_ = event_manager_->QueryEventCategory("Framework");
+        if (framework_event_category_ == 0)
             LogError("Failed to query \"Framework\" event category");
     }
 
@@ -125,7 +125,7 @@ namespace Environment
 
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if(category_id == framework_evet_category_)
+        if(category_id == framework_event_category_)
         {
             if(event_id == Foundation::NETWORKING_REGISTERED)
             {
