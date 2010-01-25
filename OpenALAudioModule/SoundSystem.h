@@ -4,7 +4,6 @@
 
 #include "SoundServiceInterface.h"
 #include "Sound.h"
-#include "SoundStream.h"
 #include "SoundChannel.h"
 
 #include <AL/al.h>
@@ -100,16 +99,6 @@ namespace OpenALAudio
          */
         virtual sound_id_t PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0);
 
-        //! Play raw audio data from buffer
-        /*! \param buffer pointer to buffer where playable audio data is stored
-            \buffer_size Size of buffer
-            \sample_rate Sample rate of audio data
-            \sample_width sample widh of audio data in bits. Currently only 8 and 16 are supported values
-            \stereo If true then audio data is stero otherwise it's mono
-            \channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
-        */
-        virtual sound_id_t PlayAudioData(u8 *buffer, int buffer_size, int sample_rate, int sample_width, bool stereo, bool positional = false, sound_id_t channel = 0);
-
         //! Gets state of channel
         /*! \param id Channel id
             \return Current state (stopped, pending & loading sound asset, playing)
@@ -176,9 +165,6 @@ namespace OpenALAudio
             Also, for non-positional channels the range parameters have no effect.
          */
         virtual void SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff); 
-
-        //! Updates the sound stream position
-        virtual void SetSoundStreamPosition(Vector3df position, bool positional);
 
         //! Get recording device names
         virtual StringVector GetRecordingDevices();
@@ -272,8 +258,6 @@ namespace OpenALAudio
         Real master_gain_;
         //! Master gain for individual sound types
         std::map<Foundation::SoundServiceInterface::SoundType, Real> sound_master_gain_;
-
-        SoundStream *sound_stream_;
 
         boost::mutex mutex;
     };
