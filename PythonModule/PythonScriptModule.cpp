@@ -370,6 +370,11 @@ namespace PythonScript
             {
                 value = PyObject_CallMethod(pmmInstance, "LOGIN_INFO", "i", event_id);
             }
+			else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+			{
+				value = PyObject_CallMethod(pmmInstance, "SERVER_DISCONNECTED", "i", event_id);
+			}
+
         }
         else if (category_id == framework_category_id && event_id == Foundation::NETWORKING_REGISTERED)
         {

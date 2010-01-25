@@ -247,7 +247,13 @@ class EditGUI(Component):
         box.addWidget(button_ok)
         box.addWidget(button_cancel)
         
-        #self.propedit = r.getPropertyEditor()
+        self.propedit = r.getPropertyEditor()
+        props = r.createUiWidgetProperty()
+        props.show_at_toolbar_ = False
+        props.widget_name_ = "Property Editor"
+        props.my_size_ = QSize(width/1.5, height)
+        self.propeditwidget = r.createUiProxyWidget(self.propedit, props)
+        uism.AddProxyWidget(self.propeditwidget)
         #print pe, pe.setObject, pe.show
         #self.propedit.show()
 
@@ -312,7 +318,7 @@ class EditGUI(Component):
         self.arrow_grabbed = False
         self.arrow_grabbed_axis = None
 
-        #~ r.c = self
+        r.c = self
         
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         
@@ -687,9 +693,10 @@ class EditGUI(Component):
             self.update_guivals()
             self.update_selection()
 
-            #~ qprim = r.getQPrim(ent.id)
-            #~ self.propedit.setObject(qprim)
-            #~ self.propedit.show()
+            qprim = r.getQPrim(ent.id)
+            self.propedit.setObject(qprim)
+            self.propeditwidget.show()
+            #self.propedit.show()
 
             #print "Set propedit object to:", qprim, dir(qprim)
     
@@ -709,6 +716,8 @@ class EditGUI(Component):
             
             self.meshline.update_text("")
             self.reset_guivals()
+            
+            self.propeditwidget.hide()
         
     def update_selection(self):             
         bb = list(self.sel.boundingbox)
@@ -1022,6 +1031,7 @@ class EditGUI(Component):
 
         uism = r.getUiSceneManager()
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
+        uism.RemoveProxyWidgetFromScene(self.propeditwidget)
 
         r.logInfo("         ...exit done.")
 

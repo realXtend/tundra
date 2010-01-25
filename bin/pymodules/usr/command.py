@@ -974,3 +974,17 @@ if 0:
     combo.addItem("dddd")
     
     print combo.currentIndex, combo.findText("ccCc")
+
+if 0:
+    print r.c.propedit
+    #~ r.c.propedit.setObject(r.c.propedit)
+    #~ r.c.propedit.show()
+    #~ props = r.createUiWidgetProperty()
+    #~ props.show_at_toolbar_ = False
+    #~ props.widget_name_ = "property editor"
+    #~ r.test = r.createUiProxyWidget(r.c.propedit, props)
+    #~ r.test.show()
+    uism = r.getUiSceneManager()
+    uism.AddProxyWidget(r.test)
+    print r.test
+    r.test.show()
