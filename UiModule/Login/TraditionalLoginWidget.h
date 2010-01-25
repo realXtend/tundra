@@ -1,27 +1,24 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_ClassicLoginWidget_h
-#define incl_UiModule_ClassicLoginWidget_h
+#ifndef incl_UiModule_TraditionalLoginWidget_h
+#define incl_UiModule_TraditionalLoginWidget_h
 
-//#include "StableHeaders.h"
 #include "AbstractLogin.h"
 
 #include <EventHandlers/LoginHandler.h>
 #include <NetworkEvents.h>
 
-#include <QtGui>
-#include <QUiLoader>
-#include <QFile>
+#include "ui_TraditionalLoginWidget.h"
 
 namespace CoreUi
 {
-    class ClassicLoginWidget : public AbstractLogin
+    class TraditionalLoginWidget : public AbstractLogin
     {
         Q_OBJECT
 
     public:
-        ClassicLoginWidget(LoginContainer *controller, RexLogic::OpenSimLoginHandler *os_login_handler, Foundation::Framework *framework);
-        virtual ~ClassicLoginWidget(void);
+        TraditionalLoginWidget(LoginContainer *controller, RexLogic::OpenSimLoginHandler *os_login_handler, Foundation::Framework *framework);
+        virtual ~TraditionalLoginWidget(void);
 
     public slots:
         void DoCommandParameterLogin(QMap<QString, QString> &login_information);
@@ -36,16 +33,9 @@ namespace CoreUi
         QString realxtend_authserver_;
         QString opensim_username_;
         QString opensim_server_;
-        QWidget *internal_widget_;
-        QRadioButton *radiobutton_opensim_;
-        QRadioButton *radiobutton_realxtend_;
-        QPushButton *pushbutton_connect_;
-        QPushButton *pushbutton_close_;
-        QLineEdit *line_edit_world_address_;
-        QLineEdit *line_edit_username_;
-        QLineEdit *line_edit_password_;
 
         Foundation::Framework *framework_;
+        Ui::TraditionalLoginWidget ui_;
 
     private slots:
         void ShowSelectedMode();
@@ -59,4 +49,4 @@ namespace CoreUi
     };
 }
 
-#endif // incl_UiModule_ClassicLoginWidget_h
+#endif // incl_UiModule_TraditionalLoginWidget_h

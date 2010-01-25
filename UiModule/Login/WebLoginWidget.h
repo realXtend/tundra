@@ -3,21 +3,17 @@
 #ifndef incl_UiModule_WebLoginWidget_h
 #define incl_UiModule_WebLoginWidget_h
 
-//#include "StableHeaders.h"
 #include "UiModuleApi.h"
-#include "WebLogin.h"
 #include "AbstractLogin.h"
 
 #include <EventHandlers/LoginHandler.h>
 #include <NetworkEvents.h>
 
-#include <QtGui>
-#include <QUiLoader>
-#include <QFile>
+#include "ui_WebLoginWidget.h"
 
 namespace CoreUi
 {
-    class WebLoginWidget : public AbstractLogin
+    class WebLoginWidget :  public AbstractLogin
     {
 
 	Q_OBJECT
@@ -26,11 +22,23 @@ namespace CoreUi
         WebLoginWidget(LoginContainer *controller, RexLogic::TaigaLoginHandler *taiga_login_handler);
         virtual ~WebLoginWidget(void);
 
+    public slots:
+        void GoToUrl();
+        void GoToUrl(bool checked);
+        void LoadStarted();
+        void UpdateUi(int progress);
+        void ProcessPage(bool success);
+
 	private:
         void InitWidget();
+        void ConnectSignals();
 		void SetLoginHandler(RexLogic::TaigaLoginHandler *taiga_login_handler);
 
-		WebLogin *web_login_widget_;
+        Ui::WebLogin weblogin_ui_;
+        QString address_;
+
+    signals:
+        void WebLoginInfoRecieved(QWebFrame *);
 
     };
 }

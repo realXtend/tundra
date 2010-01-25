@@ -163,6 +163,15 @@
       </widget>
      </item>
      <item>
+      <widget class="QWebView" name="webView">
+       <property name="url">
+        <url>
+         <string>about:blank</string>
+        </url>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="Line" name="line_Bottom">
        <property name="lineWidth">
         <number>0</number>
@@ -240,6 +249,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
