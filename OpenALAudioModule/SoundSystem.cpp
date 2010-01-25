@@ -27,8 +27,7 @@ namespace OpenALAudio
         next_channel_id_(0),
         sound_cache_size_(DEFAULT_SOUND_CACHE_SIZE),
         update_time_(0),
-        listener_position_(0.0, 0.0, 0.0),
-        sound_stream_(0)
+        listener_position_(0.0, 0.0, 0.0)
     {
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
@@ -298,27 +297,6 @@ namespace OpenALAudio
         return i->first;
     }
 
-    sound_id_t SoundSystem::PlayAudioData(u8 *buffer, 
-                                          int buffer_size, 
-                                          int sample_rate, 
-                                          int sample_width, 
-                                          bool stereo, 
-                                          bool positional,
-                                          sound_id_t channel)
-    {
-        if (!initialized_)
-            return 0;
-            
-        // TODO: Make a sound stream map so we can have multiple
-        // return id of this stream so you can call its FillBuffer again who ever gets it! 
-        if (!sound_stream_)
-            sound_stream_ = new SoundStream("voice_stream", sample_rate, sample_width, stereo);
-        if (!positional)
-            sound_stream_->SetPosition(Vector3df::ZERO, false);
-        sound_stream_->AddData(buffer, buffer_size);
-        return 0;
-    }
-
     void SoundSystem::StopSound(sound_id_t id)
     {
         SoundChannelMap::iterator i = channels_.find(id);
@@ -380,13 +358,6 @@ namespace OpenALAudio
             return;
         
         i->second->SetRange(inner_radius, outer_radius, rolloff);
-    }
-
-    void SoundSystem::SetSoundStreamPosition(Vector3df position, bool positional)
-    {
-        if (!sound_stream_)
-            return;
-        sound_stream_->SetPosition(position, positional);
     }
 
     sound_id_t SoundSystem::GetNextSoundChannelID()
