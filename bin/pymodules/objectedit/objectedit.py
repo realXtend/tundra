@@ -22,16 +22,13 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QInputDialog, QSizePolicy, QIcon, QHBoxLayout, QComboBox
+from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 from circuits import Component
 
 from conversions import * #for euler - quat -euler conversions
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
-
-#~ from lines import MeshAssetidEditline, UUIDEditLine
-#~ from buttons import PyPushButton
 
 try:
     lines
@@ -126,14 +123,6 @@ class ObjectEdit(Component):
         box.addWidget(button_cancel)
         
         self.propedit = r.getPropertyEditor()
-        #~ props = r.createUiWidgetProperty()
-        #~ props.show_at_toolbar_ = False
-        #~ props.widget_name_ = "Property Editor"
-        #~ props.my_size_ = QSize(width/1.5, height)
-        #~ self.propeditwidget = r.createUiProxyWidget(self.propedit, props)
-        #~ uism.AddProxyWidget(self.propeditwidget)
-        #print pe, pe.setObject, pe.show
-        #self.propedit.show()
         self.tabwidget.addTab(self.propedit, "Properties")
         self.tabwidget.setTabEnabled(2, False)
     
@@ -177,9 +166,6 @@ class ObjectEdit(Component):
         self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.duplicate)
         
         self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.undo)
-        
-        #self.mainTab.setMesh.connect('clicked()', self.setMesh)
-        #self.mainTab.redo.connect('clicked()', self.redo)
         
         self.mainTab.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
         self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
@@ -235,7 +221,6 @@ class ObjectEdit(Component):
         if self.keypressed:
             self.keypressed = False
             if not self.mainTab.move_button.isChecked():
-                #print self.mainTab.move_button, dir(self.mainTab.move_button)
                 self.mainTab.move_button.setChecked(True)
             else:
                 self.mainTab.move_button.setChecked(False)
@@ -394,7 +379,6 @@ class ObjectEdit(Component):
         
     def tabChanged(self, index):
         if index == 1:
-            #print "Material Tab"#, self.materialTab.formLayoutWidget.materialFormLayout
             self.updateMaterialTab()
         #~ elif index == 0:
             #~ print "Object Edit"
@@ -427,8 +411,8 @@ class ObjectEdit(Component):
                     #print realIndex, asset_type, PRIMTYPES[asset_type]
                     combobox.setCurrentIndex(realIndex)
                 
-                applyButton = self.getButton("dialogApplyButton", self.ICON_OK, line, line.applyAction)
-                cancelButton = self.getButton("dialogCancelButton", self.ICON_CANCEL, line, line.cancelAction)
+                applyButton = self.getButton("materialApplyButton", self.ICON_OK, line, line.applyAction)
+                cancelButton = self.getButton("materialCancelButton", self.ICON_CANCEL, line, line.cancelAction)
                 line.index = index
                 line.combobox = combobox
                 line.connect('textEdited(QString)', applyButton.lineValueChanged)
@@ -444,17 +428,13 @@ class ObjectEdit(Component):
 
     def clearDialogForm(self):
         children = self.materialTabFormWidget.children()
-        #print children
-        #~ print self.materialTabFormWidget.findChildren("QHBoxLayout")
         for child in children:
-            #print child.name#, child.name == "formLayout"
             if child.name != "materialFormLayout": #dont want to remove the actual form layout from the widget
                 self.materialTabFormWidget.materialFormLayout.removeWidget(child)
                 child.delete()
         
         children = self.materialTabFormWidget.findChildren("QHBoxLayout")
         for child in children:
-            #print child
             self.materialTabFormWidget.materialFormLayout.removeItem(child)
             child.delete()
 
@@ -462,7 +442,6 @@ class ObjectEdit(Component):
         #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
         current = self.mainTab.treeWidget.currentItem()
         text = current.text(0)
-        #print "Selected:", text
         if self.mainTabList.has_key(text):
             self.select(self.mainTabList[text][0])
     
@@ -470,11 +449,7 @@ class ObjectEdit(Component):
         #print "undo clicked"
         ent = self.sel
         if ent is not None:
-            #print ent.uuid
-            #worldstream = r.getServerConnection()
             self.worldstream.SendObjectUndoPacket(ent.uuid)
-            #self.hideArrows()
-            #self.sel = None
             self.update_guivals()
             self.modified = False
 
@@ -494,7 +469,6 @@ class ObjectEdit(Component):
         #print "duplicate clicked"
         ent = self.sel
         if ent is not None:
-            #print e, e.uuid, e.editable, e.updateflags
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
         
     def createObject(self):
@@ -514,34 +488,19 @@ class ObjectEdit(Component):
     def deleteObject(self):
         ent = self.sel
         if ent is not None:
-            #worldstream = r.getServerConnection()
-            #print worldstream, dir(worldstream), worldstream.SendObjectDeRezPacket
             self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
             self.hideArrows()
             self.hideSelector()
             id, tWid = self.mainTabList.pop(str(ent.id))
-            #print tWid, tWid.text(0)
             tWid.delete()
             self.deselect()
             self.sel = None
 
-    def setMesh(self):
-        """callback for the original set mesh button, going away."""
-        meshUUID = None
-        meshUUID = QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
-        if meshUUID != "" and meshUUID != None:
-            r.logDebug("User gave mesh asset UUID %s" % meshUUID)
-            # validate UUID somehow and get selected item from listview -> put mesh to it with id :)
-            #XXX validate
-            #print "Type of meshUUID:", type(meshUUID)
-            applymesh(self.sel, meshUUID)
-
     def select(self, ent):
-        #print "at select", ent.id, r.getUserAvatarId()
         arrows = False
         if self.move_arrows.id == ent.id:
             arrows = True
-        #print arrows
+
         if ent.id != 0 and ent.id > 30 and ent.id != r.getUserAvatarId() and not arrows: #terrain seems to be 3 and scene objects always big numbers, so > 30 should be good
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
@@ -575,12 +534,9 @@ class ObjectEdit(Component):
 
             qprim = r.getQPrim(ent.id)
             self.propedit.setObject(qprim)
-            #self.propeditwidget.show()
             self.tabwidget.setTabEnabled(2, True)
-            #self.propedit.show()
+            self.move_arrows.orientation = ent.orientation
 
-            #print "Set propedit object to:", qprim, dir(qprim)
-    
     def deselect(self):
         if self.sel is not None:
             self.sel = None
@@ -594,7 +550,6 @@ class ObjectEdit(Component):
             self.arrow_grabbed = False
             self.tabwidget.setTabEnabled(1, False)
             self.tabwidget.setTabEnabled(2, False)
-            #self.propedit.hide()
             
             self.meshline.update_text("")
             self.reset_guivals()
@@ -608,7 +563,7 @@ class ObjectEdit(Component):
         width = abs(bb[3] - bb[0])
         depth = abs(bb[5] - bb[2])
 
-        if bb[6] == 0: #0 means CustomObject
+        if 1:#bb[6] == 0: #0 means CustomObject
             height += scale[0]#*1.2
             width += scale[1] #*1.2
             depth += scale[2]#*1.2
@@ -633,7 +588,6 @@ class ObjectEdit(Component):
             
         #from quat to euler x.y,z
         euler = quat_to_euler(self.sel.orientation)
-        #print euler
         self.mainTab.rot_x.setValue(euler[0])
         self.mainTab.rot_y.setValue(euler[1])
         self.mainTab.rot_z.setValue(euler[2])        
@@ -683,9 +637,6 @@ class ObjectEdit(Component):
         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
             #print "Hiding arrows!"
             if self.move_arrows is not None:
-                #pos = self.move_arrows.pos #very ugly hack... seems to correct the annoying error with grabbing an object the first time
-                #scale = self.move_arrows.scale
-                #print self.move_arrows.scale, self.move_arrows.pos
                 self.move_arrows.scale = 0.0, 0.0, 0.0 #ugly hack
                 self.move_arrows.pos = 0.0, 0.0, 0.0 #another ugly hack
             
@@ -711,7 +662,6 @@ class ObjectEdit(Component):
     def LeftMouseDown(self, mouseinfo):
         #print "LeftMouseDown", mouseinfo, mouseinfo.x, mouseinfo.y
         self.left_button_down = True
-        #ent = r.rayCast(mouseinfo.x, mouseinfo.y)
         results = []
         results = r.rayCast(mouseinfo.x, mouseinfo.y)
         ent = None
@@ -731,8 +681,6 @@ class ObjectEdit(Component):
             self.prev_mouse_abs_y = mouse_abs_y
 
             r.eventhandled = self.EVENTHANDLED
-            #print "Entity position is", ent.pos
-            #print "Entity id is", ent.id
             #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
             if self.selection_box is None:
                 self.selection_box = r.createEntity("Selection.mesh", 0)
@@ -803,7 +751,7 @@ class ObjectEdit(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         
-        if self.active: #XXX not self.canvas.IsHidden():
+        if self.active:
             if self.left_button_down :
                 #print "on_mousemove + hold:", mouseinfo
                 if self.sel is not None and self.sel_activated and self.canmove:
@@ -829,11 +777,7 @@ class ObjectEdit(Component):
                     amount_x = (worldwidth * movedx)
                     amount_y = (worldheight * movedy)
                     
-                    if self.arrow_grabbed:
-                        #rightvec = r.getCameraRight()
-                        #upvec = r.getCameraUp()
-                        #mov = mouseinfo.rel_x + mouseinfo.rel_y
-                        
+                    if self.arrow_grabbed:                        
                         temp = [0,0,0]
                         temp[self.arrow_grabbed_axis] = 1
                         axis_vec = Vector3(temp)
@@ -847,8 +791,7 @@ class ObjectEdit(Component):
                         
                         if self.manipulator_state == self.MANIPULATE_MOVE: #arrow move
                             pos = list(self.sel.pos)
-                            
-                            #mov /= 7.0
+
                             #print rightvec[self.arrow_grabbed_axis], rightvec
                             if self.arrow_grabbed_axis == self.AXIS_Z:
                                 mov = lengthy
@@ -857,7 +800,10 @@ class ObjectEdit(Component):
                                 #print pos[self.arrow_grabbed_axis]
                             else:
                                 mov = lengthx 
-                                mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                div = abs(rightvec[self.arrow_grabbed_axis])
+                                if div == 0:
+                                    div = 0.01 #not the best of ideas but...
+                                mov *= rightvec[self.arrow_grabbed_axis]/div
                                 #print mov, pos[self.arrow_grabbed_axis],
                                 pos[self.arrow_grabbed_axis] += mov
                             
@@ -865,24 +811,23 @@ class ObjectEdit(Component):
                     
                             self.sel.pos = pos[0], pos[1], pos[2]
                             self.move_arrows.pos = pos[0], pos[1], pos[2]
-                            #self.update_guivals()
                                 
                         elif self.manipulator_state == self.MANIPULATE_SCALE: #arrow scaling
                             #print "should change scale!"
                             scale = list(self.sel.scale)
-
-                            #mov /= 9.0
                             
                             if self.arrow_grabbed_axis == self.AXIS_Z:
                                 mov = lengthy
                                 scale[self.arrow_grabbed_axis] -= mov
                             else:
                                 mov = lengthx
-                                mov *= rightvec[self.arrow_grabbed_axis]/abs(rightvec[self.arrow_grabbed_axis])
+                                div = abs(rightvec[self.arrow_grabbed_axis])
+                                if div == 0:
+                                    div = 0.01 #not the best of ideas but...
+                                mov *= rightvec[self.arrow_grabbed_axis]/div
                                 scale[self.arrow_grabbed_axis] += mov
                     
                             self.sel.scale = scale[0], scale[1],scale[2]
-                            #self.update_guivals()
                             self.update_selection()
 
                     else: #freemove
@@ -923,8 +868,8 @@ class ObjectEdit(Component):
             try:
                 if self.move_arrows is not None:
                     ent = self.move_arrows.id 
-            #is called by qt also when viewer is exiting,
-            #when the scene (in rexlogic module) is not there anymore.
+                    #is called by qt also when viewer is exiting,
+                    #when the scene (in rexlogic module) is not there anymore.
             except RuntimeError, e:
                 r.logDebug("on_hide: scene not found")
             else:
@@ -934,7 +879,7 @@ class ObjectEdit(Component):
             
     def update(self, time):
         #print "here", time
-        if self.active: #XXX not self.canvas.IsHidden(): #do we need this here?
+        if self.active:
             self.time += time
             ent = self.sel
             if self.time > self.UPDATE_INTERVAL:
@@ -943,9 +888,7 @@ class ObjectEdit(Component):
                         sel_pos = self.selection_box.pos
                         arr_pos = self.move_arrows.pos
                         ent_pos = ent.pos
-                        #print ent_pos, sel_pos
                         if sel_pos != ent_pos:
-                            #print "oh dear"
                             self.time = 0
                             self.selection_box.pos = ent_pos
                         if arr_pos != ent_pos:
@@ -958,8 +901,3 @@ class ObjectEdit(Component):
         self.deselect()
         self.selection_box = None
         self.move_arrows = None
-        
-#barrel on 0.5 in viila: 
-# Upload succesfull. Asset id: 35da6174-8743-4026-a83e-18b23984120d, 
-# inventory id: 12c3df2d-ef3b-490e-8615-2f89abb7375d.
-
