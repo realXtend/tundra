@@ -94,13 +94,11 @@ namespace TelepathyIM
 	{
 		DeleteConnections();
 
-// We want to stopt dbus daemon only on Windows platform
+    // We want to stop dbus daemon only on Windows platform
 #ifdef WIN32
 		StopDBusDaemon();
-        
         g_main_loop_.StopLoop();
-        //g_main_loop_quit(g_main_loop_.g_main_loop_);  // hack, should be inside the thread class
-//        g_main_loop_.terminate(); // even more evil hack. Thread should exit by it's own
+        g_main_loop_.wait();
 #endif
 	}
                
