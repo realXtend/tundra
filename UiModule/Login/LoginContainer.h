@@ -4,13 +4,15 @@
 #define incl_UiModule_LoginContainer_h
 
 #include "UiModuleApi.h"
-#include "Login/WebLogin.h"
 
 #include <EventHandlers/LoginHandler.h>
 #include <NetworkEvents.h>
 
 #include <QMap>
 #include <QString>
+#include <QProgressBar>
+
+#include "ui_LoginControllerWidget.h"
 
 namespace UiServices
 {
@@ -24,21 +26,10 @@ namespace RexLogic
     class TaigaLoginHandler;
 }
 
-QT_BEGIN_NAMESPACE
-class QString;
-class QWidget;
-class QTabWidget;
-class QProgressBar;
-class QTimer;
-class QFrame;
-class QPushButton;
-class QLabel;
-QT_END_NAMESPACE
-
 namespace CoreUi
 {
     class WebLoginWidget;
-    class ClassicLoginWidget;
+    class TraditionalLoginWidget;
 
     class UI_MODULE_API LoginContainer : public QObject
     {
@@ -79,24 +70,18 @@ namespace CoreUi
 
         UiServices::UiProxyWidget *login_proxy_widget_;
         UiServices::UiProxyWidget *login_progress_proxy_widget_;
+        Ui::LoginControllerWidget ui_;
 
-        QWidget *login_progress_widget_;
-        QWidget *login_widget_;
-        QTabWidget *tabWidget_;
-        ClassicLoginWidget *classic_login_widget_;
+        TraditionalLoginWidget *traditional_login_widget_;
         WebLoginWidget *web_login_widget_;
 
-        QFrame *message_frame_;
-        QPushButton *logout_button_;
-        QPushButton *quit_button_;
-
-        QPushButton *hide_message_button_;
+        QWidget *login_widget_;
+        QWidget *login_progress_widget_;
         QLabel *login_status_;
-        QLabel *message_label_;
-        QLabel *autohide_label_;
         QProgressBar *login_progress_bar_;
         QTimer *progress_bar_timer_;
         QTimer *autohide_timer_;
+
         bool login_is_in_progress_;
         int autohide_count_;
 

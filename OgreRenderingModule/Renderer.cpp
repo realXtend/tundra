@@ -417,7 +417,7 @@ namespace OgreRenderer
             // Paint ui view into buffer
             QPainter painter(&buffer);
             q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
-
+            //buffer.save("ui_image.png", "PNG");
             // Blit ogre view into buffer
             Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
             Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());

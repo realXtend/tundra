@@ -3,6 +3,7 @@
 #ifndef incl_UiModule_AbstractLogin_h
 #define incl_UiModule_AbstractLogin_h
 
+#include <EventHandlers/LoginHandler.h>
 #include <QWidget>
 
 namespace RexLogic
@@ -19,9 +20,12 @@ namespace CoreUi
         Q_OBJECT
 
     public:
-        AbstractLogin(LoginContainer *controller);
+        AbstractLogin(LoginContainer *controller)
+            : QWidget(),
+              controller_(controller),
+              login_handler_(0) {}
+
         virtual void InitWidget() = 0;
-        virtual void SetLayout();
 
         LoginContainer *controller_;
         RexLogic::AbstractLoginHandler *login_handler_;

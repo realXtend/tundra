@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWidget</class>
- <widget class="QWidget" name="MainWidget">
+ <class>TraditionalLoginWidget</class>
+ <widget class="QWidget" name="TraditionalLoginWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>realXtend Naali Login</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#MainWidget {
+   <string notr="true">QWidget#TraditionalLoginWidget {
 	background-color: none;
 	/*background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));*/
 }

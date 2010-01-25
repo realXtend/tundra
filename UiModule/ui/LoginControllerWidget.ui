@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>LoginControllerWidget</class>
+ <widget class="QWidget" name="LoginControllerWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -61,8 +61,9 @@
            <widget class="QLabel" name="messageLabel">
             <property name="font">
              <font>
-              <family>Estrangelo Edessa</family>
-              <pointsize>14</pointsize>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
              </font>
             </property>
             <property name="styleSheet">
