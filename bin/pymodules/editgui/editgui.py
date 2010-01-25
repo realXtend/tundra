@@ -248,15 +248,17 @@ class EditGUI(Component):
         box.addWidget(button_cancel)
         
         self.propedit = r.getPropertyEditor()
-        props = r.createUiWidgetProperty()
-        props.show_at_toolbar_ = False
-        props.widget_name_ = "Property Editor"
-        props.my_size_ = QSize(width/1.5, height)
-        self.propeditwidget = r.createUiProxyWidget(self.propedit, props)
-        uism.AddProxyWidget(self.propeditwidget)
+        #~ props = r.createUiWidgetProperty()
+        #~ props.show_at_toolbar_ = False
+        #~ props.widget_name_ = "Property Editor"
+        #~ props.my_size_ = QSize(width/1.5, height)
+        #~ self.propeditwidget = r.createUiProxyWidget(self.propedit, props)
+        #~ uism.AddProxyWidget(self.propeditwidget)
         #print pe, pe.setObject, pe.show
         #self.propedit.show()
-
+        self.tabwidget.addTab(self.propedit, "Properties")
+        self.tabwidget.setTabEnabled(2, False)
+    
         def poschanger(i):
             def pos_at_index(v):
                 self.changepos(i, v)
@@ -695,7 +697,8 @@ class EditGUI(Component):
 
             qprim = r.getQPrim(ent.id)
             self.propedit.setObject(qprim)
-            self.propeditwidget.show()
+            #self.propeditwidget.show()
+            self.tabwidget.setTabEnabled(2, True)
             #self.propedit.show()
 
             #print "Set propedit object to:", qprim, dir(qprim)
@@ -712,6 +715,7 @@ class EditGUI(Component):
             self.arrow_grabbed_axis = None
             self.arrow_grabbed = False
             self.tabwidget.setTabEnabled(1, False)
+            self.tabwidget.setTabEnabled(2, False)
             #self.propedit.hide()
             
             self.meshline.update_text("")
