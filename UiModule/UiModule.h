@@ -47,9 +47,9 @@ namespace UiServices
         //! UiSceneManager will give you a QObject derived class that will give you all
         //! the UI related services like adding your own QWidgets into the 2D scene 
         //! \return UiSceneManager The scene manager with scene services
-        UiServices::UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
+        UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
 
-        UiServices::UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
+        UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
 
         /*************** Logging ***************/
 
