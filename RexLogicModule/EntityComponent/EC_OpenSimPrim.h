@@ -252,7 +252,7 @@ namespace RexLogic
         void setHoveringText(QString value) { HoveringText = value.toStdString(); }
 
         QString getServerScriptClass() const { return QString(ServerScriptClass.c_str()); }
-        void setServerScriptClass(QString scriptclass) { ServerScriptClass = scriptclass.toStdString(); }
+        void setServerScriptClass(QString scriptclass);
 
         bool getCastShadows() const { return CastShadows; }
         void setCastShadows(bool shadows) { CastShadows = shadows; }

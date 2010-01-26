@@ -145,6 +145,17 @@ void EC_OpenSimPrim::setMaterials(QVariantMap qvmap)
 	}
 }
 
+void EC_OpenSimPrim::setServerScriptClass(QString scriptclass)
+{
+    ServerScriptClass = scriptclass.toStdString();
+ 
+	RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        rexlogic_->SendRexPrimData(LocalId);
+	}
+}
+
 #ifdef _DEBUG
 void EC_OpenSimPrim::PrintDebug()
 {
