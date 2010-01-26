@@ -84,6 +84,10 @@ namespace Foundation
     
     bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
+        // Do not send messages after exit
+        if (framework_->IsExiting())
+            return false;
+    
         if (category_id == IllegalEventCategory)
         {
             Foundation::RootLogWarning("Attempted to send event with illegal category");
@@ -95,6 +99,10 @@ namespace Foundation
     
     void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay)
     {
+        // Do not send messages after exit
+        if (framework_->IsExiting())
+            return;
+            
         if (category_id == IllegalEventCategory)
         {
             Foundation::RootLogWarning("Attempted to send delayed event with illegal category");
