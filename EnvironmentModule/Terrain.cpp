@@ -85,52 +85,6 @@ namespace
             EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
     }
 
-    void Terrain::UpdateTextureShaderLowestHeight()
-    {
-        Scene::EntityPtr entity = GetTerrainEntity().lock();
-        assert(entity.get());
-        if(!entity.get())
-            return;
-
-        EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();
-        assert(terrainComponent);
-        if(!terrainComponent)
-            return;
-
-        if(terrainComponent->AllPatchesLoaded())
-        {
-            Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-            if(!terrainMaterial.get())
-            {
-                EnvironmentModule::LogWarning("Cannot find " + std::string(terrainMaterialName) + "material.");
-                return;
-            }
-            Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();
-            while(iter.hasMoreElements())
-            {
-                Ogre::Technique *tech = iter.getNext();
-                assert(tech);
-                if(tech->getName() != "TerrainPCF") // Skip code below if technique isn't right.
-                continue;
-
-                Ogre::Technique::PassIterator passIter = tech->getPassIterator();
-                while(passIter.hasMoreElements())
-                {
-                    Ogre::Pass *pass = passIter.getNext();
-                    if(pass)
-                    {
-                        Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
-                        if(!params.isNull())
-                        {
-                            float lowestHeight = GetLowestTerrainHeight();
-                            params->setNamedConstant("lowestHeight", lowestHeight);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
     {
         assert(node->numAttachedObjects() == 1);
@@ -313,7 +267,6 @@ namespace
 
         patch.patch_geometry_dirty = false;
 
-        UpdateTextureShaderLowestHeight();
         emit HeightmapGeometryUpdated();
     }
 
@@ -550,15 +503,20 @@ namespace
                     Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
                     if(!params.isNull())
                     {
+                        Real lowest_height = 65535;
                         for(uint i = 0; i < num_terrain_textures; i++)
                         {
                             Real startHeight = start_heights[i];
                             Real endHeight = height_ranges[i];
+                            if(startHeight < lowest_height)
+                                lowest_height = startHeight;
 
                             Real heightDelta = endHeight - startHeight;
                             Ogre::Vector4 detailRegion(startHeight, startHeight+heightDelta/4, startHeight+((heightDelta*3)/4), endHeight);
                             params->setNamedConstant("detailRegion" + Ogre::StringConverter::toString(i), detailRegion);
                         }
+                        lowest_height += 0.001f; //For some reason we need to increase lowest_height a little bit to get shader work properly.
+                        params->setNamedConstant("lowestHeight", lowest_height);
                     }
                 }
             }
@@ -586,7 +544,7 @@ namespace
         Scene::EntityPtr entity = GetTerrainEntity().lock();
         assert(entity.get());
         EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();
-        if (terrainComponent)
+        if (!terrainComponent)
         {
             EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
             return 0;
