@@ -80,7 +80,7 @@ public:
     //! @param switch texture height value need to return range[0-3].
     const Real &GetTerrainTextureHeightRange(int index) const;
 
-    //! Iterates throught whole heightmap and return the lowest point on that map.
+    //! Iterates throught whole heightmap and return the lowest value on that map.
     Real GetLowestTerrainHeight();
 
 
@@ -116,10 +116,6 @@ private:
     void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
 
     void SetTerrainMaterialTexture(int index, const char *textureName);
-
-    //! When whole terrain heightmap geometry has been generated, 
-    //! it's time to inform terrain texture blend shader what is the lowest height value on that heightmap.
-    void UpdateTextureShaderLowestHeight();
 };
 
 }
