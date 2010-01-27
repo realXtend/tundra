@@ -53,9 +53,11 @@ namespace TelepathyIM
         FarsightChannel::Status GetStatus() const;
 
         //! @param value 0 to 1
+        //! NOT IMPLEMENTED
         void SetAudioPlaybackVolume(const double value);
 
         //! @param value 0 to 1
+        //! NOT IMPLEMENTED
         void SetAudioRecordVolume(const double value);
 
         //! @return VideoPlaybackWidget representing captured video input eg. web camera
@@ -74,8 +76,8 @@ namespace TelepathyIM
         //! Return true if incoming video stream is connected return false if not.
         bool IncomingVideoStreamConnected() { return video_in_src_pad_; }
 
-        //! Clears the gstreamer pipeline 
-		void ClearPipeline();
+        //! Set the gstreamer pipeline to NULL state
+		void StopPipeline();
 
         //! @return sample rate aka. sampling frequency. Return -1 if sample rate is unknwon.
         virtual int GetSampleRate() const;
@@ -134,14 +136,12 @@ namespace TelepathyIM
         Tp::StreamedMediaChannelPtr tp_channel_;
         QString video_sink_name_;
         
-        //GValue volume_;
         GValue input_volume_;
         TfChannel *tf_channel_; // telepathy-farsight channel, that this class basically wraps
         
         GstElement *pipeline_;
         GstBus *bus_;
 
-        // adjustable on init
         GstElement *audio_input_;
         GstElement *video_input_;
         GstElement *video_tee_;

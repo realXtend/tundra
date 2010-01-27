@@ -90,7 +90,7 @@ namespace TelepathyIM
 
 		if (farsight_channel_)
 		{
-			farsight_channel_->ClearPipeline();
+			farsight_channel_->StopPipeline();
             SAFE_DELETE(farsight_channel_);
 		}
     }
@@ -150,6 +150,9 @@ namespace TelepathyIM
         }
 
         tp_channel_->acceptCall();
+        connect(tp_channel_.data(),
+            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
         CreateFarsightChannel();
     }
@@ -175,7 +178,6 @@ namespace TelepathyIM
             state_ = STATE_ERROR;
             reason_ = QString("Cannot create connection").append(op->errorMessage());
             LogError(reason_.toStdString());
-//            emit (Closed(this));
             emit StateChanged(state_);
 			return;
 		}
@@ -199,10 +201,10 @@ namespace TelepathyIM
             QString message = QString("Incoming streamed media channel cannot become ready: ").append(op->errorMessage());
             LogError(message.toStdString());
             reason_ = message;
-//            emit (Closed(this));
             emit StateChanged(state_);
 			return;
 		}
+        connect(tp_channel_.data(), SIGNAL( invalidated(Tp::DBusProxy *, const QString &, const QString &) ), SLOT( OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &) ));
 
 		tp_contact_ = tp_channel_->initiatorContact();
 
@@ -225,6 +227,7 @@ namespace TelepathyIM
             emit StateChanged(state_);
 			return;
 		}
+        connect(tp_channel_.data(), SIGNAL( invalidated(Tp::DBusProxy *, const QString &, const QString &) ), SLOT( OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &) ));
 		
 		Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
 		tp_contact_ = cm->lookupContactByHandle(tp_channel_->targetHandle());
@@ -245,8 +248,7 @@ namespace TelepathyIM
         {
             // todo: for linux use "autoaudiosrc" for audio_src_name
             //       CURRENT IMPLEMENTATION WORKS ONLY ON WINDOWS
-            //farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");
-            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "dshowvideosrc", "autovideosink"); 
+            farsight_channel_ = new FarsightChannel(tp_channel_, "dshowaudiosrc", "autovideosrc", "autovideosink");
             if ( !farsight_channel_->IsAudioSupported() )
             {
                 SAFE_DELETE(farsight_channel_);
@@ -274,11 +276,6 @@ namespace TelepathyIM
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
              SLOT( OnStreamFeatureReady(Tp::PendingOperation*) ));
-
-        // todo: Move away from this method
-        connect(tp_channel_.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 
         connect(farsight_channel_,
             SIGNAL(StatusChanged(TelepathyIM::FarsightChannel::Status)),

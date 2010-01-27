@@ -13,7 +13,14 @@ namespace TelepathyIM
     void GMainLoopThread::run()
     {
         LogDebug("g_main_loop started.");
-        g_main_loop_run (g_main_loop_);
+        try
+        {
+            g_main_loop_run (g_main_loop_);
+        }
+        catch(...)
+        {
+            LogError("EXCEPTION inside gmainloop!");
+        }
         LogDebug("g_main_loop ended.");
     }
 

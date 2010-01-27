@@ -89,11 +89,13 @@ namespace TelepathyIM
 
     void FarsightChannel::Close()
     {
+        StopPipeline();
+
         if (locally_captured_video_widget_)
-        {
+		{
             locally_captured_video_widget_->close();
  			SAFE_DELETE(locally_captured_video_widget_);
-        }
+		}
         if (received_video_widget_)
         {
             received_video_widget_->close();
@@ -133,7 +135,7 @@ namespace TelepathyIM
         }
     }
 
-	void FarsightChannel::ClearPipeline()
+	void FarsightChannel::StopPipeline()
 	{
 		if (pipeline_)
 			gst_element_set_state(pipeline_, GST_STATE_NULL);
@@ -192,11 +194,6 @@ namespace TelepathyIM
             g_signal_connect(fake_audio_output_, "handoff", G_CALLBACK(&FarsightChannel::OnFakeSinkHandoff), this);
             g_object_set(G_OBJECT(fake_audio_output_), "signal-handoffs", TRUE, NULL);
         }
-        //return;
-        // We use fake audio sink for now
-        audio_output_ = setUpElement("directsoundsink");
-        if (audio_output_ == 0)
-            throw Exception("Cannot create GStreamer audio output element.");
 
         // audio modifications
         audio_resample_ = gst_element_factory_make("audioresample", NULL);
@@ -292,7 +289,7 @@ namespace TelepathyIM
             LogError(error_message.toStdString());
             throw(Exception(error_message.toStdString().c_str()));
         }
-        QString test = gst_element_get_name(video_input_);
+//        QString test = gst_element_get_name(video_input_);
 
         gst_bin_add_many(GST_BIN(video_input_bin_), video_input_, scale, rate, colorspace, capsfilter, NULL);
         bool ok = gst_element_link_many(video_input_, scale, rate, colorspace, capsfilter, NULL);
