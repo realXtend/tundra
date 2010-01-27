@@ -55,7 +55,7 @@ namespace TelepathyIM
         video_playback_element_ = gst_element_factory_make(video_sink_name.toStdString().c_str(), 0);
         if (!video_playback_element_)
         {
-            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_";
+            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_playback_element_ (" << video_sink_name <<")";
             return;
         }
 
