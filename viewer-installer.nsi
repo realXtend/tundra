@@ -3,7 +3,7 @@ Name "Naali"
 Page directory
 Page instfiles
 
-InstallDir "$PROGRAMFILES\Naali"
+InstallDir "$PROGRAMFILES\Naali0.1alpha3"
 VIProductVersion "0.1"
 
 OutFile "naali-viewer-installer.exe"
