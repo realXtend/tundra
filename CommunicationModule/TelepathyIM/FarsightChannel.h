@@ -130,9 +130,9 @@ namespace TelepathyIM
         void CreateAudioInputElement(const QString &name);
         void CreateAudioPlaybackElement();
         void CreateVideoInputElement(const QString &video_src_name);
-        void CreateVideoWidgets(const QString &video_sink_name);
 
         Tp::StreamedMediaChannelPtr tp_channel_;
+        QString video_sink_name_;
         
         //GValue volume_;
         GValue input_volume_;

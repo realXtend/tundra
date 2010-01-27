@@ -364,7 +364,6 @@ namespace TelepathyIM
                 UpdateStreamDirection(audio_stream, true);
         }
 
-//        emit ( Opened(this) );
         emit StateChanged(state_);
     }
 
@@ -890,6 +889,9 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightChannelVideoStreamReceived()
     {
+        //Communication::VideoPlaybackWidgetInterface* w = GetReceivedVideo();
+        //if (w)
+        //    w->show(); // FIXME: move the show method call to UI side
         emit ReceivingVideoData(true);
     }
 
