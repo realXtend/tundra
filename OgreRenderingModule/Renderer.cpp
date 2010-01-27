@@ -676,10 +676,14 @@ namespace OgreRenderer
         int closest_priority = minimum_priority;
         Ogre::Vector2 closest_uv;
 
-        std::vector<Ogre::Vector3> vertices;
-        std::vector<Ogre::Vector2> texcoords;
-        std::vector<uint> indices;
-        std::vector<uint> submeshstartindex;
+        static std::vector<Ogre::Vector3> vertices;
+        static std::vector<Ogre::Vector2> texcoords;
+        static std::vector<uint> indices;
+        static std::vector<uint> submeshstartindex;
+        vertices.clear();
+        texcoords.clear();
+        indices.clear();
+        submeshstartindex.clear();
 
         for (size_t i = 0; i < results.size(); ++i)
         {
@@ -730,7 +734,7 @@ namespace OgreRenderer
                     ogre_entity->getParentNode()->_getDerivedScale());
 
                 // test for hitting individual triangles on the mesh
-                for (uint j = 0; j < indices.size(); j += 3)
+                for (int j = 0; j < ((int)indices.size())-2; j += 3)
                 {
                     // check for a hit against this triangle
                     std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
