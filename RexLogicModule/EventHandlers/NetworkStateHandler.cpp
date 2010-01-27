@@ -25,7 +25,8 @@ namespace RexLogic
             {   
                 // The client has connected to the server. Create a new scene for that.
                 rexlogicmodule_->CreateNewActiveScene("World");
-                rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Downloading terrain and avatar..."), 57, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+                rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Connecting to region..."), 57, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+                //"Downloading terrain and avatar..." <- not really, here we currently only know that auth succeeded, not whether there will be any data coming from region actually (if e.g. region server has stalled)
 
                 // Send WorldStream as internal event
                 event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
