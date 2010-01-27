@@ -38,7 +38,9 @@ namespace TelepathyIM
                                      write_cursor_(0),
                                      available_audio_data_length_(0),
                                      audio_supported_(false),
-                                     video_supported_(false)
+                                     video_supported_(false),
+                                     video_sink_name_(video_sink_name)
+
     {
         try
         {
@@ -58,7 +60,9 @@ namespace TelepathyIM
         {
             try
             {
-                CreateVideoWidgets(video_sink_name);
+                locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", video_sink_name);
+                locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
+
                 CreateVideoInputElement(video_src_name);
                 video_supported_ = true;
             }
@@ -87,10 +91,14 @@ namespace TelepathyIM
     {
         if (locally_captured_video_widget_)
         {
+            locally_captured_video_widget_->close();
  			SAFE_DELETE(locally_captured_video_widget_);
         }
         if (received_video_widget_)
+        {
+            received_video_widget_->close();
             SAFE_DELETE(received_video_widget_);
+        }
         if (tf_channel_)
         {
             g_signal_handler_disconnect(tf_channel_, on_closed_g_signal_);
@@ -226,15 +234,6 @@ namespace TelepathyIM
         gst_object_unref(G_OBJECT(sink));
         gst_object_ref(audio_playback_bin_);
         gst_object_sink(audio_playback_bin_);
-    }
-
-    void FarsightChannel::CreateVideoWidgets(const QString &video_sink_name)
-    {
-        locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", video_sink_name);
-        locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
-
-        received_video_widget_ = new VideoWidget(bus_, 0, "received_video", video_sink_name);
-        received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
     }
 
     void FarsightChannel::CreateVideoInputElement(const QString &video_src_name)
@@ -593,11 +592,14 @@ namespace TelepathyIM
                     LogInfo("Got incoming VIDEO stream but ignore that because lack of video support.");
                     return;
                 }
+                self->received_video_widget_ = new VideoWidget(self->bus_, 0, "received_video", self->video_sink_name_);
+                self->received_video_playback_element_ = self->received_video_widget_->GetVideoPlaybackElement();
+                LogDebug("VideoPlaybackWidget created for received video stream.");
 
                 output_element = self->received_video_playback_element_;
                 if (self->video_in_src_pad_)
                     sink_already_linked = true;
-                LogInfo("Got pad for incoming VIDEO stream.");
+                LogDebug("Got pad for incoming VIDEO stream.");
                 break;
             }
             default:
@@ -609,7 +611,6 @@ namespace TelepathyIM
         if (sink_already_linked)
         {
             LogInfo("FarsightChannel: another Src pad added with same type.");
-
         }
         else
         {

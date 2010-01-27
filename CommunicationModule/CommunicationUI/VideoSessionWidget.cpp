@@ -256,6 +256,16 @@ namespace CommunicationUI
 
     void VideoSessionWidget::UpdateRemoteVideoControls(bool state)
     {
+
+        // Remote video and contols
+        remote_video_ = video_session_->GetReceivedVideo();
+        if (remote_video_)
+        {
+            remote_video_->setWindowTitle(QString("Receiving video %1)").arg(his_name_));
+            remote_video_->setGeometry(338, 30, 322, 240);
+            remote_video_->show();
+        }
+
 		if (main_view_visible_)
 		{
 			controls_remote_ui_.videoCheckBox->setChecked(state);
