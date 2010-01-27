@@ -185,7 +185,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"RealXtend";
-    WCHAR* szVersion = L"pre-alpha-v-0-0-2";
+    WCHAR* szVersion = L"alpha-v-0-1";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
