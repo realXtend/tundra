@@ -58,10 +58,6 @@ PRIMTYPES = {
     "45": "Material",
     "0": "Texture"
 }
-PRIMTYPES_REVERSED = {
-    "Material": "45", 
-    "Texture": "0"
-}
         
 class ObjectEdit(Component):
     EVENTHANDLED = False

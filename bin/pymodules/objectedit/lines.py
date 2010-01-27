@@ -1,6 +1,11 @@
 import rexviewer as r
 from PythonQt.QtGui import QLineEdit
 
+PRIMTYPES_REVERSED = {
+    "Material": "45", 
+    "Texture": "0"
+}
+
 class DragDroppableEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
