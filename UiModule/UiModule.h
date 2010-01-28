@@ -14,6 +14,11 @@
 #include <QStringList>
 #include <QMap>
 
+namespace CoreUi
+{
+    class ConsoleUIManager;
+}
+
 namespace OgreRenderer
 {
     class QOgreUIView;
@@ -38,6 +43,7 @@ namespace UiServices
         void Load();
         void Unload();
         void Initialize();
+        void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
@@ -73,6 +79,10 @@ namespace UiServices
 
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;
+
+        //! ConsoleUIManager pointer
+        CoreUi::ConsoleUIManager* ui_console_manager_;
+
 
         //! UiSceneManager pointer
         UiSceneManager *ui_scene_manager_;

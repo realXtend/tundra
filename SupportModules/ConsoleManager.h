@@ -3,108 +3,117 @@
 #ifndef incl_ConsoleConsoleManager_h
 #define incl_ConsoleConsoleManager_h
 
+#include "StableHeaders.h"
 #include "ConsoleServiceInterface.h"
-#include "Native.h"
-#include "OgreOverlay.h"
 #include "CommandManager.h"
+#include <LogListenerInterface.h>
+#include <Poco/Channel.h>
 
 namespace Console
 {
+
+   
+    class ConsoleChannel;
+    class LogListener;
+
+    typedef boost::shared_ptr<LogListener> LogListenerPtr;
+    typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
+
+
     //! Generic debug console manager, directs input and output to available consoles.
     /*!
         See \ref DebugConsole "Using the debug console".
     */
-    class ConsoleManager : public Console::ConsoleServiceInterface
+    class ConsoleManager :  public Console::ConsoleServiceInterface
     {
+
         friend class ConsoleModule;
     private:
         ConsoleManager();
         ConsoleManager(const ConsoleManager &other);
 
         //! constructor that takes a parent module
-        ConsoleManager(Foundation::ModuleInterface *parent)
-        {
-            parent_ = parent;
-            command_manager_ = CommandManagerPtr(new CommandManager(parent_, this));
-            native_ = ConsolePtr(new Native(command_manager_.get(), parent->GetFramework()));
-            ogre_ = ConsolePtr(new OgreOverlay(parent));
-        }
+        ConsoleManager(Foundation::ModuleInterface *parent);
+
 
     public:
         //! destructor
-        virtual ~ConsoleManager() {};
+        virtual ~ConsoleManager();
 
-        //! If console manager gets created in preinit, or at time when not all needed services are present,
-        //! this functions can be used for delayed initialization / creation.
-        void CreateDelayed() { checked_static_cast<OgreOverlay*>(ogre_.get())->Create(); }
 
-        __inline virtual void Update(f64 frametime)
-        {
-            command_manager_->Update();
-            if (ogre_->IsVisible())
-            {
-                ogre_->Update(frametime);
-            }
-        }
+        __inline virtual void Update(f64 frametime);
+        
+        //! Print text in parameter
+        __inline virtual void Print(const std::string &text);
+    
+        //! Execute command in parameter
+        virtual void ExecuteCommand(const std::string &command);
+  
+        //! Toggle console on/off
+        virtual void ToggleConsole();
 
-        __inline virtual void Print(const std::string &text)
-        {
-            native_->Print(text);
-            ogre_->Print(text);
-        }
+        //! Sets Ui initialized/uninitialized
+        virtual void SetUiInitialized(bool initialized);
 
-        virtual void Scroll(int rel)
-        {
-            native_->Scroll(rel);
-            ogre_->Scroll(rel);
-        }
-
-        virtual void SetVisible(bool visible)
-        {
-            ogre_->SetVisible(visible);
-        }
-
-        virtual bool IsVisible() const
-        {
-            return ogre_->IsVisible();
-        }
-
-        virtual bool IsActive() const
-        {
-            return ogre_->IsActive();
-        }
-
-        virtual bool HandleKeyDown(int code, uint text)
-        {
-            return ogre_->HandleKeyDown(code, text);
-        }
-
-        virtual bool HandleKeyUp(int code, uint text)
-        {
-            return ogre_->HandleKeyUp(code, text);
-        }
+        //! Returns false if UI is not initialized, true otherwise
+        virtual bool IsUiInitialized(){return ui_initialized_;}
 
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 
-        //! Returns Ogre console
-        ConsolePtr GetOgre() const { return ogre_; }
-
-        //! Returns native console
-        ConsolePtr GetNative() const { return native_; }
 
     private:
-        //! native debug console
-        ConsolePtr native_;
 
-        //! Ogre debug console
-        ConsolePtr ogre_;
+        /// Event manager.
+        Foundation::EventManagerPtr eventManager_;
+
+        //Console event category
+        event_category_id_t console_category_id_;
 
         //! command manager
         CommandManagerPtr command_manager_;
 
         //! parent module
         Foundation::ModuleInterface *parent_;
+
+        //! Custom logger to get logmessages from Pogo
+        PocoLogChannelPtr console_channel_;
+        
+        //! Listener to get logs from renderer 
+        LogListenerPtr log_listener_;
+
+        //! This is a buffer for messages generated before actual console UI
+        std::vector<std::string> early_messages_;
+        
+        //!indicates whether the UI is initialized
+        bool ui_initialized_;
+
+  
+
+
+    };
+
+    //! loglistener is used to listen log messages from renderer
+    class LogListener : public Foundation::LogListenerInterface
+    {
+        LogListener();
+        
+    public:
+        LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
+        virtual ~LogListener() {}
+
+        virtual void LogMessage(const std::string &message){if(mngr_){mngr_->Print(message);}}
+        ConsoleManager* mngr_;
+    };
+
+    //! Class to get messages from poco logger
+    class ConsoleChannel: public Poco::Channel
+    {
+    public:
+        ConsoleChannel(ConsoleManager* mngr){mngr_=mngr;}
+        void log(const Poco::Message & msg){if(mngr_){mngr_->Print(msg.getText());}}
+    private:
+        ConsoleManager* mngr_;
     };
 }
 

@@ -35,25 +35,19 @@ namespace Console
         */
         virtual void Print(const std::string &text) = 0;
 
-        //! scroll console text rel amount
-        /*!
-            \param rel positive to scroll up, negative to scroll down, 20 is one line.
-        */
-        virtual void Scroll(int rel) = 0;
+        //!Execute the specified command
+        virtual void ExecuteCommand(const std::string &command) = 0;
 
         //! Hide / show console
-        virtual void SetVisible(bool visible) = 0;
+        virtual void ToggleConsole() = 0;
 
-        //! Returns true if console is visible, false otherwise
-        virtual bool IsVisible() const = 0;
+        //! Sets Ui initialized/uninitialized
+        virtual void SetUiInitialized(bool initialized)=0;
 
-        //! Is the console accepting input
-        virtual bool IsActive() const = 0;
+        //! Returns false if UI is not initialized, true otherwise
+        virtual bool IsUiInitialized()=0;
 
-        //! event for key press
-        virtual bool HandleKeyDown(int code, uint text) = 0;
-        //! event for key released
-        virtual bool HandleKeyUp(int code, uint text) = 0;
+
     };
 
     //! smart pointer for console services. \ingroup DebugConsole_group
