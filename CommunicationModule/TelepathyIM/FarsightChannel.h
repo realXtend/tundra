@@ -124,6 +124,9 @@ namespace TelepathyIM
         //! Triggered when incoming video stream become active
         void VideoStreamReceived();
 
+        // (private)
+        void SrcPadAdded(TfStream*, GstPad*, FsCodec*);
+
     private:
 
         GstElement* setUpElement(const QString &element_name);
@@ -183,6 +186,9 @@ namespace TelepathyIM
 
         bool audio_supported_;
         bool video_supported_;
+
+    private slots:
+        void LinkIncomingSourcePad(TfStream *stream, GstPad *src_pad, FsCodec *codec);
     };
 
 } // end of namespace: TelepathyIM
