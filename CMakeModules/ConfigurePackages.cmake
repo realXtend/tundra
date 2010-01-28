@@ -13,18 +13,16 @@ macro (configure_boost)
     endif ()
 
     if (APPLE)
-        sagase_configure_package (BOOST 
-    	    NAMES Boost boost
-            COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework
-	    
-            PREFIXES ${ENV_NAALI_DEP_PATH})
+            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework)
     else ()
-        sagase_configure_package (BOOST 
-    	    NAMES Boost boost
-            COMPONENTS date_time filesystem system thread program_options unit_test_framework
-            PREFIXES ${ENV_NAALI_DEP_PATH})
+            set (BOOST_COMPONENTS date_time filesystem system thread program_options unit_test_framework)
     endif ()
  
+    sagase_configure_package (BOOST 
+        NAMES Boost boost
+        COMPONENTS ${BOOST_COMPONENTS}
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+
     if (APPLE)
         set (BOOST_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/lib)
         set (BOOST_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/include)
