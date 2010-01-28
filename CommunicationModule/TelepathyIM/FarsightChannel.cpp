@@ -42,6 +42,8 @@ namespace TelepathyIM
                                      video_sink_name_(video_sink_name)
 
     {
+        connect(this, SIGNAL( SrcPadAdded(TfStream*, GstPad*, FsCodec*) ), SLOT( LinkIncomingSourcePad(TfStream*, GstPad*, FsCodec*) ), Qt::QueuedConnection );
+
         try
         {
             CreateTfChannel();
@@ -557,10 +559,16 @@ namespace TelepathyIM
     }
 
     void FarsightChannel::onSrcPadAdded(TfStream *stream, GstPad *src_pad, FsCodec *codec, FarsightChannel *self)
+    {
+        // cross thread signal
+        emit self->SrcPadAdded(stream, src_pad, codec);
+    }
+
+    void FarsightChannel::LinkIncomingSourcePad(TfStream *stream, GstPad *src_pad, FsCodec *codec)
     {           
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
-        self->audio_stream_in_clock_rate_ = clock_rate;
+        audio_stream_in_clock_rate_ = clock_rate;
         gint channel_count = codec->channels;
 
         guint media_type;
@@ -575,26 +583,26 @@ namespace TelepathyIM
         {
             case TP_MEDIA_STREAM_TYPE_AUDIO:
             {
-                output_element = self->audio_playback_bin_;
+                output_element = audio_playback_bin_;
                 //g_object_ref(output_element); // do we need this
-                if (self->audio_in_src_pad_)
+                if (audio_in_src_pad_)
                     sink_already_linked = true;
                 LogInfo("Got pad for incoming AUDIO stream.");
                 break;
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
             {
-                if (!self->video_supported_)
+                if (!video_supported_)
                 {
                     LogInfo("Got incoming VIDEO stream but ignore that because lack of video support.");
                     return;
                 }
-                self->received_video_widget_ = new VideoWidget(self->bus_, 0, "received_video", self->video_sink_name_);
-                self->received_video_playback_element_ = self->received_video_widget_->GetVideoPlaybackElement();
+                received_video_widget_ = new VideoWidget(bus_, 0, "received_video", video_sink_name_);
+                received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
                 LogDebug("VideoPlaybackWidget created for received video stream.");
 
-                output_element = self->received_video_playback_element_;
-                if (self->video_in_src_pad_)
+                output_element = received_video_playback_element_;
+                if (video_in_src_pad_)
                     sink_already_linked = true;
                 LogDebug("Got pad for incoming VIDEO stream.");
                 break;
@@ -611,7 +619,7 @@ namespace TelepathyIM
         }
         else
         {
-            gst_bin_add(GST_BIN(self->pipeline_), output_element);
+            gst_bin_add(GST_BIN(pipeline_), output_element);
         }
 
         output_pad = gst_element_get_static_pad(output_element, "sink");
@@ -623,20 +631,20 @@ namespace TelepathyIM
         {
             case TP_MEDIA_STREAM_TYPE_AUDIO:
             {
-                if (self->audio_in_src_pad_)
+                if (audio_in_src_pad_)
                 {
-                    gst_pad_unlink(self->audio_in_src_pad_, output_pad);
+                    gst_pad_unlink(audio_in_src_pad_, output_pad);
                 }
-                self->audio_in_src_pad_ = src_pad;
+                audio_in_src_pad_ = src_pad;
                 break;
             }
             case TP_MEDIA_STREAM_TYPE_VIDEO:
             {
-                if (self->video_in_src_pad_)
+                if (video_in_src_pad_)
                 {
-                    gst_pad_unlink(self->video_in_src_pad_, output_pad);
+                    gst_pad_unlink(video_in_src_pad_, output_pad);
                 }
-                self->video_in_src_pad_ = src_pad;
+                video_in_src_pad_ = src_pad;
                 break;
             }
         }
@@ -644,15 +652,15 @@ namespace TelepathyIM
         gst_pad_link(src_pad, output_pad);
         gst_element_set_state(output_element, GST_STATE_PLAYING);
 
-        self->status_ = StatusConnected;
-        emit self->StatusChanged(self->status_);
+        status_ = StatusConnected;
+        emit StatusChanged(status_);
         switch (media_type)
         {
             case TP_MEDIA_STREAM_TYPE_AUDIO:
-                emit self->AudioStreamReceived();
+                emit AudioStreamReceived();
                 break;
             case TP_MEDIA_STREAM_TYPE_VIDEO:
-                emit self->VideoStreamReceived();
+                emit VideoStreamReceived();
                 break;
         }
     }

@@ -270,8 +270,8 @@ namespace TelepathyIM
             return;
         }
 
-        connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ) );
-        connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOverflow(int ) ) );
+        connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ), Qt::QueuedConnection );
+        connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOverflow(int ) ), Qt::QueuedConnection );
 
 	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
@@ -279,15 +279,15 @@ namespace TelepathyIM
 
         connect(farsight_channel_,
             SIGNAL(StatusChanged(TelepathyIM::FarsightChannel::Status)),
-            SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)));
+            SLOT(OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status)),  Qt::QueuedConnection);
 
         connect(farsight_channel_,
             SIGNAL( AudioStreamReceived() ),
-            SLOT( OnFarsightChannelAudioStreamReceived() ));
+            SLOT( OnFarsightChannelAudioStreamReceived() ),  Qt::QueuedConnection);
 
         connect(farsight_channel_,
             SIGNAL( VideoStreamReceived() ),
-            SLOT( OnFarsightChannelVideoStreamReceived() ));
+            SLOT( OnFarsightChannelVideoStreamReceived() ), Qt::QueuedConnection);
     }
 
     void VoiceSession::OnStreamFeatureReady(Tp::PendingOperation* op)
@@ -886,9 +886,6 @@ namespace TelepathyIM
 
     void VoiceSession::OnFarsightChannelVideoStreamReceived()
     {
-        //Communication::VideoPlaybackWidgetInterface* w = GetReceivedVideo();
-        //if (w)
-        //    w->show(); // FIXME: move the show method call to UI side
         emit ReceivingVideoData(true);
     }
 
