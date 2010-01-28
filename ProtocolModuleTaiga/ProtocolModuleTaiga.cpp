@@ -42,7 +42,7 @@ namespace TaigaProtocol
 	void ProtocolModuleTaiga::Initialize()
 	{
         loginWorker_.SetFramework(GetFramework());
-		LogInfo(Name() + " initialized.");
+        eventManager_.reset();
 	}
 
 	// virtual 

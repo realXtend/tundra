@@ -54,6 +54,7 @@ namespace OpenSimProtocol
         if (networkManager_)
             networkManager_->UnregisterNetworkListener((ProtocolUtilities::INetMessageListener *)this);
 
+        eventManager_.reset();
         LogInfo(Name() + " uninitialized.");
     }
 
