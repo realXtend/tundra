@@ -80,6 +80,7 @@ void OgreAssetEditorModule::Uninitialize()
 {
     SAFE_DELETE(materialWizard_);
     SAFE_DELETE(editorManager_);
+    eventManager_.reset();
     LogInfo("System " + Name() + " uninitialized.");
 }
 

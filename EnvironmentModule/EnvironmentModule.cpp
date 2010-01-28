@@ -104,6 +104,8 @@ namespace Environment
         sky_.reset();
         environment_editor_.reset();
         postprocess_dialog_.reset();
+        event_manager_.reset();
+        currentWorldStream_.reset();
 
         waiting_for_regioninfomessage_ = false;
 

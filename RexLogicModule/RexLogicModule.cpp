@@ -69,7 +69,8 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     framework_handler_(0),
     os_login_handler_(0),
     taiga_login_handler_(0),
-    login_ui_(0)
+    login_ui_(0),
+    main_panel_handler_(0)
 {
 }
 
@@ -300,14 +301,15 @@ void RexLogicModule::Uninitialize()
 
     event_handlers_.clear();
 
-    SAFE_DELETE (network_handler_);
-    SAFE_DELETE (input_handler_);
-    SAFE_DELETE (scene_handler_);
-    SAFE_DELETE (network_state_handler_);
-    SAFE_DELETE (framework_handler_);
-    SAFE_DELETE (os_login_handler_);
-    SAFE_DELETE (taiga_login_handler_);
-    SAFE_DELETE (login_ui_);
+    SAFE_DELETE(network_handler_);
+    SAFE_DELETE(input_handler_);
+    SAFE_DELETE(scene_handler_);
+    SAFE_DELETE(network_state_handler_);
+    SAFE_DELETE(framework_handler_);
+    SAFE_DELETE(os_login_handler_);
+    SAFE_DELETE(taiga_login_handler_);
+    SAFE_DELETE(main_panel_handler_);
+    SAFE_DELETE(login_ui_);
 
     LogInfo(Name() + " uninitialized.");
 }
