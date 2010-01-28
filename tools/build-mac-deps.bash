@@ -1,4 +1,3 @@
-
 #!/bin/bash
 set -e
 set -x
@@ -21,7 +20,7 @@ export CMAKE_C_FLAGS="-arch i386"
 export CMAKE_CXX_FLAGS="-arch i386"
 
 deps=$HOME/src/deps
-viewer=$deps/../realxtend-naali-read-only
+viewer=$deps/../realxtend-naali
 prefix=$deps
 build=$deps/build
 tarballs=$deps/tarballs
@@ -57,18 +56,38 @@ function build-regular {
         zip=$tarballs/$pkgbase.tar.gz
         test -f $zip || curl -L -o $zip $dlurl
 	tar xzf $zip
-	if test $what = xmlrpc-epi; then
-cd xmlrpc
-else
 
-	cd $pkgbase
-fi
+	if test $what = xmlrpc-epi; then
+	    cd xmlrpc # well, almost regular
+	else
+	    cd $pkgbase
+	fi
 	./configure --disable-debug --disable-static --prefix=$prefix
 	make -j $nprocs
 	make install
 	touch $tags/$what-done
     fi
 }
+
+cd $build
+what=boost    
+urlbase=http://downloads.sourceforge.net/project/boost/boost/1.41.0/
+pkgbase=boost_1_41_0
+dlurl=$urlbase/$pkgbase.tar.gz    
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || curl -L -o $zip $dlurl
+	tar xzf $zip
+
+	cd $pkgbase
+	./bootstrap.sh --prefix=$prefix
+	./bjam address-model=32 architecture=x86 install
+	touch $tags/$what-done
+    fi
+
 
 viewerdeps_svnroot=http://realxtend-naali-deps.googlecode.com/svn
 
@@ -137,6 +156,7 @@ else
     cp libopenjpeg/openjpeg.h $prefix/include
     touch $tags/$what-done
 fi
+
 
 build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
 
