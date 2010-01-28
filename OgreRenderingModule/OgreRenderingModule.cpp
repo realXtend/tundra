@@ -45,7 +45,7 @@ namespace OgreRenderer
     {
         using namespace OgreRenderer;
 
-        LogInfo("Module " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
 
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
@@ -67,7 +67,7 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Unload()
     {
-        LogInfo("Module " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -100,7 +100,7 @@ namespace OgreRenderer
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo(Name() + " initialized.");
         
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
@@ -192,7 +192,7 @@ namespace OgreRenderer
         renderer_settings_.reset();
         renderer_.reset();
         
-        LogInfo("Module " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
     }
     
     // virtual

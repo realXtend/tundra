@@ -34,6 +34,7 @@ WorldStream::WorldStream(Foundation::Framework *framework) :
 {
     clientParameters_.Reset();
     SetCurrentProtocolType(NotSet);
+    LogInfo("World Stream created and ready.");
 }
 
 WorldStream::~WorldStream()
@@ -1460,7 +1461,6 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
     }
     case NotSet:
     default:
-        LogError("Setting ProtocolType to NotSet");
         protocolModule_.reset();
         break;
     }

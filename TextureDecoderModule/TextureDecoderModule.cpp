@@ -18,13 +18,13 @@ namespace TextureDecoder
     // virtual
     void TextureDecoderModule::Load()
     {
-        LogInfo("Module " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
     }
 
     // virtual
     void TextureDecoderModule::Unload()
     {
-        LogInfo("Module " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -33,7 +33,7 @@ namespace TextureDecoder
         texture_service_ = TextureServicePtr(new TextureService(framework_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, texture_service_);
 
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo(Name() + " initialized.");
     }
     
      // virtual
@@ -61,7 +61,7 @@ namespace TextureDecoder
     {
         framework_->GetServiceManager()->UnregisterService(texture_service_);
         texture_service_.reset();
-        LogInfo("Module " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
     }
     
     bool TextureDecoderModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)

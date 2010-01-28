@@ -103,13 +103,13 @@ void RexLogicModule::Load()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
-    LogInfo("Module " + Name() + " loaded.");
+    LogInfo(Name() + " loaded.");
 }
 
 // virtual
 void RexLogicModule::Unload()
 {
-    LogInfo("Module " + Name() + " unloaded.");
+    LogInfo(Name() + " unloaded.");
 }
 
 // virtual
@@ -144,7 +144,7 @@ void RexLogicModule::Initialize()
     camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
 
-    LogInfo("Module " + Name() + " initialized.");
+    LogInfo(Name() + " initialized.");
 }
 
 // virtual
@@ -309,7 +309,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE (taiga_login_handler_);
     SAFE_DELETE (login_ui_);
 
-    LogInfo("Module " + Name() + " uninitialized.");
+    LogInfo(Name() + " uninitialized.");
 }
 
 #ifdef _DEBUG

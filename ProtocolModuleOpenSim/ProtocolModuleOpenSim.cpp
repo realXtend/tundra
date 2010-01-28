@@ -27,20 +27,20 @@ namespace OpenSimProtocol
     // virtual
     void ProtocolModuleOpenSim::Load()
     {
-        LogInfo("System " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
     }
 
     // virtual
     void ProtocolModuleOpenSim::Unload()
     {
-        LogInfo("System " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
     void ProtocolModuleOpenSim::Initialize()
     {
         loginWorker_.SetFramework(GetFramework());
-        LogInfo("System " + Name() + " initialized.");
+        LogInfo(Name() + " initialized.");
     }
 
     // virtual 
@@ -54,7 +54,7 @@ namespace OpenSimProtocol
         if (networkManager_)
             networkManager_->UnregisterNetworkListener((ProtocolUtilities::INetMessageListener *)this);
 
-        LogInfo("System " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
     }
 
     void ProtocolModuleOpenSim::RegisterNetworkEvents()
@@ -79,9 +79,9 @@ namespace OpenSimProtocol
             event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
             Foundation::NetworkingRegisteredEvent event_data(modulePointerToThis);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
-            LogInfo("System " + Name() + " sending NetworkingRegisteredEvent event");
+            LogInfo("Sending Networking Registered event");
         }
-        LogInfo("System " + Name() + " network events [NetworkState, NetworkIn, NetworkOut] registered");
+        LogInfo("Network events [NetworkState, NetworkIn, NetworkOut] registered");
     }
 
     void ProtocolModuleOpenSim::UnregisterNetworkEvents()
@@ -95,7 +95,7 @@ namespace OpenSimProtocol
             networkManager_.reset();
         }
 
-        LogInfo("System " + Name() + " networking unregistered.");
+        LogInfo("Networking unregistered.");
     }
 
     // virtual
@@ -120,7 +120,7 @@ namespace OpenSimProtocol
                 catch(Poco::Net::NetException &e)
                 {
                     LogError(e.what());
-                    LogInfo("Network error occured. Closing server connection.");
+                    LogError("Network error occured. Closing server connection.");
                     DisconnectFromServer();
                 }
             }

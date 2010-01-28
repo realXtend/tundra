@@ -21,13 +21,13 @@ namespace Console
     // virtual
     void ConsoleModule::Load()
     {
-        LogInfo("Module " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
     }
 
     // virtual
     void ConsoleModule::Unload()
     {
-        LogInfo("Module " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -42,7 +42,7 @@ namespace Console
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
 
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo(Name() + " initialized.");
     }
 
     void ConsoleModule::PostInitialize()
@@ -105,7 +105,7 @@ namespace Console
         assert (manager_);
         manager_.reset();
 
-        LogInfo("Module " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
     }
 }
 

@@ -136,12 +136,25 @@ namespace CoreUi
 
     void ConsoleUIManager::StyleString(QString &str)
     {
-        QRegExp regexp;
+        // Make all timespamp + module name blocks white
+        int block_end_index = str.indexOf("]");
+        if (block_end_index != -1)
+        {
+            QString span_start("<span style='color:white;'>");
+            QString span_end("</span>");
+            block_end_index += span_start.length() + 1;
+            str.insert(0, "<span style='color:white;'>");
+            str.insert(block_end_index, "</span>");
+            block_end_index += span_end.length();
+        }
+        else
+            block_end_index = 0;
 
+        QRegExp regexp;
         regexp.setPattern(".*Debug:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#FFFFFF\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#999999\">");
             str.push_back("</FONT>");
             return;
         }
@@ -149,7 +162,7 @@ namespace CoreUi
         regexp.setPattern(".*Notice:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#0000FF\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#0000FF\">");
             str.push_back("</FONT>");
             return;
         }
@@ -157,7 +170,7 @@ namespace CoreUi
         regexp.setPattern(".*Warning:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#CCCC00\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#FFFF00\">");
             str.push_back("</FONT>");
             return;
         }
@@ -165,7 +178,7 @@ namespace CoreUi
         regexp.setPattern(".*Error:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#FF3300\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#FF3300\">");
             str.push_back("</FONT>");
             return;
         }
@@ -173,16 +186,15 @@ namespace CoreUi
         regexp.setPattern(".*Critical:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#FF0000\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#FF0000\">");
             str.push_back("</FONT>");
             return;
         }
 
-
         regexp.setPattern(".*Fatal:.*");
         if (regexp.exactMatch(str))
         {
-            str.push_front("<FONT COLOR=\"#9933CC\">");
+            str.insert(block_end_index, "<FONT COLOR=\"#9933CC\">");
             str.push_back("</FONT>");
             return;
         }

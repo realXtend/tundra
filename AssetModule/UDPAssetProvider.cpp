@@ -104,7 +104,7 @@ namespace Asset
     {
         protocolModule_ = protocolModule;
         if (protocolModule_.lock().get())
-            AssetModule::LogWarning("Current ProtocolModule set succesfully");
+            AssetModule::LogDebug("Current ProtocolModule set succesfully");
         else
             AssetModule::LogWarning("Could not acquire handle to current protocol module");
     }

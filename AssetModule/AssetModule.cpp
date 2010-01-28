@@ -27,7 +27,7 @@ namespace Asset
     // virtual
     void AssetModule::Load()
     {
-        LogInfo("Module " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
         
         AutoRegisterConsoleCommand(Console::CreateCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
@@ -37,7 +37,7 @@ namespace Asset
     // virtual
     void AssetModule::Unload()
     {
-        LogInfo("Module " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -65,7 +65,7 @@ namespace Asset
 
         framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         
-        LogInfo("Module " + Name() + " initialized.");
+        LogInfo(Name() + " initialized.");
     }
     
     // virtual
@@ -111,7 +111,7 @@ namespace Asset
         framework_->GetServiceManager()->UnregisterService(manager_);
         manager_.reset();
         
-        LogInfo("Module " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
     }
     
     Console::CommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)

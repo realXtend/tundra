@@ -36,7 +36,7 @@ namespace UiServices
         {
             SAFE_DELETE(container_widget_);
             container_layout_ = 0;
-            UiModule::LogError("UiSceneManager >> Could not acquire UIView, skipping scene creation");
+            UiModule::LogError("UiSceneManager: Could not acquire UIView, skipping scene creation");
         }
     }
 
