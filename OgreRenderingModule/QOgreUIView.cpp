@@ -37,9 +37,9 @@ namespace OgreRenderer
             // python module crashes viewer on exit if these are not removed
             // better to have viewer not crash and leave some memory leaks
             // python should delete the QWidgets it put to scene in ~PythonModule() to avoid this
-            QList<QGraphicsItem*> remaining_items = scene()->items();
-            foreach(QGraphicsItem *item, remaining_items)
-                scene()->removeItem(item); 
+            //QList<QGraphicsItem*> remaining_items = scene()->items();
+            //foreach(QGraphicsItem *item, remaining_items)
+            //    scene()->removeItem(item); 
             delete scene();
         }
     }
