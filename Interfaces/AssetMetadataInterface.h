@@ -13,6 +13,7 @@ namespace Foundation
 	class AssetMetadataInterface
 	{
 	public:
+        virtual ~AssetMetadataInterface() {};
 
 		//! Returns asset id
 		virtual const std::string& GetId() const = 0;
