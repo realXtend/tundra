@@ -217,7 +217,7 @@ namespace Asset
             transfer.AssembleData(&data[0]);
 
 	   
-#ifdef unix
+#if defined(__GNUC__)
 	    RexAssetMetadata* m = dynamic_cast<RexAssetMetadata*>(new_asset->GetMetadata());
 #else	   
 	    Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
@@ -244,7 +244,7 @@ namespace Asset
 
 	std::string HttpAssetProvider::SerializeToJSON(Foundation::AssetPtr asset) const
 	{
-#ifdef unix
+#if defined(__GNUC__)
 		RexAssetMetadata* metadata = dynamic_cast<RexAssetMetadata*>(asset->GetMetadata());
 #else
 		RexAssetMetadata* metadata = static_cast<RexAssetMetadata*>(asset->GetMetadata());
