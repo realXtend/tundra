@@ -20,42 +20,25 @@ namespace CoreUi
         framework_(framework),
         ui_view_(ui_view),
         console_ui_(new Ui::ConsoleWidget()),
-        console_widget_( new QWidget()),
+        console_widget_(new QWidget()),
         visible_(false),
         opacity_(0.8)
     {
+        // Init internals
         console_ui_->setupUi(console_widget_);
         proxy_widget_ = new ConsoleProxyWidget(console_widget_);
-        ui_view_->scene()->addItem(proxy_widget_);
-        proxy_widget_->setOpacity(opacity_);
-
-        QObject::connect(proxy_widget_, SIGNAL(TConsoleButtonPressed()), this, SLOT(ToggleConsole()));
-        
-        QObject::connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), this, SLOT(HandleInput()));
-        
-        eventManager_=framework_->GetEventManager();
-
-        if(eventManager_.get())
-        {
-            console_category_id_ = eventManager_->QueryEventCategory("Console");
-        }
-        
-
         proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0,0, ui_view_->width(),0));
-
-        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ),
-        this, SLOT( SceneRectChanged(const QRectF &) ));
-
+        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+        proxy_widget_->setOpacity(opacity_);
+        ui_view_->scene()->addItem(proxy_widget_);
 
         SetupAnimation();
-    }
+        ConnectSignals();
 
-    void ConsoleUIManager::SetupAnimation()
-    {
-        animation_.setTargetObject(proxy_widget_);
-        animation_.setPropertyName("geometry");
-        animation_.setDuration(500);
+        // Init event categories
+        eventManager_ = framework_->GetEventManager();
+        if (eventManager_.get())
+            console_category_id_ = eventManager_->QueryEventCategory("Console");
     }
 
     ConsoleUIManager::~ConsoleUIManager()
@@ -64,20 +47,45 @@ namespace CoreUi
         SAFE_DELETE(console_widget_);
     }
 
+    void ConsoleUIManager::SetupAnimation()
+    {
+        animation_.setTargetObject(proxy_widget_);
+        animation_.setPropertyName("geometry");
+        animation_.setDuration(300);
+    }
+
+    void ConsoleUIManager::ConnectSignals()
+    {
+        // Proxy show/hide toggle
+        connect(proxy_widget_, SIGNAL( TConsoleButtonPressed() ), 
+                this, SLOT( ToggleConsole() ));
+
+        // Input field
+        connect(console_ui_->ConsoleInputArea, SIGNAL( returnPressed() ), 
+                this, SLOT( HandleInput() ));
+
+        // Scene to notify rect changes
+        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ),
+                this, SLOT( AdjustToSceneRect(const QRectF &) ));
+
+        // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
+        connect(this, SIGNAL( PrintOrderRecieved(QString) ), 
+                this, SLOT( PrintToConsole(QString) ), 
+                Qt::QueuedConnection);
+    }
+
     void ConsoleUIManager::SendInitializationReadyEvent()
     {
-        if(eventManager_.get())
+        if (eventManager_.get())
         {
-            
             Console::ConsoleEventData *event_data =  new Console::ConsoleEventData("");
-            // send delayed because immediate message doesn't seem to go through to console
             eventManager_->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED, Foundation::EventDataPtr(event_data), 5);
         }
     }
 
     void ConsoleUIManager::HandleInput()
     {
-        if(eventManager_.get())
+        if (eventManager_.get())
         {
             QString text = console_ui_->ConsoleInputArea->text();
             Console::ConsoleEventData event_data(text.toStdString());
@@ -86,19 +94,23 @@ namespace CoreUi
         }
     }
 
-    void ConsoleUIManager::PrintLine(const std::string &string)
+    void ConsoleUIManager::QueuePrintRequest(const QString &text)
     {
-        QString str(string.c_str());
-        StyleString(str);
-        console_ui_->ConsoleTextArea->appendHtml(str);
+        emit PrintOrderRecieved(text);
     }
 
-    void ConsoleUIManager::SceneRectChanged(const QRectF& rect)
+    void ConsoleUIManager::PrintToConsole(QString text)
     {
-        if(visible_)
+        StyleString(text);
+        console_ui_->ConsoleTextArea->appendHtml(text);
+    }
+
+    void ConsoleUIManager::AdjustToSceneRect(const QRectF& rect)
+    {
+        if (visible_)
         {
             QRectF new_size = rect;
-            new_size.setHeight(rect.height()*proxy_widget_->GetConsoleRelativeHeight());
+            new_size.setHeight(rect.height() * proxy_widget_->GetConsoleRelativeHeight());
             proxy_widget_->setGeometry(new_size);
         }
     }
@@ -106,23 +118,20 @@ namespace CoreUi
     void ConsoleUIManager::ToggleConsole()
     {
         visible_ = !visible_;
-        
-        
-        if(visible_)
+        if (visible_)
         {
             animation_.setStartValue(QRect(0,0,ui_view_->width(),0));
             animation_.setEndValue(QRect(0,0,ui_view_->width(), ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight()));
-            
         }
         else
         {
             animation_.setStartValue(QRect(0,0,ui_view_->width(), ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight()));
             animation_.setEndValue(QRect(0,0,ui_view_->width(),0));
         }
-        this->console_ui_->ConsoleInputArea->setFocus();
-        animation_.start();
-        this->proxy_widget_->setActive(visible_);
         
+        console_ui_->ConsoleInputArea->setFocus();
+        animation_.start();
+        proxy_widget_->setActive(visible_);
     }
 
     void ConsoleUIManager::StyleString(QString &str)
@@ -130,7 +139,7 @@ namespace CoreUi
         QRegExp regexp;
 
         regexp.setPattern(".*Debug:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#FFFFFF\">");
             str.push_back("</FONT>");
@@ -138,7 +147,7 @@ namespace CoreUi
         }
 
         regexp.setPattern(".*Notice:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#0000FF\">");
             str.push_back("</FONT>");
@@ -146,7 +155,7 @@ namespace CoreUi
         }
 
         regexp.setPattern(".*Warning:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#CCCC00\">");
             str.push_back("</FONT>");
@@ -154,7 +163,7 @@ namespace CoreUi
         }
 
         regexp.setPattern(".*Error:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#FF3300\">");
             str.push_back("</FONT>");
@@ -162,7 +171,7 @@ namespace CoreUi
         }
 
         regexp.setPattern(".*Critical:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#FF0000\">");
             str.push_back("</FONT>");
@@ -171,7 +180,7 @@ namespace CoreUi
 
 
         regexp.setPattern(".*Fatal:.*");
-        if(regexp.exactMatch(str))
+        if (regexp.exactMatch(str))
         {
             str.push_front("<FONT COLOR=\"#9933CC\">");
             str.push_back("</FONT>");

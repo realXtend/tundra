@@ -66,13 +66,12 @@ namespace UiServices
 
     UiProxyWidget* UiSceneManager::AddWidgetToScene(QWidget *widget)
     {
-        return AddWidgetToScene(widget, UiWidgetProperties());
+        return AddWidgetToScene(widget, UiWidgetProperties("Unnamed Widget", ModuleWidget));
     }
 
     UiProxyWidget* UiSceneManager::AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &widget_properties)
     {
         UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
-
         if (AddProxyWidget(proxy_widget))
             return proxy_widget;
         else
@@ -84,28 +83,26 @@ namespace UiServices
         if (ui_view_)
         {
             UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
-            
-            // Add to scene
-            if (properties.IsFullscreen())
+            if (properties.GetWidgetType() == CoreLayoutWidget)
             {
+                // Add to layout
                 if (properties.GetWidgetName() == "Login")
                     login_proxy_widget_ = proxy_widget;
                 container_layout_->addItem(proxy_widget);
             }
             else
             {
+                // Add to scene
                 proxy_widget->hide();
                 ui_view_->scene()->addItem(proxy_widget);
+                // Add a control button to toolbar
+                if (properties.IsShownInToolbar())
+                {
+                    CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(proxy_widget, properties.GetWidgetName());
+                    proxy_widget->SetControlButton(control_button);
+                    connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
+                }
             }
-
-            // Add a button to toolbar
-            if (properties.IsShownAtToolbar())
-            {
-                CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(proxy_widget, properties.GetWidgetName());
-                proxy_widget->SetControlButton(control_button);
-                connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
-            }
-
             return true;
         }
         else
@@ -116,7 +113,7 @@ namespace UiServices
     {
         if (ui_view_)
         {
-            if (main_panel_ && proxy_widget->GetWidgetProperties().IsShownAtToolbar())
+            if (main_panel_ && proxy_widget->GetWidgetProperties().IsShownInToolbar())
                 main_panel_->RemoveWidget(proxy_widget);
             ui_view_->scene()->removeItem(proxy_widget);
         }
@@ -194,14 +191,11 @@ namespace UiServices
 
         // Init main panel
         main_panel_ = new CoreUi::MainPanel(framework_);
-        main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("MainPanel", true));
+        main_panel_proxy_widget_ = new UiProxyWidget(main_panel_->GetWidget(), UiWidgetProperties("MainPanel", UiServices::CoreLayoutWidget));
 
         // Init settings widget, add control button to mainpanel
         settings_widget_ = new CoreUi::SettingsWidget();
-
-        UiWidgetProperties widget_properties("Settings", UiServices::SlideFromTop, settings_widget_->size());
-        widget_properties.SetShowAtToolbar(false);
-        settings_widget_proxy_widget_ = new UiProxyWidget(settings_widget_, widget_properties);
+        settings_widget_proxy_widget_ = new UiProxyWidget(settings_widget_, UiWidgetProperties("Settings", UiServices::SceneWidget));
         CoreUi::MainPanelButton *control_button = main_panel_->SetSettingsWidget(settings_widget_proxy_widget_, "Settings");
         settings_widget_proxy_widget_->SetControlButton(control_button);
 

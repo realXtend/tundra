@@ -6,39 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>914</width>
-    <height>597</height>
+    <width>513</width>
+    <height>142</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>ConsoleWidget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#NotificationWidget {
-	background-color: transparent;
-}
-
-QPlainTextEdit {
+   <string notr="true">QPlainTextEdit {
 	border: 0px;
-	padding: 2px;
+	padding: 0px;
 	background-color: rgb(0,0,0);
 	font-size: 12px;
 	color: #33FF33;
+	margin: 0px;
 }
 
 QLineEdit {
 	border: 0px;
-	padding: 2px;
+	border-top: 1px solid rgba(255,255,255,100);
+	border-bottom: 1px rgba(255,255,255,100);
+	padding: 0px;
+	padding-left: 3px;
 	background-color: rgb(0,0,0);
 	font-size: 12px;
 	color:#33FF33;
 }
 
-
 QScrollBar{
-
 	background-color: rgb(0,0,0);
-
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -56,8 +53,14 @@ QScrollBar{
      <property name="lineWidth">
       <number>0</number>
      </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="plainText">
+      <string/>
      </property>
     </widget>
    </item>

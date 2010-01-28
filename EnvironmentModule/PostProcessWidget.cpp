@@ -39,7 +39,7 @@ namespace Environment
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
-        ui_module->GetSceneManager()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Post-processing"));
+        ui_module->GetSceneManager()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Post-processing", UiServices::ModuleWidget));
     }
 
     void PostProcessWidget::AddHandler(OgreRenderer::CompositionHandler *handler)

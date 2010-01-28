@@ -163,7 +163,7 @@ namespace Environment
             return;
 
         EnvironmentEditorProxyWidget_ = 
-            ui_module->GetSceneManager()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties(QPointF(10,60), editor_widget_->size(), Qt::Dialog, "Environment Editor"));
+            ui_module->GetSceneManager()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties("Environment Editor", UiServices::ModuleWidget));
         //EnvironmentEditorProxyWidget_->updateGeometry();
 
         InitTerrainTabWindow();

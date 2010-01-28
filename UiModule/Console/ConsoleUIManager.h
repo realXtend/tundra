@@ -3,9 +3,10 @@
 #ifndef incl_UiModule_ConsoleUIManager_h
 #define incl_UiModule_ConsoleUIManager_h
 
+#include "Framework.h"
+
 #include <QObject>
 #include <QPropertyAnimation>
-#include "Framework.h"
 
 namespace Ui
 {
@@ -21,76 +22,80 @@ namespace CoreUi
 
     class ConsoleUIManager: public QObject
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
         ConsoleUIManager(Foundation::Framework *framework, QGraphicsView *ui_view);
         virtual ~ConsoleUIManager();
 
     public slots:
-
-        //!Togge console on/off
+        //! Toggle console show/hide
         void ToggleConsole();
-        
-        //! slot to resize the console
-        void SceneRectChanged(const QRectF &);
 
-        //! prints the string to the console
-        void PrintLine(const std::string &string);
+        //! Queues the print requests
+        void QueuePrintRequest(const QString &text);
 
-        //!Handle input to the console(called after return pushed)
+        //! Prints to console
+        void PrintToConsole(QString text);
+
+        //! Handle input to the console(called after return pushed)
         void HandleInput();
-        //! sends event to notify console module that UI for console is ready
+        
+        //! Sends event to notify console module that UI for console is ready
         void SendInitializationReadyEvent();
 
-
     signals:
+        //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
+        void PrintOrderRecieved(QString text);
+
+        //! TODO: comment
         void CommandIssued(const QString &string);
 
-    private:
-        //! configure the scrolling animation of the console
+    private slots:
+        //! Configure the scrolling animation of the console
         void SetupAnimation();
 
+        //! Connect internal signals
+        void ConnectSignals();
+
+        //! Resize the console to fit scene
+        void AdjustToSceneRect(const QRectF &);
+
+    private:
         //! is console visible or hidden?
         bool visible_;
 
-
-        //!Method for coloring/styling the string for the console
+        //! Method for coloring/styling the string for the console
         void StyleString(QString &str);
 
-        //Console opacity
+        //! Console opacity
         qreal opacity_;
 
-        
-        /// Event manager.
+        //! Event manager pointer
         Foundation::EventManagerPtr eventManager_;
 
-        //Console event category
+        //! Console event category
         event_category_id_t console_category_id_;
 
-        //Framework pointer
+        //! Framework pointer
         Foundation::Framework* framework_;
 
-        //View to the scene
+        //! View to the scene
         QGraphicsView *ui_view_;
 
-        //UI
+        //! UI
         Ui::ConsoleWidget* console_ui_;
 
-        //widget in UI
+        //! Widget in UI
         QWidget * console_widget_;
 
-        //proxy for our UI
+        // Proxy for our UI
         ConsoleProxyWidget *proxy_widget_;
         
-        //! animation used for sliding effect
+        //! Animation used for sliding effect
         QPropertyAnimation animation_;
 
-        //!
-        
-
     };
-
-
 }
 #endif

@@ -365,15 +365,16 @@ void InventoryWindow::InitInventoryWindow()
     QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::SlideFromTop, inventoryWidget_->size()));
+        inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
 
     // Upload progress window
     QFile file("./data/ui/uploadprogress.ui");
     uploadWidget_ = loader.load(&file, 0);
     file.close();
 
-    uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        uploadWidget_, UiServices::UiWidgetProperties(inventoryWidget_->mapToGlobal(QPoint(0, 0)), uploadWidget_->size(), Qt::Dialog, "Upload", false));
+    UiServices::UiWidgetProperties widget_properties("Upload", UiServices::SceneWidget);
+    widget_properties.SetPosition(inventoryWidget_->mapToGlobal(QPoint(0, 0)));
+    uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(uploadWidget_, widget_properties);
 
     connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),SLOT(ShowInformationString(const QString &, int)));
 

@@ -245,7 +245,7 @@ void OgreScriptEditor::InitEditorWindow()
 
     // Add widget to UI via ui services module
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "OGRE Script Editor: " + name_, false));
+        mainWidget_, UiServices::UiWidgetProperties("OGRE Script Editor: " + name_, UiServices::SceneWidget));
 
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
 
