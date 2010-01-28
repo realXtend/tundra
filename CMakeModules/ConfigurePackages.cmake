@@ -6,8 +6,8 @@
 # remain generic.
 
 macro (configure_boost)
-    if (MSVC OR APPLE)
-        set (Boost_USE_STATIC_LIBS OFF)
+    if (MSVC)
+        set (Boost_USE_STATIC_LIBS ON)
     else ()
         set (Boost_USE_STATIC_LIBS OFF)
     endif ()
