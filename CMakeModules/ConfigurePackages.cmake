@@ -12,15 +12,18 @@ macro (configure_boost)
         set (Boost_USE_STATIC_LIBS OFF)
     endif ()
 
-    sagase_configure_package (BOOST 
-        NAMES Boost boost
-	if (APPLE)	
-	        COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework
-	else ()
-	        COMPONENTS date_time filesystem system thread program_options unit_test_framework
-	endif ()
-
-        PREFIXES ${ENV_NAALI_DEP_PATH})
+    if (APPLE)
+        sagase_configure_package (BOOST 
+    	    NAMES Boost boost
+            COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework
+	    
+            PREFIXES ${ENV_NAALI_DEP_PATH})
+    else ()
+        sagase_configure_package (BOOST 
+    	    NAMES Boost boost
+            COMPONENTS date_time filesystem system thread program_options unit_test_framework
+            PREFIXES ${ENV_NAALI_DEP_PATH})
+    endif ()
  
     if (APPLE)
         set (BOOST_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/lib)
