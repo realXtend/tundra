@@ -46,9 +46,15 @@ namespace UiServices
             SAFE_DELETE(main_panel_);
         main_panel_proxy_widget_ = 0;
 
+        if (settings_widget_)
+            SAFE_DELETE(settings_widget_);
+        main_panel_proxy_widget_ = 0;
+
         if (container_widget_)
             SAFE_DELETE(container_widget_);
         container_layout_ = 0;
+
+        login_proxy_widget_ = 0;
     }
 
     /*************** UI Scene Manager Public Services ***************/
@@ -106,7 +112,10 @@ namespace UiServices
             return true;
         }
         else
+        {
+            SAFE_DELETE(proxy_widget);
             return false;
+        }
     }
 
     void UiSceneManager::RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget)
@@ -117,25 +126,6 @@ namespace UiServices
                 main_panel_->RemoveWidget(proxy_widget);
             ui_view_->scene()->removeItem(proxy_widget);
         }
-    }
-
-    UiProxyWidget *UiSceneManager::GetProxyWidget(const QString &widget_name)
-    {
-        QList<UiProxyWidget *> widget_list = QList<UiProxyWidget *>();
-        if (ui_view_)
-        {
-            QList<QGraphicsItem *> graphics_items = ui_view_->scene()->items();
-            foreach(QGraphicsItem *widget, graphics_items)
-            {
-                UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget *>(widget);
-                if (proxy_widget)
-                {
-                    if (proxy_widget->GetWidgetProperties().GetWidgetName() == widget_name)
-                        return proxy_widget;
-                }
-            }
-        }
-        return 0;
     }
 
     void UiSceneManager::BringProxyToFront(UiProxyWidget *widget)

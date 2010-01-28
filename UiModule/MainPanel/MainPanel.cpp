@@ -49,11 +49,11 @@ namespace CoreUi
             navigate_frame_->hide();
             panel_widget_->setMaximumHeight(25);
 
-            QObject::connect(logout_button, SIGNAL( clicked() ), this, SLOT( HideWidgets() ));
-            QObject::connect(navigate_toggle_button_, SIGNAL( clicked() ), this, SLOT( ToggleNavigation() ));
-            QObject::connect(navigate_address_bar_->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( Navigate() ));
-            QObject::connect(navigate_connect_button_, SIGNAL( clicked() ), this, SLOT( Navigate() ));
-            QObject::connect(inworld_login_dialog_, SIGNAL( TryLogin(QMap<QString,QString> &) ), this, SLOT( ParseAndEmitLogin(QMap<QString,QString> &) ));
+            connect(logout_button, SIGNAL( clicked() ), this, SLOT( HideWidgets() ));
+            connect(navigate_toggle_button_, SIGNAL( clicked() ), this, SLOT( ToggleNavigation() ));
+            connect(navigate_address_bar_->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( Navigate() ));
+            connect(navigate_connect_button_, SIGNAL( clicked() ), this, SLOT( Navigate() ));
+            connect(inworld_login_dialog_, SIGNAL( TryLogin(QMap<QString,QString> &) ), this, SLOT( ParseAndEmitLogin(QMap<QString,QString> &) ));
 
             InitBookmarks();
         }

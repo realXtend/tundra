@@ -69,10 +69,6 @@ namespace UiServices
         //! \param widget Proxy widget.
         void RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget);
 
-        //! Get proxy widget pointer by name
-        //! \return Pointer to the proxy widget or 0 if not found.
-        UiProxyWidget *GetProxyWidget(const QString &widget_name);
-
         //! Brings the UiProxyWidget to front in the scene and set focus to it
         void BringProxyToFront(UiProxyWidget *widget);
 
