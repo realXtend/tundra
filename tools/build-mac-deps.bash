@@ -4,8 +4,15 @@ set -e
 set -x
 
 # script to build most deps. omitted at least (= install sdk manually)
-# * Ogre
+# * Ogre SDK 1.6.5
+#   - http://www.ogre3d.org/wiki/index.php/MacCommonErrors says you
+#     have to install in certain locations 
+#
+# * Ogre binary dependencies package (OgreDependencies_OSX_Eihort_20080115)
+#
 # * QT
+#   - Carbon 32-bit libraries-only
+#     (to match Ogre which is also 32-bit/Carbon)
 
 export CMAKE_OSX_ARCHITECTURES=i386
 export CFLAGS="-arch i386"
@@ -85,25 +92,32 @@ else
     touch $tags/$what-done
 fi
 
-# cd $build
-# what=PythonQt
-# if test -f $tags/$what-done; then
-#     echo $what is done
-# else
-#     if test -d $what; then
-# 	svn update $what
-#     else
-# 	svn co $viewerdeps_svnroot/trunk/$what $what
-#     fi
-#     cd $what
-#     qmake
-#     make
-#     rm -f $prefix/lib/lib$what*
-#     cp -a lib/lib$what* $prefix/lib/
-#     cp src/PythonQt*.h $prefix/include/
-#     cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
-#     touch $tags/$what-done
-# fi
+cd $build
+what=PythonQt
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    if test -d $what; then
+	svn update $what
+    else
+	svn co $viewerdeps_svnroot/trunk/$what $what
+    fi
+    cd $what
+    qmake -spec macx-g++
+    if make; then
+	:
+    else
+	echo "make failed, trying QtUiTools_debug fixup"
+	mv extensions/PythonQt_QtAll/Makefile extensions/PythonQt_QtAll/Makefile.orig
+	sed 's/QtUiTools_debug/QtUiTools/' < extensions/PythonQt_QtAll/Makefile.orig > extensions/PythonQt_QtAll/Makefile
+	make
+    fi
+    rm -f $prefix/lib/lib$what*
+    cp -a lib/lib$what* $prefix/lib/
+    cp src/PythonQt*.h $prefix/include/
+    cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
+    touch $tags/$what-done
+fi
 
 cd $build
 what=OpenJPEG
