@@ -149,8 +149,7 @@ namespace UiManagers
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
         {
-            UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SlideFromTop, friend_list_widget_->size());
-            widget_properties.SetShowAtToolbar(false);
+            UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SceneWidget);
             ui_module->GetSceneManager()->AddWidgetToScene(friend_list_widget_, widget_properties);
         }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),

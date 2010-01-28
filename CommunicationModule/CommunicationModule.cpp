@@ -164,12 +164,12 @@ namespace Communication
         {
             if (name == "World Chat")
             {
-                UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, opensim_chat_ui_->size());
+                UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
                 opensim_chat_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(opensim_chat_ui_, widget_properties);
             }
             else if (name == "IM")
             {
-                UiServices::UiWidgetProperties widget_properties(name, UiServices::SlideFromTop, im_ui_->size());
+                UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
                 im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(im_ui_, widget_properties);
             }
         }

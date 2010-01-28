@@ -121,7 +121,7 @@ namespace CoreUi
             ui_.tabWidget->addTab(traditional_login_widget_, " Login"); // FIX stylesheets: tab clipping without spaces :(
             ui_.tabWidget->addTab(web_login_widget_, " Web Login"); // FIX stylesheets: tab clipping without spaces :(
 
-            login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_widget_, UiServices::UiWidgetProperties("Login", true));
+            login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_widget_, UiServices::UiWidgetProperties("Login", UiServices::CoreLayoutWidget));
             login_is_in_progress_ = false;
 
             connect(ui_.hideButton, SIGNAL( clicked() ), this, SLOT( HideMessageFromUser() ));
@@ -144,7 +144,7 @@ namespace CoreUi
             uiFile.close();
 
             login_progress_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(
-                login_progress_widget_, UiServices::UiWidgetProperties("Login loader", true, UiServices::SlideFromBottom));
+                login_progress_widget_, UiServices::UiWidgetProperties("Login loader", UiServices::CoreLayoutWidget));
             login_progress_proxy_widget_->show();
             login_is_in_progress_ = true;
         }

@@ -9,6 +9,8 @@
 #include <QGraphicsProxyWidget>
 
 class QTimeLine;
+class QParallelAnimationGroup;
+class QPropertyAnimation;
 
 namespace CoreUi
 {
@@ -34,7 +36,7 @@ namespace UiServices
 
         //! Get this proxys widget properties
         /// \return UiWidgetProperties.
-        UiWidgetProperties GetWidgetProperties() const { return widget_properties_; }
+        UiWidgetProperties GetWidgetProperties() { return widget_properties_; }
 
         //! Set control button for this proxy
         void SetControlButton(CoreUi::MainPanelButton *control_button);
@@ -48,6 +50,9 @@ namespace UiServices
         //! Set new show animation speed
         void SetShowAnimationSpeed(int new_speed);
 
+    public slots:
+        void AnimatedHide();
+
     protected:
         //! QGraphicsProxyWidget override functions
         void showEvent(QShowEvent *show_event);
@@ -57,17 +62,18 @@ namespace UiServices
         void focusOutEvent(QFocusEvent *focus_event);
         QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    private:
-        void InitAnimations();
+    private slots:
+        void InitWidgetAndProxy(QWidget *widget);
+        void InitEffectsAndAnimations();
+        void FinishHide();
 
+    private:
         UiWidgetProperties widget_properties_;
         CoreUi::MainPanelButton *control_button_;
-        QTimeLine *show_timeline_;
+        QParallelAnimationGroup *animations_;
+        QPropertyAnimation *fade_animation_;
         qreal unfocus_opacity_;
         bool show_animation_enabled_;
-
-    private slots:
-        void AnimationStep(qreal step);
 
     signals:
         void Closed();

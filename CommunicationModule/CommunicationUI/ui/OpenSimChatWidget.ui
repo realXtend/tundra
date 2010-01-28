@@ -14,13 +14,14 @@
    <string>OpenSimChatWidget</string>
   </property>
   <property name="styleSheet">
-   <string>QPlainTextEdit {
+   <string notr="true">QPlainTextEdit {
 	color: rgb(0,0,0);
 	border: 0px;
 	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 100), stop:0.295455 rgba(209, 215, 221, 100), stop:0.744318 rgba(178, 183, 196, 100), stop:1 rgba(222, 227, 236, 100));
 	background-image: url(':/images/labelWorldChat.png');
 	background-repeat: none;
 	background-position: bottom right;
+	background-attachment: fixed;
 }
 
 QLineEdit {

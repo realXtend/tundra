@@ -28,7 +28,7 @@ namespace CoreUi
         {
             if (controlled_widget_->isVisible())
             {
-                controlled_widget_->hide();
+                controlled_widget_->AnimatedHide();
                 ControlledWidgetHidden();
             }
             else

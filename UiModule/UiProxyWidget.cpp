@@ -9,50 +9,56 @@
 #include <QGraphicsEffect>
 #include <QGraphicsScene>
 #include <QTimeLine>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 
 namespace UiServices
 {
-    UiProxyWidget::UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties) :
-        QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
-        widget_properties_(in_widget_properties),
-        show_timeline_(new QTimeLine(300, this)),
-        control_button_(0),
-        unfocus_opacity_(1.0),
-        show_animation_enabled_(true)
+    UiProxyWidget::UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties) 
+        : QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
+          widget_properties_(in_widget_properties),
+          show_animation_enabled_(true),
+          unfocus_opacity_(1.0),
+          animations_(0),
+          fade_animation_(0),
+          control_button_(0)
     {
-        // QWidget setup
-        widget->setWindowFlags(widget_properties_.GetWindowStyle());
-        widget->setWindowTitle(widget_properties_.GetWidgetName());
-
-        // QGraphicsProxyWidget setup
-        setWidget(widget);
-        setPos(widget_properties_.GetPosition().x(), widget_properties_.GetPosition().y());
-        setGeometry(QRectF(widget_properties_.GetPosition(), QSizeF(widget_properties_.GetSize())));
-
-        InitAnimations();
+        InitWidgetAndProxy(widget);
+        InitEffectsAndAnimations();
     }
 
     UiProxyWidget::~UiProxyWidget()
     {
     }
 
-    void UiProxyWidget::InitAnimations()
+    void UiProxyWidget::InitWidgetAndProxy(QWidget *widget)
     {
-        if (!widget_properties_.IsFullscreen())
+        widget->setWindowFlags(widget_properties_.GetWindowStyle());
+        widget->setWindowTitle(widget_properties_.GetWidgetName());
+        setWidget(widget);
+        setGeometry(QRectF(widget_properties_.GetPosition(), QSizeF(widget->size())));
+    }
+
+    void UiProxyWidget::InitEffectsAndAnimations()
+    {
+        if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
         {
             QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
             shadow_effect->setBlurRadius(3);
             shadow_effect->setOffset(3.0, 3.0);
             setGraphicsEffect(shadow_effect);
+
+            animations_ = new QParallelAnimationGroup(this);
+            animations_->setDirection(QAbstractAnimation::Forward);
+            connect(animations_, SIGNAL( finished() ), this, SLOT( FinishHide() ));
+
+            fade_animation_ = new QPropertyAnimation(this, "opacity");
+            fade_animation_->setDuration(300);
+            fade_animation_->setStartValue(0.0);
+            fade_animation_->setEndValue(1.0);
+
+            animations_->addAnimation(fade_animation_);
         }
-
-        if (widget_properties_.GetWidgetName() != "Login loader") // fix
-            connect(show_timeline_, SIGNAL(valueChanged(qreal)), SLOT(AnimationStep(qreal)));
-    }
-
-    void UiProxyWidget::AnimationStep(qreal step)
-    {
-        setOpacity(step);
     }
 
     void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
@@ -70,34 +76,60 @@ namespace UiServices
 
     void UiProxyWidget::SetShowAnimationSpeed(int new_speed)
     {
+        if (!animations_)
+            return;
+
         if (new_speed == 0)
             show_animation_enabled_ = false;
-        else if (show_timeline_->state() == QTimeLine::NotRunning)
+        else if (animations_->state() != QAbstractAnimation::Running)
         {
-            show_timeline_->setDuration(new_speed);
+            fade_animation_->setDuration(new_speed);
             show_animation_enabled_ = true;
         }
     }
 
     void UiProxyWidget::showEvent(QShowEvent *show_event)
     {
-        emit Visible(true);
         QGraphicsProxyWidget::showEvent(show_event);
+        emit Visible(true);
         emit BringProxyToFrontRequest(this);
 
-        if (show_animation_enabled_)
-            show_timeline_->start();
+        if (show_animation_enabled_ && animations_)
+        {
+            fade_animation_->setEndValue(1.0);
+            animations_->setDirection(QAbstractAnimation::Forward);
+            animations_->start();
+        }
     }
 
     void UiProxyWidget::hideEvent(QHideEvent *hide_event)
     {
-        emit Visible(false);
         QGraphicsProxyWidget::hideEvent(hide_event);
+        emit Visible(false);
 
-        if (widget_properties_.GetWidgetName() != "Login loader") // fix
-            setOpacity(0.0);
         if (control_button_)
             control_button_->ControlledWidgetHidden();
+    }
+
+    void UiProxyWidget::AnimatedHide()
+    {
+        if (show_animation_enabled_ && animations_)
+        {
+            if (!hasFocus())
+                fade_animation_->setEndValue(unfocus_opacity_);
+            else
+                fade_animation_->setEndValue(1.0);
+            animations_->setDirection(QAbstractAnimation::Backward);
+            animations_->start();
+        }
+        else
+            hide();
+    }
+
+    void UiProxyWidget::FinishHide()
+    {
+        if (animations_->direction() == QAbstractAnimation::Backward)
+            hide();
     }
 
     void UiProxyWidget::closeEvent(QCloseEvent *close_event)
@@ -110,20 +142,25 @@ namespace UiServices
     {
         QGraphicsProxyWidget::focusInEvent(focus_event);
 
-        if (control_button_)
-            control_button_->ControlledWidgetFocusIn();
-        if (isVisible() && show_timeline_->state() != QTimeLine::Running)
-            setOpacity(1.0);
+        if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
+        {
+            if (!control_button_)
+                control_button_->ControlledWidgetFocusIn();
+            if (isVisible() && animations_->state() != QAbstractAnimation::Running)
+                setOpacity(1.0);
+        }
     }
 
     void UiProxyWidget::focusOutEvent(QFocusEvent *focus_event)
     {
         QGraphicsProxyWidget::focusOutEvent(focus_event);
 
-        if (control_button_)
-            control_button_->ControlledWidgetFocusOut();
-        if (!widget_properties_.IsFullscreen())
+        if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
+        {
             setOpacity(unfocus_opacity_);
+            if (control_button_)
+                control_button_->ControlledWidgetFocusOut();
+        }
     }
 
     QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -132,11 +169,11 @@ namespace UiServices
         {
             QPointF new_position = value.toPointF();
             QRectF scene_rect = scene()->sceneRect();
-            scene_rect.setRight(scene_rect.right()-20.0); // Right margin
+            scene_rect.setRight(scene_rect.right()-20.0);
             if (!scene_rect.contains(new_position))
             {
                 new_position.setX(qMin(scene_rect.right(), qMax(new_position.x(), scene_rect.left())));
-                new_position.setY(qMin(scene_rect.bottom(), qMax(new_position.y(), scene_rect.top()+20))); // Top margin
+                new_position.setY(qMin(scene_rect.bottom(), qMax(new_position.y(), scene_rect.top()+20)));
                 return new_position;
             }
         }

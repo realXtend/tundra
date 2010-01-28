@@ -120,7 +120,7 @@ namespace UiServices
                 break;
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
                 Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
-                ui_console_manager_->PrintLine(console_data->message);
+                ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                 break;
             }
         }

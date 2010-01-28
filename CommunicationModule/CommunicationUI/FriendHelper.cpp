@@ -84,8 +84,7 @@ namespace UiHelpers
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
         {
-            UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SlideFromTop, request_manager_widget_->size());
-            widget_properties.SetShowAtToolbar(false);
+            UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SceneWidget);
             UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(request_manager_widget_, widget_properties);
             proxy->show();
         }

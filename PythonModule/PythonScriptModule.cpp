@@ -1404,7 +1404,7 @@ PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
         PythonScript::self()->LogInfo("PythonScript's framework is not present!");
         return NULL;
     }
-	UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
+    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("", UiServices::ModuleWidget);
     return PythonQt::self()->wrapQObject(prop);;
 }
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)

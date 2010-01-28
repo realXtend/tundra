@@ -441,7 +441,7 @@ void MaterialWizard::InitWindow()
     QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        mainWidget_, UiServices::UiWidgetProperties(QPointF(10.0, 60.0), mainWidget_->size(), Qt::Dialog, "Material Wizard", true));
+        mainWidget_, UiServices::UiWidgetProperties("Material Wizard", UiServices::ModuleWidget));
 
     buttonCreate->setEnabled(false);
     RefreshWidgets();
