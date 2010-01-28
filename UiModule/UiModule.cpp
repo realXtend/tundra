@@ -5,6 +5,7 @@
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
+#include "Console/ConsoleUIManager.h"
 
 #include <NetworkEvents.h>
 #include <SceneEvents.h>
@@ -13,6 +14,7 @@
 
 #include <QTimer>
 
+#include <ConsoleEvents.h>
 namespace UiServices
 {
 
@@ -35,7 +37,7 @@ namespace UiServices
     void UiModule::Load()
     {
         QApplication::setStyle(new UiProxyStyle());
-        event_query_categories_ << "Framework" << "Scene";    
+        event_query_categories_ << "Framework" << "Scene"  << "Console";    
     }
 
     void UiModule::Unload()
@@ -44,7 +46,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-        SubscribeToEventCategories();
+
 
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
@@ -54,7 +56,15 @@ namespace UiServices
             LogDebug(">> Scene Manager service READY");
             ui_notification_manager_ = new UiNotificationManager(GetFramework(), ui_view_);
             LogDebug(">> Notification Manager service READY");
+            ui_console_manager_ = new CoreUi::ConsoleUIManager(GetFramework(), ui_view_);
+            LogDebug(">> Console UI READY");
         }
+    }
+
+    void UiModule::PostInitialize()
+    {
+        SubscribeToEventCategories();
+        ui_console_manager_->SendInitializationReadyEvent();
     }
 
     void UiModule::Uninitialize()
@@ -99,6 +109,19 @@ namespace UiServices
                 }
                 default:
                     break;
+            }
+        }
+        else if (category == "Console")
+        {
+            switch (event_id)
+            {
+            case Console::Events::EVENT_CONSOLE_TOGGLE:
+                ui_console_manager_->ToggleConsole();
+                break;
+            case Console::Events::EVENT_CONSOLE_PRINT_LINE:
+                Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
+                ui_console_manager_->PrintLine(console_data->message);
+                break;
             }
         }
         else if (category == "Scene")

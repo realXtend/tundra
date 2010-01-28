@@ -6,6 +6,7 @@
 #include "ConsoleManager.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
+#include "ConsoleEvents.h"
 
 namespace Console
 {
@@ -46,7 +47,7 @@ namespace Console
 
     void ConsoleModule::PostInitialize()
     {
-        checked_static_cast<ConsoleManager*>(manager_.get())->CreateDelayed();
+
     }
 
     void ConsoleModule::Update(f64 frametime)
@@ -64,57 +65,36 @@ namespace Console
     bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
-
-        if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
+        if ( framework_->GetEventManager()->QueryEventCategory("Console") == category_id)
         {
-            if (event_id == Input::Events::SCROLL)
+            switch (event_id)
             {
-                if (manager_->IsVisible())
-                {
-                    int rel = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
-                    manager_->Scroll(rel);
-                    return true;
-                }
+            case Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED:
+                manager_->SetUiInitialized(!manager_->IsUiInitialized());
+                break;
+            case Console::Events::EVENT_CONSOLE_COMMAND_ISSUED:
+                Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
+                manager_->ExecuteCommand(console_data->message);
+                break;
             }
+        }
+        else if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
+        {
+            
 
             if (event_id == Input::Events::SHOW_DEBUG_CONSOLE)
             {
-                manager_->SetVisible(!manager_->IsActive());
+                manager_->ToggleConsole();
   
                 return true;
             }
-
-            if (event_id == Input::Events::SHOW_DEBUG_CONSOLE_REL)
-            {
-                //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
-                //if (input)
-                //{
-                //    if (manager_->IsActive())
-                //        input->SetState(Input::State_Buffered);
-                //    else
-                //        input->SetState();
-                //}
-
-                return true;
-            }
-
-            if (event_id == Input::Events::BUFFERED_KEY_PRESSED || event_id == Input::Events::BUFFERED_KEY_RELEASED)
-            {
-                if (manager_->IsActive())
-                {
-                    int code = checked_static_cast<Input::Events::BufferedKey*>(data)->code_;
-                    unsigned int text = checked_static_cast<Input::Events::BufferedKey*>(data)->text_;
-
-                    if (event_id == Input::Events::BUFFERED_KEY_PRESSED)
-                        return manager_->HandleKeyDown(code, text);
-                    else
-                        return manager_->HandleKeyUp(code, text);
-                }
-            }
         }
-
-        return false;
+        else
+        {
+            return false;
+        }
     }
+
 
     // virtual 
     void ConsoleModule::Uninitialize()

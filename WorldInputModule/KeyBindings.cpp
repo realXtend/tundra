@@ -21,7 +21,8 @@ namespace Input
 		map.insert (make_pair (QKeySequence (Qt::Key_Backspace),        
                     make_pair (Input::Events::PY_RESTART, 0)));
 
-        //map.insert (make_pair (QKeySequence (Qt::Key_GRAVE),            Input::Events::SHOW_DEBUG_CONSOLE));
+        map.insert (make_pair (QKeySequence (Qt::Key_F1),
+                    make_pair (Input::Events::SHOW_DEBUG_CONSOLE,0)));
     }
 
     FirstPersonBindings::FirstPersonBindings ()

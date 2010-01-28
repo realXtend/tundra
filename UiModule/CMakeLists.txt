@@ -33,6 +33,7 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 AddSourceFolder (Login)
 AddSourceFolder (MainPanel)
 AddSourceFolder (Notify)
+AddSourceFolder (Console)
 
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup
@@ -51,11 +52,11 @@ add_definitions (-DUI_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (QT4)
 use_package (POCO)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon RexLogicModule ProtocolUtilities)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon RexLogicModule ProtocolUtilities SupportModules)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon)
+link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules)
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
