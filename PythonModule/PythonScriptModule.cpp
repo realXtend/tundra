@@ -95,7 +95,7 @@ namespace PythonScript
     {
         using namespace PythonScript;
 
-        LogInfo("Module " + Name() + " loaded.");
+        LogInfo(Name() + " loaded.");
         //DECLARE_MODULE_EC(EC_OgreEntity);
 
         AutoRegisterConsoleCommand(Console::CreateCommand(
@@ -118,7 +118,7 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Unload()
     {
-        LogInfo("Module " + Name() + " unloaded.");
+        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -174,7 +174,7 @@ namespace PythonScript
         mouse_left_button_down_ = false;
         mouse_right_button_down_ = false;
 
-        LogInfo("Module " + Name() + " initialized succesfully.");
+        LogInfo(Name() + " initialized succesfully.");
     }
 
     void PythonScriptModule::PostInitialize()
@@ -551,7 +551,7 @@ namespace PythonScript
         modulemanager->CallMethod2(methodname, paramtypes);*/
 
         engine_->Uninitialize();
-        LogInfo("Module " + Name() + " uninitialized.");
+        LogInfo(Name() + " uninitialized.");
 
         em_.reset();
         engine_.reset();

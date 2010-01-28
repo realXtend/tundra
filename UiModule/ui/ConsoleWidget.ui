@@ -19,7 +19,7 @@
 	padding: 0px;
 	background-color: rgb(0,0,0);
 	font-size: 12px;
-	color: #33FF33;
+	color: #33CC00;
 	margin: 0px;
 }
 
@@ -31,7 +31,7 @@ QLineEdit {
 	padding-left: 3px;
 	background-color: rgb(0,0,0);
 	font-size: 12px;
-	color:#33FF33;
+	color:#33CC00;
 }
 
 QScrollBar{

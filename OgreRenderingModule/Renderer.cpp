@@ -165,7 +165,7 @@ namespace OgreRenderer
         Ogre::RenderSystem *rendersystem = 0;
 
         // Some pretty printing
-        OgreRenderingModule::LogDebug("\n\nINITIALIZING OGRE \n================================================================\n");
+        OgreRenderingModule::LogDebug("INITIALIZING OGRE");
 
         // Create Ogre root with logfile
         logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
@@ -251,9 +251,6 @@ namespace OgreRenderer
         }
         else
             throw Exception("Could not create Ogre rendering window");
-
-        // Some pretty formatting
-        OgreRenderingModule::LogDebug("\n"); 
     }
 
     void Renderer::PostInitialize()

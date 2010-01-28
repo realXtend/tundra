@@ -37,28 +37,31 @@ namespace UiServices
     void UiModule::Load()
     {
         QApplication::setStyle(new UiProxyStyle());
-        event_query_categories_ << "Framework" << "Scene"  << "Console";    
+        event_query_categories_ << "Framework" << "Scene"  << "Console";
+        LogInfo(Name() + " loaded.");
     }
 
     void UiModule::Unload()
     {
+        LogInfo(Name() + " unloaded.");
     }
 
     void UiModule::Initialize()
     {
-
-
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
         {
-            LogDebug(">> Acquired Ogre QGraphicsView shared pointer from framework");
+            LogDebug("Acquired Ogre QGraphicsView shared pointer from framework");
             ui_scene_manager_ = new UiSceneManager(GetFramework(), ui_view_);
-            LogDebug(">> Scene Manager service READY");
+            LogDebug("Scene Manager service READY");
             ui_notification_manager_ = new UiNotificationManager(GetFramework(), ui_view_);
-            LogDebug(">> Notification Manager service READY");
+            LogDebug("Notification Manager service READY");
             ui_console_manager_ = new CoreUi::ConsoleUIManager(GetFramework(), ui_view_);
-            LogDebug(">> Console UI READY");
+            LogDebug("Console UI READY");
+            LogInfo(Name() + " initialized.");
         }
+        else
+            LogWarning("Could not accuire QGraphicsView shared pointer from framework, UiServices are disabled");
     }
 
     void UiModule::PostInitialize()
@@ -69,6 +72,7 @@ namespace UiServices
 
     void UiModule::Uninitialize()
     {
+        LogInfo(Name() + " uninitialized.");
     }
 
     void UiModule::Update(f64 frametime)
@@ -153,7 +157,7 @@ namespace UiServices
         foreach (QString category, event_query_categories_)
         {
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
-            LogDebug(QString(">> Listening to event category %1").arg(category).toStdString());
+            LogDebug(QString("Listening to event category %1").arg(category).toStdString());
         }
     }
 
