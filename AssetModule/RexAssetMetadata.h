@@ -11,7 +11,7 @@ namespace Asset
 	//! Implementation of asset metadata 
 	//! 
 	//!
-	class RexAssetMetadata : Foundation::AssetMetadataInterface
+	class RexAssetMetadata : public Foundation::AssetMetadataInterface
 	{
 	public:
 		RexAssetMetadata();
