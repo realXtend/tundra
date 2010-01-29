@@ -43,6 +43,11 @@ namespace Console
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
             checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
 
+        LogInfo(Name() + " initialized.");
+    }
+
+    void ConsoleModule::PostInitialize()
+    {
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         if (consoleEventCategory_ == 0)
             LogError("Failed to query \"Console\" event category");
@@ -50,12 +55,6 @@ namespace Console
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
         if (inputEventCategory_ == 0)
             LogError("Failed to query \"Input\" event category");
-
-        LogInfo(Name() + " initialized.");
-    }
-
-    void ConsoleModule::PostInitialize()
-    {
     }
 
     void ConsoleModule::Update(f64 frametime)
