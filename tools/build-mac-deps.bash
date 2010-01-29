@@ -3,15 +3,11 @@ set -e
 set -x
 
 # script to build most deps. omitted at least (= install sdk manually)
-# * Ogre SDK 1.6.5
-#   - http://www.ogre3d.org/wiki/index.php/MacCommonErrors says you
-#     have to install in certain locations 
+# * Ogre SDK 1.6.5+
 #
 # * Ogre binary dependencies package (OgreDependencies_OSX_Eihort_20080115)
 #
-# * QT
-#   - Carbon 32-bit libraries-only
-#     (to match Ogre which is also 32-bit/Carbon)
+# * QT 4.6.1+ for Carbon 32-bit (to match Ogre)
 
 export CMAKE_OSX_ARCHITECTURES=i386
 export CFLAGS="-arch i386"
@@ -62,7 +58,7 @@ function build-regular {
 	else
 	    cd $pkgbase
 	fi
-	./configure --disable-debug --disable-static --prefix=$prefix
+	./configure --disable-debug --disable-shared --prefix=$prefix
 	make -j $nprocs
 	make install
 	touch $tags/$what-done
@@ -122,15 +118,11 @@ else
 	svn co $viewerdeps_svnroot/trunk/$what $what
     fi
     cd $what
+    sed 's/^#CONFIG += release/CONFIG += release/' < build/common.prf > x &&
+      mv x build/common.prf
+
     qmake -spec macx-g++
-    if make; then
-	:
-    else
-	echo "make failed, trying QtUiTools_debug fixup"
-	mv extensions/PythonQt_QtAll/Makefile extensions/PythonQt_QtAll/Makefile.orig
-	sed 's/QtUiTools_debug/QtUiTools/' < extensions/PythonQt_QtAll/Makefile.orig > extensions/PythonQt_QtAll/Makefile
-	make
-    fi
+    make -j $nprocs
     rm -f $prefix/lib/lib$what*
     cp -a lib/lib$what* $prefix/lib/
     cp src/PythonQt*.h $prefix/include/
