@@ -73,6 +73,11 @@ namespace OgreRenderer
             if (os_version_info.dwMajorVersion == 6 && os_version_info.dwMinorVersion == 1)
                 setAttribute(Qt::WA_DontShowOnScreen, true);
         #endif
+
+	#ifdef Q_WS_MAC
+        setAttribute(Qt::WA_PaintOnScreen);
+	setAttribute(Qt::WA_NoSystemBackground);
+        #endif
     }
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 
@@ -107,6 +112,25 @@ namespace OgreRenderer
         //Add the external window handle parameters to the existing params set.
         params["externalWindowHandle"] = winhandle;
 
+    #endif
+
+    #ifdef Q_WS_MAC
+	// qt docs say it's a HIViewRef on carbon,
+ 	// carbon docs say HIViewGetWindow gets a WindowRef out of it
+
+    #if 0
+	HIViewRef vref = (HIViewRef) nativewin-> winId ();
+	WindowRef wref = HIViewGetWindow(vref);
+        winhandle = Ogre::StringConverter::toString(
+           (unsigned long) (HIViewGetRoot(wref)));
+    #else
+        // according to
+        // http://www.ogre3d.org/forums/viewtopic.php?f=2&t=27027 does
+        winhandle = Ogre::StringConverter::toString(
+                     (unsigned long) nativewin->winId());
+    #endif
+        //Add the external window handle parameters to the existing params set.
+        params["externalWindowHandle"] = winhandle;
     #endif
 
     #ifdef Q_WS_X11
