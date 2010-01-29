@@ -64,6 +64,11 @@ namespace TelepathyIM
             {
                 locally_captured_video_widget_ = new VideoWidget(bus_, 0, "captured_video", video_sink_name);
                 locally_captured_video_playback_element_ = locally_captured_video_widget_->GetVideoPlaybackElement();
+                LogDebug("VideoPlaybackWidget created for locally captured video stream.");
+
+                received_video_widget_ = new VideoWidget(bus_, 0, "received_video", video_sink_name_);
+                received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
+                LogDebug("VideoPlaybackWidget created for received video stream.");
 
                 CreateVideoInputElement(video_src_name);
                 video_supported_ = true;
@@ -560,12 +565,13 @@ namespace TelepathyIM
 
     void FarsightChannel::onSrcPadAdded(TfStream *stream, GstPad *src_pad, FsCodec *codec, FarsightChannel *self)
     {
-        // cross thread signal
-        emit self->SrcPadAdded(stream, src_pad, codec);
+        self->LinkIncomingSourcePad(stream, src_pad, codec);
     }
 
     void FarsightChannel::LinkIncomingSourcePad(TfStream *stream, GstPad *src_pad, FsCodec *codec)
     {           
+        incoming_video_widget_mutex_.lock();
+
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
         audio_stream_in_clock_rate_ = clock_rate;
@@ -595,11 +601,9 @@ namespace TelepathyIM
                 if (!video_supported_)
                 {
                     LogInfo("Got incoming VIDEO stream but ignore that because lack of video support.");
+                    incoming_video_widget_mutex_.unlock();
                     return;
                 }
-                received_video_widget_ = new VideoWidget(bus_, 0, "received_video", video_sink_name_);
-                received_video_playback_element_ = received_video_widget_->GetVideoPlaybackElement();
-                LogDebug("VideoPlaybackWidget created for received video stream.");
 
                 output_element = received_video_playback_element_;
                 if (video_in_src_pad_)
@@ -652,6 +656,8 @@ namespace TelepathyIM
         gst_pad_link(src_pad, output_pad);
         gst_element_set_state(output_element, GST_STATE_PLAYING);
 
+        incoming_video_widget_mutex_.unlock();
+
         status_ = StatusConnected;
         emit StatusChanged(status_);
         switch (media_type)
@@ -682,6 +688,12 @@ namespace TelepathyIM
     {
         if (!video_supported_)
             return 0;
+        incoming_video_widget_mutex_.lock();
+        if (!video_in_src_pad_) // FIXME: Make this thread safe and use more sane variable
+            incoming_video_widget_mutex_.unlock();
+            return 0;
+        incoming_video_widget_mutex_.unlock();
+
         return received_video_widget_;
     }
 
