@@ -40,21 +40,28 @@ namespace Console
     void ConsoleModule::Initialize()
     {
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand, checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
+            checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
+
+        consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
+        if (consoleEventCategory_ == 0)
+            LogError("Failed to query \"Console\" event category");
+
+        inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
+        if (inputEventCategory_ == 0)
+            LogError("Failed to query \"Input\" event category");
 
         LogInfo(Name() + " initialized.");
     }
 
     void ConsoleModule::PostInitialize()
     {
-
     }
 
     void ConsoleModule::Update(f64 frametime)
     {
         {
             PROFILE(ConsoleModule_Update);
-
             assert (manager_);
             manager_->Update(frametime);
         }
@@ -65,36 +72,37 @@ namespace Console
     bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
-        if ( framework_->GetEventManager()->QueryEventCategory("Console") == category_id)
+
+        if (consoleEventCategory_ == category_id)
         {
-            switch (event_id)
+            switch(event_id)
             {
             case Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED:
                 manager_->SetUiInitialized(!manager_->IsUiInitialized());
                 break;
             case Console::Events::EVENT_CONSOLE_COMMAND_ISSUED:
-                Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
+            {
+                Console::ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData *>(data);
                 manager_->ExecuteCommand(console_data->message);
                 break;
             }
-        }
-        else if (framework_->GetEventManager()->QueryEventCategory("Input") == category_id)
-        {
-            
+            default:
+                return false;
+            }
 
+            return true;
+        }
+        else if (inputEventCategory_ == category_id)
+        {
             if (event_id == Input::Events::SHOW_DEBUG_CONSOLE)
             {
                 manager_->ToggleConsole();
-  
                 return true;
             }
         }
-        else
-        {
-            return false;
-        }
-    }
 
+        return false;
+    }
 
     // virtual 
     void ConsoleModule::Uninitialize()
@@ -108,5 +116,3 @@ namespace Console
         LogInfo(Name() + " uninitialized.");
     }
 }
-
-
