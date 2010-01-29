@@ -690,8 +690,10 @@ namespace TelepathyIM
             return 0;
         incoming_video_widget_mutex_.lock();
         if (!video_in_src_pad_) // FIXME: Make this thread safe and use more sane variable
+        {
             incoming_video_widget_mutex_.unlock();
             return 0;
+        }
         incoming_video_widget_mutex_.unlock();
 
         return received_video_widget_;
