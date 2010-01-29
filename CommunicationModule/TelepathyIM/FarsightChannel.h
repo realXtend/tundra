@@ -187,6 +187,8 @@ namespace TelepathyIM
         bool audio_supported_;
         bool video_supported_;
 
+        QMutex incoming_video_widget_mutex_;
+
     private slots:
         void LinkIncomingSourcePad(TfStream *stream, GstPad *src_pad, FsCodec *codec);
     };
