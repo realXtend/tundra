@@ -79,6 +79,8 @@ namespace OgreRenderer
         std::string plugins_filename = "pluginsd.cfg";
 #elif defined (_WINDOWS)
         std::string plugins_filename = "plugins.cfg";
+#elif defined(__APPLE__)
+        std::string plugins_filename = "plugins-mac.cfg";
 #else
         std::string plugins_filename = "plugins-unix.cfg";
 #endif 
