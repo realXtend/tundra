@@ -43,11 +43,10 @@ namespace Console
             Foundation::EventDataInterface* data);
 
         //! returns framework
-        Foundation::Framework *GetFramework() { return framework_; }
+        Foundation::Framework *GetFramework() const { return framework_; }
 
         //! Returns default console
         ConsolePtr GetConsole() const { return manager_; }
-
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -59,6 +58,12 @@ namespace Console
     private:
         //! debug console manager
         ConsolePtr manager_;
+
+        //! Console event category id.
+        event_category_id_t consoleEventCategory_;
+
+        //! Input event category id.
+        event_category_id_t inputEventCategory_;
     };
 }
 

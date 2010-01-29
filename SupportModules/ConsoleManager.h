@@ -11,14 +11,11 @@
 
 namespace Console
 {
-
-   
     class ConsoleChannel;
     class LogListener;
 
     typedef boost::shared_ptr<LogListener> LogListenerPtr;
     typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
-
 
     //! Generic debug console manager, directs input and output to available consoles.
     /*!
@@ -26,7 +23,6 @@ namespace Console
     */
     class ConsoleManager :  public Console::ConsoleServiceInterface
     {
-
         friend class ConsoleModule;
     private:
         ConsoleManager();
@@ -35,20 +31,18 @@ namespace Console
         //! constructor that takes a parent module
         ConsoleManager(Foundation::ModuleInterface *parent);
 
-
     public:
         //! destructor
         virtual ~ConsoleManager();
 
-
         __inline virtual void Update(f64 frametime);
-        
+
         //! Print text in parameter
         __inline virtual void Print(const std::string &text);
-    
+
         //! Execute command in parameter
         virtual void ExecuteCommand(const std::string &command);
-  
+
         //! Toggle console on/off
         virtual void ToggleConsole();
 
@@ -61,9 +55,7 @@ namespace Console
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 
-
     private:
-
         /// Event manager.
         Foundation::EventManagerPtr eventManager_;
 
@@ -78,31 +70,27 @@ namespace Console
 
         //! Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;
-        
+
         //! Listener to get logs from renderer 
         LogListenerPtr log_listener_;
 
         //! This is a buffer for messages generated before actual console UI
         std::vector<std::string> early_messages_;
-        
+
         //!indicates whether the UI is initialized
         bool ui_initialized_;
-
-  
-
-
     };
 
     //! loglistener is used to listen log messages from renderer
     class LogListener : public Foundation::LogListenerInterface
     {
         LogListener();
-        
+
     public:
         LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
         virtual ~LogListener() {}
 
-        virtual void LogMessage(const std::string &message){if(mngr_){mngr_->Print(message);}}
+        virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
         ConsoleManager* mngr_;
     };
 
@@ -110,8 +98,8 @@ namespace Console
     class ConsoleChannel: public Poco::Channel
     {
     public:
-        ConsoleChannel(ConsoleManager* mngr){mngr_=mngr;}
-        void log(const Poco::Message & msg){if(mngr_){mngr_->Print(msg.getText());}}
+        ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
+        void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
     private:
         ConsoleManager* mngr_;
     };
