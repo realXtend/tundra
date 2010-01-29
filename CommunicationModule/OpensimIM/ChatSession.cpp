@@ -100,7 +100,7 @@ namespace OpensimIM
 		ChatMessage* m = new ChatMessage(&self_, QDateTime::currentDateTime(), text);
 		message_history_.push_back(m);
 
-		connection->SendChatFromViewerPacket( text.toStdString() );
+        connection->SendChatFromViewerPacket( std::string(text.toUtf8()) );
 	}
 
 	void ChatSession::Close()

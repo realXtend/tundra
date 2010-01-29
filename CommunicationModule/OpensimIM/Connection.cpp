@@ -326,8 +326,9 @@ namespace OpensimIM
 	bool Connection::HandleOSNEChatFromSimulator(ProtocolUtilities::NetInMessage& msg)
 	{
 		try
-		{
-			msg.ResetReading();
+		{              
+
+            msg.ResetReading();
 
 			std::size_t size = 0;
 			const boost::uint8_t* buffer = msg.ReadBuffer(&size);
@@ -348,7 +349,7 @@ namespace OpensimIM
 
 					QString source_uuid = source.ToString().c_str();
 					QString source_name = from_name.c_str();
-					QString message_text = message.c_str();
+                    QString message_text = QString::fromUtf8(message.c_str(), message.size());
 
 					switch (source_type)
 					{
