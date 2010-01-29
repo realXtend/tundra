@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_SupportModules_ConsoleEvents_h
 #define incl_SupportModules_ConsoleEvents_h
 
@@ -6,7 +8,6 @@
 
 namespace Console
 {
-
     namespace Events
     {
         static const event_id_t EVENT_CONSOLE_TOGGLE = 0x01;
@@ -17,6 +18,7 @@ namespace Console
 
         static const event_id_t EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED = 0x04;
     }
+
     /// Event data interface for Consolemessages
     class ConsoleEventData : public Foundation::EventDataInterface
     {

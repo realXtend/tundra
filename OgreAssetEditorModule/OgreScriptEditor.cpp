@@ -79,11 +79,10 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
     if (assetType_ == RexTypes::RexAT_MaterialScript)
     {
         materialProperties_ = new OgreMaterialProperties(name_, asset);
-
-        if (!materialProperties_->HasProperties())
-            edit_raw = true;
-        else
+        if (materialProperties_ && materialProperties_->HasProperties())
             CreatePropertyEditor();
+        else
+            edit_raw = true;
     }
 
     if (edit_raw)

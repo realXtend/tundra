@@ -77,8 +77,8 @@ namespace UiServices
         /// YOU ARE NOT 100% SURE WHAT YOU ARE DOING.
 
         //! Get the inworld controls
-        //! \return The main panel pointer or 0 if panel does not exist yet
-        CoreUi::MainPanel *GetMainPanel() const;
+        //! \return The main panel pointer.
+        CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
 
         //! Inits the ui for connected state
         void Connected();

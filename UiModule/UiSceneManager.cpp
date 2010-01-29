@@ -163,11 +163,6 @@ namespace UiServices
         emit UiStateChangeDisconnected();
     }
 
-    CoreUi::MainPanel *UiSceneManager::GetMainPanel() const
-    {
-        return main_panel_ ? main_panel_ : 0;
-    }
-
     /*************** UI Scene Manager Private functions ***************/
 
     void UiSceneManager::InitMasterLayout()
