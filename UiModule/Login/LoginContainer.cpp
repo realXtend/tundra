@@ -218,23 +218,23 @@ namespace CoreUi
 
     void LoginContainer::UpdateProgressBar()
     {
-        if (login_progress_bar_)
+        if (!login_progress_bar_)
+            return;
+
+        int oldvalue = login_progress_bar_->value();
+        if (oldvalue < 99)
         {
-            int oldvalue = login_progress_bar_->value();
-            if (oldvalue < 99)
+            if (oldvalue > 79 && progress_bar_timer_->interval() != 1000)
             {
-                if (oldvalue > 79 && progress_bar_timer_->interval() != 1000)
-                {
-                    //we don't actually know here whether anything has happened in the net, so better not change the msg either
-                    //login_status_->setText("Downloading world objects...");
-                    CreateProgressTimer(1000); 
-                }
-                else if (oldvalue > 90 && progress_bar_timer_->interval() != 3500)
-                {
-                    CreateProgressTimer(3500);
-                }
-                login_progress_bar_->setValue(++oldvalue); //shows % - which we actually don't know, 
+                //we don't actually know here whether anything has happened in the net, so better not change the msg either
+                //login_status_->setText("Downloading world objects...");
+                CreateProgressTimer(1000); 
             }
+            else if (oldvalue > 90 && progress_bar_timer_->interval() != 3500)
+            {
+                CreateProgressTimer(3500);
+            }
+            login_progress_bar_->setValue(++oldvalue); //shows % - which we actually don't know, 
         }
     }
 
