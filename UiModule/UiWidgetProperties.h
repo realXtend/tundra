@@ -37,11 +37,14 @@ namespace UiServices
         Q_OBJECT
         // READ
         Q_PROPERTY(WidgetType widget_type_ READ GetWidgetType)
-        Q_PROPERTY(QString widget_name_ READ GetWidgetName)
+        //read-write now for the workaround in py for constructors not working there yet
+        //Q_PROPERTY(QString widget_name_ READ GetWidgetName)
         Q_PROPERTY(Qt::WindowFlags window_type_ READ GetWindowStyle)
         Q_PROPERTY(bool show_in_toolbar_ READ IsShownInToolbar)
         // READ & WRITE
         Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
+        Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
+        
 
     public:
         //! Creates new properties according to the widget_type. For types check the enum documentation in the header.
@@ -93,6 +96,7 @@ namespace UiServices
 
         //! Setters for properties
         void SetPosition(const QPointF &position) {position_ = position; }
+        void SetWidgetName(const QString &newname) { widget_name_ = newname; }
 
     private:
         WidgetType widget_type_;

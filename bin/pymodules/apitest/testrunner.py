@@ -5,7 +5,7 @@ import time
 
 user, pwd, server = "Test User", "test", "localhost:9000"
 #user, pwd, server = "d d", "d", "world.evocativi.com:8002"
-
+user, pwd, server = "T An", "yEs1024", "osgrid.org:8002"
 
 class TestRunner(circuits.Component):
     def __init__(self):

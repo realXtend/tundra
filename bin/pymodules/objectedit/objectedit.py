@@ -92,7 +92,7 @@ class ObjectEdit(Component):
         uism = r.getUiSceneManager()
         uiprops = r.createUiWidgetProperty()
         uiprops.widget_name_ = "Object Edit"
-        uiprops.my_size_ = QSize(width, height)
+        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)
 
         if not uism.AddProxyWidget(self.proxywidget):
@@ -225,7 +225,7 @@ class ObjectEdit(Component):
             self.hideArrows()
         else: #activated
             if self.sel is not None:
-                self.drawMoveArrows(self.sel)
+                self.showArrows()
                 self.manipulator_state = self.MANIPULATE_MOVE
                 self.mainTab.scale_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
@@ -246,7 +246,7 @@ class ObjectEdit(Component):
         else: #activated
             if self.sel is not None:
                 self.manipulator_state = self.MANIPULATE_SCALE
-                self.drawMoveArrows(self.sel)
+                self.showArrows()
                 self.mainTab.move_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
             else:
@@ -353,7 +353,9 @@ class ObjectEdit(Component):
                     
                 self.modified = True
 
-                self.move_arrows.orientation = ort
+                #only when moving in local coords,
+                #which is not implemented yet
+                #self.move_arrows.orientation = ort
                 self.selection_box.orientation = ort
         
     def getButton(self, name, iconname, line, action):
@@ -531,7 +533,7 @@ class ObjectEdit(Component):
             qprim = r.getQPrim(ent.id)
             self.propedit.setObject(qprim)
             self.tabwidget.setTabEnabled(2, True)
-            self.move_arrows.orientation = ent.orientation
+            #self.move_arrows.orientation = ent.orientation
 
     def deselect(self):
         if self.sel is not None:
@@ -604,30 +606,18 @@ class ObjectEdit(Component):
         self.mainTab.rot_y.setValue(0)
         self.mainTab.rot_z.setValue(0)  
         
-    def drawMoveArrows(self, ent):
-        #print "drawMoveArrows", self.move_arrows
-        x, y, z = ent.pos
-        pos = x, y, z
-        
-        sx, sy, sz = ent.scale
-        scale = sx, sy, sz
-        
-        ox, oy, oz, ow = ent.orientation
-        ort = ox, oy, oz, ow
-        
-        self.showArrow(pos, scale, ort)
-        
     def createArrows(self):
         #print "\nCreating arrows!\n"
         ent = r.createEntity("axes.mesh", 606847240) #XXX make creation assign a free ID
         return ent
         
-    def showArrow(self, pos, scale, ort):
+    def showArrows(self):
         #print "Showing arrows!"
         #if self.move_arrows is not None:
-        self.move_arrows.pos = pos
-        self.move_arrows.scale = 0.2, 0.2, 0.2
-        self.move_arrows.orientation = ort
+        if self.sel is not None:
+            self.move_arrows.pos = self.sel.pos
+            self.move_arrows.scale = 0.2, 0.2, 0.2
+            self.move_arrows.orientation = 0, 0, 0, 1
   
     def hideArrows(self):
         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
