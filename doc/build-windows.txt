@@ -23,10 +23,8 @@ This is by far the easiest option. Use this option when you just need to get Naa
 # Copy C:\Naali_deps\bin\build_deps\Qt to C:\Qt\build. This directory is hard-coded in our Qt build, and will not work from any other directory.
 # Copy C:\Naali_deps\bin\runtime_deps to C:\Naali_trunk\bin.
 #* Alternatively SVN export the C:\Naali_deps\bin\runtime_deps folder (right-click on it and select Export) to C:\viewer\bin.
-# Set the following Environment variables. If you dont know how to accomplish this refer to this page  http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#Setting_Windows_environment_variables_for_cmake
+# Set the following Environment variable. If you dont know how to accomplish this refer to this page  http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk#Setting_Windows_environment_variables_for_cmake
 #* NAALI_DEP_PATH=C:\Naali_deps\bin\build_deps
-#* QTDIR=C:\Qt\build
-#* QMAKESPEC=win32-msvc2008
 # After getting Qt, continue from Building the Viewer below.
 
 === Preparing the dependency repository from source ===
