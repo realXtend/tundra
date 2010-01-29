@@ -215,6 +215,10 @@ macro (configure_curl)
 		set (CURL_LIBRARIES libcurl_imp)
 		set (CURL_DEBUG_LIBRARIES libcurld_imp)
 	endif()
+
+	if (APPLE)
+		set (CURL_LIBRARIES curl)
+	endif()
 	
     sagase_configure_report (CURL)
 endmacro (configure_curl)
