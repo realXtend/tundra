@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_ConsoleUIManager_h
-#define incl_UiModule_ConsoleUIManager_h
+#ifndef incl_UiModule_UiConsoleManager_h
+#define incl_UiModule_UiConsoleManager_h
 
 #include "Framework.h"
 
@@ -20,14 +20,14 @@ namespace CoreUi
 {
     class ConsoleProxyWidget;
 
-    class ConsoleUIManager: public QObject
+    class UiConsoleManager: public QObject
     {
         
     Q_OBJECT
 
     public:
-        ConsoleUIManager(Foundation::Framework *framework, QGraphicsView *ui_view);
-        virtual ~ConsoleUIManager();
+        UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+        virtual ~UiConsoleManager();
 
     public slots:
         //! Toggle console show/hide
@@ -98,4 +98,5 @@ namespace CoreUi
 
     };
 }
-#endif
+
+#endif // incl_UiModule_UiConsoleManager_h

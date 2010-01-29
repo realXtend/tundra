@@ -5,17 +5,6 @@
 
 #include <Ogre.h>
 
-//namespace Ogre
-//{
-//    class Root;
-//    class Viewport;
-//    class RenderWindow;
-//    class TexturePtr;
-//    class Overlay;
-//    class OverlayElement;
-//    class PixelBox;
-//}
-
 namespace OgreRenderer
 {
     class QOgreWorldView
@@ -33,7 +22,6 @@ namespace OgreRenderer
             void OverlayUI (Ogre::PixelBox &ui);
 
         private:
-
             Ogre::Root              *root_;
 
             Ogre::Viewport          *view_;

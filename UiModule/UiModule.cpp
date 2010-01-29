@@ -5,24 +5,23 @@
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
-#include "Console/ConsoleUIManager.h"
+
+// Private managers
+#include "Console/UiConsoleManager.h"
 
 #include <NetworkEvents.h>
 #include <SceneEvents.h>
+#include <ConsoleEvents.h>
 
 #include <QApplication>
 
-#include <QTimer>
-
-#include <ConsoleEvents.h>
 namespace UiServices
 {
-
-    UiModule::UiModule() :
-        Foundation::ModuleInterfaceImpl(Foundation::Module::MT_UiServices),
-        event_query_categories_(QStringList()),
-        ui_scene_manager_(0),
-        ui_notification_manager_(0)
+    UiModule::UiModule() 
+        : Foundation::ModuleInterfaceImpl(Foundation::Module::MT_UiServices),
+          event_query_categories_(QStringList()),
+          ui_scene_manager_(0),
+          ui_notification_manager_(0)
     {
     }
 
@@ -56,7 +55,7 @@ namespace UiServices
             LogDebug("Scene Manager service READY");
             ui_notification_manager_ = new UiNotificationManager(GetFramework(), ui_view_);
             LogDebug("Notification Manager service READY");
-            ui_console_manager_ = new CoreUi::ConsoleUIManager(GetFramework(), ui_view_);
+            ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
             LogDebug("Console UI READY");
             LogInfo(Name() + " initialized.");
         }

@@ -143,7 +143,14 @@ namespace OgreRenderer
         return win_;
     }
 
-    void QOgreUIView::resizeEvent(QResizeEvent *e)
+    void QOgreUIView::keyPressEvent (QKeyEvent *e)
+    {
+        if (e->key() == Qt::Key_F1 && scene()->focusItem())
+            emit ConsoleToggleRequest();
+        QGraphicsView::keyPressEvent(e);
+    }
+
+    void QOgreUIView::resizeEvent (QResizeEvent *e)
     {
         QGraphicsView::resizeEvent(e);
 
