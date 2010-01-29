@@ -426,7 +426,7 @@ namespace TelepathyIM
     void FarsightChannel::HandleAudioData(u8* data, int size, int rate, int width, int channels)
     {
         boost::mutex::scoped_lock lock(audio_queue_mutex_);
-        int audio_buffer_size = AUDIO_BUFFER_SIZE_MS * channels * width / 2 * rate / 1000;
+        int audio_buffer_size = AUDIO_BUFFER_SIZE_MS * channels * width / 8 * rate / 1000;
         if (audio_buffer_size > AUDIO_BUFFER_MAX_SIZE)
             audio_buffer_size = AUDIO_BUFFER_MAX_SIZE;
 
@@ -590,7 +590,6 @@ namespace TelepathyIM
             case TP_MEDIA_STREAM_TYPE_AUDIO:
             {
                 output_element = audio_playback_bin_;
-                //g_object_ref(output_element); // do we need this
                 if (audio_in_src_pad_)
                     sink_already_linked = true;
                 LogInfo("Got pad for incoming AUDIO stream.");
@@ -623,7 +622,10 @@ namespace TelepathyIM
         }
         else
         {
-            gst_bin_add(GST_BIN(pipeline_), output_element);
+            if (!gst_bin_add(GST_BIN(pipeline_), output_element))
+            {
+                LogWarning("Cannot and output element to GStreamer pipeline!");
+            }
         }
 
         output_pad = gst_element_get_static_pad(output_element, "sink");
@@ -653,7 +655,10 @@ namespace TelepathyIM
             }
         }
 
-        gst_pad_link(src_pad, output_pad);
+        if (gst_pad_link(src_pad, output_pad) != GST_PAD_LINK_OK)
+        {
+            LogWarning("Cannot link audio src to output element.");
+        }
         gst_element_set_state(output_element, GST_STATE_PLAYING);
 
         incoming_video_widget_mutex_.unlock();
@@ -673,7 +678,7 @@ namespace TelepathyIM
 
     gboolean FarsightChannel::onRequestResource(TfStream *stream, guint direction, gpointer data)
     {
-        LogInfo("resource request");
+        LogDebug("resource request");
         return TRUE;
     }
 
