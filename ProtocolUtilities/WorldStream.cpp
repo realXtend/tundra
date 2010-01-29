@@ -1427,6 +1427,16 @@ volatile Connection::State WorldStream::GetConnectionState()
     return protocolModule_->GetConnectionState();
 }
 
+void WorldStream::SetConnectionState(Connection::State newstate)
+{
+    protocolModule_ = GetCurrentProtocolModule();
+    if (!protocolModule_.get())
+        return;
+
+    protocolModule_->SetConnectionState(newstate);
+}
+
+
 std::string WorldStream::GetConnectionErrorMessage()
 {
     protocolModule_ = GetCurrentProtocolModule();

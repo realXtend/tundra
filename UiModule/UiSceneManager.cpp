@@ -23,7 +23,8 @@ namespace UiServices
           ui_view_(ui_view),
           container_widget_(new QGraphicsWidget()),
           container_layout_(0),
-          main_panel_(0)
+          main_panel_(0),
+          login_proxy_widget_(0)
     {
         if (ui_view_)
         {
@@ -93,7 +94,12 @@ namespace UiServices
             {
                 // Add to layout
                 if (properties.GetWidgetName() == "Login")
+                {
                     login_proxy_widget_ = proxy_widget;
+                    QRectF rect = ui_view_->scene()->sceneRect();
+                    login_proxy_widget_->widget()->setMinimumSize((int)rect.width(), 0);
+                    login_proxy_widget_->widget()->setMaximumSize((int)rect.width(), 16777215);
+                }
                 container_layout_->addItem(proxy_widget);
             }
             else
@@ -217,6 +223,11 @@ namespace UiServices
     {
         if (container_widget_)
             container_widget_->setGeometry(new_scene_rect);
+        if (login_proxy_widget_)
+        {
+            login_proxy_widget_->widget()->setMinimumSize((int)new_scene_rect.width(), 0);
+            login_proxy_widget_->widget()->setMaximumSize((int)new_scene_rect.width(), 16777215);
+        }
     }
 
     // Disabled because QtModule used this for 3D widgets and is presently disaled

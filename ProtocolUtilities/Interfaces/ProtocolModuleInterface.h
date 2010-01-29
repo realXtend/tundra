@@ -26,6 +26,9 @@ namespace ProtocolUtilities
         /// @return Connection::State enum of the connection state.
         virtual Connection::State GetConnectionState() const = 0;
 
+        /// Set new state
+        virtual void SetConnectionState(Connection::State newstate) = 0;
+
         /// @return error message as std::string.
         virtual std::string &GetConnectionErrorMessage() const = 0;
 

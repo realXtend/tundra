@@ -418,6 +418,9 @@ namespace ProtocolUtilities
         /// @return The state of the connection.
         volatile Connection::State GetConnectionState();
 
+        /// Set new state
+        void SetConnectionState(Connection::State newstate);
+
         /// @return Error message of the connection.
         std::string GetConnectionErrorMessage();
 

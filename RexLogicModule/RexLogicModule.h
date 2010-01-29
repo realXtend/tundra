@@ -265,8 +265,6 @@ namespace RexLogic
         //! workaround for not being able to send events during initialization
         bool send_input_state_;
 
-        bool login_failed_showed_;
-
         //! Get a component with certain entitycomponent in it
         Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent);
 
