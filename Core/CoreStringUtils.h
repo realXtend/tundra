@@ -23,6 +23,20 @@ static std::string ToString(const T &val) { return boost::lexical_cast<std::stri
 template <typename T>
 static T ParseString(const std::string &val) { return boost::lexical_cast<T>(val); }
 
+//! Converts string to a primitive type, such as int or float. Returns default value on boost::bad_lexical_cast
+template <typename T>
+static T ParseString(const std::string &val, T default_value) 
+{ 
+    try
+    {
+        return boost::lexical_cast<T>(val); 
+    }
+    catch (boost::bad_lexical_cast e)
+    {
+        return default_value;
+    }
+}
+
 //! Get the current time as a string.
 static std::string GetLocalTimeString()
 {
