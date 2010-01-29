@@ -144,7 +144,7 @@ namespace UiServices
 
         if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
         {
-            if (!control_button_)
+            if (control_button_)
                 control_button_->ControlledWidgetFocusIn();
             if (isVisible() && animations_->state() != QAbstractAnimation::Running)
                 setOpacity(1.0);
