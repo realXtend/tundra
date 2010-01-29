@@ -84,6 +84,9 @@ namespace OpenSimProtocol
         ///@return Connection::State enum of the connection state.
         virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
 
+        /// Set new state
+        virtual void SetConnectionState(ProtocolUtilities::Connection::State newstate) { loginWorker_.SetConnectionState(newstate); }
+        
         ///@return Connection::State enum of the connection state.
         virtual std::string &GetConnectionErrorMessage() const { return loginWorker_.GetErrorMessage(); }
 

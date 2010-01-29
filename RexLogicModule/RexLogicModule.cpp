@@ -59,7 +59,6 @@ namespace RexLogic
 
 RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     send_input_state_(false),
-    login_failed_showed_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
     network_handler_(0),
@@ -361,17 +360,13 @@ void RexLogicModule::Update(f64 frametime)
         ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
         if (present_state == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
         {
-            if (!login_failed_showed_)
-            {
-                login_failed_showed_ = true;
-                GetLogin()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
-            }
+            GetLogin()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
+            world_stream_->SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
         }
         else if(present_state != ProtocolUtilities::Connection::STATE_CONNECTED &&
                 present_state != ProtocolUtilities::Connection::STATE_DISCONNECTED &&
                 present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
         {
-            login_failed_showed_ = false;
             GetLogin()->UpdateLoginProgressUI(QString(""), 0, present_state);
         }
 

@@ -54,8 +54,6 @@ namespace CoreUi
         login_is_in_progress_ = false;
 
         SAFE_DELETE(progress_bar_timer_);
-        SAFE_DELETE(login_progress_bar_);
-        SAFE_DELETE(login_status_);
         SAFE_DELETE(login_progress_widget_);
         login_progress_proxy_widget_ = 0;
     }
@@ -158,8 +156,6 @@ namespace CoreUi
             SAFE_DELETE(progress_bar_timer_);
         }
 
-        SAFE_DELETE(login_progress_bar_);
-        SAFE_DELETE(login_status_);
         SAFE_DELETE(login_progress_widget_);
         login_progress_proxy_widget_ = 0;
     }
@@ -257,7 +253,10 @@ namespace CoreUi
         ui_.messageFrame->show();
 
         if (autohide_timer_)
+        {
             autohide_timer_->stop();
+            SAFE_DELETE(autohide_timer_);
+        }
         autohide_timer_ = new QTimer(this);
         QObject::connect(autohide_timer_, SIGNAL( timeout() ), this, SLOT( UpdateAutoHide() ));
         autohide_count_ = autohide_seconds;
