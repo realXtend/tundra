@@ -9,6 +9,7 @@
 
 #include <Ogre.h>
 #include <QGraphicsView>
+#include <QKeyEvent>
 
 namespace OgreRenderer
 {
@@ -34,6 +35,7 @@ namespace OgreRenderer
         bool isDirty() { return dirty_; }
 
     protected:
+        void keyPressEvent (QKeyEvent *e);
         void resizeEvent (QResizeEvent *e);
 
     private:
@@ -45,6 +47,9 @@ namespace OgreRenderer
 
     private slots:
         void SceneChange();
+
+    signals:
+        void ConsoleToggleRequest();
 
     };
 

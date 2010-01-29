@@ -7,7 +7,7 @@
 #include "ModuleInterface.h"
 #include "UiModuleApi.h"
 
-// UiModule Service includes
+// UiModule Public Service includes
 #include "UiSceneManager.h"
 #include "UiNotificationManager.h"
 
@@ -16,7 +16,7 @@
 
 namespace CoreUi
 {
-    class ConsoleUIManager;
+    class UiConsoleManager;
 }
 
 namespace OgreRenderer
@@ -35,6 +35,7 @@ namespace UiServices
 
     class UI_MODULE_API UiModule : public Foundation::ModuleInterfaceImpl
     {
+
     public:
         UiModule();
         ~UiModule();
@@ -67,7 +68,6 @@ namespace UiServices
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_UiServices;
 
     private:
-
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
 
@@ -80,9 +80,8 @@ namespace UiServices
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;
 
-        //! ConsoleUIManager pointer
-        CoreUi::ConsoleUIManager* ui_console_manager_;
-
+        //! UiConsoleManager pointer
+        CoreUi::UiConsoleManager* ui_console_manager_;
 
         //! UiSceneManager pointer
         UiSceneManager *ui_scene_manager_;

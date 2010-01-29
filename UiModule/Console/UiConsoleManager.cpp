@@ -1,28 +1,28 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
-#include "ConsoleUIManager.h"
+#include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
-#include <QGraphicsView>
-#include <QString>
-#include <QRegExp>
-#include <QRectF>
 
 #include <ConsoleEvents.h>
 #include <ConsoleManager.h>
 #include <ConsoleModule.h>
 
-
+#include <QGraphicsView>
+#include <QString>
+#include <QRegExp>
+#include <QRectF>
 
 namespace CoreUi
 {
-    
-    ConsoleUIManager::ConsoleUIManager(Foundation::Framework *framework, QGraphicsView *ui_view):
-        framework_(framework),
-        ui_view_(ui_view),
-        console_ui_(new Ui::ConsoleWidget()),
-        console_widget_(new QWidget()),
-        visible_(false),
-        opacity_(0.8)
+    UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view)
+        : framework_(framework),
+          ui_view_(ui_view),
+          console_ui_(new Ui::ConsoleWidget()),
+          console_widget_(new QWidget()),
+          visible_(false),
+          opacity_(0.8)
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
@@ -41,23 +41,23 @@ namespace CoreUi
             console_category_id_ = eventManager_->QueryEventCategory("Console");
     }
 
-    ConsoleUIManager::~ConsoleUIManager()
+    UiConsoleManager::~UiConsoleManager()
     {
         SAFE_DELETE(console_ui_);
         SAFE_DELETE(console_widget_);
     }
 
-    void ConsoleUIManager::SetupAnimation()
+    void UiConsoleManager::SetupAnimation()
     {
         animation_.setTargetObject(proxy_widget_);
         animation_.setPropertyName("geometry");
         animation_.setDuration(300);
     }
 
-    void ConsoleUIManager::ConnectSignals()
+    void UiConsoleManager::ConnectSignals()
     {
         // Proxy show/hide toggle
-        connect(proxy_widget_, SIGNAL( TConsoleButtonPressed() ), 
+        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), 
                 this, SLOT( ToggleConsole() ));
 
         // Input field
@@ -74,7 +74,7 @@ namespace CoreUi
                 Qt::QueuedConnection);
     }
 
-    void ConsoleUIManager::SendInitializationReadyEvent()
+    void UiConsoleManager::SendInitializationReadyEvent()
     {
         if (eventManager_.get())
         {
@@ -83,7 +83,7 @@ namespace CoreUi
         }
     }
 
-    void ConsoleUIManager::HandleInput()
+    void UiConsoleManager::HandleInput()
     {
         if (eventManager_.get())
         {
@@ -94,18 +94,18 @@ namespace CoreUi
         }
     }
 
-    void ConsoleUIManager::QueuePrintRequest(const QString &text)
+    void UiConsoleManager::QueuePrintRequest(const QString &text)
     {
         emit PrintOrderRecieved(text);
     }
 
-    void ConsoleUIManager::PrintToConsole(QString text)
+    void UiConsoleManager::PrintToConsole(QString text)
     {
         StyleString(text);
         console_ui_->ConsoleTextArea->appendHtml(text);
     }
 
-    void ConsoleUIManager::AdjustToSceneRect(const QRectF& rect)
+    void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     {
         if (visible_)
         {
@@ -115,26 +115,28 @@ namespace CoreUi
         }
     }
 
-    void ConsoleUIManager::ToggleConsole()
+    void UiConsoleManager::ToggleConsole()
     {
         visible_ = !visible_;
+        int current_height = ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight();
         if (visible_)
         {
-            animation_.setStartValue(QRect(0,0,ui_view_->width(),0));
-            animation_.setEndValue(QRect(0,0,ui_view_->width(), ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight()));
+            animation_.setStartValue(QRect(0, 0, ui_view_->width(), 0));
+            animation_.setEndValue(QRect(0, 0, ui_view_->width(), current_height));
+            // Not bringing to front, works in UiProxyWidgets, hmm...
+            ui_view_->scene()->setActiveWindow(proxy_widget_);
+            ui_view_->scene()->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
+            console_ui_->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
         }
         else
         {
-            animation_.setStartValue(QRect(0,0,ui_view_->width(), ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight()));
-            animation_.setEndValue(QRect(0,0,ui_view_->width(),0));
+            animation_.setStartValue(QRect(0, 0, ui_view_->width(), current_height));
+            animation_.setEndValue(QRect(0, 0, ui_view_->width(), 0));
         }
-        
-        console_ui_->ConsoleInputArea->setFocus();
         animation_.start();
-        proxy_widget_->setActive(visible_);
     }
 
-    void ConsoleUIManager::StyleString(QString &str)
+    void UiConsoleManager::StyleString(QString &str)
     {
         // Make all timespamp + module name blocks white
         int block_end_index = str.indexOf("]");
