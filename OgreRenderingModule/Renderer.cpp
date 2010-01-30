@@ -207,7 +207,6 @@ namespace OgreRenderer
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
 
 #ifdef _WINDOWS
-        // To "fix" QWebView lockup, modify this to always default to OpenGL! However, it is somewhat ugly solution.
         // If windows did not have DirectX fallback to OpenGL
         if (!rendersystem)
             rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
@@ -216,6 +215,11 @@ namespace OgreRenderer
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 
+        // This is needed for QWebView to not lock up!!!
+        Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
+        if (map.find("Floating-point mode") != map.end())
+            rendersystem->setConfigOption("Floating-point mode", "Consistent");
+            
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
         // Initialise but dont create rendering window yet
@@ -372,7 +376,7 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        //Ogre::WindowEventUtilities::messagePump();
+        Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
@@ -424,7 +428,7 @@ namespace OgreRenderer
             if (resized_dirty_ > 0)
                 resized_dirty_--;
         }
-
+        
         q_ogre_world_view_->RenderOneFrame();
         q_ogre_ui_view_->setDirty(false);
     }
