@@ -65,6 +65,8 @@ namespace RexLogic
 
     void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
     {
+        PROFILE(Primitive_CreateGeometry)
+        
         if (!primitive.HasPrimShapeData)
             return;
             
@@ -110,7 +112,7 @@ namespace RexLogic
                 hollowSides = 4;
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
                 hollowSides = 3;
-
+            
             PrimMesher::PrimMesh primMesh(sides, profileBegin, profileEnd, profileHollow, hollowSides);
             primMesh.topShearX = primitive.PathShearX;
             primMesh.topShearY = primitive.PathShearY;
@@ -141,6 +143,7 @@ namespace RexLogic
 
             if (object)
             {
+                PROFILE(Primitive_CreateManualObject)
                 object->clear();
                 
                 RexTypes::RexAssetID texture_id; 

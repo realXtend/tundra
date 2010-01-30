@@ -99,6 +99,8 @@ namespace Foundation
     
     void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay)
     {
+        MutexLock lock(delayed_events_mutex_);
+        
         // Do not send messages after exit
         if (framework_->IsExiting())
             return;
@@ -109,18 +111,14 @@ namespace Foundation
             return;
         }    
         
-        {   
-            MutexLock lock(delayed_events_mutex_);
-               
-            DelayedEvent new_delayed_event;
-            new_delayed_event.category_id_ = category_id;
-            new_delayed_event.event_id_ = event_id;
-            new_delayed_event.data_ = data;
-            new_delayed_event.delay_ = delay;
-            
-            new_delayed_events_.push_back(new_delayed_event);
-        }
-    }  
+        DelayedEvent new_delayed_event;
+        new_delayed_event.category_id_ = category_id;
+        new_delayed_event.event_id_ = event_id;
+        new_delayed_event.data_ = data;
+        new_delayed_event.delay_ = delay;
+        
+        new_delayed_events_.push_back(new_delayed_event);
+    }
     
     bool EventManager::SendEvent(EventSubscriber* node, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
@@ -347,14 +345,18 @@ namespace Foundation
     
     request_tag_t EventManager::GetNextRequestTag()
     {
-        if (next_request_tag_ == 0) next_request_tag_++; // Never use 0
+        if (next_request_tag_ == 0) 
+            ++next_request_tag_; // Never use 0
         return next_request_tag_++;
     }    
     
     void EventManager::ProcessDelayedEvents(f64 frametime)
     {
-        delayed_events_.insert(delayed_events_.end(), new_delayed_events_.begin(), new_delayed_events_.end());
-        new_delayed_events_.clear();
+        {
+            MutexLock lock(delayed_events_mutex_);
+            delayed_events_.insert(delayed_events_.end(), new_delayed_events_.begin(), new_delayed_events_.end());
+            new_delayed_events_.clear();
+        }
         
         DelayedEventVector::iterator i = delayed_events_.begin();
         

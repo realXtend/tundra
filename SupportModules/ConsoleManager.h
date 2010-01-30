@@ -56,9 +56,6 @@ namespace Console
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 
     private:
-        /// Event manager.
-        Foundation::EventManagerPtr eventManager_;
-
         //Console event category
         event_category_id_t console_category_id_;
 
@@ -67,6 +64,9 @@ namespace Console
 
         //! parent module
         Foundation::ModuleInterface *parent_;
+        
+        //! framework
+        Foundation::Framework* framework_;
 
         //! Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;

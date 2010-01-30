@@ -72,9 +72,6 @@ namespace CoreUi
         //! Console opacity
         qreal opacity_;
 
-        //! Event manager pointer
-        Foundation::EventManagerPtr eventManager_;
-
         //! Console event category
         event_category_id_t console_category_id_;
 

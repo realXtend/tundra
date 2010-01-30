@@ -184,8 +184,8 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // Can't use Foundation::Application for application name and version,
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
-    WCHAR* szAppName = L"RealXtend";
-    WCHAR* szVersion = L"alpha-v-0-1";
+    WCHAR* szAppName = L"realXtend";
+    WCHAR* szVersion = L"Naali_v0.1";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -220,7 +220,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     if (bMiniDumpSuccessful)
         Foundation::Platform::Message(L"Minidump generated!", message);
     else
-        Foundation::Platform::Message(szAppName, L"Un unexpected error was encountred while generating minidump!");
+        Foundation::Platform::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
