@@ -8,19 +8,19 @@
  */
 
 #include "StableHeaders.h"
-#include <DebugOperatorNew.h>
+#include "DebugOperatorNew.h"
 #include "InventoryModule.h"
 #include "InventoryWindow.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 
-#include <NetworkEvents.h>
-#include <RexLogicModule.h>
-#include <Inventory/InventoryEvents.h>
-#include <QtUtils.h>
-#include <AssetEvents.h>
-#include <ConsoleCommandServiceInterface.h>
-#include <ResourceInterface.h>
+#include "NetworkEvents.h"
+#include "RexLogicModule.h"
+#include "Inventory/InventoryEvents.h"
+#include "QtUtils.h"
+#include "AssetEvents.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "ResourceInterface.h"
 
 #include <QObject>
 #include <QStringList>

@@ -9,9 +9,9 @@
 // Private managers
 #include "Console/UiConsoleManager.h"
 
-#include <NetworkEvents.h>
-#include <SceneEvents.h>
-#include <ConsoleEvents.h>
+#include "NetworkEvents.h"
+#include "SceneEvents.h"
+#include "ConsoleEvents.h"
 
 #include <QApplication>
 

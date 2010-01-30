@@ -12,10 +12,10 @@
 #include "AbstractInventoryDataModel.h"
 #include "InventoryTreeView.h"
 
-#include <Framework.h>
-#include <RexLogicModule.h>
-#include <Inventory/InventoryEvents.h>
-#include <QtUtils.h>
+#include "Framework.h"
+#include "RexLogicModule.h"
+#include "Inventory/InventoryEvents.h"
+#include "QtUtils.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>

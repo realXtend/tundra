@@ -3,8 +3,8 @@
 #ifndef incl_CommunicationUI_OpenSimChatWidget_h
 #define incl_CommunicationUI_OpenSimChatWidget_h
 
-#include <StableHeaders.h>
-#include <NetworkEvents.h>
+#include "StableHeaders.h"
+#include "NetworkEvents.h"
 
 #include "ui_OpenSimChatWidget.h"
 

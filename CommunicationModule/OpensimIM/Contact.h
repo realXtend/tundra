@@ -1,8 +1,8 @@
 #ifndef incl_Communication_OpensimIM_Contact_h
 #define incl_Communication_OpensimIM_Contact_h
 
-#include <Foundation.h>
-#include <NetworkEvents.h>
+#include "Foundation.h"
+#include "NetworkEvents.h"
 #include "interface.h"
 
 namespace OpensimIM

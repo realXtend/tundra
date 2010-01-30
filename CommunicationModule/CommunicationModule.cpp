@@ -1,8 +1,8 @@
-#include <StableHeaders.h>
-#include <SceneEvents.h>
-#include <RexLogicModule.h>
-#include <UiModule.h>
-#include <UiProxyWidget.h>
+#include "StableHeaders.h"
+#include "SceneEvents.h"
+#include "RexLogicModule.h"
+#include "UiModule.h"
+#include "UiProxyWidget.h"
 
 #include "CommunicationModule.h"
 #include "OpensimIM/ConnectionProvider.h"

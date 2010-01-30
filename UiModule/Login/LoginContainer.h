@@ -5,8 +5,8 @@
 
 #include "UiModuleApi.h"
 
-#include <EventHandlers/LoginHandler.h>
-#include <NetworkEvents.h>
+#include "EventHandlers/LoginHandler.h"
+#include "NetworkEvents.h"
 
 #include <QMap>
 #include <QString>
