@@ -207,6 +207,7 @@ namespace OgreRenderer
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
 
 #ifdef _WINDOWS
+        // To "fix" QWebView lockup, modify this to always default to OpenGL! However, it is somewhat ugly solution.
         // If windows did not have DirectX fallback to OpenGL
         if (!rendersystem)
             rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
@@ -371,7 +372,6 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        // This causes the QWebView input lockup. Should not need it, as QT updates window
         //Ogre::WindowEventUtilities::messagePump();
     }
     
