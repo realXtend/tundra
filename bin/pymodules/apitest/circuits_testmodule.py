@@ -27,7 +27,9 @@ class TestModule(Component):
             self.data = 2 #change this to any non-1 number to test live reloading
         else:
             self.data = 1
-        print self.data, #deltatime
+        #print self.data, #deltatime
+        #r.logInfo(str(self.data))
+        #1/0 #to test exception reporting
         
     def on_chat(self, frm, msg):
         print "Test Module received chat message:", frm, msg

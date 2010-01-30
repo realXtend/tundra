@@ -9,7 +9,7 @@ try:
 except ImportError: #not running under rex
     import mockviewer as r
 from circuits import handler, Event, Component, Manager, Debugger
-
+from core.logger import NaaliLogger
 #is not identical to the c++ side, where x and y have abs and rel
 #XXX consider making identical and possible wrapping of the c++ type
 #from collections import namedtuple
@@ -54,8 +54,13 @@ class ComponentRunner(Component):
         ignchannels = [('*', n) for n in ignchannames]
         
         # Note: instantiating Manager with debugger causes severe lag when running as a true windowed app (no console), so instantiate without debugger
-        #self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
-        self.m = Manager()
+        # Fix attempt: give the circuits Debugger a logger which uses Naali logging system, instead of the default which writes to sys.stderr
+        # Todo: if the default stdout is hidden, the py stdout should be changed
+        # to something that shows e.g. in console, so prints from scripts show
+        # (people commonly use those for debugging so they should show somewhere)
+        d = Debugger(IgnoreChannels = ignchannels, logger=NaaliLogger()) #IgnoreEvents = ignored)
+        self.m = Manager() + d
+        #self.m = Manager()
 
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
         if self.firstrun:
