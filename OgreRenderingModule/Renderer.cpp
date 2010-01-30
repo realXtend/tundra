@@ -371,7 +371,8 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        Ogre::WindowEventUtilities::messagePump();
+        // This causes the QWebView input lockup. Should not need it, as QT updates window
+        //Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)

@@ -52,8 +52,11 @@ class ComponentRunner(Component):
         #ignevents = [Update, MouseMove]
         ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout']
         ignchannels = [('*', n) for n in ignchannames]
-        self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
         
+        # Note: instantiating Manager with debugger causes severe lag when running as a true windowed app (no console), so instantiate without debugger
+        #self.m = Manager() + Debugger(IgnoreChannels = ignchannels) #IgnoreEvents = ignored)
+        self.m = Manager()
+
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
         if self.firstrun:
             import autoload

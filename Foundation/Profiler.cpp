@@ -123,9 +123,10 @@ namespace Foundation
         // this Profiler. The root_ object doesn't own the memory of its children,
         // but just weakly refers to them an allows easy access for printing the
         // profiling data in each thread.
+        mutex_.lock();
         root_.AddChild(boost::shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
-
         thread_root_nodes_.push_back(root);
+        mutex_.unlock();
         return root;
     }
 
