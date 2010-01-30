@@ -109,7 +109,7 @@ namespace Input
     struct KeyState : public InputState
     {
         KeyState (const QKeySequence &s, QState *p = 0);
-        KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
+        KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p = 0);
         ~KeyState ();
 
         void onEntry (QEvent *e);
@@ -123,7 +123,7 @@ namespace Input
         KeyBindingMap               **bindings;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct InputActiveState : public InputState
@@ -158,7 +158,7 @@ namespace Input
 
     struct LeftButtonActiveState : public InputState
     {
-        LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
+        LeftButtonActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -166,12 +166,12 @@ namespace Input
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct RightButtonActiveState : public InputState
     {
-        RightButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
+        RightButtonActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -179,12 +179,12 @@ namespace Input
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct MidButtonActiveState : public InputState
     {
-        MidButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
+        MidButtonActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -192,12 +192,12 @@ namespace Input
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct WheelActiveState : public InputState
     {
-        WheelActiveState (QString name, Foundation::EventManagerPtr m, QState *p = 0);
+        WheelActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -205,12 +205,12 @@ namespace Input
         Input::Events::SingleAxisMovement   scroll;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct GestureActiveState : public InputState
     {
-        GestureActiveState (QString name, GestureInfo &g, Foundation::EventManagerPtr m, QState *p = 0);
+        GestureActiveState (QString name, GestureInfo &g, Foundation::EventManager* m, QState *p = 0);
 
         void onEntry (QEvent *event);
         void onExit (QEvent *event);
@@ -220,7 +220,7 @@ namespace Input
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct KeyBindingActiveState : public InputState
@@ -363,7 +363,7 @@ namespace Input
 
     struct GestureActive : public EventTransition <QEvent::MouseMove>
     {
-        GestureActive (GestureInfo &g, Foundation::EventManagerPtr m, QState *p = 0);
+        GestureActive (GestureInfo &g, Foundation::EventManager* m, QState *p = 0);
 
         void onTransition (QEvent *e);
 
@@ -372,12 +372,12 @@ namespace Input
         Input::Events::Movement     movement;
 
         event_category_id_t         catid;
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager*   eventmgr;
     };
 
     struct KeyListener : public QAbstractTransition 
     {
-        KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p = 0);
+        KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p = 0);
 
         bool eventTest (QEvent *event);
         void onTransition (QEvent *event);
@@ -392,7 +392,7 @@ namespace Input
         KeyStateMap         &key_states;
         KeyBindingMap       **bindings;
 
-        Foundation::EventManagerPtr eventmgr;
+        Foundation::EventManager* eventmgr;
     };
 
 
@@ -421,7 +421,7 @@ namespace Input
 
         private:
             Foundation::Framework       *framework_;
-            Foundation::EventManagerPtr eventmgr_;
+            Foundation::EventManager    *eventmgr_;
 
             QGraphicsView   *view_;
             bool            has_focus_;

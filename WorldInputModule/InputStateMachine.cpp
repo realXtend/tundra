@@ -90,7 +90,7 @@ namespace Input
         catid = eventmgr-> QueryEventCategory ("Input");
     }
 
-    KeyState::KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
+    KeyState::KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p)
         : InputState (s.toString(), p), 
         sequence (s),
         bindings (b), 
@@ -204,7 +204,7 @@ namespace Input
 
     //=========================================================================
     //
-    LeftButtonActiveState::LeftButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
+    LeftButtonActiveState::LeftButtonActiveState (QString name, Foundation::EventManager* m, QState *p)
         : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -247,7 +247,7 @@ namespace Input
 
     //=========================================================================
     //
-    RightButtonActiveState::RightButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
+    RightButtonActiveState::RightButtonActiveState (QString name, Foundation::EventManager* m, QState *p)
         : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -285,7 +285,7 @@ namespace Input
 
     //=========================================================================
     //
-    MidButtonActiveState::MidButtonActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
+    MidButtonActiveState::MidButtonActiveState (QString name, Foundation::EventManager* m, QState *p)
         : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -303,7 +303,7 @@ namespace Input
 
     //=========================================================================
     //
-    WheelActiveState::WheelActiveState (QString name, Foundation::EventManagerPtr m, QState *p)
+    WheelActiveState::WheelActiveState (QString name, Foundation::EventManager* m, QState *p)
         : InputState (name, p), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -329,7 +329,7 @@ namespace Input
 
     //=========================================================================
     //
-    GestureActiveState::GestureActiveState (QString name, GestureInfo &g, Foundation::EventManagerPtr m, QState *p)
+    GestureActiveState::GestureActiveState (QString name, GestureInfo &g, Foundation::EventManager* m, QState *p)
         : InputState (name, p), gesture (g), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -419,7 +419,7 @@ namespace Input
 
     //=========================================================================
     //
-    GestureActive::GestureActive (GestureInfo &g, Foundation::EventManagerPtr m, QState *p)
+    GestureActive::GestureActive (GestureInfo &g, Foundation::EventManager* m, QState *p)
         : EventTransition <QEvent::MouseMove> (p), gesture (g), eventmgr (m)
     {
         catid = eventmgr-> QueryEventCategory ("Input");
@@ -449,7 +449,7 @@ namespace Input
     //=========================================================================
     //
 
-    KeyListener::KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManagerPtr m, QState *p)
+    KeyListener::KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p)
         : QAbstractTransition (p), key_states (s), bindings (b), eventmgr (m)
     {
         parent = static_cast <KeyboardActiveState *> (p);
@@ -532,7 +532,7 @@ namespace Input
     WorldInputLogic::WorldInputLogic (Foundation::Framework *fw)
         : framework_ (fw),
         view_ (framework_-> GetUIView()),
-        eventmgr_ (framework_-> GetEventManager()),
+        eventmgr_ (framework_-> GetEventManager().get()),
         has_focus_ (false),
         key_binding_ (0)
     {
