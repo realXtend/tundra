@@ -80,14 +80,6 @@ namespace Foundation
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
             
-            uint max_fps_release = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_release"), 60);
-            uint max_fps_debug = config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("max_fps_debug"), static_cast<uint>(-1));
-
-            max_ticks_ = 1000 / max_fps_release;
-    #ifdef _DEBUG
-            max_ticks_ = 1000 / max_fps_debug;
-    #endif
-
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
             // Now set proper path for config (one that also non-privileged users can write to)
@@ -140,6 +132,8 @@ namespace Foundation
         log_channels_.clear();
         if (log_formatter_)
             log_formatter_->release();
+            
+        
     }
 
     void Framework::CreateLoggingSystem()
@@ -313,14 +307,6 @@ namespace Foundation
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
-
-            //! \note Frame limiter disabled for now for inaccuracy of boost timer, hopefully more accurate solution can be made on Qt side
-            //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
-            //uint elapsed_time = static_cast<uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
-            //if (max_ticks_ > elapsed_time)
-            //{
-            //    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
-            //}
         }
         
         RESETPROFILER
@@ -562,17 +548,6 @@ namespace Foundation
         return Console::ResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleLimitFrames(const StringVector &params)
-    {
-        if (params.size() != 1)
-            return Console::ResultInvalidParameters();
-
-        int max_fps = clamp(ParseString<int>(params[0]), 1, 1000000);
-        max_ticks_ = 1000 / max_fps;
-
-        return Console::ResultSuccess();
-    }
-
     void Framework::RegisterConsoleCommands()
     {
         boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
@@ -600,9 +575,6 @@ namespace Foundation
                 Console::Bind(this, &Framework::ConsoleProfile)));
 #endif
 
-            //console->RegisterCommand(Console::CreateCommand("FrameLimit", 
-            //    "Limit fps. Usage: FrameLimit(max_frames)", 
-            //    Console::Bind(this, &Framework::ConsoleLimitFrames)));
         }
     }
 

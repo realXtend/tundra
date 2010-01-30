@@ -36,9 +36,7 @@ namespace CoreUi
         ConnectSignals();
 
         // Init event categories
-        eventManager_ = framework_->GetEventManager();
-        if (eventManager_.get())
-            console_category_id_ = eventManager_->QueryEventCategory("Console");
+        console_category_id_ = framework_->GetEventManager()->QueryEventCategory("Console");
     }
 
     UiConsoleManager::~UiConsoleManager()
@@ -76,22 +74,16 @@ namespace CoreUi
 
     void UiConsoleManager::SendInitializationReadyEvent()
     {
-        if (eventManager_.get())
-        {
-            Console::ConsoleEventData *event_data =  new Console::ConsoleEventData("");
-            eventManager_->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED, Foundation::EventDataPtr(event_data), 5);
-        }
+        Console::ConsoleEventData *event_data =  new Console::ConsoleEventData("");
+        framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED, Foundation::EventDataPtr(event_data), 1);
     }
 
     void UiConsoleManager::HandleInput()
     {
-        if (eventManager_.get())
-        {
-            QString text = console_ui_->ConsoleInputArea->text();
-            Console::ConsoleEventData event_data(text.toStdString());
-            eventManager_->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_COMMAND_ISSUED, &event_data);
-            console_ui_->ConsoleInputArea->clear();
-        }
+        QString text = console_ui_->ConsoleInputArea->text();
+        Console::ConsoleEventData event_data(text.toStdString());
+        framework_->GetEventManager()->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_COMMAND_ISSUED, &event_data);
+        console_ui_->ConsoleInputArea->clear();
     }
 
     void UiConsoleManager::QueuePrintRequest(const QString &text)

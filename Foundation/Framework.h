@@ -247,9 +247,6 @@ namespace Foundation
 
         std::auto_ptr <FrameworkQtApplication> engine_;
 
-        //! maximum number of ticks (milliseconds) per frame for frame limiter
-        uint max_ticks_;
-
         //! profiler
         Profiler profiler_;
 

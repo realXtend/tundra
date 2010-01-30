@@ -34,9 +34,13 @@ namespace Foundation
         public slots:
             void UpdateFrame();
 
+        protected:
+            bool eventFilter (QObject *obj, QEvent *event);
+            
         private:
             Framework   *framework_;
             QTimer      frame_update_timer_;
+            bool        app_activated_;
 
             std::auto_ptr <QGraphicsView> view_;
     };
