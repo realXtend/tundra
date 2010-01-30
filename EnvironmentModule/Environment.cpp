@@ -5,9 +5,9 @@
 #include "StableHeaders.h"
 #include "EnvironmentModule.h"
 #include "Environment.h"
-#include <EC_OgreEnvironment.h>
-#include <SceneManager.h>
-#include <NetworkEvents.h>
+#include "EC_OgreEnvironment.h"
+#include "SceneManager.h"
+#include "NetworkEvents.h"
 
 #include <QVector>
 

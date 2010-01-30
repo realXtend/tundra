@@ -5,9 +5,9 @@
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
 
-#include <ConsoleEvents.h>
-#include <ConsoleManager.h>
-#include <ConsoleModule.h>
+#include "ConsoleEvents.h"
+#include "ConsoleManager.h"
+#include "ConsoleModule.h"
 
 #include <QGraphicsView>
 #include <QString>

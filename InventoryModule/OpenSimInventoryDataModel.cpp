@@ -12,16 +12,16 @@
 #include "InventoryAsset.h"
 #include "J2kEncoder.h"
 
-#include <UiModule.h>
-#include <Inventory/InventorySkeleton.h>
-#include <Inventory/InventoryEvents.h>
-#include <AssetEvents.h>
-#include <ResourceInterface.h>
-#include <TextureServiceInterface.h>
-#include <TextureInterface.h>
-#include <AssetServiceInterface.h>
-#include <HttpRequest.h>
-#include <LLSDUtilities.h>
+#include "UiModule.h"
+#include "Inventory/InventorySkeleton.h"
+#include "Inventory/InventoryEvents.h"
+#include "AssetEvents.h"
+#include "ResourceInterface.h"
+#include "TextureServiceInterface.h"
+#include "TextureInterface.h"
+#include "AssetServiceInterface.h"
+#include "HttpRequest.h"
+#include "LLSDUtilities.h"
 
 #include <QDir>
 #include <QFile>

@@ -6,8 +6,8 @@
 #include "UiModuleApi.h"
 #include "AbstractLogin.h"
 
-#include <EventHandlers/LoginHandler.h>
-#include <NetworkEvents.h>
+#include "EventHandlers/LoginHandler.h"
+#include "NetworkEvents.h"
 
 #include "ui_WebLoginWidget.h"
 

@@ -13,9 +13,9 @@
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
 
-#include <Framework.h>
-#include <Inventory/InventoryEvents.h>
-#include <AssetEvents.h>
+#include "Framework.h"
+#include "Inventory/InventoryEvents.h"
+#include "AssetEvents.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>

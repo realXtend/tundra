@@ -10,12 +10,12 @@
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
 
-#include <Framework.h>
-#include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Framework.h"
+#include "UiModule.h"
+#include "UiProxyWidget.h"
+#include "UiWidgetProperties.h"
 
-#include <Inventory/InventoryEvents.h>
+#include "Inventory/InventoryEvents.h"
 
 #include <QUiLoader>
 #include <QFile>

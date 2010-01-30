@@ -12,8 +12,8 @@
 #include "MaterialWizard.h"
 #include "EditorManager.h"
 
-#include <Inventory/InventoryEvents.h>
-#include <UiModule.h>
+#include "Inventory/InventoryEvents.h"
+#include "UiModule.h"
 
 #include <QStringList>
 #include <QVector>
