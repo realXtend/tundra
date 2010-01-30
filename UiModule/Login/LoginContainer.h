@@ -45,6 +45,8 @@ namespace CoreUi
         void Connected();
         void QuitApplication();
 
+        void AdjustConstraintsToSceneRect(const QRectF &rect);
+
         void StartParameterLoginTaiga(QString &server_entry_point_url);
         void StartParameterLoginOpenSim(QString &first_and_last, QString &password, QString &server_address_with_port);
         void StartParameterLoginRealXtend(QString &username, QString &password, QString &authAddressWithPort, QString &server_address_with_port);
