@@ -80,6 +80,9 @@ namespace UiServices
         //! \return The main panel pointer.
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
 
+        //! Set the login proxy widget
+        void SetLoginProxyWidget(UiServices::UiProxyWidget *login_proxy_widget) { login_proxy_widget_ = login_proxy_widget; }
+
         //! Inits the ui for connected state
         void Connected();
 
@@ -111,7 +114,7 @@ namespace UiServices
         //! Proxy widgets
         UiProxyWidget *login_proxy_widget_;
         UiProxyWidget *main_panel_proxy_widget_;
-        UiProxyWidget *settings_widget_proxy_widget_;
+        UiProxyWidget *settings_proxy_widget_;
 
         //! Framework pointer.
         Foundation::Framework *framework_;

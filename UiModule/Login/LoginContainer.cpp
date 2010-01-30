@@ -63,6 +63,15 @@ namespace CoreUi
         emit QuitApplicationSignal();
     }
 
+    void LoginContainer::AdjustConstraintsToSceneRect(const QRectF &rect)
+    {
+        if (login_widget_)
+        {
+            login_widget_->setMinimumWidth((int)rect.width());
+            login_widget_->setMaximumWidth((int)rect.width());
+        }
+    }
+
     void LoginContainer::StartParameterLoginTaiga(QString &server_entry_point_url)
     {
         emit CommandParameterLogin(server_entry_point_url);
@@ -120,10 +129,19 @@ namespace CoreUi
             ui_.tabWidget->addTab(web_login_widget_, " Web Login"); // FIX stylesheets: tab clipping without spaces :(
 
             login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_widget_, UiServices::UiWidgetProperties("Login", UiServices::CoreLayoutWidget));
-            login_is_in_progress_ = false;
+            
+            if (login_proxy_widget_)
+            {
+                // Give UiModule this proxy for login/logout hide/show controlling
+                uiServices->GetSceneManager()->SetLoginProxyWidget(login_proxy_widget_);
+                // Keep all parts visible at any given time even if notify messages are given... kind of a hack but works
+                AdjustConstraintsToSceneRect (login_proxy_widget_->scene()->sceneRect());
+                connect(login_proxy_widget_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ), this, SLOT( AdjustConstraintsToSceneRect(const QRectF &) ));
+            }
 
             connect(ui_.hideButton, SIGNAL( clicked() ), this, SLOT( HideMessageFromUser() ));
             connect(this, SIGNAL( QuitApplicationSignal() ), os_login_handler, SLOT( Quit() ));
+            login_is_in_progress_ = false;
         }
     }
 
