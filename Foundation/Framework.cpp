@@ -280,60 +280,62 @@ namespace Foundation
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
-#ifdef PROFILING
-        // Reset profiling data. Should be outside of any profiling blocks.
-        GetProfiler().ThreadedReset();
-#endif
-        PROFILE(MainLoop);
+        {
+            PROFILE(FW_MainLoop);
 
-        double frametime = timer.elapsed();
+            double frametime = timer.elapsed();
+            
+            timer.restart();
+            // do synchronized update for modules
+            {
+                PROFILE(FW_UpdateModules);
+                module_manager_->UpdateModules(frametime);
+            }
+
+            // check framework's thread task manager for completed requests, send as events
+            {
+                PROFILE(FW_ProcessThreadTaskResults)
+                thread_task_manager_->SendResultEvents();
+            }
+
+            // process delayed events
+            {
+                PROFILE(FW_ProcessDelayedEvents);
+                event_manager_->ProcessDelayedEvents(frametime);
+            }
+
+            // if we have a renderer service, render now
+            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
+                        service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
+
+            if (renderer.expired() == false)
+            {
+                PROFILE(FW_Render);
+                renderer.lock()->Render();
+            }
+
+            //! \note Frame limiter disabled for now for inaccuracy of boost timer, hopefully more accurate solution can be made on Qt side
+            //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
+            //uint elapsed_time = static_cast<uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
+            //if (max_ticks_ > elapsed_time)
+            //{
+            //    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
+            //}
+        }
         
-        timer.restart();
-        // do synchronized update for modules
-        {
-            PROFILE(FW_UpdateModules);
-            module_manager_->UpdateModules(frametime);
-        }
-
-        // check framework's thread task manager for completed requests, send as events
-        {
-            PROFILE(FW_ProcessThreadTaskResults)
-            thread_task_manager_->SendResultEvents();
-        }
-
-        // process delayed events
-        {
-            PROFILE(FW_ProcessDelayedEvents);
-            event_manager_->ProcessDelayedEvents(frametime);
-        }
-
-        // if we have a renderer service, render now
-        boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
-                    service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-
-        if (renderer.expired() == false)
-        {
-            PROFILE(FW_Render);
-            renderer.lock()->Render();
-        }
-
-        //! \note Frame limiter disabled for now for inaccuracy of boost timer, hopefully more accurate solution can be made on Qt side
-        //! \note We limit frames for the whole main thread, not just for the renderer. This is the price to pay for being an application rather than a game.
-        //uint elapsed_time = static_cast<uint>(timer.elapsed() * 1000); // get time until this point, as we do not want to include time used in sleeping in previous frame
-        //if (max_ticks_ > elapsed_time)
-        //{
-        //    boost::this_thread::sleep(boost::posix_time::milliseconds(max_ticks_ - elapsed_time));
-        //}
+        RESETPROFILER
     }
 
     void Framework::Go()
     {
-        PROFILE(FW_Go);
-        PostInitialize();
-
-        engine_->Go();   
+        {
+            PROFILE(FW_PostInitialize);
+            PostInitialize();
+        }
+        
+        engine_->Go();
         exit_signal_ = true;
-                        
+
         UnloadModules();
     }
 
@@ -504,15 +506,11 @@ namespace Foundation
             else
             {
                 char str[512];
-                // If we've spent less than 1/10th of a millisecond, hide if we're showing just brief info.
-                if (!showUnused && timings_node->elapsed_ * 1000.0 < 0.1) 
-                    recurseToChildren = false;
-                else
-                {
-                    sprintf(str, "%s: called total: %lu, elapsed total: %s, called: %lu, elapsed: %s, avg: %s",
-                        timings_node->Name().c_str(), timings_node->num_called_total_,
-                        FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
-                        FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
+                
+                sprintf(str, "%s: called total: %lu, elapsed total: %s, called: %lu, elapsed: %s, avg: %s",
+                    timings_node->Name().c_str(), timings_node->num_called_total_,
+                    FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
+                    FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
 
     /*
                 timings += timings_node->Name();
@@ -523,12 +521,12 @@ namespace Foundation
                 timings += ", average " + ToString(average);
     */
 
-                    std::string timings;
-                    timings.append(level, ' ');
-                    timings += str;
+                std::string timings;
+                for (int i = 0; i < level; ++i)
+                    timings.append("&nbsp;");
+                timings += str;
 
-                    console->Print(timings);
-                }
+                console->Print(timings);
             }
         }
 

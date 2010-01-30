@@ -98,7 +98,7 @@ namespace OpenALAudio
             
             VorbisDecodeRequestPtr request = GetNextRequest<VorbisDecodeRequest>();
             if (request)
-            {                
+            {
                 {
                     PROFILE(VorbisDecoder_Decode);
                     PerformDecode(request);

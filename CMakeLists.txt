@@ -38,7 +38,7 @@ if (MSVC)
     add_definitions (-DUNICODE -D_UNICODE)
 endif (MSVC)
 
-# Generate profiling data. Currently disabled because of threadsafety issues.
+# Generate profiling data.
 if (MSVC)
    add_definitions (-DPROFILING)
 endif (MSVC)
