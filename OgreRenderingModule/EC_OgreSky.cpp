@@ -147,9 +147,9 @@ void EC_OgreSky::CreateSky(bool show)
     return true;
 }*/
 
-std::vector<std::string> EC_OgreSky::GetMaterialTextureNames()
+Core::StringVector EC_OgreSky::GetMaterialTextureNames()
 {
-    Ogre::StringVector texture_names;
+    StringVector texture_names;
     Ogre::MaterialPtr skyMaterial;
     switch(type_)
     {
@@ -167,13 +167,9 @@ std::vector<std::string> EC_OgreSky::GetMaterialTextureNames()
     if (!skyMaterial.isNull())
     {
         Ogre::TextureUnitState *texture_state = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-        if(texture_state)
-        {
+        if (texture_state)
             for(uint i = 0; i < texture_state->getNumFrames(); i++)
-            {
                 texture_names.push_back(texture_state->getFrameTextureName(i));
-            }
-        }
         //Ogre::String textures = texture_state->getTextureName();
         //texture_names = Ogre::StringConverter::parseStringVector(textures);
     }

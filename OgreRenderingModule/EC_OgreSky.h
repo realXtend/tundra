@@ -193,7 +193,7 @@ namespace OgreRenderer
         //bool SetSkyBox(const std::string& material_name, Real distance);
 
         /// @return material texture string array.
-        std::vector<std::string> GetMaterialTextureNames();
+        StringVector GetMaterialTextureNames();
 
         /// Sets the sky material.
         /// @param material_name Material name.
