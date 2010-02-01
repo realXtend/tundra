@@ -147,7 +147,7 @@ void EC_OgreSky::CreateSky(bool show)
     return true;
 }*/
 
-Core::StringVector EC_OgreSky::GetMaterialTextureNames()
+StringVector EC_OgreSky::GetMaterialTextureNames()
 {
     StringVector texture_names;
     Ogre::MaterialPtr skyMaterial;
