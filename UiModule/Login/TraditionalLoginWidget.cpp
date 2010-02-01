@@ -46,6 +46,9 @@ namespace CoreUi
     void TraditionalLoginWidget::InitWidget()
     {
         ui_.setupUi(this);
+        // Hide the demo container and label, show to user when the actual widget gets there
+        ui_.DemoWorldFrame->hide();
+        ui_.demoWorldLabel->hide();
 
         connect(ui_.radioButton_OpenSim, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
         connect(ui_.radioButton_realXtend, SIGNAL( clicked() ), this, SLOT( ShowSelectedMode() ));
