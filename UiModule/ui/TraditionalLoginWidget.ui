@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>616</width>
-    <height>354</height>
+    <width>944</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -379,6 +379,47 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="demoWorldLabel">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Demo worlds</string>
+              </property>
+              <property name="indent">
+               <number>7</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="DemoWorldFrame">
+              <property name="styleSheet">
+               <string notr="true">QFrame#DemoWorldFrame {
+	background-color: rgba(255,255,255,200);
+	border: 1px solid rgba(0,0,0,255);
+	border-radius: 10px;
+	margin-left: 7px;
+	margin-right: 15px;
+}</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <layout class="QVBoxLayout" name="demoWorldsContainer"/>
+               </item>
+              </layout>
+             </widget>
             </item>
            </layout>
           </item>
