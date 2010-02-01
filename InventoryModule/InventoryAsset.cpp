@@ -5,7 +5,6 @@
  *  @brief A class representing asset in inventory.
  */
 
-#include "
 #include "StableHeaders.h"
 #include "InventoryAsset.h"
 #include "InventoryFolder.h"
