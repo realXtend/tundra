@@ -393,7 +393,12 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                                             newParamValue[4], newParamValue[5], newParamValue[6], newParamValue[7],
                                             newParamValue[8], newParamValue[9], newParamValue[10], newParamValue[11],
                                             newParamValue[12], newParamValue[13], newParamValue[14], newParamValue[15]);
-                                        fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+                                    fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+#else
+                                    fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+#endif
                                     }
                                     else
                                     {
