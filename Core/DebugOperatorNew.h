@@ -1,4 +1,4 @@
-/** @file MemoryLeakCheck.h
+/** @file DebugOperatorNew.h
     For conditions of distribution and use, see copyright notice in license.txt
 
     @brief Debug functionality for tracking memory leaks on the Win32 platform.
