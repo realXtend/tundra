@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DemoLoginWidget</class>
+ <widget class="QWidget" name="DemoLoginWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>242</width>
+    <height>162</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DemoLoginWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton#fishWorldButton {
+	background-color: transparent;
+	border: 0px;
+	background-image: url('./data/ui/demoworld/kalanappi_act.png');
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+
+QPushButton#fishWorldButton::hover {
+		background-image: url('./data/ui/demoworld/kalanappi_hvr.png');
+}
+
+QPushButton#fishWorldButton::pressed {
+		background-image: url('./data/ui/demoworld/kalanappi_clk.png');
+}
+
+</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QPushButton" name="fishWorldButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

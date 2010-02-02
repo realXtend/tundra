@@ -3,27 +3,27 @@ import rexviewer as r
 import urllib2
 
 from PythonQt.QtGui import QGroupBox, QPushButton
+from PythonQt.QtUiTools import QUiLoader
+from PythonQt.QtCore import QFile
 
 ACCOUNTURI = "http://www.playsign.fi/engine/rex/anonuser"
 DEMOLOGIN = "http://world.realxtend.org:9000"
 
+UIFILELOCATION = "data/ui/demoworld/DemoLoginWidget.ui"
+
 class AnonLogin(Component):
     def __init__(self):
-        #r.logInfo("AnonLogin initing..")
         Component.__init__(self)
 
-        self.group = QGroupBox()
-        self.pushbut = QPushButton(self.group)
-        self.pushbut.text = "Anon login"
-        self.pushbut.connect('clicked()', self.dologin)
-
-        uism = r.getUiSceneManager()
-        uism.SetDemoLoginWidget(self.group)
-        #r.logInfo("AnonLogin showed?")
+        self.loader = QUiLoader()
+        self.uifile = QFile(UIFILELOCATION)
+        self.demologinwidget = self.loader.load(self.uifile)
+        self.demologinwidget.fishWorldButton.connect('clicked()', self.do_fistworld_login)
         
+        uism = r.getUiSceneManager()
+        uism.SetDemoLoginWidget(self.demologinwidget)      
 
-    def dologin(self):
-        #r.logInfo("Login :)")
+    def do_fistworld_login(self):
         urlfile = urllib2.urlopen(ACCOUNTURI)
         s = urlfile.read()
         s = s.strip()
@@ -38,6 +38,6 @@ class AnonLogin(Component):
             r.startLoginOpensim(user, pwd, DEMOLOGIN)
 
     def on_exit(self):
-        self.group.hide()
-        self.group = None
-        self.pushbut = None
+        self.demologinwidget = None
+        self.uifile = None
+        self.loader = None
