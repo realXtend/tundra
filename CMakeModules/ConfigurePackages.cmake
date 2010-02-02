@@ -340,7 +340,7 @@ endmacro (configure_ogg)
 
 macro (configure_vorbis)
     sagase_configure_package(VORBIS
-        NAMES vorbis libvorbis
+        NAMES vorbisfile vorbis libvorbis
         COMPONENTS vorbis libvorbis libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
         
