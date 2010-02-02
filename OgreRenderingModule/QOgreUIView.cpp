@@ -169,8 +169,13 @@ namespace OgreRenderer
 
     void QOgreUIView::keyPressEvent (QKeyEvent *e)
     {
+        //XXX temp hacks to have special keybinding works in the start screen (ether?) too
         if (e->key() == Qt::Key_F1 && scene()->focusItem())
             emit ConsoleToggleRequest();
+
+        else if (e->key() == Qt::Key_F11 && scene()->focusItem())
+            emit PythonRestartRequest();
+
         QGraphicsView::keyPressEvent(e);
     }
 

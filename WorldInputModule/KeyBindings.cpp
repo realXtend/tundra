@@ -15,10 +15,10 @@ namespace Input
         map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Tab),   
                     make_pair (Input::Events::SWITCH_CAMERA_STATE, 0)));
 
-		map.insert (make_pair (QKeySequence (Qt::Key_Period),           
+        map.insert (make_pair (QKeySequence (Qt::ALT + Qt::Key_Period),           
                     make_pair (Input::Events::PY_RUN_COMMAND, 0)));
 
-		map.insert (make_pair (QKeySequence (Qt::Key_Backspace),        
+		map.insert (make_pair (QKeySequence (Qt::Key_F11), //to have the same in login screen hack as well. Backspace),        
                     make_pair (Input::Events::PY_RESTART, 0)));
 
         map.insert (make_pair (QKeySequence (Qt::Key_F1),
