@@ -412,9 +412,10 @@ namespace OgreRenderer
             // Compositing back buffer
             QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
 
-#ifdef _DEBUG
+//fill is needed always, otherwise the mem can be uninitialized (on linux at least)?
+//#ifdef _DEBUG
             buffer.fill(Qt::transparent);
-#endif
+//#endif
 
             // Paint ui view into buffer
             QPainter painter(&buffer);
