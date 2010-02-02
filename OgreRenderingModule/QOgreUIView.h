@@ -50,7 +50,7 @@ namespace OgreRenderer
 
     signals:
         void ConsoleToggleRequest();
-
+        void PythonRestartRequest();
     };
 
 } 

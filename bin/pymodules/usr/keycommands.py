@@ -41,6 +41,10 @@ class KeyCommander(Component):
             r.PyRunCommand: self.run_commandpy
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
         }
+
+        #XXX a temp hack to have restart work in login screen / ether too
+        uiview = r.getUiView()
+        uiview.connect("PythonRestartRequest()", self.restart_modulemanager)
         
     def on_keydown(self, key, mods, callback):
         #print "on_keydown call -> ", key, mods, (key, mods), self.keymap.has_key((key, mods))

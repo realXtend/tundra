@@ -1474,6 +1474,11 @@ PyObject* GetUiSceneManager(PyObject *self)
     return PythonQt::self()->wrapQObject(ui_module->GetSceneManager());
 }
 
+PyObject* GetUIView(PyObject *self)
+{
+    return PythonQt::self()->wrapQObject(PythonScript::self()->GetFramework()->GetUIView());
+}
+
 PyObject* GetServerConnection(PyObject *self)
 {
 	RexLogic::RexLogicModule *rexlogic_;
@@ -1859,7 +1864,10 @@ static PyMethodDef EmbMethods[] = {
     //"gets the qt module"},
 
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
-    "gets the qt ui module"},
+    "Gets the Naali-Qt UI scene manager"},
+
+    {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
+    "Gets the Naali-Qt UI main view"},
 
     {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
     "Creates a new prim at the given points"},
