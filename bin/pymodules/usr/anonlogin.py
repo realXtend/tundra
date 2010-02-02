@@ -5,7 +5,7 @@ import urllib2
 from PythonQt.QtGui import QGroupBox, QPushButton
 
 ACCOUNTURI = "http://www.playsign.fi/engine/rex/anonuser"
-DEMOLOGIN = "http://127.0.0.1:9000"
+DEMOLOGIN = "http://world.realxtend.org:9000"
 
 class AnonLogin(Component):
     def __init__(self):
