@@ -93,8 +93,13 @@ namespace CoreUi
 
     void UiConsoleManager::PrintToConsole(QString text)
     {
-        StyleString(text);
-        console_ui_->ConsoleTextArea->appendHtml(text);
+        //we can't treat the incoming text as html without escaping because of this, so disabled that for now:
+        //09:04:24 [PythonScriptModule] <Registered[*:registered] [<ObjectEdit/* (queued=0, channels=37, handlers=37) [S]>, <Manager (queued=0, channels=44, handlers=45)[S]>] {}>
+        //becomes this, which is not good for debugging .. is not rare for object reprs to use this syntax: <Vector3>
+        //09:04:22 [PythonScriptModule] , ] {}>
+        QString html = Qt::escape(text);
+        StyleString(html);
+        console_ui_->ConsoleTextArea->appendHtml(html);
     }
 
     void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
