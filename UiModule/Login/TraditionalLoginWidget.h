@@ -23,6 +23,9 @@ namespace CoreUi
     public slots:
         void DoCommandParameterLogin(QMap<QString, QString> &login_information);
 
+        //! Semi hack to get stuff into the demo world frame
+        Ui::TraditionalLoginWidget GetUi() { return ui_; }
+
     private:
         void InitWidget();
         void SetLoginHandler(RexLogic::OpenSimLoginHandler *os_login_handler);
