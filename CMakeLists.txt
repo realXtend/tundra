@@ -27,11 +27,6 @@ SET (HYDRAX 0)
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
 SET (WINDOWS_APP 0)
-if (MSVC)
-    if (WINDOWS_APP)
-        add_definitions (-DWINDOWS_APP)
-    endif (WINDOWS_APP)
-endif (MSVC)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
