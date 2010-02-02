@@ -11,15 +11,16 @@ class AnonLogin(Component):
     def __init__(self):
         #r.logInfo("AnonLogin initing..")
         Component.__init__(self)
-        #uism = r.getUiSceneManager()
-        self.group = QGroupBox()
 
+        self.group = QGroupBox()
         self.pushbut = QPushButton(self.group)
         self.pushbut.text = "Anon login"
         self.pushbut.connect('clicked()', self.dologin)
 
-        self.group.show()
+        uism = r.getUiSceneManager()
+        uism.SetDemoLoginWidget(self.group)
         #r.logInfo("AnonLogin showed?")
+        
 
     def dologin(self):
         #r.logInfo("Login :)")

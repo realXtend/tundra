@@ -83,6 +83,10 @@ namespace UiServices
         //! Set the login proxy widget
         void SetLoginProxyWidget(UiServices::UiProxyWidget *login_proxy_widget) { login_proxy_widget_ = login_proxy_widget; }
 
+        //! Set the demo login widget from python module, dont call this anywhere else!
+        //! Semi-hack for 0.1 release to get easy accessible demo worlds login without authentication
+        void SetDemoLoginWidget(QWidget *widget);
+
         //! Inits the ui for connected state
         void Connected();
 

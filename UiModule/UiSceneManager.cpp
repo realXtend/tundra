@@ -8,6 +8,7 @@
 
 #include "MainPanel/MainPanel.h"
 #include "MainPanel/SettingsWidget.h"
+#include "Login/TraditionalLoginWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>
@@ -133,6 +134,24 @@ namespace UiServices
 
     /*************** Public Functions But Use With Caution ****************/
     /** As in don't touch if you are not 100% sure on what you are doing **/
+
+    void UiSceneManager::SetDemoLoginWidget(QWidget *widget)
+    {
+        if (!login_proxy_widget_)
+            return;
+        
+        QTabWidget *tab_widget = login_proxy_widget_->widget()->findChild<QTabWidget *>("tabWidget");
+        if (!tab_widget)
+            return;
+
+        CoreUi::TraditionalLoginWidget *traditional_login = dynamic_cast<CoreUi::TraditionalLoginWidget *>(tab_widget->widget(0));
+        if (traditional_login)
+        {
+            traditional_login->GetUi().demoWorldsContainer->addWidget(widget);
+            traditional_login->GetUi().DemoWorldFrame->show();
+            traditional_login->GetUi().demoWorldLabel->show();
+        }
+    }
 
     void UiSceneManager::Connected()
     {
