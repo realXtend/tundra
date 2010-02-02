@@ -390,7 +390,7 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
                </font>
               </property>
               <property name="text">
-               <string>Demo worlds</string>
+               <string>Login to Demo Worlds</string>
               </property>
               <property name="indent">
                <number>7</number>
@@ -398,28 +398,54 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="DemoWorldFrame">
-              <property name="styleSheet">
-               <string notr="true">QFrame#DemoWorldFrame {
-	background-color: rgba(255,255,255,200);
-	border: 1px solid rgba(0,0,0,255);
-	border-radius: 10px;
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="rightMargin">
+               <number>10</number>
+              </property>
+              <item>
+               <widget class="QFrame" name="DemoWorldFrame">
+                <property name="styleSheet">
+                 <string notr="true">QFrame#DemoWorldFrame {
+	background-color: transparent;
+	border: 0px;
+	padding: 0px;
+	margin: 0px;
 	margin-left: 7px;
-	margin-right: 15px;
 }</string>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <layout class="QVBoxLayout" name="demoWorldsContainer"/>
-               </item>
-              </layout>
-             </widget>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <layout class="QVBoxLayout" name="demoWorldsContainer"/>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
