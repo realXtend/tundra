@@ -119,7 +119,7 @@ modules = [
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout,
-    #usr.anonlogin.AnonLogin,
+    usr.anonlogin.AnonLogin,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
