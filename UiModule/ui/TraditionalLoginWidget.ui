@@ -390,7 +390,7 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
                </font>
               </property>
               <property name="text">
-               <string>Quick login to a demo worlds</string>
+               <string>Quick login to demo worlds</string>
               </property>
               <property name="indent">
                <number>7</number>
