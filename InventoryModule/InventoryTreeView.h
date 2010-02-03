@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryTreeView.h
- *  @brief Inventory tree view UI widget.
+ *  @file   InventoryTreeView.h
+ *  @brief  Inventory tree view UI widget.
  */
 
 #ifndef incl_InventoryModule_InventoryTreeView_h

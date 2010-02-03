@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryTreeView.cpp
- *  @brief Inventory tree view UI widget.
+ *  @file   InventoryTreeView.cpp
+ *  @brief  Inventory tree view UI widget.
  */
 
 #include "StableHeaders.h"
@@ -30,7 +30,7 @@ InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
     setSelectionBehavior(QAbstractItemView::SelectItems);
     setAnimated(true);
     setAllColumnsShowFocus(true);
-    setDefaultDropAction(Qt::MoveAction);
+    //setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
     setStyleSheet(
     "QTreeView::branch:has-siblings:!adjoins-item"
@@ -66,7 +66,8 @@ InventoryTreeView::~InventoryTreeView()
 
 void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
 {
-    // Do mousePressEvent so that the item gets selected first.
+    // Do mousePressEvent so that the right item gets selected before we show the menu
+    // (right-click doesn't do this automatically).
     QMouseEvent mouseEvent(QEvent::MouseButtonPress, event->pos(), event->globalPos(),
         Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
 
@@ -85,7 +86,7 @@ void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
             menu->addAction(action);
     }
 
-    if (menu->actions().size() > 1) // separator "action" is always enabled
+    if (menu->actions().size() > 1) // separator "action" is always enabled, hence the 1
         menu->popup(event->globalPos());
 }
 
@@ -116,14 +117,34 @@ void InventoryTreeView::dragMoveEvent(QDragMoveEvent *event)
             InventoryItemModel *itemModel = checked_static_cast<InventoryItemModel *>(model());
             assert(itemModel);
 
-            AbstractInventoryItem *item = itemModel->GetItem(selectionModel()->currentIndex());
-/*
-            if (item->IsLibraryItem())
+            AbstractInventoryItem *draggedItem = itemModel->GetItem(selectionModel()->currentIndex());
+            assert(draggedItem);
+            QModelIndex destIndex = indexAt(event->pos());
+
+            if (!destIndex.isValid())
+            {
+                event->ignore();
+                return;
+            }
+
+            AbstractInventoryItem *destItem = 0;
+
+            if (itemModel->GetItem(destIndex)->GetItemType() == AbstractInventoryItem::Type_Asset)
+                destItem = itemModel->GetItem(destIndex)->GetParent();
+            else
+                destItem = itemModel->GetItem(destIndex);
+
+            if (!destItem || destItem->IsLibraryItem() || (draggedItem->GetParent() == destItem))
+            {
+                event->ignore();
+                return;
+            }
+
+            if (draggedItem ->IsLibraryItem())
                 event->setDropAction(Qt::CopyAction);
             else
                 event->setDropAction(Qt::MoveAction);
-*/
-            event->setDropAction(Qt::MoveAction);
+
             event->accept();
         }
         else
@@ -161,6 +182,8 @@ void InventoryTreeView::dropEvent(QDropEvent *event)
 
         if (!filenames.isEmpty())
             m->UploadFiles(filenames, itemnames, 0);
+
+        event->acceptProposedAction();
     }
     else
         QTreeView::dropEvent(event);

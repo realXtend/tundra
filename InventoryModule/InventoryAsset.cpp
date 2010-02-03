@@ -16,7 +16,7 @@ namespace Inventory
 
 InventoryAsset::InventoryAsset(const QString &id, const QString &asset_reference,const QString &name, InventoryFolder *parent) :
     AbstractInventoryItem(id, name, parent), itemType_(AbstractInventoryItem::Type_Asset), assetReference_(asset_reference),
-    libraryAsset_(false)
+    libraryItem_(false)
 {
 }
 

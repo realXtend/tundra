@@ -62,10 +62,10 @@ namespace Inventory
         void SetEditable(const bool &editable) { editable_ = editable; }
 
         /// AbstractInventoryItem override
-        bool IsLibraryItem() const { return libraryAsset_; }
+        bool IsLibraryItem() const { return libraryItem_; }
 
         /// AbstractInventoryItem override
-        void SetIsLibraryItem(const bool &value) { libraryAsset_ = value; }
+        void SetIsLibraryItem(const bool &value) { libraryItem_ = value; }
 
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
@@ -120,7 +120,7 @@ namespace Inventory
         inventory_type_t inventoryType_;
 
         /// Library asset flag.
-        bool libraryAsset_;
+        bool libraryItem_;
     };
 }
 

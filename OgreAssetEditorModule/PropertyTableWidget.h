@@ -14,6 +14,8 @@ namespace OgreAssetEditor
 {
     class PropertyTableWidget : public QTableWidget
     {
+        Q_OBJECT
+
     public:
         /// Default constuctor.
         /// @param parent Parent widget.
@@ -29,18 +31,21 @@ namespace OgreAssetEditor
         ~PropertyTableWidget();
 
     protected:
-        Q_DISABLE_COPY(PropertyTableWidget);
+        /// QTableWidget override.
+        void dragMoveEvent(QDragMoveEvent *event);
 
         /// QTableWidget override.
         QStringList mimeTypes() const;
 
         /// QTableWidget override.
-        bool dropMimeData (int row, int column, const QMimeData *data, Qt::DropAction action);
+        bool dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action);
 
         /// QTableWidget override.
         Qt::DropActions supportedDropActions() const;
 
     private:
+        Q_DISABLE_COPY(PropertyTableWidget);
+
         /// Convenience function for initializing the widget.
         void InitWidget();
     };
