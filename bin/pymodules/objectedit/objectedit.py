@@ -43,6 +43,7 @@ else:
     lines = reload(lines)
     buttons = reload(buttons)
 
+#NOTE: these are not ported yet after using OIS was dropped, so don't work
 OIS_KEY_ALT = 256
 OIS_KEY_CTRL = 16
 OIS_KEY_M = 50
