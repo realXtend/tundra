@@ -35,7 +35,7 @@ F                      Toggle the fly mode
 SPACE                  Jump / fly upwards in fly mode
 C                      Crouch (doesn't work in ModRex server) / fly downwards in the fly mode
 MOUSE WHEEL            Move the camera closer / further off the avatar
-TAB                    Toggle the free-look mode
+CTRL+TAB               Toggle the free-look mode
 LEFT MOUSE             Touch object
 RIGHT MOUSE            Rotate avatar, or look around in mouse-look mode (see below)
 F1                     Toggle debug console
