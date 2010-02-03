@@ -390,17 +390,7 @@ QPushButton#pushButton_Connect, QPushButton#pushButton_Close {
                </font>
               </property>
               <property name="text">
-               <string>Quick login to a demo world:</string>
-              </property>
-              <property name="indent">
-               <number>7</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Hint: when get in the dome, click on a fish statue to get to swim as one.</string>
+               <string>Quick login to a demo worlds</string>
               </property>
               <property name="indent">
                <number>7</number>
