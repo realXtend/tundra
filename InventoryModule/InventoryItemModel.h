@@ -61,10 +61,13 @@ namespace Inventory
     };
 
     class AbstractInventoryDataModel;
+    class InventoryTreeView;
 
     class InventoryItemModel : public QAbstractItemModel
     {
         Q_OBJECT
+
+        friend class InventoryTreeView;
 
     public:
         /// Constructor.

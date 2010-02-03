@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InventoryWindow.h"
 #include "InventoryModule.h"
 #include "InventoryItemModel.h"
@@ -36,6 +37,7 @@
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QLabel>
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -58,7 +60,8 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionSeparator_(0),
 //    offset_(0),
     lastUsedPath_(QDir::currentPath()),
-    uploadCount_(0)
+    uploadCount_(0),
+    uploadWidget_(0)
 {
     InitInventoryWindow();
 }
@@ -80,6 +83,7 @@ InventoryWindow::~InventoryWindow()
     SAFE_DELETE(actionUpload_);
     SAFE_DELETE(actionDownload_);
     SAFE_DELETE(actionSeparator_);
+    SAFE_DELETE(uploadWidget_);
 
     QMutableMapIterator<QString, QMessageBox *> it(downloadDialogs_);
     while(it.hasNext())

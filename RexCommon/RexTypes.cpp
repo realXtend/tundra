@@ -199,7 +199,7 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
     if (file_ext == "xml")
         return RexAT_GenericAvatarXml;
 
-    return -1;
+    return RexAT_None;
 }
 
 std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type)

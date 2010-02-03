@@ -1,8 +1,15 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+/// @file J2kEncoder.cpp
+/// @brief J2k encoding functionality required by image uploads.
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "J2kEncoder.h"
 #include "InventoryModule.h"
 
 #include "openjpeg.h"
+#include "MemoryLeakCheck.h"
 
 namespace J2k
 {

@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InventoryItemModel.h"
 #include "InventoryModule.h"
 #include "AbstractInventoryDataModel.h"
@@ -23,6 +24,7 @@
 #include <QItemSelection>
 #include <QApplication>
 #include <QClipboard>
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -230,8 +232,6 @@ bool InventoryItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
         itemList << item;
     }
 
-    ///\todo Differentiation between move and copy actions.
-    // Qt::CopyAction Qt::MoveAction
     AbstractInventoryItem *newParent = GetItem(parent);
 
     foreach(AbstractInventoryItem *item, itemList)
@@ -280,6 +280,7 @@ QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &pa
 
 bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
+    std::cout << "InventoryItemModel::removeRows" << std::endl;
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
         return false;
@@ -306,6 +307,7 @@ bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &p
             itemsToBeMoved_.remove(idx);
         }
     }
+    //else if(!itemMoveFlag_ && itemsToBeMoved_.size() == 0)
     else
     {
         removeRow = true;

@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "OpenSimInventoryDataModel.h"
 #include "InventoryModule.h"
 #include "InventoryFolder.h"
@@ -31,6 +32,7 @@
 
 #include <OgreImage.h>
 #include <OgreException.h>
+//#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -302,7 +304,8 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         if (!itemOpen.overrideDefaultHandler)
         {
             emit DownloadStarted(asset_id.c_str(), asset->GetName());
-            openRequests_[qMakePair(tag, asset->GetID())] = asset->GetName();
+            QPair<request_tag_t, QString> key = qMakePair(tag, asset->GetAssetReference());
+            openRequests_[key] = asset->GetName();
         }
     }
 
@@ -409,7 +412,8 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
             request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag)
             {
-                downloadRequests_[qMakePair(tag, asset->GetAssetReference())] = fullFilename;
+                QPair<request_tag_t, QString> key = qMakePair(tag, asset->GetAssetReference());
+                downloadRequests_[key] = fullFilename;
                 emit DownloadStarted(id.c_str(), asset->GetName());
             }
         }
@@ -472,7 +476,8 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    AssetRequestMap::iterator i = downloadRequests_.find(qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_)));
+    QPair<request_tag_t, QString> key = qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_));
+    AssetRequestMap::iterator i = downloadRequests_.find(key);
     if (i == downloadRequests_.end())
         return;
 
@@ -532,7 +537,11 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    AssetRequestMap::iterator i = openRequests_.find(qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_)));
+    std::cout << "*" << tag << " " << assetReady->asset_id_ << "*" << std::endl;
+    std::cout << openRequests_.size() << std::endl;
+
+    QPair<request_tag_t, QString> key = qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_));
+    AssetRequestMap::iterator i = openRequests_.find(key);
     if (i == openRequests_.end())
         return;
 

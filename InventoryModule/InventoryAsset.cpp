@@ -6,8 +6,10 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InventoryAsset.h"
 #include "InventoryFolder.h"
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
