@@ -6,6 +6,8 @@
 #include "RexTypes.h"
 #include "RexUUID.h"
 
+#include <boost/algorithm/string.hpp>
+
 namespace RexTypes
 {
 
@@ -172,6 +174,7 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
 {
     size_t pos = filename.find_last_of('.');
     std::string file_ext = filename.substr(pos + 1);
+    boost::to_lower(file_ext);
 
     if (file_ext == "tga" ||
         file_ext == "bmp" ||
