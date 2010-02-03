@@ -12,6 +12,7 @@
 
 #include <QHeaderView>
 #include <QMimeData>
+#include <QDragEnterEvent>
 
 namespace OgreAssetEditor
 {
@@ -28,6 +29,25 @@ PropertyTableWidget::PropertyTableWidget(int rows, int columns, QWidget *parent)
 
 PropertyTableWidget::~PropertyTableWidget()
 {
+}
+
+void PropertyTableWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
+    {
+        QModelIndex index  = indexAt(event->pos());
+        if (index.isValid())
+        {
+            QTableWidgetItem * item = itemFromIndex(index);
+            if (item && item->flags() & Qt::ItemIsDropEnabled)
+            {
+                event->accept();
+                return;
+            }
+        }
+    }
+
+    event->ignore();
 }
 
 QStringList PropertyTableWidget::mimeTypes() const
@@ -75,10 +95,7 @@ bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *dat
         return false;
 
     QTableWidgetItem *item = this->item(row, column);
-    if (!item)
-        return false;
-
-    if (item->flags() & Qt::ItemIsDropEnabled)
+    if (item && item->flags() & Qt::ItemIsDropEnabled)
         item->setData(Qt::DisplayRole, asset_id);
     else
         return false;
@@ -108,6 +125,7 @@ void PropertyTableWidget::InitWidget()
     horizontalHeader()->setStretchLastSection(true);
     horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setMouseTracking(true);
 }
 
 }

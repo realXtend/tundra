@@ -537,9 +537,6 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     request_tag_t tag = assetReady->tag_;
     asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    std::cout << "*" << tag << " " << assetReady->asset_id_ << "*" << std::endl;
-    std::cout << openRequests_.size() << std::endl;
-
     QPair<request_tag_t, QString> key = qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_));
     AssetRequestMap::iterator i = openRequests_.find(key);
     if (i == openRequests_.end())

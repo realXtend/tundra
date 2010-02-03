@@ -17,7 +17,7 @@ namespace Inventory
 
 InventoryFolder::InventoryFolder(const QString &id, const QString &name, InventoryFolder *parent, const bool &editable) :
     AbstractInventoryItem(id, name, parent, editable), itemType_(AbstractInventoryItem::Type_Folder), dirty_(false),
-    libraryAsset_(false)
+    libraryItem_(false)
 {
 }
 
