@@ -4,6 +4,7 @@ realXtend Naali 0.1
 System requirements
 -------------------
 -GPU with Shader Model 3.0 support
+-(Windows only) Updated DirectX End-User Runtime from http://www.microsoft.com/directx
 
 
 Getting Started
