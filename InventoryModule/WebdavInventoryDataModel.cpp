@@ -6,10 +6,12 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "WebdavInventoryDataModel.h"
 #include "InventoryAsset.h"
 #include "InventoryModule.h"
 #include "RexUUID.h"
+#include "MemoryLeakCheck.h"
 
 #include <QDir>
 

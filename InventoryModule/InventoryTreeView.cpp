@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InventoryTreeView.h"
 #include "InventoryWindow.h"
 #include "InventoryItemModel.h"
@@ -15,6 +16,7 @@
 #include <QDragEnterEvent>
 #include <QUrl>
 #include <QMenu>
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -111,6 +113,16 @@ void InventoryTreeView::dragMoveEvent(QDragMoveEvent *event)
     {
         if (event->source() == this)
         {
+            InventoryItemModel *itemModel = checked_static_cast<InventoryItemModel *>(model());
+            assert(itemModel);
+
+            AbstractInventoryItem *item = itemModel->GetItem(selectionModel()->currentIndex());
+/*
+            if (item->IsLibraryItem())
+                event->setDropAction(Qt::CopyAction);
+            else
+                event->setDropAction(Qt::MoveAction);
+*/
             event->setDropAction(Qt::MoveAction);
             event->accept();
         }

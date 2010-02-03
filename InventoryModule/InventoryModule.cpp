@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QVector>
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
