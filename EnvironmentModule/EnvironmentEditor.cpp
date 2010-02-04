@@ -1842,10 +1842,10 @@ namespace Environment
                 //uint size = tex->GetWidth() * tex->GetHeight() * tex->GetComponents();
                 //uint img_components = tex->GetComponents();
           
-                QImage img(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_RGB888);
+                //QImage img(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_RGB888);
 
-                if ( img.isNull() )
-                    img = ConvertToQImage(*tex);
+                //if ( img.isNull() )
+                QImage img = ConvertToQImage(*tex);
                     
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
                 if(texture_label && !img.isNull())
