@@ -54,6 +54,8 @@ namespace Environment
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
         terrain_texture_requests_.resize(cNumberOfTerrainTextures);
+        for (unsigned i = 0; i < cNumberOfTerrainTextures; ++i)
+            terrain_texture_requests_[i] = 0;
 
         InitEditorWindow();
     }
