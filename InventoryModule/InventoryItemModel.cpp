@@ -280,7 +280,6 @@ QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &pa
 
 bool InventoryItemModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-    std::cout << "InventoryItemModel::removeRows" << std::endl;
     InventoryFolder *parentFolder = dynamic_cast<InventoryFolder *>(GetItem(parent));
     if (!parentFolder)
         return false;
