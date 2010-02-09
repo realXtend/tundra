@@ -328,7 +328,7 @@ void InventoryWindow::UploadStarted(const QString &filename)
     if (uploadCount_ <= max_value)
     {
         progressBar->setValue(uploadCount_);
-        labelFileNumber->setText(QString("%1 (%2/%3)").arg(filename, uploadCount_, max_value));
+        labelFileNumber->setText(QString("%1 (%2/%3)").arg(filename).arg(uploadCount_).arg(max_value));
     }
 }
 
