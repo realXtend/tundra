@@ -27,7 +27,7 @@ namespace OgreRenderer
             return;
         }
         
-        mesh_entity_ = mesh_entity;
+        mesh_entity_ = mesh_entity;     
     }
     
     void EC_OgreAnimationController::Update(f64 frametime)
@@ -130,6 +130,70 @@ namespace OgreRenderer
         {
             animations_.erase(erase_list[i]);
         }
+        
+        // High-priority/low-priority blending code
+        if (entity->hasSkeleton())
+        {
+            Ogre::SkeletonInstance* skel = entity->getSkeleton();
+            if (!skel)
+                return;
+                
+		    if (highpriority_mask_.size() != skel->getNumBones())
+			    highpriority_mask_.resize(skel->getNumBones());
+		    if (lowpriority_mask_.size() != skel->getNumBones())
+			    lowpriority_mask_.resize(skel->getNumBones());
+
+            for (uint i = 0; i < skel->getNumBones(); ++i)
+            {
+                highpriority_mask_[i] = 1.0;
+                lowpriority_mask_[i] = 1.0;
+            }
+
+		    // Loop through all high priority animations & update the lowpriority-blendmask based on their active tracks
+            for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+	        {
+                Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
+                if (!animstate)
+                    continue;	        
+                // Create blend mask if animstate doesn't have it yet
+                if (!animstate->hasBlendMask())
+                    animstate->createBlendMask(skel->getNumBones());
+
+                if ((i->second.high_priority_) && (i->second.weight_ > 0.0))
+                {
+				    // High-priority animations get the full weight blend mask
+                    animstate->_setBlendMaskData(&highpriority_mask_[0]);
+                    if (!skel->hasAnimation(animstate->getAnimationName()))
+                        continue;
+                        
+                    Ogre::Animation* anim = skel->getAnimation(animstate->getAnimationName());
+                    
+                    Ogre::Animation::NodeTrackIterator it = anim->getNodeTrackIterator();
+                    while (it.hasMoreElements())
+                    {
+					    Ogre::NodeAnimationTrack* track = it.getNext();
+					    unsigned id = track->getHandle();
+					    // For each active track, reduce corresponding bone weight in lowpriority-blendmask 
+					    // by this animation's weight
+					    if (id < lowpriority_mask_.size())
+					    {
+						    lowpriority_mask_[id] -= i->second.weight_;
+						    if (lowpriority_mask_[id] < 0.0) lowpriority_mask_[id] = 0.0;
+					    }
+			        }
+                }
+            }
+
+		    // Now set the calculated blendmask on low-priority animations
+            for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+	        {
+                Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
+                if (!animstate)
+                    continue;	
+                if (i->second.high_priority_ == false)	        
+                    animstate->_setBlendMaskData(&lowpriority_mask_[0]);			    			   
+		    }
+        }
     }
     
     Ogre::Entity* EC_OgreAnimationController::GetEntity()
@@ -171,8 +235,7 @@ namespace OgreRenderer
             return 0;
     }
     
-    //! Enable an exclusive animation (fades out all other animations of same priority with fadeOut parameter)
-    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein, Real fadeout)
+    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein, Real fadeout, bool high_priority)
     {
         // Disable all other active animations
         AnimationMap::iterator i = animations_.begin();
@@ -188,11 +251,10 @@ namespace OgreRenderer
         }
 
         // Then enable this
-        return EnableAnimation(name, looped, fadein);
+        return EnableAnimation(name, looped, fadein, high_priority);
     }
 
-    //! Enable an animation. Return false if the animation doesn't exist
-    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Real fadein)
+    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Real fadein, bool high_priority)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -208,6 +270,7 @@ namespace OgreRenderer
             i->second.phase_ = PHASE_FADEIN;
             i->second.num_repeats_ = (looped ? 0: 1);
             i->second.fade_period_ = fadein;
+            i->second.high_priority_ = high_priority;
             return true;
         }
         
@@ -218,15 +281,13 @@ namespace OgreRenderer
         newanim.phase_ = PHASE_FADEIN;
         newanim.num_repeats_ = (looped ? 0: 1); // if looped, repeat 0 times (loop indefinetly) otherwise repeat one time.
         newanim.fade_period_ = fadein;
+        newanim.high_priority_ = high_priority;
 
         animations_[name] = newanim;
 
         return true;
     }
 
-    //! Check whether non-looping animation has finished
-    /*! If looping, returns always false
-     */
     bool EC_OgreAnimationController::HasAnimationFinished(const std::string& name)
     {
         Ogre::Entity* entity = GetEntity();
@@ -248,7 +309,6 @@ namespace OgreRenderer
         return true;
     }
 
-    //! Check whether animation is active
     bool EC_OgreAnimationController::IsAnimationActive(const std::string& name, bool check_fadeout)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -268,7 +328,6 @@ namespace OgreRenderer
         return false;
     }
 
-    //! Set autostop on animation
     bool EC_OgreAnimationController::SetAnimationAutoStop(const std::string& name, bool enable)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -281,8 +340,7 @@ namespace OgreRenderer
         // Animation not active
         return false;
     }
-
-    //! Set number of loops on animation
+    
     bool EC_OgreAnimationController::SetAnimationNumLoops(const std::string& name, uint repeats)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -295,7 +353,6 @@ namespace OgreRenderer
         return false;
     }
 
-    //! Disable an animation. Return false if the animation doesn't exist or isn't active
     bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Real fadeout)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -309,7 +366,6 @@ namespace OgreRenderer
         return false;
     }
 
-    //! Disable all animations. 
     void EC_OgreAnimationController::DisableAllAnimations(Real fadeout)
     {
         AnimationMap::iterator i = animations_.begin();
@@ -334,7 +390,6 @@ namespace OgreRenderer
         }
     }
 
-    //! Change speedfactor of an active animation. Return false if the animation doesn't exist or isn't active
     bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Real speedfactor)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -347,7 +402,6 @@ namespace OgreRenderer
         return false;
     }
 
-    //! Change weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
     bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Real weight)
     {
         AnimationMap::iterator i = animations_.find(name);
@@ -360,7 +414,18 @@ namespace OgreRenderer
         return false;
     }
 
-    //! Change time position of an active animation. Return false if the animation doesn't exist or isn't active
+    bool EC_OgreAnimationController::SetAnimationPriority(const std::string& name, bool high_priority)
+    {
+        AnimationMap::iterator i = animations_.find(name);
+        if (i != animations_.end())
+        {
+            i->second.high_priority_ = high_priority;
+            return true;
+        }
+        // Animation not active
+        return false;
+    }    
+
     bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Real newPosition)
     {
         Ogre::Entity* entity = GetEntity();

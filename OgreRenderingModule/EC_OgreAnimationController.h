@@ -10,8 +10,9 @@
 namespace Ogre
 {
     class Entity;
-    class AnimationState;
 }
+
+#include <OgreAnimationState.h>
 
 namespace OgreRenderer
 {
@@ -56,7 +57,10 @@ namespace OgreRenderer
             //! loop animation through num_repeats times, or loop if zero
             uint num_repeats_;
 
-            //! current phase
+            //! priority. high priority will reduce the weight of low priority animations, if exists on the same bone tracks
+            bool high_priority_;
+            
+            //! current phase            
             AnimationPhase phase_;
 
             Animation() :
@@ -66,6 +70,7 @@ namespace OgreRenderer
                 weight_factor_(1.0),
                 speed_factor_(1.0),
                 num_repeats_(0),
+                high_priority_(false),
                 phase_(PHASE_STOP)
             {
             }
@@ -85,10 +90,10 @@ namespace OgreRenderer
         void Update(f64 frametime);
         
         //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
-        bool EnableAnimation(const std::string& name, bool looped = true, Real fadein = 0.0f);
+        bool EnableAnimation(const std::string& name, bool looped = true, Real fadein = 0.0f, bool high_priority = false);
 	
         //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
-        bool EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein = 0.0f, Real fadeout = 0.0f);
+        bool EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein = 0.0f, Real fadeout = 0.0f, bool high_priority = false);
 
         //! Checks whether non-looping animation has finished
         /*! If looping, returns always false
@@ -99,7 +104,7 @@ namespace OgreRenderer
         //! \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
         bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
 
-       //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
+        //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
         bool DisableAnimation(const std::string& name, Real fadeout = 0.0f);
 
         //! Disables all animations with the same fadeout period
@@ -113,6 +118,9 @@ namespace OgreRenderer
 
         //! Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
         bool SetAnimationWeight(const std::string& name, Real weight);
+        
+        //! Changes animation priority. Can lead to fun visual effects, but provided for completeness
+        bool SetAnimationPriority(const std::string& name, bool high_priority);
 
         //! Sets time position of an active animation.
         bool SetAnimationTimePosition(const std::string& name, Real new_position);
@@ -153,6 +161,12 @@ namespace OgreRenderer
         
         //! Current animations
         AnimationMap animations_;
+        
+    	//! Bone blend mask of high-priority animations
+    	Ogre::AnimationState::BoneBlendMask highpriority_mask_;
+
+    	//! Bone blend mask of low-priority animations
+    	Ogre::AnimationState::BoneBlendMask lowpriority_mask_;        
     };
 }
 

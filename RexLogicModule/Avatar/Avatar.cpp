@@ -339,6 +339,49 @@ namespace RexLogic
         return false;
     }
     
+    bool Avatar::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
+    {        
+        StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
+        
+        if (params.size() < 7)
+            return false;
+            
+        // Convert any , to .
+        for (uint i = 0; i < params.size(); ++i)
+            ReplaceCharInplace(params[i], ',', '.');  
+        
+        RexUUID avatarid(params[0]);
+        Real rate = ParseString<Real>(params[2], 1.0f);
+        Real fadein = ParseString<Real>(params[3], 0.0f);
+        Real fadeout = ParseString<Real>(params[4], 0.0f);
+        int repeats = ParseString<int>(params[5], 1);
+        bool stopflag = ParseBool(params[6]);
+        
+        if (repeats < 0) 
+            repeats = 0;                       
+        
+        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        if (!entity)
+            return false;       
+        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get(); 
+        if (!anim)
+            return false;
+            
+        if (!stopflag)
+        {
+            anim->EnableAnimation(params[1], false, fadein, true);
+            anim->SetAnimationSpeed(params[1], rate);
+            anim->SetAnimationAutoStop(params[1], true);
+            anim->SetAnimationNumLoops(params[1], repeats);
+        }
+        else
+        {
+            anim->DisableAnimation(params[1], fadeout);
+        }
+        
+        return false;
+    }    
+    
     bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
