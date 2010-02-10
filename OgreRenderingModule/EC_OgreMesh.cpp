@@ -177,6 +177,14 @@ namespace OgreRenderer
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
             entity_->setUserAny(Ogre::Any(GetParentEntity()));
+            
+            if (entity_->hasSkeleton())
+            {
+                Ogre::SkeletonInstance* skel = entity_->getSkeleton();    
+                // Enable cumulative mode on skeletal animations
+                if (skel)	
+                    skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
+	        }                
         }
         catch (Ogre::Exception& e)
         {
@@ -232,6 +240,14 @@ namespace OgreRenderer
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
             entity_->setUserAny(Ogre::Any(GetParentEntity()));
+            
+            if (entity_->hasSkeleton())
+            {
+                Ogre::SkeletonInstance* skel = entity_->getSkeleton();    
+                // Enable cumulative mode on skeletal animations
+                if (skel)	
+                    skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
+	        }                
         }
         catch (Ogre::Exception& e)
         {

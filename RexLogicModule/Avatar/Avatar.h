@@ -31,6 +31,7 @@ namespace RexLogic
         bool HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data);
 
         bool HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data);
 
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
