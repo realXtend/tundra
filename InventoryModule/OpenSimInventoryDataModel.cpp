@@ -740,7 +740,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
 
 bool OpenSimInventoryDataModel::UploadFile(
     const RexTypes::asset_type_t &asset_type,
-    std::string &filename,
+    std::string filename,
     const std::string &name,
     const std::string &description,
     const RexUUID &folder_id)
