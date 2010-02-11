@@ -37,10 +37,6 @@ namespace Ether
             QMap<QUuid, Data::AvatarInfo *> map;
             QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
 
-            if (avatar_settings.childGroups().count() > 0)
-                qDebug() << "Reading avatars from file...";
-            else
-                qDebug() << "Could not find any stored avatars from local file";
             foreach (QString avatar_id, avatar_settings.childGroups())
             {
                 QUuid id(avatar_id);
@@ -91,7 +87,6 @@ namespace Ether
                     }
                 }
             }               
-            qDebug() << "-> Found " << map.count() << " avatars" << endl;
             return map;
         }
 
@@ -210,10 +205,6 @@ namespace Ether
             QMap<QUuid, Data::WorldInfo *> map;
             QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
 
-            if (world_settings.childGroups().count() > 0)
-                qDebug() << "Reading worlds from file";
-            else
-                qDebug() << "Could not find any stored worlds from local file";
             foreach (QString world_id, world_settings.childGroups())
             {
                 QUuid id(world_id);
@@ -252,7 +243,6 @@ namespace Ether
                     }
                 }
             }
-            qDebug() << "-> Found " << map.count() << " worlds" << endl;
             return map;
         }
 

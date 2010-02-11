@@ -13,7 +13,6 @@ namespace Ether
                                                    QRectF card_size, int top_items, int bottom_items)
             : QObject(parent),
               scene_(scene),
-              ether_scene_visibility_(true),
               active_menu_(0),
               top_menu_(menus.first),
               bottom_menu_(menus.second),
@@ -95,9 +94,6 @@ namespace Ether
 
         void EtherSceneController::SceneRectChanged(const QRectF &new_rect)
         {
-            if (!ether_scene_visibility_)
-                return;
-
             // New rects to item menus
             QRectF top_rect, bottom_rect;
             if (top_menu_)

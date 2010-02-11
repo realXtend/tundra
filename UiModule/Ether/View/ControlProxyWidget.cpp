@@ -42,20 +42,21 @@ namespace Ether
             {
                 QPointF offset_pos;
                 if (direction_ == RightToLeft)
-                    offset_pos = QPointF(-5,0);
+                    offset_pos = QPointF(0,0);
                 else
-                    offset_pos = QPointF(5,0);
-                shadow_effect->setBlurRadius(10);
+                    offset_pos = QPointF(0,0);
+                shadow_effect->setBlurRadius(30);
                 shadow_effect->setOffset(offset_pos);
-                shadow_effect->setColor(QColor(255,255,255,100));
+                shadow_effect->setColor(QColor(255,255,255,255));
             }
             else
             {
                 shadow_effect->setBlurRadius(5);
                 shadow_effect->setOffset(0,3);
                 shadow_effect->setColor(Qt::black);
+                setGraphicsEffect(shadow_effect);
             }
-            setGraphicsEffect(shadow_effect);
+            //setGraphicsEffect(shadow_effect);
         }
 
         void ControlProxyWidget::InitCardWidgets()
@@ -130,15 +131,15 @@ namespace Ether
 
         void ControlProxyWidget::InitActionWidgets()
         {
-            QSize button_size(61,249);
-            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px;";
+            QSize button_size(100,80);
+            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px; color: white;";
 
             if (direction_ == RightToLeft)
             {
                 // Buttons
-                QPushButton *connect_button = new QPushButton(parent_);
-                //connect_button->set
-                connect_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_right_2.png'); }").arg(button_style));
+                QPushButton *connect_button = new QPushButton(text_.toUpper(), parent_);
+                connect_button->setFont(QFont("Narkisim", 12));
+                connect_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
 //                                                      "QPushButton::hover { background-image: url('./data/ui/images/ether/control_right_hover.png'); }"
 //                                                      "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_right_pressed.png'); }").arg(button_style));
                 connect_button->setFlat(true);
@@ -149,8 +150,9 @@ namespace Ether
             else if (direction_ == LeftToRight)
             {
 
-                QPushButton *exit_button = new QPushButton(parent_);
-                exit_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_left_2.png'); }").arg(button_style));
+                QPushButton *exit_button = new QPushButton(text_.toUpper(), parent_);
+                exit_button->setFont(QFont("Narkisim", 12));
+                exit_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
 //                                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/control_left_hover.png'); }"
 //                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_left_pressed.png'); }").arg(button_style));
                 exit_button->setFlat(true);
@@ -158,7 +160,7 @@ namespace Ether
 
                 widget_map_[exit_button] = LeftCenter;
             }
-
+            
             setGeometry(QRectF(QPointF(0,0), button_size));
 
             foreach(QWidget *w, widget_map_.keys())

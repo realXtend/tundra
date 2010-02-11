@@ -36,6 +36,7 @@ namespace OgreRenderer
         setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
         setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+        setLineWidth(0);
 
         // Get rid of extra white layers under widgets
         // Qt doesn't respect the above request to not fill background
@@ -177,11 +178,11 @@ namespace OgreRenderer
         if (view_) 
         {
             view_->ResizeWindow(width(), height());
-            view_->ResizeOverlay(viewport()->width(), viewport()->height());
+            view_->ResizeOverlay(width(), height());
         }
         
         if (scene())
-            scene()->setSceneRect(viewport()->rect());          
+            scene()->setSceneRect(rect());          
     }
 
     void QOgreUIView::SceneChange()
