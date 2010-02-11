@@ -1031,8 +1031,8 @@ void WorldStream::SendUpdateInventoryFolderPacket(
 }
 
 void WorldStream::SendUpdateInventoryItemPacket(
-    const RexUUID item_id,
-    const RexUUID folder_id,
+    const RexUUID &item_id,
+    const RexUUID &folder_id,
     const RexTypes::asset_type_t &asset_type,
     const RexTypes::inventory_type_t &inventory_type,
     const std::string &name,
@@ -1057,9 +1057,9 @@ void WorldStream::SendUpdateInventoryItemPacket(
     m->AddUUID(item_id);
     m->AddUUID(folder_id);
     m->AddU32(0);                       // CallbackID
-    m->AddUUID(RexUUID());    // CreatorID
-    m->AddUUID(RexUUID());    // OwnerID
-    m->AddUUID(RexUUID());    // GroupID
+    m->AddUUID(RexUUID());              // CreatorID
+    m->AddUUID(RexUUID());              // OwnerID
+    m->AddUUID(RexUUID());              // GroupID
 
     // Permissions-related:
     m->AddU32(0);                       //BaseMask

@@ -310,8 +310,8 @@ namespace ProtocolUtilities
         /// @param name Name.
         /// @param description Description.
         void SendUpdateInventoryItemPacket(
-            const RexUUID item_id,
-            const RexUUID folder_id,
+            const RexUUID &item_id,
+            const RexUUID &folder_id,
             const RexTypes::asset_type_t &asset_type,
             const RexTypes::inventory_type_t &inventory_type,
             const std::string &name,
