@@ -23,9 +23,9 @@ namespace PythonScript
         {
             Py_Initialize();
             RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent
-            RunString("import sys; sys.path.append('pymodules\\DLLs');"); // pyd dll directory
-            RunString("import sys; sys.path.append('pymodules\\lib');"); // libraries directory
-            RunString("import sys; sys.path.append('pymodules\\python26_Lib.zip');"); // python modules from folder python26/Lib 
+            RunString("import sys; sys.path.append('pymodules/DLLs');"); // pyd dll directory
+            RunString("import sys; sys.path.append('pymodules/lib');"); // libraries directory
+            RunString("import sys; sys.path.append('pymodules/python26_Lib.zip');"); // python modules from folder python26/Lib 
         }
         else
         {
