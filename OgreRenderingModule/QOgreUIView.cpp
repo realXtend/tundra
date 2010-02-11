@@ -165,9 +165,7 @@ namespace OgreRenderer
         else if (e->key() == Qt::Key_F11 && scene()->focusItem())
             emit PythonRestartRequest();
 
-        else if (e->key() == Qt::Key_Escape && scene()->focusItem())
-            emit EtherToggleRequest();
-
+        emit ViewKeyPressed(e);
         QGraphicsView::keyPressEvent(e);
     }
 

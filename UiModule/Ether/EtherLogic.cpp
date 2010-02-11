@@ -4,7 +4,7 @@
 #include "EtherLogic.h"
 
 #include "EtherSceneController.h"
-#include "EtherStateMachine.h"
+//#include "EtherStateMachine.h"
 
 #include "Data/RealXtendAvatar.h"
 #include "Data/OpenSimAvatar.h"
@@ -42,14 +42,13 @@ namespace Ether
             SetVisibleItems();
 
             // Create ether scene, store current scene
-            View::EtherScene *scene = new View::EtherScene(this, QRectF(0,0,100,100));
+            scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
             //QBrush bg_brush(QPixmap("./data/ui/images/ether/tile.jpg"));
-
             //scene->setBackgroundBrush(bg_brush);
 
-            previous_scene_ = view_->scene();
-            view_->setScene(scene);
-            connect(scene, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            //previous_scene_ = view_->scene();
+            //view_->setScene(scene);
+            //connect(scene, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
 
             // Create menus
             QPair<View::EllipseMenu*, View::EllipseMenu*> menus;
@@ -57,14 +56,14 @@ namespace Ether
             menus.second = new View::EllipseMenu(View::EllipseMenu::OPENS_DOWN);
 
             // Create state machine
-            state_machine_ = new EtherStateMachine(this, scene, menus);
-            connect(state_machine_, SIGNAL( EtherSceneOutAnimationFinised() ), SLOT( ToggleEtherScene() ));
-            connect(view_, SIGNAL( EtherToggleRequest() ), SLOT( ToggleEtherScene() ));
+            //state_machine_ = new EtherStateMachine(this, scene, menus);
+            //connect(state_machine_, SIGNAL( EtherSceneOutAnimationFinised() ), SLOT( ToggleEtherScene() ));
+            //connect(view_, SIGNAL( EtherToggleRequest() ), SLOT( ToggleEtherScene() ));
             
             // Create scene controller
-            scene_controller_ = new EtherSceneController(this, scene, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
+            scene_controller_ = new EtherSceneController(this, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
 
-            ToggleEtherScene();
+            //ToggleEtherScene();
         }
 
         void EtherLogic::Start()

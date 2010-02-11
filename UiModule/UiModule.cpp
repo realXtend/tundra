@@ -5,10 +5,12 @@
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
+#include "UiStateMachine.h"
 
 // Private managers
 #include "Console/UiConsoleManager.h"
 #include "Ether/EtherLogic.h"
+#include "Ether/View/EtherScene.h"
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
@@ -28,6 +30,7 @@ namespace UiServices
 
     UiModule::~UiModule()
     {
+        SAFE_DELETE(ui_state_machine_);
         SAFE_DELETE(ui_scene_manager_);
         SAFE_DELETE(ui_notification_manager_);
     }
@@ -51,14 +54,21 @@ namespace UiServices
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
         {
-            // These use the default scene
             LogDebug("Acquired Ogre QGraphicsView shared pointer from framework");
+
+            ui_state_machine_ = new UiStateMachine(0, ui_view_);
+            ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
+            LogDebug("State Machine STARTED");
+
             ui_scene_manager_ = new UiSceneManager(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
+
             ui_notification_manager_ = new UiNotificationManager(GetFramework(), ui_view_);
             LogDebug("Notification Manager service READY");
+
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
             LogDebug("Console UI READY");
+
             LogInfo(Name() + " initialized.");
         }
         else
@@ -70,9 +80,8 @@ namespace UiServices
         SubscribeToEventCategories();
         ui_console_manager_->SendInitializationReadyEvent();
 
-        // This will store previous scene and load its own to view
         ether_logic_ = new Ether::Logic::EtherLogic(ui_view_);
-        LogDebug("Ether Logic READY");
+        ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
         LogDebug("Ether Logic STARTED");
     }

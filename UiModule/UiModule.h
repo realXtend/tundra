@@ -36,6 +36,7 @@ namespace UiServices
 {
     class UiProxyWidget;
     class UiWidgetProperties;
+    class UiStateMachine;
 
     /** UiModule hadles the shown ui scene, creates 
       * core modules ui and provides ui services to modules 
@@ -96,6 +97,8 @@ namespace UiServices
 
         //! UiNotificationManager pointer
         UiNotificationManager *ui_notification_manager_;
+
+        UiStateMachine *ui_state_machine_;
 
         //! Ether Logic
         Ether::Logic::EtherLogic *ether_logic_;
