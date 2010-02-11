@@ -446,7 +446,13 @@ void InventoryWindow::CreateActions()
     actionOpen_->setStatusTip(tr("Open this item"));
     QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
     treeView_->addAction(actionOpen_);
-
+/*
+    actionProperties_= new QAction(tr("&Properties"), this);
+    //actionProperties_->setShortcuts(QKeySequence::Delete);
+    actionProperties_->setStatusTip(tr("View item properties"));
+    QObject::connect(actionProperties_, SIGNAL(triggered()), this, SLOT(ItemProperties()));
+    treeView_->addAction(actionProperties_);
+*/
     actionCopyAssetReference_ = new QAction(tr("&Copy asset reference"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));

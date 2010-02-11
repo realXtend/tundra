@@ -1,4 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
+/**
+ *  @file   RexUUID.cpp
+ *  @brief  RexUUID is a 16-byte identifier for resources in a virtual world.
+*/
+
 #include "RexUUID.h"
 
 #include <iomanip>
@@ -30,7 +36,6 @@ static uint8_t StringToByte(const char *str)
 }
 
 }
-
 
 RexUUID::RexUUID()
 {
@@ -195,5 +200,4 @@ bool RexUUID::operator <(const RexUUID &rhs) const
 
     return false;
 }
-
 

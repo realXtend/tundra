@@ -9,7 +9,7 @@
 #define incl_InventoryModule_InventoryAsset_h
 
 #include "AbstractInventoryItem.h"
-#include "RexTypes.h"
+#include "RexUUID.h"
 
 namespace Inventory
 {
@@ -118,6 +118,18 @@ namespace Inventory
 
         /// Inventory type.
         inventory_type_t inventoryType_;
+
+        /// Creator ID.
+        RexUUID creatorId_;
+
+        /// Owner ID.
+        RexUUID ownerId_;
+
+        /// Group ID.
+        RexUUID groupId_;
+
+        /// Time of creation.
+        time_t creationTime;
 
         /// Library asset flag.
         bool libraryItem_;

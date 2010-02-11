@@ -17,7 +17,7 @@
 namespace ProtocolUtilities
 {
 
-const std::string &WorldStream::LoggerName = "WorldStream";
+const std::string &WorldStream::loggerName = "WorldStream";
 
 WorldStream::WorldStream(Foundation::Framework *framework) :
     framework_(framework),
@@ -1373,7 +1373,10 @@ void WorldStream::SendObjectRedoPacket(const QString &ent_id)
 }
 
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Vector3df &offset)
+void WorldStream::SendObjectDuplicatePacket(
+    const unsigned long ent_id,
+    const unsigned long flags,
+    const Vector3df &offset)
 {
     if (!connected_)
         return;
@@ -1395,8 +1398,12 @@ void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const un
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags,
-    const float offset_x, const float offset_y, const float offset_z)
+void WorldStream::SendObjectDuplicatePacket(
+    const unsigned long ent_id,
+    const unsigned long flags,
+    const float offset_x,
+    const float offset_y,
+    const float offset_z)
 {
     SendObjectDuplicatePacket(ent_id, flags, Vector3df(offset_x, offset_y, offset_z));
 }
@@ -1404,6 +1411,64 @@ void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const un
 void WorldStream::SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags)
 {
     SendObjectDuplicatePacket(ent_id, flags, Vector3df(0,0,0));
+}
+
+void WorldStream::SendUUIDNameRequestPacket(const RexUUID &user_id)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUUIDNameRequest);
+    assert(m);
+
+    m->SetVariableBlockCount(1);
+    m->AddUUID(user_id);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendUUIDNameRequestPacket(const std::vector<RexUUID> &user_ids)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUUIDNameRequest);
+    assert(m);
+
+    m->SetVariableBlockCount(user_ids.size());
+    for(int i = 0; i < user_ids.size(); ++i)
+        m->AddUUID(user_ids[i]);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendUUIDGroupNameRequestPacket(const RexUUID &group_id)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUUIDGroupNameRequest);
+    assert(m);
+
+    m->SetVariableBlockCount(1);
+    m->AddUUID(group_id);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendUUIDGroupNameRequestPacket(const std::vector<RexUUID> &group_ids)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgUUIDGroupNameRequest);
+    assert(m);
+
+    m->SetVariableBlockCount(group_ids.size());
+    for(int i = 0; i < group_ids.size(); ++i)
+        m->AddUUID(group_ids[i]);
+
+    FinishMessageBuilding(m);
 }
 
 std::string WorldStream::GetCapability(const std::string &name)
@@ -1531,7 +1596,8 @@ void WorldStream::SendLoginSuccessfullPackets()
 {
     // Send the necessary UDP packets.
     SendUseCircuitCodePacket();
-    /// IS THE BELOW STATEMENT STILL RELEVANT?!
+
+    ///\todo IS THE BELOW STATEMENT STILL RELEVANT?!
     ///
     //! \todo release mode viewer sends the following packets "too fast" for some old rexservers to cope. Wait a while.
     /*! Proper solution would be to wait for ack from the UseCircuitCode packet before continuing to send packets.

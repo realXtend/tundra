@@ -62,7 +62,7 @@ namespace ProtocolUtilities
     public:
         MODULE_LOGGING_FUNCTIONS;
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return LoggerName; }
+        static const std::string &NameStatic() { return loggerName; }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
         /// Constructor.
@@ -72,7 +72,12 @@ namespace ProtocolUtilities
         /// Destructor.
         virtual ~WorldStream();
 
+        /// Name used for logging.
+        static const std::string &loggerName;
+
     public slots:
+        //------------------- Connection managing functions ------------------- //
+
         /// Creates the UDP connection after a succesfull XML-RPC login.
         /// @return True, if success.
         bool CreateUdpConnection();
@@ -83,24 +88,7 @@ namespace ProtocolUtilities
         /// Disconnects from the server. Doesn't send the LogOutRequest packet.
         void ForceServerDisconnect();
 
-        /// Set the connection type.
-        /// @param ConnectionType enum.
-        void SetConnectionType(const ConnectionType &type) { connection_type_ = type; }
-
-        /// Set credential info
-        /// @param identity Identity
-        /// @param password Password (if known)
-        /// @param authentication Authentication url (if known)
-        void StoreCredentials(const std::string& identity, const std::string& password, const std::string& authentication)
-        {
-            username_ = identity;
-            password_ = password;
-            auth_server_address_ = authentication;
-        }
-
-        /// Get the connection type.
-        /// @return ConnectionType enum.
-        ConnectionType GetConnectionType() const { return connection_type_; }
+        //------------------- Packet sending functions ------------------- //
 
         /// Send the UDP chat packet.
         void SendChatFromViewerPacket(const std::string &text);
@@ -203,20 +191,22 @@ namespace ProtocolUtilities
         void SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height);
 
         /** Send a new terrain texture that we want to use.
-         *  @Param new_texture_id id for asset resouce that we want to use as our terrain texture.
-         *  @Param texture_index switch texture we want to change currently supports 4 different textures. (0 = lowest and 3 = highest)
+         *  @param new_texture_id id for asset resouce that we want to use as our terrain texture.
+         *  @param texture_index switch texture we want to change currently supports 4 different textures. (0 = lowest and 3 = highest)
          */
         void SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
         /** Sends EstateOwnerMessage that will inculde data of terrain texture height, range and corner.
-        /*  @Param start_height height value where texture start to show (meters).
-         *  @Param height_range how much up texture will go from the texture_start_height (meters)
-         *  @Param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE). Note! in Rex this variable will only tell what texture height values we are changing.
+        /*  @param start_height height value where texture start to show (meters).
+         *  @param height_range how much up texture will go from the texture_start_height (meters)
+         *  @param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE)
+         *          Note: in Rex this variable will only tell what texture height values we are changing.
          */
         void SendTextureHeightsMessage(Real start_height, Real height_range, uint corner);
 
         /// Request new region information from the server(RegionHandshake is sented every client on that server)
-        /// ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures, terrain texture startheights/ranges and WaterHeight)
+        /// ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures,
+        /// terrain texture startheights/ranges and WaterHeight)
         void SendTextureCommitMessage();
 
         /** Sends a packet which creates a new inventory folder.
@@ -354,8 +344,8 @@ namespace ProtocolUtilities
 
         /**
          *  Sends a packet to remove friend from friend list.
-         *  @param other_id Unknow
-         *  @todo FInd out meaning of the other_id argument
+         *  @param other_id Unknown
+         *  @todo Find out meaning of the other_id argument
          */
         void SendTerminateFriendshipPacket(const RexUUID &other_id);
 
@@ -390,6 +380,70 @@ namespace ProtocolUtilities
         /// Sends a packet informing server that client is running normal again.
         void SendAgentResumePacket();
 
+        /// sends the derez packet for the entity ent_id (have to use unsigned longs for PythonQt correctness...)
+        void SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id);
+
+        /// sends the undo packet for the entity ent_id
+        void SendObjectUndoPacket(const QString &ent_id);
+
+        /// sends the redo packet for the entity ent_id
+        void SendObjectRedoPacket(const QString &ent_id);
+
+        /// duplicate the object (have to use unsigned longs for PythonQt correctness...)
+        void SendObjectDuplicatePacket(
+            const unsigned long ent_id,
+            const unsigned long flags,
+            const Vector3df &offset);
+
+        /// same as above but takes the offset vector as three floats (have to use unsigned longs for PythonQt correctness...)
+        void SendObjectDuplicatePacket(
+            const unsigned long ent_id,
+            const unsigned long flags,
+            const float offset_x,
+            const float offset_y,
+            const float offset_z);
+
+        /// without the offset, reverts to Vector.ZERO (have to use unsigned longs for PythonQt correctness...)
+        void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
+
+        /// Sends an UUIDNameRequest for UUID-username lookup.
+        ///@param user_id User ID.
+        void SendUUIDNameRequestPacket(const RexUUID &user_id);
+
+        /// Sends an UUIDNameRequest for UUID-username lookup.
+        /// Translate a UUID into first and last names
+        ///@param user_ids List of user ID's.
+        void SendUUIDNameRequestPacket(const std::vector<RexUUID> &user_ids);
+
+        /// Sends an UUIDGroupNameRequest packet for UUID-group name lookup.
+        ///@param group_id Group ID.
+        void SendUUIDGroupNameRequestPacket(const RexUUID &group_id);
+
+        /// Sends an UUIDGroupNameRequest packet for UUID-group name lookup.
+        ///@param group_ids List of group ID's.
+        void SendUUIDGroupNameRequestPacket(const std::vector<RexUUID> &group_ids);
+
+        //------------------- Utility functions ------------------- //
+
+        /// Set the connection type.
+        /// @param ConnectionType enum.
+        void SetConnectionType(const ConnectionType &type) { connection_type_ = type; }
+
+        /// Get the connection type.
+        /// @return ConnectionType enum.
+        ConnectionType GetConnectionType() const { return connection_type_; }
+
+        /// Set credential info
+        /// @param identity Identity
+        /// @param password Password (if known)
+        /// @param authentication Authentication url (if known)
+        void StoreCredentials(const std::string& identity, const std::string& password, const std::string& authentication)
+        {
+            username_ = identity;
+            password_ = password;
+            auth_server_address_ = authentication;
+        }
+
         /// @return Name of the sim we're connected to.
         std::string GetSimName() const { return simName_; }
 
@@ -404,13 +458,13 @@ namespace ProtocolUtilities
         std::string GetCapability(const std::string &name);
 
         /// @return Last used password
-        const std::string& GetPassword() { return password_; }
+        const std::string& GetPassword() const { return password_; }
 
         /// @return Last used username
-        const std::string& GetUsername() { return username_; }
+        const std::string& GetUsername() const { return username_; }
 
         /// @return Last used authentication address
-        const std::string& GetAuthAddress() { return auth_server_address_; }
+        const std::string& GetAuthAddress() const { return auth_server_address_; }
 
         /// @return True if the client connected to a server.
         const bool &IsConnected() const { return connected_; }
@@ -440,27 +494,6 @@ namespace ProtocolUtilities
 
         /// Unregisters the eventmanager from current Protocol Module
         void UnregisterCurrentProtocolModule();
-
-
-		/// sends the derez packet for the entity ent_id (have to use unsigned longs for PythonQt correctness...)
-		void SendObjectDeRezPacket(const unsigned long ent_id, const QString &trash_id);
-
-		/// sends the undo packet for the entity ent_id
-		void SendObjectUndoPacket(const QString &ent_id);
-		
-		/// sends the redo packet for the entity ent_id
-		void SendObjectRedoPacket(const QString &ent_id);
-		
-		/// duplicate the object (have to use unsigned longs for PythonQt correctness...)
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const Vector3df &offset);
-		/// same as above but takes the offset vector as three floats (have to use unsigned longs for PythonQt correctness...)
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags, const float offset_x, const float offset_y, const float offset_z);
-		/// without the offset, reverts to Vector.ZERO (have to use unsigned longs for PythonQt correctness...)
-		void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
-		
-    public:
-        /// Name used for logging.
-        static const std::string &LoggerName;
 
     private:
         /// Sends all the needed packets to server when connection successfull
