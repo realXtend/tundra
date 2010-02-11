@@ -21,13 +21,13 @@ namespace OgreRenderer
     Q_PROPERTY(bool dirty_ WRITE setDirty READ isDirty)
 
     public:
-        QOgreUIView ();
         QOgreUIView (QWidget *parent, QGraphicsScene *scene);
         virtual ~QOgreUIView ();
 
         void SetWorldView(QOgreWorldView *view);
-        void InitializeWorldView(int width, int height); 
-
+        void SetScene(QGraphicsScene *new_scene);
+        void InitializeWorldView(int width, int height);
+        
         Ogre::RenderWindow *CreateRenderWindow (const std::string &name, int width, int height, int left, int top, bool fullscreen);
 
     public slots:
@@ -51,6 +51,7 @@ namespace OgreRenderer
     signals:
         void ConsoleToggleRequest();
         void PythonRestartRequest();
+        void EtherToggleRequest();
     };
 
 } 
