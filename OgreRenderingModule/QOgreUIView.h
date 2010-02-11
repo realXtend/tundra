@@ -51,7 +51,8 @@ namespace OgreRenderer
     signals:
         void ConsoleToggleRequest();
         void PythonRestartRequest();
-        void EtherToggleRequest();
+        
+        void ViewKeyPressed(QKeyEvent *key_event);
     };
 
 } 

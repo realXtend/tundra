@@ -25,7 +25,6 @@ namespace Ether
             if (ke->isAutoRepeat())
                 return;
 
-            // Send key presses to showed scenes logic handler
             switch (ke->key())
             {
                 case Qt::Key_W:
@@ -46,10 +45,6 @@ namespace Ether
                 case Qt::Key_D:
                 case Qt::Key_Right:
                     emit RightPressed();
-                    break;
-
-                case Qt::Key_Escape:
-                    emit EtherTogglePressed();
                     break;
 
                 default:

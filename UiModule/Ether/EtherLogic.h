@@ -21,6 +21,7 @@ namespace Ether
     namespace View
     {
         class InfoCard;
+        class EtherScene;
     }
 
     namespace Logic
@@ -42,8 +43,9 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
+            View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }
-            EtherStateMachine *GetStateMachine() { return state_machine_; }
+            /*EtherStateMachine *GetStateMachine() { return state_machine_; }*/
 
         private slots:
             void SetVisibleItems();
@@ -56,8 +58,9 @@ namespace Ether
             QGraphicsView *view_;
 
             Data::DataManager *data_manager_;
+            View::EtherScene *scene_;
             EtherSceneController *scene_controller_;
-            EtherStateMachine *state_machine_;
+            //EtherStateMachine *state_machine_;
 
             QGraphicsScene *previous_scene_;
 
