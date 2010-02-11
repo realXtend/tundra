@@ -761,7 +761,7 @@ bool OpenSimInventoryDataModel::UploadFile(
     std::ifstream file(filename.c_str(), std::ios::binary);
     if (!file.is_open())
     {
-        InventoryModule::LogError("Could not open file the file: " + filename + ".");
+        InventoryModule::LogError("Could not open the file: " + filename + ".");
         return false;
     }
 
@@ -879,7 +879,7 @@ void OpenSimInventoryDataModel::ThreadedUploadFiles(QStringList &filenames, QStr
         std::string it_str = RexTypes::GetInventoryTypeString(asset_type);
         std::string at_str = RexTypes::GetAssetTypeString(asset_type);
         std::string cat_name = RexTypes::GetCategoryNameForAssetType(asset_type);
-
+        
         ///\todo User-defined name and desc when we got the UI.
         QString name;
         if (name_it != item_names.end())
