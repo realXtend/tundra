@@ -625,7 +625,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
         std::string rex_sound_url = ReadNullTerminatedStringFromBytes(primdata,idx);
 
         if (rex_mesh_url.size() > 0)
-            prim->CollisionMeshID = rex_mesh_url;
+            prim->MeshID = rex_mesh_url;
         if (rex_collision_mesh_url.size() > 0)
             prim->CollisionMeshID = rex_collision_mesh_url;
         if (rex_particle_script_url.size() > 0)
