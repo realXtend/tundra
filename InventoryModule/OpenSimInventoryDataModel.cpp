@@ -321,7 +321,7 @@ void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInve
         std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
-            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
@@ -342,7 +342,7 @@ void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, QStringList 
         std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
-            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
@@ -363,7 +363,7 @@ void OpenSimInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QV
         std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
-            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
@@ -750,7 +750,7 @@ bool OpenSimInventoryDataModel::UploadFile(
         std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
         if (upload_url == "")
         {
-            InventoryModule::LogError("Could not get upload capability for asset uploader. Uploading not possible");
+            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return false;
         }
 
