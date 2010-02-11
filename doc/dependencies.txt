@@ -13,9 +13,7 @@ This project has the following dependencies:
 
 - Qt 4.6.1 or newer, http://www.qtsoftware.com/ 
 
-- Python 2.5 or newer (but not 3.* currently): http://www.python.org/
-
-- PythonQt 1.1 or newer: http://sourceforge.net/projects/pythonqt/
+- Python 2.6 or newer (but not 3.* currently): http://www.python.org/
 
 - XMLRPC-EPI 2008-04-16, http://xmlrpc-epi.sourceforge.net/main.php?t=summary is used as a dynamic library.  XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project.
 
@@ -41,11 +39,29 @@ This project has the following dependencies:
 
 - Farsight2 0.0.14 or newer , http://farsight.freedesktop.org/wiki/Farsight2Design
 
-- dbus-glib 0.78 or newer , http://www.freedesktop.org/wiki/Software/DBusBindings
+- dbus-glib 0.78 or newer , http://www.freedesktop.org/wiki/Software/DBusBindingse 
 
 - glib 2.0 or newer , http://en.wikipedia.org/wiki/GLib
 
 - dbus , http://www.freedesktop.org/wiki/Software/dbus
+
+
+Dependencies with modifications that are not in upstream yet
+------------------------------------------------------------
+
+For these dependencies it is easiest to use the versions which we have
+in the Naali dependencies source repository, http://code.google.com/p/realxtend-naali-deps/
+
+- PythonQt : http://sourceforge.net/projects/pythonqt/
+ * modified for Naali to run on Qt 4.6
+ * applied a couple patches to allow init with an existing py interpreter
+ 
+ These patches have been put to tracker and communicated about to the
+ owner, but are not applied yet at least.
+
+- YAPE - Yet Another Property Editor, http://www.kde-apps.org/content/show.php?content=100063 
+ * modified to optionally accept a QApp reference from outside, 
+   'cause was not getting the same app instance with the singleton mechanism
 
 
 OBTAINING DEPENDENCIES
