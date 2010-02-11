@@ -14,6 +14,14 @@
 #include <QStringList>
 #include <QMap>
 
+namespace Ether
+{
+    namespace Logic
+    {
+        class EtherLogic;
+    }
+}
+
 namespace CoreUi
 {
     class UiConsoleManager;
@@ -88,6 +96,9 @@ namespace UiServices
 
         //! UiNotificationManager pointer
         UiNotificationManager *ui_notification_manager_;
+
+        //! Ether Logic
+        Ether::Logic::EtherLogic *ether_logic_;
 
         QString current_avatar_;
         QString current_server_;

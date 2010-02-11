@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_UiProxyStyle_h
-#define incl_Foundation_UiProxyStyle_h
+#ifndef incl_UiModule_UiProxyStyle_h
+#define incl_UiModule_UiProxyStyle_h
 
 #include <QProxyStyle>
 

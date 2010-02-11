@@ -8,6 +8,7 @@
 
 // Private managers
 #include "Console/UiConsoleManager.h"
+#include "Ether/EtherLogic.h"
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
@@ -50,6 +51,7 @@ namespace UiServices
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
         {
+            // These use the default scene
             LogDebug("Acquired Ogre QGraphicsView shared pointer from framework");
             ui_scene_manager_ = new UiSceneManager(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
@@ -67,6 +69,12 @@ namespace UiServices
     {
         SubscribeToEventCategories();
         ui_console_manager_->SendInitializationReadyEvent();
+
+        // This will store previous scene and load its own to view
+        ether_logic_ = new Ether::Logic::EtherLogic(ui_view_);
+        LogDebug("Ether Logic READY");
+        ether_logic_->Start();
+        LogDebug("Ether Logic STARTED");
     }
 
     void UiModule::Uninitialize()

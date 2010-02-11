@@ -13,14 +13,6 @@
 
 namespace OgreRenderer
 {
-    QOgreUIView::QOgreUIView () :
-        QGraphicsView(),
-        win_(0),
-        view_(0)
-    {
-        Initialize_();
-    }
-
     QOgreUIView::QOgreUIView (QWidget *parent, QGraphicsScene *scene) : 
         QGraphicsView(scene, parent),
         win_(0),
@@ -32,16 +24,7 @@ namespace OgreRenderer
     QOgreUIView::~QOgreUIView ()
     {
         if (scene())
-        {
-            // FIX PYTHON:
-            // python module crashes viewer on exit if these are not removed
-            // better to have viewer not crash and leave some memory leaks
-            // python should delete the QWidgets it put to scene in ~PythonModule() to avoid this
-            //QList<QGraphicsItem*> remaining_items = scene()->items();
-            //foreach(QGraphicsItem *item, remaining_items)
-            //    scene()->removeItem(item); 
             delete scene();
-        }
     }
 
     void QOgreUIView::Initialize_()
@@ -74,16 +57,22 @@ namespace OgreRenderer
                 setAttribute(Qt::WA_DontShowOnScreen, true);
         #endif
 
-	#ifdef Q_WS_MAC
+	    #ifdef Q_WS_MAC
         setAttribute(Qt::WA_PaintOnScreen);
-	setAttribute(Qt::WA_NoSystemBackground);
+	    setAttribute(Qt::WA_NoSystemBackground);
         #endif
     }
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 
     { 
         view_ = view; 
-        QObject::connect(scene(), SIGNAL( changed (const QList<QRectF> &) ), this, SLOT( SceneChange() )); 
+        connect(scene(), SIGNAL( changed(const QList<QRectF> &) ), this, SLOT( SceneChange() )); 
+    }
+
+    void QOgreUIView::SetScene(QGraphicsScene *new_scene)
+    {
+        setScene(new_scene);
+        QObject::connect(scene(), SIGNAL( changed (const QList<QRectF> &) ), this, SLOT( SceneChange() ));   
     }
 
     void QOgreUIView::InitializeWorldView(int width, int height)
@@ -175,6 +164,9 @@ namespace OgreRenderer
 
         else if (e->key() == Qt::Key_F11 && scene()->focusItem())
             emit PythonRestartRequest();
+
+        else if (e->key() == Qt::Key_Escape && scene()->focusItem())
+            emit EtherToggleRequest();
 
         QGraphicsView::keyPressEvent(e);
     }

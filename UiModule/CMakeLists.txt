@@ -8,7 +8,7 @@ macro (AddSourceFolder folder_name)
 endmacro (AddSourceFolder)
 
 macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx */*/*.cxx)
     source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro (MocFolder)
 
@@ -30,6 +30,9 @@ file (GLOB UI_FILES ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
 # SubFolders to project with filtering
+AddSourceFolder (Ether)
+AddSourceFolder (Ether/View)
+AddSourceFolder (Ether/Data)
 AddSourceFolder (Login)
 AddSourceFolder (MainPanel)
 AddSourceFolder (Notify)
