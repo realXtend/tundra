@@ -38,8 +38,6 @@ namespace Ether
             void RightPressed() { active_menu_->moveRight(); }
             void ItemActivatedWithMouse(View::InfoCard *clicked_item);
 
-            bool IsEtherVisible() { return ether_scene_visibility_; }
-
         private slots:
             void ActiveItemChanged(View::InfoCard *);
             void SceneRectChanged(const QRectF &new_rect);
@@ -47,7 +45,6 @@ namespace Ether
         private:
             //! Current scene
             View::EtherScene *scene_;
-            bool ether_scene_visibility_;
 
             //! Menus
             View::EllipseMenu *active_menu_;

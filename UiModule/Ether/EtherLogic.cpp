@@ -4,7 +4,6 @@
 #include "EtherLogic.h"
 
 #include "EtherSceneController.h"
-//#include "EtherStateMachine.h"
 
 #include "Data/RealXtendAvatar.h"
 #include "Data/OpenSimAvatar.h"
@@ -43,27 +42,16 @@ namespace Ether
 
             // Create ether scene, store current scene
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
-            //QBrush bg_brush(QPixmap("./data/ui/images/ether/tile.jpg"));
-            //scene->setBackgroundBrush(bg_brush);
-
-            //previous_scene_ = view_->scene();
-            //view_->setScene(scene);
-            //connect(scene, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            QBrush bg_brush(QColor(233,233,233,75));            
+            scene_->setBackgroundBrush(bg_brush);
 
             // Create menus
             QPair<View::EllipseMenu*, View::EllipseMenu*> menus;
             menus.first = new View::EllipseMenu(View::EllipseMenu::OPENS_UP);
             menus.second = new View::EllipseMenu(View::EllipseMenu::OPENS_DOWN);
 
-            // Create state machine
-            //state_machine_ = new EtherStateMachine(this, scene, menus);
-            //connect(state_machine_, SIGNAL( EtherSceneOutAnimationFinised() ), SLOT( ToggleEtherScene() ));
-            //connect(view_, SIGNAL( EtherToggleRequest() ), SLOT( ToggleEtherScene() ));
-            
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
-
-            //ToggleEtherScene();
         }
 
         void EtherLogic::Start()
@@ -159,7 +147,6 @@ namespace Ether
         void EtherLogic::GenerateAvatarInfoCards()
         {
             View::InfoCard *card = 0;
-            qDebug() << "Creating avatar cards and loading them to scene";
             foreach(Data::AvatarInfo *avatar_info, avatar_map_.values())
             {
                 switch (avatar_info->avatarType())
@@ -195,13 +182,11 @@ namespace Ether
                     card = 0;
                 }
             }
-            qDebug() << "-> Created " << avatar_card_map_.count() << "avatar cards";
         }
 
         void EtherLogic::GenerateWorldInfoCards()
         {
             View::InfoCard *card = 0;
-            qDebug() << "Creating world cards and loading them to scene";
             foreach(Data::WorldInfo *world_info, world_map_.values())
             {
                 switch (world_info->worldType())
@@ -232,7 +217,6 @@ namespace Ether
                     card = 0;
                 }
             }
-            qDebug() << "-> Created " << world_card_map_.count() << "world cards";
         }
 
         void EtherLogic::ToggleEtherScene()
