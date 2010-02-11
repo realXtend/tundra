@@ -11,6 +11,8 @@ from httplib import HTTPConnection, HTTPException
 from webdav import WebdavClient
 from webdav.Connection import WebdavError, AuthorizationError
 
+import rexviewer #for logging
+
 CABLEBEACH_IDENTITY_HEADER = "CableBeach-Identity"
 CABLEBEACH_WEBDAV_HEADER = "CableBeach-WebDavInventory"
 
@@ -188,6 +190,7 @@ class WebDavClient(object):
         
     def uploadFile(self, filePath, collectionWebDavPath, resourceWebDavName):
         dataFile = None
+        rexviewer.logDebug("WebDav Connection Uploading file: %s" % filePath)
         try:
             dataFile = open(filePath, 'rb')
         except IOError:
