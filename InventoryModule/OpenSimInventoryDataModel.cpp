@@ -740,7 +740,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
 
 bool OpenSimInventoryDataModel::UploadFile(
     const RexTypes::asset_type_t &asset_type,
-    const std::string &filename,
+    std::string &filename,
     const std::string &name,
     const std::string &description,
     const RexUUID &folder_id)
@@ -758,6 +758,11 @@ bool OpenSimInventoryDataModel::UploadFile(
     }
 
     // Open the file.
+#ifdef Q_WS_WIN
+    // Remove leading '/' on Windows environment, if it exists.
+    if (filename.find('/',0) == 0)
+        filename.erase(0, 1);
+#endif
     std::ifstream file(filename.c_str(), std::ios::binary);
     if (!file.is_open())
     {

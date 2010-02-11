@@ -178,7 +178,7 @@ void InventoryTreeView::dropEvent(QDropEvent *event)
         QStringList filenames, itemnames;
         QListIterator<QUrl> it(data->urls());
         while(it.hasNext())
-            filenames << it.next().path().remove(0, 1); // remove '/' from the beginning
+            filenames << it.next().path();
 
         if (!filenames.isEmpty())
             m->UploadFiles(filenames, itemnames, 0);
