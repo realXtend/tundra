@@ -1,7 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-/// @file   RexTypes.h
-/// @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
+/**
+ *  @file   RexTypes.h
+ *  @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
+ */
 
 #include "RexTypes.h"
 #include "RexUUID.h"

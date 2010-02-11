@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /**
- *  @file InventoryEvents.h
- *  @brief Inventory events.
+ *  @file   InventoryEvents.h
+ *  @brief  Inventory events.
  */
 
 #ifndef incl_Protocol_InventoryEvents_h
@@ -48,16 +48,35 @@ namespace Inventory
     class InventoryItemEventData : public Foundation::EventDataInterface
     {
     public:
+        /// Constructor.
+        /// @param type Item type.
         InventoryItemEventData(const ItemType &type) : item_type(type) {}
+        /// Destructor.
         virtual ~InventoryItemEventData() {}
+        /// Item type (asset or folder)
         ItemType item_type;
+        /// Item ID
         RexUUID id;
+        /// Asset reference ID.
         RexUUID assetId;
+        /// Parent folder ID.
         RexUUID parentId;
+        /// Inventory item type enumeration, see \ref RexTypes.h
         inventory_type_t inventoryType;
+        /// Asset type enumeration, see \c RexTypes.h
         asset_type_t assetType;
+        /// Name.
         std::string name;
+        /// Description.
         std::string description;
+        /// Creator ID.
+        RexUUID creatorId;
+        /// Owner ID.
+        RexUUID ownerId;
+        /// Group ID.
+        RexUUID groupId;
+        /// Time of creation.
+        time_t creationTime;
         //! Original filename of upload, if applicable
         std::string fileName;
     };
@@ -66,9 +85,13 @@ namespace Inventory
     class InventoryUploadEventData : public Foundation::EventDataInterface
     {
     public:
+        /// Default constuctor.
         InventoryUploadEventData() {}
+        /// Destructor.
         virtual ~InventoryUploadEventData() {}
+        /// List of filenames.
         QStringList filenames;
+        /// List of names for the files.
         QStringList names;
     };
 
@@ -76,9 +99,13 @@ namespace Inventory
     class InventoryUploadBufferEventData : public Foundation::EventDataInterface
     {
     public:
+        /// Default constuctor.
         InventoryUploadBufferEventData() {}
+        /// Destructor.
         virtual ~InventoryUploadBufferEventData() {}
+        /// List of filenames.
         QStringList filenames;
+        /// File buffers of the files.
         QVector<QVector<u8> > buffers;
     };
 
