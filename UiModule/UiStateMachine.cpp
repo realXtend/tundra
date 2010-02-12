@@ -64,6 +64,9 @@ namespace UiServices
         else
             animations_group = animations_map_[current_scene_];
 
+        if (animations_group->state() == QAbstractAnimation::Running)
+            return;
+
         animations_group->clear();
         foreach (QGraphicsItem *item, current_scene_->items())
         {
