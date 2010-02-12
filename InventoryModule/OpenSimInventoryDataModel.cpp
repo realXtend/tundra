@@ -789,35 +789,30 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     return true;
 }
 
-QString OpenSimInventoryDataModel::CreateNameFromFilename(QString filename)
+QString OpenSimInventoryDataModel::CreateNameFromFilename(const QString &filename)
 {
-    std::string name = "asset";
     bool no_path = false;
+    QString name("asset");
+    QString fileName = QDir::fromNativeSeparators(filename);
 
     // Find the last '/' from the filepath.
-    size_t name_start_pos = filename.toStdString().find_last_of('/');
-
-    // check also for '\' if the filepath is windows format
-    if (name_start_pos == std::string::npos)
-        name_start_pos = filename.toStdString().find_last_of('\\');
+    int name_start_pos = fileName.lastIndexOf ('/');
 
     // If the filename doesn't have the full path, start from index 0.
-    if (name_start_pos == std::string::npos)
+    if (name_start_pos == -1)
     {
         name_start_pos = 0;
         no_path = true;
     }
 
-    size_t name_end_pos = filename.toStdString().find_last_of('.');
-    if (name_end_pos != std::string::npos)
-    {
+    int name_end_pos = fileName.lastIndexOf('.');
+    if (name_end_pos != -1)
         if (no_path)
-            name = filename.toStdString().substr(name_start_pos, name_end_pos - name_start_pos);
+            name = fileName.mid(name_start_pos, name_end_pos - name_start_pos);
         else
-            name = filename.toStdString().substr(name_start_pos + 1, name_end_pos - name_start_pos - 1);
-    }
+            name = fileName.mid(name_start_pos + 1, name_end_pos - name_start_pos - 1);
 
-    return name.c_str();
+    return name;
 }
 
 void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(

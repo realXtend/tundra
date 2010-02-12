@@ -187,7 +187,7 @@ namespace Inventory
         /// Utility function for create name for asset from filename.
         /// @param filename Filename.
         /// @return Filename without the file extension.
-        QString CreateNameFromFilename(QString filename);
+        QString CreateNameFromFilename(const QString &filename);
 
         /// Sends both NameUUIDRequest and GroupNameUUIDRequest
         /// @param asset Inventory asset for which the requst is made.
