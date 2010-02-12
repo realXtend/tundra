@@ -266,6 +266,12 @@ namespace Ether
             appdata_path = appdata_path.leftRef(appdata_path.lastIndexOf(QDir::separator())+1).toString();
             
             // Check that dirs exists
+            dir_check = QDir(appdata_path + "ether");
+            if (!dir_check.exists())
+            {
+                dir_check = QDir(appdata_path);
+                dir_check.mkdir("ether");
+            }
             dir_check = QDir(appdata_path + "ether" + QDir::separator() + "avatarimages");
             if (!dir_check.exists())
             {
