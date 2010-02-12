@@ -79,10 +79,25 @@ namespace Inventory
         ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
 
     private:
-        InventoryModule(const InventoryModule &);
-        void operator=(const InventoryModule &);
+        Q_DISABLE_COPY(InventoryModule);
 
         void RegisterInventoryItemHandler(RexTypes::asset_type_t asset_type, QObject *handler);
+
+        /// Handles InventoryDescendents packet.
+        /// @param data Event data.
+        void HandleInventoryDescendents(Foundation::EventDataInterface* event_data);
+
+        /// Handles CreateInventoryItem packet.
+        /// @param data Event data.
+        void HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data);
+
+        /// Handles CreateInventoryItem packet.
+        /// @param data Event data.
+        void HandleUuidNameReply(Foundation::EventDataInterface* event_data);
+
+        /// Handles CreateInventoryItem packet.
+        /// @param data Event data.
+        void HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data);
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
@@ -90,8 +105,11 @@ namespace Inventory
         /// Inventory event category.
         event_category_id_t inventoryEventCategory_;
 
-        /// Network state event category.
+        /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;
+
+        /// NetworkIn event category.
+        event_category_id_t networkInEventCategory_;
 
         /// Framework event category
         event_category_id_t frameworkEventCategory_;

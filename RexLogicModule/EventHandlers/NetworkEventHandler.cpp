@@ -12,7 +12,6 @@
 #include "BitStream.h"
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
-#include "Inventory/InventoryEvents.h"
 #include "SceneEvents.h"
 #include "SoundServiceInterface.h"
 #include "AssetServiceInterface.h"
@@ -104,21 +103,6 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgObjectProperties:
         return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
-       
-    //case RexNetMsgLayerData:
-        // \todo remove this when scene events are complite.
-        //rexlogicmodule_->GetTerrainEditor()->UpdateTerrain();
-        //return rexlogicmodule_->GetTerrainHandler()->HandleOSNE_LayerData(netdata);
-        //return HandleOSNE_LayerData(netdata);
-
-    //case RexNetMsgSimulatorViewerTimeMessage:
-    //    return rexlogicmodule_->GetEnvironmentHandler()->HandleOSNE_SimulatorViewerTimeMessage(netdata);
-
-    case RexNetMsgInventoryDescendents:
-        return HandleOSNE_InventoryDescendents(netdata);
-
-    case RexNetMsgUpdateCreateInventoryItem:
-        return HandleOSNE_UpdateCreateInventoryItem(netdata);
 
     case RexNetMsgAttachedSound:
         return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_AttachedSound(netdata);
@@ -131,7 +115,7 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgPreloadSound:
         return HandleOSNE_PreloadSound(netdata);
-        
+
     default:
         break;
     }
@@ -355,172 +339,6 @@ bool NetworkEventHandler::HandleOSNE_KillObject(ProtocolUtilities::NetworkEventI
             return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
         if (rexlogicmodule_->GetAvatarEntity(killedobjectid))
             return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);
-    }
-
-    return false;
-}
-
-bool NetworkEventHandler::HandleOSNE_InventoryDescendents(ProtocolUtilities::NetworkEventInboundData* data)
-{
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
-
-    // AgentData
-    RexUUID agent_id = msg.ReadUUID();
-    RexUUID session_id = msg.ReadUUID();
-
-    // Check that this packet is for us.
-    if (agent_id != rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
-        session_id != rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
-    {
-        RexLogicModule::LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
-        return false;
-    }
-
-    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
-
-    msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
-    msg.SkipToNextVariable();               //Version S32, version of the folder for caching
-    int32_t descendents = msg.ReadS32();    //Descendents, count to help with caching
-    if (descendents == 0)
-        return false;
-
-    // For hackish protection against weird behaviour of 0.4 server. See below.
-    bool exceptionOccurred = false;
-
-    // FolderData, Variable block.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-    for(size_t i = 0; i < instance_count; ++i)
-    {
-        try
-        {
-            // Gather event data.
-            Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
-            folder_data.id = msg.ReadUUID();
-            folder_data.parentId = msg.ReadUUID();
-            folder_data.inventoryType = msg.ReadS8();
-            folder_data.name = msg.ReadString();
-
-            // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
-        }
-        catch (NetMessageException &)
-        {
-            exceptionOccurred = true;
-        }
-    }
-
-    ///\note Hackish protection against weird behaviour of 0.4 server. It seems that even if the block instance count
-    /// of FolderData should be 0, we read it as 1. Reset reading and skip first 5 variables. After that start reading
-    /// data from block interpreting it as ItemData block. This problem doesn't happen with 0.5.
-    if (exceptionOccurred)
-    {
-        msg.ResetReading();
-        for(int i = 0; i < 5; ++i)
-            msg.SkipToNextVariable();
-    }
-
-    // ItemData, Variable block.
-    instance_count = msg.ReadCurrentBlockInstanceCount();
-    for(size_t i = 0; i < instance_count; ++i)
-    {
-        try
-        {
-            // Gather event data.
-            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-            asset_data.id = msg.ReadUUID();
-            asset_data.parentId = msg.ReadUUID();
-            asset_data.creatorId = msg.ReadUUID();
-            asset_data.ownerId = msg.ReadUUID();
-            asset_data.groupId = msg.ReadUUID();
-
-            ///\note Skipping some permission & sale related stuff.
-            msg.SkipToFirstVariableByName("AssetID");
-            asset_data.assetId = msg.ReadUUID();
-            asset_data.assetType = msg.ReadS8();
-            asset_data.inventoryType = msg.ReadS8();
-            msg.SkipToFirstVariableByName("Name");
-            asset_data.name = msg.ReadString();
-            asset_data.description = msg.ReadString();
-
-            asset_data.creationTime = msg.ReadS32();
-            msg.SkipToNextInstanceStart();
-            //msg.ReadU32(); //CRC
-
-            // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
-        }
-        catch (NetMessageException &e)
-        {
-            RexLogicModule::LogError("Catched NetMessageException: " + e.What() + " while reading InventoryDescendents packet.");
-        }
-    }
-
-    return false;
-}
-
-bool NetworkEventHandler::HandleOSNE_UpdateCreateInventoryItem(ProtocolUtilities::NetworkEventInboundData* data)
-{
-    ///\note It seems that this packet is only sent by 0.4 reX server.
-
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
-
-    // AgentData
-    RexUUID agent_id = msg.ReadUUID();
-    if (agent_id != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
-    {
-        RexLogicModule::LogError("Received UpdateCreateInventoryItem packet with wrong AgentID, ignoring packet.");
-        return false;
-    }
-
-    bool simApproved = msg.ReadBool();
-    if (!simApproved)
-    {
-        RexLogicModule::LogInfo("Server did not approve your inventory item upload!");
-        return false;
-    }
-
-    msg.SkipToNextVariable(); // TransactionID, UUID
-
-    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
-
-    // InventoryData, variable block.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-    for(size_t i = 0; i < instance_count; ++i)
-    {
-        try
-        {
-            // Gather event data.
-            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-            asset_data.id = msg.ReadUUID();
-            asset_data.parentId = msg.ReadUUID();
-
-            ///\note Skipping all permission & sale related stuff.
-            msg.SkipToFirstVariableByName("AssetID");
-            asset_data.assetId = msg.ReadUUID();
-            asset_data.assetType = msg.ReadS8();
-            asset_data.inventoryType = msg.ReadS8();
-            msg.SkipToFirstVariableByName("Name");
-            asset_data.name = msg.ReadString();
-            asset_data.description = msg.ReadString();
-
-            msg.SkipToNextInstanceStart();
-            //msg.ReadS32(); //CreationDate
-            //msg.ReadU32(); //CRC
-
-            // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
-        }
-        catch (NetMessageException &e)
-        {
-            RexLogicModule::LogError("Catched NetMessageException: " + e.What() + " while reading UpdateCreateInventoryItem packet.");
-        }
     }
 
     return false;

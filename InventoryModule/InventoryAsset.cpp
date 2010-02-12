@@ -14,8 +14,18 @@
 namespace Inventory
 {
 
-InventoryAsset::InventoryAsset(const QString &id, const QString &asset_reference,const QString &name, InventoryFolder *parent) :
-    AbstractInventoryItem(id, name, parent), itemType_(AbstractInventoryItem::Type_Asset), assetReference_(asset_reference),
+InventoryAsset::InventoryAsset(
+    const QString &id,
+    const QString &asset_reference,
+    const QString &name,
+    InventoryFolder *parent) :
+    AbstractInventoryItem(id, name, parent),
+    itemType_(AbstractInventoryItem::Type_Asset),
+    assetReference_(asset_reference),
+    creatorId_(RexUUID()),
+    ownerId_(RexUUID()),
+    groupId_(RexUUID()),
+    creationTime_(time(0)),
     libraryItem_(false)
 {
 }
@@ -31,23 +41,16 @@ bool InventoryAsset::IsDescendentOf(AbstractInventoryItem *searchFolder)
     {
         AbstractInventoryItem *parent = GetParent();
         if (parent)
-        {
             if (parent == searchFolder)
                 return true;
             else
                 return parent->IsDescendentOf(searchFolder);
-        }
 
         return false;
     }
 }
 
 /*
-int InventoryAsset::ColumnCount() const
-{
-    return itemData_.count();
-}
-
 int InventoryAsset::Row() const
 {
     if (GetParent())

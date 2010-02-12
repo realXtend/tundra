@@ -446,6 +446,10 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
             newAsset->SetDescription(oldAsset->GetDescription());
             newAsset->SetInventoryType(oldAsset->GetInventoryType());
             newAsset->SetAssetType(oldAsset->GetAssetType());
+            newAsset->SetCreatorId(oldAsset->GetCreatorId());
+            newAsset->SetOwnerId(oldAsset->GetOwnerId());
+            newAsset->SetGroupId(oldAsset->GetGroupId());
+            newAsset->SetCreationTime(oldAsset->GetCreationTime());
 
             // When moving folders with descendents, we don't need to notify server about every descendent,
             // just the root item we're moving i.e. when the current parent is different from the new parent.

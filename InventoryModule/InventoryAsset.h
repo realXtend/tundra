@@ -83,7 +83,7 @@ namespace Inventory
         void SetAssetReference(const QString &asset_reference) { assetReference_ = asset_reference; }
 
         /// @return Description.
-        QString GetDescription() const { return description_;}
+        QString GetDescription() const { return description_; }
 
         /// @param description New description.
         void SetDescription(const QString &description) { description_ = description; }
@@ -93,10 +93,29 @@ namespace Inventory
         asset_type_t GetAssetType() const { return assetType_;}
 
         /// @return Inventory type (see RexTypes.h).
-        inventory_type_t GetInventoryType() const { return inventoryType_;}
+        inventory_type_t GetInventoryType() const { return inventoryType_; }
 
         /// @param inventory_type New inventory type (see RexTypes.h).
         void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
+
+        /// Get/set for creator ID.
+        void SetCreatorId(const RexUUID &creator_id) { creatorId_ = creator_id; uuids_.push_back(creator_id); }
+        RexUUID GetCreatorId() const { return creatorId_; }
+
+        /// Get/set owner ID.
+        void SetOwnerId(const RexUUID &owner_id) { ownerId_ = owner_id; uuids_.push_back(owner_id); }
+        RexUUID GetOwnerId() const { return ownerId_; }
+
+        /// Get/set for group ID.
+        void SetGroupId(const RexUUID &group_id) { groupId_ = group_id; uuids_.push_back(group_id); }
+        RexUUID GetGroupId() const { return groupId_; }
+
+        /// Get/set creation time.
+        void SetCreationTime(time_t time) { creationTime_ = time; }
+        time_t GetCreationTime() const { return creationTime_; }
+
+        /// Returns creation time as a string.
+        QString GetCreationTimeString() const { return asctime(localtime(&creationTime_)); }
 
         /// @return Row number of this inventory asset.
 //        int Row() const;
@@ -129,10 +148,13 @@ namespace Inventory
         RexUUID groupId_;
 
         /// Time of creation.
-        time_t creationTime;
+        time_t creationTime_;
 
         /// Library asset flag.
         bool libraryItem_;
+
+        // List of UUID's related to this asset (e.g. owner, creator and group)
+        QList<RexUUID> uuids_;
     };
 }
 

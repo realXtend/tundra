@@ -14,13 +14,14 @@
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 
-#include "NetworkEvents.h"
-#include "RexLogicModule.h"
-#include "Inventory/InventoryEvents.h"
-#include "QtUtils.h"
-#include "AssetEvents.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "ResourceInterface.h"
+#include <NetworkEvents.h>
+#include <RexLogicModule.h>
+#include <Inventory/InventoryEvents.h>
+#include <QtUtils.h>
+#include <AssetEvents.h>
+#include <ConsoleCommandServiceInterface.h>
+#include <ResourceInterface.h>
+#include <RealXtend/RexProtocolMsgIDs.h>
 
 #include <QObject>
 #include <QStringList>
@@ -34,6 +35,7 @@ InventoryModule::InventoryModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
     inventoryEventCategory_(0),
     networkStateEventCategory_(0),
+    networkInEventCategory_(0),
     assetEventCategory_(0),
     resourceEventCategory_(0),
     frameworkEventCategory_(0),
@@ -117,7 +119,12 @@ void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPt
     if (networkStateEventCategory_ == 0)
         LogError("Failed to query \"NetworkState\" event category");
     else
-        LogInfo("System " + Name() + " subscribed to [NetworkIn]");
+        LogInfo("System " + Name() + " subscribed to [NetworkState]");
+
+    networkInEventCategory_ = eventManager_->QueryEventCategory("NetworkIn");
+    if (networkInEventCategory_ == 0)
+        LogError("Failed to query \"NetworkIn\" event category");
+
 }
 
 void InventoryModule::Update(f64 frametime)
@@ -129,6 +136,7 @@ bool InventoryModule::HandleEvent(
     event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
+    // NetworkState
     if (category_id == networkStateEventCategory_)
     {
         // Connected to server. Initialize inventory_ tree model.
@@ -193,6 +201,29 @@ bool InventoryModule::HandleEvent(
         return false;
     }
 
+    // NetworkIn
+    if (category_id == networkInEventCategory_)
+    {
+        switch(event_id)
+        {
+        case RexNetMsgInventoryDescendents:
+            HandleInventoryDescendents(data);
+            return false;
+        case RexNetMsgUpdateCreateInventoryItem:
+            HandleUpdateCreateInventoryItem(data);
+            return false;
+        case RexNetMsgUUIDNameReply:
+            HandleUuidNameReply(data);
+            return false;
+        case RexNetMsgUUIDGroupNameReply:
+            HandleUuidGroupNameReply(data);
+            return false;
+        default:
+            return false;
+        }
+    }
+
+    // Inventory
     if (category_id == inventoryEventCategory_)
     {
         // Add new items to inventory_.
@@ -223,6 +254,7 @@ bool InventoryModule::HandleEvent(
         return false;
     }
 
+    // Framework
     if (category_id == frameworkEventCategory_)
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
@@ -243,6 +275,7 @@ bool InventoryModule::HandleEvent(
         }
     }
 
+    // Asset download related handlers.
     if (inventoryType_ == IDMT_OpenSim)
     {
         if (!inventory_.get())
@@ -347,6 +380,224 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
     static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFiles(filenames, itemNames, 0);
 
     return Console::ResultSuccess();
+}
+
+void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
+{
+    ProtocolUtilities::NetworkEventInboundData *data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    if (!data)
+        return;
+
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    // AgentData
+    RexUUID agent_id = msg.ReadUUID();
+    RexUUID session_id = msg.ReadUUID();
+
+    // Check that this packet is for us.
+    if (agent_id != currentWorldStream_->GetInfo().agentID &&
+        session_id != currentWorldStream_->GetInfo().sessionID)
+    {
+        LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
+        return;
+    }
+
+    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
+    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+
+    msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
+    msg.SkipToNextVariable();               //Version S32, version of the folder for caching
+    int32_t descendents = msg.ReadS32();    //Descendents, count to help with caching
+    if (descendents == 0)
+        return;
+
+    // For hackish protection against weird behaviour of 0.4 server. See below.
+    bool exceptionOccurred = false;
+
+    // FolderData, Variable block.
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        try
+        {
+            // Gather event data.
+            Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
+            folder_data.id = msg.ReadUUID();
+            folder_data.parentId = msg.ReadUUID();
+            folder_data.inventoryType = msg.ReadS8();
+            folder_data.name = msg.ReadString();
+
+            // Send event.
+            if (event_category != 0)
+                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
+        }
+        catch (NetMessageException &)
+        {
+            exceptionOccurred = true;
+        }
+    }
+
+    ///\note Hackish protection against weird behaviour of 0.4 server. It seems that even if the block instance count
+    /// of FolderData should be 0, we read it as 1. Reset reading and skip first 5 variables. After that start reading
+    /// data from block interpreting it as ItemData block. This problem doesn't happen with 0.5.
+    if (exceptionOccurred)
+    {
+        msg.ResetReading();
+        for(int i = 0; i < 5; ++i)
+            msg.SkipToNextVariable();
+    }
+
+    // ItemData, Variable block.
+    instance_count = msg.ReadCurrentBlockInstanceCount();
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        try
+        {
+            // Gather event data.
+            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
+            asset_data.id = msg.ReadUUID();
+            asset_data.parentId = msg.ReadUUID();
+            asset_data.creatorId = msg.ReadUUID();
+            asset_data.ownerId = msg.ReadUUID();
+            asset_data.groupId = msg.ReadUUID();
+
+            ///\note Skipping some permission & sale related stuff.
+            msg.SkipToFirstVariableByName("AssetID");
+            asset_data.assetId = msg.ReadUUID();
+            asset_data.assetType = msg.ReadS8();
+            asset_data.inventoryType = msg.ReadS8();
+            msg.SkipToFirstVariableByName("Name");
+            asset_data.name = msg.ReadString();
+            asset_data.description = msg.ReadString();
+
+            asset_data.creationTime = msg.ReadS32();
+            msg.SkipToNextInstanceStart();
+            //msg.ReadU32(); //CRC
+
+            // Send event.
+            if (event_category != 0)
+                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+        }
+        catch (NetMessageException &e)
+        {
+            LogError("Catched NetMessageException: " + e.What() + " while reading InventoryDescendents packet.");
+        }
+    }
+
+    return;
+}
+
+void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data)
+{
+    ///\note It seems that this packet is only sent by 0.4 reX server.
+    ///     Maybe drop support at some point?
+    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    if (!data)
+        return;
+
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    // AgentData
+    RexUUID agent_id = msg.ReadUUID();
+    if (agent_id != currentWorldStream_->GetInfo().agentID)
+    {
+        LogError("Received UpdateCreateInventoryItem packet with wrong AgentID, ignoring packet.");
+        return;
+    }
+
+    bool simApproved = msg.ReadBool();
+    if (!simApproved)
+    {
+        LogInfo("Server did not approve your inventory item upload!");
+        return;
+    }
+
+    msg.SkipToNextVariable(); // TransactionID, UUID
+
+    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
+    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
+
+    // InventoryData, variable block.
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        try
+        {
+            // Gather event data.
+            Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
+            asset_data.id = msg.ReadUUID();
+            asset_data.parentId = msg.ReadUUID();
+
+            ///\note Skipping all permission & sale related stuff.
+            msg.SkipToFirstVariableByName("AssetID");
+            asset_data.assetId = msg.ReadUUID();
+            asset_data.assetType = msg.ReadS8();
+            asset_data.inventoryType = msg.ReadS8();
+            msg.SkipToFirstVariableByName("Name");
+            asset_data.name = msg.ReadString();
+            asset_data.description = msg.ReadString();
+
+            msg.SkipToNextInstanceStart();
+            //msg.ReadS32(); //CreationDate
+            //msg.ReadU32(); //CRC
+
+            // Send event.
+            if (event_category != 0)
+                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+        }
+        catch (NetMessageException &e)
+        {
+            LogError("Catched NetMessageException: " + e.What() + " while reading UpdateCreateInventoryItem packet.");
+        }
+    }
+}
+
+void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_data)
+{
+    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    if (!data)
+        return;
+
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    // UUIDNameBlock, variable block.
+    QMap<RexUUID, QString> map;
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        RexUUID id = msg.ReadUUID();
+        QString name(msg.ReadString().c_str());
+        name.append(" ");
+        name.append(msg.ReadString().c_str());
+        map[id] = name;
+    }
+
+    //inventory_->
+}
+
+void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
+{
+    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    if (!data)
+        return;
+
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    // UUIDNameBlock, variable block.
+    QMap<RexUUID, QString> map;
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        RexUUID id = msg.ReadUUID();
+        QString name(msg.ReadString().c_str());
+        map[id] = name;
+    }
+
+    //inventory_->
 }
 
 } // namespace Inventory
