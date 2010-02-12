@@ -14,6 +14,11 @@
 #include <QStringList>
 #include <QMap>
 
+namespace RexLogic
+{
+    class OpenSimLoginHandler;
+}
+
 namespace Ether
 {
     namespace Logic
@@ -66,6 +71,8 @@ namespace UiServices
         UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
 
         UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
+
+        void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
 
         /*************** Logging ***************/
 

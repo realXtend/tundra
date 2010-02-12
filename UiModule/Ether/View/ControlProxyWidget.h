@@ -64,6 +64,7 @@ namespace Ether
             void QuestionHandler();
             void AddHandler();
             void RemoveHandler();
+            void ActionHandler();
 
         private:
             ControlType type_;
@@ -77,6 +78,10 @@ namespace Ether
             QWidget *parent_;
 
             InfoCard *controlled_card_;
+
+        signals:
+            void ActionRequest();
+
         };
     }
 }

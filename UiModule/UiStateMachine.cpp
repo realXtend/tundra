@@ -45,6 +45,12 @@ namespace UiServices
         }
     }
 
+    void UiStateMachine::SwitchInworldScene()
+    {
+        if (current_scene_ == scene_map_["Ether"])
+            AnimationsStart();
+    }
+
     void UiStateMachine::AnimationsStart()
     {
         // Create group if doesent exist yet

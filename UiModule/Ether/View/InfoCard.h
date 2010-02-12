@@ -31,6 +31,7 @@ namespace Ether
             void IsActiveItem(bool active);
             QString title() { return title_; }
             ArragementType arragementType() { return type_; }
+            QUuid id() { return id_; }
 
             void SetMoveAnimationPointer(QPropertyAnimation *ptr) { move_animation_pointer_ = ptr; }
             QPropertyAnimation *GetMoveAnimationPointer() { return move_animation_pointer_; }

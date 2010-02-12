@@ -34,8 +34,9 @@ namespace Ether
             void DownPressed();
             void LeftPressed();
             void RightPressed();
+            void EnterPressed();
+
             void ItemClicked(View::InfoCard *clicked_item);
-            void EtherTogglePressed();
         };
     }
 }

@@ -4,6 +4,7 @@
 #include "EtherLogic.h"
 
 #include "EtherSceneController.h"
+#include "EtherLoginHandler.h"
 
 #include "Data/RealXtendAvatar.h"
 #include "Data/OpenSimAvatar.h"
@@ -17,8 +18,6 @@
 #include <QPair>
 #include <QStringList>
 #include <QTimer>
-#include <QPixmap>
-#include <QBrush>
 
 namespace Ether
 {
@@ -42,8 +41,6 @@ namespace Ether
 
             // Create ether scene, store current scene
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
-            QBrush bg_brush(QColor(233,233,233,75));            
-            scene_->setBackgroundBrush(bg_brush);
 
             // Create menus
             QPair<View::EllipseMenu*, View::EllipseMenu*> menus;
@@ -52,6 +49,11 @@ namespace Ether
 
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
+            connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
+                    this, SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
+
+            // Create login handler
+            login_handler_ = new EtherLoginHandler(this, scene_controller_); 
         }
 
         void EtherLogic::Start()
@@ -91,19 +93,25 @@ namespace Ether
             if (data_manager_->GetAvatarCountInSettings() == 0)
             {
                 qDebug() << "Avatar config file was empty, adding some items to it...";
-                Data::OpenSimAvatar oa("Test", "User", "myPass312");
-                Data::RealXtendAvatar ra("testuser", QUrl("http://world.evocativi.com:10001"), "myPass835");
-                data_manager_->StoreOrUpdateAvatar(&oa);
+                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "nopass");
+                Data::OpenSimAvatar oa2("d", "d", "d");
+                Data::RealXtendAvatar ra("testrexuser", QUrl("http://world.evocativi.com:10001"), "test");
+                data_manager_->StoreOrUpdateAvatar(&oa1);
+                data_manager_->StoreOrUpdateAvatar(&oa2);
                 data_manager_->StoreOrUpdateAvatar(&ra);
             }
 
             if (data_manager_->GetWorldCountInSettings() == 0)
             {
                 qDebug() << "World config file was empty, adding some items to it...";
-                Data::OpenSimWorld ow1(QUrl("http://world.evocativi.com:9000/"), QUrl());
-                Data::OpenSimWorld ow2(QUrl("http://test.world.net/9003"), QUrl());
+                Data::OpenSimWorld ow1(QUrl("http://world.evocativi.com:8002"), QUrl());
+                Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), QUrl());
+                Data::OpenSimWorld ow3(QUrl("http://localhost:9000"), QUrl());
+                Data::OpenSimWorld ow4(QUrl("http://localhost:8002"), QUrl());
                 data_manager_->StoreOrUpdateWorld(&ow1);
                 data_manager_->StoreOrUpdateWorld(&ow2);
+                data_manager_->StoreOrUpdateWorld(&ow3);
+                data_manager_->StoreOrUpdateWorld(&ow4);
             }
         }
 
@@ -195,7 +203,8 @@ namespace Ether
                     {
                         Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_info);
                         if (ow)
-                            card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), ow->loginUrl().host(), ow->pixmapPath());
+                            card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), 
+                                                      QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port())), ow->pixmapPath());
                         break;
                     }
 
@@ -219,13 +228,21 @@ namespace Ether
             }
         }
 
-        void EtherLogic::ToggleEtherScene()
+        void EtherLogic::SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler)
         {
-            QGraphicsScene *scene = view_->scene();
-            previous_scene_->setSceneRect(view_->rect());
-            view_->setScene(previous_scene_);
-            connect(previous_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() )); 
-            previous_scene_ = scene;
+            login_handler_->SetOpenSimLoginHandler(os_login_handler);
+        }
+
+        void EtherLogic::ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*> ui_cards)
+        {
+            QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards;
+            if (avatar_map_.contains(ui_cards.first->id()) &&
+                world_map_.contains(ui_cards.second->id()) )
+            {
+                data_cards.first = avatar_map_[ui_cards.first->id()];
+                data_cards.second = world_map_[ui_cards.second->id()];
+                login_handler_->ParseInfoFromData(data_cards);
+            }
         }
     }
 }

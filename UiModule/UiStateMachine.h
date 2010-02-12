@@ -24,6 +24,7 @@ namespace UiServices
         UiStateMachine(QObject *parent, QGraphicsView *view);
 
     public slots:
+        void SwitchInworldScene();
         void RegisterScene(QString name, QGraphicsScene *scene);
         void SwitchToScene(QString name);
 

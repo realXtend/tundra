@@ -9,6 +9,11 @@
 #include <QGraphicsProxyWidget>
 #include <QUuid>
 
+namespace RexLogic
+{
+    class OpenSimLoginHandler;
+}
+
 namespace Ether
 {
     namespace Data
@@ -28,6 +33,7 @@ namespace Ether
     {
         class EtherSceneController;
         class EtherStateMachine;
+        class EtherLoginHandler;
 
         class EtherLogic : public QObject
         {
@@ -46,12 +52,15 @@ namespace Ether
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }
 
+            void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
+
         private slots:
             void SetVisibleItems();
             void StoreDataToFilesIfEmpty();
             void GenerateAvatarInfoCards();
             void GenerateWorldInfoCards();
-            void ToggleEtherScene();
+
+            void ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*> ui_cards);
 
         private:
             QGraphicsView *view_;
@@ -59,6 +68,7 @@ namespace Ether
             Data::DataManager *data_manager_;
             View::EtherScene *scene_;
             EtherSceneController *scene_controller_;
+            EtherLoginHandler *login_handler_;
 
             QGraphicsScene *previous_scene_;
 

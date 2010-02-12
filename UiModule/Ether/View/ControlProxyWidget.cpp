@@ -71,7 +71,7 @@ namespace Ether
             text_label_->setStyleSheet("color: white");
             text_label_->setFont(QFont("Narkisim", 18));
             text_label_->setAlignment(Qt::AlignCenter);
-            text_label_->setMinimumWidth(200);
+            text_label_->setMinimumWidth(300);
 
             // Buttons
             QPushButton *add_button = new QPushButton(parent_);
@@ -145,6 +145,8 @@ namespace Ether
                 connect_button->setFlat(true);
                 connect_button->resize(button_size);
 
+                connect(connect_button, SIGNAL( clicked() ), SLOT( ActionHandler() ));
+
                 widget_map_[connect_button] = RightCenter;
             }
             else if (direction_ == LeftToRight)
@@ -157,6 +159,8 @@ namespace Ether
 //                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_left_pressed.png'); }").arg(button_style));
                 exit_button->setFlat(true);
                 exit_button->resize(button_size);
+
+                connect(exit_button, SIGNAL( clicked() ), SLOT( ActionHandler() ));
 
                 widget_map_[exit_button] = LeftCenter;
             }
@@ -281,6 +285,11 @@ namespace Ether
         void ControlProxyWidget::RemoveHandler()
         {
             qDebug()<< "ControlProxyWidget::RemoveHandler()";
+        }
+
+        void ControlProxyWidget::ActionHandler()
+        {
+            emit ActionRequest();
         }
     }
 }
