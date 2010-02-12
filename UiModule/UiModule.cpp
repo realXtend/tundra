@@ -119,10 +119,13 @@ namespace UiServices
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
                     // Experimental for screenshots
-                    //QMap<QString, QString> paths_map = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
-                    //boost::shared_ptr<Foundation::RenderServiceInterface> rendering_service_ = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-                    //if (rendering_service_.get())
-                    //    ;//rendering_service_->TakeScreenshot(QApplication::applicationDirPath().toStdString(), );
+                    QMap<QString, QString> paths_map = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+                    boost::shared_ptr<Foundation::RenderServiceInterface> rendering_service_ = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+                    if (rendering_service_.get() && paths_map.count() == 4)
+                    {
+                        rendering_service_->TakeScreenshot(paths_map["WorldPath"].toStdString(), paths_map["WorldFile"].toStdString());
+                        ether_logic_->UpdateUiPixmaps();
+                    }
                     ui_scene_manager_->Disconnected();
                     break;
                 }

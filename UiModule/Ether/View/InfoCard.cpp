@@ -25,17 +25,32 @@ namespace Ether
         {
             resize(bounding_rectf_.size());
 
-            InitPaintHelpers(pixmap_path);
+            UpdatePixmap(pixmap_path);
+            InitPaintHelpers();
             InitDecorations();
         }
 
-        void InfoCard::InitPaintHelpers(QString pixmap_path)
+        void InfoCard::UpdatePixmap(QString pixmap_path)
         {
+            pixmap_path_ = pixmap_path;
+
             // Pixmap
             QSize image_size = bounding_rectf_.size().toSize();
-            pixmap_.load(pixmap_path);
-            pixmap_ = pixmap_.scaled(image_size.width()-20,image_size.height()-20);
+            image_size.setWidth(image_size.width()-20);
+            image_size.setHeight(image_size.height()-20);
 
+            pixmap_.load(pixmap_path_);
+            if (pixmap_.rect().width() < image_size.width() && pixmap_.rect().height() < image_size.height())
+                pixmap_ = pixmap_.scaled(image_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            else
+            {
+                pixmap_ = pixmap_.scaledToHeight(image_size.height(), Qt::SmoothTransformation);
+                pixmap_ = pixmap_.copy(QRect(QPoint(pixmap_.width()/2-image_size.width()/2,0), QPoint(pixmap_.width()/2+image_size.width()/2, pixmap_.height())));
+            }
+        }
+
+        void InfoCard::InitPaintHelpers()
+        {          
             // Font and pen
             font_ = QFont("Helvetica", 10);
             pen_ = QPen(Qt::SolidLine);
@@ -107,5 +122,7 @@ namespace Ether
             painter->drawRoundedRect(bounding_rectf_.toRect(), 15, 15);
             painter->drawPixmap(QPoint(10,10), pixmap_);
         }
+
+
     }
 }
