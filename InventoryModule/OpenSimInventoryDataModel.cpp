@@ -594,7 +594,58 @@ void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventData
         newAsset->SetDescription(STD_TO_QSTR(item_data->description));
         newAsset->SetInventoryType(item_data->inventoryType);
         newAsset->SetAssetType(item_data->assetType);
+        newAsset->SetCreatorId(item_data->creatorId);
+        newAsset->SetOwnerId(item_data->ownerId);
+        newAsset->SetGroupId(item_data->groupId);
+        newAsset->SetCreationTime(item_data->creationTime);
+
+        // Request names for the UUID's.
+        SendNameUuidRequest(newAsset);
     }
+}
+
+bool OpenSimInventoryDataModel::UploadFile(
+    const RexTypes::asset_type_t &asset_type,
+    std::string filename,
+    const std::string &name,
+    const std::string &description,
+    const RexUUID &folder_id)
+{
+    if (!HasUploadCapability())
+    {
+        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url == "")
+        {
+            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
+            return false;
+        }
+
+        SetUploadCapability(upload_url);
+    }
+
+    // Open the file.
+#ifdef Q_WS_WIN
+    // Remove leading '/' on Windows environment, if it exists.
+    if (filename.find('/',0) == 0)
+        filename.erase(0, 1);
+#endif
+    std::ifstream file(filename.c_str(), std::ios::binary);
+    if (!file.is_open())
+    {
+        InventoryModule::LogError("Could not open the file: " + filename + ".");
+        return false;
+    }
+
+    QVector<uchar> buffer;
+
+    std::filebuf *pbuf = file.rdbuf();
+    size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+    buffer.resize(size);
+    pbuf->pubseekpos(0, std::ios::in);
+    pbuf->sgetn((char *)&buffer[0], size);
+    file.close();
+
+    return UploadBuffer(asset_type, filename, name, description, folder_id, buffer);
 }
 
 bool OpenSimInventoryDataModel::UploadBuffer(
@@ -738,55 +789,18 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     return true;
 }
 
-bool OpenSimInventoryDataModel::UploadFile(
-    const RexTypes::asset_type_t &asset_type,
-    std::string filename,
-    const std::string &name,
-    const std::string &description,
-    const RexUUID &folder_id)
-{
-    if (!HasUploadCapability())
-    {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
-        {
-            InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
-            return false;
-        }
-
-        SetUploadCapability(upload_url);
-    }
-
-    // Open the file.
-#ifdef Q_WS_WIN
-    // Remove leading '/' on Windows environment, if it exists.
-    if (filename.find('/',0) == 0)
-        filename.erase(0, 1);
-#endif
-    std::ifstream file(filename.c_str(), std::ios::binary);
-    if (!file.is_open())
-    {
-        InventoryModule::LogError("Could not open the file: " + filename + ".");
-        return false;
-    }
-
-    QVector<uchar> buffer;
-
-    std::filebuf *pbuf = file.rdbuf();
-    size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-    buffer.resize(size);
-    pbuf->pubseekpos(0, std::ios::in);
-    pbuf->sgetn((char *)&buffer[0], size);
-    file.close();
-
-    return UploadBuffer(asset_type, filename, name, description, folder_id, buffer);
-}
-
 QString OpenSimInventoryDataModel::CreateNameFromFilename(QString filename)
 {
     std::string name = "asset";
     bool no_path = false;
+
+    // Find the last '/' from the filepath.
     size_t name_start_pos = filename.toStdString().find_last_of('/');
+
+    // check also for '\' if the filepath is windows format
+    if (name_start_pos == std::string::npos)
+        name_start_pos = filename.toStdString().find_last_of('\\');
+
     // If the filename doesn't have the full path, start from index 0.
     if (name_start_pos == std::string::npos)
     {
@@ -976,6 +990,46 @@ void OpenSimInventoryDataModel::ThreadedUploadBuffers(QStringList filenames, QVe
 
     InventoryModule::LogInfo("Multiupload:" + ToString(asset_count) + " assets succesfully uploaded.");
 }
+
+void OpenSimInventoryDataModel::SendNameUuidRequest(InventoryAsset *asset)
+{
+    std::vector<RexUUID> names, groups;
+
+    if (!asset->GetCreatorId().IsNull())
+        names.push_back(asset->GetCreatorId());
+    if (!asset->GetOwnerId().IsNull())
+        names.push_back(asset->GetOwnerId());
+    if (!asset->GetGroupId().IsNull())
+        groups.push_back(asset->GetGroupId());
+
+    if (names.size() > 0)
+        currentWorldStream_->SendUUIDNameRequestPacket(names);
+    if (groups.size() > 0)
+        currentWorldStream_->SendUUIDGroupNameRequestPacket(groups);
+
+    for(int i = 0; i < names.size(); ++i)
+        uuidNameRequests_ << names[i];
+
+    for(int i = 0; i < groups.size(); ++i)
+        uuidNameRequests_ << groups[i];
+}
+
+/*
+void OpenSimInventoryDataModel::HandleNameUuidReply(QMap<RexUUID, QString> map)
+{
+    QMapIterator<RexUUID, QString> it(map);
+    while(it.hasNext())
+    {
+        it.next();
+        int index = uuidNameRequests_.indexOf(it.key());
+        if (index == -1)
+            continue;
+
+        RexUUID id = uuidNameRequests_.at(index);
+        //asset->SetNameForUuid(id, name)
+    }
+}
+*/
 
 std::string OpenSimInventoryDataModel::CreateNewFileAgentInventoryXML(
     const std::string &asset_type,

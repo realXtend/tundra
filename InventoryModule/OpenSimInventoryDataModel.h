@@ -14,6 +14,7 @@
 
 #include <QMap>
 #include <QPair>
+#include <QVector>
 
 namespace Foundation
 {
@@ -30,6 +31,7 @@ namespace ProtocolUtilities
 namespace Inventory
 {
     class InventoryFolder;
+    class InventoryAsset;
 
     class OpenSimInventoryDataModel : public AbstractInventoryDataModel
     {
@@ -187,6 +189,15 @@ namespace Inventory
         /// @return Filename without the file extension.
         QString CreateNameFromFilename(QString filename);
 
+        /// Sends both NameUUIDRequest and GroupNameUUIDRequest
+        /// @param asset Inventory asset for which the requst is made.
+        void SendNameUuidRequest(InventoryAsset *asset);
+
+        /// Handles UUID-name map parsed from bot NameUUIDReply and GroupNameUUIDReply messages.
+        /// and assigns the reveiced names for the inventory assets who have requsted them.
+        /// @param map Map of UUID-name pairs.
+//        void HandleNameUuidReply(QMap<RexUUID, QString> map);
+
         typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
     signals:
@@ -247,6 +258,9 @@ namespace Inventory
 
         /// Item open request map.
         AssetRequestMap openRequests_;
+
+        /// UUID-name request map.
+        QVector<RexUUID> uuidNameRequests_;
     };
 }
 
