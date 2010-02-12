@@ -15,9 +15,9 @@
 
 #include "View/InfoCard.h"
 
-#include <QPair>
 #include <QStringList>
 #include <QTimer>
+#include <QDir>
 
 namespace Ether
 {
@@ -242,7 +242,39 @@ namespace Ether
                 data_cards.first = avatar_map_[ui_cards.first->id()];
                 data_cards.second = world_map_[ui_cards.second->id()];
                 login_handler_->ParseInfoFromData(data_cards);
+                last_login_cards_ = data_cards;
             }
+        }
+
+        QMap<QString, QString> EtherLogic::GetLastLoginScreenshotData(std::string conf_path)
+        {
+            QString appdata_path = QString::fromStdString(conf_path);
+            appdata_path.replace("/", QDir::separator());
+            appdata_path.replace("\\", QDir::separator());
+            appdata_path = appdata_path.leftRef(appdata_path.lastIndexOf(QDir::separator())+1).toString();
+
+            QMap<QString, QString> paths_map;
+            QString worldpath, avatarpath, worldfile, avatarfile;
+
+            avatarpath = appdata_path + "ether" + QDir::separator() + "avatarimages" + QDir::separator();
+            avatarfile = last_login_cards_.first->pixmapPath();
+
+            worldpath = appdata_path + "ether" + QDir::separator() + "worldimages" + QDir::separator();
+            worldfile = last_login_cards_.second->pixmapPath();
+
+            if (avatarfile.isEmpty())
+            {
+                avatarfile = avatarpath + last_login_cards_.first->id();
+                last_login_cards_.first->setPixmapPath(avatarfile);
+            }
+
+            if (worldfile.isEmpty())
+            {
+                worldfile = worldpath + last_login_cards_.second->id();
+                last_login_cards_.first->setPixmapPath(worldfile);
+            }
+
+            return paths_map;
         }
     }
 }

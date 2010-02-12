@@ -165,7 +165,7 @@ namespace OgreRenderer
         void SetCurrentCamera(Ogre::Camera* camera);
 
         //! Takes a screenshot and saves it to a file.
-        void TakeScreenshot(const std::string& filePath, const std::string& fileName);//const Ogre::String& pyFilePath, const Ogre::String& pyFileName):
+        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
