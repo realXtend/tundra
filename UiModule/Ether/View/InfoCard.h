@@ -28,16 +28,17 @@ namespace Ether
             void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
         public slots:
+            void UpdatePixmap(QString new_path);
             void IsActiveItem(bool active);
+            void SetMoveAnimationPointer(QPropertyAnimation *ptr) { move_animation_pointer_ = ptr; }
+
             QString title() { return title_; }
             ArragementType arragementType() { return type_; }
             QUuid id() { return id_; }
-
-            void SetMoveAnimationPointer(QPropertyAnimation *ptr) { move_animation_pointer_ = ptr; }
             QPropertyAnimation *GetMoveAnimationPointer() { return move_animation_pointer_; }
 
         private slots:
-            void InitPaintHelpers(QString pixmap_path);
+            void InitPaintHelpers();
             void InitDecorations();
 
         protected:

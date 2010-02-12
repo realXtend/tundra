@@ -55,6 +55,7 @@ namespace Ether
 
             void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
             QMap<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
+            void UpdateUiPixmaps();
 
         private slots:
             void SetVisibleItems();

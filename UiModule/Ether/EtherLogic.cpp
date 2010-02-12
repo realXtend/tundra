@@ -58,6 +58,9 @@ namespace Ether
 
         void EtherLogic::Start()
         {
+            last_login_cards_.first = 0;
+            last_login_cards_.second = 0;
+
             GenerateAvatarInfoCards();
             GenerateWorldInfoCards();
 
@@ -248,33 +251,71 @@ namespace Ether
 
         QMap<QString, QString> EtherLogic::GetLastLoginScreenshotData(std::string conf_path)
         {
-            QString appdata_path = QString::fromStdString(conf_path);
+            QMap<QString, QString> paths_map;
+            // Return if no login has been done via ether
+            if (!last_login_cards_.first || !last_login_cards_.second)
+                return paths_map;
+
+            QString worldpath, avatarpath, worldfile, avatarfile, path_with_file, appdata_path;
+            QDir dir_check;
+
+            // Get users appdata path (semi hack, from frameworks config manager path)
+            appdata_path = QString::fromStdString(conf_path);
             appdata_path.replace("/", QDir::separator());
             appdata_path.replace("\\", QDir::separator());
             appdata_path = appdata_path.leftRef(appdata_path.lastIndexOf(QDir::separator())+1).toString();
-
-            QMap<QString, QString> paths_map;
-            QString worldpath, avatarpath, worldfile, avatarfile;
-
+            
+            // Check that dirs exists
+            dir_check = QDir(appdata_path + "ether" + QDir::separator() + "avatarimages");
+            if (!dir_check.exists())
+            {
+                dir_check = QDir(appdata_path + "ether");
+                dir_check.mkdir("avatarimages");
+            }
+            dir_check = QDir(appdata_path + "ether" + QDir::separator() + "worldimages");
+            if (!dir_check.exists())
+            {
+                dir_check = QDir(appdata_path + "ether");
+                dir_check.mkdir("worldimages");
+            }
+ 
+            // Avatar paths
             avatarpath = appdata_path + "ether" + QDir::separator() + "avatarimages" + QDir::separator();
-            avatarfile = last_login_cards_.first->pixmapPath();
+            avatarfile = last_login_cards_.first->id() + ".png";
+            path_with_file = avatarpath + avatarfile;
+            if (last_login_cards_.first->pixmapPath() != path_with_file)
+            {
+                // Lets not do this yet, cant take the shot for it
+                //last_login_cards_.first->setPixmapPath(path_with_file);
+                //data_manager_->StoreOrUpdateAvatar(last_login_cards_.first);
+            }
 
+            // World paths
             worldpath = appdata_path + "ether" + QDir::separator() + "worldimages" + QDir::separator();
-            worldfile = last_login_cards_.second->pixmapPath();
-
-            if (avatarfile.isEmpty())
+            worldfile = last_login_cards_.second->id() + ".png";
+            path_with_file = worldpath + worldfile;
+            if (last_login_cards_.second->pixmapPath() != path_with_file)
             {
-                avatarfile = avatarpath + last_login_cards_.first->id();
-                last_login_cards_.first->setPixmapPath(avatarfile);
+                last_login_cards_.second->setPixmapPath(path_with_file);
+                data_manager_->StoreOrUpdateWorld(last_login_cards_.second);
             }
 
-            if (worldfile.isEmpty())
-            {
-                worldfile = worldpath + last_login_cards_.second->id();
-                last_login_cards_.first->setPixmapPath(worldfile);
-            }
-
+            // Return values
+            paths_map["AvatarPath"] = avatarpath;
+            paths_map["AvatarFile"] = avatarfile;
+            paths_map["WorldPath"] = worldpath;
+            paths_map["WorldFile"] = worldfile;
             return paths_map;
+        }
+
+        void EtherLogic::UpdateUiPixmaps()
+        {
+            // Update new world image to ui
+            if (last_login_cards_.second)
+                if (world_card_map_.contains(last_login_cards_.second->id()))
+                    world_card_map_[last_login_cards_.second->id()]->UpdatePixmap(last_login_cards_.second->pixmapPath());
+
+            // Avatar later when we get the picture...
         }
     }
 }
