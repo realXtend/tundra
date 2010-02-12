@@ -42,7 +42,7 @@ namespace UiHelpers
 
     void ConfigHelper::SetPreviousData(Ui::LoginWidget *login_ui, QMap<QString,QString> data_map)
     {
-        if (!data_map["username"].isEmpty() && !data_map["server"].isEmpty() && !data_map["password"].isEmpty())
+        if (!data_map["username"].isEmpty() && !data_map["server"].isEmpty())
         {
             login_ui->usernameLineEdit->setText(data_map["username"]);
             login_ui->serverLineEdit->setText(data_map["server"]);
