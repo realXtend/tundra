@@ -48,6 +48,7 @@ namespace CommunicationUI
         EventHandler *GetEventHandler() { return event_handler_; }
 
         void ChangeContext(UiDefines::UiStates::ConnectionState new_state = UiDefines::UiStates::NoStateChange);
+        void PresetSelected(int index);
 
     protected:
         void hideEvent(QHideEvent *hide_event);

@@ -13,6 +13,7 @@
 #include "ui_SessionManagerWidget.h"
 
 #include <QFile>
+#include <QDebug>
 
 namespace CommunicationUI
 {
@@ -86,6 +87,7 @@ namespace CommunicationUI
         {
             case UiDefines::UiStates::Disconnected:
             {
+                SAFE_DELETE(login_widget_);
                 login_widget_ = new QWidget();
                 login_ui_->setupUi(login_widget_);
                 layout()->addWidget(login_widget_);
@@ -97,11 +99,13 @@ namespace CommunicationUI
                     login_ui_->statusLabel->setText(login_helper_->GetErrorMessage());
                 
                 connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
+                connect(login_ui_->presetsComboBox, SIGNAL( currentIndexChanged(int) ), this, SLOT( PresetSelected(int) ));
                 connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
                 break;
             }
             case UiDefines::UiStates::Connecting:
             {
+                SAFE_DELETE(loading_widget_);
                 loading_widget_ = new QWidget();
                 loading_ui_->setupUi(loading_widget_);
                 layout()->addWidget(loading_widget_);
@@ -113,6 +117,8 @@ namespace CommunicationUI
             case UiDefines::UiStates::Connected:
             {
                 config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
+
+                SAFE_DELETE(session_manager_widget_);
                 session_manager_widget_ = new QWidget();
                 session_manager_ui_->setupUi(session_manager_widget_);
                 layout()->addWidget(session_manager_widget_);
@@ -136,19 +142,25 @@ namespace CommunicationUI
         foreach (QString ui_class, to_be_removed_)
         {
             if (ui_class == "login_ui_")
-            {
-                layout()->removeWidget(login_widget_);
-                //SAFE_DELETE(login_widget_);
+            {               
+                login_widget_->disconnect();
+                login_widget_->hide();
+                layout()->removeItem(layout()->itemAt(layout()->indexOf(login_widget_)));
+                login_widget_->setParent(0);
             }
             else if (ui_class == "loading_ui_")
             {
-                layout()->removeWidget(loading_widget_);
-                //SAFE_DELETE(loading_widget_);
+                loading_widget_->disconnect();
+                loading_widget_->hide();
+                layout()->removeItem(layout()->itemAt(layout()->indexOf(loading_widget_)));
+                loading_widget_->setParent(0);
             }
             else if (ui_class == "session_manager_ui_")
             {
-                layout()->removeWidget(session_manager_widget_);
-                //SAFE_DELETE(session_manager_widget_);
+                session_manager_widget_->disconnect();
+                session_manager_widget_->hide();
+                layout()->removeItem(layout()->itemAt(layout()->indexOf(session_manager_widget_)));
+                session_manager_widget_->setParent(0);
             }
         }
         to_be_removed_.clear();
@@ -161,4 +173,28 @@ namespace CommunicationUI
         if (session_manager_)
             session_manager_->HideFriendListWidget();
     }
+
+    void MasterWidget::PresetSelected(int index)
+    {
+        QMap<QString,QString> data_map;
+        switch (index)
+        {
+            case 0:
+                config_helper_->ReadLoginData(login_ui_);
+                break;
+            case 1:
+                data_map["username"] = "username@gmail.com";
+                data_map["server"] = "talk.google.com";
+                data_map["password"] = "";
+                config_helper_->SetPreviousData(login_ui_, data_map);
+                break;
+            case 2:
+                data_map["username"] = "username@chat.facebook.com";
+                data_map["server"] = "chat.facebook.com";
+                data_map["password"] = "";
+                config_helper_->SetPreviousData(login_ui_, data_map);
+                break;
+        }
+    }
+
 }
