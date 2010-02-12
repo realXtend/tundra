@@ -17,7 +17,7 @@ namespace Ether
         Q_PROPERTY(QString last_name_ READ lastName)
 
         public:
-            OpenSimAvatar(QString first_name, QString last_name, QString password, QString path_to_pixmap = QString(), QUuid id = 0)
+            OpenSimAvatar(QString first_name, QString last_name, QString password, QString path_to_pixmap = QString(""), QUuid id = 0)
                 : AvatarInfo(Ether::AvatarTypes::OpenSim, password, path_to_pixmap, id),
                   first_name_(first_name),
                   last_name_(last_name)

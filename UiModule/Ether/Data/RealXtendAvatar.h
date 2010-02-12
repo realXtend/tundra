@@ -19,7 +19,7 @@ namespace Ether
         Q_PROPERTY(QUrl auth_url_ READ authUrl)
 
         public:
-            RealXtendAvatar(QString account, QUrl auth_url, QString password, QString path_to_pixmap = QString(), QUuid id = 0)
+            RealXtendAvatar(QString account, QUrl auth_url, QString password, QString path_to_pixmap = QString(""), QUuid id = 0)
                 : AvatarInfo(Ether::AvatarTypes::RealXtend, password, path_to_pixmap, id),
                   account_(account),
                   auth_url_(auth_url)

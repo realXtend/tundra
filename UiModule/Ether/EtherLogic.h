@@ -8,6 +8,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsProxyWidget>
 #include <QUuid>
+#include <QPair>
 
 namespace RexLogic
 {
@@ -53,6 +54,7 @@ namespace Ether
             EtherSceneController *GetSceneController() { return scene_controller_; }
 
             void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
+            QMap<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
 
         private slots:
             void SetVisibleItems();
@@ -76,6 +78,8 @@ namespace Ether
             QMap<QUuid, Data::WorldInfo*> world_map_;
             QMap<QUuid, View::InfoCard*> avatar_card_map_;
             QMap<QUuid, View::InfoCard*> world_card_map_;
+
+            QPair<Data::AvatarInfo*, Data::WorldInfo*> last_login_cards_;
 
             QRectF card_size_;
 
