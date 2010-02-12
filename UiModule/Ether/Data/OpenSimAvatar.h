@@ -26,6 +26,7 @@ namespace Ether
 
             QString firstName() { return first_name_; }
             QString lastName() { return last_name_; }
+            QString userName() { return QString("%1 %2").arg(first_name_, last_name_); }
 
             void Print()
             {

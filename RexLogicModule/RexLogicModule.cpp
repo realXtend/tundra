@@ -50,6 +50,7 @@
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
 
+#include "UiModule.h"
 #include "Login/LoginContainer.h"
 
 #include "MemoryLeakCheck.h"
@@ -226,6 +227,10 @@ void RexLogicModule::PostInitialize()
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
     login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
     main_panel_handler_->ConnectToLoginHandler();
+
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module.get())
+        ui_module->SetLoginHandlers(os_login_handler_);
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)

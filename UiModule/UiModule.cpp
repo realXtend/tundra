@@ -150,6 +150,8 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
+                    // Now we are really inworld
+                    ui_state_machine_->SwitchInworldScene();
                     ui_scene_manager_->Connected();
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())
@@ -175,6 +177,11 @@ namespace UiServices
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
             LogDebug(QString("Listening to event category %1").arg(category).toStdString());
         }
+    }
+
+    void UiModule::SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler) 
+    { 
+        ether_logic_->SetLoginHandlers(os_login_handler); 
     }
 
 }

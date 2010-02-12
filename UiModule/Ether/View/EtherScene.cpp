@@ -7,6 +7,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
 #include <QList>
+#include <QBrush>
 
 #include <QDebug>
 
@@ -17,6 +18,8 @@ namespace Ether
         EtherScene::EtherScene(QObject *parent, const QRectF &scene_rect)
             : QGraphicsScene(scene_rect, parent)
         {
+            QBrush bg_brush(QColor(233,233,233,75));            
+            setBackgroundBrush(bg_brush);
         }
 
         void EtherScene::keyPressEvent(QKeyEvent *ke)
@@ -45,6 +48,11 @@ namespace Ether
                 case Qt::Key_D:
                 case Qt::Key_Right:
                     emit RightPressed();
+                    break;
+
+                case Qt::Key_Return:
+                case Qt::Key_Enter:
+                    emit EnterPressed();
                     break;
 
                 default:

@@ -31,6 +31,8 @@ namespace Ether
                     this, SLOT( RightPressed() ));
             connect(scene_, SIGNAL( LeftPressed() ),
                     this, SLOT( LeftPressed() ));
+            connect(scene_, SIGNAL( EnterPressed() ),
+                    this, SLOT( TryStartLogin() ));
 
             // Connect item clicked signal
             connect(scene_, SIGNAL( ItemClicked(View::InfoCard*) ),
@@ -86,6 +88,7 @@ namespace Ether
             scene_->addItem(world_info_widget_);
 
             connect_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::RightToLeft, "Connect");
+            connect(connect_control_widget_, SIGNAL( ActionRequest() ), SLOT( TryStartLogin() ));
             scene_->addItem(connect_control_widget_);
 
             exit_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::LeftToRight, "Exit");
@@ -165,6 +168,15 @@ namespace Ether
                 last_active_top_card_ = card;
                 avatar_info_widget_->UpdateContollerCard(last_active_top_card_);
             }
+        }
+
+        void EtherSceneController::TryStartLogin()
+        {
+            QPair<View::InfoCard*, View::InfoCard*> selected_cards;
+            selected_cards.first = top_menu_->GetHighlighted();
+            selected_cards.second = bottom_menu_->GetHighlighted();
+
+            emit LoginRequest(selected_cards);
         }
     }
 }

@@ -36,6 +36,7 @@ namespace Ether
             void DownPressed();
             void LeftPressed() { active_menu_->moveLeft(); }
             void RightPressed() { active_menu_->moveRight(); }
+            void TryStartLogin();
             void ItemActivatedWithMouse(View::InfoCard *clicked_item);
 
         private slots:
@@ -68,6 +69,8 @@ namespace Ether
             View::ControlProxyWidget *connect_control_widget_;
             View::ControlProxyWidget *exit_control_widget_;
 
+        signals:
+            void LoginRequest(QPair<View::InfoCard*, View::InfoCard*> selected_cards);
         };
     }
 }
