@@ -823,6 +823,25 @@ namespace OgreRenderer
         }
     }
 
+    void Renderer::CaptureWorldAndAvatarToFile(const std::string& worldfile, const std::string& avatarfile)
+    {
+        if (renderwindow_)
+        {
+            // World image
+            Ogre::Box bounds(0, 0, renderwindow_->getWidth(), renderwindow_->getHeight());
+            Ogre::uchar* pixelData = new Ogre::uchar[renderwindow_->getWidth() * renderwindow_->getHeight() * 4];
+            Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
+
+            renderwindow_->copyContentsToMemory(pixels);
+
+            Ogre::Image screenshot;
+            screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8, false);
+            screenshot.save(worldfile);
+
+            // Avatar image comin later...
+        }
+    }
+
     void Renderer::AddResourceDirectory(const std::string& directory)
     {
         // Check to not add the same directory more than once
