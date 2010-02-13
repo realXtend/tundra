@@ -307,10 +307,8 @@ namespace Ether
             }
 
             // Return values
-            paths_map["AvatarPath"] = avatarpath;
-            paths_map["AvatarFile"] = avatarfile;
-            paths_map["WorldPath"] = worldpath;
-            paths_map["WorldFile"] = worldfile;
+            paths_map["WorldFile"] = worldpath + worldfile;
+            paths_map["AvatarFile"] = avatarpath + avatarfile;
             return paths_map;
         }
 
