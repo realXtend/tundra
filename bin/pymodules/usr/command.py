@@ -274,17 +274,25 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
         
     drawline()
 
-if 0:
+if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    #print dir(PythonQt)
+    print dir(PythonQt)
     #print "Importing PythonQt.QtGui..."
     #import PythonQt.QtGui as gui
     #print dir(gui)
-    import PythonQt.QtUiTools as uitools
-    print dir(uitools.QUiLoader)
+    #import PythonQt.QtUiTools as uitools
+    #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
-    
+
+    #V3 works :)
+    import PythonQt.QtCore
+    print dir(PythonQt.QtCore)
+    v3 = PythonQt.QtCore.QVector3D()
+    print v3
+    print dir(v3)
+    v3.setX(1)
+    print v3.x()
 
 if 0:
     from PythonQt.QtGui import *
