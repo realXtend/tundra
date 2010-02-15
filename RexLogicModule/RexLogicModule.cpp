@@ -34,6 +34,7 @@
 
 // Ogre -specific
 #include "Renderer.h"
+#include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgrePlaceable.h"
@@ -446,6 +447,8 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 
 void RexLogicModule::LogoutAndDeleteWorld()
 {
+    AboutToDeleteWorld();
+
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
 
@@ -976,6 +979,33 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     }
 
     pending_parents_.erase(i);
+}
+
+void RexLogicModule::AboutToDeleteWorld()  
+{
+    // Lets take some screenshots before deleting the scene
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (avatar_.get() && ui_module.get())
+    {
+        Scene::EntityPtr avatar_ptr = avatar_->GetUserAvatar();
+        if (avatar_ptr.get())
+        {
+            const Foundation::ComponentInterfacePtr &component = avatar_ptr->GetComponent("EC_OgrePlaceable");
+            if (component)
+            {
+                OgreRenderer::EC_OgrePlaceable *ogre_placable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(component.get());
+                if (ogre_placable)
+                {
+                    Vector3Df avatar_position = ogre_placable->GetPosition();
+                    Quaternion avatar_orientation = ogre_placable->GetOrientation();
+                    QPair<QString, QString> paths = ui_module->GetScreenshotPaths();
+                    boost::shared_ptr<Foundation::RenderServiceInterface> rendering_service_ = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+                    if (rendering_service_.get() && !paths.first.isEmpty() && !paths.second.isEmpty())
+                        rendering_service_->CaptureWorldAndAvatarToFile(avatar_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
+                }
+            }
+        }
+    }
 }
 
 } // namespace RexLogic

@@ -5,8 +5,11 @@
 #include "RendererEvents.h"
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgreCamera.h"
 #include "SceneEvents.h"
+#include "SceneManager.h"
 #include "Entity.h"
 
 #include <Ogre.h>
@@ -18,6 +21,7 @@
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QDebug>
 
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
 //#include <OgreD3D9RenderWindow.h>
@@ -823,22 +827,73 @@ namespace OgreRenderer
         }
     }
 
-    void Renderer::CaptureWorldAndAvatarToFile(const std::string& worldfile, const std::string& avatarfile)
+    void Renderer::CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile)
     {
         if (renderwindow_)
         {
-            // World image
-            Ogre::Box bounds(0, 0, renderwindow_->getWidth(), renderwindow_->getHeight());
-            Ogre::uchar* pixelData = new Ogre::uchar[renderwindow_->getWidth() * renderwindow_->getHeight() * 4];
+            /*** World image ***/
+            int window_width = renderwindow_->getWidth();
+            int window_height = renderwindow_->getHeight();
+            Ogre::Box bounds(0, 0, window_width, window_height);
+            Ogre::uchar* pixelData = new Ogre::uchar[window_width * window_height * 4];
             Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
 
+            // Just use rendererwindow:s view for this
             renderwindow_->copyContentsToMemory(pixels);
 
+            // Save pixeldata to image
             Ogre::Image screenshot;
             screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8, false);
             screenshot.save(worldfile);
 
-            // Avatar image comin later...
+            /*** Avatar image ***/
+            Ogre::Camera *screenshot_cam = GetSceneManager()->createCamera("ScreenshotCamera");
+            Ogre::Vector3 ogre_avatar_pos = ToOgreVector3(avatar_position);
+            Ogre::Quaternion ogre_avatar_orientation = ToOgreQuaternion(avatar_orientation);
+
+            // Setup camera
+            screenshot_cam->setNearClipDistance(0.1f);
+            screenshot_cam->setFarClipDistance(2000.f);
+            screenshot_cam->setAspectRatio(Ogre::Real(viewport_->getActualWidth() / Ogre::Real(viewport_->getActualHeight())));
+            screenshot_cam->setAutoAspectRatio(true);
+            
+            // Calculate positions
+            Vector3df pos = avatar_position;
+            pos += (avatar_orientation * Vector3df::UNIT_X * 1.0f);
+            pos += (avatar_orientation * Vector3df::UNIT_Z * 0.5f);
+            Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,0.7f);
+
+            // Create scenenode and attach camera to it
+            Ogre::SceneNode *cam_node = GetSceneManager()->createSceneNode("ScreenShotNode");
+            cam_node->attachObject(screenshot_cam);
+
+            // Setup camera to look at the avatar
+            cam_node->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+            cam_node->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+            cam_node->lookAt(Ogre::Vector3(lookat.x, lookat.y, lookat.z), Ogre::Node::TS_WORLD, Ogre::Vector3::NEGATIVE_UNIT_Z);
+      
+            // Render camera view to texture and save to file
+            Ogre::TexturePtr avatar_screenshot = 
+                Ogre::TextureManager::getSingleton().createManual("ScreenshotTexture",
+                                                                  Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+                                                                  Ogre::TEX_TYPE_2D, window_width, window_height, 0, 
+                                                                  Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+
+            Ogre::RenderTexture *render_texture = avatar_screenshot->getBuffer()->getRenderTarget();
+            Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
+            render_texture->update();
+
+            pixelData = new Ogre::uchar[window_width * window_height * 4];
+            pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, pixelData);
+            render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
+            
+            screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8, false);
+            screenshot.save(avatarfile);
+
+            // Cleanup
+            Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
+            GetSceneManager()->destroySceneNode(cam_node);
+            GetSceneManager()->destroyCamera(screenshot_cam);
         }
     }
 

@@ -13,6 +13,7 @@
 class QRectF;
 class QGraphicsLinearLayout;
 class QGraphicsWidget;
+class QGraphicsScene;
 
 namespace CoreUi
 {
@@ -104,6 +105,9 @@ namespace UiServices
 
         //! Pointer to main QGraphicsView
         QGraphicsView *ui_view_;
+
+        //! Pointer to inworld widget scene
+        QGraphicsScene *inworld_scene_;
 
         //! Main layout for full screen widgets
         QGraphicsLinearLayout *container_layout_;

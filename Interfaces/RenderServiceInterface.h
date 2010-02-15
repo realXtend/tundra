@@ -66,7 +66,7 @@ namespace Foundation
         //! take sceenshot to a location
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
         //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
-        virtual void CaptureWorldAndAvatarToFile(const std::string& worldfile, const std::string& avatarfile) = 0;
+        virtual void CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile) = 0;
         
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request

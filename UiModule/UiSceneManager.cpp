@@ -15,6 +15,7 @@
 #include <QGraphicsLinearLayout>
 #include <QGraphicsWidget>
 #include <QGraphicsView>
+#include <QGraphicsScene>
 
 namespace UiServices
 {
@@ -22,6 +23,7 @@ namespace UiServices
         : QObject(),
           framework_(framework),
           ui_view_(ui_view),
+          inworld_scene_(0),
           container_widget_(new QGraphicsWidget()),
           container_layout_(0),
           main_panel_(0),
@@ -29,9 +31,10 @@ namespace UiServices
     {
         if (ui_view_)
         {
+            inworld_scene_ = ui_view_->scene();
             InitMasterLayout();
-            SceneRectChanged(ui_view_->scene()->sceneRect());
-            connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ),
+            SceneRectChanged(inworld_scene_->sceneRect());
+            connect(inworld_scene_, SIGNAL( sceneRectChanged(const QRectF &) ),
                     this, SLOT( SceneRectChanged(const QRectF &) ));
         }
         else
@@ -96,7 +99,7 @@ namespace UiServices
             else
             {
                 proxy_widget->hide();
-                ui_view_->scene()->addItem(proxy_widget);
+                inworld_scene_->addItem(proxy_widget);
                 if (properties.IsShownInToolbar())
                 {
                     CoreUi::MainPanelButton *control_button = main_panel_->AddWidget(proxy_widget, properties.GetWidgetName());
@@ -119,7 +122,7 @@ namespace UiServices
         {
             if (main_panel_ && proxy_widget->GetWidgetProperties().IsShownInToolbar())
                 main_panel_->RemoveWidget(proxy_widget);
-            ui_view_->scene()->removeItem(proxy_widget);
+            inworld_scene_->removeItem(proxy_widget);
         }
     }
 
@@ -127,8 +130,8 @@ namespace UiServices
     {
         if (ui_view_)
         {
-            ui_view_->scene()->setActiveWindow(widget);
-            ui_view_->scene()->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+            inworld_scene_->setActiveWindow(widget);
+            inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
         }
     }
 
@@ -175,7 +178,7 @@ namespace UiServices
             login_proxy_widget_->show();
         }
         if (ui_view_)
-            SceneRectChanged(ui_view_->scene()->sceneRect());
+            SceneRectChanged(inworld_scene_->sceneRect());
         emit UiStateChangeDisconnected();
     }
 
@@ -188,7 +191,7 @@ namespace UiServices
         container_layout_->setContentsMargins(0,0,0,0);
         container_layout_->setSpacing(0);
         container_widget_->setLayout(container_layout_);
-        ui_view_->scene()->addItem(container_widget_);
+        inworld_scene_->addItem(container_widget_);
 
         // Init main panel
         main_panel_ = new CoreUi::MainPanel(framework_);

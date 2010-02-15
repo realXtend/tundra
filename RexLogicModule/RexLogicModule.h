@@ -207,6 +207,11 @@ namespace RexLogic
         void SendRexPrimData(entity_id_t entityid);
 
     private:
+        //! Does preparations before logout/delete of scene
+        //! For example: Takes ui screenshots of world/avatar with rendering service.
+        //!              Add functionality if you need something done before logout.
+        void AboutToDeleteWorld();
+
         /// Return renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetRendererPtr();
 
