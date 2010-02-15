@@ -26,7 +26,7 @@ SET (CAELUM 1)
 SET (HYDRAX 0)
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
-SET (WINDOWS_APP 1)
+SET (WINDOWS_APP 0)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
