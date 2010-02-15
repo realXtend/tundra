@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QPair>
 #include <QTimer>
+#include <QSlider>
 
 class QImage;
 class QColor;
@@ -166,6 +167,9 @@ namespace Environment
         void UpdateSunLightColor(const QColor& color);
         void UpdateAmbientLightColor(const QColor& color);
 
+        void TimeOfDayOverrideChanged(int state);
+        void TimeValueChanged(int new_value);
+
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 
@@ -224,6 +228,8 @@ namespace Environment
 
         //! Proxy Widget for ui
         UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
+
+        QSlider *timeof_day_slider_;
 
         QColorDialog* sun_color_picker_;
         QColorDialog* ambient_color_picker_;

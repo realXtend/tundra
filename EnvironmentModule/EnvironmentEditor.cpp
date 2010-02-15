@@ -12,6 +12,7 @@
 
 #include "Sky.h"
 #include "Environment.h"
+#include "EC_OgreEnvironment.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
@@ -507,8 +508,18 @@ namespace Environment
     void EnvironmentEditor::InitAmbientTabWindow()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(environment != 0)
+        if (environment != 0)
         {
+            // Time of day override
+            QCheckBox *daytime_override_checkbox = editor_widget_->findChild<QCheckBox *>("serverTimeOverrideCheckBox");
+            timeof_day_slider_ = editor_widget_->findChild<QSlider *>("horizontalSliderTimeOfDay");
+            
+            timeof_day_slider_->setTracking(true);
+            timeof_day_slider_->setEnabled(environment->GetTimeOverride());
+
+            connect(daytime_override_checkbox, SIGNAL( stateChanged(int) ), SLOT( TimeOfDayOverrideChanged(int) ));
+            connect(timeof_day_slider_, SIGNAL( sliderMoved(int) ), SLOT( TimeValueChanged(int) ));
+
             // Sun direction
             QDoubleSpinBox* sun_direction_x = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_x");
             sun_direction_x->setMinimum(-100.0);
@@ -2099,5 +2110,33 @@ namespace Environment
         }
     }
 
+    void EnvironmentEditor::TimeOfDayOverrideChanged(int state)
+    {
+        EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
+        if(!environment.get())
+            return;
+
+        bool enabled = false;
+        if (state == Qt::Checked)
+            enabled = true;
+        timeof_day_slider_->setEnabled(enabled);
+        environment->SetTimeOverride(enabled);
+        TimeValueChanged(timeof_day_slider_->value());
+    }
     
+    void EnvironmentEditor::TimeValueChanged(int new_value)
+    {
+        EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
+        if (!environment.get())
+            return;
+        if (!environment->GetTimeOverride())
+            return;
+        OgreRenderer::EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
+        if (ec_ogre_env)
+        {
+            qreal float_time = new_value;
+            float_time /= 100;
+            ec_ogre_env->SetTime(float_time);
+        }
+    }
 }
