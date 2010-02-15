@@ -54,7 +54,7 @@ namespace Ether
             EtherSceneController *GetSceneController() { return scene_controller_; }
 
             void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
-            QMap<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
+            QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
 
         private slots:

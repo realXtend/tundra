@@ -74,6 +74,8 @@ namespace UiServices
 
         void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
 
+        QPair<QString, QString> GetScreenshotPaths();
+
         /*************** Logging ***************/
 
         MODULE_LOGGING_FUNCTIONS;

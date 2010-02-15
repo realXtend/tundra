@@ -167,7 +167,7 @@ namespace OgreRenderer
         //! Takes a screenshot and saves it to a file.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
-        virtual void CaptureWorldAndAvatarToFile(const std::string& worldfile, const std::string& avatarfile);
+        virtual void CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile);
 
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add

@@ -96,24 +96,24 @@ namespace Ether
             if (data_manager_->GetAvatarCountInSettings() == 0)
             {
                 qDebug() << "Avatar config file was empty, adding some items to it...";
-                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "nopass");
-                Data::OpenSimAvatar oa2("d", "d", "d");
-                Data::RealXtendAvatar ra("testrexuser", QUrl("http://world.evocativi.com:10001"), "test");
+                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "friendscallmejack");
+                //Data::OpenSimAvatar oa2("d", "d", "d");
+                //Data::RealXtendAvatar ra("testrexuser", QUrl("http://world.evocativi.com:10001"), "test");
                 data_manager_->StoreOrUpdateAvatar(&oa1);
-                data_manager_->StoreOrUpdateAvatar(&oa2);
-                data_manager_->StoreOrUpdateAvatar(&ra);
+                //data_manager_->StoreOrUpdateAvatar(&oa2);
+                //data_manager_->StoreOrUpdateAvatar(&ra);
             }
 
             if (data_manager_->GetWorldCountInSettings() == 0)
             {
                 qDebug() << "World config file was empty, adding some items to it...";
-                Data::OpenSimWorld ow1(QUrl("http://world.evocativi.com:8002"), QUrl());
+                Data::OpenSimWorld ow1(QUrl("http://home.hulkko.net:9007"), QUrl());
                 Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), QUrl());
-                Data::OpenSimWorld ow3(QUrl("http://localhost:9000"), QUrl());
+                //Data::OpenSimWorld ow3(QUrl("http://localhost:9000"), QUrl());
                 Data::OpenSimWorld ow4(QUrl("http://localhost:8002"), QUrl());
                 data_manager_->StoreOrUpdateWorld(&ow1);
                 data_manager_->StoreOrUpdateWorld(&ow2);
-                data_manager_->StoreOrUpdateWorld(&ow3);
+                //data_manager_->StoreOrUpdateWorld(&ow3);
                 data_manager_->StoreOrUpdateWorld(&ow4);
             }
         }
@@ -249,12 +249,14 @@ namespace Ether
             }
         }
 
-        QMap<QString, QString> EtherLogic::GetLastLoginScreenshotData(std::string conf_path)
+        QPair<QString, QString> EtherLogic::GetLastLoginScreenshotData(std::string conf_path)
         {
-            QMap<QString, QString> paths_map;
+            QPair<QString, QString> paths_pair;
+            paths_pair.first = QString("");
+            paths_pair.second = QString("");
             // Return if no login has been done via ether
             if (!last_login_cards_.first || !last_login_cards_.second)
-                return paths_map;
+                return paths_pair;
 
             QString worldpath, avatarpath, worldfile, avatarfile, path_with_file, appdata_path;
             QDir dir_check;
@@ -291,9 +293,8 @@ namespace Ether
             path_with_file = avatarpath + avatarfile;
             if (last_login_cards_.first->pixmapPath() != path_with_file)
             {
-                // Lets not do this yet, cant take the shot for it
-                //last_login_cards_.first->setPixmapPath(path_with_file);
-                //data_manager_->StoreOrUpdateAvatar(last_login_cards_.first);
+                last_login_cards_.first->setPixmapPath(path_with_file);
+                data_manager_->StoreOrUpdateAvatar(last_login_cards_.first);
             }
 
             // World paths
@@ -307,9 +308,9 @@ namespace Ether
             }
 
             // Return values
-            paths_map["WorldFile"] = worldpath + worldfile;
-            paths_map["AvatarFile"] = avatarpath + avatarfile;
-            return paths_map;
+            paths_pair.first = worldpath + worldfile;
+            paths_pair.second = avatarpath + avatarfile;
+            return paths_pair;
         }
 
         void EtherLogic::UpdateUiPixmaps()
@@ -319,7 +320,10 @@ namespace Ether
                 if (world_card_map_.contains(last_login_cards_.second->id()))
                     world_card_map_[last_login_cards_.second->id()]->UpdatePixmap(last_login_cards_.second->pixmapPath());
 
-            // Avatar later when we get the picture...
+            // Update new avatar image to ui
+            if (last_login_cards_.first)
+                if (avatar_card_map_.contains(last_login_cards_.first->id()))
+                    avatar_card_map_[last_login_cards_.first->id()]->UpdatePixmap(last_login_cards_.first->pixmapPath());
         }
     }
 }
