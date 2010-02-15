@@ -31,7 +31,6 @@ Environment::~Environment()
     // Does not own.
     activeEnvEntity_.reset();
     owner_ = 0;
-
 }
 
 OgreRenderer::EC_OgreEnvironment* Environment::GetEnvironmentComponent()

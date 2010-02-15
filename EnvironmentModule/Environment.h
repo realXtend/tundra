@@ -127,8 +127,9 @@ namespace Environment
          **/
         bool IsCaelum();
 
-        //! Set server time override
-        void SetTimeOverride(bool enabled) { time_override_ = enabled; }      
+        //! Setter/getter for bool local override of server time
+        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
+        bool GetTimeOverride() { return time_override_; }
 
         void SetSunDirection(const QVector<float>& vector);
         QVector<float> GetSunDirection();
