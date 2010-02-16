@@ -8,6 +8,7 @@
 #include "OgreConversionUtils.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCamera.h"
+#include "EC_OgreMovableTextOverlay.h"
 #include "SceneEvents.h"
 #include "SceneManager.h"
 #include "Entity.h"
@@ -831,6 +832,12 @@ namespace OgreRenderer
     {
         if (renderwindow_)
         {
+           
+            // Hide ui and name overlays
+            SetAllTextOverlaysVisible(false);
+            q_ogre_world_view_->HideUiOverlay();
+
+
             /*** World image ***/
             int window_width = renderwindow_->getWidth();
             int window_height = renderwindow_->getHeight();
@@ -859,9 +866,9 @@ namespace OgreRenderer
             
             // Calculate positions
             Vector3df pos = avatar_position;
-            pos += (avatar_orientation * Vector3df::UNIT_X * 1.0f);
-            pos += (avatar_orientation * Vector3df::UNIT_Z * 0.5f);
-            Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,0.7f);
+            pos += (avatar_orientation * Vector3df::UNIT_X * 0.6f);
+            pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
+            Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
 
             // Create scenenode and attach camera to it
             Ogre::SceneNode *cam_node = GetSceneManager()->createSceneNode("ScreenShotNode");
@@ -894,6 +901,10 @@ namespace OgreRenderer
             Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
             GetSceneManager()->destroySceneNode(cam_node);
             GetSceneManager()->destroyCamera(screenshot_cam);
+
+            // Show ui and name overlays
+            SetAllTextOverlaysVisible(true);
+            q_ogre_world_view_->ShowUiOverlay();
         }
     }
 
@@ -951,6 +962,30 @@ namespace OgreRenderer
     Real Renderer::GetViewDistance()
     {
         return view_distance_;
+    }
+
+    void Renderer::SetAllTextOverlaysVisible(bool visible)
+    {
+        // Get all EC_OgreMovableTextOverlay from scene
+        QList<EC_OgreMovableTextOverlay *> name_overlay_list;
+        Scene::ScenePtr word_scene = framework_->GetDefaultWorldScene();
+        if (word_scene.get())
+        {
+            for (Scene::SceneManager::iterator iter = word_scene->begin(); iter != word_scene->end(); ++iter)
+            {
+                Scene::Entity &entity = **iter;
+                const Foundation::ComponentInterfacePtr &ogre_text_component = entity.GetComponent("EC_OgreMovableTextOverlay");
+                if (ogre_text_component)
+                {
+                    EC_OgreMovableTextOverlay *ogre_movable_text_overlay = checked_static_cast<EC_OgreMovableTextOverlay *>(ogre_text_component.get());
+                    name_overlay_list.append(ogre_movable_text_overlay);
+                }
+            }
+        }
+
+        // Set visibility for all found text overlays
+        foreach (EC_OgreMovableTextOverlay* overlay, name_overlay_list)
+            overlay->SetVisible(visible);
     }
 }
 

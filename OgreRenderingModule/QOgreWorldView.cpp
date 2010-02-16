@@ -95,4 +95,16 @@ namespace OgreRenderer
         ui_overlay_texture_-> getBuffer()-> blitFromMemory (ui);
     }
 
+    void QOgreWorldView::ShowUiOverlay()
+    {
+        ui_overlay_->show();
+        RenderOneFrame();
+    }
+
+    void QOgreWorldView::HideUiOverlay()
+    {
+        ui_overlay_->hide();
+        RenderOneFrame();
+    }
+
 }
