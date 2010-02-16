@@ -71,7 +71,12 @@ namespace UiServices
         void RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget);
 
         //! Brings the UiProxyWidget to front in the scene and set focus to it
+        //! \param widget Proxy widget.
         void BringProxyToFront(UiProxyWidget *widget);
+
+        //! Brings the UiProxyWidget to front in the scene and set focus to it
+        //! \param widget Widget.
+        void BringProxyToFront(QWidget *widget);
 
         ///\note
         /// THE FOLLOWING FUNCTIONS SHOULD BE USED BY THE CORE UI ONLY (INTERNALLY BY UI MODULE). DON'T USE THESE DIRECTLY IF

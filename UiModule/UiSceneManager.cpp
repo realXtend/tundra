@@ -135,6 +135,15 @@ namespace UiServices
         }
     }
 
+    void UiSceneManager::BringProxyToFront(QWidget *widget)
+    {
+        if (ui_view_)
+        {
+            inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
+            inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+        }
+    }
+
     /*************** Public Functions But Use With Caution ****************/
     /** As in don't touch if you are not 100% sure on what you are doing **/
 
