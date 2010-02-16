@@ -184,6 +184,9 @@ namespace OgreRenderer
         //! Initialises the events related info for this module
         void InitializeEvents();
 
+        //! Sets visibility for all name display overlays, used in screenshot taking
+        void SetAllTextOverlaysVisible(bool visible);
+
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
          */

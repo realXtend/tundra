@@ -21,6 +21,9 @@ namespace OgreRenderer
             void RenderOneFrame ();
             void OverlayUI (Ogre::PixelBox &ui);
 
+            void ShowUiOverlay();
+            void HideUiOverlay();
+
         private:
             Ogre::Root              *root_;
 
