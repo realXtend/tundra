@@ -6,6 +6,8 @@
 #include "ModuleReference.h"
 #include "EventDataInterface.h"
 
+#include <Qt>
+
 class QDomElement;
 
 namespace Foundation
@@ -215,9 +217,12 @@ namespace Foundation
         
         //! Mutex for new delayed events
         Mutex delayed_events_mutex_;
-                
+        
         //! Framework
         Framework *framework_;
+        
+        //! Current thread ID
+        Qt::HANDLE main_thread_id_;
     };
 }
 
