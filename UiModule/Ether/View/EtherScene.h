@@ -25,9 +25,14 @@ namespace Ether
         public:
             EtherScene(QObject *parent, const QRectF &scene_rect);
 
+            void SupressKeyEvents(bool enabled) { supress_key_events_ = enabled; }
+
         protected:
             void keyPressEvent(QKeyEvent *ke);
             void mousePressEvent(QGraphicsSceneMouseEvent *mouse_event);
+
+        private:
+            bool supress_key_events_;
 
         signals:
             void UpPressed();

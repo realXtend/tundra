@@ -7,12 +7,12 @@ namespace Ether
 {
     namespace Data
     {
-        WorldInfo::WorldInfo(Ether::WorldTypes::World world_type, QUrl login_url, QUrl info_url, QString path_to_pixmap, QUuid id)
+        WorldInfo::WorldInfo(Ether::WorldTypes::World world_type, QUrl login_url, QMap<QString, QVariant> grid_info, QString path_to_pixmap, QUuid id)
             : QObject(),
               path_to_pixmap_(path_to_pixmap),
               world_type_(world_type),
               login_url_(login_url),
-              info_url_(info_url)
+              grid_info_(grid_info)
         {
             if (id.isNull())
                 id_ = QUuid::createUuid();

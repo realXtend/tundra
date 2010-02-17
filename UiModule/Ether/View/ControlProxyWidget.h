@@ -9,6 +9,7 @@
 #include <QPushButton>
 
 #include "InfoCard.h"
+#include "ActionProxyWidget.h"
 
 namespace Ether
 {
@@ -50,10 +51,13 @@ namespace Ether
             };
 
             ControlProxyWidget(ControlType type, LayoutDirection direction, QString text);
+            void EmitActionRequest(QString type);
 
         public slots:
             void UpdateGeometry(QRectF rect);
             void UpdateContollerCard(InfoCard *new_card);
+
+            void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
 
         private slots:
             void InitCardWidgets();
@@ -77,10 +81,13 @@ namespace Ether
             QLabel *text_label_;
             QWidget *parent_;
 
-            InfoCard *controlled_card_;
+            View::InfoCard *controlled_card_;
+            ActionProxyWidget *action_widget_;
 
         signals:
             void ActionRequest();
+            void test();
+            void ShowActionWidgetRequest(QString, View::InfoCard*);
 
         };
     }

@@ -20,6 +20,7 @@ namespace Ether
         Q_OBJECT
 
         public:
+            enum DataType { Avatar, World };
             enum ArragementType { TopToBottom, BottomToTop };
 
             InfoCard(ArragementType type, QRectF bounding_rect, QUuid mapping_id, QString title, QString pixmap_path);
@@ -33,15 +34,19 @@ namespace Ether
             void SetMoveAnimationPointer(QPropertyAnimation *ptr) { move_animation_pointer_ = ptr; }
 
             QString title() { return title_; }
+            DataType dataType() { return data_type_; }
             ArragementType arragementType() { return type_; }
             QUuid id() { return id_; }
             QPropertyAnimation *GetMoveAnimationPointer() { return move_animation_pointer_; }
+
+            void setTitle(QString title) { title_ = title; }
 
         private slots:
             void InitPaintHelpers();
             void InitDecorations();
 
         protected:
+            DataType data_type_;
             ArragementType type_;
 
             QUuid id_;

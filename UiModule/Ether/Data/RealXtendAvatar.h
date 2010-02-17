@@ -26,8 +26,11 @@ namespace Ether
             {
             }
 
-            QString account() { return account_; }
-            QUrl authUrl() { return auth_url_; }
+            QString account()                   { return account_; }
+            QUrl authUrl()                      { return auth_url_; }
+
+            void setAccount(QString account)    { account_ = account; }
+            void setAuthUrl(QUrl auth_url)      { auth_url_ = auth_url; }
 
             void Print()
             {

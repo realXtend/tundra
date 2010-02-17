@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QMap>
 
 #include "AvatarInfo.h"
 #include "WorldInfo.h"
@@ -32,9 +33,21 @@ namespace Ether
             QMap<QUuid, Data::WorldInfo*> ReadAllWorldsFromFile();
             void StoreOrUpdateWorld(Data::WorldInfo *world_info);
 
+            Data::AvatarInfo *GetAvatarInfo(QString uuid);
+            Data::WorldInfo *GetWorldInfo(QString uuid);
+
         private:
             QString avatar_settings_name_;
             QString worldserver_settings_name_;
+
+            QMap<QUuid, Data::AvatarInfo *> avatar_map_;
+            QMap<QUuid, Data::WorldInfo *> world_map_;
+
+        signals:
+            void ObjectUpdated(QUuid, QString);
+            void AvatarDataCreated(Data::AvatarInfo *);
+            void WorldDataCreated(Data::WorldInfo *);
+
         };
     }
 }
