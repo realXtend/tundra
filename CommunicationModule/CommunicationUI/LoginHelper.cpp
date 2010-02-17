@@ -49,7 +49,7 @@ namespace UiHelpers
 
         // Username validation
         if (!username_.contains("@"))
-	        username_.append(QString("@%1").arg(server_));
+            username_.append(QString("@%1").arg(server_));
 
         // Server and port validation
         if (!server_.startsWith("http://") || !server_.startsWith("https://"))
@@ -68,12 +68,12 @@ namespace UiHelpers
 
         server_ = server_url.authority();
 
-	    try
+        try
         {
             im_connection_ = 0; // CommunicationService will delete this
             im_connection_ = communication_service_->OpenConnection(credentials);
         }
-        catch (Exception &e) { /* e.what() for error */ }
+        catch (Exception &/*e*/) { /* e.what() for error */ }
 
         connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
         connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));
