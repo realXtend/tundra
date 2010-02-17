@@ -7,7 +7,8 @@
 
 namespace Environment
 {
-    // This label will send a signal when some of mouse event has happend inside this label.
+    // This label will send a signal when some of mouse event has occured inside this label.
+    //! \ingroup EnvironmentModuleClient.
     class TerrainLabel: public QLabel
     {
         Q_OBJECT

@@ -11,6 +11,7 @@
 namespace OgreRenderer
 {
     /// Sky type
+    //! \ingroup EnvironmentModuleClient.
     enum SkyType
     {
         SKYTYPE_NONE = 0,
@@ -57,6 +58,8 @@ namespace OgreRenderer
         }
     };*/
 
+    //! Sky parameters for skybox, see ogre documentation for more information.
+    //! \ingroup EnvironmentModuleClient.
     struct SkyBoxParameters
     {
         std::string material;
@@ -82,7 +85,8 @@ namespace OgreRenderer
         }
     };
 
-    /// Sky parameters for skydome, see Ogre documentation for more info.
+    /// Sky parameters for skydome, see Ogre documentation for more information.
+    //! \ingroup EnvironmentModuleClient.
     struct SkyDomeParameters
     {
         std::string material;
@@ -124,7 +128,8 @@ namespace OgreRenderer
         }
     };
 
-    /// Sky parameters for skyplane, see Ogre documentation for more info.
+    /// Sky parameters for skyplane, see Ogre documentation for more infomation.
+    //! \ingroup EnvironmentModuleClient.
     struct SkyPlaneParameters
     {
         std::string material;
@@ -165,7 +170,7 @@ namespace OgreRenderer
 
     /** Ogre sky component
      *
-     *  \ingroup OgreRenderingModuleClient
+     *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      *
      */
     class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface

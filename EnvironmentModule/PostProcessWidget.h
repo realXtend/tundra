@@ -19,6 +19,7 @@ namespace Environment
     class EnvironmentModule;
 
     //! Dialog for postprocessing effects
+    //! \ingroup EnvironmentModuleClient.
     class PostProcessWidget : public QWidget
     {
         Q_OBJECT

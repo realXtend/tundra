@@ -16,6 +16,12 @@ class QColor;
 class QMouseEvent;
 class QColorDialog;
 
+namespace Ogre
+{
+    class ManualObject;
+    class SceneNode;
+}
+
 namespace Resource
 {
     namespace Events
@@ -45,13 +51,20 @@ namespace Environment
 
     typedef QPair<float, float> MinMaxValue;
 
+    //! Environment editor window. Owned by EnvironmentModule. Handles terrain, water, sky, fog and light editing.
+    //! Terrain: Paint terrain heightmap, update terrain textures and height ranges.
+    //! Water: Enable/Disable water geometry and change it height value.
+    //! Sky: Choose between three sky types that are Sky_box, Sky_dome and Sky_plane, update sky parameters like distance and texture and enable/disable sky geometry.
+    //! Fog: Change water and ground fog start and end distances and change water and ground fog color.
+    //! Light: Change sunlight direction and color and change ambient light color.
+    //! \ingroup EnvironmentModuleClient.
     class EnvironmentEditor: public QObject
     {
         Q_OBJECT
 
     public:
-        // All modify land actions that we can send into the server.
-        // Note! Dont change the order of this list or server wont do right modify land actions.
+        //! All modify land actions that we can send into the server.
+        //! Note! Dont change the order of this list or server wont do right modify land actions.
         enum ModifyLandAction
         {
             Flatten = 0,
@@ -62,23 +75,25 @@ namespace Environment
             Revert  = 5
         };
 
-        // All brush sizes that we can use to modify our land.
-        // Note! Dont change the order of this list.
+        //! All brush sizes that we can use to modify our land.
+        //! Note! Dont change the order of this list.
         enum BrushSize
         {
+            //!Brush size is 3x3 vertices.
             Small   = 0,
+            //!Brush Size is 5x5 vertices.
             Medium  = 1,
+            //!Brush Size is 9x9 vertices.
             Large   = 2
         };
 
-        /*enum MousePressEvents
+        enum TerrainPaintMode
         {
-            no_button       = 0,
-            left_button     = 1 << 0,
-            right_button    = 1 << 1,
-            middle_button   = 1 << 2,
-            button_mask     = 0 + left_button + right_button + middle_button
-        };*/
+            //!Only 2D painting is enabled.
+            Paint2D,
+            //!Both 2D and 3D painting are enabled.
+            Paint3D
+        };
 
         //! Constuctor
         EnvironmentEditor(EnvironmentModule *environment_module);
@@ -89,11 +104,30 @@ namespace Environment
         //! Handle resource ready event that will return the texture that has been requested.
         void HandleResourceReady(Resource::Events::ResourceReady *res);
 
+        //! Heightmap image width
         static const int cHeightmapImageWidth  = 256;
+
+        //! Heightmap image height
         static const int cHeightmapImageHeight = 256;
+
+        //! How many textures terrain is using
         static const int cNumberOfTerrainTextures = 4;
 
     public slots:
+        //! Toggle between Paint2D and Paint3D mode.
+        void ToggleTerrainPaintMode();
+
+        //! What paint mode is in use (Paint2D or Paint3D).
+        TerrainPaintMode GetTerrainPaintMode() const;
+
+        //! Will handle MOUSEDRAG and MOUSEDRAG_STOPPED events. When MOUSEDRAG event is called first time
+        //! terrain painting mode is set to active and terrain_paint_timer is set running. 
+        //! terrain painting mode is active until WorldInputModule will send a MOUSEDRAG_STOPPED event.
+        //! @param event_id Mouse event id is used to identifie what mouse event just occured.
+        //! @param data Mouse movement information, used for raycast.
+        //! @return Should return true if the event was handled and is not to be propagated further
+        bool HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+
         //! Create new terrain heightmap texture using terrain height information.
         void UpdateTerrain();
 
@@ -103,7 +137,11 @@ namespace Environment
         //! Get new terrain texture asset ids from the terrain object and send a asset request to the texture decoder.
         void UpdateTerrainTextures();
 
+        //! Update water geometry if water geometry is not already created, create new water geometry and get new water height from editor window.
+        //! @param state Editor window's checkbox state.
         void UpdateWaterGeometry(int state);
+
+        //! Update water height value.
         void UpdateWaterHeight();
 
         //! Called when sky type has been changed.
@@ -127,7 +165,8 @@ namespace Environment
         //! Change state of sky enable check box.
         void ToggleSkyCheckButton(bool enabled);
 
-        //! Called when QMouseEvent event is generated inside the terrain map image label.
+        //! Called when QMouseEvent event is generated inside the TerrainLabel.
+        //! ev mouse event pointer.
         void HandleMouseEvent(QMouseEvent *ev);
 
         //! When called modify land message is sended into the server. This method is connected with mouse click event and is active,
@@ -153,18 +192,45 @@ namespace Environment
         //! Adjust Water check button.
         void ToggleWaterCheckButton();
 
+        //! Update ground fog.
+        //! @param fogStart fog start distance
+        //! @param fogEnd fog end distance
+        //! @param color fog color
         void UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
 
+        //! Update water fog.
+        //! @param fogStart fog start distance
+        //! @param fogEnd fog end distance
+        //! @param color fog color
         void UpdateWaterFog(float fogStart, float fogEnd, const QVector<float>& color);
+
+        //! Set new ground fog values to Environment object.
         void SetGroundFog();
+
+        //! Set new water fog values to Environment object.
         void SetWaterFog();
+
+        //! Set new ground fog distance value to Environment object.
         void SetGroundFogDistance();
+
+        //! Set new water fog distance value to Environment object.
         void SetWaterFogDistance();
+
+        //! Toggle if fog color can be changed by client side.
         void ToggleFogOverride();
 
+        //! Updates sun direction when user change some of the cordinate values from the editor widnow.
         void UpdateSunDirection(double value);
+
+        //! Bring a external color picker dialog on the screen.
         void ShowColorPicker();
+
+        //! Update sun light color value.
+        //! @color new color value.
         void UpdateSunLightColor(const QColor& color);
+
+        //! Update ambient light color.
+        //! @param new color value.
         void UpdateAmbientLightColor(const QColor& color);
 
         void TimeOfDayOverrideChanged(int state);
@@ -178,6 +244,17 @@ namespace Environment
         //! @Return converted QImage.
         QImage ConvertToQImage(Foundation::TextureInterface &tex);
 
+        //! Create new terrain paint brush that will display where user is painting the terrain.
+        //! Paint area color is calculated using distance between middle point and individual vertex.
+        //! This method will destroy the previous mesh until it begin to create a new mesh.
+        //! @param x_pos X coordinate where paint mesh middle point is located.
+        //! @param y_pos Y coordinate where paint mesh middle point is located.
+        //! @param color Paint area color.
+        //! @param gradient_size how much larger or smaller gradient will be. Gradient range can be [0 - 1].
+        void CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color = Color(1.0f, 0.0f, 0.0f), float gradient_size = 0.75f);
+        //! If paint area has been created, this method will release it from the scene.
+        void ReleasePaintMeshOnScene();
+
         //! Create a window for terrain editor.
         void InitEditorWindow();
         void InitTerrainTabWindow();
@@ -190,6 +267,11 @@ namespace Environment
         //! Create a new heightmap image that will show heightmap values in grayscale.format.
         void CreateHeightmapImage();
 
+        //! Create red cube inside the heightmap image. Cube is used to show where mouse cursor is curently located 
+        //! @param x_pos x position of mouse cursor.
+        //! @param y_pos y position of mouse cursor.
+        void UpdateHeightmapImagePaintArea(uint x_pos, uint y_pos);
+
         //! Clear old sky properties and create a new one for spesific sky type.
         //! @Param sky_type is used to tell what type of sky is in use, so right properties will be created.
         void CreateSkyProperties(OgreRenderer::SkyType sky_type);
@@ -198,7 +280,7 @@ namespace Environment
         void CleanSkyProperties();
 
         //! Ask texture decoder for a texture resource.
-        //! @Param index for terrain_texture_id_list_ that holds the uuid that we want to use to request the resource that we need. Range should be [0 - 3].
+        //! @Param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
         //! @Return request tag for the texture.
         request_tag_t RequestTerrainTexture(uint index);
 
@@ -212,7 +294,7 @@ namespace Environment
         std::vector<std::string> terrain_texture_id_list_;
 
         //! Return heightmap smallest and largest value (first = min and second = max).
-        MinMaxValue GetMinMaxHeightmapValue(EC_Terrain &terrain) const;
+        MinMaxValue GetMinMaxHeightmapValue(const EC_Terrain &terrain) const;
 
         //! Pointer for environment module.
         EnvironmentModule *environment_module_;
@@ -240,16 +322,21 @@ namespace Environment
 
         //! Timer for terrain painting so that terrain is painted certain time.
         QTimer terrain_paint_timer_;
-        //! Mouse press flags
-        //u8 mouse_press_flag_;
-        
-        //! Only use with terrain paint to keep track where mouse is locating.
+
+        //! Only used when terrain paint is active. Updates parameter when move event occurs.
         int mouse_position_[2];
 
-        bool edit_terrain_;
+        //! Is a user currently painting the terrain.
+        bool edit_terrain_active_;
 
-        /// 
-        //Real start_height_;
+        //! Terrain paint mode is used to tell the editor when user can paint in 3d.
+        TerrainPaintMode terrainPaintMode_;
+
+        //! This object is created each time the CreatePaintAreaMesh is called.
+        Ogre::ManualObject *manual_paint_object_;
+
+        //! Scene node that will hold spesific paint area mesh object.
+        Ogre::SceneNode *manual_paint_node_;
     };
 }
 

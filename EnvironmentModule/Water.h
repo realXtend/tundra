@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-/// @file Water.h
-/// @brief Manages Water-related Rex logic.
+//! @file Water.h
+//! @brief Manages Water-related environment module.
 
 #ifndef incl_Water_h
 #define incl_Water_h
@@ -16,16 +16,17 @@ namespace Environment
     class EnvironmentModule;
     class EC_Water;
 
+    //! \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Water : public QObject
     {
         Q_OBJECT 
 
         public:
-            /// Constructor.
-            /// @param owner EnvironmentModule pointer.
+            //! Constructor.
+            //! @param owner EnvironmentModule pointer.
             Water(EnvironmentModule *owner);
 
-            /// Destructor.
+            //! Destructor.
             virtual ~Water();
 
            
@@ -73,13 +74,13 @@ namespace Environment
             //! entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
             Scene::EntityWeakPtr GetActiveWater();
 
-            /// EnvironmentModule pointer.
+            //! EnvironmentModule pointer.
             EnvironmentModule *owner_;
 
-            /// Water EC pointer.
+            //! Water EC pointer.
             EC_Water* activeWaterComponent_;
 
-            /// Cached water entity pointer.
+            //! Cached water entity pointer.
             Scene::EntityWeakPtr activeWaterEntity_;
             
     };

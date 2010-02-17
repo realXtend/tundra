@@ -44,7 +44,7 @@ namespace OgreRenderer
 
     /** Ogre environment component.
      *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
-     *  \ingroup OgreRenderingModuleClient
+     *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      */
     class OGRE_MODULE_API EC_OgreEnvironment : public Foundation::ComponentInterface
     {

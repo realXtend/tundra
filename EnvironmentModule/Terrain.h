@@ -36,12 +36,17 @@ struct DecodedTerrainPatch;
 
 //! Handles the logic related to the OpenSim Terrain. Note - partially lacks support for multiple scenes - the Terrain object is not instantiated
 //! per-scene, but it contains data that should be stored per-scene. This doesn't affect anything unless we will some day actually have several scenes.
+//! \ingroup EnvironmentModuleClient.
 class ENVIRONMENT_MODULE_API Terrain: public QObject
 {
     Q_OBJECT
 
 public:
+    //! Constructor.
+    //! @param owner_ owner of this object.
     Terrain(EnvironmentModule *owner_);
+
+    //! Destructor
     ~Terrain();
 
     //! Called to handle an OpenSim LayerData packet.
@@ -51,12 +56,18 @@ public:
     //! The OpenSim terrain has a hardcoded size of four textures. When/if we lift that, change the amount here or remove altogether if dynamic.
     static const int num_terrain_textures = 4;
 
-    /// Sets the new terrain texture UUIDs that are used for this terrain. Places
-    /// new resource requests to the asset handler if any of the textures have changed.
+    //! Sets the new terrain texture UUIDs that are used for this terrain. Places
+    //! new resource requests to the asset handler if any of the textures have changed.
     void SetTerrainTextures(const RexTypes::RexAssetID textures[num_terrain_textures]);
 
+    /*! 
+     * Set new terrain height ranges, that will be used with terrain texture shader.
+     * @param start_heights array contains 4 different terrain texture start height value in meters.
+     * @param height_ranges array contains 4 different terrain texture end height value in meters.
+     */
     void SetTerrainHeightValues(const Real start_heights[num_terrain_textures], const Real height_ranges[num_terrain_textures]);
 
+    //! Request new terrain textures from the server.
     void RequestTerrainTextures();
 
     //! Looks through all the entities in RexLogic's currently active scene to find the Terrain
@@ -69,7 +80,8 @@ public:
     //! Called whenever a texture is loaded so it can be attached to the terrain.
     void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
-    //! Get terrain texture ids.
+    //! Get terrain texture ids
+    //! @param index index of texture id range[0-3].
     const RexTypes::RexAssetID &GetTerrainTextureID(int index) const;
 
     //! Get terrain texture start height in meters.
@@ -92,14 +104,19 @@ signals:
     void TerrainTextureChanged();
 
 private:
+    /// Environment module's pointer.
     EnvironmentModule *owner_;
 
+    /// Request tags for new terrain textures.
     request_tag_t terrain_texture_requests_[num_terrain_textures];
 
-    //! UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
+    /// UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
     RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
 
+    /// Array of terrain texture start heights.
     Real start_heights_[num_terrain_textures];
+
+    /// Array of terrain texture end heights.
     Real height_ranges_[num_terrain_textures];
 
     Scene::EntityWeakPtr cachedTerrainEntity_;

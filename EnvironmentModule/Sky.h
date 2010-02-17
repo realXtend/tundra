@@ -30,6 +30,7 @@ namespace Environment
     const int SKYBOX_TEXTURE_COUNT = 6;
 
     /// Sky component
+    /// \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Sky : public QObject
     {
         Q_OBJECT
