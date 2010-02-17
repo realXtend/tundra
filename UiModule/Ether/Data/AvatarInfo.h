@@ -29,14 +29,14 @@ namespace Ether
             virtual void Print() = 0;
 
             //! Getters
-            QString id() { return id_string_; }
-            QString password() { return password_; }
-            QString pixmapPath() { return path_to_pixmap_; }
+            QString id()                            { return id_string_; }
+            QString password()                      { return password_; }
+            QString pixmapPath()                    { return path_to_pixmap_; }
             Ether::AvatarTypes::Avatar avatarType() { return avatar_type_; }
 
             //! Setters
-            void setPixmapPath(QString path) { path_to_pixmap_ = path; }
-
+            void setPixmapPath(QString path)        { path_to_pixmap_ = path; }
+            void setPassword(QString password)      { password_ = password; }
 
         private:
             QUuid id_;

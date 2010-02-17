@@ -28,6 +28,11 @@ namespace Ether
             UpdatePixmap(pixmap_path);
             InitPaintHelpers();
             InitDecorations();
+
+            if (type == TopToBottom)
+                data_type_ = Avatar;
+            else if (type == BottomToTop)
+                data_type_ = World;
         }
 
         void InfoCard::UpdatePixmap(QString pixmap_path)

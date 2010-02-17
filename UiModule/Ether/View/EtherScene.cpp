@@ -16,7 +16,8 @@ namespace Ether
     namespace View
     {
         EtherScene::EtherScene(QObject *parent, const QRectF &scene_rect)
-            : QGraphicsScene(scene_rect, parent)
+            : QGraphicsScene(scene_rect, parent),
+              supress_key_events_(false)
         {
             QBrush bg_brush(QColor(233,233,233,75));            
             setBackgroundBrush(bg_brush);
@@ -25,7 +26,7 @@ namespace Ether
         void EtherScene::keyPressEvent(QKeyEvent *ke)
         {
             QGraphicsScene::keyPressEvent(ke);
-            if (ke->isAutoRepeat())
+            if (ke->isAutoRepeat() || supress_key_events_)
                 return;
 
             switch (ke->key())

@@ -9,10 +9,13 @@
 #include "View/EtherScene.h"
 #include "View/EllipseMenu.h"
 
+#include "Data/DataManager.h"
 #include "Data/AvatarInfo.h"
 #include "Data/WorldInfo.h"
+
 #include "View/InfoCard.h"
 #include "View/ControlProxyWidget.h"
+#include "View/ActionProxyWidget.h"
 
 namespace Ether
 {
@@ -24,13 +27,15 @@ namespace Ether
         Q_OBJECT
 
         public:
-            EtherSceneController(QObject *parent, View::EtherScene *scene, QPair<View::EllipseMenu*, View::EllipseMenu*> menus,
+            EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EllipseMenu*, View::EllipseMenu*> menus,
                                  QRectF card_size, int top_items, int bottom_items);
 
         public slots:
-            void LoadTitleWidgets();
+            void LoadActionWidgets();
             void LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map);
+            void NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map);
             void LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map);
+            void NewWorldToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> world_map);
 
             void UpPressed();
             void DownPressed();
@@ -39,11 +44,21 @@ namespace Ether
             void TryStartLogin();
             void ItemActivatedWithMouse(View::InfoCard *clicked_item);
 
+            void ActionWidgetInProgress(bool action_ongoing);
+
+            void UpdateAvatarInfoWidget();
+            void UpdateWorldInfoWidget();
+
+            void RecalculateMenus();
+
         private slots:
             void ActiveItemChanged(View::InfoCard *);
             void SceneRectChanged(const QRectF &new_rect);
 
         private:
+            //! Pointer to data manager
+            Data::DataManager *data_manager_;
+
             //! Current scene
             View::EtherScene *scene_;
 
@@ -65,9 +80,12 @@ namespace Ether
             View::ControlProxyWidget *avatar_info_widget_;
             View::ControlProxyWidget *world_info_widget_;
 
-            //! Action widgets
+            //! Control widgets
             View::ControlProxyWidget *connect_control_widget_;
             View::ControlProxyWidget *exit_control_widget_;
+
+            //! Action widget
+            View::ActionProxyWidget *action_proxy_widget_;
 
         signals:
             void LoginRequest(QPair<View::InfoCard*, View::InfoCard*> selected_cards);

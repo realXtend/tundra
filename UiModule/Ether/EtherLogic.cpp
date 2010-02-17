@@ -35,6 +35,12 @@ namespace Ether
             // Read avatars and worlds from file
             avatar_map_ = data_manager_->ReadAllAvatarsFromFile();
             world_map_ = data_manager_->ReadAllWorldsFromFile();
+            connect(data_manager_, SIGNAL( ObjectUpdated(QUuid, QString) ),
+                    SLOT( TitleUpdate(QUuid, QString) ));
+            connect(data_manager_, SIGNAL( AvatarDataCreated(Data::AvatarInfo*) ),
+                    SLOT( AvatarCreated(Data::AvatarInfo*) ));
+            connect(data_manager_, SIGNAL( WorldDataCreated(Data::WorldInfo*) ),
+                    SLOT( WorldCreated(Data::WorldInfo*) ));
 
             // Chech how many should be shown in UI
             SetVisibleItems();
@@ -48,9 +54,9 @@ namespace Ether
             menus.second = new View::EllipseMenu(View::EllipseMenu::OPENS_DOWN);
 
             // Create scene controller
-            scene_controller_ = new EtherSceneController(this, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
+            scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
             connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
-                    this, SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
+                    SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
 
             // Create login handler
             login_handler_ = new EtherLoginHandler(this, scene_controller_); 
@@ -64,7 +70,7 @@ namespace Ether
             GenerateAvatarInfoCards();
             GenerateWorldInfoCards();
 
-            scene_controller_->LoadTitleWidgets();
+            scene_controller_->LoadActionWidgets();
             scene_controller_->LoadAvatarCardsToScene(avatar_card_map_);
             scene_controller_->LoadWorldCardsToScene(world_card_map_);
 
@@ -95,26 +101,18 @@ namespace Ether
         {
             if (data_manager_->GetAvatarCountInSettings() == 0)
             {
-                qDebug() << "Avatar config file was empty, adding some items to it...";
-                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "friendscallmejack");
-                //Data::OpenSimAvatar oa2("d", "d", "d");
-                //Data::RealXtendAvatar ra("testrexuser", QUrl("http://world.evocativi.com:10001"), "test");
+                qDebug() << "Avatar config file was empty, adding one anonymous opensim user to it";
+                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "nopass");
                 data_manager_->StoreOrUpdateAvatar(&oa1);
-                //data_manager_->StoreOrUpdateAvatar(&oa2);
-                //data_manager_->StoreOrUpdateAvatar(&ra);
             }
 
             if (data_manager_->GetWorldCountInSettings() == 0)
             {
-                qDebug() << "World config file was empty, adding some items to it...";
-                Data::OpenSimWorld ow1(QUrl("http://home.hulkko.net:9007"), QUrl());
-                Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), QUrl());
-                //Data::OpenSimWorld ow3(QUrl("http://localhost:9000"), QUrl());
-                Data::OpenSimWorld ow4(QUrl("http://localhost:8002"), QUrl());
+                qDebug() << "World config file was empty, adding two anonymous login servers";
+                Data::OpenSimWorld ow1(QUrl("http://home.hulkko.net:9007"), QMap<QString, QVariant>()); // empty grid info at this point
+                Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), QMap<QString, QVariant>()); // empty grid info at this point
                 data_manager_->StoreOrUpdateWorld(&ow1);
                 data_manager_->StoreOrUpdateWorld(&ow2);
-                //data_manager_->StoreOrUpdateWorld(&ow3);
-                data_manager_->StoreOrUpdateWorld(&ow4);
             }
         }
 
@@ -206,8 +204,14 @@ namespace Ether
                     {
                         Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_info);
                         if (ow)
-                            card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), 
-                                                      QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port())), ow->pixmapPath());
+                        {
+                            QString title;
+                            if (ow->loginUrl().port() != -1)
+                                title = QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port()));
+                            else
+                                title = ow->loginUrl().host();
+                            card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), title, ow->pixmapPath());
+                        }
                         break;
                     }
 
@@ -324,6 +328,77 @@ namespace Ether
             if (last_login_cards_.first)
                 if (avatar_card_map_.contains(last_login_cards_.first->id()))
                     avatar_card_map_[last_login_cards_.first->id()]->UpdatePixmap(last_login_cards_.first->pixmapPath());
+        }
+
+        void EtherLogic::TitleUpdate(QUuid card_uuid, QString new_title)
+        {
+            if (avatar_card_map_.contains(card_uuid))
+            {
+                avatar_card_map_[card_uuid]->setTitle(new_title);
+                scene_controller_->UpdateAvatarInfoWidget();
+            }
+            else if (world_card_map_.contains(card_uuid))
+            {
+                world_card_map_[card_uuid]->setTitle(new_title);
+                scene_controller_->UpdateWorldInfoWidget();
+            }
+        }
+
+        void EtherLogic::AvatarCreated(Data::AvatarInfo *avatar_data)
+        {
+            View::InfoCard *new_avatar_card = 0;
+            if (avatar_data->avatarType() == AvatarTypes::OpenSim)
+            {
+                Data::OpenSimAvatar *oa = dynamic_cast<Data::OpenSimAvatar *>(avatar_data);
+                if (oa)
+                    new_avatar_card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(oa->id()), 
+                                                         oa->userName(), oa->pixmapPath());
+
+            }
+            else if (avatar_data->avatarType() == AvatarTypes::RealXtend)
+            {
+                Data::RealXtendAvatar *ra = dynamic_cast<Data::RealXtendAvatar *>(avatar_data);
+                if (ra)
+                    new_avatar_card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(ra->id()), 
+                                                         ra->account(), ra->pixmapPath());
+            }
+
+            if (!new_avatar_card)
+                return;
+
+            if (!avatar_card_map_.contains(new_avatar_card->id()))
+            {
+                avatar_map_[avatar_data->id()] = avatar_data;
+                avatar_card_map_[new_avatar_card->id()] = new_avatar_card;
+                scene_controller_->NewAvatarToScene(new_avatar_card, avatar_card_map_);
+            }
+        }
+
+        void EtherLogic::WorldCreated(Data::WorldInfo *world_data)
+        {
+            View::InfoCard *new_world_card = 0;
+            if (world_data->worldType() == WorldTypes::OpenSim)
+            {
+                Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_data);
+                QString title;
+                if (ow->loginUrl().port() != -1)
+                    title = QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port()));
+                else
+                    title = ow->loginUrl().host();
+                if (ow)
+                    new_world_card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), 
+                                                        title, ow->pixmapPath());
+            }
+
+            if (!new_world_card)
+                return;
+
+            if (!world_card_map_.contains(new_world_card->id()))
+            {
+                world_map_[new_world_card->id()] = world_data;
+                world_card_map_[new_world_card->id()] = new_world_card;
+                scene_controller_->NewWorldToScene(new_world_card, world_card_map_);
+            }
         }
     }
 }

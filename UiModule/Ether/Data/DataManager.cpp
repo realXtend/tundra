@@ -7,6 +7,7 @@
 #include "OpenSimAvatar.h"
 #include "OpenSimWorld.h"
 
+#include <QVariant>
 #include <QStringList>
 
 namespace Ether
@@ -34,7 +35,7 @@ namespace Ether
 
         QMap<QUuid, Data::AvatarInfo *> DataManager::ReadAllAvatarsFromFile()
         {
-            QMap<QUuid, Data::AvatarInfo *> map;
+            avatar_map_.clear();
             QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
 
             foreach (QString avatar_id, avatar_settings.childGroups())
@@ -62,7 +63,7 @@ namespace Ether
                                                               secret,
                                                               image_path,
                                                               id);
-                            map[id] = realxtend_avatar;
+                            avatar_map_[id] = realxtend_avatar;
                             break;
                         }
 
@@ -74,7 +75,7 @@ namespace Ether
                                                             secret,
                                                             image_path,
                                                             id);
-                            map[id] = opensim_avatar;
+                            avatar_map_[id] = opensim_avatar;
                             break;
                         }
 
@@ -87,7 +88,7 @@ namespace Ether
                     }
                 }
             }               
-            return map;
+            return avatar_map_;
         }
 
         void DataManager::StoreOrUpdateAvatar(Data::AvatarInfo *avatar_info)
@@ -100,8 +101,9 @@ namespace Ether
             {
                 avatar_settings.beginGroup(uuid_string);
                 avatar_settings.setValue("type", avatar_info->avatarType());
+                if (avatar_info->pixmapPath().isEmpty())
+                    avatar_info->setPixmapPath("./data/ui/images/ether/naali.jpg");
 
-                qDebug() << "Stored the following avatar to local file";
                 switch (type)
                 {
                     case AvatarTypes::RealXtend:
@@ -113,7 +115,7 @@ namespace Ether
                             avatar_settings.setValue("authurl", realxtend_avatar->authUrl());
                             avatar_settings.setValue("secret", QByteArray(realxtend_avatar->password().toStdString().c_str()).toBase64());
                             avatar_settings.setValue("imagepath", realxtend_avatar->pixmapPath());
-                            realxtend_avatar->Print();
+                            emit AvatarDataCreated(avatar_info);
                         }
                         else
                             qDebug() << "Could not cast AvatarInfo to RealXtendAvatar";
@@ -129,7 +131,7 @@ namespace Ether
                             avatar_settings.setValue("lastname", opensim_avatar->lastName());
                             avatar_settings.setValue("secret", QByteArray(opensim_avatar->password().toStdString().c_str()).toBase64());
                             avatar_settings.setValue("imagepath", opensim_avatar->pixmapPath());
-                            opensim_avatar->Print();
+                            emit AvatarDataCreated(avatar_info);
                         }
                         else
                             qDebug() << "Could not cast AvatarInfo to OpenSimAvatar";
@@ -147,11 +149,10 @@ namespace Ether
                 }
                 avatar_settings.endGroup();
                 avatar_settings.sync();
-                qDebug() << endl;
+                avatar_map_[QUuid(avatar_info->id())] = avatar_info;
             }
             else
             {
-                qDebug() << "Updated the following avatars info to local file";
                 switch (type)
                 {
                     case AvatarTypes::RealXtend:
@@ -163,7 +164,7 @@ namespace Ether
                             avatar_settings.setValue(QString("%1/authurl").arg(uuid_string), realxtend_avatar->authUrl());
                             avatar_settings.setValue(QString("%1/secret").arg(uuid_string), QByteArray(realxtend_avatar->password().toStdString().c_str()).toBase64());
                             avatar_settings.setValue(QString("%1/imagepath").arg(uuid_string), realxtend_avatar->pixmapPath());
-                            realxtend_avatar->Print();
+                            emit ObjectUpdated(realxtend_avatar->id(), realxtend_avatar->account());
                         }
                         else
                             qDebug() << "Could not cast AvatarInfo to RealXtendAvatar";
@@ -179,7 +180,7 @@ namespace Ether
                             avatar_settings.setValue(QString("%1/lastname").arg(uuid_string), opensim_avatar->lastName());
                             avatar_settings.setValue(QString("%1/secret").arg(uuid_string), QByteArray(opensim_avatar->password().toStdString().c_str()).toBase64());
                             avatar_settings.setValue(QString("%1/imagepath").arg(uuid_string), opensim_avatar->pixmapPath());
-                            opensim_avatar->Print();
+                            emit ObjectUpdated(opensim_avatar->id(), opensim_avatar->userName());
                         }
                         else
                             qDebug() << "Could not cast AvatarInfo to OpenSimAvatar";
@@ -202,7 +203,7 @@ namespace Ether
 
         QMap<QUuid, Data::WorldInfo*> DataManager::ReadAllWorldsFromFile()
         {
-            QMap<QUuid, Data::WorldInfo *> map;
+            world_map_.clear();
             QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
 
             foreach (QString world_id, world_settings.childGroups())
@@ -214,7 +215,7 @@ namespace Ether
                     int type = world_settings.value(QString("%1/type").arg(world_id)).toInt();
                     QString image_path = world_settings.value(QString("%1/imagepath").arg(world_id)).toString();
                     QUrl login_url = world_settings.value(QString("%1/loginurl").arg(world_id)).toUrl();
-                    QUrl info_url = world_settings.value(QString("%1/infourl").arg(world_id)).toUrl();
+                    QMap<QString, QVariant> grid_info = world_settings.value(QString("%1/gridinfo").arg(world_id)).toMap();
 
                     // Umm.. default image test baby
                     if (image_path.isEmpty())
@@ -225,10 +226,10 @@ namespace Ether
                         case WorldTypes::OpenSim:
                         {
                             Data::OpenSimWorld *opensim_world = new Data::OpenSimWorld(login_url,
-                                                                                       info_url,
+                                                                                       grid_info,
                                                                                        image_path,
                                                                                        id);
-                            map[id] = opensim_world;
+                            world_map_[id] = opensim_world;
                             break;
                         }
 
@@ -243,7 +244,7 @@ namespace Ether
                     }
                 }
             }
-            return map;
+            return world_map_;
         }
 
         void DataManager::StoreOrUpdateWorld(Data::WorldInfo *world_info)
@@ -256,8 +257,9 @@ namespace Ether
             {
                 world_settings.beginGroup(uuid_string);
                 world_settings.setValue("type", world_info->worldType());
+                if (world_info->pixmapPath().isEmpty())
+                    world_info->setPixmapPath("./data/ui/images/ether/world.jpg");
 
-                qDebug() << "Stored the following world to local file";
                 switch (type)
                 {
                     case WorldTypes::OpenSim:
@@ -266,9 +268,9 @@ namespace Ether
                         if (opensim_world)
                         {
                             world_settings.setValue("loginurl", opensim_world->loginUrl());
-                            world_settings.setValue("infourl", opensim_world->infoUrl());
+                            world_settings.setValue("gridinfo", opensim_world->gridInfo());
                             world_settings.setValue("imagepath", opensim_world->pixmapPath());
-                            opensim_world->Print();
+                            emit WorldDataCreated(opensim_world);
                         }
                         else
                             qDebug() << "Could not cast WorldInfo to OpenSimWorld";
@@ -286,11 +288,10 @@ namespace Ether
                 }
                 world_settings.endGroup();
                 world_settings.sync();
-                qDebug() << endl;
+                world_map_[QUuid(world_info->id())] = world_info;
             }
             else
             {
-                qDebug() << "Updated the following worlds info to local file";
                 switch (type)
                 {
                     case WorldTypes::OpenSim:
@@ -299,8 +300,16 @@ namespace Ether
                         if (opensim_world)
                         {
                             world_settings.setValue(QString("%1/loginurl").arg(uuid_string), opensim_world->loginUrl());
-                            world_settings.setValue(QString("%1/infourl").arg(uuid_string), opensim_world->infoUrl());
+                            world_settings.setValue(QString("%1/gridinfo").arg(uuid_string), opensim_world->gridInfo());
                             world_settings.setValue(QString("%1/imagepath").arg(uuid_string), opensim_world->pixmapPath());
+                            
+                            QString new_title;
+                            if (opensim_world->loginUrl().port() != -1)
+                                new_title = QString("%1:%2").arg(opensim_world->loginUrl().host(), QString::number(opensim_world->loginUrl().port()));
+                            else
+                                new_title = opensim_world->loginUrl().host();
+
+                            emit ObjectUpdated(opensim_world->id(), new_title);
                         }
                         else
                             qDebug() << "Could not cast WorldInfo to OpenSimWorld";
@@ -318,6 +327,24 @@ namespace Ether
                 }
                 world_settings.sync();
             }
+        }
+
+        Data::AvatarInfo *DataManager::GetAvatarInfo(QString uuid)
+        {
+            QUuid id(uuid);
+            if (avatar_map_.contains(id))
+                return avatar_map_[id];
+            else
+                return 0;
+        }
+
+        Data::WorldInfo *DataManager::GetWorldInfo(QString uuid)
+        {
+            QUuid id(uuid);
+            if (world_map_.contains(id))
+                return world_map_[id];
+            else
+                return 0;
         }
     }
 }

@@ -55,14 +55,18 @@ add_definitions (-DUI_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (QT4)
 use_package (POCO)
+use_package (CURL)
+use_package (XMLRPC)
 use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon RexLogicModule ProtocolUtilities SupportModules)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules)
+link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities)
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
+link_package (XMLRPC)
+link_package (CURL)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

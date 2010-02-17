@@ -259,6 +259,8 @@ namespace Ether
             disconnect();
             connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL( finished()),
                     this, SLOT( ControlledWidgetStopped() ));
+
+            emit ShowActionWidgetRequest(QString("edit"), controlled_card_);
         }
 
         void ControlProxyWidget::ControlledWidgetStopped()
@@ -269,27 +271,32 @@ namespace Ether
 
         void ControlProxyWidget::InfoHandler()
         {
-            qDebug()<< "ControlProxyWidget::InfoHandler()";
+            EmitActionRequest("info");
         }
 
         void ControlProxyWidget::QuestionHandler()
         {
-            qDebug()<< "ControlProxyWidget::QuestionHandler()";
+            EmitActionRequest("edit");
         }
 
         void ControlProxyWidget::AddHandler()
         {
-            qDebug()<< "ControlProxyWidget::AddHandler()";
+            EmitActionRequest("add");
         }
 
         void ControlProxyWidget::RemoveHandler()
         {
-            qDebug()<< "ControlProxyWidget::RemoveHandler()";
+            EmitActionRequest("remove");
         }
 
         void ControlProxyWidget::ActionHandler()
         {
             emit ActionRequest();
         }
+
+        void ControlProxyWidget::EmitActionRequest(QString type)
+        {
+            action_widget_->ShowWidget(type, controlled_card_);
+        }   
     }
 }
