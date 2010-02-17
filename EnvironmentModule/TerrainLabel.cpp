@@ -7,12 +7,12 @@ namespace Environment
 {
     TerrainLabel::TerrainLabel(QWidget *parent, Qt::WindowFlags f): QLabel(parent, f)
     {
-
+        setMouseTracking(true);
     }
 
     TerrainLabel::TerrainLabel(const QString &text, QWidget *parent, Qt::WindowFlags f): QLabel(text, parent, f)
     {
-
+        setMouseTracking(true);
     }
 
     TerrainLabel::~TerrainLabel()

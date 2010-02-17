@@ -65,12 +65,19 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     msg.ResetReading();
 
     ///\ secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server
-    usecSinceStart_ = (time_t)msg.ReadU64();
-    secPerDay_ = msg.ReadU32();
-    secPerYear_ = msg.ReadU32();
-    sunDirection_ = msg.ReadVector3();
-    sunPhase_ = msg.ReadF32();
-    sunAngVelocity_ = msg.ReadVector3();
+    try
+    {
+	    usecSinceStart_ = (time_t)msg.ReadU64();
+	    secPerDay_ = msg.ReadU32();
+	    secPerYear_ = msg.ReadU32();
+	    sunDirection_ = msg.ReadVector3();
+	    sunPhase_ = msg.ReadF32();
+	    sunAngVelocity_ = msg.ReadVector3();
+    }
+    catch(NetMessageException &)
+    {
+		//! todo crashes with 0.4 server add error message.
+    }
     
     // Calculate time of day from sun phase, which seems the most reliable way to do it
     float dayphase;

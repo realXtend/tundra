@@ -15,7 +15,8 @@ namespace Ogre
 
 namespace Environment
 {
-    /// Represents data related to a water plane.
+    /// Represents data related to water plane.
+    /// \ingroup EnvironmentModuleClient.
     class EC_Water : public Foundation::ComponentInterface
     {
         Q_OBJECT

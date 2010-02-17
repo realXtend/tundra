@@ -9,17 +9,24 @@
 #include "Terrain.h"
 #include "TerrainLabel.h"
 #include "Water.h"
-
 #include "Sky.h"
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
+#include "math.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
+#include "SceneEvents.h"
+#include "InputEvents.h"
+#include "OgreRenderingModule.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
+
+// Ogre renderer -specific.
+#include <OgreManualObject.h>
+#include "OgreMaterialUtils.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -45,11 +52,14 @@ namespace Environment
     editor_widget_(0),
     action_(Flatten),
     brush_size_(Small),
+    terrainPaintMode_(Paint2D),
     sky_type_(OgreRenderer::SKYTYPE_NONE),
     ambient_(false),
-    edit_terrain_(false),
+    edit_terrain_active_(false),
     sun_color_picker_(0),
-    ambient_color_picker_(0)
+    ambient_color_picker_(0),
+    manual_paint_object_(0),
+    manual_paint_node_(0)
     //mouse_press_flag_(no_button)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
@@ -59,6 +69,8 @@ namespace Environment
             terrain_texture_requests_[i] = 0;
 
         InitEditorWindow();
+        mouse_position_[0] = 0;
+        mouse_position_[1] = 0;
     }
 
     EnvironmentEditor::~EnvironmentEditor()
@@ -117,7 +129,54 @@ namespace Environment
         }
     }
 
-    MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(EC_Terrain &terrain) const
+    void EnvironmentEditor::UpdateHeightmapImagePaintArea(uint x_pos, uint y_pos)
+    {
+        if(x_pos > cHeightmapImageWidth)
+            x_pos = cHeightmapImageWidth;
+        if(y_pos > cHeightmapImageHeight)
+            y_pos = cHeightmapImageHeight;
+
+        CreateHeightmapImage();
+        QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
+        if(label)
+        {
+            const QPixmap *pixmap = label->pixmap();
+            QImage image = pixmap->toImage();
+            
+            uint paint_area_size = 0;
+            switch(brush_size_)
+            {
+            case Small: 
+                paint_area_size = 3;
+                break;
+            case Medium:
+                paint_area_size = 5;
+                break;
+            case Large:
+                paint_area_size = 9;
+                break;
+            }
+
+            uint half_paint_area_size = paint_area_size / 2.0f;
+            for(uint i = 0; i < paint_area_size; i++)
+            {
+                for(uint j = 0; j < paint_area_size; j++)
+                {
+                    uint x = (x_pos - half_paint_area_size) + i;
+                    uint y = (y_pos - half_paint_area_size) + j;
+                    if(x >= cHeightmapImageWidth || y >= cHeightmapImageHeight)
+                        continue;
+                    //uint color = 255 / abs();
+
+                    image.setPixel(x, y, qRgb(255 , 128, 128));
+                }
+            }
+
+            label->setPixmap(QPixmap::fromImage(image));
+        }
+    }
+
+    MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(const EC_Terrain &terrain) const
     {
         float min, max;
         min = 65535.0f;
@@ -182,6 +241,12 @@ namespace Environment
             QObject::connect(tab_widget, SIGNAL(currentChanged(int)), this, SLOT(TabWidgetChanged(int)));
 
         QObject::connect(&terrain_paint_timer_, SIGNAL(timeout()), this, SLOT(TerrainEditTimerTick()));
+
+        /*TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(terrain.get())
+        {
+            QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
+        }*/
     }
 
     void EnvironmentEditor::InitTerrainTabWindow()
@@ -207,21 +272,9 @@ namespace Environment
         if(update_button)
             QObject::connect(update_button, SIGNAL(clicked()), this, SLOT(UpdateTerrain()));
 
-        QPushButton *apply_button_one = editor_widget_->findChild<QPushButton *>("apply_texture_button_1");
-        if(apply_button_one)
-            QObject::connect(apply_button_one, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_two = editor_widget_->findChild<QPushButton *>("apply_texture_button_2");
-        if(apply_button_two)
-            QObject::connect(apply_button_two, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_three = editor_widget_->findChild<QPushButton *>("apply_texture_button_3");
-        if(apply_button_three)
-            QObject::connect(apply_button_three, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_four = editor_widget_->findChild<QPushButton *>("apply_texture_button_4");
-        if(apply_button_four)
-            QObject::connect(apply_button_four, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+        QPushButton *paint_terrain_button = editor_widget_->findChild<QPushButton *>("paint_terrain_button");
+        if(paint_terrain_button)
+            QObject::connect(paint_terrain_button, SIGNAL(clicked()), this, SLOT(ToggleTerrainPaintMode()));
 
 
         // RadioButton Signals
@@ -266,6 +319,23 @@ namespace Environment
     {
         if(!editor_widget_)
             return;
+
+        // Texture apply buttons
+        QPushButton *apply_button_one = editor_widget_->findChild<QPushButton *>("apply_texture_button_1");
+        if(apply_button_one)
+            QObject::connect(apply_button_one, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+
+        QPushButton *apply_button_two = editor_widget_->findChild<QPushButton *>("apply_texture_button_2");
+        if(apply_button_two)
+            QObject::connect(apply_button_two, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+
+        QPushButton *apply_button_three = editor_widget_->findChild<QPushButton *>("apply_texture_button_3");
+        if(apply_button_three)
+            QObject::connect(apply_button_three, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+
+        QPushButton *apply_button_four = editor_widget_->findChild<QPushButton *>("apply_texture_button_4");
+        if(apply_button_four)
+            QObject::connect(apply_button_four, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
 
         // Line Edit signals
         QLineEdit *line_edit_one = editor_widget_->findChild<QLineEdit *>("texture_line_edit_1");
@@ -1049,36 +1119,30 @@ namespace Environment
         if ( widget != 0 
              && widget->objectName() == "ambient_light")
         {
-           
-                QVector<float> current_sun_color = environment->GetSunColor();
-                QVector<float> new_sun_color(4);
-                new_sun_color[0] = color.redF(), new_sun_color[1] = color.greenF(), new_sun_color[2] = color.blueF(), new_sun_color[3] = 1;
-                if ( new_sun_color[0] != current_sun_color[0] 
-                     && new_sun_color[1] != current_sun_color[1] 
-                     && new_sun_color[2] != current_sun_color[2])
+            QVector<float> current_sun_color = environment->GetSunColor();
+            QVector<float> new_sun_color(4);
+            new_sun_color[0] = color.redF(), new_sun_color[1] = color.greenF(), new_sun_color[2] = color.blueF(), new_sun_color[3] = 1;
+            if ( new_sun_color[0] != current_sun_color[0] 
+                 && new_sun_color[1] != current_sun_color[1] 
+                 && new_sun_color[2] != current_sun_color[2])
+            {
+                // Change to new color.
+                environment->SetSunColor(new_sun_color);
+                QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
+                if ( label != 0)
                 {
-                    // Change to new color.
-                    environment->SetSunColor(new_sun_color);
-                    QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
-                    if ( label != 0)
-                    {
-                        QPixmap img(label->width(), 23);
-                        QColor color;
-                        color.setRedF(new_sun_color[0]);
-                        color.setGreenF(new_sun_color[1]);
-                        color.setBlueF(new_sun_color[2]);
-                        //color.setAlpha(sun_color[3]);
-                        //color.setAlpha(0);
-                        img.fill(color);
-                        label->setPixmap(img);
-                    }
-                   
-                
-
-                 }
-           
+                    QPixmap img(label->width(), 23);
+                    QColor color;
+                    color.setRedF(new_sun_color[0]);
+                    color.setGreenF(new_sun_color[1]);
+                    color.setBlueF(new_sun_color[2]);
+                    //color.setAlpha(sun_color[3]);
+                    //color.setAlpha(0);
+                    img.fill(color);
+                    label->setPixmap(img);
+                }
+             }
          }
-
     }
 
     void EnvironmentEditor::UpdateAmbientLightColor(const QColor& color)
@@ -1616,6 +1680,78 @@ namespace Environment
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
+    void EnvironmentEditor::ToggleTerrainPaintMode()
+    {
+        if(!editor_widget_)
+            return;
+
+        QLabel *textLabel = editor_widget_->findChild<QLabel*>("terrain_paint_3d_label");
+        if(!textLabel)
+            return;
+
+        if(terrainPaintMode_ == Paint2D)
+        {
+            terrainPaintMode_ = Paint3D;
+            textLabel->setText("Active");
+        }
+        else if(terrainPaintMode_ == Paint3D)
+        {
+            terrainPaintMode_ = Paint2D;
+            textLabel->setText("Inactive");
+        }
+    }
+
+    EnvironmentEditor::TerrainPaintMode EnvironmentEditor::GetTerrainPaintMode() const
+    {
+        return terrainPaintMode_;
+    }
+
+    bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        //Paining is only enabled when window's is created and visible.
+        if(!editor_widget_)
+            return false;
+
+        if(!editor_widget_->isVisible())
+            return false;
+
+        if(event_id == Input::Events::MOUSEDRAG)
+        {
+            Input::Events::Movement *event_data = dynamic_cast<Input::Events::Movement *>(data);
+            if(event_data)
+            {
+                // do raycast into the world when user is draging the mouse while hes holding left button down.
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                if (!renderer)
+                    return false;
+                Foundation::RaycastResult result = renderer->Raycast(event_data->x_.abs_, event_data->y_.abs_);
+
+                Scene::Entity *entity = result.entity_;
+
+                if (entity)
+                {
+                    mouse_position_[0] = result.pos_.x;
+                    mouse_position_[1] = result.pos_.y;
+                    UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
+                    CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
+                    if(edit_terrain_active_ == false)
+                    {
+                        edit_terrain_active_ = true;
+                        terrain_paint_timer_.start(250);
+                    }
+                }
+            }
+        }
+        else if(event_id == Input::Events::MOUSEDRAG_STOPPED)
+        {
+            CreateHeightmapImage();
+            terrain_paint_timer_.stop();
+            edit_terrain_active_ = false;
+            ReleasePaintMeshOnScene();
+        }
+        return false;
+    }
+
     void EnvironmentEditor::UpdateTerrain()
     {
         assert(environment_module_);
@@ -1631,84 +1767,26 @@ namespace Environment
 
         QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         CreateHeightmapImage();
+        if(edit_terrain_active_) //Display terrain paint area only when user is painting the terrain.
+        {
+            CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
+            UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
+        }
     }
 
     void EnvironmentEditor::HandleMouseEvent(QMouseEvent *ev)
     {
-        /*assert(environment_module_);
-        TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
-            return;*/
-
-        // Ugly this need to be removed when mouse move events are working corretly in Rex UICanvas.
-        // Check if mouse has pressed.
-        /*if(ev->type() == QEvent::MouseButtonPress)
-        {
-            QPoint position = ev->pos();
-            Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
-            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-            start_height_ = terrain_component->GetPoint(position.x(), position.y());
-
-            switch(ev->button())
-            {
-                case Qt::LeftButton:
-                    mouse_press_flag_ |= left_button;
-                    break;
-                case Qt::RightButton:
-                    mouse_press_flag_ |= right_button;
-                    break;
-                case Qt::MidButton:
-                    mouse_press_flag_ |= middle_button;
-                    break;
-            }
-        }
-        else if(ev->type() == QEvent::MouseButtonRelease)
-        {
-            switch(ev->button())
-            {
-                case Qt::LeftButton:
-                    mouse_press_flag_ -= (mouse_press_flag_ & left_button);
-                    break;
-                case Qt::RightButton:
-                    mouse_press_flag_ -= right_button;
-                    break;
-                case Qt::MidButton:
-                    mouse_press_flag_ -= middle_button;
-                    break;
-            }
-        }
-
-        if((mouse_press_flag_ & button_mask) > 0)
-        {
-            int time = terrain_paint_timer_.restart();
-            if(time <= 0)
-                terrain_paint_timer_.start();
-
-            float time_in_ms = time / 1000.0f;
-            // update mouse position.
-            mouse_position_[0] = ev->pos().x();
-            mouse_position_[1] = ev->pos().y();
-
-            QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
-            const QPixmap *pixmap = label->pixmap();
-            QImage image = pixmap->toImage();
-            image.setPixel(ev->pos(), qRgb(255, 255, 255));
-            label->setPixmap(QPixmap::fromImage(image));
-            label->show();
-
-            QPoint position = ev->pos();
-            Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
-            EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-            environment_module_->SendModifyLandMessage(position.x(), position.y(), brush_size_, action_, 0.3, terrain_component->GetPoint(position.x(), position.y())); 
-        }*/
-
+        //! @todo In some cases this could fail if mouse release wont be handed into this function.
+        //! Make some time limit how long this terrain_pain_timet will run until it will set it self to halt state.
         if(ev->type() == QEvent::MouseButtonPress || ev->type() == QEvent::MouseMove)
         {
             mouse_position_[0] = ev->pos().x();
             mouse_position_[1] = ev->pos().y();
+            UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
+            CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
             if(ev->button() == Qt::LeftButton)
             {
-                edit_terrain_ = true;
+                edit_terrain_active_ = true;
                 terrain_paint_timer_.start(250);
             }
         }
@@ -1717,14 +1795,14 @@ namespace Environment
             if(ev->button() == Qt::LeftButton)
             {
                 terrain_paint_timer_.stop();
-                edit_terrain_ = false;
+                edit_terrain_active_ = false;
             }
         }
     }
 
     void EnvironmentEditor::TerrainEditTimerTick()
     {
-        if(edit_terrain_)
+        if(edit_terrain_active_)
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
@@ -1807,6 +1885,22 @@ namespace Environment
         if(tab->objectName() == "edit_terrain") // Map tab
         {
             UpdateTerrain();
+
+            if(!editor_widget_)
+            return;
+
+            QLabel *textLabel = editor_widget_->findChild<QLabel*>("terrain_paint_3d_label");
+            if(!textLabel)
+                return;
+
+            if(textLabel->text() == "Active")
+            {
+                terrainPaintMode_ = Paint3D;
+            }
+            else
+            {
+                terrainPaintMode_ = Paint2D;
+            }
         }
         else if(tab->objectName() == "edit_terrain_texture") // Texture tab
         {
@@ -1825,7 +1919,7 @@ namespace Environment
 
                 QString line_edit_name("texture_line_edit_" + QString("%1").arg(i + 1));
 
-                // Check if terrain texture hasn't changed for last time, if not we dont need to request a new texture resource and we can continue on next texture.
+                // Check if terrain texture hasn't changed for the last time, if not we dont need to request a new texture resource and we can continue on next texture.
                 if(terrain_texture_id_list_[i] == terrain_id)
                     continue;
 
@@ -1838,7 +1932,10 @@ namespace Environment
 
                 terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
+            terrainPaintMode_ = Paint2D;
         }
+        else
+            terrainPaintMode_ = Paint2D;
     }
 
     void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
@@ -1916,6 +2013,128 @@ namespace Environment
         }
 
         return image;
+    }
+
+    void EnvironmentEditor::CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color, float gradient_size)
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
+        TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(!terrain.get())
+            return;
+
+        Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
+        boost::shared_ptr<EC_Terrain> terrain_component = entity->GetComponent<EC_Terrain>();
+        if(!terrain_component->AllPatchesLoaded())
+            return;
+
+        int paint_area_size = 0;
+        switch(brush_size_)
+        {
+        case Small:
+            paint_area_size = 3;
+            break;
+        case Medium:
+            paint_area_size = 5;
+            break;
+        case Large:
+            paint_area_size = 9;
+            break;
+        }
+        //how many vertices we need to create alongside of the middle point.
+        int nub_of_neighbour_vertices = paint_area_size / 2;
+
+        float middle_point_height = terrain_component->GetPoint(x_pos, y_pos);
+
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        manual_paint_object_ = sceneMgr->createManualObject("paint_area");
+        manual_paint_object_->estimateVertexCount(9*9);
+        manual_paint_object_->clear();
+
+        const float vertexSpacingX = 1.0f;
+        const float vertexSpacingY = 1.0f;
+
+        manual_paint_object_->begin("UnlitTexturedSoftAlphaVCol", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+        float height_value = 0;
+        int curIndex = 0;
+        int stride = paint_area_size;
+        //Calculate UV map spep size.
+        //float uv_map_step_size = 1.0f / (paint_area_size - 1);
+        //Calculate farest vectex distance from the middle point of the area.
+        float paint_area_radius = sqrt(float(nub_of_neighbour_vertices * nub_of_neighbour_vertices) + float(nub_of_neighbour_vertices * nub_of_neighbour_vertices));
+        //Change gradient size.
+        paint_area_radius *= gradient_size;
+        for(int y = -nub_of_neighbour_vertices; y <= nub_of_neighbour_vertices; y++)
+        {
+            for(int x = -nub_of_neighbour_vertices; x <= nub_of_neighbour_vertices; x++)
+            {
+                if (x+1 <= nub_of_neighbour_vertices && y+1 <= nub_of_neighbour_vertices)
+                {
+                    manual_paint_object_->index(curIndex);
+                    manual_paint_object_->index(curIndex+1);
+                    manual_paint_object_->index(curIndex+stride);
+
+                    manual_paint_object_->index(curIndex+1);
+                    manual_paint_object_->index(curIndex+stride+1);
+                    manual_paint_object_->index(curIndex+stride);
+                }
+
+                //Calculate vertex position so it's near at terrain vertex position.
+                height_value = terrain_component->GetPoint(x_pos + x, y_pos + y) + 0.05;
+                manual_paint_object_->position(Ogre::Vector3(x * vertexSpacingX, y * vertexSpacingY, height_value));
+
+                //Calculate UV values for each vertex
+                //float x_step_coord = (x + nub_of_neighbour_vertices) * uv_map_step_size;
+                //float y_step_coord = (y + nub_of_neighbour_vertices) * uv_map_step_size;
+                //manual_paint_object_->textureCoord(x_step_coord, y_step_coord);
+
+                //Calculate vertex color.
+                float vertex_distance_from_origo = sqrt(float(x * x) + float(y * y));
+                float alfa = (paint_area_radius - vertex_distance_from_origo) / paint_area_radius;
+                if(alfa < 0)
+                    alfa = 0;
+                manual_paint_object_->colour(color.r, color.g, color.b, alfa);
+                curIndex++;
+            }
+        }
+        manual_paint_object_->end();
+
+        std::string meshName = renderer->GetUniqueObjectName();
+        Ogre::MeshPtr terrainMesh = manual_paint_object_->convertToMesh(meshName);
+        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), meshName);
+        ogre_entity->setCastShadows(false);
+
+        ReleasePaintMeshOnScene();
+
+        manual_paint_node_ = sceneMgr->getRootSceneNode()->createChildSceneNode();
+        manual_paint_node_->attachObject(ogre_entity);
+
+        if(manual_paint_node_)
+        {
+            manual_paint_node_->setPosition(Ogre::Vector3(x_pos, y_pos, 0));
+        }
+    }
+
+    void EnvironmentEditor::ReleasePaintMeshOnScene()
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
+        Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+        if(manual_paint_object_)
+        {
+            manual_paint_object_->clear();
+            sceneMgr->destroyManualObject(manual_paint_object_);
+            manual_paint_object_ = 0;
+        }
+        if(manual_paint_node_)
+        {
+            sceneMgr->destroySceneNode(manual_paint_node_);
+            manual_paint_node_ = 0;
+        }
     }
 
     request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)

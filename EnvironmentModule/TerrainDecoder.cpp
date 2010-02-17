@@ -9,7 +9,6 @@
 
 #include "BitStream.h"
 #include "TerrainDecoder.h"
-//#include "RexLogicModule.h"
 #include "EnvironmentModule.h"
 
 namespace Environment

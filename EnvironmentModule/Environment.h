@@ -27,6 +27,8 @@ namespace Environment
 {
     class EnvironmentModule;
 
+    //! Environment contain information about water, fog and lightning. Also Caelum implementation code is included in this class.
+    //! \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Environment : public QObject
     {
         Q_OBJECT
@@ -92,20 +94,51 @@ namespace Environment
         
         bool GetFogColorOverride();
  
+        /**
+         * Set new ground fog color.
+         * @param new color value.
+         **/
         void SetGroundFogColor(const QVector<float>& color);
-        
+
+        /**
+         * Set new water fog color.
+         * @param new color value.
+         **/
         void SetWaterFogColor(const QVector<float>& color);
 
+        /**
+         * Set new ground fog distance.
+         * @param fogStart start distance from the viewpoint.
+         * @param fogEnd end distance from the viewpoint.
+         **/
         void SetGroundFogDistance(float fogStart, float fogEnd);
 
+        /**
+         * Set new underwater fog distance.
+         * @param fogStart start distance from the viewpoint.
+         * @param fogEnd end distance from the viewpoint.
+         **/
         void SetWaterFogDistance(float fogStart, float fogEnd);
 
+        /**
+         * @return underwater fog start distance. 
+         */
         float GetWaterFogStartDistance();
-        float GetWaterFogEndDistance();
-        float GetGroundFogStartDistance();
-        float GetGroundFogEndDistance();
 
-     
+        /**
+         * @return underwater fog end distance. 
+         */
+        float GetWaterFogEndDistance();
+
+        /**
+         * @return ground fog start distance. 
+         */
+        float GetGroundFogStartDistance();
+
+        /**
+         * @return ground fog end distance. 
+         */
+        float GetGroundFogEndDistance();
 
         /**
          * Returns current fog ground color. 
@@ -131,13 +164,28 @@ namespace Environment
         void SetTimeOverride(bool enabled) { time_override_ = enabled; }
         bool GetTimeOverride() { return time_override_; }
 
+        //! Set new sunlight direction
+        //! @param vector new sun light direction.
         void SetSunDirection(const QVector<float>& vector);
+
+        //! Get sunlight direction
+        //! @return sun light direction.
         QVector<float> GetSunDirection();
 
+        //! Set new sunlight color.
+        //! @param vector new sunlight color.
         void SetSunColor(const QVector<float>& vector);
+
+        //! Get sunlight color
+        //! @return sun light color.
         QVector<float> GetSunColor();
 
+        //! Get ambient light color
+        //! @return ambient light color.
         QVector<float> GetAmbientLight();
+
+        //! Set new ambient light color.
+        //! @param vector new ambient light color value.
         void SetAmbientLight(const QVector<float>& vector);
 
         
@@ -162,9 +210,8 @@ namespace Environment
         }
      
     signals:
-        
-         void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
-         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
+        void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
+        void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
     private:
        
