@@ -2,8 +2,8 @@
 
 /**
  *  @file   OgreAssetEditorModule.h
- *  @brief  Ogre asset editor module.provides editing and previewing tools for
- *          OGRE assets such as mesh, material & particle scripts.
+ *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
+ *          OGRE assets such as meshes and material scripts.
  */
 
 #ifndef incl_OgreAssetEditorModule_h

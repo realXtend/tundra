@@ -48,6 +48,7 @@ namespace Inventory
         AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
+    public slots:
         /// AbstractInventoryDataModel override.
         bool FetchInventoryDescendents(AbstractInventoryItem *item);
 

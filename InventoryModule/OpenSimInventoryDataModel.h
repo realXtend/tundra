@@ -68,6 +68,7 @@ namespace Inventory
         AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name = "New Asset");
 
+    public slots:
         /// AbstractInventoryDataModel override.
         bool FetchInventoryDescendents(AbstractInventoryItem *item);
 
@@ -117,7 +118,7 @@ namespace Inventory
         bool GetUseTrashFolder() const { return true; }
 
         // OpenSimInventoryDataModel API
-
+    public:
         /// Set World Stream.
         /// @param world_stream WorldStream pointer.
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream) { currentWorldStream_ = world_stream; }

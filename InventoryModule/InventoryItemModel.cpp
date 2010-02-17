@@ -94,7 +94,7 @@ bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value
     QString oldName = item->GetName();
     item->SetName(value.toString());
 
-    // Is this needed anymore?
+    // Is this needed anymore?  
     emit dataChanged(index, index);
 
     // Notify server. Give updated item and old name (webdav needs this at least)

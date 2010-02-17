@@ -24,7 +24,6 @@ QT_END_NAMESPACE
 
 namespace Foundation
 {
-    class Framework;
     class EventDataInterface;
 }
 
@@ -41,6 +40,7 @@ namespace UiServices
 
 namespace Inventory
 {
+    class InventoryModule;
     class InventoryTreeView;
     class InventoryItemEventData;
     class InventoryItemModel;
@@ -54,8 +54,8 @@ namespace Inventory
 
     public:
         /// Constructor.
-        /// @param framework Framework.pointer.
-        InventoryWindow(Foundation::Framework *framework);
+        /// @param owner InventoryModule pointer
+        InventoryWindow(InventoryModule *owner);
 
         /// Destructor.
         virtual ~InventoryWindow();
@@ -74,6 +74,9 @@ namespace Inventory
     private slots:
         /// Opens inventory item (folder or asset) when user double-clicks it.
         void OpenItem();
+
+        /// Opens inventory item's property window.
+        void OpenItemProperties();
 
         /// Adds new folder.
         void AddFolder();
@@ -142,8 +145,8 @@ namespace Inventory
         /// Creates the context menu actions.
         void CreateActions();
 
-        /// Framework pointer.
-        Foundation::Framework *framework_;
+        /// InventoryModule pointer.
+        InventoryModule *owner_;
 
         /// Inventory view model.
         QPointer<InventoryItemModel> inventoryItemModel_;
@@ -183,6 +186,9 @@ namespace Inventory
 
         /// Open action.
         QAction *actionOpen_;
+
+        /// Properties action.
+        QAction *actionProperties_;
 
         /// Copy asset reference action.
         QAction *actionCopyAssetReference_;

@@ -5,6 +5,9 @@
  *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
  *          Implement data model -spesific event handling etc. here, not in InventoryWindow
  *          or InventoryItemModel classes.
+ *
+ *          It's not recommended to get any pointers to InventoryModule from other modules
+ *          because InventoryModule is designed to be an optional module.
  */
 
 #include "StableHeaders.h"
@@ -13,6 +16,8 @@
 #include "InventoryWindow.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
+#include "InventoryAsset.h"
+#include "ItemPropertiesWindow.h"
 
 #include <NetworkEvents.h>
 #include <RexLogicModule.h>
@@ -22,6 +27,8 @@
 #include <ConsoleCommandServiceInterface.h>
 #include <ResourceInterface.h>
 #include <RealXtend/RexProtocolMsgIDs.h>
+
+#include <UiModule.h>
 
 #include <QObject>
 #include <QStringList>
@@ -83,7 +90,7 @@ void InventoryModule::Initialize()
     }
 
     // Create inventory window.
-    inventoryWindow_ = new InventoryWindow(framework_);
+    inventoryWindow_ = new InventoryWindow(this);
 
     LogInfo("System " + Name() + " initialized.");
 }
@@ -106,11 +113,13 @@ void InventoryModule::PostInitialize()
 void InventoryModule::Uninitialize()
 {
     SAFE_DELETE(inventoryWindow_);
-    LogInfo("System " + Name() + " uninitialized.");
+    DeleteAllItemPropertiesWindows();
 
     eventManager_.reset();
     currentWorldStream_.reset();
     inventory_.reset();
+
+    LogInfo("System " + Name() + " uninitialized.");
 }
 
 void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule)
@@ -158,9 +167,9 @@ bool InventoryModule::HandleEvent(
                 else
                 {
                     // Create WebDAV inventory model.
+                    inventoryType_ = IDMT_WebDav;
                     inventory_ = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(auth->identityUrl), STD_TO_QSTR(auth->hostUrl)));
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
-                    inventoryType_ = IDMT_WebDav;
                 }
                 break;
             case ProtocolUtilities::AT_OpenSim:
@@ -175,8 +184,8 @@ bool InventoryModule::HandleEvent(
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
 
-                inventoryWindow_->InitInventoryTreeModel(inventory_);
                 inventoryType_ = IDMT_OpenSim;
+                inventoryWindow_->InitInventoryTreeModel(inventory_);
                 break;
             }
             case ProtocolUtilities::AT_Unknown:
@@ -188,7 +197,7 @@ bool InventoryModule::HandleEvent(
             return false;
         }
 
-        // Disconnected from server. Hide inventory_ and reset tree model.
+        // Disconnected from server. Hide inventory and reset tree model. Also close item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
             if (inventoryWindow_)
@@ -196,6 +205,8 @@ bool InventoryModule::HandleEvent(
                 inventoryWindow_->Hide();
                 inventoryWindow_->ResetInventoryTreeModel();
             }
+
+            DeleteAllItemPropertiesWindows();
         }
 
         return false;
@@ -302,6 +313,8 @@ bool InventoryModule::HandleEvent(
         }
     }
 
+    ///\todo Handle AssetReady for ItemPropertiesWindows
+
     return false;
 }
 
@@ -382,6 +395,53 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
     return Console::ResultSuccess();
 }
 
+void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
+{
+    // Check that item properties window for this item doesn't already exists.
+    // If it does, bring it to front and set focus to it.
+    QMap<QString, ItemPropertiesWindow *>::iterator it = itemPropertiesWindows_.find(inventory_id);
+    if (it != itemPropertiesWindows_.end())
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module =
+            GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!ui_module.get())
+            return;
+
+        ui_module->GetSceneManager()->BringProxyToFront(it.value());
+        return;
+    }
+
+    InventoryAsset *asset = dynamic_cast<InventoryAsset *>(inventory_->GetChildById(inventory_id));
+    if (!asset)
+        return;
+
+    ItemPropertiesWindow *wnd = new ItemPropertiesWindow(this);
+    wnd->SetItem(asset);
+
+    itemPropertiesWindows_[inventory_id] = wnd;
+
+    if (inventoryType_ == IDMT_OpenSim)
+        if (asset)
+            static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SendNameUuidRequest(asset);
+}
+
+void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, bool save_changes)
+{
+    // Note: We only remove the pointer from the map here. The window deletes itself.
+    ItemPropertiesWindow *wnd = itemPropertiesWindows_.take(inventory_id);
+    if (!wnd)
+        return;
+
+    // If inventory item is modified notify server.
+    if (save_changes)
+    {
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(inventory_->GetChildById(inventory_id));
+        if (asset)
+            ///\todo WebDAV needs the old name. We don't have it here...
+            inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
+    }
+}
+
 void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
 {
     ProtocolUtilities::NetworkEventInboundData *data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
@@ -402,9 +462,6 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
         LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
         return;
     }
-
-    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
 
     msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
     msg.SkipToNextVariable();               //Version S32, version of the folder for caching
@@ -429,8 +486,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
             folder_data.name = msg.ReadString();
 
             // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
+            eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
         }
         catch (NetMessageException &)
         {
@@ -476,8 +532,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
             //msg.ReadU32(); //CRC
 
             // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+            eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
         catch (NetMessageException &e)
         {
@@ -516,9 +571,6 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
 
     msg.SkipToNextVariable(); // TransactionID, UUID
 
-    Foundation::EventManagerPtr eventManager = framework_->GetEventManager();
-    event_category_id_t event_category = eventManager->QueryEventCategory("Inventory");
-
     // InventoryData, variable block.
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
@@ -544,8 +596,7 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
             //msg.ReadU32(); //CRC
 
             // Send event.
-            if (event_category != 0)
-                eventManager->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
+            eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
         catch (NetMessageException &e)
         {
@@ -575,7 +626,10 @@ void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_
         map[id] = name;
     }
 
-    //inventory_->
+    // Pass UuidNameReplys to item properties windows.
+    QMapIterator<QString, ItemPropertiesWindow *> it(itemPropertiesWindows_);
+    while(it.hasNext())
+        it.next().value()->HandleUuidNameReply(map);
 }
 
 void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
@@ -597,7 +651,21 @@ void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* e
         map[id] = name;
     }
 
-    //inventory_->
+    // Pass UuidGroupNameReplys to item properties windows
+    QMapIterator<QString, ItemPropertiesWindow *> it(itemPropertiesWindows_);
+    while(it.hasNext())
+        it.next().value()->HandleUuidNameReply(map);
+}
+
+void InventoryModule::DeleteAllItemPropertiesWindows()
+{
+    QMutableMapIterator<QString, ItemPropertiesWindow *> it(itemPropertiesWindows_);
+    while(it.hasNext())
+    {
+        ItemPropertiesWindow *wnd = it.next().value();
+        SAFE_DELETE(wnd);
+        it.remove();
+    }
 }
 
 } // namespace Inventory

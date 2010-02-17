@@ -249,6 +249,7 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
 
     proxyWidget_->show();
+    ui_module->GetSceneManager()->BringProxyToFront(proxyWidget_);
 }
 
 void OgreScriptEditor::CreateTextEdit()

@@ -12,8 +12,8 @@
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
 #include "InventoryTreeView.h"
+#include "InventoryAsset.h"
 
-#include "Framework.h"
 #include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
@@ -42,8 +42,8 @@
 namespace Inventory
 {
 
-InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
-    framework_(framework),
+InventoryWindow::InventoryWindow(InventoryModule *owner) :
+    owner_(owner),
     inventoryWidget_(0),
     inventoryItemModel_(0),
     treeView_(0),
@@ -54,6 +54,7 @@ InventoryWindow::InventoryWindow(Foundation::Framework *framework) :
     actionPaste_(0),
     actionNewFolder_(0),
     actionOpen_(0),
+    actionProperties_(0),
     actionCopyAssetReference_(0),
     actionUpload_(0),
     actionDownload_(0),
@@ -112,34 +113,38 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     treeView_->setModel(inventoryItemModel_);
 
     // Connect download progress signals.
-    QObject::connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &, const QString &)),
+    connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &, const QString &)),
         this, SLOT(OpenDownloadProgess(const QString &, const QString &)));
 
-    QObject::connect(inventory_model.get(), SIGNAL(DownloadAborted(const QString &)),
+    connect(inventory_model.get(), SIGNAL(DownloadAborted(const QString &)),
         this, SLOT(AbortDownload(const QString &)));
 
-    QObject::connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
+    connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
         this, SLOT(CloseDownloadProgess(const QString &)));
 
     // Connect upload progress signals.
-    QObject::connect(inventory_model.get(), SIGNAL(MultiUploadStarted(size_t)),
+    connect(inventory_model.get(), SIGNAL(MultiUploadStarted(size_t)),
         this, SLOT(OpenUploadProgress(size_t)));
 
-    QObject::connect(inventory_model.get(), SIGNAL(UploadStarted(const QString &)),
+    connect(inventory_model.get(), SIGNAL(UploadStarted(const QString &)),
         this, SLOT(UploadStarted(const QString &)));
 
-//    QObject::connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &)),
+//    connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &)),
 //        this, SLOT(UploadProgress(const QString &)));
 
-//    QObject::connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
+//    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
 //        this, SLOT(UploadProgress(const QString &)));
 
-    QObject::connect(inventory_model.get(), SIGNAL(MultiUploadCompleted()),
+    connect(inventory_model.get(), SIGNAL(MultiUploadCompleted()),
         this, SLOT(CloseUploadProgress()));
 
     // Connect selectionChanged
-    QObject::connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
+    connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+
+    ///\todo Hack: connect this signal only for regular OS, causes problems with WebDAV.
+    if (owner_->GetInventoryDataModelType() == InventoryModule::IDMT_OpenSim)
+        connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(OpenItem()));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -155,6 +160,20 @@ void InventoryWindow::OpenItem()
 
     treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     UpdateActions();
+}
+
+void InventoryWindow::OpenItemProperties()
+{
+    QModelIndex index = treeView_->selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    InventoryAsset *item = dynamic_cast<InventoryAsset *>(inventoryItemModel_->GetItem(index));
+    if (!item)
+        return;
+
+    // InventoryModule manages item properties windows.
+    owner_->OpenItemPropertiesWindow(item->GetID());
 }
 
 void InventoryWindow::AddFolder()
@@ -260,6 +279,7 @@ void InventoryWindow::UpdateActions()
     bool is_asset = inventoryItemModel_->GetItemType(index) == AbstractInventoryItem::Type_Asset;
     actionCopyAssetReference_->setEnabled(is_asset);
     actionOpen_->setEnabled(is_asset);
+    actionProperties_->setEnabled(is_asset);
 
     bool hasCurrent = treeView_->selectionModel()->currentIndex().isValid();
 
@@ -349,7 +369,7 @@ void InventoryWindow::CloseUploadProgress()
 void InventoryWindow::InitInventoryWindow()
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return;
 
@@ -365,8 +385,8 @@ void InventoryWindow::InitInventoryWindow()
 
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
-//    QObject::connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
-    QObject::connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
+//    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
+    connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
         inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
@@ -380,7 +400,8 @@ void InventoryWindow::InitInventoryWindow()
     widget_properties.SetPosition(inventoryWidget_->mapToGlobal(QPoint(0, 0)));
     uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(uploadWidget_, widget_properties);
 
-    connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),SLOT(ShowInformationString(const QString &, int)));
+    connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),
+        SLOT(ShowInformationString(const QString &, int)));
 
     CreateActions();
 }
@@ -390,17 +411,17 @@ void InventoryWindow::CreateActions()
 /*
     itemMenu_ = new QMenu(this);
     fileTransferMenu_ = new QMenu(this);
-    QObject::connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
+    connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
 */
     // File transfer actions
     actionUpload_= new QAction(tr("&Upload"), this);
     actionUpload_->setStatusTip(tr("Upload file to your inventory"));
-    QObject::connect(actionUpload_, SIGNAL(triggered()), this, SLOT(Upload()));
+    connect(actionUpload_, SIGNAL(triggered()), this, SLOT(Upload()));
     treeView_->addAction(actionUpload_);
 
     actionDownload_= new QAction(tr("&Download"), this);
     actionDownload_->setStatusTip(tr("Download assets to your hard drive"));
-    QObject::connect(actionDownload_, SIGNAL(triggered()), this, SLOT(Download()));
+    connect(actionDownload_, SIGNAL(triggered()), this, SLOT(Download()));
     treeView_->addAction(actionDownload_);
 
     // Add separator
@@ -412,51 +433,51 @@ void InventoryWindow::CreateActions()
     actionDelete_ = new QAction(tr("&Delete"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionDelete_->setStatusTip(tr("Delete this item"));
-    QObject::connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
+    connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
     treeView_->addAction(actionDelete_);
 
     actionRename_ = new QAction(tr("&Rename"), this);
     //actionRename_->setShortcuts();
     actionRename_->setStatusTip(tr("Rename this item"));
-    QObject::connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
+    connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
     treeView_->addAction(actionRename_);
 
 /*
     actionCut_ = new QAction(tr("&Cut"), this);
     actionDelete_->setShortcuts(QKeySequence::Cut);
     actionDelete_->setStatusTip(tr("Cut this item"));
-    QObject::connect(actionCut_, SIGNAL(triggered()), this, SLOT(Test()));
+    connect(actionCut_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionCut_);
 
     actionPaste_ = new QAction(tr("&Paste"), this);
     actionDelete_->setShortcuts(QKeySequence::Paste);
     actionDelete_->setStatusTip(tr("Paste this item"));
-    QObject::connect(actionPaste_, SIGNAL(triggered()), this, SLOT(Test()));
+    connect(actionPaste_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionPaste_);
 */
 
     actionNewFolder_ = new QAction(tr("&New folder"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionNewFolder_->setStatusTip(tr("Create new folder"));
-    QObject::connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));
+    connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));
     treeView_->addAction(actionNewFolder_);
 
     actionOpen_ = new QAction(tr("&Open"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionOpen_->setStatusTip(tr("Open this item"));
-    QObject::connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
+    connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
     treeView_->addAction(actionOpen_);
-/*
+
     actionProperties_= new QAction(tr("&Properties"), this);
     //actionProperties_->setShortcuts(QKeySequence::Delete);
     actionProperties_->setStatusTip(tr("View item properties"));
-    QObject::connect(actionProperties_, SIGNAL(triggered()), this, SLOT(ItemProperties()));
+    connect(actionProperties_, SIGNAL(triggered()), this, SLOT(OpenItemProperties()));
     treeView_->addAction(actionProperties_);
-*/
+
     actionCopyAssetReference_ = new QAction(tr("&Copy asset reference"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
-    QObject::connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
+    connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
     treeView_->addAction(actionCopyAssetReference_);
 }
 

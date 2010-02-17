@@ -62,12 +62,14 @@ namespace Inventory
 
     class AbstractInventoryDataModel;
     class InventoryTreeView;
+    class InventoryWindow;
 
     class InventoryItemModel : public QAbstractItemModel
     {
         Q_OBJECT
 
         friend class InventoryTreeView;
+        friend class InventoryWindow;
 
     public:
         /// Constructor.
@@ -183,12 +185,12 @@ namespace Inventory
         /// Sets up view from data.
         void SetupModelData();
 
-        /// Data model pointer.
-        AbstractInventoryDataModel *dataModel_;
-
         /// @param index Model index of the wanted item.
         /// @return pointer to inventory item.
         AbstractInventoryItem *GetItem(const QModelIndex &index) const;
+
+        /// Data model pointer.
+        AbstractInventoryDataModel *dataModel_;
 
         /// Does this model use trash folder.
         bool useTrash_;
