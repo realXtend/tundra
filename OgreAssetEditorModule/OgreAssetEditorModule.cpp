@@ -2,8 +2,8 @@
 
 /**
  *  @file   OgreAssetEditorModule.cpp
- *  @brief  Ogre asset editor module.provides editing and previewing tools for
- *          OGRE assets such as mesh, material & particle scripts.
+ *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
+ *          OGRE assets such as meshes and material scripts.
  */
 
 #include "StableHeaders.h"
@@ -97,7 +97,7 @@ bool OgreAssetEditorModule::HandleEvent(
     {
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
-            Inventory::InventoryItemDownloadedEventData *downloaded = static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
+            Inventory::InventoryItemDownloadedEventData *downloaded = checked_static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
             RexTypes::asset_type_t at = downloaded->assetType;
             switch(at)
             {
@@ -105,18 +105,29 @@ bool OgreAssetEditorModule::HandleEvent(
             case RexTypes::RexAT_MaterialScript:
             {
                 // Create new editor if it doesn't already exist.
-                if (!editorManager_->Exists(QString(downloaded->inventoryId.ToString().c_str()), downloaded->assetType))
+                QString id = downloaded->inventoryId.ToString().c_str();
+                if (!editorManager_->Exists(id, at))
                 {
-                    QString id = downloaded->inventoryId.ToString().c_str();
-                    QString name = downloaded->name.c_str();
+                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, downloaded->name.c_str());
 
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, name);
                     QObject::connect(editor, SIGNAL(Closed(const QString &, RexTypes::asset_type_t)),
                         editorManager_, SLOT(Delete(const QString &, RexTypes::asset_type_t)));
 
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
                 }
+                /*
+                else
+                {
+                    ///\todo Bring editor to front
+                    OgreScriptEditor *editor = editorManager_->GetEditor(id, at);
+                    boost::shared_ptr<UiServices::UiModule> ui_module = 
+                        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                    if (ui_module)
+                        ui_module->GetSceneManager()->BringProxyToFront(editor);
+                }
+                */
+
                 downloaded->handled = true;
                 break;
             }

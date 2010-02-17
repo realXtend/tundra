@@ -60,6 +60,7 @@ namespace Inventory
         virtual AbstractInventoryItem *GetOrCreateNewAsset(const QString &inventory_id, const QString &asset_id,
             AbstractInventoryItem &parentFolder, const QString &name) = 0;
 
+    public slots:
         /// Request inventory descendents for spesific folder from the server.
         /// @param item Folder.
         /// @return True, if the folder could be opened.
@@ -83,7 +84,7 @@ namespace Inventory
 
         /// Opens inventory item.
         /// @param Inventory item.
-        /// @return True if the item at spesific index could be openeded, false otherwise.
+        /// @return True if the item at spesific index could be opened, false otherwise.
         virtual bool OpenItem(AbstractInventoryItem *item) = 0;
 
         /// Uploads file.

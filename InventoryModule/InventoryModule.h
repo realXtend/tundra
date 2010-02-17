@@ -5,6 +5,9 @@
  *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
  *          Implement data model -spesific event handling etc. here, not in InventoryWindow
  *          or InventoryItemModel classes.
+ *
+ *          It's not recommended to get any pointers to InventoryModule from other modules
+ *          because InventoryModule is designed to be an optional module.
  */
 
 #ifndef incl_InventoryModule_h
@@ -12,6 +15,8 @@
 
 #include <ModuleInterface.h>
 #include "WorldStream.h"
+
+#include <QMap>
 
 namespace Foundation
 {
@@ -24,11 +29,16 @@ namespace ProtocolUtilities
     typedef boost::weak_ptr<ProtocolModuleInterface> ProtocolWeakPtr;
 }
 
+QT_BEGIN_NAMESPACE
+class QWidget;
+QT_END_NAMESPACE
+
 namespace Inventory
 {
     class InventoryWindow;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
+    class ItemPropertiesWindow;
 
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
@@ -78,10 +88,27 @@ namespace Inventory
         /// Get the current WorldStream
         ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
 
+        /// Returns the inventory pointer
+        InventoryPtr GetInventoryPtr() const { return inventory_; }
+
+        /// Return the type of the inventory data model (e.g. OpenSim or WebDAV).
+        InventoryDataModelType GetInventoryDataModelType() const { return inventoryType_; }
+
+        /// Opens new item properties window.
+        /// @param inventory_id Inventory ID of the item.
+        void OpenItemPropertiesWindow(const QString &inventory_id);
+
+        /// Notifies server if item properties were modified.
+        /// The actual window takes care of closing and deleting itself.
+        /// @param inventory_id Inventory ID of the item.
+        /// @param save_changes Do we want to save changes.
+        void CloseItemPropertiesWindow(const QString &inventory_id, bool save_changes = false);
+
     private:
         Q_DISABLE_COPY(InventoryModule);
 
-        void RegisterInventoryItemHandler(RexTypes::asset_type_t asset_type, QObject *handler);
+        ///\todo Registration mechanism for asset types?
+//        void RegisterInventoryItemHandler(RexTypes::asset_type_t asset_type, QObject *handler);
 
         /// Handles InventoryDescendents packet.
         /// @param data Event data.
@@ -98,6 +125,9 @@ namespace Inventory
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
         void HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data);
+
+        /// Deletes all item properties windows.
+        void DeleteAllItemPropertiesWindows();
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
@@ -131,6 +161,9 @@ namespace Inventory
 
         /// Inventory data model.type.
         InventoryDataModelType inventoryType_;
+
+        /// List of item properties widgets.
+        QMap<QString, ItemPropertiesWindow *> itemPropertiesWindows_;
     };
 }
 
