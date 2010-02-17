@@ -73,7 +73,7 @@ namespace TelepathyIM
                 CreateVideoInputElement(video_src_name);
                 video_supported_ = true;
             }
-            catch(Exception &e)
+            catch(Exception &/*e*/)
             {
                 LogError("Cannot create video elements.");
             }
@@ -99,10 +99,10 @@ namespace TelepathyIM
         StopPipeline();
 
         if (locally_captured_video_widget_)
-		{
+        {
             locally_captured_video_widget_->close();
- 			SAFE_DELETE(locally_captured_video_widget_);
-		}
+             SAFE_DELETE(locally_captured_video_widget_);
+        }
         if (received_video_widget_)
         {
             received_video_widget_->close();
@@ -128,25 +128,25 @@ namespace TelepathyIM
             video_input_bin_ = 0;
         }
         if (audio_input_) 
-		{
+        {
             audio_input_ = 0;
         }
         if (audio_playback_bin_)
-		{
+        {
             audio_playback_bin_ = 0;
         }
         if (pipeline_) 
-		{
+        {
             g_object_unref(pipeline_);
             pipeline_ = 0;
         }
     }
 
-	void FarsightChannel::StopPipeline()
-	{
-		if (pipeline_)
-			gst_element_set_state(pipeline_, GST_STATE_NULL);
-	}
+    void FarsightChannel::StopPipeline()
+    {
+        if (pipeline_)
+            gst_element_set_state(pipeline_, GST_STATE_NULL);
+    }
 
     void FarsightChannel::CreateTfChannel()
     {
@@ -368,14 +368,14 @@ namespace TelepathyIM
         int rate = 0;
         int channels = 0;
         int width = 0;
-	    GstCaps *caps;
-	    GstStructure *structure;
-	    caps = gst_buffer_get_caps(buffer);
-	    structure = gst_caps_get_structure(caps, 0);
-	    gst_structure_get_int(structure, "rate", &rate);
+        GstCaps *caps;
+        GstStructure *structure;
+        caps = gst_buffer_get_caps(buffer);
+        structure = gst_caps_get_structure(caps, 0);
+        gst_structure_get_int(structure, "rate", &rate);
         gst_structure_get_int(structure, "channels", &channels);
         gst_structure_get_int(structure, "width", &width);
-	    gst_caps_unref(caps);
+        gst_caps_unref(caps);
 
         if (GST_BUFFER_FLAG_IS_SET(buffer, GST_BUFFER_FLAG_PREROLL))
         {
