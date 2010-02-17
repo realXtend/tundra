@@ -44,8 +44,8 @@ namespace Console
     {
         if(ui_initialized_)
         {
-            Console::ConsoleEventData event_data(text);
-            framework_->GetEventManager()->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_PRINT_LINE, &event_data);
+            Console::ConsoleEventData* event_data = new Console::ConsoleEventData(text);
+            framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_PRINT_LINE, Foundation::EventDataPtr(event_data));
         }
         else
         {

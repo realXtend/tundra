@@ -7,6 +7,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
+#include <QThread>
 
 #include <algorithm>
 
@@ -16,7 +17,8 @@ namespace Foundation
         framework_(framework),
         next_category_id_(1),
         next_request_tag_(1),
-        event_subscriber_root_(EventSubscriberPtr(new EventSubscriber()))
+        event_subscriber_root_(EventSubscriberPtr(new EventSubscriber())),
+        main_thread_id_(QThread::currentThreadId())
     {
     }
 
@@ -84,10 +86,15 @@ namespace Foundation
     
     bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
+        if (QThread::currentThreadId() != main_thread_id_)
+        {
+            Foundation::RootLogError("Tried to send an immediate event (using SendEvent) from a thread that is not the main thread. Use SendDelayedEvent() instead.");
+            throw Exception("Tried to send an immediate event (using SendEvent) from a thread that is not the main thread. Use SendDelayedEvent() instead.");
+        }
+        
         // Do not send messages after exit
         if (framework_->IsExiting())
             return false;
-    
         if (category_id == IllegalEventCategory)
         {
             Foundation::RootLogWarning("Attempted to send event with illegal category");
