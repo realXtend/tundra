@@ -19,6 +19,7 @@ namespace Ether
               bottom_menu_(menus.second),
               top_menu_visible_items_(top_items),
               bottom_menu_visible_items_(bottom_items),
+              menu_cap_size_(10),
               card_size_(card_size),
               last_active_top_card_(0),
               last_active_bottom_card_(0)
@@ -73,7 +74,7 @@ namespace Ether
             top_rect.setHeight(top_rect.height()/2 - 5);
 
             // Start menu with rect and cards, set top as active
-            top_menu_->Initialize(top_rect, avatar_map.values().toVector(), card_size_, 0.95, top_menu_visible_items_, 0.1);
+            top_menu_->Initialize(top_rect, avatar_map.values().toVector(), card_size_, 0.95, top_menu_visible_items_, 0.05, menu_cap_size_);
             
             // Recalculate the positions if this was a update, 
             // not adding widgets to scene
@@ -98,7 +99,7 @@ namespace Ether
             QVector<View::InfoCard*> avatar_vector = avatar_map.values().toVector();
             avatar_vector.push_front(new_card);
             
-            top_menu_->Initialize(top_rect, avatar_vector, card_size_, 0.95, top_menu_visible_items_, 0.1);
+            top_menu_->Initialize(top_rect, avatar_vector, card_size_, 0.95, top_menu_visible_items_, 0.05, menu_cap_size_);
             active_menu_ = top_menu_;
 
             RecalculateMenus();
@@ -121,7 +122,7 @@ namespace Ether
             bottom_rect.setHeight(scene_->height()/2);
 
             // Start menu with rect and cards
-            bottom_menu_->Initialize(bottom_rect, world_map.values().toVector(), card_size_, 0.95, bottom_menu_visible_items_, 0.1);
+            bottom_menu_->Initialize(bottom_rect, world_map.values().toVector(), card_size_, 0.95, bottom_menu_visible_items_, 0.05, menu_cap_size_);
             
             // Recalculate the positions if this was a update, 
             // not adding widgets to scene
@@ -144,7 +145,7 @@ namespace Ether
             world_vector.push_front(new_card);
 
             // Start menu with rect and cards
-            bottom_menu_->Initialize(bottom_rect, world_vector, card_size_, 0.95, bottom_menu_visible_items_, 0.1);
+            bottom_menu_->Initialize(bottom_rect, world_vector, card_size_, 0.95, bottom_menu_visible_items_, 0.05, menu_cap_size_);
             active_menu_ = bottom_menu_;
 
             RecalculateMenus();
@@ -169,14 +170,14 @@ namespace Ether
             world_info_widget_->SetActionWidget(action_proxy_widget_);
             scene_->addItem(world_info_widget_);
 
-            // Connect button
-            connect_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::RightToLeft, "Connect");
-            connect(connect_control_widget_, SIGNAL( ActionRequest() ), SLOT( TryStartLogin() ));
-            scene_->addItem(connect_control_widget_);
+            //// Connect button
+            //connect_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::RightToLeft, "Connect");
+            //connect(connect_control_widget_, SIGNAL( ActionRequest() ), SLOT( TryStartLogin() ));
+            //scene_->addItem(connect_control_widget_);
 
-            // Exit button
-            exit_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::LeftToRight, "Exit");
-            scene_->addItem(exit_control_widget_);
+            //// Exit button
+            //exit_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::LeftToRight, "Exit");
+            //scene_->addItem(exit_control_widget_);
         }
 
         void EtherSceneController::RecalculateMenus()
@@ -210,9 +211,9 @@ namespace Ether
             hightlight = bottom_menu_->GetHighlighted();
             world_info_widget_->UpdateGeometry(hightlight->mapRectToScene(hightlight->boundingRect()));
 
-            // Update action control positions
-            connect_control_widget_->setPos(new_rect.width() - connect_control_widget_->rect().width(), new_rect.height()/2 - (connect_control_widget_->rect().height()/2));
-            exit_control_widget_->setPos(0, new_rect.height()/2 - (exit_control_widget_->rect().height()/2));
+            //// Update action control positions
+            //connect_control_widget_->setPos(new_rect.width() - connect_control_widget_->rect().width(), new_rect.height()/2 - (connect_control_widget_->rect().height()/2));
+            //exit_control_widget_->setPos(0, new_rect.height()/2 - (exit_control_widget_->rect().height()/2));
 
             // Update action widget
             action_proxy_widget_->UpdateGeometry(new_rect);

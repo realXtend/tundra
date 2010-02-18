@@ -70,6 +70,7 @@ namespace Ether
             View::EtherMenu *bottom_menu_;
             int top_menu_visible_items_;
             int bottom_menu_visible_items_;
+            int menu_cap_size_;
 
             //! Max card size
             QRectF card_size_;
