@@ -108,7 +108,7 @@ namespace OgreRenderer
 
         if (renderwindow_)
         {
-            unsigned int width, height, left, top;
+            int width, height, left, top;
             bool maximized = main_window_->isMaximized();
             left = main_window_->geometry().x();
             top = main_window_->geometry().y();   
