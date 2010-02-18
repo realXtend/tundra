@@ -131,13 +131,13 @@ bool OgreAssetEditorModule::HandleEvent(
                 }
 
                 downloaded->handled = true;
-                break;
+
+                // Surpress this event.
+                return true;
             }
             default:
-                break;
+                return false;
             }
-
-            return false;
         }
     }
 

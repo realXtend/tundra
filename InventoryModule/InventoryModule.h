@@ -36,9 +36,10 @@ QT_END_NAMESPACE
 namespace Inventory
 {
     class InventoryWindow;
+    class UploadProgressWindow;
+    class ItemPropertiesWindow;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
-    class ItemPropertiesWindow;
 
     class InventoryModule : public Foundation::ModuleInterfaceImpl
     {
@@ -107,9 +108,6 @@ namespace Inventory
     private:
         Q_DISABLE_COPY(InventoryModule);
 
-        ///\todo Registration mechanism for asset types?
-//        void RegisterInventoryItemHandler(RexTypes::asset_type_t asset_type, QObject *handler);
-
         /// Handles InventoryDescendents packet.
         /// @param data Event data.
         void HandleInventoryDescendents(Foundation::EventDataInterface* event_data);
@@ -128,6 +126,9 @@ namespace Inventory
 
         /// Deletes all item properties windows.
         void DeleteAllItemPropertiesWindows();
+
+        /// Connects upload-related signals.
+        void ConnectSignals();
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
@@ -152,6 +153,9 @@ namespace Inventory
 
         /// Module GUI widget
         InventoryWindow *inventoryWindow_;
+
+        /// Upload progress window.
+        UploadProgressWindow *uploadProgressWindow_;
 
         /// WorldStream pointer
         ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;

@@ -14,6 +14,7 @@
 #include "DebugOperatorNew.h"
 #include "InventoryModule.h"
 #include "InventoryWindow.h"
+#include "UploadProgressWindow.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 #include "InventoryAsset.h"
@@ -47,6 +48,7 @@ InventoryModule::InventoryModule() :
     resourceEventCategory_(0),
     frameworkEventCategory_(0),
     inventoryWindow_(0),
+    uploadProgressWindow_(0),
     inventoryType_(IDMT_Unknown)
 {
 }
@@ -88,9 +90,6 @@ void InventoryModule::Initialize()
         console->RegisterCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
             Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
     }
-
-    // Create inventory window.
-    inventoryWindow_ = new InventoryWindow(this);
 
     LogInfo("System " + Name() + " initialized.");
 }
@@ -155,9 +154,18 @@ bool InventoryModule::HandleEvent(
             if (!auth)
                 return false;
 
+            // Create inventory and upload progress windows
+            if (inventoryWindow_)
+                SAFE_DELETE(inventoryWindow_);
+            inventoryWindow_ = new InventoryWindow(this);
+            if (uploadProgressWindow_)
+                SAFE_DELETE(uploadProgressWindow_);
+            uploadProgressWindow_ = new UploadProgressWindow(this);
+
             switch(auth->type)
             {
             case ProtocolUtilities::AT_Taiga:
+            {
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
                 {
@@ -172,6 +180,7 @@ bool InventoryModule::HandleEvent(
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
                 }
                 break;
+            }
             case ProtocolUtilities::AT_OpenSim:
             case ProtocolUtilities::AT_RealXtend:
             {
@@ -194,19 +203,33 @@ bool InventoryModule::HandleEvent(
                 break;
             }
 
+            ConnectSignals();
+
             return false;
         }
 
-        // Disconnected from server. Hide inventory and reset tree model. Also close item properties windows.
+        // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            if (inventoryWindow_)
+            boost::shared_ptr<UiServices::UiModule> ui_module =
+                GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            if (ui_module)
             {
-                inventoryWindow_->Hide();
-                inventoryWindow_->ResetInventoryTreeModel();
-            }
+                if (inventoryWindow_)
+                {
+                    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(inventoryWindow_);
+                    inventoryWindow_->deleteLater();
+                    inventoryWindow_ = 0;
+                }
+                if (uploadProgressWindow_)
+                {
+                    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(uploadProgressWindow_);
+                    uploadProgressWindow_->deleteLater();
+                    uploadProgressWindow_ = 0;
+                }
 
-            DeleteAllItemPropertiesWindows();
+                DeleteAllItemPropertiesWindows();
+            }
         }
 
         return false;
@@ -668,6 +691,28 @@ void InventoryModule::DeleteAllItemPropertiesWindows()
         SAFE_DELETE(wnd);
         it.remove();
     }
+}
+
+void InventoryModule::ConnectSignals()
+{
+    if (!uploadProgressWindow_)
+        return;
+
+    // Connect upload progress signals.
+    QObject::connect(inventory_.get(), SIGNAL(MultiUploadStarted(size_t)),
+        uploadProgressWindow_, SLOT(OpenUploadProgress(size_t)));
+
+    QObject::connect(inventory_.get(), SIGNAL(UploadStarted(const QString &)),
+        uploadProgressWindow_, SLOT(UploadStarted(const QString &)));
+
+//    connect(inventory_.get(), SIGNAL(UploadFailed(const QString &)),
+//        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
+
+//    connect(inventory_.get(), SIGNAL(UploadCompleted(const QString &)),
+//        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
+
+    QObject::connect(inventory_.get(), SIGNAL(MultiUploadCompleted()),
+        uploadProgressWindow_, SLOT(CloseUploadProgress()));
 }
 
 } // namespace Inventory

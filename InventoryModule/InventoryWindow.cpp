@@ -43,9 +43,10 @@
 namespace Inventory
 {
 
-InventoryWindow::InventoryWindow(InventoryModule *owner) :
+InventoryWindow::InventoryWindow(InventoryModule *owner, QWidget *parent) :
     owner_(owner),
-    inventoryWidget_(0),
+    QWidget(parent),
+    mainWidget_(0),
     inventoryItemModel_(0),
     treeView_(0),
     actionMenu_(0),
@@ -61,9 +62,9 @@ InventoryWindow::InventoryWindow(InventoryModule *owner) :
     actionDownload_(0),
     actionSeparator_(0),
 //    offset_(0),
-    lastUsedPath_(QDir::currentPath()),
-    uploadCount_(0),
-    uploadWidget_(0)
+    lastUsedPath_(QDir::currentPath())
+//    uploadCount_(0),
+//    uploadWidget_(0)
 {
     InitInventoryWindow();
 }
@@ -73,7 +74,7 @@ InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
     SAFE_DELETE(treeView_);
-    SAFE_DELETE(inventoryWidget_);
+    SAFE_DELETE(mainWidget_);
     SAFE_DELETE(actionMenu_);
     SAFE_DELETE(actionDelete_);
     SAFE_DELETE(actionRename_);
@@ -85,7 +86,7 @@ InventoryWindow::~InventoryWindow()
     SAFE_DELETE(actionUpload_);
     SAFE_DELETE(actionDownload_);
     SAFE_DELETE(actionSeparator_);
-    SAFE_DELETE(uploadWidget_);
+//    SAFE_DELETE(uploadWidget_);
 
 /*
     QMutableMapIterator<QString, QMessageBox *> it(downloadDialogs_);
@@ -124,22 +125,6 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 
     connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
         this, SLOT(CloseDownloadProgess(const QString &)));
-
-    // Connect upload progress signals.
-    connect(inventory_model.get(), SIGNAL(MultiUploadStarted(size_t)),
-        this, SLOT(OpenUploadProgress(size_t)));
-
-    connect(inventory_model.get(), SIGNAL(UploadStarted(const QString &)),
-        this, SLOT(UploadStarted(const QString &)));
-
-//    connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &)),
-//        this, SLOT(UploadProgress(const QString &)));
-
-//    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
-//        this, SLOT(UploadProgress(const QString &)));
-
-    connect(inventory_model.get(), SIGNAL(MultiUploadCompleted()),
-        this, SLOT(CloseUploadProgress()));
 
     // Connect selectionChanged
     connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
@@ -260,7 +245,7 @@ void InventoryWindow::Download()
     if (selection.isEmpty())
         return;
 
-    QString storePath = QFileDialog::getExistingDirectory(inventoryWidget_, "Select location for file download", lastUsedPath_);
+    QString storePath = QFileDialog::getExistingDirectory(mainWidget_, "Select location for file download", lastUsedPath_);
     if (storePath.isEmpty())
         return;
 
@@ -310,7 +295,7 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
     {
-        QPointF pos = inventoryWidget_->mapToGlobal(QPoint(0, 0));
+        QPointF pos = mainWidget_->mapToGlobal(QPoint(0, 0));
         pos.setX(pos.x() + offset_);
         pos.setY(pos.y() + offset_);
         offset_ += 20;
@@ -338,7 +323,7 @@ void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
         delete msgBox;
 */
 }
-
+/*
 void InventoryWindow::OpenUploadProgress(size_t file_count)
 {
     QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
@@ -361,11 +346,9 @@ void InventoryWindow::UploadStarted(const QString &filename)
     }
 }
 
-/*
 void InventoryWindow::UploadCompleted(const QString &filename)
 {
 }
-*/
 
 void InventoryWindow::CloseUploadProgress()
 {
@@ -374,6 +357,7 @@ void InventoryWindow::CloseUploadProgress()
     uploadCount_ = 0;
     uploadProxyWidget_->hide();
 }
+*/
 
 void InventoryWindow::InitInventoryWindow()
 {
@@ -384,13 +368,19 @@ void InventoryWindow::InitInventoryWindow()
 
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory.ui");
-    inventoryWidget_ = loader.load(&uiFile, 0);
+    mainWidget_ = loader.load(&uiFile, 0);
     uiFile.close();
 
+    /// Layout 
+    layout_ = new QVBoxLayout;
+    //layout_->addWidget(mainWidget_);
+    setLayout(layout_);
+
     // Create inventory tree view.
-    treeView_ = new InventoryTreeView;
-    QHBoxLayout *hlayout = inventoryWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
-    hlayout->addWidget(treeView_);
+    treeView_ = new InventoryTreeView(mainWidget_);
+//    QHBoxLayout *hlayout = mainWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
+//    hlayout->addWidget(treeView_);
+    layout_->addWidget(treeView_);
 
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
@@ -398,7 +388,7 @@ void InventoryWindow::InitInventoryWindow()
     connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        inventoryWidget_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
+        this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
 
     // Upload progress window
     QFile file("./data/ui/uploadprogress.ui");
@@ -406,7 +396,7 @@ void InventoryWindow::InitInventoryWindow()
     file.close();
 
     UiServices::UiWidgetProperties widget_properties("Upload", UiServices::SceneWidget);
-    widget_properties.SetPosition(inventoryWidget_->mapToGlobal(QPoint(0, 0)));
+    widget_properties.SetPosition(mainWidget_->mapToGlobal(QPoint(0, 0)));
     uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(uploadWidget_, widget_properties);
 
     connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),
