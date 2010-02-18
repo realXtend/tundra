@@ -177,8 +177,16 @@ Color EC_OgreEnvironment::GetSunColor() const
 #ifdef CAELUM
     if ( caelumSystem_ != 0)
     {
-        Vector3df sunDirection = GetSunDirection();
-        Ogre::ColourValue color = caelumSystem_->getSunLightColour(caelumSystem_->getUniversalClock()->getJulianSecond(), ToOgreVector3(sunDirection));
+        Ogre::ColourValue color;
+        if ( override_flags_.testFlag(SunColor))
+        {
+            color = userSunColor_;
+        }
+        else
+        {
+            Vector3df sunDirection = GetSunDirection();
+            color = caelumSystem_->getSunLightColour(caelumSystem_->getUniversalClock()->getJulianSecond(), ToOgreVector3(sunDirection));
+        }
         return Color(color.r, color.g, color.b, color.a);
     }   
     

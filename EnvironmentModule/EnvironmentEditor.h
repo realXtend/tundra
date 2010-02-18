@@ -10,6 +10,7 @@
 #include <QPair>
 #include <QTimer>
 #include <QSlider>
+#include <QVector>
 
 class QImage;
 class QColor;
@@ -225,6 +226,9 @@ namespace Environment
         //! Bring a external color picker dialog on the screen.
         void ShowColorPicker();
 
+        //! Return the original color to environment if color picker got cancel signal.
+        void ColorPickerRejected();
+
         //! Update sun light color value.
         //! @color new color value.
         void UpdateSunLightColor(const QColor& color);
@@ -314,7 +318,10 @@ namespace Environment
         QSlider *timeof_day_slider_;
 
         QColorDialog* sun_color_picker_;
+        QVector<float> sun_color_;
+
         QColorDialog* ambient_color_picker_;
+        QVector<float> ambient_color_;
         bool ambient_;
 
         //! sky type in use.
