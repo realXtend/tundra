@@ -46,17 +46,23 @@ namespace OgreRenderer
     */
     class OGRE_MODULE_API Renderer : public Foundation::RenderServiceInterface
     {
-        
     public:
         //! Constructor
         //! \param framework Framework pointer.
         //! \param config Config filename.
         //! \param plugins Plugins filename.
         //! \param window_title Renderer window title.
-        Renderer(Foundation::Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title);
+        Renderer(
+            Foundation::Framework* framework,
+            const std::string& config,
+            const std::string& plugins,
+            const std::string& window_title);
 
         //! Destructor
         virtual ~Renderer();
+
+        //! Renders the screen
+        virtual void Render();
 
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
@@ -67,9 +73,6 @@ namespace OgreRenderer
             \return Raycast result structure
         */
         virtual Foundation::RaycastResult Raycast(int x, int y);
-
-        //! Renders the screen
-        virtual void Render();
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -82,6 +85,32 @@ namespace OgreRenderer
 
         //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
+
+        //! set maximum view distance
+        virtual void SetViewDistance(Real distance);
+
+        //! get maximum view distance
+        virtual Real GetViewDistance();
+
+        //! force UI repaint
+        virtual void RepaintUi();
+
+        //! Takes a screenshot and saves it to a file.
+        //! \param filePath File path.
+        //! \param fileName File name.
+        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
+
+        //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
+        //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
+        //! \param avatar_position Avatar's position.
+        //! \param avatar_orientation Avatar's orientation.
+        //! \param worldfile Worldfile's filename.
+        //! \param avatarfile Avatarfile's filename.
+        virtual void CaptureWorldAndAvatarToFile(
+            const Vector3Df &avatar_position,
+            const Quaternion &avatar_orientation,
+            const std::string& worldfile,
+            const std::string& avatarfile);
 
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
@@ -105,11 +134,6 @@ namespace OgreRenderer
          */
         virtual void RemoveResource(const std::string& id, const std::string& type);
 
-        //! set maximum view distance
-        virtual void SetViewDistance(Real distance);
-        //! get maximum view distance
-        virtual Real GetViewDistance();
-        
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -163,11 +187,6 @@ namespace OgreRenderer
             when rendering.
          */
         void SetCurrentCamera(Ogre::Camera* camera);
-
-        //! Takes a screenshot and saves it to a file.
-        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
-
-        virtual void CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile);
 
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
