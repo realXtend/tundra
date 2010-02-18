@@ -576,7 +576,9 @@ namespace ProtocolUtilities
             if (timeNow - it->first >= cTimeoutSeconds)
             {
                 it->first = timeNow;
+                it->second->MarkResend();
                 SendProcessedMessage(it->second);
+                //std::cout << "Resending packet " << it->second->GetSequenceNumber() << std::endl;
 #ifdef PROFILING
                 resentPackets.InsertRecord(1.0);
 #endif
