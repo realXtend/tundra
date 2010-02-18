@@ -14,6 +14,7 @@
 #include "Data/WorldInfo.h"
 
 #include "View/InfoCard.h"
+#include "View/VerticalMenu.h"
 
 #include <QStringList>
 #include <QTimer>
@@ -53,9 +54,9 @@ namespace Ether
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
 
             // Initialise menus
-            QPair<View::EllipseMenu*, View::EllipseMenu*> menus;
-            menus.first = new View::EllipseMenu(View::EllipseMenu::OPENS_UP);
-            menus.second = new View::EllipseMenu(View::EllipseMenu::OPENS_DOWN);
+            QPair<View::EtherMenu*, View::EtherMenu*> menus;
+            menus.first = new View::VerticalMenu(View::VerticalMenu::VERTICAL_TOP);
+            menus.second = new View::VerticalMenu(View::VerticalMenu::VERTICAL_TOP);
 
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);

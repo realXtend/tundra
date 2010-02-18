@@ -1,9 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EllipseMenu_h
-#define incl_UiModule_EllipseMenu_h
+#ifndef incl_UiModule_VerticalMenu_h
+#define incl_UiModule_VerticalMenu_h
 
 #include "EtherMenu.h"
+
 
 namespace Ether
 {
@@ -11,21 +12,22 @@ namespace Ether
     {
         //! Class for animated ellipse menu.
         //! note that this class is NOT responsible of deleting the QGraphicsobjects it animates
-        class EllipseMenu : public EtherMenu
+        class VerticalMenu : public EtherMenu
         {
         public:
 
-            enum TYPE { ELLIPSE_OPENS_UP, ELLIPSE_OPENS_DOWN};
+            enum TYPE {VERTICAL_TOP, VERTICAL_MID, VERTICAL_BOTTOM };
 
-            EllipseMenu(TYPE type);
-            virtual ~EllipseMenu();
+            VerticalMenu(TYPE type);
+            virtual ~VerticalMenu();
         private:
             //! Calculate positions for objects
             void CalculatePositions(QVector<QPointF> &positions);
+
 
             TYPE type_;
         };
     }
 }
 
-#endif // ELLIPSEMENU_H
+#endif // VerticalMenu_H
