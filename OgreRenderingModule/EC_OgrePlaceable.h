@@ -6,6 +6,7 @@
 #include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+#include <QtGui/qvector3d.h>
 
 namespace Ogre
 {
@@ -24,9 +25,11 @@ namespace OgreRenderer
      */
     class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
     {
-        Q_OBJECT
-        
         DECLARE_EC(EC_OgrePlaceable);
+
+        Q_OBJECT
+        Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
+
     public:
         virtual ~EC_OgrePlaceable();
 
@@ -95,6 +98,10 @@ namespace OgreRenderer
                        
         //! returns select priority
         int GetSelectPriority() const { return select_priority_; }
+
+        //! experimental accessors that use the new 3d vector etc types in Qt 4.6, for qproperties
+        QVector3D GetQPosition() const;
+        void SetQPosition(const QVector3D newpos);
         
     private:
         //! constructor

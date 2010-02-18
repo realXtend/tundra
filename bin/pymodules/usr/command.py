@@ -286,9 +286,9 @@ if 0: #pythonqt introspec
     #print dir(gui.QTreeWidgetItem)
 
     #V3 works :)
-    import PythonQt.QtCore
-    print dir(PythonQt.QtCore)
-    v3 = PythonQt.QtCore.QVector3D()
+    import PythonQt.QtGui
+    print dir(PythonQt.QtGui)
+    v3 = PythonQt.QtGui.QVector3D()
     print v3
     print dir(v3)
     v3.setX(1)
@@ -768,7 +768,7 @@ if 0:
     print dir(r.c.proxywidget)
     r.c.proxywidget.hide()
     
-if 0:
+if 0: #qprim
     qprim = r.getQPrim(1680221423)
     mats = qprim.Materials
     print mats
@@ -785,6 +785,31 @@ if 0:
         #~ id += 1
     
     #~ #print keys, mats.keys(), mats[keys[0]]
+
+if 0: #qplaceable
+    id = 2138143966
+    qplace = r.getQPlaceable(id)
+    print qplace, qplace.Position
+
+    oldz = qplace.Position.z()
+    print oldz, "==>",
+
+    import PythonQt.QtGui
+    from PythonQt.QtGui import QVector3D
+    change_v = QVector3D(0, 0, 0.1)
+    #dir shows __add__ but for some reason doesn't work out of the box :(
+    #"unsupported operand type(s) for +=: 'QVector3D' and 'QVector3D'"
+    #qplace.Position += change_v
+    #qplace.Position + change_v
+
+    #bleh and this changes the val in the vec, but doesn't trigger the *vec* setter, 
+    #so no actual change in Naali internals
+    #qplace.Position.setZ(oldz + 0.1)
+  
+    newpos = qplace.Position
+    newpos.setZ(oldz + 0.1)
+    qplace.Position = newpos
+    print qplace.Position.z(), "."    
         
 if 0:
     from PythonQt.QtCore import QFile, QSize
