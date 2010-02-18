@@ -828,7 +828,11 @@ namespace OgreRenderer
         }
     }
 
-    void Renderer::CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile)
+    void Renderer::CaptureWorldAndAvatarToFile(
+        const Vector3Df &avatar_position,
+        const Quaternion &avatar_orientation,
+        const std::string& worldfile,
+        const std::string& avatarfile)
     {
         if (renderwindow_)
         {
@@ -962,6 +966,12 @@ namespace OgreRenderer
     Real Renderer::GetViewDistance()
     {
         return view_distance_;
+    }
+
+    void Renderer::RepaintUi()
+    {
+        if (resized_dirty_ < 1)
+            resized_dirty_  = 1;
     }
 
     void Renderer::SetAllTextOverlaysVisible(bool visible)

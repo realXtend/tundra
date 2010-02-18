@@ -28,7 +28,7 @@ namespace Foundation
         //! V coord in entity. 0 if no texture mapping
         Real v_;
     };
-    
+
     //! Render service interface.
     /*!
         \ingroup Services_group
@@ -39,11 +39,15 @@ namespace Foundation
     class MODULE_API RenderServiceInterface : public ServiceInterface
     {
     public:
+        /// Default constructor
         RenderServiceInterface() {}
+
+        /// Destructor.
         virtual ~RenderServiceInterface() {}
 
         //! Renders the scene
         virtual void Render() = 0;
+
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
             \param x Horizontal position for the origin of the ray
@@ -51,23 +55,44 @@ namespace Foundation
             \return Raycast result structure
         */
         virtual RaycastResult Raycast(int x, int y) = 0;
+
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
+
         //! Returns render window height, or 0 if no window is opened
         virtual int GetWindowHeight() const = 0;
+
         //! subscribe a listener to renderer log
         virtual void SubscribeLogListener(const LogListenerPtr &listener) = 0;
+
         //! unsubsribe a listener to renderer log
         virtual void UnsubscribeLogListener(const LogListenerPtr &listener) = 0;
+
         //! set maximum view distance
         virtual void SetViewDistance(Real distance) = 0;
+
         //! get maximum view distance
         virtual Real GetViewDistance() = 0;
+
+        //! force UI repaint
+        virtual void RepaintUi() = 0;
+
         //! take sceenshot to a location
+        //! \param filePath File path.
+        //! \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
+
         //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
-        virtual void CaptureWorldAndAvatarToFile(Vector3Df avatar_position, Quaternion avatar_orientation, const std::string& worldfile, const std::string& avatarfile) = 0;
-        
+        //! \param avatar_position Avatar's position.
+        //! \param avatar_orientation Avatar's orientation.
+        //! \param worldfile Worldfile's filename.
+        //! \param avatarfile Avatarfile's filename.
+        virtual void CaptureWorldAndAvatarToFile(
+            const Vector3Df &avatar_position,
+            const Quaternion &avatar_orientation,
+            const std::string& worldfile,
+            const std::string& avatarfile) = 0;
+
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
             \param id Resource id
