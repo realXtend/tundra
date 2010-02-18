@@ -80,6 +80,9 @@ namespace ProtocolUtilities
         /// Marks the message as reliable
         void MarkReliable() { messageData[0] |= NetFlagReliable; }
         
+        /// Marks the message as a resend
+        void MarkResend() { messageData[0] |= NetFlagResent; }
+        
         /// @return True if this message is flagged as reliable, i.e. if the receiver has to Ack it.
         bool IsReliable() const { return (messageData[0] & NetFlagReliable) != 0;}
         
