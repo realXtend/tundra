@@ -20,6 +20,7 @@ QT_BEGIN_NAMESPACE
 class QMenu;
 class QAction;
 class QMessageBox;
+class QModelIndex;
 QT_END_NAMESPACE
 
 namespace Foundation
@@ -74,6 +75,10 @@ namespace Inventory
     private slots:
         /// Opens inventory item (folder or asset) when user double-clicks it.
         void OpenItem();
+
+        /// Expands the folder at spesific index.
+        /// @param index Folder model index.
+        void ExpandFolder(const QModelIndex &index);
 
         /// Opens inventory item's property window.
         void OpenItemProperties();
@@ -203,7 +208,7 @@ namespace Inventory
         QAction *actionSeparator_;
 
         /// Map of active download progress dialogs.
-        QMap<QString, QMessageBox *> downloadDialogs_;
+//        QMap<QString, QMessageBox *> downloadDialogs_;
 
         /// Offset for download dialog positions.
 //        size_t offset_;

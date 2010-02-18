@@ -9,7 +9,7 @@
 #ifndef incl_OgreAssetEditorModule_MaterialWizard_h
 #define incl_OgreAssetEditorModule_MaterialWizard_h
 
-#include <QObject>
+#include <QWidget>
 #include <QString>
 
 namespace Foundation
@@ -23,12 +23,12 @@ namespace UiServices
 }
 
 QT_BEGIN_NAMESPACE
-class QWidget;
+class QVBoxLayout;
 QT_END_NAMESPACE
 
 namespace OgreAssetEditor
 {
-    class MaterialWizard : public QObject
+    class MaterialWizard : public QWidget
     {
         Q_OBJECT
 
@@ -95,7 +95,7 @@ namespace OgreAssetEditor
 
         /// Consturctor.
         /// @param framework Framework pointer.
-        MaterialWizard(Foundation::Framework *framework);
+        MaterialWizard(Foundation::Framework *framework, QWidget *parent = 0);
 
         /// Destructor.
         ~MaterialWizard();
@@ -109,6 +109,9 @@ namespace OgreAssetEditor
 
         /// Activates and deactivates widgets according to the current selection.
         void RefreshWidgets();
+
+        /// Unchecks every checkbox and radiobutton.
+        void ClearSelections();
 
         /// Checks that name name isn't null.
         void ValidateScriptName(const QString &name);
@@ -124,11 +127,14 @@ namespace OgreAssetEditor
         /// Framework pointer.
         Foundation::Framework *framework_;
 
+        /// Main widget loaded from .ui file.
+        QWidget *mainWidget_;
+
+        /// Layout 
+        QVBoxLayout *layout_;
+
         /// Proxy widget for the UI.
         UiServices::UiProxyWidget *proxyWidget_;
-
-        /// The window main widget.
-        QWidget *mainWidget_;
 
         /// Bit mask of current material configuration options.
         MaterialWizardOptions currentOptions_;

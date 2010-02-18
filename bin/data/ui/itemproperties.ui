@@ -17,15 +17,10 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Avatar Editor</string>
+   <string>Item Properties</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* Containers */
-QWidget#ItemProperties {
-	background-color: none;
-}
-
-QFrame#MainFrame {
+   <string notr="true">QWidget#ItemProperties{
 	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
 	padding: 5px;
 }
@@ -42,13 +37,7 @@ QLabel {
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="MainFrame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
+    <widget class="QWidget" name="MainWidget" native="true">
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="margin">
        <number>0</number>
@@ -170,6 +159,9 @@ QLabel {
          <widget class="QLabel" name="labelAssetIdData">
           <property name="text">
            <string/>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>

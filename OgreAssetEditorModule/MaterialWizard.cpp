@@ -24,6 +24,7 @@
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QLabel>
+#include <QVBoxLayout>
 
 // Useful defines
 #define ENABLE(p) p->setEnabled(true);
@@ -32,8 +33,9 @@
 namespace OgreAssetEditor
 {
 
-MaterialWizard::MaterialWizard(Foundation::Framework *framework) :
+MaterialWizard::MaterialWizard(Foundation::Framework *framework, QWidget *parent) :
     framework_(framework),
+    QWidget(parent),
     proxyWidget_(0),
     mainWidget_(0),
     currentOptions_(Material_None),
@@ -44,6 +46,9 @@ MaterialWizard::MaterialWizard(Foundation::Framework *framework) :
 
 MaterialWizard::~MaterialWizard()
 {
+    proxyWidget_->hide();
+    SAFE_DELETE(layout_);
+    SAFE_DELETE(mainWidget_);
 }
 
 void MaterialWizard::Create()
@@ -74,12 +79,14 @@ void MaterialWizard::Create()
 
     event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE, &event_data);
 
-    proxyWidget_->close();
+    proxyWidget_->hide();
+    ClearSelections();
 }
 
 void MaterialWizard::Cancel()
 {
-    proxyWidget_->close();
+    proxyWidget_->hide();
+    ClearSelections();
 }
 
 void MaterialWizard::RefreshWidgets()
@@ -402,6 +409,32 @@ void MaterialWizard::RefreshWidgets()
     */
 }
 
+void MaterialWizard::ClearSelections()
+{
+    QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
+    QListIterator<QObject *> iter(widgetList);
+    while(iter.hasNext())
+    {
+        QObject *obj = iter.next();
+        QString name = obj->objectName();
+        if (name.indexOf("Param") != -1)
+        {
+           QAbstractButton *button = dynamic_cast<QAbstractButton *>(obj);
+            if (button)
+            {
+                // Set defaults checked and everything else unchecked.
+                if (name == "radioDiffRgbTexParam" || name == "radioSpecNoneParam" || name == "radioAlphaNoneParam")
+                    button->setChecked(true);
+                else
+                    button->setChecked(false);
+            }
+        }
+    }
+
+    QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
+    lineEditName->setText("");
+}
+
 void MaterialWizard::InitWindow()
 {
     boost::shared_ptr<UiServices::UiModule> ui_module = 
@@ -421,14 +454,17 @@ void MaterialWizard::InitWindow()
     mainWidget_ = loader.load(&file, 0);
     file.close();
 
+    layout_ = new QVBoxLayout;
+    layout_->addWidget(mainWidget_);
+    setLayout(layout_);
+
     // Connect parameter widgets' clicked signal to RefreshWidgets slot.
     QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
     QListIterator<QObject *> iter(widgetList);
     while(iter.hasNext())
     {
         QObject *obj = iter.next();
-        QString objName = obj->objectName();
-        if (objName.indexOf("Param") != -1)
+        if (obj->objectName().indexOf("Param") != -1)
             QObject::connect(obj, SIGNAL(clicked(bool)), this, SLOT(RefreshWidgets()));
     }
 

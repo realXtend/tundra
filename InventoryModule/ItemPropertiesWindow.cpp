@@ -28,7 +28,7 @@ namespace Inventory
 {
 
 ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *parent) :
-    QWidget(parent), owner_(owner), initialized_(false)
+    QWidget(parent), owner_(owner)
 {
     QUiLoader loader;
     QFile file("./data/ui/itemproperties.ui");
@@ -40,23 +40,32 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     layout_->addWidget(mainWidget_);
     setLayout(layout_);
 
-    setAttribute(Qt::WA_DeleteOnClose, true);
-
-//    setStyleSheet("QWidget#ItemProperties {\n    background-color: none;\n}\n\nQFrame#MainFrame {\n    "
-//  "background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50),"
-// "stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
-//"\n    padding: 5px;\n}\n\nQLabel {\n    padding-bottom: 3px;\n}");
+/*
+    setStyleSheet(
+        "QWidget"
+        "{"
+        "background-color: qlineargradient("
+            "spread:pad, x1:0.006, y1:0, x2:0, y2:1,"
+            "stop:0.142045 rgba(229, 234, 243, 50),"
+            "stop:0.295455 rgba(209, 215, 221, 150),"
+            "stop:0.65 rgba(179, 183, 196, 150),"
+            "stop:1 rgba(222, 227, 236, 100));"
+            "padding: 5px;"
+        "}");
+*/
 
     // Get widgets and connect signals
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
     lineEditDescription_ = mainWidget_->findChild<QLineEdit *>("lineEditDescription");
+
     labelAssetIdData_ = mainWidget_->findChild<QLabel *>("labelAssetIdData");
-    labelType_ = mainWidget_->findChild<QLabel *>("labelType");
-    labelFileSize_ = mainWidget_->findChild<QLabel *>("labelFileSize");
+    labelTypeData_ = mainWidget_->findChild<QLabel *>("labelTypeData");
+    labelFileSizeData_ = mainWidget_->findChild<QLabel *>("labelFileSizeData");
     labelCreationTimeData_ = mainWidget_->findChild<QLabel *>("labelCreationTimeData");
     labelCreatorData_ = mainWidget_->findChild<QLabel *>("labelCreatorData");
     labelOwnerData_ = mainWidget_->findChild<QLabel *>("labelOwnerData");
     labelGroupData_ = mainWidget_->findChild<QLabel *>("labelGroupData");
+
     pushButtonSave_ = mainWidget_->findChild<QPushButton *>("pushButtonSave");
     pushButtonCancel_ = mainWidget_->findChild<QPushButton *>("pushButtonCancel");
 
@@ -80,7 +89,6 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
 
     proxyWidget_->show();
     ui_module->GetSceneManager()->BringProxyToFront(proxyWidget_);
-    initialized_ = true;
 }
 
 ItemPropertiesWindow::~ItemPropertiesWindow()
@@ -113,8 +121,8 @@ void ItemPropertiesWindow::SetItem(InventoryAsset *item)
 
 void ItemPropertiesWindow::HandleAssetReady(Foundation::AssetPtr asset)
 {
-    labelType_->setText(asset->GetType().c_str());
-    labelFileSize_->setText(QString::number(asset->GetSize()));
+    labelTypeData_->setText(asset->GetType().c_str());
+    labelFileSizeData_->setText(QString::number(asset->GetSize()));
 }
 
 void ItemPropertiesWindow::HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_map)
@@ -132,22 +140,30 @@ void ItemPropertiesWindow::HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_
     }
 }
 
-void ItemPropertiesWindow::hideEvent(QHideEvent *event)
-{
-    if (initialized_)
-        close();
-}
-
 void ItemPropertiesWindow::Save()
 {
-    owner_->CloseItemPropertiesWindow(inventoryId_, true);
     proxyWidget_->hide();
+
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return;
+
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+    owner_->CloseItemPropertiesWindow(inventoryId_, true);
 }
 
 void ItemPropertiesWindow::Cancel()
 {
-    owner_->CloseItemPropertiesWindow(inventoryId_, false);
     proxyWidget_->hide();
+
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return;
+
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+    owner_->CloseItemPropertiesWindow(inventoryId_, true);
 }
 
 bool ItemPropertiesWindow::EditingFinished()

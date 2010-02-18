@@ -66,10 +66,6 @@ namespace Inventory
         /// @param uuid_name_map Map of UUID-name pairs.
         void HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_map);
 
-    protected:
-        /// QWidget override.
-        void hideEvent(QHideEvent *event);
-
     private slots:
         /// Tells InventoryModule to destroy the window and save the changes made to the item.
         void Save();
@@ -83,9 +79,6 @@ namespace Inventory
         bool EditingFinished();
 
     private:
-        ///
-        bool initialized_;
-
         /// Main widget loaded from .ui file.
         QWidget *mainWidget_;
 
@@ -125,11 +118,11 @@ namespace Inventory
         /// Asset ID value label.
         QLabel *labelAssetIdData_;
 
-        /// Type label.
-        QLabel *labelType_;
+        /// Type value label.
+        QLabel *labelTypeData_;
 
-        /// File size label
-        QLabel *labelFileSize_;
+        /// File size value label
+        QLabel *labelFileSizeData_;
 
         /// Creation time value label.
         QLabel *labelCreationTimeData_;

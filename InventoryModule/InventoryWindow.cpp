@@ -22,6 +22,7 @@
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
 //#include <DirectoryView.h>
+#include <RenderServiceInterface.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -34,7 +35,7 @@
 #include <QFileDialog>
 #include <QMenu>
 #include <QAction>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QProgressBar>
 #include <QLabel>
 #include "MemoryLeakCheck.h"
@@ -86,6 +87,7 @@ InventoryWindow::~InventoryWindow()
     SAFE_DELETE(actionSeparator_);
     SAFE_DELETE(uploadWidget_);
 
+/*
     QMutableMapIterator<QString, QMessageBox *> it(downloadDialogs_);
     while(it.hasNext())
     {
@@ -93,6 +95,7 @@ InventoryWindow::~InventoryWindow()
         SAFE_DELETE(msgBox);
         it.remove();
     }
+*/
 }
 
 void InventoryWindow::Hide()
@@ -144,7 +147,7 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 
     ///\todo Hack: connect this signal only for regular OS, causes problems with WebDAV.
     if (owner_->GetInventoryDataModelType() == InventoryModule::IDMT_OpenSim)
-        connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(OpenItem()));
+        connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -159,6 +162,12 @@ void InventoryWindow::OpenItem()
     inventoryItemModel_->Open(index);
 
     treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
+    UpdateActions();
+}
+
+void InventoryWindow::ExpandFolder(const QModelIndex &index)
+{
+    inventoryItemModel_->Open(index);
     UpdateActions();
 }
 

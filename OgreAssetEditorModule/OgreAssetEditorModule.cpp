@@ -17,6 +17,7 @@
 
 #include <QStringList>
 #include <QVector>
+#include <QGraphicsProxyWidget>
 
 namespace OgreAssetEditor
 {
@@ -116,17 +117,18 @@ bool OgreAssetEditorModule::HandleEvent(
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
                 }
-                /*
                 else
                 {
-                    ///\todo Bring editor to front
-                    OgreScriptEditor *editor = editorManager_->GetEditor(id, at);
-                    boost::shared_ptr<UiServices::UiModule> ui_module = 
+                    // Bring editor to front
+                    QWidget *editor = editorManager_->GetEditor(id, at);
+                    if (editor)
+                    {
+                        boost::shared_ptr<UiServices::UiModule> ui_module = 
                         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                    if (ui_module)
-                        ui_module->GetSceneManager()->BringProxyToFront(editor);
+                        if (ui_module)
+                            ui_module->GetSceneManager()->BringProxyToFront(editor);
+                    }
                 }
-                */
 
                 downloaded->handled = true;
                 break;

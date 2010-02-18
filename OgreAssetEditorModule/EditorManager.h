@@ -10,7 +10,7 @@
 
 #include "RexTypes.h"
 
-#include <QObject>
+#include <QWidget>
 #include <QMap>
 #include <QPair>
 #include <QString>
@@ -18,11 +18,11 @@
 namespace OgreAssetEditor
 {
     typedef QPair<QString, RexTypes::asset_type_t> EditorMapKey;
-    typedef QMap<EditorMapKey, QObject *> EditorMap;
+    typedef QMap<EditorMapKey, QWidget *> EditorMap;
     typedef EditorMap::iterator EditorMapIter;
-    typedef QMutableMapIterator<EditorMapKey, QObject *> MutableEditorMapIter;
+    typedef QMutableMapIterator<EditorMapKey, QWidget *> MutableEditorMapIter;
 
-    class EditorManager : public QObject
+    class EditorManager : public QWidget
     {
         Q_OBJECT
 
@@ -39,13 +39,13 @@ namespace OgreAssetEditor
         /// @param asset_type Asset type.
         /// @param editor Editor object.
         /// @return True if the editor was added succesfully, false otherwise.
-        bool Add(const QString &inventory_id, RexTypes::asset_type_t asset_type, QObject *editor);
+        bool Add(const QString &inventory_id, RexTypes::asset_type_t asset_type, QWidget *editor);
 
         /// Returns editor object.
         /// @param inventory_id Inventory id.
         /// @param asset_type Asset type.
         /// @return Editor object or null if not found.
-        QObject *GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type);
+        QWidget *GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type);
 
         /// Returns true if the editor with matching id and asset type exists
         /// @param inventory_id Inventory id.
@@ -59,14 +59,15 @@ namespace OgreAssetEditor
         bool Delete(const QString &inventory_id, RexTypes::asset_type_t asset_type);
 
         /// Deletes all editors.
-        void DeleteAll();
+        /// @param delete_later Sert true if you want to use QWidget::deleteLater instead of normal delete.
+        void DeleteAll(bool delete_later = false);
 
     private:
         /// Returns editor object and removes it from the editor map.
         /// @param inventory_id Inventory id.
         /// @param asset_type Asset type.
         /// @return Editor object or null if not found.
-        QObject *TakeEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type);
+        QWidget *TakeEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type);
 
         /// Map of currently existing editors.
         EditorMap editors_;
