@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainWidget</class>
- <widget class="QWidget" name="mainWidget">
+ <class>OgreScriptEditor</class>
+ <widget class="QWidget" name="OgreScriptEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,12 +11,13 @@
    </rect>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#mainWidget {
-	background-color: none;
+   <string notr="true">QWidget#MainWidget{
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
+	padding: 5px;
 }
 
-QFrame#MainFrame {
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
+QLabel {
+	padding-bottom: 3px;
 }</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
@@ -27,13 +28,7 @@ QFrame#MainFrame {
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="MainFrame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
+    <widget class="QWidget" name="MainWidget" native="true">
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="margin">
        <number>0</number>

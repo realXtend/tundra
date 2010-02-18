@@ -440,6 +440,8 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
             ///\todo WebDAV needs the old name. We don't have it here...
             inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
     }
+
+    wnd->deleteLater();
 }
 
 void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)

@@ -39,8 +39,10 @@ OgreScriptEditor::OgreScriptEditor(
     Foundation::Framework *framework,
     const QString &inventory_id,
     const RexTypes::asset_type_t &asset_type,
-    const QString &name) :
+    const QString &name,
+    QWidget *parent) :
     framework_(framework),
+    QWidget(parent),
     proxyWidget_(0),
     mainWidget_(0),
     lineEditName_(0),
@@ -67,6 +69,8 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(textEdit_);
     SAFE_DELETE(propertyTable_);
     SAFE_DELETE(materialProperties_);
+    SAFE_DELETE(layout_);
+    SAFE_DELETE(mainWidget_);
 }
 
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
@@ -106,7 +110,13 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 void OgreScriptEditor::Close()
 {
     proxyWidget_->hide();
-    mainWidget_->close();
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return;
+
+    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+
     emit Closed(inventoryId_, assetType_);
 }
 
@@ -229,8 +239,13 @@ void OgreScriptEditor::InitEditorWindow()
     }
 
     mainWidget_ = loader.load(&file);
-    mainWidget_->setAttribute(Qt::WA_DeleteOnClose, true);
+    //mainWidget_->setAttribute(Qt::WA_DeleteOnClose, true);
     file.close();
+
+    layout_ = new QVBoxLayout;
+    layout_->addWidget(mainWidget_);
+    setLayout(layout_);
+    resize(mainWidget_->size());
 
     // Get controls
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
@@ -244,7 +259,7 @@ void OgreScriptEditor::InitEditorWindow()
 
     // Add widget to UI via ui services module
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        mainWidget_, UiServices::UiWidgetProperties("OGRE Script Editor: " + name_, UiServices::SceneWidget));
+        this, UiServices::UiWidgetProperties("OGRE Script Editor: " + name_, UiServices::SceneWidget));
 
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
 

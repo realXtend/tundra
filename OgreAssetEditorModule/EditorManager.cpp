@@ -20,7 +20,7 @@ EditorManager::~EditorManager()
     DeleteAll();
 }
 
-bool EditorManager::Add(const QString &inventory_id, RexTypes::asset_type_t asset_type, QObject *editor)
+bool EditorManager::Add(const QString &inventory_id, RexTypes::asset_type_t asset_type, QWidget *editor)
 {
     if (!editor || inventory_id.isEmpty() || asset_type == RexTypes::RexAT_None)
         return false;
@@ -29,7 +29,7 @@ bool EditorManager::Add(const QString &inventory_id, RexTypes::asset_type_t asse
     return true;
 }
 
-QObject *EditorManager::GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+QWidget *EditorManager::GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     EditorMapIter it = editors_.find(key);
@@ -47,28 +47,31 @@ bool EditorManager::Exists(const QString &inventory_id, RexTypes::asset_type_t a
 
 bool EditorManager::Delete(const QString &inventory_id, RexTypes::asset_type_t asset_type)
 {
-    QObject *editor = TakeEditor(inventory_id, asset_type);
+    QWidget *editor = TakeEditor(inventory_id, asset_type);
     if (editor)
     {
-        SAFE_DELETE(editor);
+        editor->deleteLater();
         return true;
     }
     else
         return false;
 }
 
-void EditorManager::DeleteAll()
+void EditorManager::DeleteAll(bool delete_later)
 {
     MutableEditorMapIter it(editors_);
     while(it.hasNext())
     {
-        QObject *editor = it.next().value();
-        SAFE_DELETE(editor);
+        QWidget *editor = it.next().value();
+        if (delete_later)
+            editor->deleteLater();
+        else
+            SAFE_DELETE(editor);
         it.remove();
     }
 }
 
-QObject *EditorManager::TakeEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+QWidget *EditorManager::TakeEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     EditorMapIter it = editors_.find(key);

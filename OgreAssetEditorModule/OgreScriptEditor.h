@@ -13,12 +13,12 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <QObject>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
+class QVBoxLayout;
 class QPushButton;
 class QLineEdit;
-class QWidget;
 class QTextEdit;
 QT_END_NAMESPACE
 
@@ -39,7 +39,7 @@ namespace OgreAssetEditor
     class OgreMaterialProperties;
     class PropertyTableWidget;
 
-    class OgreScriptEditor : public QObject
+    class OgreScriptEditor : public QWidget
     {
         Q_OBJECT
 
@@ -51,7 +51,8 @@ namespace OgreAssetEditor
         OgreScriptEditor(Foundation::Framework *framework,
             const QString &inventory_id,
             const RexTypes::asset_type_t &asset_type,
-            const QString &name);
+            const QString &name,
+            QWidget *parent = 0);
 
         /// Destructor.
         virtual ~OgreScriptEditor();
@@ -98,11 +99,14 @@ namespace OgreAssetEditor
         /// Framework pointer.
         Foundation::Framework *framework_;
 
+        /// Layout 
+        QVBoxLayout *layout_;
+
+        /// Main widget loaded from .ui file.
+        QWidget *mainWidget_;
+
         /// Proxy widget for the ui
         UiServices::UiProxyWidget *proxyWidget_;
-
-        /// The editor main window widget.
-        QWidget *mainWidget_;
 
         /// Save As button.
         QLineEdit *lineEditName_;
