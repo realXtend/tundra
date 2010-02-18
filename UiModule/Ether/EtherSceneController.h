@@ -7,7 +7,7 @@
 #include <QGraphicsScene>
 
 #include "View/EtherScene.h"
-#include "View/EllipseMenu.h"
+#include "View/VerticalMenu.h"
 
 #include "Data/DataManager.h"
 #include "Data/AvatarInfo.h"
@@ -27,7 +27,7 @@ namespace Ether
         Q_OBJECT
 
         public:
-            EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EllipseMenu*, View::EllipseMenu*> menus,
+            EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EtherMenu*, View::EtherMenu*> menus,
                                  QRectF card_size, int top_items, int bottom_items);
 
         public slots:
@@ -65,9 +65,9 @@ namespace Ether
             View::EtherScene *scene_;
 
             //! Menus
-            View::EllipseMenu *active_menu_;
-            View::EllipseMenu *top_menu_;
-            View::EllipseMenu *bottom_menu_;
+            View::EtherMenu *active_menu_;
+            View::EtherMenu *top_menu_;
+            View::EtherMenu *bottom_menu_;
             int top_menu_visible_items_;
             int bottom_menu_visible_items_;
 
