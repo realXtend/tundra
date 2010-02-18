@@ -3,7 +3,7 @@ import circuits
 
 import time
 
-user, pwd, server = "Test User", "test", "localhost:9000"
+user, pwd, server = "Test Bot", "test", "world.realxtend.org:9000"
 #user, pwd, server = "d d", "d", "world.evocativi.com:8002"
 
 class TestRunner(circuits.Component):
@@ -18,8 +18,8 @@ class TestRunner(circuits.Component):
             if status:
                 print "Test state", status
                 prev = status
-            else:
-                print "Test state", prev, "still running"
+            #else:
+                #print "Test state", prev, "still running"
         except StopIteration:
             print "Test finished"
 
@@ -42,7 +42,7 @@ class TestLoginLogoutExit(TestRunner):
         r.startLoginOpensim(user, pwd, server)
         print "ELAPSED:", self.elapsed(self.wait_time)
         while not self.elapsed(self.wait_time):
-            print "X",
+            #print "X",
             yield None
 
         yield "logging out"
