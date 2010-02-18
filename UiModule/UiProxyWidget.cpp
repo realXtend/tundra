@@ -23,6 +23,7 @@ namespace UiServices
           fade_animation_(0),
           control_button_(0)
     {
+        setObjectName(in_widget_properties.GetWidgetName());
         InitWidgetAndProxy(widget);
         InitEffectsAndAnimations();
     }

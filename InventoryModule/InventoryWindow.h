@@ -12,11 +12,12 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <QWidget>
 #include <QPointer>
-#include <QObject>
 #include <QMap>
 
 QT_BEGIN_NAMESPACE
+class QVBoxLayout;
 class QMenu;
 class QAction;
 class QMessageBox;
@@ -49,14 +50,14 @@ namespace Inventory
 
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
 
-    class InventoryWindow : public QObject
+    class InventoryWindow : public QWidget
     {
         Q_OBJECT
 
     public:
         /// Constructor.
         /// @param owner InventoryModule pointer
-        InventoryWindow(InventoryModule *owner);
+        InventoryWindow(InventoryModule *owner, QWidget *parent = 0);
 
         /// Destructor.
         virtual ~InventoryWindow();
@@ -121,6 +122,7 @@ namespace Inventory
         /// @param asset_id Asset id.
         void CloseDownloadProgess(const QString &asset_id);
 
+/*
         /// Opens the upload progress bar window.
         /// @param file_count Number of files to be uploaded.
         void OpenUploadProgress(size_t file_count);
@@ -134,7 +136,7 @@ namespace Inventory
 
         ///
         void CloseUploadProgress();
-
+*/
     signals:
         /// Use this signal to send notification to the UI.
         /// @param message Message to be shown.
@@ -157,7 +159,10 @@ namespace Inventory
         QPointer<InventoryItemModel> inventoryItemModel_;
 
         /// Inventory window widget.
-        QWidget *inventoryWidget_;
+        QWidget *mainWidget_;
+
+        /// Layout 
+        QVBoxLayout *layout_;
 
         /// Upload progress window widget
         QWidget *uploadWidget_;

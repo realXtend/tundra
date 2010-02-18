@@ -126,6 +126,23 @@ namespace UiServices
         }
     }
 
+    void UiSceneManager::RemoveProxyWidgetFromScene(QWidget *widget)
+    {
+        if (ui_view_)
+        {
+            QList<UiProxyWidget *> proxies(main_panel_->GetProxyWidgetList());
+            foreach (UiProxyWidget *proxy, proxies)
+            {
+                QGraphicsProxyWidget *qproxy = dynamic_cast<QGraphicsProxyWidget *>(proxy);
+                if (qproxy && qproxy == widget->graphicsProxyWidget())
+                    if (main_panel_ && proxy->GetWidgetProperties().IsShownInToolbar())
+                        main_panel_->RemoveWidget(proxy);
+            }
+
+            inworld_scene_->removeItem(widget->graphicsProxyWidget());
+        }
+    }
+
     void UiSceneManager::BringProxyToFront(UiProxyWidget *widget)
     {
         if (ui_view_)
