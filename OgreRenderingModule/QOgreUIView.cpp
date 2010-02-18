@@ -159,7 +159,6 @@ namespace OgreRenderer
 
     void QOgreUIView::keyPressEvent (QKeyEvent *e)
     {
-        //XXX temp hacks to have special keybinding works in the start screen (ether?) too
         if (e->key() == Qt::Key_F1 && scene()->focusItem())
             emit ConsoleToggleRequest();
 
@@ -181,6 +180,7 @@ namespace OgreRenderer
             view_->ResizeOverlay(width(), height());
         }
         
+        // Resize the scene to view rect
         if (scene())
             scene()->setSceneRect(rect());          
     }
