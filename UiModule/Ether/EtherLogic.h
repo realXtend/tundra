@@ -66,6 +66,7 @@ namespace Ether
             void ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*> ui_cards);
 
             void TitleUpdate(QUuid card_uuid, QString new_title);
+            void RemoveObjectFromData(QUuid uuid);
             void AvatarCreated(Data::AvatarInfo *avatar_data);
             void WorldCreated(Data::WorldInfo *world_data);
 

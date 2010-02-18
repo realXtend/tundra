@@ -19,7 +19,8 @@ namespace Ether
             : QGraphicsScene(scene_rect, parent),
               supress_key_events_(false)
         {
-            QBrush bg_brush(QColor(233,233,233,75));            
+            QPixmap bg_image("./data/ui/images/ether/tile.png");
+            QBrush bg_brush(bg_image);            
             setBackgroundBrush(bg_brush);
         }
 
