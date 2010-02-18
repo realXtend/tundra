@@ -9,6 +9,11 @@
 
 namespace ProtocolUtilities
 {
+class NetMessageManager;
+}
+
+namespace ProtocolUtilities
+{
     class MODULE_API ProtocolModuleInterface
     {
 
@@ -63,6 +68,9 @@ namespace ProtocolUtilities
         /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
         /// this class.
         virtual void FinishMessageBuilding(NetOutMessage *msg) = 0;
+
+        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() = 0;
+
     };
 }
 

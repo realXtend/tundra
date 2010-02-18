@@ -59,6 +59,8 @@ namespace Foundation
 
     void FrameworkQtApplication::UpdateFrame()
     {
+        PROFILE(FrameworkQtApplication_UpdateFrame);
+
         QApplication::processEvents (QEventLoop::AllEvents, 1);
         QApplication::sendPostedEvents ();
 

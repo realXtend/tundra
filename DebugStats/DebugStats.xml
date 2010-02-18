@@ -1,5 +1,0 @@
-<config>
-  <entry>DebugStats</entry>
-  <dependency>SupportModules</dependency>
-  <dependency>RexLogicModule</dependency>
-</config>

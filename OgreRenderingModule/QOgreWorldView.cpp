@@ -62,6 +62,7 @@ namespace OgreRenderer
     {
         if (win_)
         {
+            PROFILE(QOgreWorldView_ResizeWindow);
             win_->resize(width, height); 
             win_->windowMovedOrResized();
         }
@@ -71,6 +72,8 @@ namespace OgreRenderer
     {
         if (Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
         {
+            PROFILE(QOgreWorldView_ResizeOverlay);
+
             // resize the container
             ui_overlay_container_-> setDimensions (width, height);
 
@@ -84,6 +87,7 @@ namespace OgreRenderer
 
     void QOgreWorldView::RenderOneFrame ()
     {
+        PROFILE(QOgreWorldView_RenderOneFrame);
         root_-> _fireFrameStarted ();
         win_-> update();
         root_-> _fireFrameRenderingQueued ();
@@ -92,6 +96,7 @@ namespace OgreRenderer
 
     void QOgreWorldView::OverlayUI (Ogre::PixelBox &ui)
     {
+        PROFILE(QOgreWorldView_OverlayUI);
         ui_overlay_texture_-> getBuffer()-> blitFromMemory (ui);
     }
 

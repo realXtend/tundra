@@ -92,6 +92,19 @@ namespace Foundation
             return 0.0;
 	    }
 
+#ifdef _WINDOWS
+        static double ElapsedTimeSeconds(const LARGE_INTEGER &start, const LARGE_INTEGER &end)
+        {
+            if (supported_)
+            {
+                double elapsed_s = (double)(end.QuadPart - start.QuadPart) / (double)frequency_.QuadPart;
+         
+                return (elapsed_s < 0 ? 0 : elapsed_s);
+            }
+            return 0.0;
+        }
+#endif
+
         //! Returns elapsed time in microseconds
         LONGLONG ElapsedTimeMicroSeconds()
         {
@@ -125,6 +138,8 @@ namespace Foundation
 #endif
     };
 
+    class Profiler;
+
     //! N-ary tree structure for profiling nodes
     class ProfilerNodeTree
     {
@@ -135,13 +150,18 @@ namespace Foundation
         typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
 
         //! constructor that takes a name for the node
-        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0)
+        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0)
         { }
 
         //! destructor
         virtual ~ProfilerNodeTree()
-        { }
+        {
+            if (owner_)
+                RemoveThreadRootBlock();
+        }
         
+        void RemoveThreadRootBlock();
+
         //! Resets this node and all child nodes
         virtual void ResetValues()
         {
@@ -204,11 +224,18 @@ namespace Foundation
         //! Returns list of children for introspection
         const NodeList &GetChildren() const { return children_; }
 
+        void MarkAsRootBlock(Profiler *owner)
+        {
+            owner_ = owner;
+        }
+
     private:
         //! list of all children for this node
         NodeList children_;
         //! cached parent node for easy access
         ProfilerNodeTree *parent_;
+        //! If non-null, this node is a root block owned by the given profiler.
+        Profiler *owner_;
         //! Name of this node
         const std::string name_;
 
@@ -236,7 +263,11 @@ namespace Foundation
           elapsed_min_(0.0),
           elapsed_max_(0.0),
           elapsed_min_current_(0.0),
-          elapsed_max_current_(0.0)
+          elapsed_max_current_(0.0),
+          num_called_custom_(0),
+          total_custom_(0),
+          custom_elapsed_min_(0),
+          custom_elapsed_max_(0)
           {
           }
 
@@ -278,6 +309,14 @@ namespace Foundation
 
         //! Maximum time spend in this profile during last frame
         double elapsed_max_;
+
+        // Profiling data is also accumulated here, and can be resetted on a custom interval.
+        // Mutable since the application can alter these at will, but the above "official"
+        // values may not be touched.
+        mutable ulong num_called_custom_;
+        mutable double total_custom_;
+        mutable double custom_elapsed_min_;
+        mutable double custom_elapsed_max_;
 
     private:
         ulong num_called_current_;
@@ -335,9 +374,7 @@ namespace Foundation
 #endif
         }
     public:
-        ~Profiler()
-        {
-        }
+        ~Profiler();
 
         //! Start a profiling block.
         /*!
@@ -363,6 +400,7 @@ namespace Foundation
         void ThreadedReset();
 
         ProfilerNodeTree *CreateThreadRootBlock();
+        void RemoveThreadRootBlock(ProfilerNodeTree *rootBlock);
 
         ProfilerNodeTree *GetThreadRootBlock();
 

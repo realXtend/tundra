@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <crtdbg.h>
+
 #define _CRTDBG_MAP_ALLOC
 /*    
 void *operator new(std::size_t size);
@@ -31,24 +32,34 @@ void operator delete(void *ptr);
 void operator delete[](void *ptr);
 */
 
+// Ideally, we would like to allocate _CLIENT_BLOCKs in all the handlers below,
+// but this has caused an assertion failure in crtdbg, where a memory block allocated
+// by our code (as a _CLIENT_BLOCK) gets freed as if it were a _NORMAL_BLOCK. So,
+// currently allocate all our blocks as _NORMAL_BLOCKs as well, which can make grepping
+// a bit more difficult.
+
 __forceinline void *operator new(std::size_t size)
 {
-	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME, 1);
+	return _malloc_dbg(size, _NORMAL_BLOCK, DEBUG_CPP_NAME, 1);
+//	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME, 1);
 }
 
 __forceinline void *operator new[](std::size_t size)
 {
-	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME ", op[]", 1);
+	return _malloc_dbg(size, _NORMAL_BLOCK, DEBUG_CPP_NAME ", op[]", 1);
+//	return _malloc_dbg(size, _CLIENT_BLOCK, DEBUG_CPP_NAME ", op[]", 1);
 }
 
 __forceinline void operator delete(void *ptr)
 {
-    _free_dbg(ptr, _CLIENT_BLOCK);
+    _free_dbg(ptr, _NORMAL_BLOCK);
+//    _free_dbg(ptr, _CLIENT_BLOCK);
 }
 
 __forceinline void operator delete[](void *ptr)
 {
-    _free_dbg(ptr, _CLIENT_BLOCK);
+    _free_dbg(ptr, _NORMAL_BLOCK);
+//    _free_dbg(ptr, _CLIENT_BLOCK);
 }
 
 #endif // ~_MSC_VER

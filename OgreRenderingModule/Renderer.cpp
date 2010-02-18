@@ -408,6 +408,8 @@ namespace OgreRenderer
         if (!initialized_) 
             return;
             
+        PROFILE(Renderer_Render);
+
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
@@ -418,6 +420,8 @@ namespace OgreRenderer
 
         if (q_ogre_ui_view_->isDirty() || resized_dirty_)
         {
+            PROFILE(Renderer_Render_QtBlit);
+
             QSize viewsize(q_ogre_ui_view_-> size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
