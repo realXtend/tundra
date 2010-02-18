@@ -111,7 +111,7 @@ namespace Ether
             if (data_manager_->GetAvatarCountInSettings() == 0)
             {
                 qDebug() << "Avatar config file was empty, adding one anonymous opensim user to it";
-                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "nopass");
+                Data::OpenSimAvatar oa1("Mr.", "Anonymous", "");
                 data_manager_->StoreOrUpdateAvatar(&oa1);
             }
 

@@ -609,7 +609,6 @@ namespace Ether
                         return;
                     }
                 }
-
                 current_os_world_data_->setGridInfo(current_grid_info_map_);
                 data_manager_->StoreOrUpdateWorld(current_os_world_data_);
             }
@@ -617,11 +616,27 @@ namespace Ether
             {
                 line_edit = current_widget_->findChild<QLineEdit*>("firstNameLineEdit");
                 if (line_edit)
-                    current_os_avatar_data_->setFirstName(line_edit->text());
+                {
+                    QString first = line_edit->text();
+                    if ((first.isEmpty() || first.contains(" ")) && status)
+                    {
+                        status->setText("First name can't be empty or have spaces");
+                        return;
+                    }
+                    current_os_avatar_data_->setFirstName(first);
+                }
 
                 line_edit = current_widget_->findChild<QLineEdit*>("lastNameLineEdit");
                 if (line_edit)
-                    current_os_avatar_data_->setLastName(line_edit->text());
+                {
+                    QString last = line_edit->text();
+                    if ((last.isEmpty() || last.contains(" ")) && status)
+                    {
+                        status->setText("Last name can't be empty or have spaces");
+                        return;
+                    }
+                    current_os_avatar_data_->setLastName(last);
+                }
 
                 line_edit = current_widget_->findChild<QLineEdit*>("passwordLineEdit");
                 if (line_edit)
@@ -681,14 +696,21 @@ namespace Ether
                 if (line_edit)
                     password = line_edit->text();
 
-                if (!first.isEmpty() && !last.isEmpty() && !password.isEmpty())
+                bool spaces_on_names = first.contains(" ");
+                if (!spaces_on_names)
+                    spaces_on_names = last.contains(" ");
+                
+                if (!first.isEmpty() && !last.isEmpty() && !spaces_on_names)
                 {
                     Data::OpenSimAvatar *new_opensim_avatar = new Data::OpenSimAvatar(first, last, password);
                     data_manager_->StoreOrUpdateAvatar(new_opensim_avatar);
                 }
                 else if (status)
                 {
-                    status->setText("Fill all the fields before saving");
+                    if (spaces_on_names)
+                        status->setText("You can't have spaces in first or last name");
+                    else
+                        status->setText("Both first and last name are required");
                     return;
                 }
             }
