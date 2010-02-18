@@ -11,6 +11,13 @@ namespace Foundation
     FrameworkQtApplication::FrameworkQtApplication (Framework *framework, int &argc, char** argv) : 
         QApplication (argc, argv), framework_ (framework), app_activated_(true)
     {
+        #ifdef Q_WS_WIN
+        // If under windows, add run_dir/plugins as library path
+        // unix users will get plugins from their OS Qt installation folder automatically
+        QString run_directory = applicationDirPath();
+        run_directory += "/qtplugins";
+        addLibraryPath(run_directory);
+        #endif
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
