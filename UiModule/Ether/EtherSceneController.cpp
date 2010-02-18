@@ -48,13 +48,25 @@ namespace Ether
                     this, SLOT( ActiveItemChanged(View::InfoCard*) ));
             connect(bottom_menu_, SIGNAL( ItemHighlighted(View::InfoCard*) ),
                     this, SLOT( ActiveItemChanged(View::InfoCard*) ));
+
+            // Init widget pointers to 0 for null cheching on startup
+            avatar_info_widget_ = 0;
+            world_info_widget_ = 0;
+            connect_control_widget_ = 0;
+            exit_control_widget_ = 0;
+            action_proxy_widget_ = 0;
         }
 
-        void EtherSceneController::LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map)
+        void EtherSceneController::LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene)
         {
-            // Add cards to scene, connect click signals
-            foreach (View::InfoCard *card, avatar_map.values())
+            top_menu_visible_items_ = visible_top_items;
+
+            // Add cards to scene if requested
+            if (add_to_scene)
+            {
+                foreach (View::InfoCard *card, avatar_map.values())
                     scene_->addItem(card);
+            }
 
             // Adjust menu rect to proper size
             QRectF top_rect = scene_->sceneRect();
@@ -62,11 +74,20 @@ namespace Ether
 
             // Start menu with rect and cards, set top as active
             top_menu_->Initialize(top_rect, avatar_map.values().toVector(), card_size_, 0.95, top_menu_visible_items_, 0.1);
-            active_menu_ = top_menu_;
+            
+            // Recalculate the positions if this was a update, 
+            // not adding widgets to scene
+            if (!add_to_scene)
+                RecalculateMenus();
+
+            // For the first run we set top as the active menu
+            if (!active_menu_)
+                active_menu_ = top_menu_;
         }
 
-        void EtherSceneController::NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map)
+        void EtherSceneController::NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items)
         {
+            top_menu_visible_items_ = visible_top_items;
             scene_->addItem(new_card);
 
             // Adjust menu rect to proper size
@@ -83,13 +104,14 @@ namespace Ether
             RecalculateMenus();
         }
 
-        void EtherSceneController::LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map)
+        void EtherSceneController::LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map, int visible_bottom_items, bool add_to_scene)
         {
-            // Add cards to scene, connect click signals
-            QList<QGraphicsItem *> scene_items = scene_->items();
-            foreach(View::InfoCard *card, world_map.values())
+            bottom_menu_visible_items_ = visible_bottom_items;
+
+            // Add cards to scene if requested
+            if (add_to_scene)
             {
-                if (!scene_items.contains(card))
+                foreach (View::InfoCard *card, world_map.values())
                     scene_->addItem(card);
             }
 
@@ -100,10 +122,16 @@ namespace Ether
 
             // Start menu with rect and cards
             bottom_menu_->Initialize(bottom_rect, world_map.values().toVector(), card_size_, 0.95, bottom_menu_visible_items_, 0.1);
+            
+            // Recalculate the positions if this was a update, 
+            // not adding widgets to scene
+            if (!add_to_scene)
+                RecalculateMenus();
         }
 
-        void EtherSceneController::NewWorldToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> world_map)
+        void EtherSceneController::NewWorldToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> world_map, int visible_bottom_items)
         {
+            bottom_menu_visible_items_ = visible_bottom_items;
             scene_->addItem(new_card);
 
             // Adjust menu rect to proper size
@@ -127,6 +155,8 @@ namespace Ether
             // Action widget to show info and edit cards info
             action_proxy_widget_ = new View::ActionProxyWidget(data_manager_);
             connect(action_proxy_widget_, SIGNAL( ActionInProgress(bool) ), SLOT( ActionWidgetInProgress(bool) ));
+            connect(action_proxy_widget_, SIGNAL( RemoveAvatar(Data::AvatarInfo *) ), SLOT ( RemoveAvatar(Data::AvatarInfo *) ));
+            connect(action_proxy_widget_, SIGNAL( RemoveWorld(Data::WorldInfo *) ), SLOT ( RemoveWorld(Data::WorldInfo *) ));
             scene_->addItem(action_proxy_widget_);
 
             // Avatar info frame
@@ -234,9 +264,7 @@ namespace Ether
 
         void EtherSceneController::ActionWidgetInProgress(bool action_ongoing)
         {
-            // No moving left/right or WASD when action widget is in progress
-            bool supress_key_events = action_ongoing;
-            scene_->SupressKeyEvents(supress_key_events);
+            scene_->SupressKeyEvents(action_ongoing);
         }
 
         void EtherSceneController::UpdateAvatarInfoWidget()
@@ -245,10 +273,32 @@ namespace Ether
                 avatar_info_widget_->UpdateContollerCard(last_active_top_card_);
         }
 
+        void EtherSceneController::RemoveAvatar(Data::AvatarInfo *avatar_info)
+        {
+            bool removed = data_manager_->RemoveAvatar(avatar_info);
+            if (removed && last_active_top_card_)
+            {
+                last_active_top_card_->close();
+                scene_->removeItem(last_active_top_card_);
+                emit ObjectRemoved(avatar_info->id());
+            }
+        }
+
         void EtherSceneController::UpdateWorldInfoWidget()
         {
             if (last_active_bottom_card_)
                 world_info_widget_->UpdateContollerCard(last_active_bottom_card_);
+        }
+
+        void EtherSceneController::RemoveWorld(Data::WorldInfo *world_info)
+        {
+            bool removed = data_manager_->RemoveWorld(world_info);
+            if (removed && last_active_bottom_card_)
+            {
+                last_active_bottom_card_->close();
+                scene_->removeItem(last_active_bottom_card_);
+                emit ObjectRemoved(world_info->id());
+            }
         }
 
         void EtherSceneController::TryStartLogin()

@@ -29,12 +29,16 @@ namespace Ether
 
             QMap<QUuid, Data::AvatarInfo*> ReadAllAvatarsFromFile();
             void StoreOrUpdateAvatar(Data::AvatarInfo *avatar_info);
+            bool RemoveAvatar(Data::AvatarInfo *avatar_info);
 
             QMap<QUuid, Data::WorldInfo*> ReadAllWorldsFromFile();
             void StoreOrUpdateWorld(Data::WorldInfo *world_info);
+            bool RemoveWorld(Data::WorldInfo *world_info);
 
             Data::AvatarInfo *GetAvatarInfo(QString uuid);
+            QMap<QUuid, Data::AvatarInfo *> GetAvatarMap();
             Data::WorldInfo *GetWorldInfo(QString uuid);
+            QMap<QUuid, Data::WorldInfo *> GetWorldMap();
 
         private:
             QString avatar_settings_name_;

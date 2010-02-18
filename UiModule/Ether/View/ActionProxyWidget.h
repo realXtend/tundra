@@ -81,6 +81,8 @@ namespace Ether
 
         signals:
             void ActionInProgress(bool);
+            void RemoveAvatar(Data::AvatarInfo *);
+            void RemoveWorld(Data::WorldInfo *);
 
         };
     }

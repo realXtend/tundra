@@ -10,6 +10,8 @@
 #include <QVariant>
 #include <QStringList>
 
+#include <QFile>
+
 namespace Ether
 {
     namespace Data
@@ -32,6 +34,8 @@ namespace Ether
             QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
             return world_settings.childGroups().count();
         }
+
+        /***** AVATAR FUNCTIONS *****/
 
         QMap<QUuid, Data::AvatarInfo *> DataManager::ReadAllAvatarsFromFile()
         {
@@ -115,6 +119,7 @@ namespace Ether
                             avatar_settings.setValue("authurl", realxtend_avatar->authUrl());
                             avatar_settings.setValue("secret", QByteArray(realxtend_avatar->password().toStdString().c_str()).toBase64());
                             avatar_settings.setValue("imagepath", realxtend_avatar->pixmapPath());
+                            avatar_map_[avatar_info->id()] = avatar_info;
                             emit AvatarDataCreated(avatar_info);
                         }
                         else
@@ -200,6 +205,35 @@ namespace Ether
                 avatar_settings.sync();
             }
         }
+
+        bool DataManager::RemoveAvatar(Data::AvatarInfo *avatar_info)
+        {
+            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
+            QString uuid_string = avatar_info->id();
+            
+            // If this is the last avatar card, lets not allow it to be removed
+            // TODO: find a proper way to do this so user can actually remove all the cards
+            if (avatar_settings.childGroups().count() == 1)
+                return false;
+
+            if (avatar_settings.childGroups().contains(uuid_string))
+            {
+                // Remove config data
+                avatar_map_.remove(avatar_info->id());
+                avatar_settings.remove(uuid_string);
+                avatar_settings.sync();
+
+                // Remove avatar screenshot image
+                QFile remove_image(avatar_info->pixmapPath());
+                if (!remove_image.fileName().isEmpty() && !remove_image.fileName().isNull() && 
+                    !remove_image.fileName().startsWith("./data/"))
+                    remove_image.remove();
+                return true;
+            }
+            return false;
+        }
+
+        /***** WORLD FUNCTIONS *****/
 
         QMap<QUuid, Data::WorldInfo*> DataManager::ReadAllWorldsFromFile()
         {
@@ -329,6 +363,35 @@ namespace Ether
             }
         }
 
+        bool DataManager::RemoveWorld(Data::WorldInfo *world_info)
+        {
+            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
+            QString uuid_string = world_info->id();
+
+            // If this is the last world card, lets not allow it to be removed
+            // TODO: find a proper way to do this so user can actually remove all the cards
+            if (world_settings.childGroups().count() == 1)
+                return false;
+
+            if (world_settings.childGroups().contains(uuid_string))
+            {
+                // Remove config data
+                world_map_.remove(world_info->id());
+                world_settings.remove(uuid_string);
+                world_settings.sync();
+
+                // Remove world screenshot image
+                QFile remove_image(world_info->pixmapPath());
+                if (!remove_image.fileName().isEmpty() && !remove_image.fileName().isNull() && 
+                    !remove_image.fileName().startsWith("./data/"))
+                    remove_image.remove();
+                return true;
+            }
+            return false;
+        }
+
+        /*****     GETTERS     *****/
+
         Data::AvatarInfo *DataManager::GetAvatarInfo(QString uuid)
         {
             QUuid id(uuid);
@@ -338,6 +401,11 @@ namespace Ether
                 return 0;
         }
 
+        QMap<QUuid, Data::AvatarInfo *> DataManager::GetAvatarMap()
+        {
+            return avatar_map_;
+        }
+
         Data::WorldInfo *DataManager::GetWorldInfo(QString uuid)
         {
             QUuid id(uuid);
@@ -345,6 +413,11 @@ namespace Ether
                 return world_map_[id];
             else
                 return 0;
+        }
+
+        QMap<QUuid, Data::WorldInfo *> DataManager::GetWorldMap()
+        {
+            return world_map_;
         }
     }
 }

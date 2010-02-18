@@ -19,6 +19,8 @@
 #include <QTimer>
 #include <QDir>
 
+#include <QDebug>
+
 namespace Ether
 {
     namespace Logic
@@ -35,6 +37,8 @@ namespace Ether
             // Read avatars and worlds from file
             avatar_map_ = data_manager_->ReadAllAvatarsFromFile();
             world_map_ = data_manager_->ReadAllWorldsFromFile();
+
+            // Signals from data manager
             connect(data_manager_, SIGNAL( ObjectUpdated(QUuid, QString) ),
                     SLOT( TitleUpdate(QUuid, QString) ));
             connect(data_manager_, SIGNAL( AvatarDataCreated(Data::AvatarInfo*) ),
@@ -48,15 +52,19 @@ namespace Ether
             // Create ether scene, store current scene
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
 
-            // Create menus
+            // Initialise menus
             QPair<View::EllipseMenu*, View::EllipseMenu*> menus;
             menus.first = new View::EllipseMenu(View::EllipseMenu::OPENS_UP);
             menus.second = new View::EllipseMenu(View::EllipseMenu::OPENS_DOWN);
 
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
+            
+            // Signals from scene contoller
             connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
                     SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
+            connect(scene_controller_, SIGNAL( ObjectRemoved(QUuid) ),
+                    SLOT( RemoveObjectFromData(QUuid) ));
 
             // Create login handler
             login_handler_ = new EtherLoginHandler(this, scene_controller_); 
@@ -71,8 +79,8 @@ namespace Ether
             GenerateWorldInfoCards();
 
             scene_controller_->LoadActionWidgets();
-            scene_controller_->LoadAvatarCardsToScene(avatar_card_map_);
-            scene_controller_->LoadWorldCardsToScene(world_card_map_);
+            scene_controller_->LoadAvatarCardsToScene(avatar_card_map_, top_menu_visible_items_, true);
+            scene_controller_->LoadWorldCardsToScene(world_card_map_, bottom_menu_visible_items_, true);
 
             // HACK to put focus for avatar row :)
             QTimer::singleShot(500, scene_controller_, SLOT(UpPressed()));
@@ -370,7 +378,9 @@ namespace Ether
             {
                 avatar_map_[avatar_data->id()] = avatar_data;
                 avatar_card_map_[new_avatar_card->id()] = new_avatar_card;
-                scene_controller_->NewAvatarToScene(new_avatar_card, avatar_card_map_);
+
+                SetVisibleItems();
+                scene_controller_->NewAvatarToScene(new_avatar_card, avatar_card_map_, top_menu_visible_items_);
             }
         }
 
@@ -397,7 +407,33 @@ namespace Ether
             {
                 world_map_[new_world_card->id()] = world_data;
                 world_card_map_[new_world_card->id()] = new_world_card;
-                scene_controller_->NewWorldToScene(new_world_card, world_card_map_);
+
+                SetVisibleItems();
+                scene_controller_->NewWorldToScene(new_world_card, world_card_map_, bottom_menu_visible_items_);
+            }
+        }
+
+        void EtherLogic::RemoveObjectFromData(QUuid uuid)
+        {
+            if (avatar_card_map_.contains(uuid))
+            {
+                View::InfoCard *removed_item = avatar_card_map_[uuid];
+                if (avatar_card_map_.remove(uuid) > 0 && avatar_map_.remove(uuid) > 0)
+                {
+                    SetVisibleItems();
+                    scene_controller_->LoadAvatarCardsToScene(avatar_card_map_, top_menu_visible_items_, false);
+                    SAFE_DELETE(removed_item);
+                }
+            }
+            else if (world_card_map_.contains(uuid))
+            {
+                View::InfoCard *removed_item = world_card_map_[uuid];
+                if (world_card_map_.remove(uuid) > 0 && world_map_.remove(uuid) > 0)
+                {
+                    SetVisibleItems();
+                    scene_controller_->LoadWorldCardsToScene(world_card_map_, bottom_menu_visible_items_, false);
+                    SAFE_DELETE(removed_item);
+                }
             }
         }
     }

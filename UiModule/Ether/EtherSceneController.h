@@ -32,10 +32,10 @@ namespace Ether
 
         public slots:
             void LoadActionWidgets();
-            void LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map);
-            void NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map);
-            void LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map);
-            void NewWorldToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> world_map);
+            void LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene);
+            void NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items);
+            void LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map, int visible_bottom_items,  bool add_to_scene);
+            void NewWorldToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> world_map, int visible_bottom_items);
 
             void UpPressed();
             void DownPressed();
@@ -47,7 +47,9 @@ namespace Ether
             void ActionWidgetInProgress(bool action_ongoing);
 
             void UpdateAvatarInfoWidget();
+            void RemoveAvatar(Data::AvatarInfo *avatar_info);
             void UpdateWorldInfoWidget();
+            void RemoveWorld(Data::WorldInfo *world_info);
 
             void RecalculateMenus();
 
@@ -89,6 +91,7 @@ namespace Ether
 
         signals:
             void LoginRequest(QPair<View::InfoCard*, View::InfoCard*> selected_cards);
+            void ObjectRemoved(QUuid);
         };
     }
 }

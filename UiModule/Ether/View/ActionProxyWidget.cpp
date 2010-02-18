@@ -59,18 +59,28 @@ namespace Ether
             {
                 case InfoCard::Avatar:
                 {
-                    // Adding new cards
+                    // Retrieve data
+                    Data::AvatarInfo *avatar_info = data_manager_->GetAvatarInfo(card->id());
+                    if (!avatar_info)
+                        return;
+                    
+                    // Adding a new card
                     if (type == "add")    
                     {
                         action_widget = AvatarSelectionWidget();
                         title = "Creating new avatar";
                     }
-                    // Modifying cards
+
+                    // Removing the card
+                    else if (type == "remove")
+                    {
+                        emit RemoveAvatar(avatar_info);
+                        return;
+                    }
+
+                    // Modifying the card
                     else
                     {
-                        // Retrieve data
-                        Data::AvatarInfo *avatar_info = data_manager_->GetAvatarInfo(card->id());
-
                         // Generate QWidget with avatar and action widget type
                         if (avatar_info->avatarType() == AvatarTypes::OpenSim)
                         {
@@ -109,25 +119,40 @@ namespace Ether
                 {
                     // Retrieve data
                     Data::WorldInfo *world_info = data_manager_->GetWorldInfo(card->id());
+                    if (!world_info)
+                        return;
 
-                    // Generate QWidget with world and action widget type
-                    if (world_info->worldType() == WorldTypes::OpenSim)
+                    // Adding a new card
+                    if (type == "add")
                     {
-                        Data::OpenSimWorld *os_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                        if (os_world && type == "info")
+                        action_widget = CreateNewOpenSimWorld();
+                        title = "Creating new OpenSim world";
+                    }
+
+                    // Removing the card
+                    else if (type == "remove")
+                    {
+                        emit RemoveWorld(world_info);
+                        return;
+                    }
+
+                    // Modifying the card
+                    else
+                    {
+                        // Generate QWidget with world and action widget type
+                        if (world_info->worldType() == WorldTypes::OpenSim)
                         {
-                            action_widget = OpenSimWorldInfoWidget(os_world);
-                            title = QString("Information of OpenSim world %1").arg(os_world->loginUrl().host());
-                        }
-                        else if (os_world && type == "edit")
-                        {
-                            action_widget = OpenSimWorldEditWidget(os_world);
-                            title = QString("Editing OpenSim world %1").arg(os_world->loginUrl().host());
-                        }
-                        else if (os_world && type == "add")
-                        {
-                            action_widget = CreateNewOpenSimWorld();
-                            title = "Creating new OpenSim world";
+                            Data::OpenSimWorld *os_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
+                            if (os_world && type == "info")
+                            {
+                                action_widget = OpenSimWorldInfoWidget(os_world);
+                                title = QString("Information of OpenSim world %1").arg(os_world->loginUrl().host());
+                            }
+                            else if (os_world && type == "edit")
+                            {
+                                action_widget = OpenSimWorldEditWidget(os_world);
+                                title = QString("Editing OpenSim world %1").arg(os_world->loginUrl().host());
+                            }
                         }
                     }
                     break;
@@ -561,9 +586,30 @@ namespace Ether
             // Updating cards
             if (current_type_ == "world-opensim" && current_os_world_data_)
             {
+                QUrl login_url;
+                QString url_string;
+
                 line_edit = current_widget_->findChild<QLineEdit*>("loginURLLineEdit");
                 if (line_edit)
-                    current_os_world_data_->setLoginUrl(QUrl(line_edit->text()));
+                {
+                    // Some url validation
+                    url_string = line_edit->text();
+                    if (!url_string.startsWith("http://") && !url_string.startsWith("https://"))
+                        url_string = "http://" + url_string;
+                    login_url = QUrl(url_string);
+                    if (login_url.port() == -1)
+                        login_url.setPort(80);
+                    line_edit->setText(login_url.toString());
+
+                    if (login_url.isValid())
+                        current_os_world_data_->setLoginUrl(login_url);
+                    else if (status)
+                    {
+                        status->setText("Entered authentication url is invalid");
+                        return;
+                    }
+                }
+
                 current_os_world_data_->setGridInfo(current_grid_info_map_);
                 data_manager_->StoreOrUpdateWorld(current_os_world_data_);
             }
@@ -585,13 +631,32 @@ namespace Ether
             }
             else if (current_type_ == "avatar-realxtend" && current_rex_avatar_data_)
             {
+                QString url_string;
+                QUrl auth_url;
+
                 line_edit = current_widget_->findChild<QLineEdit*>("accountLineEdit");
                 if (line_edit)
                     current_rex_avatar_data_->setAccount(line_edit->text());
 
                 line_edit = current_widget_->findChild<QLineEdit*>("authenticationServerLineEdit");
                 if (line_edit)
-                    current_rex_avatar_data_->setAuthUrl(QUrl(line_edit->text()));
+                {
+                    // Some url validation
+                    url_string = line_edit->text();
+                    if (!url_string.startsWith("http://") && !url_string.startsWith("https://"))
+                        url_string = "http://" + url_string;
+                    auth_url = QUrl(url_string);
+                    if (auth_url.port() == -1)
+                        auth_url.setPort(10001);
+                    line_edit->setText(auth_url.toString());
+                    if (auth_url.isValid())
+                        current_rex_avatar_data_->setAuthUrl(auth_url);
+                    else if (status)
+                    {
+                        status->setText("Entered authentication url is invalid");
+                        return;
+                    }
+                }
 
                 line_edit = current_widget_->findChild<QLineEdit*>("passwordLineEdit");
                 if (line_edit)
@@ -629,7 +694,7 @@ namespace Ether
             }
             else if (current_type_ == "new-avatar-realxtend")
             {
-                QString account, password;
+                QString account, password, url_string;
                 QUrl auth_url;
 
                 line_edit = current_widget_->findChild<QLineEdit*>("accountLineEdit");
@@ -638,11 +703,20 @@ namespace Ether
 
                 line_edit = current_widget_->findChild<QLineEdit*>("authenticationServerLineEdit");
                 if (line_edit)
-                    auth_url = QUrl(line_edit->text());
+                {
+                    url_string = line_edit->text();
+                    if (!url_string.startsWith("http://") && !url_string.startsWith("https://"))
+                        url_string = "http://" + url_string;
+                    auth_url = QUrl(url_string);
+                    if (auth_url.port() == -1)
+                        auth_url.setPort(10001);
+                    line_edit->setText(auth_url.toString());
+                }
 
                 line_edit = current_widget_->findChild<QLineEdit*>("passwordLineEdit");
                 if (line_edit)
                     password = line_edit->text();
+
 
                 if (!account.isEmpty() && !password.isEmpty() && auth_url.isValid())
                 {
@@ -651,7 +725,10 @@ namespace Ether
                 }
                 else if (status)
                 {
-                    status->setText("Fill all the fields before saving");
+                    if (!auth_url.isValid())
+                        status->setText("Entered authentication url is invalid");
+                    else
+                        status->setText("Fill all the fields before saving");
                     return;
                 }
             }
@@ -662,15 +739,16 @@ namespace Ether
 
                 line_edit = current_widget_->findChild<QLineEdit*>("loginURLLineEdit");
                 if (line_edit)
-                    url_string = line_edit->text();
-
-                if (!url_string.startsWith("http://"))
                 {
-                    url_string = "http://" + url_string;
-                    line_edit->setText(url_string);
+                    url_string = line_edit->text();
+                    if (!url_string.startsWith("http://") && !url_string.startsWith("https://"))
+                        url_string = "http://" + url_string;
+                    login_url = QUrl(url_string);
+                    if (login_url.port() == -1)
+                        login_url.setPort(80);
+                    line_edit->setText(login_url.toString());
                 }
 
-                login_url = QUrl(url_string);
                 if (login_url.isValid())
                 {
                     Data::OpenSimWorld *new_opensim_world = new Data::OpenSimWorld(login_url, current_grid_info_map_);
