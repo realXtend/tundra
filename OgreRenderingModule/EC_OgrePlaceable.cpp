@@ -4,6 +4,7 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
+#include <QtGui/qvector3d.h>
 
 #include <Ogre.h>
 
@@ -71,7 +72,7 @@ namespace OgreRenderer
         const Ogre::Vector3& pos = link_scene_node_->getPosition();
         return Vector3df(pos.x, pos.y, pos.z);
     }
-    
+
     Quaternion EC_OgrePlaceable::GetOrientation() const
     {
         const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
@@ -94,7 +95,7 @@ namespace OgreRenderer
     {
         link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
     }
-    
+
     void EC_OgrePlaceable::LookAt(const Vector3df& look_at)
     {
         // Don't rely on the stability of the lookat (since it uses previous orientation), 
@@ -174,4 +175,19 @@ namespace OgreRenderer
         parent_node->removeChild(link_scene_node_);
         attached_ = false;
     }
+
+    //experimental QVector3D acessors
+    QVector3D EC_OgrePlaceable::GetQPosition() const
+    {
+        //conversions, conversions, all around
+        //.. if this works, and QVector3D is good, we should consider porting Vector3df for that
+        Vector3df rexpos = GetPosition();
+        return QVector3D(rexpos.x, rexpos.y, rexpos.z);
+    }
+    
+    void EC_OgrePlaceable::SetQPosition(const QVector3D newpos)
+    {
+	SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
+    }
+    
 }

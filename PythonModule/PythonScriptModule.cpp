@@ -1172,16 +1172,44 @@ PyObject* GetQPrim(PyObject* self, PyObject* args)
     ent_id = (entity_id_t) ent_id_int;
 
     RexLogic::RexLogicModule *rexlogic_;
-	rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     Scene::EntityPtr primentity = rexlogic_->GetPrimEntity(ent_id);
     if (!primentity) 
-	{
-		PyErr_SetString(PyExc_ValueError, "The entity id given to getQPrim does not have a prim component.");
-		return NULL;
-	}
+    {
+	PyErr_SetString(PyExc_ValueError, "The entity id given to getQPrim does not have a prim component.");
+	return NULL;
+    }
     RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
 
-	return PythonQt::self()->wrapQObject(prim);
+    return PythonQt::self()->wrapQObject(prim);
+}
+
+PyObject* GetQPlaceable(PyObject* self, PyObject* args)
+{
+    unsigned int ent_id_int;
+    entity_id_t ent_id;
+    Scene::EntityPtr entity;
+    OgreRenderer::EC_OgrePlaceable* placeable = 0;
+    Scene::ScenePtr scene = PythonScript::GetScene();
+
+    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
+    {
+        return NULL;
+    }
+
+    ent_id = (entity_id_t) ent_id_int;
+    entity = scene->GetEntity(ent_id);
+
+    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
+    
+    if (!ogre_component)
+    {
+	PyErr_SetString(PyExc_AttributeError, "GetQPlaceable: Given entity id does not have a placeable component.");
+	return NULL;   
+    }
+
+    placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+    return PythonQt::self()->wrapQObject(placeable);
 }
 
 PyObject* CreateEntity(PyObject *self, PyObject *value)
@@ -1190,18 +1218,18 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     RexLogic::RexLogicModule *rexlogic_;
 
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-
-	std::string meshname;
-	const char* c_text;
-	float prio = 0;
-	//PyObject_Print(value, stdout, 0);
-	if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
-	{
+    
+    std::string meshname;
+    const char* c_text;
+    float prio = 0;
+    //PyObject_Print(value, stdout, 0);
+    if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
+    {
         PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
         return NULL;
-	}
+    }
 
-	meshname = std::string(c_text);
+    meshname = std::string(c_text);
 
     Scene::ScenePtr scene = PythonScript::GetScene();        
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
@@ -1209,8 +1237,8 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         return NULL;   
     }
 
-	entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
-
+    entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
+    
     StringVector defaultcomponents;
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
     //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
@@ -1220,17 +1248,16 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
     Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-	Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
     if (placeable)
     {
-
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-		if (prio != 0)
-			ogrepos.SetSelectPriority(prio);
-		OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-		ogremesh.SetPlaceable(placeable);
-		ogremesh.SetMesh(meshname, true);
-
+	if (prio != 0)
+	    ogrepos.SetSelectPriority(prio);
+	OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+	ogremesh.SetPlaceable(placeable);
+	ogremesh.SetMesh(meshname, true);
+	
         return entity_create(ent_id); //return the py wrapper for the new entity
     }
     
@@ -1798,8 +1825,11 @@ static PyMethodDef EmbMethods[] = {
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
 
-	{"getQPrim", (PyCFunction)GetQPrim, METH_VARARGS,
+    {"getQPrim", (PyCFunction)GetQPrim, METH_VARARGS,
     "Gets the prim component as a QObject from an entity with the given ID."},
+
+    {"getQPlaceable", (PyCFunction)GetQPlaceable, METH_VARARGS,
+    "Gets the placeable component as a QObject from an entity with the given ID."},
 
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
@@ -1984,14 +2014,14 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
     const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-	RexLogic::EC_OpenSimPrim *prim = 0;
+    RexLogic::EC_OpenSimPrim *prim = 0;
     if (prim_component)
-	   prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
+	prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
 	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-	OgreRenderer::EC_OgrePlaceable *placeable = 0;
+    OgreRenderer::EC_OgrePlaceable *placeable = 0;
     if (ogre_component)
-		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+	placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
     
     if (s_name.compare("id") == 0)
     {
@@ -2085,7 +2115,8 @@ PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
         //RexTypes::Vector3 rot = PackQuaternionToFloat3(ogre_pos->GetOrientation());
         /* .. i guess best to wrap the Rex Vector and other types soon,
            the pyrr irrlicht binding project does it for these using swig,
-           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
+           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i 
+	Now am experimenting with the new QVector3D type, see GetQPlaceable*/
         return Py_BuildValue("fff", pos.x, pos.y, pos.z);
     }
 
