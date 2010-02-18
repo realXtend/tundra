@@ -11,6 +11,7 @@
 #include "NetOutMessage.h"
 #include "NetMessage.h"
 #include "Interfaces/INetMessageListener.h"
+#include "EventHistory.h"
 
 namespace ProtocolUtilities
 {
@@ -55,6 +56,19 @@ namespace ProtocolUtilities
         /// \todo weakptr'ize. \todo delegate/event \todo pub/sub or something else.
         void RegisterNetworkListener(INetMessageListener *listener) { messageListener = listener; }
         void UnregisterNetworkListener(INetMessageListener *listener) { messageListener = 0; }
+
+#ifdef PROFILING
+        EventHistory sentDatagrams;
+        EventHistory sentDatabytes;
+        EventHistory receivedDatagrams;
+        EventHistory receivedDatabytes;
+        /// A history of occurrences of when a packet has had to be resent.
+        EventHistory resentPackets;
+        /// A history of occurrences when we assume we have lost an incoming packet (we generate false positives when receiving data out-of-order, but that's not critical)
+        EventHistory lostPackets;
+        /// A history of occurrences of when we have received a duplicate packet and have discarded it.
+        EventHistory duplicatesReceived;
+#endif
 
     private:
         /// Deallocates all memory used for outbound message structs.
@@ -121,6 +135,9 @@ namespace ProtocolUtilities
         
         /// A running sequence number for outbound messages.
         size_t sequenceNumber;
+
+        /// The sequence number of the most recent packet we received. Note that this can go up and down if we receive data out of order (or if we receive spoofed data)
+        size_t lastReceivedSequenceNumber;
         
         /// A set of received messages' sequence numbers.
         std::set<uint32_t> receivedSequenceNumbers;

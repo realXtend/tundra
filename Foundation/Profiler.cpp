@@ -67,6 +67,8 @@ namespace Foundation
 
     void Profiler::EndBlock(const std::string &name)
     {
+        using namespace std;
+
         ProfilerNodeTree *treeNode = current_node_.get();
         assert (treeNode->Name() == name && "New profiling block started before old one ended!");
 
@@ -81,6 +83,11 @@ namespace Foundation
         node->elapsed_min_current_ = (equals(node->elapsed_min_current_, 0.0) ? elapsed : (elapsed < node->elapsed_min_current_ ? elapsed : node->elapsed_min_current_));
         node->elapsed_max_current_ = elapsed > node->elapsed_max_current_ ? elapsed : node->elapsed_max_current_;
         node->total_ += elapsed;
+
+        node->num_called_custom_++;
+        node->total_custom_ += elapsed;
+        node->custom_elapsed_min_ = std::min(node->custom_elapsed_min_, elapsed);
+        node->custom_elapsed_max_ = std::max(node->custom_elapsed_max_, elapsed);
 
         assert (node->recursion_ >= 0);
 
@@ -125,9 +132,25 @@ namespace Foundation
         // profiling data in each thread.
         mutex_.lock();
         root_.AddChild(boost::shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
+        root->MarkAsRootBlock(this);
         thread_root_nodes_.push_back(root);
         mutex_.unlock();
         return root;
+    }
+
+    void Profiler::RemoveThreadRootBlock(ProfilerNodeTree *rootBlock)
+    {
+        mutex_.lock();
+        for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
+            if (*iter == rootBlock)
+            {
+                thread_root_nodes_.erase(iter);
+                mutex_.unlock();
+                return;
+            }
+
+        std::cout << "Warning: Tried to delete a nonexisting thread root block!" << std::endl;
+        mutex_.unlock();
     }
 
     void Profiler::ThreadedReset()
@@ -138,6 +161,22 @@ namespace Foundation
 
         mutex_.lock();
         root->ResetValues();
+        mutex_.unlock();
+    }
+
+    void ProfilerNodeTree::RemoveThreadRootBlock()
+    {
+        assert(owner_);
+        owner_->RemoveThreadRootBlock(this);
+    }
+
+    Profiler::~Profiler()
+    {
+        // We are going down.. tell all root blocks that they don't need to notify back to the Profiler that they've been deleted.
+        // i.e. 'detach' all the (thread specific) root blocks so that they delete themselves at their leisure when their threads die.
+        mutex_.lock();
+        for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
+            (*iter)->MarkAsRootBlock(0);
         mutex_.unlock();
     }
 }

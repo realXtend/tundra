@@ -133,10 +133,20 @@ namespace ProtocolUtilities
 
     NetMessageManager::NetMessageManager(const char *messageListFilename)
     :messageList(boost::shared_ptr<NetMessageList>(new NetMessageList(messageListFilename)))
-    ,messageListener(0), sequenceNumber(1)
-    {
-        receivedSequenceNumbers.clear();
-        
+    ,messageListener(0), 
+    sequenceNumber(1), // Note here: We always start outbound communication with PacketID==1.
+    lastReceivedSequenceNumber(0)
+#ifdef PROFILING
+    ,sentDatagrams(65536)
+    ,sentDatabytes(65536)
+    ,receivedDatagrams(65536)
+    ,receivedDatabytes(65536)
+    ,resentPackets(65536)
+    ,lostPackets(65536)
+    ,duplicatesReceived(65536)
+#endif
+    {      
+        receivedSequenceNumbers.clear();        
     }
 
     NetMessageManager::~NetMessageManager()
@@ -214,6 +224,14 @@ namespace ProtocolUtilities
             std::vector<uint8_t> data(cMaxPayload, 0);
             int numBytes = connection->ReceiveBytes(&data[0], cMaxPayload);
             
+            if (numBytes == 0)
+                break;
+
+#ifdef PROFILING
+            receivedDatagrams.InsertRecord(1.0);
+            receivedDatabytes.InsertRecord(numBytes);
+#endif
+
             if (!messageListener)
             {
                 cout << "No UDP message listener set! Dropping incoming packet as unhandled:" << endl;
@@ -223,6 +241,16 @@ namespace ProtocolUtilities
 
             uint32_t seqNum = ExtractNetworkMessageSequenceNumber(&data[0], numBytes);
 
+#ifdef PROFILING
+            if (receivedSequenceNumbers.size() > 0 && seqNum - lastReceivedSequenceNumber < 16)
+            {
+                for(int i = lastReceivedSequenceNumber+1; i < seqNum; ++i)
+                    if (receivedSequenceNumbers.find(i) == receivedSequenceNumbers.end())
+                        lostPackets.InsertRecord(1.0);
+            }
+#endif
+            lastReceivedSequenceNumber = seqNum;
+
             // Send ACK for reliable messages.
             if ((data[0] & NetFlagReliable) != 0)
                 QueuePacketACK(seqNum);
@@ -231,7 +259,12 @@ namespace ProtocolUtilities
             // and check if we've seen this packet before.
             pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
             if (ret.second == false) 
+            {
+#ifdef PROFILING
+                duplicatesReceived.InsertRecord(1.0);
+#endif
                 continue; // A message with this sequence number has already been given to the application for processing. Drop it this time.
+            }
 
     //        NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
 
@@ -396,7 +429,13 @@ namespace ProtocolUtilities
         assert(msg);
 
         std::vector<uint8_t> &data = msg->GetData();
+        assert(data.size() > 0);
         connection->SendBytes(&data[0], data.size());
+
+#ifdef PROFILING
+        sentDatagrams.InsertRecord(1.0);
+        sentDatabytes.InsertRecord(data.size());
+#endif
 
         if (messageListener)
             messageListener->OnNetworkMessageSent(msg);
@@ -472,9 +511,7 @@ namespace ProtocolUtilities
     {
         size_t blockCount = msg->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < blockCount; ++i)
-        {
             ProcessPacketACK(msg->ReadU32());
-        }
     }
 
     void NetMessageManager::ProcessPacketACK(uint32_t id)
@@ -540,11 +577,14 @@ namespace ProtocolUtilities
             {
                 it->first = timeNow;
                 SendProcessedMessage(it->second);
+#ifdef PROFILING
+                resentPackets.InsertRecord(1.0);
+#endif
             }
         }
     }
 
-    #ifndef RELEASE
+#ifndef RELEASE
 
     void NetMessageManager::DebugSendHardcodedTestPacket()
     {
@@ -568,6 +608,7 @@ namespace ProtocolUtilities
         connection->SendBytes(&data[0], numBytes);
     }
 
+#endif
+
 }
 
-#endif

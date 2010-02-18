@@ -131,6 +131,8 @@ namespace TaigaProtocol
         /// this class.
         virtual void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
+        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() { return networkManager_.get(); }
+
     private:
         /// Requests capabilities from the server.
         /// @param seed Seed capability URL.

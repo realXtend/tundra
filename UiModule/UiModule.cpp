@@ -98,6 +98,8 @@ namespace UiServices
 
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
+        PROFILE(UiModule_HandleEvent);
+
         QString category = service_category_identifiers_.keys().value(service_category_identifiers_.values().indexOf(category_id));
         if (category == "Framework")
         {

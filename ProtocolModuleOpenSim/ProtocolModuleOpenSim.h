@@ -122,6 +122,8 @@ namespace OpenSimProtocol
         /// this class.
         virtual void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
+        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() { return networkManager_.get(); }
+
     private:
         ProtocolModuleOpenSim(const ProtocolModuleOpenSim &);
         void operator=(const ProtocolModuleOpenSim &);
