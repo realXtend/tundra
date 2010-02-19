@@ -66,7 +66,7 @@ private:
 
     TimeProfilerWindow *profilerWindow_;
 
-    ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+    ProtocolUtilities::WorldStreamPtr current_world_stream_;
 };
 
 }

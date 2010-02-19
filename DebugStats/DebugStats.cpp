@@ -88,8 +88,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     proxy->resize(650, 530);
     proxy->setWindowTitle("Profiler");
 
-    if (currentWorldStream_)
-        profilerWindow_->SetWorldStreamPtr(currentWorldStream_);
+    if (current_world_stream_)
+        profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
     profilerWindow_->RefreshProfilingData();
 
@@ -130,9 +130,9 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id,
         {
             Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
             if (event_data)
-                currentWorldStream_ = event_data->WorldStream;
+                current_world_stream_ = event_data->WorldStream;
             if (profilerWindow_)
-                profilerWindow_->SetWorldStreamPtr(currentWorldStream_);
+                profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
             networkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
             if (networkEventCategory_ == 0)

@@ -24,31 +24,31 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
     QUiLoader loader;
     QFile file("./data/ui/profiler.ui");
     file.open(QFile::ReadOnly);
-    contentsWidget_ = loader.load(&file, this);
-    assert(contentsWidget_);
+    contents_widget_ = loader.load(&file, this);
+    assert(contents_widget_);
     file.close();
 
     QVBoxLayout *layout = new QVBoxLayout;
     assert(layout);
-    layout->addWidget(contentsWidget_);
+    layout->addWidget(contents_widget_);
     setLayout(layout);
 
-    treeProfilingData_ = findChild<QTreeWidget*>("treeProfilingData");
-    comboTimingRefreshInterval_ = findChild<QComboBox*>("comboTimingRefreshInterval");
-    tabWidget_ = findChild<QTabWidget*>("tabWidget");
-    labelFrameTimeHistory_ = findChild<QLabel*>("labelFrameTimeHistory");
-    labelTopFrameTime_ = findChild<QLabel*>("labelTopFrameTime");
-    labelTimePerFrame_ = findChild<QLabel*>("labelTimePerFrame");
-    assert(tabWidget_);
-    assert(treeProfilingData_);
-    assert(comboTimingRefreshInterval_);
-    assert(labelFrameTimeHistory_);
-    assert(labelTopFrameTime_);
+    tree_profiling_data_ = findChild<QTreeWidget*>("treeProfilingData");
+    combo_timing_refresh_interval_ = findChild<QComboBox*>("comboTimingRefreshInterval");
+    tab_widget_ = findChild<QTabWidget*>("tabWidget");
+    label_frame_time_history_ = findChild<QLabel*>("labelFrameTimeHistory");
+    label_top_frame_time_ = findChild<QLabel*>("labelTopFrameTime");
+    label_time_per_frame_ = findChild<QLabel*>("labelTimePerFrame");
+    assert(tab_widget_);
+    assert(tree_profiling_data_);
+    assert(combo_timing_refresh_interval_);
+    assert(label_frame_time_history_);
+    assert(label_top_frame_time_);
 
     // Create a QImage object and set it in label.
-    QImage frameTimeHistory(labelFrameTimeHistory_->width(), labelFrameTimeHistory_->height(), QImage::Format_RGB32);
+    QImage frameTimeHistory(label_frame_time_history_->width(), label_frame_time_history_->height(), QImage::Format_RGB32);
     frameTimeHistory.fill(0xFF000000);
-    labelFrameTimeHistory_->setPixmap(QPixmap::fromImage(frameTimeHistory));
+    label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
     QLabel *label = findChild<QLabel*>("labelDataInSecGraph");
     QImage img(label->width(), label->height(), QImage::Format_RGB32);
@@ -70,86 +70,86 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
     img.fill(0xFF000000);
     label->setPixmap(QPixmap::fromImage(img));
 
-    const int headerHeight = treeProfilingData_->headerItem()->sizeHint(0).height();
+    const int headerHeight = tree_profiling_data_->headerItem()->sizeHint(0).height();
 
-    treeProfilingData_->header()->resizeSection(0, 300);
-    treeProfilingData_->header()->resizeSection(1, 60);
-    treeProfilingData_->header()->resizeSection(2, 50);
-    treeProfilingData_->header()->resizeSection(3, 50);
-    treeProfilingData_->header()->resizeSection(4, 50);
+    tree_profiling_data_->header()->resizeSection(0, 300);
+    tree_profiling_data_->header()->resizeSection(1, 60);
+    tree_profiling_data_->header()->resizeSection(2, 50);
+    tree_profiling_data_->header()->resizeSection(3, 50);
+    tree_profiling_data_->header()->resizeSection(4, 50);
 
-    QObject::connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
+    QObject::connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
 
-    labelRegionMapCoords_ = findChild<QLabel*>("labelRegionMapCoords");
-    labelRegionObjectCapacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
-    treeSimStats_ = findChild<QTreeWidget*>("treeSimStats");
-    labelPidStat_ = findChild<QLabel*>("labelPidStat");
-    assert(labelPidStat_);
-    assert(labelRegionMapCoords_);
-    assert(labelRegionObjectCapacity_);
-    assert(treeSimStats_);
+    label_region_map_coords_ = findChild<QLabel*>("labelRegionMapCoords");
+    label_region_object_capacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
+    tree_sim_stats_ = findChild<QTreeWidget*>("treeSimStats");
+    label_pid_stat_ = findChild<QLabel*>("labelPidStat");
+    assert(label_pid_stat_);
+    assert(label_region_map_coords_);
+    assert(label_region_object_capacity_);
+    assert(tree_sim_stats_);
 
-    treeSimStats_->header()->resizeSection(0, 400);
-    treeSimStats_->header()->resizeSection(1, 100);
+    tree_sim_stats_->header()->resizeSection(0, 400);
+    tree_sim_stats_->header()->resizeSection(1, 100);
 
-    showProfilerTree = false;
-    showUnused = false;
+    show_profiler_tree_ = false;
+    show_unused_ = false;
 
-    pushButtonToggleTree_ = findChild<QPushButton*>("pushButtonToggleTree");
-    pushButtonCollapseAll_ = findChild<QPushButton*>("pushButtonCollapseAll");
-    pushButtonExpandAll_ = findChild<QPushButton*>("pushButtonExpandAll");
-    pushButtonShowUnused_ = findChild<QPushButton*>("pushButtonShowUnused");
-    assert(pushButtonToggleTree_);
-    assert(pushButtonCollapseAll_);
-    assert(pushButtonExpandAll_);
-    assert(pushButtonShowUnused_);
+    push_button_toggle_tree_ = findChild<QPushButton*>("pushButtonToggleTree");
+    push_button_collapse_all_ = findChild<QPushButton*>("pushButtonCollapseAll");
+    push_button_expand_all_ = findChild<QPushButton*>("pushButtonExpandAll");
+    push_button_show_unused_ = findChild<QPushButton*>("pushButtonshow_unused_");
+    assert(push_button_toggle_tree_);
+    assert(push_button_collapse_all_);
+    assert(push_button_expand_all_);
+    assert(push_button_show_unused_);
 
-   QObject::connect(pushButtonToggleTree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-   QObject::connect(pushButtonCollapseAll_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-   QObject::connect(pushButtonExpandAll_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-   QObject::connect(pushButtonShowUnused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+   QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
+   QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
+   QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
+   QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(show_unused_ButtonPressed()));
 
-   frameTimeUpdateXPos = 0;
+   frame_time_update_x_pos_ = 0;
 }
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
 {
-    showProfilerTree = !showProfilerTree;
-    treeProfilingData_->clear();
+    show_profiler_tree_ = !show_profiler_tree_;
+    tree_profiling_data_->clear();
 
-    if (showProfilerTree)
+    if (show_profiler_tree_)
     {
         RefreshProfilingDataTree();
-        pushButtonToggleTree_->setText("Top");
+        push_button_toggle_tree_->setText("Top");
     }
     else
     {
         RefreshProfilingDataList();
-        pushButtonToggleTree_->setText("Tree");
+        push_button_toggle_tree_->setText("Tree");
     }
 }
 
 void TimeProfilerWindow::CollapseAllButtonPressed()
 {
-    treeProfilingData_->collapseAll();
+    tree_profiling_data_->collapseAll();
 }
 
 void TimeProfilerWindow::ExpandAllButtonPressed()
 {
-    treeProfilingData_->expandAll();
+    tree_profiling_data_->expandAll();
 }
 
-void TimeProfilerWindow::ShowUnusedButtonPressed()
+void TimeProfilerWindow::show_unused_ButtonPressed()
 {
-    showUnused = !showUnused;
-    treeProfilingData_->clear();
+    show_unused_ = !show_unused_;
+    tree_profiling_data_->clear();
 
-    if (showUnused)
-        pushButtonShowUnused_->setText("Hide Unused");
+    if (show_unused_)
+        push_button_show_unused_->setText("Hide Unused");
     else
-        pushButtonShowUnused_->setText("Show Unused");
+        push_button_show_unused_->setText("Show Unused");
 
-    if (showProfilerTree)
+    if (show_profiler_tree_)
         RefreshProfilingDataTree();
     else
         RefreshProfilingDataList();
@@ -192,7 +192,7 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
 
 void TimeProfilerWindow::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
 {
-    currentWorldStream_ = worldStream;
+    current_world_stream_ = worldStream;
 }
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
@@ -204,7 +204,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
         Foundation::ProfilerNodeTree *node = iter->get();
 
         const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
-        if (timings_node && timings_node->num_called_ == 0 && !showUnused)
+        if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
            continue;
 
 //        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
@@ -248,11 +248,11 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std:
 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes)
 {
-    if (!tabWidget_ || tabWidget_->currentIndex() != 1)
+    if (!tab_widget_ || tab_widget_->currentIndex() != 1)
         return;
 
-//    QPixmap picture(labelFrameTimeHistory_->width(), labelFrameTimeHistory_->height());
-    const QPixmap *pixmap = labelFrameTimeHistory_->pixmap();
+//    QPixmap picture(label_frame_time_history_->width(), label_frame_time_history_->height());
+    const QPixmap *pixmap = label_frame_time_history_->pixmap();
     QImage image = pixmap->toImage();
 
 #ifdef _WINDOWS
@@ -313,12 +313,12 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     if (vertLine15FPS >= 1)
         painter.fillRect(0, vertLine15FPS, image.width()-1, 3, QColor(0xFF, 0x00, 0x00, 0x80));
 
-    labelFrameTimeHistory_->setPixmap(QPixmap::fromImage(image));
+    label_frame_time_history_->setPixmap(QPixmap::fromImage(image));
 
     // Update max Time/frame label.
     char str[256];
     sprintf(str, "%dms", (int)(maxTime*1000.f + 0.49f));
-    labelTopFrameTime_->setText(str);
+    label_top_frame_time_->setText(str);
 
     // Update smoothed avg time/frame label.
     double avg = 0;
@@ -332,33 +332,33 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         smoothFactor *= smoothCoeff;
     }
     sprintf(str, "%.2f msecs/frame.", (float)(avg * 1000.0 / denom));
-    labelTimePerFrame_->setText(str);
+    label_time_per_frame_->setText(str);
 }
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
-    contentsWidget_->resize(this->width()-10, this->height()-10);
-    tabWidget_->resize(this->width()-20, this->height()-20);
-    treeProfilingData_->resize(this->width()-40, this->height()-80);
+    contents_widget_->resize(this->width()-10, this->height()-10);
+    tab_widget_->resize(this->width()-20, this->height()-20);
+    tree_profiling_data_->resize(this->width()-40, this->height()-80);
 
-    labelFrameTimeHistory_->resize(this->width()-75, this->height()-75);
+    label_frame_time_history_->resize(this->width()-75, this->height()-75);
 
-    treeSimStats_->resize(this->width()-40, this->height()-80);
+    tree_sim_stats_->resize(this->width()-40, this->height()-80);
 
-    QImage frameTimeHistory(labelFrameTimeHistory_->width(), labelFrameTimeHistory_->height(), QImage::Format_RGB32);
+    QImage frameTimeHistory(label_frame_time_history_->width(), label_frame_time_history_->height(), QImage::Format_RGB32);
     frameTimeHistory.fill(0);
-    labelFrameTimeHistory_->setPixmap(QPixmap::fromImage(frameTimeHistory));
+    label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
 }
 
 int TimeProfilerWindow::ReadProfilingRefreshInterval()
 {
-    assert(comboTimingRefreshInterval_);
+    assert(combo_timing_refresh_interval_);
 
     // Positive values denote
     const int refreshTimes[] = { 10000, 5000, 2000, 1000, 500 };
 
-    int selection = comboTimingRefreshInterval_->currentIndex();
+    int selection = combo_timing_refresh_interval_->currentIndex();
     return refreshTimes[min(max(selection, 0), (int)(sizeof(refreshTimes)/sizeof(refreshTimes[0])-1))];
 }
 
@@ -420,7 +420,7 @@ static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 
 void TimeProfilerWindow::RefreshOgreProfilingWindow()
 {
-    if (!tabWidget_ || tabWidget_->currentIndex() != 2)
+    if (!tab_widget_ || tab_widget_->currentIndex() != 2)
         return;
 
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
@@ -473,10 +473,10 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
-    if (!tabWidget_ || tabWidget_->currentIndex() != 0)
+    if (!tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
-    if (showProfilerTree)
+    if (show_profiler_tree_)
         RefreshProfilingDataTree();
     else
         RefreshProfilingDataList();
@@ -502,14 +502,14 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
         node = iter->get();
 
         const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
-        if (timings_node && timings_node->num_called_ == 0 && !showUnused)
+        if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
             continue;
 
-        QTreeWidgetItem *item = FindItemByName(treeProfilingData_, node->Name().c_str());
+        QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
         if (!item)
         {
             item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
-            treeProfilingData_->addTopLevelItem(item);
+            tree_profiling_data_->addTopLevelItem(item);
         }
 
         if (timings_node)
@@ -571,18 +571,18 @@ void TimeProfilerWindow::RefreshProfilingDataList()
     CollectProfilerNodes(root, nodes);
     std::sort(nodes.begin(), nodes.end(), ProfilingNodeLessThan);
 
-    treeProfilingData_->clear();
+    tree_profiling_data_->clear();
 
     for(std::vector<const Foundation::ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
         const Foundation::ProfilerNode *timings_node = *iter;
         assert(timings_node);
 
-        if (timings_node->num_called_custom_ == 0 && !showUnused)
+        if (timings_node->num_called_custom_ == 0 && !show_unused_)
             continue;
 
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(timings_node->Name().c_str())));
-        treeProfilingData_->addTopLevelItem(item);
+        tree_profiling_data_->addTopLevelItem(item);
 
         char str[256] = "-";
         if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
@@ -649,12 +649,12 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
 void TimeProfilerWindow::RefreshNetworkProfilingData()
 {
 #ifdef PROFILING
-    if (!tabWidget_ || tabWidget_->currentIndex() != 3)
+    if (!tab_widget_ || tab_widget_->currentIndex() != 3)
         return;
 
-    if (currentWorldStream_)
+    if (current_world_stream_)
     {
-        ProtocolUtilities::NetMessageManager *netMessageManager = currentWorldStream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
+        ProtocolUtilities::NetMessageManager *netMessageManager = current_world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
         assert(netMessageManager);
         std::vector<double> dstAccum;
         std::vector<double> dstOccur;
@@ -803,10 +803,10 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     u32 regionFlags = simStats->ReadU32();
     int objectCapacity = simStats->ReadU32();
 
-    treeSimStats_->clear();
+    tree_sim_stats_->clear();
 
-    labelRegionMapCoords_->setText(QString("(%1, %2)").arg(regionX).arg(regionY));
-    labelRegionObjectCapacity_->setText(QString("%1").arg(objectCapacity));
+    label_region_map_coords_->setText(QString("(%1, %2)").arg(regionX).arg(regionY));
+    label_region_object_capacity_->setText(QString("%1").arg(objectCapacity));
 
     size_t numStats = simStats->ReadCurrentBlockInstanceCount();
     for(int i = 0; i < numStats; ++i)
@@ -816,8 +816,8 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
 
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(SimStatsStr(statID)));
         item->setText(1, QString("%1").arg(statValue));
-        treeSimStats_->addTopLevelItem(item);
+        tree_sim_stats_->addTopLevelItem(item);
     }
     int pidStat = simStats->ReadS32();
-    labelPidStat_->setText(QString("%1").arg(pidStat));
+    label_pid_stat_->setText(QString("%1").arg(pidStat));
 }

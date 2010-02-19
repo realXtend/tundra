@@ -23,32 +23,32 @@ class TimeProfilerWindow : public QWidget
 
     Foundation::Framework *framework_;
 
-    QTreeWidget *treeProfilingData_;
-    QComboBox *comboTimingRefreshInterval_;
-    QTabWidget *tabWidget_;
-    QWidget *contentsWidget_;
-    QLabel *labelFrameTimeHistory_;
-    QLabel *labelTopFrameTime_;
-    QLabel *labelTimePerFrame_;
-    QLabel *labelRegionMapCoords_;
-    QLabel *labelRegionObjectCapacity_;
-    QLabel *labelPidStat_;
-    QTreeWidget *treeSimStats_;
-    QPushButton *pushButtonToggleTree_;
-    QPushButton *pushButtonCollapseAll_;
-    QPushButton *pushButtonExpandAll_;
-    QPushButton *pushButtonShowUnused_;
+    QTreeWidget *tree_profiling_data_;
+    QComboBox *combo_timing_refresh_interval_;
+    QTabWidget *tab_widget_;
+    QWidget *contents_widget_;
+    QLabel *label_frame_time_history_;
+    QLabel *label_top_frame_time_;
+    QLabel *label_time_per_frame_;
+    QLabel *label_region_map_coords_;
+    QLabel *label_region_object_capacity_;
+    QLabel *label_pid_stat_;
+    QTreeWidget *tree_sim_stats_;
+    QPushButton *push_button_toggle_tree_;
+    QPushButton *push_button_collapse_all_;
+    QPushButton *push_button_expand_all_;
+    QPushButton *push_button_show_unused_;
 
-    int frameTimeUpdateXPos;
+    int frame_time_update_x_pos_;
 
     // If true, profiling data is shown in a tree, otherwise using a flat list.
-    bool showProfilerTree;
+    bool show_profiler_tree_;
 
-    bool showUnused;
+    bool show_unused_;
 
-    QTimer profilerUpdateTimer_;
+    QTimer profiler_update_timer_;
 
-    ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+    ProtocolUtilities::WorldStreamPtr current_world_stream_;
 
     void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
 
@@ -74,7 +74,7 @@ public slots:
     void ToggleTreeButtonPressed();
     void CollapseAllButtonPressed();
     void ExpandAllButtonPressed();
-    void ShowUnusedButtonPressed();
+    void show_unused_ButtonPressed();
 };
 
 #endif
