@@ -70,7 +70,7 @@ namespace Foundation
         if (app_activated_)
             frame_update_timer_.start (0); 
         else 
-            frame_update_timer_.start (15);
+            frame_update_timer_.start (5);
     }
 
 }
