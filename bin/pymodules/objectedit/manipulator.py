@@ -65,13 +65,7 @@ class Manipulator:
                 
                 self.grabbed_axis = None
                 self.grabbed = False
-                #self.manipulator_state = self.MANIPULATE_NONE
                 
-                #self.creator.window.mainTab.move_button.setChecked(False)
-                #self.creator.window.mainTab.rotate_button.setChecked(False)
-                #self.creator.window.mainTab.scale_button.setChecked(False)
-                
-                #XXX todo: change these after theres a ent.hide type way
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
     

@@ -207,6 +207,10 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.reset_guivals()
         
+        self.creator.window.mainTab.move_button.setChecked(False)
+        self.creator.window.mainTab.rotate_button.setChecked(False)
+        self.creator.window.mainTab.scale_button.setChecked(False)
+        
     def updateMaterialTab(self, ent):
         if ent is not None:
             self.clearDialogForm()
