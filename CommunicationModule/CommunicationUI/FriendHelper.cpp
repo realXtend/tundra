@@ -150,11 +150,11 @@ namespace UiHelpers
             {
                 if (list_item->GetID() == remove_id)
                 {
-					int row = friend_list_ui_->friendListWidget->row((QListWidgetItem *)list_item);
+                    int row = friend_list_ui_->friendListWidget->row((QListWidgetItem *)list_item);
                     friend_list_ui_->friendListWidget->takeItem(row);
                     friend_list_ui_->friendListWidget->sortItems();
                     contacts_map_.remove(remove_id);
-					SAFE_DELETE(list_item);
+                    SAFE_DELETE(list_item);
                     return;
                 }
             }

@@ -50,64 +50,64 @@ namespace CommunicationUI
             return;
         QString html("<span style='color:#828282;'>[");
         html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(message.GetTimeStamp()));
-		html.append("]</span> <span style='color:#2133F0;'>");
+        html.append("]</span> <span style='color:#2133F0;'>");
         html.append(message.GetOriginator()->GetName());
-		html.append("</span><span style='color:black;'>: ");
-		html.append(message.GetText());
-		html.append("</span>");
-		MessageToConversation(html);
+        html.append("</span><span style='color:black;'>: ");
+        html.append(message.GetText());
+        html.append("</span>");
+        MessageToConversation(html);
     }
 
-	void ChatSessionWidget::SendMessage()
-	{
-		QString message(chat_session_ui_.sendMessageLineEdit->text());
-	    chat_session_ui_.sendMessageLineEdit->clear();
-		chat_session_->SendMessage(message);
+    void ChatSessionWidget::SendMessage()
+    {
+        QString message(chat_session_ui_.sendMessageLineEdit->text());
+        chat_session_ui_.sendMessageLineEdit->clear();
+        chat_session_->SendMessage(message);
 
-		QString html("<span style='color:#828282;'>[");
-		html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
-		html.append("]</span> <span style='color:#C21511;'>");
-		html.append(my_name_);
-		html.append("</span><span style='color:black;'>: ");
-		html.append(message);
-		html.append("</span>");
-		MessageToConversation(html);
-	}
+        QString html("<span style='color:#828282;'>[");
+        html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
+        html.append("]</span> <span style='color:#C21511;'>");
+        html.append(my_name_);
+        html.append("</span><span style='color:black;'>: ");
+        html.append(message);
+        html.append("</span>");
+        MessageToConversation(html);
+    }
 
-	void ChatSessionWidget::ShowMessageHistory(Communication::ChatMessageVector messageHistory) 
-	{
-		Communication::ChatMessageVector::const_iterator itrHistory;
-		for (itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++)
-		{
-			Communication::ChatMessageInterface *msg = (*itrHistory);
-			QString html("<span style='color:#828282;'>[");
-			html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(msg->GetTimeStamp()));
-			html.append("]</span> <span style='color:#2133F0;'>");
-			html.append(msg->GetOriginator()->GetName());
-			//! @todo check if the originator is the current user
-			html.append("</span><span style='color:black;'>: ");
-			html.append(msg->GetText());
-			html.append("</span>");
-			MessageToConversation(html);
-		}
-	}
+    void ChatSessionWidget::ShowMessageHistory(Communication::ChatMessageVector messageHistory) 
+    {
+        Communication::ChatMessageVector::const_iterator itrHistory;
+        for (itrHistory = messageHistory.begin(); itrHistory!=messageHistory.end(); itrHistory++)
+        {
+            Communication::ChatMessageInterface *msg = (*itrHistory);
+            QString html("<span style='color:#828282;'>[");
+            html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(msg->GetTimeStamp()));
+            html.append("]</span> <span style='color:#2133F0;'>");
+            html.append(msg->GetOriginator()->GetName());
+            //! @todo check if the originator is the current user
+            html.append("</span><span style='color:black;'>: ");
+            html.append(msg->GetText());
+            html.append("</span>");
+            MessageToConversation(html);
+        }
+    }
 
-	void ChatSessionWidget::ContactStateChanged(const QString &status, const QString &message)
-	{
-		QString html("<span style='color:#828282;'>[");
-		html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
-		html.append("] ");
-		html.append(his_name_);
-		html.append(" changed status to ");
-		html.append(status);
-		if ( message.size() > 0 )
-		{
-			html.append(" with message ");
-			html.append(message);
-		}
-		html.append("</span>");
-		MessageToConversation(html);
-	}
+    void ChatSessionWidget::ContactStateChanged(const QString &status, const QString &message)
+    {
+        QString html("<span style='color:#828282;'>[");
+        html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
+        html.append("] ");
+        html.append(his_name_);
+        html.append(" changed status to ");
+        html.append(status);
+        if ( message.size() > 0 )
+        {
+            html.append(" with message ");
+            html.append(message);
+        }
+        html.append("</span>");
+        MessageToConversation(html);
+    }
 
     void ChatSessionWidget::CloseConversation()
     {

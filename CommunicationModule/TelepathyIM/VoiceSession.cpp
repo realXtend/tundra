@@ -14,8 +14,8 @@
 
 namespace TelepathyIM
 {
-	
-	VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel)
+    
+    VoiceSession::VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel)
         : state_(STATE_INITIALIZING), 
         tp_channel_(tp_channel), 
         pending_audio_streams_(0), 
@@ -26,13 +26,13 @@ namespace TelepathyIM
         audio_playback_position_( Vector3df(0.0f, 0.0f, 0.0f)),
         spatial_audio_playback_(false)
 
-	{
+    {
         connect(tp_channel_->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(OnIncomingChannelReady(Tp::PendingOperation*)));
-	}
+    }
 
-	VoiceSession::VoiceSession(Tp::ContactPtr tp_contact):
+    VoiceSession::VoiceSession(Tp::ContactPtr tp_contact):
         state_(STATE_INITIALIZING),
         tp_channel_(0),
         pending_audio_streams_(0),
@@ -42,18 +42,18 @@ namespace TelepathyIM
         positional_voice_enabled_(false),
         audio_playback_position_( Vector3df(0.0f, 0.0f, 0.0f)),
         spatial_audio_playback_(false)
-	{
+    {
         tp_contact_ = tp_contact;
-	    QVariantMap request;
-		request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-		request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), (uint) Tp::HandleTypeContact);
-		request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"), tp_contact->handle().at(0));
+        QVariantMap request;
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), (uint) Tp::HandleTypeContact);
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"), tp_contact->handle().at(0));
 
-		Tp::ConnectionPtr tp_connection = tp_contact->manager()->connection();
-		connect(tp_connection->ensureChannel(request),
+        Tp::ConnectionPtr tp_connection = tp_contact->manager()->connection();
+        connect(tp_connection->ensureChannel(request),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnOutgoingChannelCreated(Tp::PendingOperation*) ));
-	}
+    }
 
     VoiceSession::~VoiceSession()
     {
@@ -88,21 +88,21 @@ namespace TelepathyIM
             tp_channel_->requestClose();
         }
 
-		if (farsight_channel_)
-		{
-			farsight_channel_->StopPipeline();
+        if (farsight_channel_)
+        {
+            farsight_channel_->StopPipeline();
             SAFE_DELETE(farsight_channel_);
-		}
+        }
     }
 
-	Communication::VoiceSessionInterface::State VoiceSession::GetState() const
-	{
-		return state_;
-	}
+    Communication::VoiceSessionInterface::State VoiceSession::GetState() const
+    {
+        return state_;
+    }
 
-	Communication::VoiceSessionParticipantVector VoiceSession::GetParticipants() const
-	{
-		Communication::VoiceSessionParticipantVector participants;
+    Communication::VoiceSessionParticipantVector VoiceSession::GetParticipants() const
+    {
+        Communication::VoiceSessionParticipantVector participants;
 
         for (VoiceSessionParticipantVector::const_iterator i = participants_.begin(); i != participants_.end(); i++)
         {
@@ -110,12 +110,12 @@ namespace TelepathyIM
             participants.push_back( participant );
         }
         
-		//! @todo IMPLEMENT
-		return participants;
-	}
+        //! @todo IMPLEMENT
+        return participants;
+    }
 
-	void VoiceSession::Close()
-	{
+    void VoiceSession::Close()
+    {
         if (audio_playback_channel_)
             ClosePlaybackChannel();
 
@@ -123,7 +123,7 @@ namespace TelepathyIM
         DeleteChannels();
         emit StateChanged(state_);
 
-	}
+    }
 
     void VoiceSession::ClosePlaybackChannel()
     {
@@ -171,42 +171,42 @@ namespace TelepathyIM
         emit StateChanged(state_);
     }
 
-	void VoiceSession::OnOutgoingChannelCreated(Tp::PendingOperation *op)
-	{
-	    if (op->isError())
-		{
+    void VoiceSession::OnOutgoingChannelCreated(Tp::PendingOperation *op)
+    {
+        if (op->isError())
+        {
             state_ = STATE_ERROR;
             reason_ = QString("Cannot create connection").append(op->errorMessage());
             LogError(reason_.toStdString());
             emit StateChanged(state_);
-			return;
-		}
+            return;
+        }
 
-		Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
-		tp_channel_ = Tp::StreamedMediaChannel::create(pending_channel->connection(),pending_channel->objectPath(), pending_channel->immutableProperties());
-	    connect(tp_channel_->becomeReady(),
+        Tp::PendingChannel *pending_channel = qobject_cast<Tp::PendingChannel *>(op);
+        tp_channel_ = Tp::StreamedMediaChannel::create(pending_channel->connection(),pending_channel->objectPath(), pending_channel->immutableProperties());
+        connect(tp_channel_->becomeReady(),
                 SIGNAL( finished(Tp::PendingOperation*) ),
                 SLOT( OnOutgoingChannelReady(Tp::PendingOperation*) ));
-	}
+    }
 
-	void VoiceSession::OnIncomingChannelReady(Tp::PendingOperation *op)
-	{
+    void VoiceSession::OnIncomingChannelReady(Tp::PendingOperation *op)
+    {
         Tp::PendingReady *pr = qobject_cast<Tp::PendingReady *>(op);
 
         tp_channel_ = Tp::StreamedMediaChannelPtr(qobject_cast<Tp::StreamedMediaChannel *>(pr->object()));
 
-		if (op->isError())
-		{
-			state_ = STATE_ERROR;
+        if (op->isError())
+        {
+            state_ = STATE_ERROR;
             QString message = QString("Incoming streamed media channel cannot become ready: ").append(op->errorMessage());
             LogError(message.toStdString());
             reason_ = message;
             emit StateChanged(state_);
-			return;
-		}
+            return;
+        }
         connect(tp_channel_.data(), SIGNAL( invalidated(Tp::DBusProxy *, const QString &, const QString &) ), SLOT( OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &) ));
 
-		tp_contact_ = tp_channel_->initiatorContact();
+        tp_contact_ = tp_channel_->initiatorContact();
 
         Contact* contact = new Contact(tp_contact_);   // HACK: The contact should be get from Connection object (now we don't delete it!!!)
         VoiceSessionParticipant* participant = new VoiceSessionParticipant(contact);
@@ -216,21 +216,21 @@ namespace TelepathyIM
         state_ = STATE_RINGING_LOCAL;
         emit StateChanged(state_);
 
-		emit Ready(this);
-	}
+        emit Ready(this);
+    }
 
-	void VoiceSession::OnOutgoingChannelReady(Tp::PendingOperation *op)
-	{
-		if (op->isError())
-		{
-			state_ = STATE_ERROR;
+    void VoiceSession::OnOutgoingChannelReady(Tp::PendingOperation *op)
+    {
+        if (op->isError())
+        {
+            state_ = STATE_ERROR;
             emit StateChanged(state_);
-			return;
-		}
+            return;
+        }
         connect(tp_channel_.data(), SIGNAL( invalidated(Tp::DBusProxy *, const QString &, const QString &) ), SLOT( OnChannelInvalidated(Tp::DBusProxy *, const QString &, const QString &) ));
-		
-		Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
-		tp_contact_ = cm->lookupContactByHandle(tp_channel_->targetHandle());
+        
+        Tp::ContactManager *cm = tp_channel_->connection()->contactManager();
+        tp_contact_ = cm->lookupContactByHandle(tp_channel_->targetHandle());
         QString id = tp_contact_->id();
 
         CreateFarsightChannel();
@@ -240,7 +240,7 @@ namespace TelepathyIM
             state_ = STATE_RINGING_REMOTE;
             emit StateChanged(state_);
         }
-	}
+    }
 
     void VoiceSession::CreateFarsightChannel()
     {
@@ -273,7 +273,7 @@ namespace TelepathyIM
         connect( farsight_channel_, SIGNAL(AudioDataAvailable(int)), SLOT( OnFarsightAudioDataAvailable(int ) ), Qt::QueuedConnection );
         connect( farsight_channel_, SIGNAL(AudioBufferOverflow(int)), SLOT( OnFarsightAudioBufferOverflow(int ) ), Qt::QueuedConnection );
 
-	    connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
+        connect(tp_channel_->becomeReady(Tp::StreamedMediaChannel::FeatureStreams),
              SIGNAL( finished(Tp::PendingOperation*) ),
              SLOT( OnStreamFeatureReady(Tp::PendingOperation*) ));
 
@@ -308,46 +308,46 @@ namespace TelepathyIM
         connect(tp_channel_.data(), SIGNAL( streamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ), SLOT( OnStreamDirectionChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamDirection, Tp::MediaStreamPendingSend) ));
         connect(tp_channel_.data(), SIGNAL( streamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ), SLOT( OnStreamStateChanged(const Tp::MediaStreamPtr &, Tp::MediaStreamState) ));
 
-		Tp::MediaStreams streams = tp_channel_->streams();
-		for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
-		{
+        Tp::MediaStreams streams = tp_channel_->streams();
+        for(Tp::MediaStreams::iterator i = streams.begin(); i != streams.end(); ++i)
+        {
             Tp::MediaStreamPtr stream = *i;
 
             QString type = "UNKNOWN";
-			switch(stream->type())
-			{
-			case Tp::MediaStreamTypeAudio:
+            switch(stream->type())
+            {
+            case Tp::MediaStreamTypeAudio:
                 type = "AUDIO";
                 break;
-			case Tp::MediaStreamTypeVideo:
+            case Tp::MediaStreamTypeVideo:
                 type = "VIDEO";
                 break;
-			}
+            }
 
             QString direction = "unknown";
             
             switch(stream->direction())
-			{
-			case Tp::MediaStreamDirectionNone:
+            {
+            case Tp::MediaStreamDirectionNone:
                 direction = "None";
                 break;
             case Tp::MediaStreamDirectionSend:
                 direction = "Send";
                 break;
-			case Tp::MediaStreamDirectionReceive:
+            case Tp::MediaStreamDirectionReceive:
                 direction = "Receive";
                 break;
-			case Tp::MediaStreamDirectionBidirectional:
+            case Tp::MediaStreamDirectionBidirectional:
                 direction = "Bidirectional";
                 break;
-			}
+            }
             
             QString log_message = type.append(" stream is ready: direction is ").append(direction);
             LogDebug(log_message.toStdString());
 
             OnStreamDirectionChanged(stream, stream->direction(), stream->pendingSend());
             OnStreamStateChanged(stream, stream->state());
-		}
+        }
 
         Tp::MediaStreamPtr audio_stream = GetAudioMediaStream();
         Tp::MediaStreamPtr video_stream = GetVideoMediaStream();

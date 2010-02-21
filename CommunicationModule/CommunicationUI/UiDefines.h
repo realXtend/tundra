@@ -67,46 +67,46 @@ namespace UiDefines
 
         static QIcon GetIconForStatusCode(QString status_code)
         {
-	        QIcon icon;
-	        if ( QString::compare(status_code, QString("available"), Qt::CaseInsensitive) == 0 ||
+            QIcon icon;
+            if ( QString::compare(status_code, QString("available"), Qt::CaseInsensitive) == 0 ||
                  QString::compare(status_code, QString("chat"), Qt::CaseInsensitive) == 0 )
-		        icon = QIcon(":/images/iconGreen.png");
-	        else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
+                icon = QIcon(":/images/iconGreen.png");
+            else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("hidden"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString(""), Qt::CaseInsensitive) == 0 )
-		        icon = QIcon(":/images/iconGrey.png");
-	        else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
-		        icon = QIcon(":/images/iconYellow.png");
-	        else if ( QString::compare(status_code, QString("xa"), Qt::CaseInsensitive) == 0 ||
+                icon = QIcon(":/images/iconGrey.png");
+            else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
+                icon = QIcon(":/images/iconYellow.png");
+            else if ( QString::compare(status_code, QString("xa"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("dnd"), Qt::CaseInsensitive) == 0 )
-		        icon = QIcon(":/images/iconOrange.png");
-	        else
+                icon = QIcon(":/images/iconOrange.png");
+            else
             {
                 qDebug() << "Unknows status code: " << status_code << endl;
-		        icon = QIcon(":/images/iconGrey.png");
+                icon = QIcon(":/images/iconGrey.png");
             }
             return icon;
         }
 
         static QString GetImagePathForStatusCode(QString status_code)
         {
-	        QString path;
-	        if ( QString::compare(status_code, QString("available"), Qt::CaseInsensitive) == 0 ||
+            QString path;
+            if ( QString::compare(status_code, QString("available"), Qt::CaseInsensitive) == 0 ||
                  QString::compare(status_code, QString("chat"), Qt::CaseInsensitive) == 0 )
-		        path = ":/images/iconGreen.png";
-	        else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
+                path = ":/images/iconGreen.png";
+            else if ( QString::compare(status_code, QString("offline"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("hidden"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("unknown"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString(""), Qt::CaseInsensitive) == 0 )
-		        path = ":/images/iconGrey.png";
-	        else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
-		        path = ":/images/iconYellow.png";
-	        else if ( QString::compare(status_code, QString("xa"), Qt::CaseInsensitive) == 0 ||
+                path = ":/images/iconGrey.png";
+            else if ( QString::compare(status_code, QString("away"), Qt::CaseInsensitive) == 0 )
+                path = ":/images/iconYellow.png";
+            else if ( QString::compare(status_code, QString("xa"), Qt::CaseInsensitive) == 0 ||
                       QString::compare(status_code, QString("dnd"), Qt::CaseInsensitive) == 0 )
-		        path = ":/images/iconOrange.png";
-	        else
-		        path = ":/images/iconGrey.png";
+                path = ":/images/iconOrange.png";
+            else
+                path = ":/images/iconGrey.png";
             return path;
         }
 
@@ -120,19 +120,19 @@ namespace UiDefines
     public:
 
         //! Generates a formatted timestamp of the current time and date and returns it as a QString
-	    static QString GenerateTimeStamp()
-	    {
+        static QString GenerateTimeStamp()
+        {
             QDateTime time_stamp = QDateTime::currentDateTime();
 
             QString timestamp(QString("%1 %2").arg(time_stamp.date().toString("dd.MM.yyyy"),time_stamp.time().toString("hh:mm:ss")));
-		    return timestamp;
-	    }
+            return timestamp;
+        }
 
         //! Formats an already existing QDateTime and returns it as a QString
         static QString FormatTimeStamp(QDateTime time)
         {
             QString timestamp(QString("%1 %2").arg(time.date().toString("dd.MM.yyyy"),time.time().toString("hh:mm:ss")));
-		    return timestamp;
+            return timestamp;
         }
     };
 

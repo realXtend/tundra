@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Communication_TelepathyIM_VoiceSession_h
 #define incl_Communication_TelepathyIM_VoiceSession_h
 
@@ -17,34 +19,34 @@
 
 namespace TelepathyIM
 {
-	/**
-	 *  Uses Tp::StreamedMediaChannel for communicating with dbus    
+    /**
+     *  Uses Tp::StreamedMediaChannel for communicating with dbus    
      *
      *  TODO: audio/video in/out enabled variable setting is NOT COMPLETE YET!
      *        * Check if audio/video capture/playback is possible and trow exections...
-	 */
-	class VoiceSession : public Communication::VoiceSessionInterface
-	{
-		Q_OBJECT
-		MODULE_LOGGING_FUNCTIONS
-		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+     */
+    class VoiceSession : public Communication::VoiceSessionInterface
+    {
+        Q_OBJECT
+        MODULE_LOGGING_FUNCTIONS
+        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
         static const int AUDIO_BUFFER_SIZE = 8192;
         static const int AUDIO_BUFFER_PLAYBACK_MIN_SIZE = 4096;
 
 
-	public:
-		VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel);
-		VoiceSession(Tp::ContactPtr tp_contact);
+    public:
+        VoiceSession(const Tp::StreamedMediaChannelPtr &tp_channel);
+        VoiceSession(Tp::ContactPtr tp_contact);
         virtual ~VoiceSession();
 
-		//! @return State of the session
-		virtual Communication::VoiceSessionInterface::State GetState() const;
+        //! @return State of the session
+        virtual Communication::VoiceSessionInterface::State GetState() const;
 
-		//! @return reason of current state eg. error message
+        //! @return reason of current state eg. error message
         virtual QString GetReason() const { return reason_; };
 
-		//! @return all known participants of the chat session inlcuding the user
-		virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
+        //! @return all known participants of the chat session inlcuding the user
+        virtual Communication::VoiceSessionParticipantVector GetParticipants() const;
 
         //! Getters for captured and received video widgets
         virtual Communication::VideoPlaybackWidgetInterface* GetLocallyCapturedVideo();
@@ -59,7 +61,7 @@ namespace TelepathyIM
 
     public slots:
         //! Close the session
-		virtual void Close();
+        virtual void Close();
 
         //! Accept incoming session
         virtual void Accept();
@@ -79,7 +81,7 @@ namespace TelepathyIM
         //! Set if we want to use spatial voice with avatar tracking
         virtual void TrackingAvatar(bool enabled);
 
-	protected:
+    protected:
         void UpdateStreamDirection(const Tp::MediaStreamPtr &stream, bool send);
         void CreateAudioStream();
         void CreateVideoStream();
@@ -90,8 +92,8 @@ namespace TelepathyIM
         Tp::MediaStreamPtr GetAudioMediaStream() const;
         Tp::MediaStreamPtr GetVideoMediaStream() const; 
         
-		State state_;
-		Tp::StreamedMediaChannelPtr tp_channel_;
+        State state_;
+        Tp::StreamedMediaChannelPtr tp_channel_;
         FarsightChannel* farsight_channel_;
 
         Tp::PendingMediaStreams *pending_audio_streams_;
@@ -105,12 +107,12 @@ namespace TelepathyIM
         Vector3df audio_playback_position_;
         bool spatial_audio_playback_;
 
-	protected slots:
+    protected slots:
         void OnChannelInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
         void OnFarsightChannelStatusChanged(TelepathyIM::FarsightChannel::Status status);
-		void OnOutgoingChannelCreated(Tp::PendingOperation *op);
-		void OnIncomingChannelReady(Tp::PendingOperation *op);
-		void OnOutgoingChannelReady(Tp::PendingOperation *op);
+        void OnOutgoingChannelCreated(Tp::PendingOperation *op);
+        void OnIncomingChannelReady(Tp::PendingOperation *op);
+        void OnOutgoingChannelReady(Tp::PendingOperation *op);
         void OnStreamFeatureReady(Tp::PendingOperation* op);
         void OnStreamAdded(const Tp::MediaStreamPtr &media_stream);
         void OnStreamRemoved(const Tp::MediaStreamPtr &media_stream);
@@ -130,7 +132,7 @@ namespace TelepathyIM
     signals:
 
         // When incoming session is ready for accecpt/reject
-		void Ready(VoiceSession* session);
+        void Ready(VoiceSession* session);
     };
 
     typedef std::vector<VoiceSession*> VoiceSessionVector;

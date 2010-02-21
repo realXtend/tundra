@@ -14,34 +14,34 @@
 
 namespace CommunicationUI
 {
-	class OpenSimChatWidget : public QWidget
-	{
+    class OpenSimChatWidget : public QWidget
+    {
 
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
+    public:
         OpenSimChatWidget(ProtocolUtilities::ClientParameters clientParams);
-		virtual ~OpenSimChatWidget();
+        virtual ~OpenSimChatWidget();
 
-	public slots:
-		void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
-		void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
-		
-		void MessageRecieved(const Communication::ChatMessageInterface &msg);
-		void SendMessage();
-	
-	private:
-		void InitCommunicationConnections();
-		void ConnectSlotsToChatSession();
+    public slots:
+        void OnOpensimUdpConnectionReady(Communication::ConnectionInterface&);
+        void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
+        
+        void MessageRecieved(const Communication::ChatMessageInterface &msg);
+        void SendMessage();
+    
+    private:
+        void InitCommunicationConnections();
+        void ConnectSlotsToChatSession();
 
         Ui::OpenSimChatWidget opensim_chat_ui_;
 
-		Communication::CommunicationServiceInterface *communicationService_;
-		Communication::ConnectionInterface *opensimConnection_;
-		Communication::ChatSessionInterface *publicChat_;
+        Communication::CommunicationServiceInterface *communicationService_;
+        Communication::ConnectionInterface *opensimConnection_;
+        Communication::ChatSessionInterface *publicChat_;
 
-		ProtocolUtilities::ClientParameters clientParams_;
-	};
+        ProtocolUtilities::ClientParameters clientParams_;
+    };
 }
 
 #endif // incl_CommunicationUI_OpenSimChatWidget_h

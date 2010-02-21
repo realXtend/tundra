@@ -87,7 +87,7 @@ namespace UiManagers
         busy_status = status_menu->addAction("Busy", this, SLOT( StatusBusy() ));
         hidden_status = status_menu->addAction("Hidden", this, SLOT( StatusHidden() ));
 
-		set_status_message->setIcon(QIcon(":images/iconRename.png"));
+        set_status_message->setIcon(QIcon(":images/iconRename.png"));
         available_status->setCheckable(true);
         available_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("available"));
         chatty_status->setCheckable(true);
@@ -112,24 +112,24 @@ namespace UiManagers
 
         status_menu->addSeparator();
         signout = status_menu->addAction("Sign out", this, SLOT( SignOut() ));
-		signout->setIcon(QIcon(":images/iconSignout.png"));
+        signout->setIcon(QIcon(":images/iconSignout.png"));
         
         // JOIN MENU
         QMenu *actions_menu = new QMenu("Actions", main_parent_);
-		add_new_friend = actions_menu->addAction("Add New Friend");
-		add_new_friend->setIcon(QIcon(":images/iconAdd.png"));
+        add_new_friend = actions_menu->addAction("Add New Friend");
+        add_new_friend->setIcon(QIcon(":images/iconAdd.png"));
         join_chat_room = actions_menu->addAction("Join Chat Room", this, SLOT( JoinChatRoom() ));
-		join_chat_room->setIcon(QIcon(":/images/iconConference.png"));
-		manage_spatial_voice = actions_menu->addAction("Manage 3D Voice", this, SLOT( Show3DSoundManager() ));
-		manage_spatial_voice->setIcon(QIcon(":images/iconProperties.png"));
+        join_chat_room->setIcon(QIcon(":/images/iconConference.png"));
+        manage_spatial_voice = actions_menu->addAction("Manage 3D Voice", this, SLOT( Show3DSoundManager() ));
+        manage_spatial_voice->setIcon(QIcon(":images/iconProperties.png"));
         
-		// Add sub menus to menu bar
+        // Add sub menus to menu bar
         menu_bar_->addMenu(file_menu);
         menu_bar_->addMenu(status_menu);
         menu_bar_->addMenu(actions_menu);
         menu_bar_->addAction("Show Friend List", this, SLOT( ToggleShowFriendList() ));
         
-		// Connect signals
+        // Connect signals
         connect(add_new_friend, SIGNAL( triggered() ),
                 session_helper_, SLOT( SendFriendRequest() ));
         connect(this, SIGNAL( StatusChange(const QString&) ), 

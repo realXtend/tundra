@@ -6,43 +6,43 @@
 namespace OpensimIM
 {
 
-	Contact::Contact(const QString &id, const QString &name): id_(id), name_(name), online_(false), is_typing_(false)
-	{
-		
-	}
+    Contact::Contact(const QString &id, const QString &name): id_(id), name_(name), online_(false), is_typing_(false)
+    {
+        
+    }
 
-	QString Contact::GetID() const
-	{
-		return id_;
-	}
+    QString Contact::GetID() const
+    {
+        return id_;
+    }
 
-	QString Contact::GetName() const
-	{
-		return name_;
-	}
+    QString Contact::GetName() const
+    {
+        return name_;
+    }
 
-	void Contact::SetName(const QString& name)
-	{
-		// NOT SUPPORTED BY OPENSIM
-	}
+    void Contact::SetName(const QString& name)
+    {
+        // NOT SUPPORTED BY OPENSIM
+    }
 
-	QString Contact::GetPresenceStatus() const
-	{
-		if (online_)
-			return "online";
-		else
-			return "offline";
-	}
+    QString Contact::GetPresenceStatus() const
+    {
+        if (online_)
+            return "online";
+        else
+            return "offline";
+    }
 
-	QString Contact::GetPresenceMessage() const
-	{
-		// NOT SUPPORTED BY OPENSIM
-		return "";
-	}
+    QString Contact::GetPresenceMessage() const
+    {
+        // NOT SUPPORTED BY OPENSIM
+        return "";
+    }
 
-	void Contact::SetOnlineStatus(bool online)
-	{
-		online_ = online;
-	}
+    void Contact::SetOnlineStatus(bool online)
+    {
+        online_ = online;
+    }
 
 } // end of namespace: OpensimIM

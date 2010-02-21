@@ -23,15 +23,15 @@ namespace UiHelpers
     {
         QString value, configKey;
         QString server, username, password;
-		QString configGroup("InstantMessagingLogin");
+        QString configGroup("InstantMessagingLogin");
 
-		configKey = QString("username");
-		username = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+        configKey = QString("username");
+        username = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
         configKey = QString("server");
-		server = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
-		configKey = QString("password");
-		password = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
-		
+        server = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+        configKey = QString("password");
+        password = QString(framework_->GetDefaultConfigPtr()->GetSetting<std::string>(configGroup.toStdString(), configKey.toStdString()).c_str());
+        
         if (!username.isNull() && !username.isEmpty())
             login_ui->usernameLineEdit->setText(username);
         if (!server.isNull() && !server.isEmpty())

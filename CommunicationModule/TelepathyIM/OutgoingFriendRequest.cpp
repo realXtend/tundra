@@ -6,14 +6,14 @@
 
 namespace TelepathyIM
 {
-	OutgoingFriendRequest::OutgoingFriendRequest(const QString &target_id, const QString &message, Tp::ConnectionPtr tp_connection) : state_(STATE_PENDING), tp_connection_(tp_connection), message_(message)
-	{
-		target_id_ = target_id;
-		Tp::PendingContacts *pending_contacts = tp_connection_->contactManager()->contactsForIdentifiers(QStringList() << target_id);
-		connect(pending_contacts,
-			    SIGNAL( finished(Tp::PendingOperation *) ),
-				SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
-	}
+    OutgoingFriendRequest::OutgoingFriendRequest(const QString &target_id, const QString &message, Tp::ConnectionPtr tp_connection) : state_(STATE_PENDING), tp_connection_(tp_connection), message_(message)
+    {
+        target_id_ = target_id;
+        Tp::PendingContacts *pending_contacts = tp_connection_->contactManager()->contactsForIdentifiers(QStringList() << target_id);
+        connect(pending_contacts,
+                SIGNAL( finished(Tp::PendingOperation *) ),
+                SLOT( OnContactRetrievedForFriendRequest(Tp::PendingOperation *) ));
+    }
 
     OutgoingFriendRequest::~OutgoingFriendRequest()
     {
@@ -24,15 +24,15 @@ namespace TelepathyIM
         }
     }
 
-	QString OutgoingFriendRequest::GetTargetId()
-	{
-		return target_id_;
-	}
+    QString OutgoingFriendRequest::GetTargetId()
+    {
+        return target_id_;
+    }
 
-	QString OutgoingFriendRequest::GetTargetName()
-	{
-		return target_name_;
-	}
+    QString OutgoingFriendRequest::GetTargetName()
+    {
+        return target_name_;
+    }
 
     Contact* OutgoingFriendRequest::GetContact()
     {
@@ -40,46 +40,46 @@ namespace TelepathyIM
         //return outgoing_contact_handle_;
     }
 
-	void OutgoingFriendRequest::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
-	{
-		if (op->isError())
-		{
-			state_ = STATE_ERROR;
-			reason_ = op->errorMessage();
-			emit( Error(this) );
-			return;
-		}
-		Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
-		QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
-		
-		assert( contacts.size() == 1); // We have request only one contact 
-		Tp::ContactPtr contact = contacts.first();
-		target_name_ = contact->alias();
+    void OutgoingFriendRequest::OnContactRetrievedForFriendRequest(Tp::PendingOperation *op)
+    {
+        if (op->isError())
+        {
+            state_ = STATE_ERROR;
+            reason_ = op->errorMessage();
+            emit( Error(this) );
+            return;
+        }
+        Tp::PendingContacts *pending_contacts = qobject_cast<Tp::PendingContacts *>(op);
+        QList<Tp::ContactPtr> contacts = pending_contacts->contacts();
+        
+        assert( contacts.size() == 1); // We have request only one contact 
+        Tp::ContactPtr contact = contacts.first();
+        target_name_ = contact->alias();
         //Tp::ContactPtr cPtr = contacts.first();
         //cPtr.data;
-		//connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
+        //connect(tp_connection_->contactManager(), SIGNAL( presencePublicationRequested(const Tp::Contacts &) ), SLOT( OnPresencePublicationRequested(const Tp::Contacts &) ));
 
         outgoing_contact_handle_ = contacts.first();
 
         //contacts[0]->addedToGroup
 
 
-		// Do the presence subscription
-		Tp::PendingOperation* p = contact->requestPresenceSubscription(message_);
-		connect(p, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnPresenceSubscriptionResult(Tp::PendingOperation*) ));
-	}
+        // Do the presence subscription
+        Tp::PendingOperation* p = contact->requestPresenceSubscription(message_);
+        connect(p, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnPresenceSubscriptionResult(Tp::PendingOperation*) ));
+    }
 
-	void OutgoingFriendRequest::OnPresenceSubscriptionResult(Tp::PendingOperation *op)
-	{
-		if (op->isError())
-		{
-			state_ = STATE_ERROR;
-			reason_ = op->errorMessage();
-			emit( Error(this) );
-			return;
-		}
-		state_ = STATE_SENT;
-		emit( Sent(this) );
+    void OutgoingFriendRequest::OnPresenceSubscriptionResult(Tp::PendingOperation *op)
+    {
+        if (op->isError())
+        {
+            state_ = STATE_ERROR;
+            reason_ = op->errorMessage();
+            emit( Error(this) );
+            return;
+        }
+        state_ = STATE_SENT;
+        emit( Sent(this) );
 
         connect(outgoing_contact_handle_.data(), SIGNAL( aliasChanged(const QString &)), SLOT( OnAliasChanged(const QString &)));
         connect(outgoing_contact_handle_.data(), SIGNAL( avatarTokenChanged(const QString &)), SLOT( OnAvatarTokenChanged(const QString &)));
@@ -92,7 +92,7 @@ namespace TelepathyIM
         connect(outgoing_contact_handle_.data(), SIGNAL( addedToGroup(const QString &)), SLOT( OnAddedToGroup(const QString &)));
         connect(outgoing_contact_handle_.data(), SIGNAL( removedFromGroup(const QString &)), SLOT( OnRemovedFromGroup(const QString &)));
 
-	}
+    }
 
 
     void OutgoingFriendRequest::OnAliasChanged(const QString &alias)

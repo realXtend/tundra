@@ -45,7 +45,7 @@ namespace CommunicationUI
         void StatusChange(const QString &item_string);
         void StartChatSession();
         void StartVideoSession();
-		void RemoveContact();
+        void RemoveContact();
 
     signals:
         void NewChatSessionStarted(Communication::ChatSessionInterface *, QString &);
