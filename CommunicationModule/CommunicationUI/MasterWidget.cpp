@@ -33,7 +33,7 @@ namespace CommunicationUI
           session_manager_widget_(0)
 
     {
-		setWindowIcon(QIcon(":/images/iconUsers.png"));
+        setWindowIcon(QIcon(":/images/iconUsers.png"));
         setLayout(new QVBoxLayout(this));
         layout()->setMargin(0);
 

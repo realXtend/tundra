@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Communication_TelepathyIM_FarsightChannel_h
 #define incl_Communication_TelepathyIM_FarsightChannel_h
 
@@ -24,8 +26,8 @@ namespace TelepathyIM
         Q_OBJECT
         Q_ENUMS(Status)
 
-		MODULE_LOGGING_FUNCTIONS
-		static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        MODULE_LOGGING_FUNCTIONS
+        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
 
         //! Max size for audio buffer for received raw audio data in bytes
         //! The whole buffer will be used as a ring buffer.
@@ -77,7 +79,7 @@ namespace TelepathyIM
         bool IncomingVideoStreamConnected() { return video_in_src_pad_; }
 
         //! Set the gstreamer pipeline to NULL state
-		void StopPipeline();
+        void StopPipeline();
 
         //! @return sample rate aka. sampling frequency. Return -1 if sample rate is unknwon.
         virtual int GetSampleRate() const;

@@ -1,45 +1,56 @@
-#include "StableHeaders.h"
-#include "SceneEvents.h"
-#include "RexLogicModule.h"
-#include "UiModule.h"
-#include "UiProxyWidget.h"
+// For conditions of distribution and use, see copyright notice in license.txt
 
+#include "StableHeaders.h"
 #include "CommunicationModule.h"
+#include "CommunicationService.h"
+#include "CommunicationUI/MasterWidget.h"
+#include "CommunicationUI/OpenSimChatWidget.h"
+#include "Test.h"
 #include "OpensimIM/ConnectionProvider.h"
 #include "TelepathyIM/ConnectionProvider.h"
 
+#include <RexLogicModule.h>
+#include <UiModule.h>
+#include <UiProxyWidget.h>
+
 namespace Communication
 {
-
-	CommunicationModule::CommunicationModule(void) 
-        : ModuleInterfaceImpl("CommunicationModule"), 
+    CommunicationModule::CommunicationModule()
+        : ModuleInterfaceImpl(type_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
           opensim_chat_ui_(0),
           opensim_chat_proxy_widget_(0),
-          communication_service_(0), 
-          test_(0), 
-          event_category_networkstate_(0), 
+          communication_service_(0),
+          test_(0),
+          event_category_networkstate_(0),
           event_category_framework_(0)
-	{
-	}
+    {
+    }
 
-	CommunicationModule::~CommunicationModule(void)
-	{
-	}
+    CommunicationModule::~CommunicationModule()
+    {
+    }
 
-	void CommunicationModule::Load(){}
-	void CommunicationModule::Unload(){}
+    void CommunicationModule::Load()
+    {
+        LogInfo("System " + Name() + " loaded");
+    }
 
-	void CommunicationModule::Initialize() 
-	{
+    void CommunicationModule::Unload()
+    {
+        LogInfo("System " + Name() + " unloaded");
+    }
+
+    void CommunicationModule::Initialize() 
+    {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-		LogInfo("Initialized");
-	}
+        LogInfo(Name() + " initialized");
+    }
 
-	void CommunicationModule::PostInitialize()
-	{
-		Foundation::EventManagerPtr event_manager = framework_->GetEventManager(); 
+    void CommunicationModule::PostInitialize()
+    {
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager(); 
         CommunicationService::CreateInstance(framework_);
         communication_service_ = CommunicationService::GetInstance();
         if (communication_service_ == 0)
@@ -50,46 +61,48 @@ namespace Communication
         
         connect(communication_service_, SIGNAL( NewProtocolSupported(QString &) ), SLOT( OnNewProtocol(QString &) ));
         connect(communication_service_, SIGNAL( ProtocolSupportEnded(QString &) ), SLOT( OnProtocolSupportEnded(QString &) ));
-        QObject::connect(communication_service_, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ), this, SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
-        QObject::connect(communication_service_, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ), this, SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
+        QObject::connect(communication_service_, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ),
+            this, SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
+        QObject::connect(communication_service_, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ),
+            this, SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
 
         OpensimIM::ConnectionProvider* opensim = new OpensimIM::ConnectionProvider(framework_);
         communication_service_->RegisterConnectionProvider(opensim);
 
-	    TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
-	    communication_service_->RegisterConnectionProvider(telepathy);
+        TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
+        communication_service_->RegisterConnectionProvider(telepathy);
 
         test_ = new CommunicationTest::Test(framework_);
 
-		QStringList protocols = communication_service_->GetSupportedProtocols();
-		if (protocols.size() == 0)
-			LogInfo("No IM protocols supported");
-		else
-		{
-			for (QStringList::iterator i = protocols.begin(); i != protocols.end(); ++i)
-			{
-				QString message = "IM protocol support for: ";
-				message.append(*i);
-				LogInfo( message.toStdString() );
-			}
-		}
-	}
+        QStringList protocols = communication_service_->GetSupportedProtocols();
+        if (protocols.size() == 0)
+            LogInfo("No IM protocols supported");
+        else
+        {
+            for (QStringList::iterator i = protocols.begin(); i != protocols.end(); ++i)
+            {
+                QString message = "IM protocol support for: ";
+                message.append(*i);
+                LogInfo( message.toStdString() );
+            }
+        }
+    }
 
-	void CommunicationModule::Uninitialize()
-	{
+    void CommunicationModule::Uninitialize()
+    {
         SAFE_DELETE(im_ui_);
-		SAFE_DELETE(opensim_chat_ui_);
+        SAFE_DELETE(opensim_chat_ui_);
         SAFE_DELETE(test_);
 
         CommunicationService::CleanUp();
         communication_service_ = NULL;
 
-		LogInfo("Uninitialized.");   
-	}
+        LogInfo("System " + Name() + " uninitialized.");
+    }
 
-	void CommunicationModule::Update(f64 frametime)
-	{
-	}
+    void CommunicationModule::Update(f64 frametime)
+    {
+    }
 
     bool CommunicationModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
@@ -100,7 +113,7 @@ namespace Communication
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
                 boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
-	    		if (current_protocol_module.lock().get())
+                if (current_protocol_module.lock().get())
                 {
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
                     //! TODO: Currently we can have only one world_chat ui but this
@@ -123,8 +136,8 @@ namespace Communication
 
         if (communication_service_)
             return dynamic_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
-		return false;
-    }    
+        return false;
+    }
 
     void CommunicationModule::OnNewProtocol(QString &protocol)
     {
@@ -181,7 +194,6 @@ namespace Communication
         if (ui_module.get())
             ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxy_widget);
     }
-
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

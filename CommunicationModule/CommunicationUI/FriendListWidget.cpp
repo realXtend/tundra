@@ -38,7 +38,7 @@ namespace CommunicationUI
 
         im_connection_->CheckPendingFriendRequests();
 
-		setWindowIcon(QIcon(":/images/iconUsers.png"));
+        setWindowIcon(QIcon(":/images/iconUsers.png"));
     }
 
     FriendListWidget::~FriendListWidget()
@@ -53,7 +53,7 @@ namespace CommunicationUI
         Communication::ContactVector::const_iterator iter;
 
         for( iter=contacts.begin(); iter!=contacts.end(); iter++ )
-	    {
+        {
             Communication::ContactInterface *contact = (*iter);
             contacts_map_[contact->GetID()] = contact;
         }
@@ -151,11 +151,11 @@ namespace CommunicationUI
         }
     }
 
-	void FriendListWidget::RemoveContact()
-	{
-		Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
-		if (contact)
-			im_connection_->RemoveContact(*contact);
-	}
+    void FriendListWidget::RemoveContact()
+    {
+        Communication::ContactInterface *contact = friend_helper_->GetContactsMap()[clicked_item_->GetID()];
+        if (contact)
+            im_connection_->RemoveContact(*contact);
+    }
 
 }

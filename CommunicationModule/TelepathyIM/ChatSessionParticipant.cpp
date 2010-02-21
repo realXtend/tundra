@@ -6,34 +6,34 @@
 
 namespace TelepathyIM
 {
-	//ChatSessionParticipant::ChatSessionParticipant(const QString &id, const QString &name): id_(id), name_(name)
-	//{
+    //ChatSessionParticipant::ChatSessionParticipant(const QString &id, const QString &name): id_(id), name_(name)
+    //{
 
-	//}
+    //}
 
-	ChatSessionParticipant::ChatSessionParticipant(Contact *contact): contact_(contact)
-	{
+    ChatSessionParticipant::ChatSessionParticipant(Contact *contact): contact_(contact)
+    {
 
-	}
+    }
 
-	ChatSessionParticipant::~ChatSessionParticipant()
-	{
+    ChatSessionParticipant::~ChatSessionParticipant()
+    {
 
-	}
+    }
 
-	Communication::ContactInterface* ChatSessionParticipant::GetContact() const
-	{
-		return contact_;
-	}
+    Communication::ContactInterface* ChatSessionParticipant::GetContact() const
+    {
+        return contact_;
+    }
 
-	QString ChatSessionParticipant::GetID() const
-	{
-		return contact_->GetID();
-	}
-	
-	QString ChatSessionParticipant::GetName() const
-	{
-		return contact_->GetName();
-	}
+    QString ChatSessionParticipant::GetID() const
+    {
+        return contact_->GetID();
+    }
+    
+    QString ChatSessionParticipant::GetName() const
+    {
+        return contact_->GetName();
+    }
 
 } // end of namespace: TelepathyIM

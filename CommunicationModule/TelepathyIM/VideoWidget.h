@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Communication_TelepathyIM_VideoWidget_h
 #define incl_Communication_TelepathyIM_VideoWidget_h
 
@@ -6,7 +8,7 @@
 #include <gst/farsight/fs-element-added-notifier.h>
 
 #include "../interface.h"
-              
+
 namespace TelepathyIM
 {
     /**
@@ -35,7 +37,7 @@ namespace TelepathyIM
     
     protected:
         void showEvent(QShowEvent *showEvent);
-		void closeEvent(QCloseEvent *closeEvent);
+        void closeEvent(QCloseEvent *closeEvent);
 
     public slots:
         void SetOverlay();

@@ -59,29 +59,29 @@ namespace TelepathyIM
             return;
         }
 
-		// Video bin init
-		const QString video_bin_name = "video_bin_for_" + name;
-		video_playback_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
-		if (!video_playback_bin_)
-		{
-			qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
-			return;
-		}
+        // Video bin init
+        const QString video_bin_name = "video_bin_for_" + name;
+        video_playback_bin_ = gst_bin_new(video_bin_name.toStdString().c_str());
+        if (!video_playback_bin_)
+        {
+            qDebug() << "VideoWidget " << name << " CANNOT CREATE video_bin_";
+            return;
+        }
 
-		// Add playback element to video bin
-		gst_bin_add(GST_BIN(video_playback_bin_), video_playback_element_);
+        // Add playback element to video bin
+        gst_bin_add(GST_BIN(video_playback_bin_), video_playback_element_);
 
-		// Pad inits
-		GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
-		GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
+        // Pad inits
+        GstPad *static_sink_pad = gst_element_get_static_pad(video_playback_element_, "sink");
+        GstPad *sink_ghost_pad = gst_ghost_pad_new("sink", static_sink_pad);
 
-		// Add pad to video bin
-		gst_element_add_pad(GST_ELEMENT(video_playback_bin_), sink_ghost_pad);
-		gst_object_unref(G_OBJECT(static_sink_pad));
-		gst_object_ref(video_playback_bin_);
-		gst_object_sink(video_playback_bin_);
+        // Add pad to video bin
+        gst_element_add_pad(GST_ELEMENT(video_playback_bin_), sink_ghost_pad);
+        gst_object_unref(G_OBJECT(static_sink_pad));
+        gst_object_ref(video_playback_bin_);
+        gst_object_sink(video_playback_bin_);
 
-		fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_bin_));
+        fs_element_added_notifier_add(notifier_, GST_BIN(video_playback_bin_));
 
         gst_bus_enable_sync_message_emission(bus_);
         on_sync_message_g_signal_ = g_signal_connect(bus_, "sync-message", G_CALLBACK(&VideoWidget::OnSyncMessage), this);
@@ -121,12 +121,12 @@ namespace TelepathyIM
         if (video_playback_bin_)
         {
             g_object_unref(video_playback_bin_);
-			video_playback_bin_ = 0;
+            video_playback_bin_ = 0;
         }
-		if (video_playback_element_)
-			video_playback_element_ = 0;
-		if (video_overlay_)
-			video_overlay_ = 0;
+        if (video_playback_element_)
+            video_playback_element_ = 0;
+        if (video_overlay_)
+            video_overlay_ = 0;
     }
 
     void VideoWidget::OnElementAdded(FsElementAddedNotifier *notifier, GstBin *bin, GstElement *element, VideoWidget *self)
@@ -195,12 +195,12 @@ namespace TelepathyIM
         SetOverlay();
     }
 
-	void VideoWidget::closeEvent(QCloseEvent *closeEvent)
-	{
+    void VideoWidget::closeEvent(QCloseEvent *closeEvent)
+    {
         if ( video_overlay_ )
-		    gst_element_set_state(video_overlay_, GST_STATE_NULL);
-		QWidget::closeEvent(closeEvent);
-	}
+            gst_element_set_state(video_overlay_, GST_STATE_NULL);
+        QWidget::closeEvent(closeEvent);
+    }
 
     void VideoWidget::SetOverlay()
     {
@@ -209,7 +209,7 @@ namespace TelepathyIM
             // Get window id from this widget and set it for video sink
             // so it renders to our widget id and does not open separate window (that is the default behaviour)
             qDebug() << name_ << " >> SetOverlay() called from showEvent()";
-			window_id_ = winId();
+            window_id_ = winId();
             if (window_id_)
             {
                 qDebug() << name_ << " >> Giving x overlay widgets window id " << window_id_;
@@ -235,13 +235,13 @@ namespace TelepathyIM
         }
     }
 
-	GstElement *VideoWidget::GetVideoPlaybackElement() const
-	{
-		if (video_playback_bin_) 
-			return video_playback_bin_; 
-		else
-			return 0;
-	}
+    GstElement *VideoWidget::GetVideoPlaybackElement() const
+    {
+        if (video_playback_bin_) 
+            return video_playback_bin_; 
+        else
+            return 0;
+    }
 
     bool VideoWidget::VideoAvailable()
     {

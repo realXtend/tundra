@@ -84,7 +84,7 @@ namespace UiHelpers
     {
         Communication::ChatSessionParticipantVector::const_iterator iter;
         for( iter=participant_vector.begin(); iter!=participant_vector.end(); iter++ )
-	    {
+        {
             Communication::ChatSessionParticipantInterface *participant = (*iter);
             if (participant->GetID() != my_name_)
                 return participant->GetID();
@@ -96,7 +96,7 @@ namespace UiHelpers
     {
         Communication::VoiceSessionParticipantVector::const_iterator iter;
         for( iter=participant_vector.begin(); iter!=participant_vector.end(); iter++ )
-	    {
+        {
             Communication::VoiceSessionParticipantInterface *participant = (*iter);
             if (participant->GetID() != my_name_)
                 return participant->GetID();
@@ -107,15 +107,15 @@ namespace UiHelpers
     /************* CHECK IT *************/
 
     bool SessionHelper::DoesChatTabExist(const QString &chat_friends_name)
-	{
+    {
         if (chat_sessions_pointers_map_.contains(chat_friends_name))
         {
             QWidget *found_tab_widget = chat_sessions_pointers_map_[chat_friends_name].first;
             session_manager_ui_->sessionsTabWidget->setCurrentWidget(found_tab_widget);
             return true;
         }
-		return false;
-	}
+        return false;
+    }
 
     bool SessionHelper::DoesVideoTabExist(const QString &video_friends_name)
     {
@@ -125,7 +125,7 @@ namespace UiHelpers
             session_manager_ui_->sessionsTabWidget->setCurrentWidget(found_tab_widget);
             return true;
         }
-		return false;
+        return false;
     }
 
     void SessionHelper::TabWidgetPreStateCheck()
@@ -137,10 +137,10 @@ namespace UiHelpers
         }
 
         if (info_widget_)
-		{
-			info_widget_->findChild<QLabel *>("infoLabel")->hide();
+        {
+            info_widget_->findChild<QLabel *>("infoLabel")->hide();
             SAFE_DELETE(info_widget_);
-		}
+        }
     }
 
     void SessionHelper::TabWidgetPostStateCheck()
@@ -154,7 +154,7 @@ namespace UiHelpers
             QVBoxLayout *layout = new QVBoxLayout(info_widget_);
             layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Preferred, QSizePolicy::Expanding));
             QLabel *info_label = new QLabel("Click on Show Friend List from the top menu to start communicating", info_widget_);
-			info_label->setObjectName("infoLabel");
+            info_label->setObjectName("infoLabel");
             info_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
             info_label->setAlignment(Qt::AlignCenter);
             layout->addWidget(info_label);
