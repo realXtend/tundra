@@ -56,6 +56,10 @@
 #include "UiModule.h"
 #include "Login/LoginContainer.h"
 
+#include "EnvironmentModule.h"
+#include "Terrain.h"
+#include "EC_Terrain.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic
@@ -400,6 +404,22 @@ void RexLogicModule::Update(f64 frametime)
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
+/*
+            if (!camera_entity_.expired())
+            {
+                boost::shared_ptr<Environment::EnvironmentModule> env =
+                    GetFramework()->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
+                if (env)
+                {
+                    Scene::EntityPtr entity = env->GetTerrainHandler()->GetTerrainEntity().lock();
+                    Environment::EC_Terrain *ec_terrain = entity->GetComponent<Environment::EC_Terrain>().get();
+                    if (ec_terrain && ec_terrain->AllPatchesLoaded())
+                    {
+                        std::cout << ec_terrain->InterpolateHeightValue(GetCameraPosition().x, GetCameraPosition().y) << std::endl;
+                    }
+                }
+            }
+*/
 
             // Update overlays last, after camera update
             UpdateAvatarOverlays();
@@ -983,65 +1003,63 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     pending_parents_.erase(i);
 }
 
-void RexLogicModule::AboutToDeleteWorld()  
+void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (avatar_.get() && ui_module.get())
-    {
-        Scene::EntityPtr avatar_ptr = avatar_->GetUserAvatar();
-        if (avatar_ptr.get())
-        {
-            const Foundation::ComponentInterfacePtr &placeable_component = avatar_ptr->GetComponent("EC_OgrePlaceable");
-            const Foundation::ComponentInterfacePtr &mesh_component = avatar_ptr->GetComponent("EC_OgreMesh");
-            const Foundation::ComponentInterfacePtr &app_component = avatar_ptr->GetComponent("EC_AvatarAppearance");
-            if (placeable_component && mesh_component && app_component)
-            {
-                OgreRenderer::EC_OgrePlaceable *ogre_placable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                OgreRenderer::EC_OgreMesh *ogre_mesh = checked_static_cast<OgreRenderer::EC_OgreMesh *>(mesh_component.get());
-                EC_AvatarAppearance *avatar_appearance = checked_static_cast<EC_AvatarAppearance *>(app_component.get());
-                if (ogre_placable && ogre_mesh && avatar_appearance)
-                {
-                    // Head bone pos setup
-                    Vector3Df avatar_position = ogre_placable->GetPosition();
-                    Quaternion avatar_orientation = ogre_placable->GetOrientation();
-                    Ogre::Entity* ent = ogre_mesh->GetEntity();
-                    Ogre::SkeletonInstance* skel = ent->getSkeleton();
-                    std::string view_bone_name;
-                    Real adjustheight = ogre_mesh->GetAdjustPosition().z;
-                    Vector3df avatar_head_position;
-                    
-                    if (avatar_appearance->HasProperty("headbone"))
-                    {
-                        view_bone_name = avatar_appearance->GetProperty("headbone");
-                        adjustheight += 0.15;
-                        if (!view_bone_name.empty())
-                        {
-                            if (skel && skel->hasBone(view_bone_name))
-                            {                           
-                                Ogre::Bone* bone = skel->getBone(view_bone_name);
-                                Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                                Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-                                avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
-                        avatar_head_position = ogre_placable->GetPosition(); 
-                    }
+    // Lets take some screenshots before deleting the scene
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
 
-                    // Get paths where to store the screenshots
-                    QPair<QString, QString> paths = ui_module->GetScreenshotPaths();
-                    
-                    // Pass all variables to renderer for screenshot
-                    boost::shared_ptr<Foundation::RenderServiceInterface> rendering_service_ = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-                    if (rendering_service_.get() && !paths.first.isEmpty() && !paths.second.isEmpty())
-                        rendering_service_->CaptureWorldAndAvatarToFile(avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
+    if (!avatar_ && !ui_module)
+        return;
+
+    Scene::EntityPtr avatar_entity = avatar_->GetUserAvatar();
+    if (!avatar_entity)
+        return;
+
+    OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    EC_AvatarAppearance *ec_appearance = avatar_entity->GetComponent<EC_AvatarAppearance>().get();
+    if (!ec_placeable || !ec_mesh || !ec_appearance)
+        return;
+
+    if (ec_placeable && ec_mesh && ec_appearance)
+    {
+        // Head bone pos setup
+        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Quaternion avatar_orientation = ec_placeable->GetOrientation();
+        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
+        std::string view_bone_name;
+        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        Vector3df avatar_head_position;
+
+        if (ec_appearance->HasProperty("headbone"))
+        {
+            view_bone_name = ec_appearance->GetProperty("headbone");
+            adjustheight += 0.15;
+            if (!view_bone_name.empty())
+            {
+                if (skel && skel->hasBone(view_bone_name))
+                {
+                    Ogre::Bone* bone = skel->getBone(view_bone_name);
+                    Ogre::Vector3 headpos = bone->_getDerivedPosition();
+                    Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+                    avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
                 }
             }
         }
+        else
+        {
+            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
+            avatar_head_position = ec_placeable->GetPosition();
+        }
+
+        // Get paths where to store the screenshots
+        QPair<QString, QString> paths = ui_module->GetScreenshotPaths();
+
+        // Pass all variables to renderer for screenshot
+        if (!paths.first.isEmpty() && !paths.second.isEmpty())
+            GetRendererPtr()->CaptureWorldAndAvatarToFile(avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
     }
 }
 

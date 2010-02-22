@@ -3,6 +3,7 @@
 #ifndef incl_EC_TerrainPatch_h
 #define incl_EC_TerrainPatch_h
 
+#include "EnvironmentModuleApi.h"
 #include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
@@ -15,10 +16,10 @@ namespace Ogre
 namespace Environment
 {
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
-    class EC_Terrain : public Foundation::ComponentInterface
+    class ENVIRONMENT_MODULE_API EC_Terrain : public Foundation::ComponentInterface
     {
         Q_OBJECT
-        
+
         DECLARE_EC(EC_Terrain);
     public:
         virtual ~EC_Terrain();
@@ -47,6 +48,9 @@ namespace Environment
             /// the GPU-side geometry resources since the neighboring patches haven't been loaded
             /// in yet.
             bool patch_geometry_dirty;
+
+            /// Call only when you've checked that this patch has been loaded in.
+            float GetHeightValue(int x, int y) const { return heightData[y*16+x]; }
         };
 
         /// The OpenSim world has a 16x16 grid of terrain patches. Alter this to change the
@@ -81,7 +85,7 @@ namespace Environment
         /// @param yinside vertical position within patch
         /// @return normal
         Vector3df CalculateNormal(int x, int y, int xinside, int yinside);
-        
+
         /// @return True if all the patches of the terrain are loaded.
         bool AllPatchesLoaded() const
         {
@@ -96,13 +100,15 @@ namespace Environment
         /// Utility to get heightmap point
         float GetPoint(int x, int y) const;
 
+        /// Returns interpolated height value of the the patch in spesific point.
+        float InterpolateHeightValue(float x, float y);
+
         /// Removes all stored terrain patches and the associated Ogre scene nodes.
         void Destroy();
 
     private:
         EC_Terrain(Foundation::ModuleInterface* module);
 
-        
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];
 
