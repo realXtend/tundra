@@ -1,4 +1,3 @@
-
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -12,46 +11,56 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-//#include "RexTypes.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
+#include "EnvironmentModule.h"
+#include "Terrain.h"
+#include "EC_Terrain.h"
 #include <Ogre.h>
 
 
 namespace RexLogic
 {
-    CameraControllable::CameraControllable(Foundation::Framework *fw) : 
-        framework_(fw)
-      , action_event_category_(fw->GetEventManager()->QueryEventCategory("Action"))
-      , current_state_(ThirdPerson)
-      , firstperson_pitch_(0)
-      , firstperson_yaw_(0)
-      , drag_pitch_(0)
-      , drag_yaw_(0)
+    CameraControllable::CameraControllable(Foundation::Framework *fw) :
+        framework_(fw),
+        action_event_category_(fw->GetEventManager()->QueryEventCategory("Action")),
+        current_state_(ThirdPerson),
+        firstperson_pitch_(0),
+        firstperson_yaw_(0),
+        drag_pitch_(0),
+        drag_yaw_(0)
     {
         camera_distance_ = 7.f;
         framework_->GetDefaultConfig().SetSetting("Camera", "default_distance", camera_distance_);
         camera_min_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "min_distance", 1.f);
         camera_max_distance_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "max_distance", 50.f);
 
-        
         camera_offset_ = ParseString<Vector3df>(
             framework_->GetDefaultConfig().DeclareSetting("Camera", "third_person_offset", ToString(Vector3df(0, 0, 1.8f))));
-        
+
         camera_offset_firstperson_ = ParseString<Vector3df>(
             framework_->GetDefaultConfig().DeclareSetting("Camera", "first_person_offset", ToString(Vector3df(0.5f, 0, 0.8f))));
 
         sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "translation_sensitivity", 25.f);
         zoom_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "zoom_sensitivity", 0.015f);
         firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "mouselook_rotation_sensitivity", 1.3f);
-        
+
+        zoom_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "zoom_sensitivity", 0.015f);
+        firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "mouselook_rotation_sensitivity", 1.3f);
+
+        zoom_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "zoom_sensitivity", 0.015f);
+        firstperson_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "mouselook_rotation_sensitivity", 1.3f);
+
+        useTerrainConstraint_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "use_terrain_constraint", true);
+        terrainConstraintOffset_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "terrain_constraint_offset", 0.75f);
+
         action_trans_[RexTypes::Actions::MoveForward] = Vector3df::NEGATIVE_UNIT_Z;
         action_trans_[RexTypes::Actions::MoveBackward] = Vector3df::UNIT_Z;
         action_trans_[RexTypes::Actions::MoveLeft] = Vector3df::NEGATIVE_UNIT_X;
         action_trans_[RexTypes::Actions::MoveRight] = Vector3df::UNIT_X;
         action_trans_[RexTypes::Actions::MoveUp] = Vector3df::UNIT_Y;
         action_trans_[RexTypes::Actions::MoveDown] = Vector3df::NEGATIVE_UNIT_Y;
-        
+
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
     }
@@ -198,8 +207,11 @@ namespace RexLogic
                     Vector3df pos = avatar_pos;
                     pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_X * camera_distance_);
                     pos += (avatar_orientation * camera_offset_);
+
+                    if (useTerrainConstraint_)
+                        pos.z = GetForcedHeight(pos);
+
                     camera_placeable->SetPosition(pos);
-                    
                     Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
                     camera_placeable->LookAt(lookat);
                 }
@@ -275,6 +287,10 @@ namespace RexLogic
 
                     RexTypes::Vector3 pos = camera_placeable->GetPosition();
                     pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
+
+                    if (useTerrainConstraint_)
+                        pos.z = GetForcedHeight(pos);
+
                     camera_placeable->SetPosition(pos);
 
                     camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
@@ -310,14 +326,36 @@ namespace RexLogic
                 }
                 break;
             }
-		}
+        }
     }
 
-	//experimental for py api
-	void CameraControllable::SetYawPitch(Real newyaw, Real newpitch)
-	{
-		firstperson_yaw_ = newyaw;
-		firstperson_pitch_ = newpitch;
-	}
+    //experimental for py api
+    void CameraControllable::SetYawPitch(Real newyaw, Real newpitch)
+    {
+        firstperson_yaw_ = newyaw;
+        firstperson_pitch_ = newpitch;
+    }
+
+    float CameraControllable::GetForcedHeight(const Vector3df &position)
+    {
+        boost::shared_ptr<Environment::EnvironmentModule> env =
+            framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
+        if (env)
+        {
+            Scene::EntityWeakPtr terrain = env->GetTerrainHandler()->GetTerrainEntity();
+            if (!terrain.expired())
+            {
+                Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
+                if (ec_terrain && ec_terrain->AllPatchesLoaded())
+                {
+                    float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
+                    if (position.z < terrain_height)
+                        return terrain_height + terrainConstraintOffset_;
+                }
+            }
+        }
+
+        return position.z;
+    }
 }
 

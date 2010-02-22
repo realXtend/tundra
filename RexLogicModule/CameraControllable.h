@@ -3,7 +3,6 @@
 #ifndef incl_RexLogic_CameraControllable_h
 #define incl_RexLogic_CameraControllable_h
 
-#include "RexTypes.h"
 #include "InputEvents.h"
 
 namespace RexLogic
@@ -16,7 +15,6 @@ namespace RexLogic
         Scene::EntityPtr entity;
         int amount;
     };
-
 
     //! A controller for cameras.
     /*! For more information about controllables, see EC_Controllable.
@@ -35,7 +33,9 @@ namespace RexLogic
         };
 
         //! default constructor
+        //! \param fw Framework pointer
         CameraControllable(Foundation::Framework *fw);
+
         //! destructor
         ~CameraControllable() {}
 
@@ -56,11 +56,29 @@ namespace RexLogic
 
         //! returns camera pitch
         Real GetPitch() const { return firstperson_pitch_; }
-		void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
+        void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
 
         //! returns current state of camera
         State GetState() const { return current_state_; }
-         
+
+        //! Sets do we want to use terrain constraint for camera's position.
+        //! param value Do we use terrain constraint.
+        void SetUseTerrainConstraint(bool value) { useTerrainConstraint_ = value; }
+
+        //! Returns true if we use terrain constraint for camera's position.
+        bool GetUseTerrainConstraint() const { return useTerrainConstraint_; }
+
+        //! Sets the terrain constraint offset.
+        //! param offset New offset.
+        void SetTerrainConstraintOffset(float offset) { terrainConstraintOffset_ = offset; }
+
+        //! Return terrain constraint offset.
+        float GetTerrainConstraintOffset()const { return terrainConstraintOffset_; }
+
+        //! Returns forced height value for camera position.
+        //! \param position Current camera position.
+        float GetForcedHeight(const Vector3df &position);
+
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
 
@@ -69,7 +87,7 @@ namespace RexLogic
 
         //! Entity this camera is attached to in third / first person modes
         Scene::EntityWeakPtr target_entity_;
-        
+
         //! Camera entity
         Scene::EntityWeakPtr camera_entity_;
 
@@ -120,10 +138,17 @@ namespace RexLogic
         //! Action to translation map in free look mode
         ActionTransMap action_trans_;
 
-        Foundation::Framework *framework_;       
+        //! Framework pointer
+        Foundation::Framework *framework_;
 
         //! Mouse-look movement
         Input::Events::Movement movement_;
+
+        //! Do we use terrain height as a camera Z-axis constraint.
+        bool useTerrainConstraint_;
+
+        //! Terrain height constraint.offset.
+        float terrainConstraintOffset_;
     };
 }
 
