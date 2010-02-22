@@ -840,11 +840,21 @@ namespace OgreRenderer
     {
         if (renderwindow_)
         {
-           
+            if (worldfile.length() == 0)
+            {
+                OgreRenderingModule::LogError("Empty filename for worldfile, cannot save.");
+                return;
+            }
+
+            if (avatarfile.length() == 0)
+            {
+                OgreRenderingModule::LogError("Empty filename for avatarfile, cannot save.");
+                return;
+            }
+
             // Hide ui and name overlays
             SetAllTextOverlaysVisible(false);
             q_ogre_world_view_->HideUiOverlay();
-
 
             /*** World image ***/
             int window_width = renderwindow_->getWidth();

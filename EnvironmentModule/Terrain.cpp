@@ -1,6 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 /// @file Terrain.cpp
 /// @brief Manages Terrain-related Rex logic.
-/// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 
@@ -27,17 +28,6 @@
 
 #include "Entity.h"
 
-namespace Environment
-{
-    Terrain::Terrain(EnvironmentModule *owner)
-    :owner_(owner)
-    {
-    }
-
-    Terrain::~Terrain()
-    {
-    }
-
 namespace
 {
     void DebugDumpOgreTextureInfo(const char *texName)
@@ -48,19 +38,30 @@ namespace
         {
             std::stringstream ss;
             ss << "Ogre Texture \"" << texName << "\" not found!";
-            EnvironmentModule::LogWarning(ss.str());
+            Environment::EnvironmentModule::LogWarning(ss.str());
             return;
         }
 
         std::stringstream ss;
         ss << "Texture \"" << texName << "\": width: " << tex->getWidth() << ", height: " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
-        EnvironmentModule::LogDebug(ss.str());
+        Environment::EnvironmentModule::LogDebug(ss.str());
     }
 
     //const char terrainMaterialName[] = "TerrainMaterial";
     const char terrainMaterialName[] = "Rex/TerrainPCF";
     //const char terrainMaterialName[] = "Rex/TerrainBool";
 }
+
+namespace Environment
+{
+    Terrain::Terrain(EnvironmentModule *owner)
+    :owner_(owner)
+    {
+    }
+
+    Terrain::~Terrain()
+    {
+    }
 
     /// Sets the texture of the material used to render terrain.
     void Terrain::SetTerrainMaterialTexture(int index, const char *textureName)

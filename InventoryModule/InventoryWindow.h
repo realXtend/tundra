@@ -22,6 +22,7 @@ class QMenu;
 class QAction;
 class QMessageBox;
 class QModelIndex;
+class QLineEdit;
 QT_END_NAMESPACE
 
 namespace Foundation
@@ -106,6 +107,11 @@ namespace Inventory
         /// Copies asset reference (UUID or URL) to the clipboard.
         void CopyAssetReference();
 
+        /// Searchs inventory items by selected text. Currently searches only by the name of item.
+        /// Sets the best matching item selected.
+        /// @param text Search text
+//        void Search(const QString &text);
+
         /// Updates possible actions depending on the currently active tree view item.
         void UpdateActions();
 
@@ -169,6 +175,9 @@ namespace Inventory
 
         // Inventory tree view widget
         InventoryTreeView *treeView_;
+
+        // Inventory search field
+//        QLineEdit *lineEditSearch_;
 
         /// Proxy widget for ui
         UiServices::UiProxyWidget *proxyWidget_;
