@@ -128,21 +128,6 @@ namespace Inventory
         /// @param asset_id Asset id.
         void CloseDownloadProgess(const QString &asset_id);
 
-/*
-        /// Opens the upload progress bar window.
-        /// @param file_count Number of files to be uploaded.
-        void OpenUploadProgress(size_t file_count);
-
-        /// Updates the upload progress bar window.
-        /// @param filename Filename.
-        void UploadStarted(const QString &filename);
-
-        ///
-//        void UploadCompleted(const QString &filename);
-
-        ///
-        void CloseUploadProgress();
-*/
     signals:
         /// Use this signal to send notification to the UI.
         /// @param message Message to be shown.
@@ -170,9 +155,6 @@ namespace Inventory
         /// Layout 
         QVBoxLayout *layout_;
 
-        /// Upload progress window widget
-        QWidget *uploadWidget_;
-
         // Inventory tree view widget
         InventoryTreeView *treeView_;
 
@@ -181,9 +163,6 @@ namespace Inventory
 
         /// Proxy widget for ui
         UiServices::UiProxyWidget *proxyWidget_;
-
-        /// Proxy widget for upload progress ui.
-        UiServices::UiProxyWidget *uploadProxyWidget_;
 
         /// Action menu.
         QMenu *actionMenu_;
@@ -229,9 +208,6 @@ namespace Inventory
 
         /// Last file path used when using open file dialog.
         QString lastUsedPath_;
-
-        /// Counter used for file upload progress window.
-        size_t uploadCount_;
     };
 }
 
