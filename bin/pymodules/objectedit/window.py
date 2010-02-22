@@ -31,8 +31,8 @@ class ObjectEditWindow:
     ICON_OK = "pymodules/objectedit/ok.png"
     ICON_CANCEL = "pymodules/objectedit/cancel.png" 
     
-    def __init__(self, creator):
-        self.creator = creator
+    def __init__(self, controller):
+        self.controller = controller
         loader = QUiLoader()
         uifile = QFile(self.UIFILE)
 
@@ -59,7 +59,7 @@ class ObjectEditWindow:
         self.materialTabFormWidget = self.materialTab.formLayoutWidget
         self.mainTab.label.text = "<none>"
 
-        self.meshline = lines.MeshAssetidEditline(creator) 
+        self.meshline = lines.MeshAssetidEditline(controller) 
         self.meshline.name = "meshLineEdit"
 
         button_ok = self.getButton("Apply", self.ICON_OK, self.meshline, self.meshline.applyAction)
@@ -76,97 +76,47 @@ class ObjectEditWindow:
         
         def poschanger(i):
             def pos_at_index(v):
-                self.changepos(i, v)
+                self.controller.changepos(i, v)
             return pos_at_index
         for i, poswidget in enumerate([self.mainTab.xpos, self.mainTab.ypos, self.mainTab.zpos]):
             poswidget.connect('valueChanged(double)', poschanger(i))
 
         def rotchanger(i):
             def rot_at_index(v):
-                self.changerot(i, v)
+                self.controller.changerot(i, v)
             return rot_at_index
         for i, rotwidget in enumerate([self.mainTab.rot_x, self.mainTab.rot_y, self.mainTab.rot_z]):
             rotwidget.connect('valueChanged(double)', rotchanger(i))
         
         def scalechanger(i):
             def scale_at_index(v):
-                self.changescale(i, v)
+                self.controller.changescale(i, v)
             return scale_at_index
         for i, scalewidget in enumerate([self.mainTab.scalex, self.mainTab.scaley, self.mainTab.scalez]):
             scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
         
-        self.proxywidget.connect('Visible(bool)', self.creator.on_hide)
+        self.proxywidget.connect('Visible(bool)', self.controller.on_hide)
         self.tabwidget.connect('currentChanged(int)', self.tabChanged)
 
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
         
-        self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.createObject)
-        self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.deleteObject)
-        self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.duplicate)
+        self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.controller.createObject)
+        self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.controller.deleteObject)
+        self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.controller.duplicate)
         
-        self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.undo)
+        self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.controller.undo)
         
         self.mainTab.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
         self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
         self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
 
         self.mainTabList = {}
-        
-    def undo(self):
-        #print "undo clicked"
-        ent = self.creator.sel
-        if ent is not None:
-            self.worldstream.SendObjectUndoPacket(ent.uuid)
-            self.update_guivals(ent)
-            self.modified = False
-
-    #~ def redo(self):
-        #~ #print "redo clicked"
-        #~ ent = self.sel
-        #~ if ent is not None:
-            #~ #print ent.uuid
-            #~ #worldstream = r.getServerConnection()
-            #~ self.worldstream.SendObjectRedoPacket(ent.uuid)
-            #~ #self.sel = None
-            #~ self.update_guivals()
-            #~ self.modified = False
-            
-    def duplicate(self):
-        #print "duplicate clicked"
-        ent = self.creator.sel
-        if ent is not None:
-            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
-        
-    def createObject(self):
-        ent_id = r.getUserAvatarId()
-        ent = r.getEntity(ent_id)
-        x, y, z = ent.pos#r.getUserAvatarPos()
-
-        start_x = x
-        start_y = y
-        start_z = z
-        end_x = x
-        end_y = y
-        end_z = z
-
-        r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
-
-    def deleteObject(self):
-        ent = self.creator.sel
-        if ent is not None:
-            self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
-            self.creator.manipulator.hideManipulator()
-            self.hideSelector()
-            id, tWid = self.mainTabList.pop(str(ent.id))
-            tWid.delete()
-            self.deselect()
-            self.creator.sel = None
 
     def update_guivals(self, ent):
-        #ent = self.creator.sel
+        #ent = self.controller.sel
         x, y, z = ent.pos
         self.mainTab.xpos.setValue(x)
         self.mainTab.ypos.setValue(y)
@@ -183,8 +133,8 @@ class ObjectEditWindow:
         self.mainTab.rot_y.setValue(euler[1])
         self.mainTab.rot_z.setValue(euler[2])        
          
-        self.creator.selection_box.pos = ent.pos
-        self.creator.selection_box.orientation = ent.orientation
+        self.controller.selection_box.pos = ent.pos
+        self.controller.selection_box.orientation = ent.orientation
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)
@@ -207,9 +157,9 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.reset_guivals()
         
-        self.creator.window.mainTab.move_button.setChecked(False)
-        self.creator.window.mainTab.rotate_button.setChecked(False)
-        self.creator.window.mainTab.scale_button.setChecked(False)
+        self.controller.window.mainTab.move_button.setChecked(False)
+        self.controller.window.mainTab.rotate_button.setChecked(False)
+        self.controller.window.mainTab.scale_button.setChecked(False)
         
     def updateMaterialTab(self, ent):
         if ent is not None:
@@ -222,7 +172,7 @@ class ObjectEditWindow:
             for i in range(len(mats)):
                 index = str(i)
                 tuple = mats[index]
-                line = lines.UUIDEditLine(self.creator)#QLineEdit()
+                line = lines.UUIDEditLine(self.controller)#QLineEdit()
                 line.update_text(tuple[1])
                 line.name = index
                 asset_type = tuple[0]
@@ -268,7 +218,7 @@ class ObjectEditWindow:
         current = self.mainTab.treeWidget.currentItem()
         text = current.text(0)
         if self.mainTabList.has_key(text):
-            self.select(self.mainTabList[text][0])
+            self.controller.select(self.mainTabList[text][0])
     
     def getButton(self, name, iconname, line, action):
         size = QSize(16, 16)
@@ -289,98 +239,15 @@ class ObjectEditWindow:
         
     def tabChanged(self, index):
         if index == 1:
-            self.updateMaterialTab(self.creator.sel)
+            self.updateMaterialTab(self.controller.sel)
         #~ elif index == 0:
             #~ print "Object Edit"
         #~ else:
             #~ print "nothing found!"
             
-    def float_equal(self, a,b):
-        #print abs(a-b), abs(a-b)<0.01
-        if abs(a-b)<0.01:
-            return True
-        else:
-            return False
-
-    def changepos(self, i, v):
-        #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
-        #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
-        #print "pos index %i changed to: %f" % (i, v)
-        ent = self.creator.sel
-        
-        if ent is not None:
-            #print "sel pos:", ent.pos, pos[i], v
-            pos = list(ent.pos) #should probably wrap Vector3, see test_move.py for refactoring notes. 
-    
-            if not self.float_equal(pos[i],v):
-                pos[i] = v
-                #converted to list to have it mutable
-                ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
-                #print "=>", ent.pos
-                self.creator.manipulator.moveTo(pos)
-                #self.creator.selection_box.pos = pos[0], pos[1], pos[2]
-
-                self.mainTab.xpos.setValue(pos[0])
-                self.mainTab.ypos.setValue(pos[1])
-                self.mainTab.zpos.setValue(pos[2])
-                self.modified = True
-                if not self.creator.dragging:
-                    r.networkUpdate(ent.id)
-            
-    def changescale(self, i, v):
-        ent = self.creator.sel
-        if ent is not None:
-            oldscale = list(ent.scale)
-            scale = list(ent.scale)
-                
-            if not self.float_equal(scale[i],v):
-                scale[i] = v
-                if self.mainTab.scale_lock.checked:
-                    #XXX BUG does wrong thing - the idea was to maintain aspect ratio
-                    diff = scale[i] - oldscale[i]
-                    for index in range(len(scale)):
-                        #print index, scale[index], index == i
-                        if index != i:
-                            scale[index] += diff
-                
-                ent.scale = scale[0], scale[1], scale[2]
-                
-                if not self.creator.dragging:
-                    r.networkUpdate(ent.id)
-                
-                self.mainTab.scalex.setValue(scale[0])
-                self.mainTab.scaley.setValue(scale[1])
-                self.mainTab.scalez.setValue(scale[2])
-                self.modified = True
-
-                self.update_selection()
-            
-    def changerot(self, i, v):
-        #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
-        #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
-        #print "pos index %i changed to: %f" % (i, v)
-        ent = self.creator.sel
-        if ent is not None:
-            #print "sel orientation:", ent.orientation
-            #from euler x,y,z to to quat
-            euler = list(quat_to_euler(ent.orientation))
-                
-            if not self.float_equal(euler[i],v):
-                euler[i] = v
-                ort = euler_to_quat(euler)
-                #print euler, ort
-                #print euler, ort
-                ent.orientation = ort
-                if not self.creator.dragging:
-                    r.networkUpdate(ent.id)
-                    
-                self.modified = True
-
-                self.creator.selection_box.orientation = ort
-
     def manipulator_move(self):
-        #~ if self.creator.keypressed:
-            #~ self.creator.keypressed = False
+        #~ if self.controller.keypressed:
+            #~ self.controller.keypressed = False
             #~ if not self.mainTab.move_button.isChecked():
                 #~ self.mainTab.move_button.setChecked(True)
             #~ else:
@@ -390,22 +257,22 @@ class ObjectEditWindow:
 
         if not self.mainTab.move_button.isChecked():
             freemove = True
-            self.creator.manipulator.hideManipulator()
+            self.controller.hideManipulator()
         else: #activated
-            if self.creator.sel is not None:
+            if self.controller.sel is not None:
                 self.mainTab.scale_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
-                self.creator.changeManipulator(self.creator.MANIPULATE_MOVE)   
+                self.controller.changeManipulator(self.controller.MANIPULATE_MOVE)   
             else:
                 self.mainTab.move_button.setChecked(False)
                 freemove = True
         
-        #~ if freemove:
-            #~ self.creator.changeManipulator(self.creator.MANIPULATE_FREEMOVE)
+        if freemove:
+            self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
         
     def manipulator_scale(self):
-        #~ if self.creator.keypressed:
-            #~ self.creator.keypressed = False
+        #~ if self.controller.keypressed:
+            #~ self.controller.keypressed = False
             #~ if not self.mainTab.scale_button.isChecked():
                 #~ self.mainTab.scale_button.setChecked(True)
             #~ else:
@@ -414,22 +281,22 @@ class ObjectEditWindow:
         freemove = False
         if not self.mainTab.scale_button.isChecked():
             freemove = True
-            self.creator.manipulator.hideManipulator()
+            self.controller.hideManipulator()
         else: #activated
-            if self.creator.sel is not None:
+            if self.controller.sel is not None:
                 self.mainTab.move_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
-                self.creator.changeManipulator(self.creator.MANIPULATE_SCALE)
+                self.controller.changeManipulator(self.controller.MANIPULATE_SCALE)
             else:
                 self.mainTab.scale_button.setChecked(False)
                 freemove = True
         
-        #~ if freemove:
-            #~ self.creator.changeManipulator(self.creator.MANIPULATE_FREEMOVE)
+        if freemove:
+            self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def manipulator_rotate(self):
-        if self.creator.keypressed:
-            self.creator.keypressed = False
+        if self.controller.keypressed:
+            self.controller.keypressed = False
             if not self.mainTab.rotate_button.isChecked():
                 self.mainTab.rotate_button.setChecked(True)
             else:
@@ -438,12 +305,12 @@ class ObjectEditWindow:
         freemove = False
         if not self.mainTab.rotate_button.isChecked():
             freemove = True
-            self.creator.manipulator.hideManipulator()
+            self.controller.hideManipulator()
             r.logInfo("not activated, something")
         else: #activated
-            if self.creator.sel is not None:
+            if self.controller.sel is not None:
                 r.logInfo("activated, has selectiong")
-                self.creator.changeManipulator(self.creator.MANIPULATE_ROTATE)
+                self.controller.changeManipulator(self.controller.MANIPULATE_ROTATE)
                 self.mainTab.scale_button.setChecked(False)
                 self.mainTab.move_button.setChecked(False)
             else:
@@ -451,8 +318,8 @@ class ObjectEditWindow:
                 self.mainTab.rotate_button.setChecked(False) 
                 freemove = True
         
-        #~ if freemove:
-            #~ self.creator.changeManipulator(self.creator.MANIPULATE_FREEMOVE)
+        if freemove:
+            self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def selected(self, ent):
         if not self.mainTabList.has_key(str(ent.id)):
@@ -475,6 +342,8 @@ class ObjectEditWindow:
             qprim = r.getQPrim(ent.id)
             self.propedit.setObject(qprim)
             self.tabwidget.setTabEnabled(2, True)
+        else:
+            r.logInfo("selected else")
             
         self.updateMaterialTab(ent)
         self.tabwidget.setTabEnabled(1, True)
