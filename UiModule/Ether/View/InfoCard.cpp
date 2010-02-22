@@ -21,18 +21,26 @@ namespace Ether
               pixmap_path_(pixmap_path),
               pixmap_(QPixmap()),
               bounding_rectf_(bounding_rect),
-              active_animations_()
+              active_animations_(),
+              frame_pixmap_(bounding_rect.width(), bounding_rect.height())
         {
             resize(bounding_rectf_.size());
+            frame_pixmap_.load("./data/ui/images/ether/card_frame_top.png", "PNG");
 
             UpdatePixmap(pixmap_path);
             InitPaintHelpers();
             InitDecorations();
 
             if (type == TopToBottom)
+            {
                 data_type_ = Avatar;
+                frame_pixmap_.load("./data/ui/images/ether/card_frame_top.png", "PNG");
+            }
             else if (type == BottomToTop)
+            {
                 data_type_ = World;
+                frame_pixmap_.load("./data/ui/images/ether/card_frame_bottom.png", "PNG");
+            }
         }
 
         void InfoCard::UpdatePixmap(QString pixmap_path)
@@ -40,13 +48,11 @@ namespace Ether
             pixmap_path_ = pixmap_path;
 
             // Pixmap
-            QSize image_size = bounding_rectf_.size().toSize();
-            image_size.setWidth(image_size.width()-20);
-            image_size.setHeight(image_size.height()-20);
+            QSize image_size(531, 368);
 
             pixmap_.load(pixmap_path_);
             if (pixmap_.rect().width() < image_size.width() && pixmap_.rect().height() < image_size.height())
-                pixmap_ = pixmap_.scaled(image_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                pixmap_ = pixmap_.scaled(image_size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
             else
             {
                 pixmap_ = pixmap_.scaledToHeight(image_size.height(), Qt::SmoothTransformation);
@@ -59,6 +65,7 @@ namespace Ether
             // Font and pen
             font_ = QFont("Helvetica", 10);
             pen_ = QPen(Qt::SolidLine);
+            pen_.setColor(Qt::blue);
 
             // Background brush
             QRadialGradient bg_grad(QPointF(80, 80), 100);
@@ -71,8 +78,8 @@ namespace Ether
         {
             QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
             effect->setColor(QColor(0,0,0,255));
-            effect->setOffset(0,0);
-            effect->setBlurRadius(30);
+            effect->setOffset(0,5);
+            effect->setBlurRadius(20);
 
             active_animations_ = new QSequentialAnimationGroup(this);
             blur_animation_ = new QPropertyAnimation(effect, "blurRadius", active_animations_);
@@ -103,7 +110,7 @@ namespace Ether
             if (active)
             {          
                 if (effect)
-                    effect->setColor(Qt::white);
+                    effect->setColor(Qt::black);
                 active_animations_->start();
             }
             else
@@ -111,6 +118,7 @@ namespace Ether
                 if (effect)
                     effect->setColor(Qt::black);
                 active_animations_->stop();
+                effect->setBlurRadius(20);
             }
         }
 
@@ -121,13 +129,11 @@ namespace Ether
 
         void InfoCard::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
-            pen_.setColor(Qt::blue);
-            painter->setPen(pen_);
-            painter->setBrush(bg_brush_);
-            painter->drawRoundedRect(bounding_rectf_.toRect(), 15, 15);
-            painter->drawPixmap(QPoint(10,10), pixmap_);
+            painter->drawPixmap(QPoint(0,0), frame_pixmap_);
+            if (type_ == TopToBottom)
+                painter->drawPixmap(QPoint(4,20), pixmap_);
+            else if (type_ == BottomToTop)
+                painter->drawPixmap(QPoint(4,12), pixmap_);
         }
-
-
     }
 }

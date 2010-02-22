@@ -54,6 +54,7 @@ namespace Ether
             QString pixmap_path_;
 
             QPixmap pixmap_;
+            QPixmap frame_pixmap_;
             QRectF bounding_rectf_;
             QRectF title_rectf_;
 

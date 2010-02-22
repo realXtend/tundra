@@ -45,9 +45,15 @@ namespace UiServices
         }
     }
 
-    void UiStateMachine::SwitchInworldScene()
+    void UiStateMachine::SwitchToInworldScene()
     {
         if (current_scene_ == scene_map_["Ether"])
+            AnimationsStart();
+    }
+
+    void UiStateMachine::SwitchToEtherScene()
+    {
+        if (current_scene_ == scene_map_["Inworld"])
             AnimationsStart();
     }
 
@@ -114,7 +120,8 @@ namespace UiServices
         
         current_scene_ = scene_map_[name];
         current_scene_->setSceneRect(view_->rect());
-        view_->setScene(current_scene_);
+        if (view_->scene() != current_scene_)
+            view_->setScene(current_scene_);
                 
         connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
 

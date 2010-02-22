@@ -19,9 +19,12 @@ namespace Ether
             : QGraphicsScene(scene_rect, parent),
               supress_key_events_(false)
         {
-            QPixmap bg_image("./data/ui/images/ether/tile.png");
-            QBrush bg_brush(bg_image);            
+            bg_image_ = QPixmap("./data/ui/images/ether/main_background.png");
+            QBrush bg_brush(bg_image_);            
             setBackgroundBrush(bg_brush);
+
+            connect(this, SIGNAL( sceneRectChanged(const QRectF &) ),
+                    SLOT( RectChanged(const QRectF &) ));
         }
 
         void EtherScene::keyPressEvent(QKeyEvent *ke)
@@ -72,6 +75,12 @@ namespace Ether
                     emit ItemClicked(clicked_item);
             }
             QGraphicsScene::mousePressEvent(mouse_event);
+        }
+
+        void EtherScene::RectChanged(const QRectF &new_rect)
+        {
+            QPixmap bg = bg_image_.scaled(new_rect.size().toSize());
+            setBackgroundBrush(QBrush(bg));
         }
     }
 }

@@ -81,9 +81,10 @@ namespace UiServices
         SubscribeToEventCategories();
         ui_console_manager_->SendInitializationReadyEvent();
 
-        ether_logic_ = new Ether::Logic::EtherLogic(ui_view_);
+        ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
+        //ui_state_machine_->SwitchToEtherScene(); // uncomment when ether is default on startup
         LogDebug("Ether Logic STARTED");
     }
 
@@ -120,6 +121,7 @@ namespace UiServices
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
                     ether_logic_->UpdateUiPixmaps();
+                    //ui_state_machine_->SwitchToEtherScene();
                     ui_scene_manager_->Disconnected();
                     break;
                 }
@@ -156,8 +158,7 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    // Now we are really inworld
-                    ui_state_machine_->SwitchInworldScene();
+                    ui_state_machine_->SwitchToInworldScene();
                     ui_scene_manager_->Connected();
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())

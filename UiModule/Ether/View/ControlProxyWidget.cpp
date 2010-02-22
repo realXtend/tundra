@@ -7,6 +7,7 @@
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 #include <QGraphicsSceneMouseEvent>
+#include <QHBoxLayout>
 
 #include <QDebug>
 
@@ -22,7 +23,6 @@ namespace Ether
               parent_(new QWidget())
         {
             parent_->setObjectName("containerWidget");
-            parent_->setStyleSheet("QWidget#containerWidget { background-color: transparent; }");
             setWidget(parent_);
             setZValue(50);
 
@@ -32,31 +32,16 @@ namespace Ether
                     InitCardWidgets();
                     break;
                 case ActionControl:
+                    parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
                     InitActionWidgets();
                     break;
             }
 
             QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
-
-            if (type_ == ActionControl)
-            {
-                QPointF offset_pos;
-                if (direction_ == RightToLeft)
-                    offset_pos = QPointF(0,0);
-                else
-                    offset_pos = QPointF(0,0);
-                shadow_effect->setBlurRadius(30);
-                shadow_effect->setOffset(offset_pos);
-                shadow_effect->setColor(QColor(255,255,255,255));
-            }
-            else
-            {
-                shadow_effect->setBlurRadius(5);
-                shadow_effect->setOffset(0,3);
-                shadow_effect->setColor(Qt::black);
-                setGraphicsEffect(shadow_effect);
-            }
-            //setGraphicsEffect(shadow_effect);
+            shadow_effect->setBlurRadius(15);
+            shadow_effect->setOffset(0,5);
+            shadow_effect->setColor(Qt::black);
+            setGraphicsEffect(shadow_effect);
         }
 
         void ControlProxyWidget::InitCardWidgets()
@@ -69,7 +54,7 @@ namespace Ether
             text_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
             text_label_->setMaximumWidth(300);
             text_label_->setStyleSheet("color: white");
-            text_label_->setFont(QFont("Narkisim", 18));
+            text_label_->setFont(QFont("Narkisim", 24));
             text_label_->setAlignment(Qt::AlignCenter);
             text_label_->setMinimumWidth(300);
 
@@ -110,144 +95,184 @@ namespace Ether
 
             if (direction_ == BottomToTop)
             {
+                parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_top.png'); background-position: top left; background-repeat: no-repeat; }");   
                 widget_map_[text_label_] = BottomCenter;
                 widget_map_[add_button] = TopRight;
                 widget_map_[remove_button] = TopLeft;
                 widget_map_[info_button] = BottomRight;
-                widget_map_[question_button] = BottomLeft;
+                //widget_map_[question_button] = BottomLeft;
             }
             else if (direction_ == TopToBottom)
             {
+                parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_bottom.png'); background-position: top left; background-repeat: no-repeat; }");
                 widget_map_[text_label_] = TopCenter;
                 widget_map_[add_button] = BottomRight ;
                 widget_map_[remove_button] = BottomLeft;
                 widget_map_[info_button] = TopRight;
-                widget_map_[question_button] = TopLeft;
+                //widget_map_[question_button] = TopLeft;
             }
 
+            text_label_->show();
             foreach(QWidget *w, widget_map_.keys())
                 w->show();
         }
 
         void ControlProxyWidget::InitActionWidgets()
         {
-            QSize button_size(100,80);
-            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px; color: white;";
+            //QSize button_size(100,80);
+            //QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px; color: white;";
 
-            if (direction_ == RightToLeft)
+            if (direction_ == TopToBottom)
             {
-                // Buttons
-                QPushButton *connect_button = new QPushButton(text_.toUpper(), parent_);
-                connect_button->setFont(QFont("Narkisim", 12));
-                connect_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
-//                                                      "QPushButton::hover { background-image: url('./data/ui/images/ether/control_right_hover.png'); }"
-//                                                      "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_right_pressed.png'); }").arg(button_style));
-                connect_button->setFlat(true);
-                connect_button->resize(button_size);
-
-                connect(connect_button, SIGNAL( clicked() ), SLOT( ActionHandler() ));
-
-                widget_map_[connect_button] = RightCenter;
-            }
-            else if (direction_ == LeftToRight)
-            {
-
-                QPushButton *exit_button = new QPushButton(text_.toUpper(), parent_);
-                exit_button->setFont(QFont("Narkisim", 12));
-                exit_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
+                // Exit 
+                QPushButton *exit_button = new QPushButton("EXIT", parent_);
+                exit_button->setFont(QFont("Narkisim", 10));
+                exit_button->setMinimumWidth(60);
+                exit_button->setMinimumHeight(20);
+                //exit_button->setFlat(true);
+                //exit_button->resize(button_size);
+//                exit_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
 //                                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/control_left_hover.png'); }"
 //                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_left_pressed.png'); }").arg(button_style));
-                exit_button->setFlat(true);
-                exit_button->resize(button_size);
+                connect(exit_button, SIGNAL( clicked() ), SLOT( ExitHandler() ));
 
-                connect(exit_button, SIGNAL( clicked() ), SLOT( ActionHandler() ));
+                // Connect
+                QPushButton *connect_button = new QPushButton("CONNECT", parent_);
+                connect_button->setFont(QFont("Narkisim", 12));
+                connect_button->setMinimumWidth(130);
+                connect_button->setMinimumHeight(35);
+                //connect_button->setFlat(true);
+                //connect_button->resize(button_size);
+//                connect_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
+//                                                      "QPushButton::hover { background-image: url('./data/ui/images/ether/control_right_hover.png'); }"
+//                                                      "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_right_pressed.png'); }").arg(button_style));
+                connect(connect_button, SIGNAL( clicked() ), SLOT( ConnectHandler() ));
 
-                widget_map_[exit_button] = LeftCenter;
+                // Connect
+                QPushButton *help_button = new QPushButton("HELP", parent_);
+                help_button->setFont(QFont("Narkisim", 10));
+                help_button->setMinimumWidth(60);
+                help_button->setMinimumHeight(20);
+                help_button->setEnabled(false); // enable when has functionality
+                //help_button->setFlat(true);
+                //help_button->resize(button_size);
+//                help_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/control_bg.png'); }").arg(button_style));
+//                                                      "QPushButton::hover { background-image: url('./data/ui/images/ether/control_right_hover.png'); }"
+//                                                      "QPushButton::pressed { background-image: url('./data/ui/images/ether/control_right_pressed.png'); }").arg(button_style));
+                connect(help_button, SIGNAL( clicked() ), SLOT( HelpHandler() ));
+
+                widget_map_[exit_button] = NonePosition;
+                widget_map_[connect_button] = NonePosition;
+                widget_map_[help_button] = NonePosition;
+
+                parent_->setLayout(new QHBoxLayout(parent_));
+                parent_->layout()->setMargin(0);
+
+                dynamic_cast<QBoxLayout*>(parent_->layout())->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding));
+                foreach (QWidget *w, widget_map_.keys())
+                    parent_->layout()->addWidget(w);
+                dynamic_cast<QBoxLayout*>(parent_->layout())->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding));
+
+                widget()->setMinimumHeight(50);
+                widget()->setMaximumHeight(50);
+                setGeometry(widget()->geometry());
             }
-            
-            setGeometry(QRectF(QPointF(0,0), button_size));
-
-            foreach(QWidget *w, widget_map_.keys())
-                w->show();
         }
 
-        void ControlProxyWidget::UpdateGeometry(QRectF rect)
+        void ControlProxyWidget::UpdateGeometry(QRectF new_rect, qreal scale)
         {
-            if (isVisible())
+            if (type_ == CardControl)
+            {
                 hide();
 
-            qreal xoffset = 40;
-            qreal yoffset = 3;
-            rect.setWidth(rect.width() + xoffset * 2);
-            rect.moveLeft(rect.left() - xoffset);
-            setGeometry(rect);
+                QSize overlay_size(539,529);
+                int name_height = 74 * scale;
+                int button_height = 82 * scale;
 
-            xoffset += yoffset;
-            QPoint pos;
-            foreach(QWidget *w, widget_map_.keys())
-            {
+                qreal xoffset = 0;
+                qreal yoffset = 0;
+                if (direction_ == TopToBottom)
+                    new_rect.setY(new_rect.y()-button_height + 19 * scale);
+                else if (direction_ == BottomToTop)
+                    new_rect.setY(new_rect.y()-button_height + 15 * scale);
+                new_rect.setWidth(overlay_size.width());
+                new_rect.setHeight(overlay_size.height());
+                setGeometry(new_rect);
 
-                switch (widget_map_.value(w))
+                xoffset += yoffset;
+                QPoint pos;
+                foreach(QWidget *w, widget_map_.keys())
                 {
-                    case BottomCenter:
-                        pos.setX(rect.width()/2 - w->width()/2);
-                        pos.setY(rect.height() - 35);
-                        break;
-                    case TopCenter:
-                        pos.setX(rect.width()/2 - w->width()/2);
-                        pos.setY(10);
-                        break;
-                    case LeftCenter:
-                    case RightCenter:
-                        pos = QPoint(0,0);
-                        break;
-                    case BottomLeft:
-                        if (direction_== TopToBottom)
-                        {
-                            pos.setX(0);
-                            pos.setY(rect.height() - w->height());
-                        }
-                        else
-                        {
-                            pos.setX(xoffset);
-                            pos.setY(rect.height() - w->height() - yoffset);
-                        }
-                        break;
-                    case BottomRight:
-                        if (direction_ == TopToBottom)
-                        {
-                            pos.setX(rect.width() - w->width());
-                            pos.setY(rect.height() - w->height());
-                        }
-                        else
-                        {
-                            pos.setX(rect.width() - w->width() - xoffset);
-                            pos.setY(rect.height() - w->height() - yoffset);
-                        }
-                        break;
-                    case TopRight:
-                        if (direction_ == TopToBottom)
-                        {
-                            pos.setX(rect.width() - w->width() - xoffset);
-                            pos.setY(yoffset);
-                        }
-                        else
-                        {
-                            pos.setX(rect.width() - w->width());
-                            pos.setY(0);
-                        }
-                        break;
-                    case TopLeft:
-                        if (direction_ == TopToBottom)
-                        {
-                            pos.setX(xoffset);
-                            pos.setY(yoffset);
-                        }
-                        else
-                            pos =  QPoint(0,0);
-                        break;
+                    switch (widget_map_.value(w))
+                    {
+                        case BottomCenter:
+                            pos.setX(new_rect.width()/2 - w->width()/2);
+                            pos.setY(new_rect.height() - 45);
+                            break;
+                        case TopCenter:
+                            pos.setX(new_rect.width()/2 - w->width()/2);
+                            pos.setY(30);
+                            break;
+                        case LeftCenter:
+                        case RightCenter:
+                            pos = QPoint(0,0);
+                            break;
+                        case BottomLeft:
+                            if (direction_== TopToBottom)
+                            {
+                                pos.setX(0);
+                                pos.setY(new_rect.height() - w->height());
+                            }
+                            else
+                            {
+                                pos.setX(xoffset);
+                                pos.setY(new_rect.height() - w->height() - yoffset);
+                            }
+                            break;
+                        case BottomRight:
+                            if (direction_ == TopToBottom)
+                            {
+                                pos.setX(new_rect.width() - w->width());
+                                pos.setY(new_rect.height() - w->height());
+                            }
+                            else
+                            {
+                                pos.setX(new_rect.width() - w->width() - xoffset);
+                                pos.setY(new_rect.height() - w->height() - yoffset);
+                            }
+                            break;
+                        case TopRight:
+                            if (direction_ == TopToBottom)
+                            {
+                                pos.setX(new_rect.width() - w->width() - xoffset);
+                                pos.setY(yoffset);
+                            }
+                            else
+                            {
+                                pos.setX(new_rect.width() - w->width());
+                                pos.setY(0);
+                            }
+                            break;
+                        case TopLeft:
+                            if (direction_ == TopToBottom)
+                            {
+                                pos.setX(xoffset);
+                                pos.setY(yoffset);
+                            }
+                            else
+                                pos =  QPoint(0,0);
+                            break;
+                    }
+                    w->move(pos);
                 }
-                w->move(pos);
+                setScale(scale);
+            }
+            else if (type_ == ActionControl)
+            {
+                QRectF calculated_rect;
+                calculated_rect.setX(new_rect.width()/2 - rect().width()/2);
+                calculated_rect.setY(new_rect.y());
+                setPos(calculated_rect.topLeft());
             }
         }
 
@@ -259,13 +284,11 @@ namespace Ether
             disconnect();
             connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL( finished()),
                     this, SLOT( ControlledWidgetStopped() ));
-
-            emit ShowActionWidgetRequest(QString("edit"), controlled_card_);
         }
 
         void ControlProxyWidget::ControlledWidgetStopped()
         {
-            UpdateGeometry(controlled_card_->mapRectToScene(controlled_card_->boundingRect()));
+            UpdateGeometry(controlled_card_->mapRectToScene(controlled_card_->boundingRect()), controlled_card_->scale());
             show();
         }
 
@@ -289,9 +312,19 @@ namespace Ether
             EmitActionRequest("remove");
         }
 
-        void ControlProxyWidget::ActionHandler()
+        void ControlProxyWidget::ExitHandler()
         {
-            emit ActionRequest();
+            emit ActionRequest("exit");
+        }
+
+        void ControlProxyWidget::ConnectHandler()
+        {
+            emit ActionRequest("connect");
+        }
+
+        void ControlProxyWidget::HelpHandler()
+        {
+            emit ActionRequest("help");
         }
 
         void ControlProxyWidget::EmitActionRequest(QString type)

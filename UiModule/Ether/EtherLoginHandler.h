@@ -29,6 +29,7 @@ namespace Ether
         public slots:
             void SetOpenSimLoginHandler(RexLogic::OpenSimLoginHandler *opensim_login_handler);
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
+            void ExitApplication();
 
         private:
             EtherSceneController *scene_controller_;
@@ -37,6 +38,7 @@ namespace Ether
         signals:
             void StartOsLogin(QMap<QString, QString> info_map);
             void StartRexLogin(QMap<QString, QString> info_map);
+            void Quit();
 
         };
     }
