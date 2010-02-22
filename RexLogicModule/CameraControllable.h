@@ -75,9 +75,14 @@ namespace RexLogic
         //! Return terrain constraint offset.
         float GetTerrainConstraintOffset()const { return terrainConstraintOffset_; }
 
-        //! Returns forced height value for camera position.
+        //! Sets camera constraint boundary box.
+        //! \param min Mimimum corner point.
+        //! \param max Maximum corner point.
+        void SetBoundaryBox(const Vector3df &min, const Vector3df &max);
+
+        //! Clamps current camera position taking account of the constraints used (terrain, boundary box).
         //! \param position Current camera position.
-        float GetForcedHeight(const Vector3df &position);
+        void ClampPosition(Vector3df &position);
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
@@ -149,6 +154,15 @@ namespace RexLogic
 
         //! Terrain height constraint.offset.
         float terrainConstraintOffset_;
+
+        //! Do we use terrain height as a camera Z-axis constraint.
+        bool useBoundaryBoxConstraint_;
+
+        //! Boundary box mimimum corner point.
+        Vector3df boundaryBoxMin_;
+
+        //! Boundary box maximum corner point.
+        Vector3df boundaryBoxMax_;
     };
 }
 

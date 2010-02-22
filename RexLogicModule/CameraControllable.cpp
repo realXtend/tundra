@@ -16,8 +16,8 @@
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "EC_Terrain.h"
-#include <Ogre.h>
 
+#include <Ogre.h>
 
 namespace RexLogic
 {
@@ -53,6 +53,14 @@ namespace RexLogic
 
         useTerrainConstraint_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "use_terrain_constraint", true);
         terrainConstraintOffset_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "terrain_constraint_offset", 0.75f);
+
+        useBoundaryBoxConstraint_ = framework_->GetDefaultConfig().DeclareSetting("Camera", "use_boundarybox_constraint", true);
+
+        boundaryBoxMin_ = ParseString<Vector3df>(
+            framework_->GetDefaultConfig().DeclareSetting("Camera", "boundarybox_min", ToString(Vector3df(0, 0, 0))));
+
+        boundaryBoxMax_ = ParseString<Vector3df>(
+            framework_->GetDefaultConfig().DeclareSetting("Camera", "boundarybox_max", ToString(Vector3df(256.f, 256.f, 256.f))));
 
         action_trans_[RexTypes::Actions::MoveForward] = Vector3df::NEGATIVE_UNIT_Z;
         action_trans_[RexTypes::Actions::MoveBackward] = Vector3df::UNIT_Z;
@@ -207,10 +215,6 @@ namespace RexLogic
                     Vector3df pos = avatar_pos;
                     pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_X * camera_distance_);
                     pos += (avatar_orientation * camera_offset_);
-
-                    if (useTerrainConstraint_)
-                        pos.z = GetForcedHeight(pos);
-
                     camera_placeable->SetPosition(pos);
                     Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
                     camera_placeable->LookAt(lookat);
@@ -287,10 +291,8 @@ namespace RexLogic
 
                     RexTypes::Vector3 pos = camera_placeable->GetPosition();
                     pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
-
-                    if (useTerrainConstraint_)
-                        pos.z = GetForcedHeight(pos);
-
+                    std::cout << pos << std::endl;
+                    ClampPosition(pos);
                     camera_placeable->SetPosition(pos);
 
                     camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
@@ -336,26 +338,42 @@ namespace RexLogic
         firstperson_pitch_ = newpitch;
     }
 
-    float CameraControllable::GetForcedHeight(const Vector3df &position)
+    void CameraControllable::ClampPosition(Vector3df &position)
     {
-        boost::shared_ptr<Environment::EnvironmentModule> env =
-            framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
-        if (env)
+        float min_z;
+
+        if (useTerrainConstraint_)
         {
-            Scene::EntityWeakPtr terrain = env->GetTerrainHandler()->GetTerrainEntity();
-            if (!terrain.expired())
+            boost::shared_ptr<Environment::EnvironmentModule> env =
+                framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
+            if (env)
             {
-                Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
-                if (ec_terrain && ec_terrain->AllPatchesLoaded())
+                Scene::EntityWeakPtr terrain = env->GetTerrainHandler()->GetTerrainEntity();
+                if (!terrain.expired())
                 {
-                    float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
-                    if (position.z < terrain_height)
-                        return terrain_height + terrainConstraintOffset_;
+                    Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
+                    if (ec_terrain && ec_terrain->AllPatchesLoaded())
+                    {
+                        float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
+                        min_z = terrain_height + terrainConstraintOffset_;
+                        if (!useBoundaryBoxConstraint_)
+                            if (position.z < min_z)
+                                position.z = min_z;
+                    }
                 }
             }
         }
 
-        return position.z;
+        if (useBoundaryBoxConstraint_)
+        {
+            position.x = clamp(position.x, boundaryBoxMin_.x, boundaryBoxMax_.x);
+            position.y = clamp(position.y, boundaryBoxMin_.y, boundaryBoxMax_.y);
+
+            if (useTerrainConstraint_)
+                position.z = clamp(position.z, min_z, boundaryBoxMax_.z);
+            else
+                position.z = clamp(position.z, boundaryBoxMin_.z, boundaryBoxMax_.z);
+        }
     }
 }
 
