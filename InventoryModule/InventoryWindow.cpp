@@ -88,7 +88,6 @@ InventoryWindow::~InventoryWindow()
     SAFE_DELETE(actionUpload_);
     SAFE_DELETE(actionDownload_);
     SAFE_DELETE(actionSeparator_);
-//    SAFE_DELETE(uploadWidget_);
 
 /*
     QMutableMapIterator<QString, QMessageBox *> it(downloadDialogs_);
@@ -335,41 +334,6 @@ void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
         delete msgBox;
 */
 }
-/*
-void InventoryWindow::OpenUploadProgress(size_t file_count)
-{
-    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
-    progressBar->setRange(0, file_count);
-    progressBar->setValue(uploadCount_);
-    uploadProxyWidget_->show();
-}
-
-void InventoryWindow::UploadStarted(const QString &filename)
-{
-    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
-    QLabel *labelFileNumber = uploadWidget_->findChild<QLabel *>("labelFileNumber");
-
-    ++uploadCount_;
-    int max_value = progressBar->maximum();
-    if (uploadCount_ <= max_value)
-    {
-        progressBar->setValue(uploadCount_);
-        labelFileNumber->setText(QString("%1 (%2/%3)").arg(filename).arg(uploadCount_).arg(max_value));
-    }
-}
-
-void InventoryWindow::UploadCompleted(const QString &filename)
-{
-}
-
-void InventoryWindow::CloseUploadProgress()
-{
-    QProgressBar *progressBar = uploadWidget_->findChild<QProgressBar *>("progressBar");
-    progressBar->reset();
-    uploadCount_ = 0;
-    uploadProxyWidget_->hide();
-}
-*/
 
 void InventoryWindow::InitInventoryWindow()
 {
@@ -404,15 +368,6 @@ void InventoryWindow::InitInventoryWindow()
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
-
-    // Upload progress window
-    QFile file("./data/ui/uploadprogress.ui");
-    uploadWidget_ = loader.load(&file, 0);
-    file.close();
-
-    UiServices::UiWidgetProperties widget_properties("Upload", UiServices::SceneWidget);
-    widget_properties.SetPosition(mainWidget_->mapToGlobal(QPoint(0, 0)));
-    uploadProxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(uploadWidget_, widget_properties);
 
     connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),
         SLOT(ShowInformationString(const QString &, int)));
