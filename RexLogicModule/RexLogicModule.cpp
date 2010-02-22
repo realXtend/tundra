@@ -56,10 +56,6 @@
 #include "UiModule.h"
 #include "Login/LoginContainer.h"
 
-#include "EnvironmentModule.h"
-#include "Terrain.h"
-#include "EC_Terrain.h"
-
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic
@@ -404,22 +400,6 @@ void RexLogicModule::Update(f64 frametime)
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
-/*
-            if (!camera_entity_.expired())
-            {
-                boost::shared_ptr<Environment::EnvironmentModule> env =
-                    GetFramework()->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
-                if (env)
-                {
-                    Scene::EntityPtr entity = env->GetTerrainHandler()->GetTerrainEntity().lock();
-                    Environment::EC_Terrain *ec_terrain = entity->GetComponent<Environment::EC_Terrain>().get();
-                    if (ec_terrain && ec_terrain->AllPatchesLoaded())
-                    {
-                        std::cout << ec_terrain->InterpolateHeightValue(GetCameraPosition().x, GetCameraPosition().y) << std::endl;
-                    }
-                }
-            }
-*/
 
             // Update overlays last, after camera update
             UpdateAvatarOverlays();
