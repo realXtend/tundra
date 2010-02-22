@@ -508,11 +508,15 @@ namespace Foundation
 
     void ModuleManager::AddDependenciesToPath(const StringVector &all_additions)
     {
+        // Do this in windows only for now,
+        // untill linux crash caused by this is resolved
+        #ifdef Q_WS_WIN
+
         std::string path = Poco::Environment::get("path");
         std::string cwd = Poco::Path::current();
         char separator = Poco::Path::pathSeparator();
 
-        // add additions to env
+        // Add additions to env
         for(StringVector::const_iterator it = all_additions.begin(); it != all_additions.end(); ++it )
         {
             std::string absolutePath = cwd + (*it);
@@ -520,7 +524,9 @@ namespace Foundation
             path.insert(0, absolutePath);
         }
 
-        //set additions to process path
+        // Set additions to process path
         Poco::Environment::set("path", path);
+
+        #endif
     }
 }
