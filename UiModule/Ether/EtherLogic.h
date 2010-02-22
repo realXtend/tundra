@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_EtherLogic_h
 #define incl_UiModule_EtherLogic_h
 
+#include "Foundation.h"
+
 #include <QObject>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -42,7 +44,7 @@ namespace Ether
         Q_OBJECT
 
         public:
-            EtherLogic(QGraphicsView *view);
+            EtherLogic(Foundation::Framework *framework, QGraphicsView *view);
 
         public slots:
             void Start();
@@ -71,6 +73,7 @@ namespace Ether
             void WorldCreated(Data::WorldInfo *world_data);
 
         private:
+            Foundation::Framework *framework_;
             QGraphicsView *view_;
 
             Data::DataManager *data_manager_;

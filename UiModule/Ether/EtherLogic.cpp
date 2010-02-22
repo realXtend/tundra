@@ -26,11 +26,12 @@ namespace Ether
 {
     namespace Logic
     {
-        EtherLogic::EtherLogic(QGraphicsView *view)
+        EtherLogic::EtherLogic(Foundation::Framework *framework, QGraphicsView *view)
             : QObject(),
+              framework_(framework),
               view_(view),
               data_manager_(new Data::DataManager(this)),
-              card_size_(QRectF(0, 0, 400, 400)),
+              card_size_(QRectF(0, 0, 539, 400)),
               previous_scene_(0)
         {
             StoreDataToFilesIfEmpty();
@@ -61,14 +62,16 @@ namespace Ether
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
             
+            // Create login handler
+            login_handler_ = new EtherLoginHandler(this, scene_controller_); 
+
             // Signals from scene contoller
+            connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
+                    login_handler_, SLOT( ExitApplication() ));
             connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
                     SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
             connect(scene_controller_, SIGNAL( ObjectRemoved(QUuid) ),
                     SLOT( RemoveObjectFromData(QUuid) ));
-
-            // Create login handler
-            login_handler_ = new EtherLoginHandler(this, scene_controller_); 
         }
 
         void EtherLogic::Start()

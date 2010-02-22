@@ -52,8 +52,10 @@ namespace Ether
             void RemoveWorld(Data::WorldInfo *world_info);
 
             void RecalculateMenus();
+            void TheResizer();
 
         private slots:
+            void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);
             void SceneRectChanged(const QRectF &new_rect);
 
@@ -83,14 +85,16 @@ namespace Ether
             View::ControlProxyWidget *avatar_info_widget_;
             View::ControlProxyWidget *world_info_widget_;
 
-            //! Control widgets
-            View::ControlProxyWidget *connect_control_widget_;
-            View::ControlProxyWidget *exit_control_widget_;
+            //! Control widget
+            View::ControlProxyWidget *control_widget_;
 
             //! Action widget
             View::ActionProxyWidget *action_proxy_widget_;
 
+            int last_scale_;
+
         signals:
+            void ApplicationExitRequested();
             void LoginRequest(QPair<View::InfoCard*, View::InfoCard*> selected_cards);
             void ObjectRemoved(QUuid);
         };

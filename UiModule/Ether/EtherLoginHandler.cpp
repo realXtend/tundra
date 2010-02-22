@@ -26,6 +26,8 @@ namespace Ether
                     opensim_login_handler_, SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
             connect(this, SIGNAL( StartRexLogin(QMap<QString, QString>) ), 
                     opensim_login_handler_, SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
+            connect(this, SIGNAL( Quit() ),
+                    opensim_login_handler_, SLOT( Quit() ));
         }
 
         void EtherLoginHandler::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
@@ -62,6 +64,11 @@ namespace Ether
                     break;
                 }
             }
+        }
+
+        void EtherLoginHandler::ExitApplication()
+        {
+            emit Quit();
         }
     }
 }

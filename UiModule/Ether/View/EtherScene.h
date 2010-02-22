@@ -31,7 +31,11 @@ namespace Ether
             void keyPressEvent(QKeyEvent *ke);
             void mousePressEvent(QGraphicsSceneMouseEvent *mouse_event);
 
+        private slots:
+            void RectChanged(const QRectF &new_rect);
+
         private:
+            QPixmap bg_image_;
             bool supress_key_events_;
 
         signals:

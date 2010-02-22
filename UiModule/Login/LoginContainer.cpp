@@ -125,8 +125,8 @@ namespace CoreUi
             web_login_widget_ = new WebLoginWidget(this, taiga_login_handler);
 
             ui_.tabWidget->clear();
-            ui_.tabWidget->addTab(traditional_login_widget_, " Login"); // FIX stylesheets: tab clipping without spaces :(
-            ui_.tabWidget->addTab(web_login_widget_, " Web Login"); // FIX stylesheets: tab clipping without spaces :(
+            ui_.tabWidget->addTab(traditional_login_widget_, " Login"); // FIX stylesheets: tab text clipping without spaces :(
+            ui_.tabWidget->addTab(web_login_widget_, " Web Login"); // FIX stylesheets: tab text clipping without spaces :(
 
             login_proxy_widget_ = uiServices->GetSceneManager()->AddWidgetToScene(login_widget_, UiServices::UiWidgetProperties("Login", UiServices::CoreLayoutWidget));
             

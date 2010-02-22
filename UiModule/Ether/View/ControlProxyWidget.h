@@ -34,8 +34,7 @@ namespace Ether
                 BottomToTop,
                 RightToLeft,
                 LeftToRight,
-                None
-
+                NoneDirection
             };
 
             enum Position
@@ -47,14 +46,15 @@ namespace Ether
                 BottomLeft,
                 BottomRight,
                 LeftCenter,
-                RightCenter
+                RightCenter,
+                NonePosition
             };
 
             ControlProxyWidget(ControlType type, LayoutDirection direction, QString text);
             void EmitActionRequest(QString type);
 
         public slots:
-            void UpdateGeometry(QRectF rect);
+            void UpdateGeometry(QRectF rect, qreal scale);
             void UpdateContollerCard(InfoCard *new_card);
 
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
@@ -68,7 +68,9 @@ namespace Ether
             void QuestionHandler();
             void AddHandler();
             void RemoveHandler();
-            void ActionHandler();
+            void ExitHandler();
+            void ConnectHandler();
+            void HelpHandler();
 
         private:
             ControlType type_;
@@ -85,10 +87,7 @@ namespace Ether
             ActionProxyWidget *action_widget_;
 
         signals:
-            void ActionRequest();
-            void test();
-            void ShowActionWidgetRequest(QString, View::InfoCard*);
-
+            void ActionRequest(QString);
         };
     }
 }

@@ -4,6 +4,9 @@
 #include "EtherSceneController.h"
 
 #include <QGraphicsProxyWidget>
+#include <QPainter>
+#include <QImage>
+#include <QDebug>
 
 namespace Ether
 {
@@ -53,8 +56,7 @@ namespace Ether
             // Init widget pointers to 0 for null cheching on startup
             avatar_info_widget_ = 0;
             world_info_widget_ = 0;
-            connect_control_widget_ = 0;
-            exit_control_widget_ = 0;
+            control_widget_ = 0;
             action_proxy_widget_ = 0;
         }
 
@@ -170,14 +172,10 @@ namespace Ether
             world_info_widget_->SetActionWidget(action_proxy_widget_);
             scene_->addItem(world_info_widget_);
 
-            //// Connect button
-            //connect_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::RightToLeft, "Connect");
-            //connect(connect_control_widget_, SIGNAL( ActionRequest() ), SLOT( TryStartLogin() ));
-            //scene_->addItem(connect_control_widget_);
-
-            //// Exit button
-            //exit_control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::LeftToRight, "Exit");
-            //scene_->addItem(exit_control_widget_);
+            // Bottom controls
+            control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::TopToBottom, "");
+            connect(control_widget_, SIGNAL( ActionRequest(QString) ), SLOT( ControlsWidgetHandler(QString) ));
+            scene_->addItem(control_widget_);
         }
 
         void EtherSceneController::RecalculateMenus()
@@ -187,36 +185,54 @@ namespace Ether
 
         void EtherSceneController::SceneRectChanged(const QRectF &new_rect)
         {
+            if (!top_menu_ || !bottom_menu_)
+                return;
+
+            QRectF controls_rect, left_over_rect, top_rect, bottom_rect;
+            View::InfoCard *hightlight_top = top_menu_->GetHighlighted();
+            View::InfoCard *hightlight_bottom = bottom_menu_->GetHighlighted();
+            qreal present_scale = hightlight_top->scale();
+            qreal scaled_margin = 80.00 * present_scale;
+            
+            // Controls rect
+            controls_rect.setTopLeft(QPointF(0, new_rect.height()- control_widget_->rect().height()));
+            controls_rect.setHeight(control_widget_->rect().height());
+            controls_rect.setWidth(new_rect.width());
+
+            left_over_rect = new_rect;
+            left_over_rect.setY(left_over_rect.y() + scaled_margin);
+            left_over_rect.setHeight(left_over_rect.height() - scaled_margin - control_widget_->rect().height());
+
             // New rects to item menus
-            QRectF top_rect, bottom_rect;
-            if (top_menu_)
-            {
-                top_rect = new_rect;
-                top_rect.setHeight(top_rect.height()/2);
-                top_menu_->RectChanged(top_rect);
-            }
-            if (bottom_menu_)
-            {
-                bottom_rect = new_rect;
-                bottom_rect.setY(new_rect.height()/2);
-                bottom_rect.setHeight(new_rect.height()/2);
-                bottom_menu_->RectChanged(bottom_rect);
-            }
+            top_rect = left_over_rect;
+            top_rect.setHeight(left_over_rect.height()/2 - scaled_margin);
+            top_menu_->RectChanged(top_rect);
 
-            // Update avatar info pos
-            View::InfoCard *hightlight = top_menu_->GetHighlighted();
-            avatar_info_widget_->UpdateGeometry(hightlight->mapRectToScene(hightlight->boundingRect()));
-
-            // Update world info pos
-            hightlight = bottom_menu_->GetHighlighted();
-            world_info_widget_->UpdateGeometry(hightlight->mapRectToScene(hightlight->boundingRect()));
-
-            //// Update action control positions
-            //connect_control_widget_->setPos(new_rect.width() - connect_control_widget_->rect().width(), new_rect.height()/2 - (connect_control_widget_->rect().height()/2));
-            //exit_control_widget_->setPos(0, new_rect.height()/2 - (exit_control_widget_->rect().height()/2));
-
-            // Update action widget
+            bottom_rect = left_over_rect;
+            bottom_rect.setY(top_rect.bottom() + scaled_margin * 2);
+            bottom_rect.setHeight(left_over_rect.height()/2 - scaled_margin);
+            bottom_menu_->RectChanged(bottom_rect);
+            
+            // Update avatar info geometry (highlighted card size and pos)
+            avatar_info_widget_->UpdateGeometry(hightlight_top->mapRectToScene(hightlight_top->boundingRect()), hightlight_top->scale());
+            // Update world info geometry (highlighted card size and pos)
+            world_info_widget_->UpdateGeometry(hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect()), hightlight_bottom->scale());
+            // Update control widget position (bottom of screen, pos calculated inside)
+            control_widget_->UpdateGeometry(controls_rect, 1);
+            // Update action widgets geometry (full screen)
             action_proxy_widget_->UpdateGeometry(new_rect);
+
+            // Start crazy, but neccessary hack
+            connect(hightlight_top->GetMoveAnimationPointer(), SIGNAL( finished()), SLOT( TheResizer() ));
+            last_scale_ = present_scale * 10;
+        }
+
+        void EtherSceneController::TheResizer()
+        {
+            // End crazy, but neccessary hack
+            if (last_scale_ != (int)(top_menu_->GetHighlighted()->scale()*10))
+                SceneRectChanged(scene_->sceneRect());
+            disconnect(this, SLOT( TheResizer() ));
         }
 
         void EtherSceneController::UpPressed()
@@ -300,6 +316,16 @@ namespace Ether
                 scene_->removeItem(last_active_bottom_card_);
                 emit ObjectRemoved(world_info->id());
             }
+        }
+
+        void EtherSceneController::ControlsWidgetHandler(QString request_type)
+        {
+            if (request_type == "connect")
+                TryStartLogin();
+            else if (request_type == "exit")
+                emit ApplicationExitRequested();
+            else if (request_type == "help")
+                return; // Do nothing atm
         }
 
         void EtherSceneController::TryStartLogin()

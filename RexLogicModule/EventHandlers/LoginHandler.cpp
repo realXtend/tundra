@@ -172,6 +172,7 @@ namespace RexLogic
                 server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
                 if (server_entry_point_url_.isValid())
                 {
+                    Logout();
                     emit LoginStarted();
                     InstantiateWorldSession();
                 }
@@ -196,6 +197,7 @@ namespace RexLogic
             server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
             if (server_entry_point_url_.isValid())
             {
+                Logout();
                 emit LoginStarted();
                 InstantiateWorldSession();
             }
@@ -265,6 +267,7 @@ namespace RexLogic
         server_entry_point_url_ = ValidateServerUrl(entry_point_url);
         if (server_entry_point_url_.isValid())
         {
+            Logout();
             emit LoginStarted();
             InstantiateWorldSession();
         }
