@@ -11,7 +11,7 @@ class Manipulator:
     USES_MANIPULATOR = True
     
     def __init__(self, creator):
-        self.creator = creator;
+        self.controller = creator;
         self.manipulator = None
         self.grabbed_axis = None
         self.grabbed = False
@@ -168,7 +168,7 @@ class ScaleManipulator(Manipulator):
                 scale[self.grabbed_axis] += mov
 
             ent.scale = scale[0], scale[1],scale[2]
-            self.creator.updateSelectionBox()  
+            self.controller.updateSelectionBox()  
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
