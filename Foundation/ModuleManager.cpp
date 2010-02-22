@@ -512,7 +512,7 @@ namespace Foundation
         // untill linux crash caused by this is resolved
         #ifdef Q_WS_WIN
 
-        std::string path = Poco::Environment::get("path");
+        std::string path = Poco::Environment::get("path", "");
         std::string cwd = Poco::Path::current();
         char separator = Poco::Path::pathSeparator();
 
