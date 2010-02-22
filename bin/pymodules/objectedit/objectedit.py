@@ -110,12 +110,12 @@ class ObjectEdit(Component):
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         
     def select(self, ent):
-        if ent.id != 0 and ent.id > 30 and ent.id != r.getUserAvatarId() and not self.manipulator.compareIds(ent.id): #terrain seems to be 3 and scene objects always big numbers, so > 30 should be good
+        if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId() and not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good
             self.sel_activated = False
             self.worldstream.SendObjectSelectPacket(ent.id)
-            
-            self.window.selected(ent)
+
             self.sel = ent
+            self.window.selected(ent)
             self.updateSelectionBox()
             self.changeManipulator(self.MANIPULATE_FREEMOVE)
 
@@ -395,7 +395,7 @@ class ObjectEdit(Component):
             self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
             self.manipulator.hideManipulator()
             self.hideSelector()
-            id, tWid = self.mainTabList.pop(str(ent.id))
+            id, tWid = self.window.mainTabList.pop(str(ent.id))
             tWid.delete()
             self.deselect()
             self.sel = None
@@ -425,9 +425,7 @@ class ObjectEdit(Component):
                 self.manipulator.moveTo(pos)
                 #self.selection_box.pos = pos[0], pos[1], pos[2]
 
-                self.mainTab.xpos.setValue(pos[0])
-                self.mainTab.ypos.setValue(pos[1])
-                self.mainTab.zpos.setValue(pos[2])
+                #self.window.update_posvals(pos)
                 self.modified = True
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -440,7 +438,7 @@ class ObjectEdit(Component):
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
-                if self.mainTab.scale_lock.checked:
+                if self.window.mainTab.scale_lock.checked:
                     #XXX BUG does wrong thing - the idea was to maintain aspect ratio
                     diff = scale[i] - oldscale[i]
                     for index in range(len(scale)):
@@ -453,12 +451,11 @@ class ObjectEdit(Component):
                 if not self.dragging:
                     r.networkUpdate(ent.id)
                 
-                self.mainTab.scalex.setValue(scale[0])
-                self.mainTab.scaley.setValue(scale[1])
-                self.mainTab.scalez.setValue(scale[2])
+                #self.window.update_scalevals(scale)
+                
                 self.modified = True
 
-                self.update_selection()
+                self.updateSelectionBox()
             
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -480,5 +477,9 @@ class ObjectEdit(Component):
                     r.networkUpdate(ent.id)
                     
                 self.modified = True
-
+                #self.window.update_rotvals(ort)
                 self.selection_box.orientation = ort
+                
+    def updateSelectionBoxPositionAndOrientation(self, ent): #XXX riiiight, rename please!
+        self.selection_box.pos = ent.pos
+        self.selection_box.orientation = ent.orientation
