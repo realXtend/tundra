@@ -69,6 +69,7 @@ class ObjectEdit(Component):
         self.worldstream = r.getServerConnection()
         
         self.sel = None
+        self.selections = []
         self.left_button_down = False
         self.right_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
@@ -82,21 +83,22 @@ class ObjectEdit(Component):
         self.canmove = False
         self.selection_box = None
         self.manipulatorsInit = False
+        
         self.mouse_events = {
-            #r.LeftMouseClickPressed: self.LeftMouseDown,
-            r.InWorldClick: self.LeftMouseDown,
-            r.LeftMouseClickReleased: self.LeftMouseUp,  
-            #~ r.RightMouseClickPressed: self.RightMouseDown,
-            #~ r.RightMouseClickReleased: self.RightMouseUp
+            #r.LeftMouseClickPressed: self.LeftMousePressed,
+            r.InWorldClick: self.LeftMousePressed,
+            r.LeftMouseClickReleased: self.LeftMouseReleased,  
+            r.RightMouseClickPressed: self.RightMousePressed,
+            r.RightMouseClickReleased: self.RightMouseReleased
         }
 
         self.shortcuts = {
             (OIS_KEY_ESC, 0): self.deselect,
             (OIS_KEY_M, OIS_KEY_ALT): self.window.manipulator_move,#"ALT+M", #move
             (OIS_KEY_S, OIS_KEY_ALT): self.window.manipulator_scale,#"ALT+S" #, #scale
-            (OIS_KEY_DEL, 0): self.window.deleteObject,
-            (OIS_KEY_Z, OIS_KEY_CTRL): self.window.undo, 
-            (OIS_KEY_D, OIS_KEY_ALT): self.window.duplicate, 
+            (OIS_KEY_DEL, 0): self.deleteObject,
+            (OIS_KEY_Z, OIS_KEY_CTRL): self.undo, 
+            (OIS_KEY_D, OIS_KEY_ALT): self.duplicate, 
             #(OIS_KEY_R, ALT): self.manipulator_rotate #rotate
         }
                 
@@ -122,7 +124,7 @@ class ObjectEdit(Component):
             self.sel = None
             self.hideSelector()
             
-            self.manipulator.hideManipulator() #manipulator
+            self.hideManipulator() #manipulator
 
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
@@ -151,7 +153,6 @@ class ObjectEdit(Component):
         else:
             r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
-
     def changeManipulator(self, id):
         #r.logInfo("changing manipulator to " + str(id))
         
@@ -174,8 +175,8 @@ class ObjectEdit(Component):
         except RuntimeError, e:
             r.logDebug("hideSelector failed")
             
-    def LeftMouseDown(self, mouseinfo):
-        r.logDebug("LeftMouseDown") #, mouseinfo, mouseinfo.x, mouseinfo.y
+    def LeftMousePressed(self, mouseinfo):
+        r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
 
         if self.selection_box is None:
             self.selection_box = r.createEntity("Selection.mesh", 0)
@@ -220,12 +221,12 @@ class ObjectEdit(Component):
             self.canmove = False
             self.deselect()
 
-    def LeftMouseUp(self, mouseinfo):
+    def LeftMouseReleased(self, mouseinfo):
         self.left_button_down = False
         
         if self.sel:
             if self.sel_activated and self.dragging:
-                #print "LeftMouseUp, networkUpdate call"
+                #print "LeftMouseReleased, networkUpdate call"
                 r.networkUpdate(self.sel.id)
             
             self.sel_activated = True
@@ -235,18 +236,20 @@ class ObjectEdit(Component):
             
         self.manipulator.stopManipulating()
         
-    #~ def RightMouseDown(self, mouseinfo):
-        #~ self.right_button_down = True
+    def RightMousePressed(self, mouseinfo):
+        r.logInfo("rightmouse down")
+        self.right_button_down = True
         
-    #~ def RightMouseUp(self, mouseinfo):
-        #~ self.right_button_down = False
+    def RightMouseReleased(self, mouseinfo):
+        r.logInfo("rightmouse up")
+        self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
         if self.active: #XXXnot self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
-                #r.logDebug("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
-            
+                #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
+                
     def on_mousemove(self, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
@@ -346,3 +349,136 @@ class ObjectEdit(Component):
         self.deselect()
         self.selection_box = None
         self.manipulator = None
+
+    def undo(self):
+        #print "undo clicked"
+        ent = self.sel
+        if ent is not None:
+            self.worldstream.SendObjectUndoPacket(ent.uuid)
+            self.update_guivals(ent)
+            self.modified = False
+
+    #~ def redo(self):
+        #~ #print "redo clicked"
+        #~ ent = self.sel
+        #~ if ent is not None:
+            #~ #print ent.uuid
+            #~ #worldstream = r.getServerConnection()
+            #~ self.worldstream.SendObjectRedoPacket(ent.uuid)
+            #~ #self.sel = None
+            #~ self.update_guivals()
+            #~ self.modified = False
+            
+    def duplicate(self):
+        #print "duplicate clicked"
+        ent = self.sel
+        if ent is not None:
+            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
+        
+    def createObject(self):
+        ent_id = r.getUserAvatarId()
+        ent = r.getEntity(ent_id)
+        x, y, z = ent.pos#r.getUserAvatarPos()
+
+        start_x = x
+        start_y = y
+        start_z = z
+        end_x = x
+        end_y = y
+        end_z = z
+
+        r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+
+    def deleteObject(self):
+        ent = self.sel
+        if ent is not None:
+            self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+            self.manipulator.hideManipulator()
+            self.hideSelector()
+            id, tWid = self.mainTabList.pop(str(ent.id))
+            tWid.delete()
+            self.deselect()
+            self.sel = None
+            
+    def float_equal(self, a,b):
+        #print abs(a-b), abs(a-b)<0.01
+        if abs(a-b)<0.01:
+            return True
+        else:
+            return False
+
+    def changepos(self, i, v):
+        #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
+        #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
+        #print "pos index %i changed to: %f" % (i, v)
+        ent = self.sel
+        
+        if ent is not None:
+            #print "sel pos:", ent.pos, pos[i], v
+            pos = list(ent.pos) #should probably wrap Vector3, see test_move.py for refactoring notes. 
+    
+            if not self.float_equal(pos[i],v):
+                pos[i] = v
+                #converted to list to have it mutable
+                ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
+                #print "=>", ent.pos
+                self.manipulator.moveTo(pos)
+                #self.selection_box.pos = pos[0], pos[1], pos[2]
+
+                self.mainTab.xpos.setValue(pos[0])
+                self.mainTab.ypos.setValue(pos[1])
+                self.mainTab.zpos.setValue(pos[2])
+                self.modified = True
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
+            
+    def changescale(self, i, v):
+        ent = self.sel
+        if ent is not None:
+            oldscale = list(ent.scale)
+            scale = list(ent.scale)
+                
+            if not self.float_equal(scale[i],v):
+                scale[i] = v
+                if self.mainTab.scale_lock.checked:
+                    #XXX BUG does wrong thing - the idea was to maintain aspect ratio
+                    diff = scale[i] - oldscale[i]
+                    for index in range(len(scale)):
+                        #print index, scale[index], index == i
+                        if index != i:
+                            scale[index] += diff
+                
+                ent.scale = scale[0], scale[1], scale[2]
+                
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
+                
+                self.mainTab.scalex.setValue(scale[0])
+                self.mainTab.scaley.setValue(scale[1])
+                self.mainTab.scalez.setValue(scale[2])
+                self.modified = True
+
+                self.update_selection()
+            
+    def changerot(self, i, v):
+        #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
+        #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
+        #print "pos index %i changed to: %f" % (i, v)
+        ent = self.sel
+        if ent is not None:
+            #print "sel orientation:", ent.orientation
+            #from euler x,y,z to to quat
+            euler = list(quat_to_euler(ent.orientation))
+                
+            if not self.float_equal(euler[i],v):
+                euler[i] = v
+                ort = euler_to_quat(euler)
+                #print euler, ort
+                #print euler, ort
+                ent.orientation = ort
+                if not self.dragging:
+                    r.networkUpdate(ent.id)
+                    
+                self.modified = True
+
+                self.selection_box.orientation = ort
