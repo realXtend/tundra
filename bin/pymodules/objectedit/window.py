@@ -4,7 +4,7 @@ import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
-from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
+from conversions import quat_to_euler #for euler - quat -euler conversions
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 
 try:
@@ -167,7 +167,7 @@ class ObjectEditWindow:
         self.mainTab.scale_button.setChecked(False)
         
     def updateMaterialTab(self):
-        ent = self.controller.sel
+        ent = self.controller.active
         if ent is not None:
             self.clearDialogForm()
             qprim = r.getQPrim(ent.id)
@@ -252,7 +252,7 @@ class ObjectEditWindow:
             #~ print "nothing found!"
             
     def manipulator_move(self):
-        ent = self.controller.sel
+        ent = self.controller.active
         #~ if self.controller.keypressed:
             #~ self.controller.keypressed = False
             #~ if not self.mainTab.move_button.isChecked():
@@ -278,7 +278,7 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
         
     def manipulator_scale(self):
-        ent = self.controller.sel
+        ent = self.controller.active
         #~ if self.controller.keypressed:
             #~ self.controller.keypressed = False
             #~ if not self.mainTab.scale_button.isChecked():
@@ -303,7 +303,7 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def manipulator_rotate(self):
-        ent = self.controller.sel
+        ent = self.controller.active
         
         #~ if self.controller.keypressed:
             #~ self.controller.keypressed = False
@@ -372,4 +372,7 @@ class ObjectEditWindow:
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
         uism.RemoveProxyWidgetFromScene(self.propeditwidget)
         
-    
+    def objectDeleted(self, ent_id): #XXX not the best way of doing this
+        if self.mainTabList.has_key(ent_id):
+            id, tWid = self.mainTabList.pop(ent_id)
+            tWid.delete()

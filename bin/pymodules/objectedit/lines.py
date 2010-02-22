@@ -43,7 +43,7 @@ class DragDroppableEditline(QLineEdit):
         #print data
         asset_type, inv_id, inv_name, asset_ref = data.split(';')
 
-        ent = self.mainedit.sel #is public so no need for getter, can be changed to a property if needs a getter at some point
+        ent = self.mainedit.active #is public so no need for getter, can be changed to a property if needs a getter at some point
         if ent is not None:
             self.doaction(ent, asset_type, inv_id, inv_name, asset_ref)
 
@@ -53,7 +53,8 @@ class DragDroppableEditline(QLineEdit):
 
     def update_text(self, name):
         """called also from main/parent.select() when sel changed"""
-        ent = self.mainedit.sel
+        
+        ent = self.mainedit.active
         if ent is not None:
             self.text = name #XXX add querying inventory for name
         else:
@@ -85,7 +86,7 @@ class MeshAssetidEditline(DragDroppableEditline):
     
     def applyAction(self):
         #print self, "applyAction!"
-        ent = self.mainedit.sel
+        ent = self.mainedit.active
         if ent is not None:
             applymesh(ent, self.text)
             self.deactivateButtons()
@@ -104,7 +105,7 @@ class UUIDEditLine(DragDroppableEditline):
         r.sendRexPrimData(ent.id)
         
     def applyAction(self):
-        ent = self.mainedit.sel
+        ent = self.mainedit.active
         if self.combobox is not None and ent is not None:
             qprim = r.getQPrim(ent.id)
             mats = qprim.Materials

@@ -24,6 +24,7 @@ import rexviewer as r
 import math
 from circuits import Component
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
+from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 
 try:
     window
@@ -53,7 +54,7 @@ OIS_KEY_DEL = 211
  
 class ObjectEdit(Component):
     EVENTHANDLED = False
-
+ 
     UPDATE_INTERVAL = 0.05 #how often the networkUpdate will be sent
     
     MANIPULATE_FREEMOVE = 0
@@ -62,14 +63,13 @@ class ObjectEdit(Component):
     MANIPULATE_ROTATE = 3
     
     def __init__(self):
+        self.sels = []  
         Component.__init__(self)
         self.window = window.ObjectEditWindow(self)
         self.manipulator = manipulator.FreeMoveManipulator(self)
                 
         self.worldstream = r.getServerConnection()
-        
-        self.sel = None
-        self.selections = []
+
         self.left_button_down = False
         self.right_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
@@ -79,7 +79,7 @@ class ObjectEdit(Component):
         self.dragging = False
         self.time = 0
         self.keypressed = False
-        self.active = False
+        self.windowActive = False
         self.canmove = False
         self.selection_box = None
         self.manipulatorsInit = False
@@ -110,18 +110,17 @@ class ObjectEdit(Component):
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         
     def select(self, ent):
-        if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId() and not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good
-            self.sel_activated = False
-            self.worldstream.SendObjectSelectPacket(ent.id)
-
-            self.sel = ent
-            self.window.selected(ent)
-            self.updateSelectionBox()
-            self.changeManipulator(self.MANIPULATE_FREEMOVE)
+        r.logInfo("trying entity selected: " + str(ent.id))
+        self.sel_activated = False
+        self.worldstream.SendObjectSelectPacket(ent.id)
+        self.updateSelectionBox()
+        self.window.selected(ent)
+        self.changeManipulator(self.MANIPULATE_FREEMOVE)
 
     def deselect(self):
-        if self.sel is not None:
-            self.sel = None
+        if len(self.sels)>0:
+            #XXX might need something here?!
+            self.sels = []
             self.hideSelector()
             
             self.hideManipulator() #manipulator
@@ -132,26 +131,28 @@ class ObjectEdit(Component):
 
             self.window.deselected()
 
-    def updateSelectionBox(self):             
-        bb = list(self.sel.boundingbox)
-        scale = list(self.sel.scale)
-        min = Vector3(bb[0], bb[1], bb[2])
-        max = Vector3(bb[3], bb[4], bb[5])
-        height = abs(bb[4] - bb[1]) 
-        width = abs(bb[3] - bb[0])
-        depth = abs(bb[5] - bb[2])
+    def updateSelectionBox(self): 
+        ent = self.active #XXX use first or last... ?
+        if ent is not None:
+            bb = list(ent.boundingbox)
+            scale = list(ent.scale)
+            min = Vector3(bb[0], bb[1], bb[2])
+            max = Vector3(bb[3], bb[4], bb[5])
+            height = abs(bb[4] - bb[1]) 
+            width = abs(bb[3] - bb[0])
+            depth = abs(bb[5] - bb[2])
 
-        if 1:#bb[6] == 0: #0 means CustomObject
-            height += scale[0]#*1.2
-            width += scale[1] #*1.2
-            depth += scale[2]#*1.2
+            if 1:#bb[6] == 0: #0 means CustomObject
+                height += scale[0]#*1.2
+                width += scale[1] #*1.2
+                depth += scale[2]#*1.2
 
-            self.selection_box.pos = self.sel.pos
-            
-            self.selection_box.scale = height, width, depth#depth, width, height
-            self.selection_box.orientation = self.sel.orientation
-        else:
-            r.logDebug("EditGUI: EC_OgreMesh clicked...")
+                self.selection_box.pos = ent.pos
+                
+                self.selection_box.scale = height, width, depth#depth, width, height
+                self.selection_box.orientation = ent.orientation
+            else:
+                r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
     def changeManipulator(self, id):
         #r.logInfo("changing manipulator to " + str(id))
@@ -161,8 +162,9 @@ class ObjectEdit(Component):
             #r.logInfo("was something completely different")
             self.manipulator.hideManipulator()
             self.manipulator = newmanipu
-            
-        self.manipulator.showManipulator(self.sel)
+        
+        ent = self.active
+        self.manipulator.showManipulator(ent)
     
     def hideManipulator(self):
         self.manipulator.hideManipulator()
@@ -199,23 +201,33 @@ class ObjectEdit(Component):
 
         #print "Got entity:", ent
         if ent is not None:
-            width, height = r.getScreenSize()
-            normalized_width = 1/width
-            normalized_height = 1/height
-            mouse_abs_x = normalized_width * mouseinfo.x
-            mouse_abs_y = normalized_height * mouseinfo.y
-            self.prev_mouse_abs_x = mouse_abs_x
-            self.prev_mouse_abs_y = mouse_abs_y
+            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id:
+                width, height = r.getScreenSize()
+                normalized_width = 1/width
+                normalized_height = 1/height
+                mouse_abs_x = normalized_width * mouseinfo.x
+                mouse_abs_y = normalized_height * mouseinfo.y
+                self.prev_mouse_abs_x = mouse_abs_x
+                self.prev_mouse_abs_y = mouse_abs_y
 
-            r.eventhandled = self.EVENTHANDLED
-            #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
-        
-            if self.sel is None or self.sel.id != ent.id: #a diff ent than prev sel was changed
-                self.select(ent)
-                self.canmove = True
-            elif self.sel.id == ent.id:
-                self.canmove = True
-        
+                r.eventhandled = self.EVENTHANDLED
+                #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
+                found = False
+                for entity in self.sels:
+                    if entity.id == ent.id:
+                        found = True
+               
+                if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
+                    if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():#terrain seems to be 3 and scene objects always big numbers, so > 50 should be good
+                        if not found:
+                            self.sels = []
+                            self.sels.append(ent)   
+                        self.select(ent)
+                        self.canmove = True
+                elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
+                    self.canmove = True
+                    
+                r.logInfo(str(self.sels))
         else:
             #print "canmove:", self.canmove
             self.canmove = False
@@ -223,11 +235,11 @@ class ObjectEdit(Component):
 
     def LeftMouseReleased(self, mouseinfo):
         self.left_button_down = False
-        
-        if self.sel:
+        ent = self.active
+        if ent: #XXX something here?
             if self.sel_activated and self.dragging:
                 #print "LeftMouseReleased, networkUpdate call"
-                r.networkUpdate(self.sel.id)
+                r.networkUpdate(ent.id)
             
             self.sel_activated = True
         
@@ -237,15 +249,37 @@ class ObjectEdit(Component):
         self.manipulator.stopManipulating()
         
     def RightMousePressed(self, mouseinfo):
-        r.logInfo("rightmouse down")
+        #r.logInfo("rightmouse down")
         self.right_button_down = True
         
+        results = []
+        results = r.rayCast(mouseinfo.x, mouseinfo.y)
+        
+        ent = None
+        
+        if results is not None and results[0] != 0:
+            id = results[0]
+            ent = r.getEntity(id)
+        found = False
+        #print "Got entity:", ent
+        if ent is not None:
+            for entity in self.sels:
+                if entity.id == ent.id:
+                    found = True
+            
+            if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
+                if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
+                    if not found:
+                        self.sels.append(ent)
+                    
+        #r.logInfo(str(self.sels))
+        
     def RightMouseReleased(self, mouseinfo):
-        r.logInfo("rightmouse up")
+        #r.logInfo("rightmouse up")
         self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo, callback):
-        if self.active: #XXXnot self.canvas.IsHidden():
+        if self.windowActive: #XXXnot self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
@@ -254,15 +288,16 @@ class ObjectEdit(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         
-        if self.active:
+        if self.windowActive:
             if self.left_button_down :
+                ent = self.active #XXX use first or last... ?
                 #print "on_mousemove + hold:", mouseinfo
-                if self.sel is not None and self.sel_activated and self.canmove:
+                if ent is not None and self.sel_activated and self.canmove:
                     self.dragging = True
                     fov = r.getCameraFOV()
 
                     campos = Vector3(r.getCameraPosition())
-                    entpos = Vector3(self.sel.pos)
+                    entpos = Vector3(ent.pos)
                     width, height = r.getScreenSize()
                     
                     normalized_width = 1/width
@@ -270,7 +305,6 @@ class ObjectEdit(Component):
                     mouse_abs_x = normalized_width * mouseinfo.x
                     mouse_abs_y = normalized_height * mouseinfo.y
 
-                    
                     length = (campos-entpos).length
                     worldwidth = (math.tan(fov/2)*length) * 2
                     worldheight = (height*worldwidth) / width
@@ -283,12 +317,12 @@ class ObjectEdit(Component):
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
                     
-                    self.manipulator.manipulate(self.sel, amountx, amounty)                 
+                    self.manipulator.manipulate(ent, amountx, amounty)                 
 
-                    self.window.update_guivals(self.sel)
+                    self.window.update_guivals(ent)
    
     def on_keyup(self, keycode, keymod, callback):
-        if self.active:
+        if self.windowActive:
             #print keycode, keymod
             if self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True
@@ -308,10 +342,10 @@ class ObjectEdit(Component):
         r.logInfo("         ...exit done.")
 
     def on_hide(self, shown):
-        self.active = shown
+        self.windowActive = shown
         
-        if self.active:
-            self.sel = None
+        if self.windowActive:
+            self.sels = []
             try:
                 self.manipulator.hideManipulator()
                 #if self.move_arrows is not None:
@@ -327,11 +361,11 @@ class ObjectEdit(Component):
             
     def update(self, time):
         #print "here", time
-        if self.active:
+        if self.windowActive:
             self.time += time
-            ent = self.sel
-            if self.time > self.UPDATE_INTERVAL:
-                if ent is not None:
+            if self.sels:
+                ent = self.active
+                if self.time > self.UPDATE_INTERVAL:
                     try:
                         sel_pos = self.selection_box.pos
                         arr_pos = self.manipulator.getManipulatorPosition()
@@ -352,7 +386,7 @@ class ObjectEdit(Component):
 
     def undo(self):
         #print "undo clicked"
-        ent = self.sel
+        ent = self.active
         if ent is not None:
             self.worldstream.SendObjectUndoPacket(ent.uuid)
             self.update_guivals(ent)
@@ -365,13 +399,13 @@ class ObjectEdit(Component):
             #~ #print ent.uuid
             #~ #worldstream = r.getServerConnection()
             #~ self.worldstream.SendObjectRedoPacket(ent.uuid)
-            #~ #self.sel = None
+            #~ #self.sel = []
             #~ self.update_guivals()
             #~ self.modified = False
             
     def duplicate(self):
         #print "duplicate clicked"
-        ent = self.sel
+        ent = self.active
         if ent is not None:
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
         
@@ -390,15 +424,16 @@ class ObjectEdit(Component):
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
     def deleteObject(self):
-        ent = self.sel
-        if ent is not None:
-            self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+        if self.active is not None:
+            for ent in self.sels:
+                #r.logInfo("deleting " + str(ent.id))
+                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+                self.window.objectDeleted(str(ent.id))
+            
             self.manipulator.hideManipulator()
-            self.hideSelector()
-            id, tWid = self.window.mainTabList.pop(str(ent.id))
-            tWid.delete()
+            self.hideSelector()        
             self.deselect()
-            self.sel = None
+            self.sels = []
             
     def float_equal(self, a,b):
         #print abs(a-b), abs(a-b)<0.01
@@ -411,7 +446,7 @@ class ObjectEdit(Component):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
-        ent = self.sel
+        ent = self.active
         
         if ent is not None:
             #print "sel pos:", ent.pos, pos[i], v
@@ -431,7 +466,7 @@ class ObjectEdit(Component):
                     r.networkUpdate(ent.id)
             
     def changescale(self, i, v):
-        ent = self.sel
+        ent = self.active
         if ent is not None:
             oldscale = list(ent.scale)
             scale = list(ent.scale)
@@ -461,7 +496,7 @@ class ObjectEdit(Component):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
-        ent = self.sel
+        ent = self.active
         if ent is not None:
             #print "sel orientation:", ent.orientation
             #from euler x,y,z to to quat
@@ -483,3 +518,11 @@ class ObjectEdit(Component):
     def updateSelectionBoxPositionAndOrientation(self, ent): #XXX riiiight, rename please!
         self.selection_box.pos = ent.pos
         self.selection_box.orientation = ent.orientation
+    
+    def getActive(self):
+        if len(self.sels) > 0:
+            ent = self.sels[-1]
+            return ent
+        return None
+        
+    active = property(getActive)
