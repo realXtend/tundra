@@ -115,26 +115,31 @@ class ObjectEditWindow:
 
         self.mainTabList = {}
 
-    def update_guivals(self, ent):
-        #ent = self.controller.sel
-        x, y, z = ent.pos
-        self.mainTab.xpos.setValue(x)
-        self.mainTab.ypos.setValue(y)
-        self.mainTab.zpos.setValue(z)
-            
-        x, y, z = ent.scale
+    def update_guivals(self, ent):   
+        #from quat to euler x.y,z
+        if ent is not None:
+            self.update_posvals(ent.pos)
+            self.update_scalevals(ent.scale)
+            self.update_rotvals(ent.orientation)
+            self.controller.updateSelectionBoxPositionAndOrientation(ent)
+        
+    def update_scalevals(self, scale):
+        x, y, z = scale
         self.mainTab.scalex.setValue(x)
         self.mainTab.scaley.setValue(y)
         self.mainTab.scalez.setValue(z)
-            
-        #from quat to euler x.y,z
-        euler = quat_to_euler(ent.orientation)
+        
+    def update_posvals(self, pos):
+        x, y, z = pos
+        self.mainTab.xpos.setValue(x)
+        self.mainTab.ypos.setValue(y)
+        self.mainTab.zpos.setValue(z)
+        
+    def update_rotvals(self, rot):
+        euler = quat_to_euler(rot)
         self.mainTab.rot_x.setValue(euler[0])
         self.mainTab.rot_y.setValue(euler[1])
-        self.mainTab.rot_z.setValue(euler[2])        
-         
-        self.controller.selection_box.pos = ent.pos
-        self.controller.selection_box.orientation = ent.orientation
+        self.mainTab.rot_z.setValue(euler[2])   
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)
@@ -157,11 +162,12 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.reset_guivals()
         
-        self.controller.window.mainTab.move_button.setChecked(False)
-        self.controller.window.mainTab.rotate_button.setChecked(False)
-        self.controller.window.mainTab.scale_button.setChecked(False)
+        self.mainTab.move_button.setChecked(False)
+        self.mainTab.rotate_button.setChecked(False)
+        self.mainTab.scale_button.setChecked(False)
         
-    def updateMaterialTab(self, ent):
+    def updateMaterialTab(self):
+        ent = self.controller.sel
         if ent is not None:
             self.clearDialogForm()
             qprim = r.getQPrim(ent.id)
@@ -239,13 +245,14 @@ class ObjectEditWindow:
         
     def tabChanged(self, index):
         if index == 1:
-            self.updateMaterialTab(self.controller.sel)
+            self.updateMaterialTab()
         #~ elif index == 0:
             #~ print "Object Edit"
         #~ else:
             #~ print "nothing found!"
             
     def manipulator_move(self):
+        ent = self.controller.sel
         #~ if self.controller.keypressed:
             #~ self.controller.keypressed = False
             #~ if not self.mainTab.move_button.isChecked():
@@ -259,7 +266,7 @@ class ObjectEditWindow:
             freemove = True
             self.controller.hideManipulator()
         else: #activated
-            if self.controller.sel is not None:
+            if ent is not None:
                 self.mainTab.scale_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
                 self.controller.changeManipulator(self.controller.MANIPULATE_MOVE)   
@@ -271,6 +278,7 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
         
     def manipulator_scale(self):
+        ent = self.controller.sel
         #~ if self.controller.keypressed:
             #~ self.controller.keypressed = False
             #~ if not self.mainTab.scale_button.isChecked():
@@ -283,7 +291,7 @@ class ObjectEditWindow:
             freemove = True
             self.controller.hideManipulator()
         else: #activated
-            if self.controller.sel is not None:
+            if ent is not None:
                 self.mainTab.move_button.setChecked(False)
                 self.mainTab.rotate_button.setChecked(False)
                 self.controller.changeManipulator(self.controller.MANIPULATE_SCALE)
@@ -295,12 +303,14 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def manipulator_rotate(self):
-        if self.controller.keypressed:
-            self.controller.keypressed = False
-            if not self.mainTab.rotate_button.isChecked():
-                self.mainTab.rotate_button.setChecked(True)
-            else:
-                self.mainTab.rotate_button.setChecked(False)
+        ent = self.controller.sel
+        
+        #~ if self.controller.keypressed:
+            #~ self.controller.keypressed = False
+            #~ if not self.mainTab.rotate_button.isChecked():
+                #~ self.mainTab.rotate_button.setChecked(True)
+            #~ else:
+                #~ self.mainTab.rotate_button.setChecked(False)
                 
         freemove = False
         if not self.mainTab.rotate_button.isChecked():
@@ -308,7 +318,7 @@ class ObjectEditWindow:
             self.controller.hideManipulator()
             r.logInfo("not activated, something")
         else: #activated
-            if self.controller.sel is not None:
+            if ent is not None:
                 r.logInfo("activated, has selectiong")
                 self.controller.changeManipulator(self.controller.MANIPULATE_ROTATE)
                 self.mainTab.scale_button.setChecked(False)
@@ -322,31 +332,38 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def selected(self, ent):
+        self.mainTab.move_button.setChecked(False)
+        self.mainTab.rotate_button.setChecked(False)
+        self.mainTab.scale_button.setChecked(False)
+        
         if not self.mainTabList.has_key(str(ent.id)):
             tWid = QTreeWidgetItem(self.mainTab.treeWidget)
             id = ent.id
             tWid.setText(0, id)
             
             self.mainTabList[str(id)] = (ent, tWid)
+        #~ else:
+            #~ r.logInfo("selected else")
+            
+        """show the id and name of the object. name is sometimes empty it seems. 
+            swoot: actually, seems like the name just isn't gotten fast enough or 
+            something.. next time you click on the same entity, it has a name."""
+            
+        name = ent.name
+        if name == "":
+            name = "n/a"
+        self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
         
-            """show the id and name of the object. name is sometimes empty it seems. 
-                swoot: actually, seems like the name just isn't gotten fast enough or 
-                something.. next time you click on the same entity, it has a name."""
-            name = ent.name
-            if name == "":
-                name = "n/a"
-            self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
-            
-            self.meshline.update_text(ent.mesh)
-            
-            qprim = r.getQPrim(ent.id)
-            self.propedit.setObject(qprim)
-            self.tabwidget.setTabEnabled(2, True)
-        else:
-            r.logInfo("selected else")
-            
-        self.updateMaterialTab(ent)
+        self.meshline.update_text(ent.mesh)
+        
+        self.updateMaterialTab()
         self.tabwidget.setTabEnabled(1, True)
+
+        qprim = r.getQPrim(ent.id)
+        if qprim is not None:
+            self.propedit.setObject(qprim)
+            self.tabwidget.setTabEnabled(2, True)        
+
         self.update_guivals(ent)
         
     def on_exit(self):
@@ -354,3 +371,5 @@ class ObjectEditWindow:
         uism = r.getUiSceneManager()
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
         uism.RemoveProxyWidgetFromScene(self.propeditwidget)
+        
+    
