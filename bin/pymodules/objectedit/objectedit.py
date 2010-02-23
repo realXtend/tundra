@@ -66,23 +66,8 @@ class ObjectEdit(Component):
         self.sels = []  
         Component.__init__(self)
         self.window = window.ObjectEditWindow(self)
-        self.manipulator = manipulator.FreeMoveManipulator(self)
-                
+        self.resetValues()
         self.worldstream = r.getServerConnection()
-
-        self.left_button_down = False
-        self.right_button_down = False
-        self.sel_activated = False #to prevent the selection to be moved on the intial click
-        
-        self.prev_mouse_abs_x = 0
-        self.prev_mouse_abs_y = 0
-        self.dragging = False
-        self.time = 0
-        self.keypressed = False
-        self.windowActive = False
-        self.canmove = False
-        self.selection_box = None
-        self.manipulatorsInit = False
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMousePressed,
@@ -101,13 +86,29 @@ class ObjectEdit(Component):
             (OIS_KEY_D, OIS_KEY_ALT): self.duplicate, 
             #(OIS_KEY_R, ALT): self.manipulator_rotate #rotate
         }
-                
+        
+        self.resetManipulators()
+    def resetValues(self):
+        self.left_button_down = False
+        self.right_button_down = False
+        self.sel_activated = False #to prevent the selection to be moved on the intial click
+        self.prev_mouse_abs_x = 0
+        self.prev_mouse_abs_y = 0
+        self.dragging = False
+        self.time = 0
+        self.keypressed = False
+        self.windowActive = False
+        self.canmove = False
+        self.selection_box = None
+    
+    def resetManipulators(self):
+        self.manipulatorsInit = False
         self.manipulators = {}
-
         self.manipulators[self.MANIPULATE_MOVE] =  manipulator.MoveManipulator(self)
         self.manipulators[self.MANIPULATE_SCALE] =  manipulator.ScaleManipulator(self)
         self.manipulators[self.MANIPULATE_FREEMOVE] =  manipulator.FreeMoveManipulator(self)
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
+        self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
         
     def select(self, ent):
         self.sel_activated = False
@@ -192,6 +193,7 @@ class ObjectEdit(Component):
             ent = r.getEntity(id)
 
         if not self.manipulatorsInit:
+            r.logInfo("should init manipulators")
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
@@ -333,57 +335,6 @@ class ObjectEdit(Component):
     def on_inboundnetwork(self, evid, name, callback):
         return False
         #print "editgui got an inbound network event:", id, name
-
-    def on_exit(self):
-        r.logInfo("Object Edit exiting...")
-
-        self.deselect()
-        self.window.on_exit()  
-
-        r.logInfo("         ...exit done.")
-
-    def on_hide(self, shown):
-        self.windowActive = shown
-        
-        if self.windowActive:
-            self.sels = []
-            try:
-                self.manipulator.hideManipulator()
-                #if self.move_arrows is not None:
-                    #ent = self.move_arrows.id 
-                    #is called by qt also when viewer is exiting,
-                    #when the scene (in rexlogic module) is not there anymore.
-            except RuntimeError, e:
-                r.logDebug("on_hide: scene not found")
-            else:
-                self.deselect()
-        else:
-            self.deselect()
-            
-    def update(self, time):
-        #print "here", time
-        if self.windowActive:
-            self.time += time
-            if self.sels:
-                ent = self.active
-                if self.time > self.UPDATE_INTERVAL:
-                    try:
-                        sel_pos = self.selection_box.pos
-                        arr_pos = self.manipulator.getManipulatorPosition()
-                        ent_pos = ent.pos
-                        if sel_pos != ent_pos:
-                            self.time = 0
-                            self.selection_box.pos = ent_pos
-                        if arr_pos != ent_pos:
-                            self.manipulator.moveTo(ent_pos)
-                    except RuntimeError, e:
-                        r.logDebug("update: scene not found")
-   
-    def on_logout(self, id):
-        r.logInfo("Object Edit resetting due to Logout.")
-        self.deselect()
-        self.selection_box = None
-        self.manipulator = None
 
     def undo(self):
         #print "undo clicked"
@@ -527,3 +478,59 @@ class ObjectEdit(Component):
         return None
         
     active = property(getActive)
+    
+    def on_exit(self):
+        r.logInfo("Object Edit exiting...")
+
+        self.deselect()
+        self.window.on_exit()  
+
+        r.logInfo("         ...exit done.")
+
+    def on_hide(self, shown):
+        self.windowActive = shown
+
+        
+        if self.windowActive:
+            self.sels = []
+            
+            try:
+                self.manipulator.hideManipulator()
+                #if self.move_arrows is not None:
+                    #ent = self.move_arrows.id 
+                    #is called by qt also when viewer is exiting,
+                    #when the scene (in rexlogic module) is not there anymore.
+            except RuntimeError, e:
+                r.logDebug("on_hide: scene not found")
+            else:
+                self.deselect()
+        else:
+            self.deselect()
+            
+    def update(self, time):
+        #print "here", time
+        if self.windowActive:
+            self.time += time
+            if self.sels:
+                ent = self.active
+                if self.time > self.UPDATE_INTERVAL:
+                    try:
+                        sel_pos = self.selection_box.pos
+                        arr_pos = self.manipulator.getManipulatorPosition()
+                        ent_pos = ent.pos
+                        if sel_pos != ent_pos:
+                            self.time = 0
+                            self.selection_box.pos = ent_pos
+                        if arr_pos != ent_pos:
+                            self.manipulator.moveTo(ent_pos)
+                    except RuntimeError, e:
+                        r.logDebug("update: scene not found")
+   
+    def on_logout(self, id):
+        r.logInfo("Object Edit resetting due to Logout.")
+        self.deselect()
+        self.sels = []
+        self.selection_box = None
+        self.resetValues()
+        self.resetManipulators()
+        
