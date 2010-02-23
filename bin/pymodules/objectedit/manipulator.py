@@ -75,9 +75,6 @@ class Manipulator:
             if ent is None:
                 return
                 
-            if self.manipulator.id != ent.id:
-                return
-                
             if ent.id == self.manipulator.id:
                     u = results[-2]
                     v = results[-1]
@@ -97,8 +94,8 @@ class Manipulator:
                         self.grabbed_axis = None
                         self.grabbed = False
                     
-    def manipulate(self, ent, amountx, amounty):
-        if ent is not None:
+    def manipulate(self, ents, amountx, amounty):
+        if ents is not None:
             lengthx = 0
             lengthy = 0
             if self.grabbed:
@@ -113,71 +110,73 @@ class Manipulator:
                 mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
                 lengthx = mousex_on_arrow_projection.length * amountx
             
-            self._manipulate(ent, amountx, amounty, lengthx, lengthy)
+            self._manipulate(ents, amountx, amounty, lengthx, lengthy)
 
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     #MANIPULATOR_MESH_NAME = "axes.mesh"
 
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ents, amountx, amounty, lengthx, lengthy):
         if self.grabbed:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
-
-            pos = list(ent.pos)
-            #print rightvec[self.manipulatorGrabbed_axis], rightvec
-            if self.grabbed_axis == AXIS_Z:
-                mov = lengthy
-                #print mov, pos[self.manipulatorGrabbed_axis],
-                pos[self.grabbed_axis] -= mov
+            for ent in ents:
+                pos = list(ent.pos)
+                #print rightvec[self.manipulatorGrabbed_axis], rightvec
+                if self.grabbed_axis == AXIS_Z:
+                    mov = lengthy
+                    #print mov, pos[self.manipulatorGrabbed_axis],
+                    pos[self.grabbed_axis] -= mov
+                    #print pos[self.manipulatorGrabbed_axis]
+                else:
+                    mov = lengthx 
+                    div = abs(rightvec[self.grabbed_axis])
+                    if div == 0:
+                        div = 0.01 #not the best of ideas but...
+                    mov *= rightvec[self.grabbed_axis]/div
+                    #print mov, pos[self.manipulatorGrabbed_axis],
+                    pos[self.grabbed_axis] += mov
+                
                 #print pos[self.manipulatorGrabbed_axis]
-            else:
-                mov = lengthx 
-                div = abs(rightvec[self.grabbed_axis])
-                if div == 0:
-                    div = 0.01 #not the best of ideas but...
-                mov *= rightvec[self.grabbed_axis]/div
-                #print mov, pos[self.manipulatorGrabbed_axis],
-                pos[self.grabbed_axis] += mov
-            
-            #print pos[self.manipulatorGrabbed_axis]
-    
-            ent.pos = pos[0], pos[1], pos[2]
-            self.manipulator.pos = pos[0], pos[1], pos[2]
+                
+                ent.pos = pos[0], pos[1], pos[2]
+                self.manipulator.pos = pos[0], pos[1], pos[2]
         
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
     #MANIPULATOR_MESH_NAME = "axes.mesh"
     
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ents, amountx, amounty, lengthx, lengthy):
         if self.grabbed:
             #print "should change scale!"
-            scale = list(ent.scale)
-            rightvec = Vector3(r.getCameraRight())
-            upvec = Vector3(r.getCameraUp())
-            
-            if self.grabbed_axis == AXIS_Z:
-                mov = lengthy
-                scale[self.grabbed_axis] -= mov
-            else:
-                mov = lengthx
-                div = abs(rightvec[self.grabbed_axis])
-                if div == 0:
-                    div = 0.01 #not the best of ideas but...
-                mov *= rightvec[self.grabbed_axis]/div
-                scale[self.grabbed_axis] += mov
-
-            ent.scale = scale[0], scale[1],scale[2]
-            self.controller.updateSelectionBox()  
+            for ent in ents:
+                scale = list(ent.scale)
+                rightvec = Vector3(r.getCameraRight())
+                upvec = Vector3(r.getCameraUp())
+                
+                if self.grabbed_axis == AXIS_Z:
+                    mov = lengthy
+                    scale[self.grabbed_axis] -= mov
+                else:
+                    mov = lengthx
+                    div = abs(rightvec[self.grabbed_axis])
+                    if div == 0:
+                        div = 0.01 #not the best of ideas but...
+                    mov *= rightvec[self.grabbed_axis]/div
+                    scale[self.grabbed_axis] += mov
+               
+                ent.scale = scale[0], scale[1],scale[2]
+                self.controller.updateSelectionBox()  
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
     USES_MANIPULATOR = False
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ents, amountx, amounty, lengthx, lengthy):
         #freemove
         #r.logInfo("_manipulate")
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
-        entpos = Vector3(ent.pos)
-        newpos = entpos + (amountx * rightvec) - (amounty * upvec)
-        ent.pos = newpos.x, newpos.y, newpos.z
+        for ent in ents:
+            entpos = Vector3(ent.pos)
+            newpos = entpos + (amountx * rightvec) - (amounty * upvec)
+            ent.pos = newpos.x, newpos.y, newpos.z
