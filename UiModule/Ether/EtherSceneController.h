@@ -58,12 +58,14 @@ namespace Ether
             void TheResizer();
 
             void StartLoginAnimation();
-            void RevertLoginAnimation();
+            void RevertLoginAnimation(bool refresh_after_done);
 
         private slots:
             void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);
             void SceneRectChanged(const QRectF &new_rect);
+
+            void LoginAnimationFinished();
 
         private:
             //! Pointer to data manager
@@ -81,7 +83,7 @@ namespace Ether
             int menu_cap_size_;
 
             //!animations
-            QScopedPointer<QParallelAnimationGroup> login_animations_;
+            QParallelAnimationGroup *login_animations_;
 
             //! Max card size
             QRectF card_size_;
@@ -101,6 +103,8 @@ namespace Ether
             View::ActionProxyWidget *action_proxy_widget_;
 
             int last_scale_;
+
+            bool refresh_menus_;
 
         signals:
             void ApplicationExitRequested();

@@ -4,6 +4,7 @@
 #define incl_UiModule_ControlProxyWidget_h
 
 #include <QGraphicsProxyWidget>
+#include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 #include <QLabel>
 #include <QPushButton>
@@ -54,7 +55,7 @@ namespace Ether
             void EmitActionRequest(QString type);
 
         public slots:
-            void UpdateGeometry(QRectF rect, qreal scale);
+            void UpdateGeometry(QRectF rect, qreal scale, bool do_fade);
             void UpdateContollerCard(InfoCard *new_card);
 
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
@@ -85,6 +86,13 @@ namespace Ether
 
             View::InfoCard *controlled_card_;
             ActionProxyWidget *action_widget_;
+
+            QParallelAnimationGroup *all_action_widget_animations_;
+            QPropertyAnimation *fade_animation_;
+            QPropertyAnimation *scale_animation_;
+            QPropertyAnimation *move_animation_;
+
+            QRectF last_scene_rect_;
 
         signals:
             void ActionRequest(QString);

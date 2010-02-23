@@ -23,7 +23,7 @@ namespace Ether
               top_menu_visible_items_(top_items),
               bottom_menu_visible_items_(bottom_items),
               menu_cap_size_(10),
-              login_animations_(new QParallelAnimationGroup()),
+              login_animations_(new QParallelAnimationGroup(this)),
               card_size_(card_size),
               last_active_top_card_(0),
               last_active_bottom_card_(0)
@@ -53,6 +53,10 @@ namespace Ether
                     this, SLOT( ActiveItemChanged(View::InfoCard*) ));
             connect(bottom_menu_, SIGNAL( ItemHighlighted(View::InfoCard*) ),
                     this, SLOT( ActiveItemChanged(View::InfoCard*) ));
+
+            // Connect login animations finished signal
+            connect(login_animations_, SIGNAL( finished() ),
+                    this, SLOT( LoginAnimationFinished() ));
 
             // Init widget pointers to 0 for null cheching on startup
             avatar_info_widget_ = 0;
@@ -193,7 +197,8 @@ namespace Ether
             View::InfoCard *hightlight_top = top_menu_->GetHighlighted();
             View::InfoCard *hightlight_bottom = bottom_menu_->GetHighlighted();
             qreal present_scale = hightlight_top->scale();
-            qreal scaled_margin = 80.00 * present_scale;
+            qreal scaled_margin = 65.00 * present_scale;
+            bool do_fade = true;
             
             // Controls rect
             controls_rect.setTopLeft(QPointF(0, new_rect.height()- control_widget_->rect().height()));
@@ -207,19 +212,19 @@ namespace Ether
             // New rects to item menus
             top_rect = left_over_rect;
             top_rect.setHeight(left_over_rect.height()/2 - scaled_margin);
-            top_menu_->RectChanged(top_rect);
-
             bottom_rect = left_over_rect;
             bottom_rect.setY(top_rect.bottom() + scaled_margin * 2);
             bottom_rect.setHeight(left_over_rect.height()/2 - scaled_margin);
+
+            top_menu_->RectChanged(top_rect);
             bottom_menu_->RectChanged(bottom_rect);
             
             // Update avatar info geometry (highlighted card size and pos)
-            avatar_info_widget_->UpdateGeometry(hightlight_top->mapRectToScene(hightlight_top->boundingRect()), hightlight_top->scale());
+            avatar_info_widget_->UpdateGeometry(hightlight_top->mapRectToScene(hightlight_top->boundingRect()), present_scale, do_fade);
             // Update world info geometry (highlighted card size and pos)
-            world_info_widget_->UpdateGeometry(hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect()), hightlight_bottom->scale());
+            world_info_widget_->UpdateGeometry(hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect()), present_scale, do_fade);
             // Update control widget position (bottom of screen, pos calculated inside)
-            control_widget_->UpdateGeometry(controls_rect, 1);
+            control_widget_->UpdateGeometry(controls_rect, present_scale, !do_fade);
             // Update action widgets geometry (full screen)
             action_proxy_widget_->UpdateGeometry(new_rect);
 
@@ -329,27 +334,31 @@ namespace Ether
                 return; // Do nothing atm
         }
 
-        void EtherSceneController::RevertLoginAnimation()
+        void EtherSceneController::TryStartLogin()
         {
-            login_animations_->setDirection(QAbstractAnimation::Direction::Backward);
-            login_animations_->start();
+            QPair<View::InfoCard*, View::InfoCard*> selected_cards;
+            selected_cards.first = top_menu_->GetHighlighted();
+            selected_cards.second = bottom_menu_->GetHighlighted();
+
+            StartLoginAnimation();
+            emit LoginRequest(selected_cards);
         }
 
         void EtherSceneController::StartLoginAnimation()
         {
             login_animations_->clear();
+            login_animations_->setDirection(QAbstractAnimation::Forward);
 
-            login_animations_->setDirection(QAbstractAnimation::Direction::Forward);
+            // Get all Infocards
             QVector<View::InfoCard*> t_obj = top_menu_->GetObjects();
             t_obj += bottom_menu_->GetObjects();
 
-            for(int i=0; i< t_obj.size(); i++)
+            foreach (View::InfoCard* card, t_obj)
             {
-                View::InfoCard* card = t_obj.at(i);
-
-                if(card!= last_active_bottom_card_ && card!= last_active_top_card_)
+                // Animate opacity from current to 0 for every card except the selected cards
+                if (card != last_active_bottom_card_ && card != last_active_top_card_)
                 {
-                    QPropertyAnimation* anim = new QPropertyAnimation(card, "opacity");
+                    QPropertyAnimation* anim = new QPropertyAnimation(card, "opacity", login_animations_);
                     anim->setStartValue(card->opacity());
                     anim->setEndValue(0);
                     anim->setDuration(1000);
@@ -357,27 +366,25 @@ namespace Ether
                 }
             }
 
-            QPropertyAnimation* anim1 = new QPropertyAnimation(last_active_top_card_, "pos");
-            QPropertyAnimation* anim2 = new QPropertyAnimation(avatar_info_widget_, "pos");
+            // Animate selected cards position
+            QPropertyAnimation* anim1 = new QPropertyAnimation(last_active_top_card_, "pos", login_animations_);
+            QPropertyAnimation* anim2 = new QPropertyAnimation(avatar_info_widget_, "pos", login_animations_);
 
-            QPropertyAnimation* anim3 = new QPropertyAnimation(last_active_bottom_card_, "pos");
-            QPropertyAnimation* anim4 = new QPropertyAnimation(world_info_widget_, "pos");
+            QPropertyAnimation* anim3 = new QPropertyAnimation(last_active_bottom_card_, "pos", login_animations_);
+            QPropertyAnimation* anim4 = new QPropertyAnimation(world_info_widget_, "pos", login_animations_);
 
-
-            qreal diff = avatar_info_widget_->mapRectToScene(avatar_info_widget_->rect()).bottom() 
-                - world_info_widget_->mapRectToScene(world_info_widget_->rect()).top();
+            qreal diff = avatar_info_widget_->mapRectToScene(avatar_info_widget_->rect()).bottom() - world_info_widget_->mapRectToScene(world_info_widget_->rect()).top();
             diff /=2;
 
-            if(diff <0)
+            if (diff < 0)
                 diff *= -1;
 
+            // Calculate positions
             QPointF pos1 = last_active_top_card_->pos();
             pos1.setY(pos1.y() + diff);
 
             QPointF pos2 = avatar_info_widget_->pos();
             pos2.setY(pos2.y() + diff);
-
-
 
             QPointF pos3 = last_active_bottom_card_->pos();
             pos3.setY(pos3.y() - diff);
@@ -401,24 +408,29 @@ namespace Ether
             anim4->setEndValue(pos4);
             anim4->setDuration(1000);
 
-
+            // Add animations to the group
             login_animations_->addAnimation(anim1);
             login_animations_->addAnimation(anim2);
             login_animations_->addAnimation(anim3);
             login_animations_->addAnimation(anim4);
 
+            // Start animations
             login_animations_->start();
         }
 
-        void EtherSceneController::TryStartLogin()
+        void EtherSceneController::RevertLoginAnimation(bool refresh_after_done)
         {
-            QPair<View::InfoCard*, View::InfoCard*> selected_cards;
-            selected_cards.first = top_menu_->GetHighlighted();
-            selected_cards.second = bottom_menu_->GetHighlighted();
+            refresh_menus_ = refresh_after_done;
+            if (login_animations_->state() == QAbstractAnimation::Running)
+                login_animations_->pause();
+            login_animations_->setDirection(QAbstractAnimation::Backward);
+            login_animations_->start();
+        }
 
-            StartLoginAnimation();
-
-            emit LoginRequest(selected_cards);
+        void EtherSceneController::LoginAnimationFinished()
+        {
+            if (login_animations_->direction() == QAbstractAnimation::Backward && refresh_menus_)
+                RecalculateMenus(); // needs more work, opacitys are not reverted in RevertLoginAnimation() after logout
         }
     }
 }
