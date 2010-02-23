@@ -479,6 +479,19 @@ QModelIndex InventoryItemModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     return createIndex(parentItem->Row(), 0, parentItem);
+
+/*
+    if (!index.isValid())
+        return QModelIndex();
+
+    TreeItem *childItem = getItem(index);
+    TreeItem *parentItem = childItem->parent();
+
+    if (parentItem == rootItem)
+        return QModelIndex();
+
+    return createIndex(parentItem->childNumber(), 0, parentItem);
+*/
 }
 
 int InventoryItemModel::rowCount(const QModelIndex &parent) const

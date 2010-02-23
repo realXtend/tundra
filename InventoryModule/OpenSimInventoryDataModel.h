@@ -55,6 +55,7 @@ namespace Inventory
         AbstractInventoryItem *GetChildFolderById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.
+        /// @note Not recursive. Use GetChildById if you want to search all the descendents.
         AbstractInventoryItem *GetChildAssetById(const QString &searchId) const;
 
         /// AbstractInventoryDataModel override.

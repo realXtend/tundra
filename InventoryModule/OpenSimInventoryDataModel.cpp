@@ -173,6 +173,12 @@ bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()), RexUUID(), 0, false, true);
     }
 
+    ///\todo hack: delete dummy item.
+    /*
+    AbstractInventoryItem *dummy = dynamic_cast<InventoryFolder *>(item)->GetChildAssetById("DummyItem");
+    if (dummy)
+        SAFE_DELETE(dummy);
+    */
     return true;
 }
 
@@ -832,6 +838,9 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     if (parent_folder)
     {
         parent_folder->AddChild(newFolder);
+        ///\todo  small hack: Add dummy item so that the expand/collapse arrows appear for every folder.
+        //  These dummy items are deleted after the folder has been expanded for the first time.
+        //InventoryAsset *dummy = new InventoryAsset("DummyItem", "DummyItem", "DummyItem", newFolder);
 
         if (newFolder == GetOpenSimLibraryFolder())
             newFolder->SetIsLibraryItem(true);
@@ -1008,23 +1017,6 @@ void OpenSimInventoryDataModel::SendNameUuidRequest(InventoryAsset *asset)
     for(int i = 0; i < groups.size(); ++i)
         uuidNameRequests_ << groups[i];
 }
-
-/*
-void OpenSimInventoryDataModel::HandleNameUuidReply(QMap<RexUUID, QString> map)
-{
-    QMapIterator<RexUUID, QString> it(map);
-    while(it.hasNext())
-    {
-        it.next();
-        int index = uuidNameRequests_.indexOf(it.key());
-        if (index == -1)
-            continue;
-
-        RexUUID id = uuidNameRequests_.at(index);
-        //asset->SetNameForUuid(id, name)
-    }
-}
-*/
 
 std::string OpenSimInventoryDataModel::CreateNewFileAgentInventoryXML(
     const std::string &asset_type,
