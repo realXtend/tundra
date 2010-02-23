@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_EtherMenu_h
 #define incl_UiModule_EtherMenu_h
 
-#include <QSharedPointer>
+#include <QScopedPointer>
 #include <QVector>
 #include <QPointF>
 #include <QGraphicsWidget>
