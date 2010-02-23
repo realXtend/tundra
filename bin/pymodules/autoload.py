@@ -128,7 +128,7 @@ modules = [
 ]
 
 #modules.append(headtrack.control.HeadTrack)
-
+import traceback
 def load(circuitsmanager):
     for klass in modules:
         #~ modinst = klass()
@@ -139,6 +139,7 @@ def load(circuitsmanager):
         except Exception, exc:
             print "failed to instansciate pymodule", klass
             print exc
+            traceback.print_exc()
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
 
