@@ -56,8 +56,8 @@ namespace Ether
 
             // Initialise menus
             QPair<View::EtherMenu*, View::EtherMenu*> menus;
-            menus.first = new View::VerticalMenu(View::VerticalMenu::VERTICAL_TOP);
-            menus.second = new View::VerticalMenu(View::VerticalMenu::VERTICAL_TOP);
+            menus.first = new View::VerticalMenu(View::VerticalMenu::VERTICAL_MID);
+            menus.second = new View::VerticalMenu(View::VerticalMenu::VERTICAL_MID);
 
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
