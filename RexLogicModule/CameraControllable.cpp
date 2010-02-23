@@ -291,7 +291,6 @@ namespace RexLogic
 
                     RexTypes::Vector3 pos = camera_placeable->GetPosition();
                     pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
-                    std::cout << pos << std::endl;
                     ClampPosition(pos);
                     camera_placeable->SetPosition(pos);
 
@@ -356,9 +355,8 @@ namespace RexLogic
                     {
                         float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
                         min_z = terrain_height + terrainConstraintOffset_;
-                        if (!useBoundaryBoxConstraint_)
-                            if (position.z < min_z)
-                                position.z = min_z;
+                        if (!useBoundaryBoxConstraint_ && position.z < min_z)
+                            position.z = min_z;
                     }
                 }
             }

@@ -105,6 +105,7 @@ void ItemPropertiesWindow::SetItem(InventoryAsset *item)
     lineEditName_->setText(item->GetName());
     lineEditDescription_->setText(item->GetDescription());
     labelAssetIdData_->setText(item->GetAssetReference());
+    labelTypeData_->setText(RexTypes::GetTypeNameFromAssetType(item->GetAssetType()).c_str());
     labelCreationTimeData_->setText(item->GetCreationTimeString());
 
     creatorId_ = item->GetCreatorId();
@@ -119,10 +120,9 @@ void ItemPropertiesWindow::SetItem(InventoryAsset *item)
     }
 }
 
-void ItemPropertiesWindow::HandleAssetReady(Foundation::AssetPtr asset)
+void ItemPropertiesWindow::SetFileSize(size_t file_size)
 {
-    labelTypeData_->setText(asset->GetType().c_str());
-    labelFileSizeData_->setText(QString::number(asset->GetSize()));
+    labelFileSizeData_->setText(QString::number(file_size) + " bytes");
 }
 
 void ItemPropertiesWindow::HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_map)

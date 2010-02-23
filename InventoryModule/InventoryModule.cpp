@@ -28,8 +28,8 @@
 #include <ConsoleCommandServiceInterface.h>
 #include <ResourceInterface.h>
 #include <RealXtend/RexProtocolMsgIDs.h>
-
 #include <UiModule.h>
+#include <AssetServiceInterface.h>
 
 #include <QObject>
 #include <QStringList>
@@ -444,8 +444,24 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     itemPropertiesWindows_[inventory_id] = wnd;
 
     if (inventoryType_ == IDMT_OpenSim)
-        if (asset)
-            static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SendNameUuidRequest(asset);
+    {
+        static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SendNameUuidRequest(asset);
+
+        // Get asset service interface and check if the asset is in cache.
+        // If it is, show file size to item properties UI. SLUDP protocol doesn't support querying asset size
+        // and we don't want download asset only just to know its size.
+        ///\todo If WebDAV supports this, utilize it.
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
+            return;
+
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+            service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+
+        Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset->GetAssetReference().toStdString(), GetTypeNameFromAssetType(asset->GetAssetType()));
+        if(assetPtr && assetPtr->GetSize() > 0)
+            wnd->SetFileSize(assetPtr->GetSize());
+    }
 }
 
 void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, bool save_changes)

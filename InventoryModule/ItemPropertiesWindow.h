@@ -57,9 +57,9 @@ namespace Inventory
         /// @param item Inventory asset.
         void SetItem(InventoryAsset *item);
 
-        /// 
-        /// @param
-        void HandleAssetReady(Foundation::AssetPtr asset);
+        /// Set the file size shown in the UI.
+        /// @param file_size File size.
+        void SetFileSize(size_t file_size);
 
         /// Handles UuidNameReply 
         /// Inserts the corresponding name to the UI if it matches with the UUID.

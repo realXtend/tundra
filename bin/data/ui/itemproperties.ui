@@ -107,7 +107,7 @@ QLabel {
          </widget>
         </item>
         <item row="4" column="2">
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="labelTypeData">
           <property name="text">
            <string/>
           </property>
@@ -123,21 +123,21 @@ QLabel {
         <item row="7" column="2">
          <widget class="QLabel" name="labelCreatorData">
           <property name="text">
-           <string>...</string>
+           <string>Unknown</string>
           </property>
          </widget>
         </item>
         <item row="8" column="2">
          <widget class="QLabel" name="labelOwnerData">
           <property name="text">
-           <string>...</string>
+           <string>Unknown</string>
           </property>
          </widget>
         </item>
         <item row="9" column="2">
          <widget class="QLabel" name="labelGroupData">
           <property name="text">
-           <string>...</string>
+           <string>Unknown</string>
           </property>
          </widget>
         </item>
@@ -151,7 +151,7 @@ QLabel {
         <item row="5" column="2">
          <widget class="QLabel" name="labelFileSizeData">
           <property name="text">
-           <string>...</string>
+           <string>Unknown</string>
           </property>
          </widget>
         </item>

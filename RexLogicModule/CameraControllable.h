@@ -75,6 +75,12 @@ namespace RexLogic
         //! Return terrain constraint offset.
         float GetTerrainConstraintOffset()const { return terrainConstraintOffset_; }
 
+        //! param value Do we use terrain constraint.
+        void SetUseBoundingBoxConstraint(bool value) { useBoundaryBoxConstraint_ = value; }
+
+        //! Returns true if we use terrain constraint for camera's position.
+        bool GetUseBoundingBoxConstraint() const { return useBoundaryBoxConstraint_; }
+
         //! Sets camera constraint boundary box.
         //! \param min Mimimum corner point.
         //! \param max Maximum corner point.
