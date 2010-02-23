@@ -110,7 +110,6 @@ class ObjectEdit(Component):
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         
     def select(self, ent):
-        r.logInfo("trying entity selected: " + str(ent.id))
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
         self.updateSelectionBox()
@@ -227,7 +226,6 @@ class ObjectEdit(Component):
                 elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
-                r.logInfo(str(self.sels))
         else:
             #print "canmove:", self.canmove
             self.canmove = False
@@ -250,29 +248,31 @@ class ObjectEdit(Component):
         
     def RightMousePressed(self, mouseinfo):
         #r.logInfo("rightmouse down")
-        self.right_button_down = True
-        
-        results = []
-        results = r.rayCast(mouseinfo.x, mouseinfo.y)
-        
-        ent = None
-        
-        if results is not None and results[0] != 0:
-            id = results[0]
-            ent = r.getEntity(id)
-        found = False
-        #print "Got entity:", ent
-        if ent is not None:
-            for entity in self.sels:
-                if entity.id == ent.id:
-                    found = True
+        if self.windowActive:
+            self.right_button_down = True
             
-            if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
-                if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
-                    if not found:
-                        self.sels.append(ent)
-                    
-        #r.logInfo(str(self.sels))
+            results = []
+            results = r.rayCast(mouseinfo.x, mouseinfo.y)
+            
+            ent = None
+            
+            if results is not None and results[0] != 0:
+                id = results[0]
+                ent = r.getEntity(id)
+            found = False
+            #print "Got entity:", ent
+            if ent is not None:
+                for entity in self.sels:
+                    if entity.id == ent.id:
+                        found = True
+                
+                if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
+                    if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
+                        if not found:
+                            self.sels.append(ent)
+                        self.select(ent)
+                        
+            #r.logInfo(str(self.sels))
         
     def RightMouseReleased(self, mouseinfo):
         #r.logInfo("rightmouse up")
@@ -317,7 +317,7 @@ class ObjectEdit(Component):
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
                     
-                    self.manipulator.manipulate(ent, amountx, amounty)                 
+                    self.manipulator.manipulate(self.sels, amountx, amounty)            
 
                     self.window.update_guivals(ent)
    
@@ -424,11 +424,10 @@ class ObjectEdit(Component):
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
     def deleteObject(self):
-        if self.sels:
-            thrashid = r.getTrashFolderId()
+        if self.active is not None:
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.id))
-                self.worldstream.SendObjectDeRezPacket(ent.id, trashid)
+                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
                 self.window.objectDeleted(str(ent.id))
             
             self.manipulator.hideManipulator()
@@ -438,7 +437,7 @@ class ObjectEdit(Component):
             
     def float_equal(self, a,b):
         #print abs(a-b), abs(a-b)<0.01
-        if abs(a-b) < 0.01:
+        if abs(a-b)<0.01:
             return True
         else:
             return False
