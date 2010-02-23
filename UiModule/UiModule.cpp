@@ -120,6 +120,7 @@ namespace UiServices
             {
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
+                    ether_logic_->Disconnected();
                     ether_logic_->UpdateUiPixmaps();
                     //ui_state_machine_->SwitchToEtherScene();
                     ui_scene_manager_->Disconnected();
@@ -158,6 +159,7 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
+                    ether_logic_->ConnectedToWorld();
                     ui_state_machine_->SwitchToInworldScene();
                     ui_scene_manager_->Connected();
                     QString welcome_message;

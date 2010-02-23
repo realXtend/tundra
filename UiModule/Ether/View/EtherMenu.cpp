@@ -385,7 +385,7 @@ namespace Ether
             else
             {
                 qreal scalemultiplier = (priority+1)/2;
-                scalevalue = pow(current_scale_factor_, scalemultiplier/*0.8*/);
+                scalevalue = pow(current_scale_factor_, scalemultiplier);
                 //scalevalue *= 0.9;
             }
 

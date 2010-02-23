@@ -6,6 +6,9 @@
 #include <QObject>
 #include <QGraphicsScene>
 
+#include <QScopedPointer>
+#include <QParallelAnimationGroup>
+
 #include "View/EtherScene.h"
 #include "View/VerticalMenu.h"
 
@@ -54,6 +57,9 @@ namespace Ether
             void RecalculateMenus();
             void TheResizer();
 
+            void StartLoginAnimation();
+            void RevertLoginAnimation();
+
         private slots:
             void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);
@@ -73,6 +79,9 @@ namespace Ether
             int top_menu_visible_items_;
             int bottom_menu_visible_items_;
             int menu_cap_size_;
+
+            //!animations
+            QScopedPointer<QParallelAnimationGroup> login_animations_;
 
             //! Max card size
             QRectF card_size_;

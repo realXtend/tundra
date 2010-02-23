@@ -417,6 +417,16 @@ namespace Ether
             }
         }
 
+        void EtherLogic::Disconnected()
+        {
+            scene_controller_->RevertLoginAnimation();
+        }
+
+        void EtherLogic::ConnectedToWorld()
+        {
+            scene_controller_->RevertLoginAnimation();
+        }
+
         void EtherLogic::RemoveObjectFromData(QUuid uuid)
         {
             if (avatar_card_map_.contains(uuid))
