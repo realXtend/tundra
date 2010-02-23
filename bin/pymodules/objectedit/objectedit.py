@@ -424,10 +424,11 @@ class ObjectEdit(Component):
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
     def deleteObject(self):
-        if self.active is not None:
+        if self.sels:
+            thrashid = r.getTrashFolderId()
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.id))
-                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+                self.worldstream.SendObjectDeRezPacket(ent.id, trashid)
                 self.window.objectDeleted(str(ent.id))
             
             self.manipulator.hideManipulator()
@@ -437,7 +438,7 @@ class ObjectEdit(Component):
             
     def float_equal(self, a,b):
         #print abs(a-b), abs(a-b)<0.01
-        if abs(a-b)<0.01:
+        if abs(a-b) < 0.01:
             return True
         else:
             return False

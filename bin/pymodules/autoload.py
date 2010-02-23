@@ -7,8 +7,13 @@ whatever loading that you want (in your module i.e. .py file).
 """
 import rexviewer as r
 import sys
+import traceback
 
-def load_module(modulename):
+"""
+this should be completed and put to use for all loading to get rid of the copy-paste here.
+best example now is objectedit loading, 'cause it has the import exc handling too.
+ 
+def freshimport(modulename): #aka. load_or_reload
     print "Loading", modulename,
     try:
         exec(modulename)
@@ -19,8 +24,10 @@ def load_module(modulename):
         print "- reload."
         exec("%s = reload(%s)" % (modulename, modulename))
     return sys.modules[modulename]
+"""
 
-#reload-on-the fly test - how to make generic for all modules?
+modules = []
+
 try:
     apitest.circuits_testmodule
 except: #first run
@@ -48,15 +55,24 @@ else:
 #~ usr.keycommands = load_module("usr.keycommands")
 
 try:
-    objectedit.objectedit #only_layout
+    objectedit.objectedit
 except: #first run
     try:
-        import objectedit.objectedit #only_layout
-    except ImportError, e:
-        print "couldn't load objectedit:", e
+        import objectedit.objectedit
+    except:  #ImportError, e:
+        print "couldn't load objectedit:"
+        traceback.print_exc()
+    else:
+        modules.append(objectedit.objectedit.ObjectEdit) #copy-pasted from the other successful case below :/
 else:
     r.logDebug("   reloading objectedit")
-    objectedit.objectedit = reload(objectedit.objectedit) #only_layout)
+    try:
+        objectedit.objectedit = reload(objectedit.objectedit)
+    except: #e.g. a syntax error in the source, reload fail
+        print "couldn't reload objectedit:"
+        traceback.print_exc()
+    else:
+        modules.append(objectedit.objectedit.ObjectEdit)
 
 #~ editgui = load_module("editgui")
 
@@ -113,22 +129,21 @@ else:
 import apitest.testrunner
 import mediaurlhandler.mediaurlhandler
     
-modules = [
+modules.extend([
     #apitest.circuits_testmodule.TestModule,
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout,
+    #objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout, #now at import for failsafety
     usr.anonlogin.AnonLogin,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
     #apitest.testrunner.TestLoginLogoutExit,
-]
+])
 
 #modules.append(headtrack.control.HeadTrack)
-import traceback
 def load(circuitsmanager):
     for klass in modules:
         #~ modinst = klass()
