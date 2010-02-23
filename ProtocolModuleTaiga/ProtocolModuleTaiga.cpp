@@ -115,6 +115,10 @@ namespace TaigaProtocol
 				clientParameters_ = loginWorker_.GetClientParameters();
 				loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 			}
+            else if (loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
+            {
+                eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, 0);
+            }
 	        
 			if (connected_)
 			{

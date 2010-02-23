@@ -52,8 +52,7 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void Disconnected();
-            void ConnectedToWorld();
+            void SetConnectionState(QString state);
 
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }

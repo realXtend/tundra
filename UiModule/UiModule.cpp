@@ -84,7 +84,7 @@ namespace UiServices
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
-        //ui_state_machine_->SwitchToEtherScene(); // uncomment when ether is default on startup
+        ui_state_machine_->SwitchToEtherScene(); // uncomment when ether is default on startup
         LogDebug("Ether Logic STARTED");
     }
 
@@ -118,12 +118,17 @@ namespace UiServices
         {
             switch (event_id)
             {
+                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
+                {
+                    ether_logic_->SetConnectionState("failed");
+                    break;
+                }
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
-                    ether_logic_->Disconnected();
                     ether_logic_->UpdateUiPixmaps();
-                    //ui_state_machine_->SwitchToEtherScene();
+                    ui_state_machine_->SwitchToEtherScene();
                     ui_scene_manager_->Disconnected();
+                    ether_logic_->SetConnectionState("disconnected");
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
@@ -159,9 +164,10 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    ether_logic_->ConnectedToWorld();
+                    ether_logic_->SetConnectionState("connected");
                     ui_state_machine_->SwitchToInworldScene();
                     ui_scene_manager_->Connected();
+
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())
                         welcome_message = current_avatar_ + " welcome to " + current_server_;

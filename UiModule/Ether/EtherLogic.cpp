@@ -365,7 +365,6 @@ namespace Ether
                 if (oa)
                     new_avatar_card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(oa->id()), 
                                                          oa->userName(), oa->pixmapPath());
-
             }
             else if (avatar_data->avatarType() == AvatarTypes::RealXtend)
             {
@@ -417,14 +416,14 @@ namespace Ether
             }
         }
 
-        void EtherLogic::Disconnected()
+        void EtherLogic::SetConnectionState(QString state)
         {
-            scene_controller_->RevertLoginAnimation();
-        }
-
-        void EtherLogic::ConnectedToWorld()
-        {
-            scene_controller_->RevertLoginAnimation();
+            if (state == "failed")
+                scene_controller_->RevertLoginAnimation(false);
+            else if (state == "disconnected")
+                scene_controller_->RevertLoginAnimation(true);
+            else if (state == "connected")
+                scene_controller_->RevertLoginAnimation(true);
         }
 
         void EtherLogic::RemoveObjectFromData(QUuid uuid)
