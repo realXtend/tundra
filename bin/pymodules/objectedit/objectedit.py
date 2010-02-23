@@ -270,7 +270,8 @@ class ObjectEdit(Component):
                     if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
                         if not found:
                             self.sels.append(ent)
-                        self.select(ent)
+                            self.select(ent)
+                        self.canmove = True
                         
             #r.logInfo(str(self.sels))
         
@@ -290,7 +291,7 @@ class ObjectEdit(Component):
         
         if self.windowActive:
             if self.left_button_down :
-                ent = self.active #XXX use first or last... ?
+                ent = self.active
                 #print "on_mousemove + hold:", mouseinfo
                 if ent is not None and self.sel_activated and self.canmove:
                     self.dragging = True
