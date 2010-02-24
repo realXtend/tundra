@@ -3,23 +3,26 @@
 #include "StableHeaders.h"
 #include "TimeProfilerWindow.h"
 #include "Profiler.h"
+#include "NetworkMessages/NetMessageManager.h"
+#include "DebugStats.h"
 
 #include <utility>
+
 #include <QVBoxLayout>
 #include <QTreeWidget>
 #include <QUiLoader>
 #include <QFile>
 #include <QHeaderView>
+#include <QPainter>
 
 #include <Ogre.h>
 #include <OgreFontManager.h>
-#include "NetworkMessages/NetMessageManager.h"
 
 using namespace std;
 
 TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
-                                       Foundation::Framework *framework)
-:framework_(framework)
+                                       DebugStats::DebugStatsModule *owner)
+:framework_(owner->GetFramework()), owner_(owner)
 {
     QUiLoader loader;
     QFile file("./data/ui/profiler.ui");
@@ -31,6 +34,7 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
     QVBoxLayout *layout = new QVBoxLayout;
     assert(layout);
     layout->addWidget(contents_widget_);
+    layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
 
     tree_profiling_data_ = findChild<QTreeWidget*>("treeProfilingData");
@@ -98,7 +102,7 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
     push_button_toggle_tree_ = findChild<QPushButton*>("pushButtonToggleTree");
     push_button_collapse_all_ = findChild<QPushButton*>("pushButtonCollapseAll");
     push_button_expand_all_ = findChild<QPushButton*>("pushButtonExpandAll");
-    push_button_show_unused_ = findChild<QPushButton*>("pushButtonshow_unused_");
+    push_button_show_unused_ = findChild<QPushButton*>("pushButtonShowUnused");
     assert(push_button_toggle_tree_);
     assert(push_button_collapse_all_);
     assert(push_button_expand_all_);
@@ -107,7 +111,7 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
    QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
    QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-   QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(show_unused_ButtonPressed()));
+   QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
    frame_time_update_x_pos_ = 0;
 }
@@ -139,7 +143,7 @@ void TimeProfilerWindow::ExpandAllButtonPressed()
     tree_profiling_data_->expandAll();
 }
 
-void TimeProfilerWindow::show_unused_ButtonPressed()
+void TimeProfilerWindow::ShowUnusedButtonPressed()
 {
     show_unused_ = !show_unused_;
     tree_profiling_data_->clear();
@@ -292,7 +296,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;// Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
         color = (fmod(age, 2.0) >= 1.0) ? colorOdd : colorEven;
 #endif
-        if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 && frameTimes[firstEntry + i].second >= okFrameTime) || frameTimes[firstEntry + i].second >= maxAllowedFrameTime)
+        if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 &&
+            frameTimes[firstEntry + i].second >= okFrameTime) || frameTimes[firstEntry + i].second >= maxAllowedFrameTime)
             color = colorTrouble;
 
         painter.setPen(QColor(color));
@@ -335,6 +340,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     label_time_per_frame_->setText(str);
 }
 
+/*
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
     contents_widget_->resize(this->width()-10, this->height()-10);
@@ -350,6 +356,7 @@ void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
     label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
 }
+*/
 
 int TimeProfilerWindow::ReadProfilingRefreshInterval()
 {
@@ -821,3 +828,9 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     int pidStat = simStats->ReadS32();
     label_pid_stat_->setText(QString("%1").arg(pidStat));
 }
+
+void TimeProfilerWindow::Closed()
+{
+    owner_->CloseProfilingWindow();
+}
+

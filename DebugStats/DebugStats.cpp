@@ -2,8 +2,10 @@
 
 #include "StableHeaders.h"
 #include "DebugStats.h"
-#include "UiProxyWidget.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
+
+#include <UiModule.h>
+#include <UiProxyWidget.h>
 
 #include <utility>
 
@@ -26,7 +28,6 @@ DebugStatsModule::DebugStatsModule()
 
 DebugStatsModule::~DebugStatsModule()
 {
-	
 }
 
 void DebugStatsModule::Load()
@@ -77,23 +78,42 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
         //return;
 
         // Now we need play 'singleton' with the UI subsystem.
-        profilerWindow_->show();
+        //profilerWindow_->show();
         return Console::ResultSuccess();
 //        delete profilerWindow_;
     }
 
-    profilerWindow_ = new TimeProfilerWindow(ui_module.get(), framework_);
-    UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(profilerWindow_);
-    proxy->show();    
+    profilerWindow_ = new TimeProfilerWindow(ui_module.get(), this);
+    UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(profilerWindow_,
+        UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
+    //Desired: profilerWindow_->show();
+    // Instead of:
+    proxy->show();
+    // The following should not be needed if the size was properly set in Designer.
     proxy->resize(650, 530);
-    proxy->setWindowTitle("Profiler");
+    // Assuming size needs to be se in a custom way:
+    // profilerWindow_->resize();
+    
+//    proxy->setWindowTitle("Profiler");
 
+    QObject::connect(proxy, SIGNAL(Closed()), profilerWindow_, SLOT(Closed()));
+//  Desired:    QObject::connect(profilerWindow_, SIGNAL(Closed()), profilerWindow_, SLOT(Closed()));
+//  This should be in profilerWindow_.
+
+// profilerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+//connect(profilerWindow_, SIGNAL(Destroyed(QObject *)), this, CloseProfilingWindow());
     if (current_world_stream_)
         profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
     profilerWindow_->RefreshProfilingData();
 
     return Console::ResultSuccess();
+}
+
+void DebugStatsModule::CloseProfilingWindow()
+{
+    profilerWindow_->deleteLater();
+    profilerWindow_ = 0;
 }
 
 void DebugStatsModule::Uninitialize()
