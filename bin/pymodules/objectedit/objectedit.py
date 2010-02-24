@@ -272,6 +272,10 @@ class ObjectEdit(Component):
                         if not found:
                             self.sels.append(ent)
                             self.select(ent)
+                        else:
+                            for _ent in self.sels:
+                                if _ent.id == ent.id:
+                                    self.sels.remove(_ent)
                         self.canmove = True
                         
             #r.logInfo(str(self.sels))
