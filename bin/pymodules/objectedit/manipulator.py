@@ -105,7 +105,6 @@ class Manipulator:
             width, height = r.getScreenSize()
             campos = Vector3(r.getCameraPosition())
             for ent in ents:
-
                 entpos = Vector3(ent.pos)
                 length = (campos-entpos).length
                 
@@ -192,6 +191,8 @@ class FreeMoveManipulator(Manipulator):
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
-        entpos = Vector3(ent.pos)
-        newpos = entpos + changevec
-        ent.pos = newpos.x, newpos.y, newpos.z
+        #print changevec.length
+        if changevec.length < 1.0:
+            entpos = Vector3(ent.pos)
+            newpos = entpos + changevec
+            ent.pos = newpos.x, newpos.y, newpos.z

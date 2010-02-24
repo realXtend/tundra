@@ -227,7 +227,7 @@ class ObjectEdit(Component):
                         found = True
                
                 if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
-                    if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():#terrain seems to be 3 and scene objects always big numbers, so > 50 should be good
+                    if self.validId(ent.id):
                         if not found:
                             self.sels = []
                             self.sels.append(ent)
@@ -279,7 +279,7 @@ class ObjectEdit(Component):
                         found = True
                 
                 if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
-                    if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
+                    if self.validId(ent.id):
                         if not found:
                             self.sels.append(ent)
                             self.multiselect(ent)
@@ -290,6 +290,12 @@ class ObjectEdit(Component):
                         self.canmove = True
                         
             #r.logInfo(str(self.sels))
+    def validId(self, id):
+        if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
+            if id != r.getUserAvatarId(): #add other avatar id's check
+                if not self.manipulator.compareIds(id) and id != self.selection_box.id:
+                    return True
+        return False
         
     def RightMouseReleased(self, mouseinfo):
         #r.logInfo("rightmouse up")
