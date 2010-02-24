@@ -193,7 +193,6 @@ class ObjectEdit(Component):
             ent = r.getEntity(id)
 
         if not self.manipulatorsInit:
-            r.logInfo("should init manipulators")
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
@@ -357,8 +356,9 @@ class ObjectEdit(Component):
             
     def duplicate(self):
         #print "duplicate clicked"
-        ent = self.active
-        if ent is not None:
+        #ent = self.active
+        #if ent is not None:
+        for ent in self.sels:
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
         
     def createObject(self):
