@@ -150,7 +150,7 @@ void ItemPropertiesWindow::Cancel()
         return;
 
     ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
-    owner_->CloseItemPropertiesWindow(inventoryId_, true);
+    owner_->CloseItemPropertiesWindow(inventoryId_, false);
 }
 
 bool ItemPropertiesWindow::EditingFinished()

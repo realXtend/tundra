@@ -3,6 +3,9 @@
 #ifndef incl_DebugStats_TimeProfilerWindow_h
 #define incl_DebugStats_TimeProfilerWindow_h
 
+#include "Framework.h"
+#include "WorldStream.h"
+
 #include <QTreeWidget>
 #include <QTimer>
 #include <QComboBox>
@@ -11,17 +14,29 @@
 #include <QTreeWidget>
 #include <QPushButton>
 
-#include "Framework.h"
-#include "UiModule.h"
-#include "WorldStream.h"
-#include "NetworkMessages/NetInMessage.h"
 #include <boost/cstdint.hpp>
+
+namespace ProtocolUtilities
+{
+    class NetInMessage;
+}
+
+namespace UiServices
+{
+    class UiModule;
+}
+
+namespace DebugStats
+{
+    class DebugStatsModule;
+}
 
 class TimeProfilerWindow : public QWidget
 {
     Q_OBJECT
 
     Foundation::Framework *framework_;
+    DebugStats::DebugStatsModule *owner_;
 
     QTreeWidget *tree_profiling_data_;
     QComboBox *combo_timing_refresh_interval_;
@@ -56,11 +71,11 @@ class TimeProfilerWindow : public QWidget
     void RefreshProfilingDataTree();
     void RefreshProfilingDataList();
     void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
-    void resizeEvent(QResizeEvent *event);
+//    void resizeEvent(QResizeEvent *event);
 
 public:
     /// The ctor adds this window to scene, but does not show it.
-    explicit TimeProfilerWindow(UiServices::UiModule *uiModule, Foundation::Framework *framework);
+    explicit TimeProfilerWindow(UiServices::UiModule *uiModule, DebugStats::DebugStatsModule *owner);
     void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
     void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
@@ -74,7 +89,10 @@ public slots:
     void ToggleTreeButtonPressed();
     void CollapseAllButtonPressed();
     void ExpandAllButtonPressed();
-    void show_unused_ButtonPressed();
+    void ShowUnusedButtonPressed();
+    
+public slots:
+    void Closed();
 };
 
 #endif

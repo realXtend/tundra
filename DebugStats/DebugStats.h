@@ -49,6 +49,7 @@ public:
     static const std::string ModuleName;
 
     Console::CommandResult ShowProfilingWindow(const StringVector &params);
+    void CloseProfilingWindow();
 
 private:
     /// A history of estimated frame times.
