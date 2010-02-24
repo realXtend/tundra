@@ -344,11 +344,13 @@ void InventoryWindow::InitInventoryWindow()
 
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory.ui");
-    mainWidget_ = loader.load(&uiFile, 0);
+    mainWidget_ = loader.load(&uiFile, this);
     uiFile.close();
 
     /// Layout 
     layout_ = new QVBoxLayout;
+    layout_->addWidget(mainWidget_);
+    layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 //    QLineEdit *lineEditSearch_ = new QLineEdit(this);
 

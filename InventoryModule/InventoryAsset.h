@@ -115,7 +115,7 @@ namespace Inventory
         time_t GetCreationTime() const { return creationTime_; }
 
         /// Returns creation time as a string.
-        QString GetCreationTimeString() const { return asctime(localtime(&creationTime_)); }
+        QString GetCreationTimeString() const;
 
         /// @return Row number of this inventory asset.
 //        int Row() const;

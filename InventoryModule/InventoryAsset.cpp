@@ -60,4 +60,11 @@ int InventoryAsset::Row() const
 }
 */
 
+QString InventoryAsset::GetCreationTimeString() const
+{
+    QString str = asctime(localtime(&creationTime_));
+    // remove \n from the end
+    str.remove(QChar('\n'), Qt::CaseInsensitive);
+    return str;
+}
 }

@@ -33,26 +33,13 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     QUiLoader loader;
     QFile file("./data/ui/itemproperties.ui");
     file.open(QFile::ReadOnly);
-    mainWidget_ = loader.load(&file, this);
+    mainWidget_ = loader.load(&file);
     file.close();
 
     layout_ = new QVBoxLayout;
     layout_->addWidget(mainWidget_);
+    layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
-
-/*
-    setStyleSheet(
-        "QWidget"
-        "{"
-        "background-color: qlineargradient("
-            "spread:pad, x1:0.006, y1:0, x2:0, y2:1,"
-            "stop:0.142045 rgba(229, 234, 243, 50),"
-            "stop:0.295455 rgba(209, 215, 221, 150),"
-            "stop:0.65 rgba(179, 183, 196, 150),"
-            "stop:1 rgba(222, 227, 236, 100));"
-            "padding: 5px;"
-        "}");
-*/
 
     // Get widgets and connect signals
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
