@@ -48,7 +48,7 @@ namespace Ether
             pixmap_path_ = pixmap_path;
 
             // Pixmap
-            QSize image_size(531, 368);
+            QSize image_size(bounding_rectf_.width()-4*2, bounding_rectf_.height()-19-12);
 
             pixmap_.load(pixmap_path_);
             if (pixmap_.rect().width() < image_size.width() && pixmap_.rect().height() < image_size.height())

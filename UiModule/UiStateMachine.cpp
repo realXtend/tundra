@@ -79,6 +79,8 @@ namespace UiServices
             QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget*>(item);
             if (!widget)
                 continue;
+            if (!widget->isVisible())
+                continue;
 
             QPropertyAnimation *anim = new QPropertyAnimation(widget, "opacity", animations_group);
             anim->setDuration(300);
@@ -86,6 +88,8 @@ namespace UiServices
             anim->setEndValue(0);
             animations_group->addAnimation(anim);
         }
+
+        CheckAnimationTargets(animations_group);
         animations_group->setDirection(QAbstractAnimation::Forward);
         animations_group->start();
     }
@@ -109,6 +113,10 @@ namespace UiServices
     {
         if (!scene_map_.contains(name))
             scene_map_[name] = scene;
+
+        // Scene spesific connections
+        if (name == "Ether")
+            connect(scene, SIGNAL( EtherSceneReadyForSwitch() ), SLOT( SwitchToInworldScene() ));
     }
     
     void UiStateMachine::SwitchToScene(QString name)
@@ -127,8 +135,22 @@ namespace UiServices
 
         if (animations_map_.contains(current_scene_))
         {
-            animations_map_[current_scene_]->setDirection(QAbstractAnimation::Backward);
-            animations_map_[current_scene_]->start();
+            QParallelAnimationGroup *animations = animations_map_[current_scene_];
+            CheckAnimationTargets(animations);
+            animations->setDirection(QAbstractAnimation::Backward);
+            animations->start();
+        }
+    }
+
+    void UiStateMachine::CheckAnimationTargets(QParallelAnimationGroup *animations)
+    {
+        for (int i=0; i<animations->animationCount(); i++)
+        {
+            QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(animations->animationAt(i));
+            if (!anim)
+                continue;
+            if (!anim->targetObject())
+                animations->removeAnimation(anim);
         }
     }
 }

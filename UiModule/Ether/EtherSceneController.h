@@ -58,7 +58,7 @@ namespace Ether
             void TheResizer();
 
             void StartLoginAnimation();
-            void RevertLoginAnimation(bool refresh_after_done);
+            void RevertLoginAnimation(bool change_scene_after_anims_finish);
 
         private slots:
             void ControlsWidgetHandler(QString request_type);
@@ -104,7 +104,7 @@ namespace Ether
 
             int last_scale_;
 
-            bool refresh_menus_;
+            bool change_scene_after_anims_finish_;
 
         signals:
             void ApplicationExitRequested();
