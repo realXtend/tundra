@@ -54,7 +54,7 @@ namespace Ether
 
                     // Umm.. default image test baby
                     if (image_path.isEmpty())
-                        image_path = "./data/ui/images/ether/naali.jpg";
+                        image_path = "./data/ui/images/ether/naali.png";
 
                     switch (type)
                     {
@@ -106,7 +106,7 @@ namespace Ether
                 avatar_settings.beginGroup(uuid_string);
                 avatar_settings.setValue("type", avatar_info->avatarType());
                 if (avatar_info->pixmapPath().isEmpty())
-                    avatar_info->setPixmapPath("./data/ui/images/ether/naali.jpg");
+                    avatar_info->setPixmapPath("./data/ui/images/ether/naali.png");
 
                 switch (type)
                 {
@@ -253,7 +253,7 @@ namespace Ether
 
                     // Umm.. default image test baby
                     if (image_path.isEmpty())
-                        image_path = "./data/ui/images/ether/world.jpg";
+                        image_path = "./data/ui/images/ether/world.png";
 
                     switch (type)
                     {
@@ -292,7 +292,7 @@ namespace Ether
                 world_settings.beginGroup(uuid_string);
                 world_settings.setValue("type", world_info->worldType());
                 if (world_info->pixmapPath().isEmpty())
-                    world_info->setPixmapPath("./data/ui/images/ether/world.jpg");
+                    world_info->setPixmapPath("./data/ui/images/ether/world.png");
 
                 switch (type)
                 {

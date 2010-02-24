@@ -50,9 +50,9 @@ namespace Ether
             if (!QFile::exists(pixmap_path))
             {
                 if (dataType() == Avatar)
-                    pixmap_path_ = "./data/ui/images/ether/naali.jpg";
+                    pixmap_path_ = "./data/ui/images/ether/naali.png";
                 else if (dataType() == World)
-                    pixmap_path_ = "./data/ui/images/ether/world.jpg";
+                    pixmap_path_ = "./data/ui/images/ether/world.png";
             }
             else
                 pixmap_path_ = pixmap_path;
