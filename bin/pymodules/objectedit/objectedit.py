@@ -119,6 +119,10 @@ class ObjectEdit(Component):
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
     
     def select(self, ent):
+        self.sels = []
+        self.sels.append(ent)
+        self.canmove = True
+        
         self.baseselect(ent)
         self.window.selected(ent)
 
@@ -223,11 +227,7 @@ class ObjectEdit(Component):
                 if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
                     if self.validId(ent.id):
                         if not found:
-                            self.sels = []
-                            self.sels.append(ent)
-                        
                             self.select(ent)
-                            self.canmove = True
 
                 elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
