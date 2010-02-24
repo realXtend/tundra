@@ -5,4 +5,5 @@
    <dependency>SupportModules</dependency>
    <dependency>OgreRenderingModule</dependency>
    <dependency>UiModule</dependency>
+   <dependency>EnvironmentModule</dependency>
 </config>
