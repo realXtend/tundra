@@ -126,9 +126,10 @@ namespace UiServices
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
                     ether_logic_->UpdateUiPixmaps();
+                    ether_logic_->SetConnectionState("disconnected");
                     ui_state_machine_->SwitchToEtherScene();
                     ui_scene_manager_->Disconnected();
-                    ether_logic_->SetConnectionState("disconnected");
+                    
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
@@ -164,9 +165,8 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    ether_logic_->SetConnectionState("connected");
-                    ui_state_machine_->SwitchToInworldScene();
                     ui_scene_manager_->Connected();
+                    ether_logic_->SetConnectionState("connected");
 
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())

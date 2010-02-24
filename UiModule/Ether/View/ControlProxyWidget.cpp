@@ -56,49 +56,50 @@ namespace Ether
             // Text label
             text_label_ = new QLabel(text_, parent_);
             text_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-            text_label_->setMaximumWidth(300);
+            text_label_->setMaximumWidth(490);
             text_label_->setStyleSheet("color: white");
-            text_label_->setFont(QFont("Narkisim", 24));
+            text_label_->setFont(QFont("Narkisim", 18));
             text_label_->setAlignment(Qt::AlignCenter);
-            text_label_->setMinimumWidth(300);
-
-            // Buttons
-            QPushButton *add_button = new QPushButton(parent_);
-            add_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/add_button.png'); }"
-                                              "QPushButton::hover { background-image: url('./data/ui/images/ether/add_button_hover.png'); }"
-                                              "QPushButton::pressed { background-image: url('./data/ui/images/ether/add_button_pressed.png'); }").arg(button_style));
-            add_button->setFlat(true);
-            add_button->resize(button_size);
-
-            QPushButton *remove_button = new QPushButton(parent_);
-            remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/remove_button.png'); }"
-                                                 "QPushButton::hover { background-image: url('./data/ui/images/ether/remove_button_hover.png'); }"
-                                                 "QPushButton::pressed { background-image: url('./data/ui/images/ether/remove_button_pressed.png'); }").arg(button_style));
-            remove_button->setFlat(true);
-            remove_button->resize(button_size);
-
-            QPushButton *info_button = new QPushButton(parent_);
-            info_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/info_button.png'); }"
-                                               "QPushButton::hover { background-image: url('./data/ui/images/ether/info_button_hover.png'); }"
-                                               "QPushButton::pressed { background-image: url('./data/ui/images/ether/info_button_pressed.png'); }").arg(button_style));
-            info_button->setFlat(true);
-            info_button->resize(button_size);
-
-            QPushButton *question_button = new QPushButton(parent_);
-            question_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/question_button.png'); }"
-                                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/question_button_hover.png'); }"
-                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/question_button_pressed.png'); }").arg(button_style));
-            question_button->setFlat(true);
-            question_button->resize(button_size);
-
-            // Set handlers
-            connect(add_button, SIGNAL(clicked()), SLOT(AddHandler()));
-            connect(remove_button, SIGNAL(clicked()), SLOT(RemoveHandler()));
-            connect(info_button, SIGNAL(clicked()), SLOT(InfoHandler()));
-            connect(question_button, SIGNAL(clicked()), SLOT(QuestionHandler()));
+            text_label_->setMinimumWidth(490);
 
             if (direction_ == BottomToTop)
             {
+                // Buttons
+                QPushButton *add_button = new QPushButton(parent_);
+                add_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/add_button.png'); }"
+                                                  "QPushButton::hover { background-image: url('./data/ui/images/ether/add_button_hover.png'); }"
+                                                  "QPushButton::pressed { background-image: url('./data/ui/images/ether/add_button_pressed.png'); }").arg(button_style));
+                add_button->setFlat(true);
+                add_button->resize(button_size);
+
+                QPushButton *remove_button = new QPushButton(parent_);
+                remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/remove_button.png'); }"
+                                                     "QPushButton::hover { background-image: url('./data/ui/images/ether/remove_button_hover.png'); }"
+                                                     "QPushButton::pressed { background-image: url('./data/ui/images/ether/remove_button_pressed.png'); }").arg(button_style));
+                remove_button->setFlat(true);
+                remove_button->resize(button_size);
+
+                QPushButton *info_button = new QPushButton(parent_);
+                info_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/info_button.png'); }"
+                                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/info_button_hover.png'); }"
+                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/info_button_pressed.png'); }").arg(button_style));
+                info_button->setFlat(true);
+                info_button->resize(button_size);
+
+                QPushButton *question_button = new QPushButton(parent_);
+                question_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/question_button.png'); }"
+                                                       "QPushButton::hover { background-image: url('./data/ui/images/ether/question_button_hover.png'); }"
+                                                       "QPushButton::pressed { background-image: url('./data/ui/images/ether/question_button_pressed.png'); }").arg(button_style));
+                question_button->setFlat(true);
+                question_button->resize(button_size);
+
+                // Set handlers
+                connect(add_button, SIGNAL(clicked()), SLOT(AddHandler()));
+                connect(remove_button, SIGNAL(clicked()), SLOT(RemoveHandler()));
+                connect(info_button, SIGNAL(clicked()), SLOT(InfoHandler()));
+                connect(question_button, SIGNAL(clicked()), SLOT(QuestionHandler()));
+
+
                 parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_top.png'); background-position: top left; background-repeat: no-repeat; }");   
                 widget_map_[text_label_] = BottomCenter;
                 //widget_map_[add_button] = TopRight;
@@ -206,11 +207,11 @@ namespace Ether
                 qreal yoffset = 0;
 
                 // Calculate new position
-                QSize overlay_size(539,494);
-                int name_height = 55 * scale;
-                int button_height = 64 * scale;
+                QSize overlay_size(490,449);
+                int name_height = 50 * scale;
+                int button_height = 58 * scale;
                 if (direction_ == TopToBottom)
-                    new_rect.setY(new_rect.y()-button_height + 19 * scale);
+                    new_rect.setY(new_rect.y()-button_height + 15 * scale);
                 else if (direction_ == BottomToTop)
                     new_rect.setY(new_rect.y()-button_height + 15 * scale);
                 new_rect.setWidth(overlay_size.width());
@@ -225,11 +226,11 @@ namespace Ether
                     {
                         case BottomCenter:
                             pos.setX(new_rect.width()/2 - w->width()/2);
-                            pos.setY(new_rect.height() - 40);
+                            pos.setY(new_rect.height() - 35);
                             break;
                         case TopCenter:
                             pos.setX(new_rect.width()/2 - w->width()/2);
-                            pos.setY(15);
+                            pos.setY(18);
                             break;
                         case LeftCenter:
                         case RightCenter:

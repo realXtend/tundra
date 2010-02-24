@@ -36,6 +36,8 @@ namespace UiServices
         void AnimationsStart();
         void AnimationsFinished();
 
+        void CheckAnimationTargets(QParallelAnimationGroup *animations);
+
     private:
         QStateMachine *state_machine_;
         QState *state_ether_;

@@ -63,6 +63,8 @@ namespace Ether
             world_info_widget_ = 0;
             control_widget_ = 0;
             action_proxy_widget_ = 0;
+
+
         }
 
         void EtherSceneController::LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene)
@@ -197,7 +199,7 @@ namespace Ether
             View::InfoCard *hightlight_top = top_menu_->GetHighlighted();
             View::InfoCard *hightlight_bottom = bottom_menu_->GetHighlighted();
             qreal present_scale = hightlight_top->scale();
-            qreal scaled_margin = 65.00 * present_scale;
+            qreal scaled_margin = 58.00 * present_scale;
             bool do_fade = true;
             
             // Controls rect
@@ -339,7 +341,8 @@ namespace Ether
             QPair<View::InfoCard*, View::InfoCard*> selected_cards;
             selected_cards.first = top_menu_->GetHighlighted();
             selected_cards.second = bottom_menu_->GetHighlighted();
-
+            
+            scene_->SupressKeyEvents(true);
             StartLoginAnimation();
             emit LoginRequest(selected_cards);
         }
@@ -361,7 +364,8 @@ namespace Ether
                     QPropertyAnimation* anim = new QPropertyAnimation(card, "opacity", login_animations_);
                     anim->setStartValue(card->opacity());
                     anim->setEndValue(0);
-                    anim->setDuration(1000);
+                    anim->setDuration(2000);
+                    anim->setEasingCurve(QEasingCurve::InOutSine);
                     login_animations_->addAnimation(anim);
                 }
             }
@@ -381,32 +385,40 @@ namespace Ether
 
             // Calculate positions
             QPointF pos1 = last_active_top_card_->pos();
-            pos1.setY(pos1.y() + diff);
+            pos1.setY(pos1.y() + diff + 3);
 
             QPointF pos2 = avatar_info_widget_->pos();
-            pos2.setY(pos2.y() + diff);
+            pos2.setY(pos2.y() + diff + 3);
 
             QPointF pos3 = last_active_bottom_card_->pos();
-            pos3.setY(pos3.y() - diff);
+            pos3.setY(pos3.y() - diff - 3);
 
             QPointF pos4 = world_info_widget_->pos();
-            pos4.setY(pos4.y() - diff);
+            pos4.setY(pos4.y() - diff - 3);
 
             anim1->setStartValue(last_active_top_card_->pos());
+            anim1->setKeyValueAt(0.3, QPointF(last_active_top_card_->pos().x(), last_active_top_card_->pos().y()-10));
             anim1->setEndValue(pos1);
-            anim1->setDuration(1000);
+            anim1->setDuration(2000);
+            anim1->setEasingCurve(QEasingCurve::OutBounce);
 
             anim2->setStartValue(avatar_info_widget_->pos());
+            anim2->setKeyValueAt(0.3, QPointF(avatar_info_widget_->pos().x(), avatar_info_widget_->pos().y()-10));
             anim2->setEndValue(pos2);
-            anim2->setDuration(1000);
+            anim2->setDuration(2000);
+            anim2->setEasingCurve(QEasingCurve::OutBounce);
 
             anim3->setStartValue(last_active_bottom_card_->pos());
+            anim3->setKeyValueAt(0.4, QPointF(last_active_bottom_card_->pos().x(), last_active_bottom_card_->pos().y()+10));
             anim3->setEndValue(pos3);
-            anim3->setDuration(1000);
+            anim3->setDuration(2000);
+            anim3->setEasingCurve(QEasingCurve::OutBounce);
 
             anim4->setStartValue(world_info_widget_->pos());
+            anim4->setKeyValueAt(0.4, QPointF(world_info_widget_->pos().x(), world_info_widget_->pos().y()+10));
             anim4->setEndValue(pos4);
-            anim4->setDuration(1000);
+            anim4->setDuration(2000);
+            anim4->setEasingCurve(QEasingCurve::OutBounce);
 
             // Add animations to the group
             login_animations_->addAnimation(anim1);
@@ -418,19 +430,28 @@ namespace Ether
             login_animations_->start();
         }
 
-        void EtherSceneController::RevertLoginAnimation(bool refresh_after_done)
+        void EtherSceneController::RevertLoginAnimation(bool change_scene_after_anims_finish)
         {
-            refresh_menus_ = refresh_after_done;
+            change_scene_after_anims_finish_ = change_scene_after_anims_finish; 
             if (login_animations_->state() == QAbstractAnimation::Running)
                 login_animations_->pause();
             login_animations_->setDirection(QAbstractAnimation::Backward);
+            
+            for(int i=0; i<login_animations_->animationCount(); i++)
+            {
+                QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(login_animations_->animationAt(i));
+                if (anim)
+                    if (anim->easingCurve() == QEasingCurve::OutBounce)
+                        anim->setEasingCurve(QEasingCurve::InBounce);
+            }
+
             login_animations_->start();
         }
 
         void EtherSceneController::LoginAnimationFinished()
         {
-            if (login_animations_->direction() == QAbstractAnimation::Backward && refresh_menus_)
-                RecalculateMenus(); // needs more work, opacitys are not reverted in RevertLoginAnimation() after logout
+            if (login_animations_->direction() == QAbstractAnimation::Backward && change_scene_after_anims_finish_)
+                scene_->EmitSwitchSignal();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Ether
               framework_(framework),
               view_(view),
               data_manager_(new Data::DataManager(this)),
-              card_size_(QRectF(0, 0, 539, 400)),
+              card_size_(QRectF(0, 0, 490, 364)),
               previous_scene_(0)
         {
             StoreDataToFilesIfEmpty();
@@ -420,10 +420,12 @@ namespace Ether
         {
             if (state == "failed")
                 scene_controller_->RevertLoginAnimation(false);
-            else if (state == "disconnected")
-                scene_controller_->RevertLoginAnimation(true);
             else if (state == "connected")
                 scene_controller_->RevertLoginAnimation(true);
+            else if (state == "disconnected")
+                return;
+
+            scene_->SupressKeyEvents(false);
         }
 
         void EtherLogic::RemoveObjectFromData(QUuid uuid)

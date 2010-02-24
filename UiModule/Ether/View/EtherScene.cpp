@@ -82,5 +82,10 @@ namespace Ether
             QPixmap bg = bg_image_.scaled(new_rect.size().toSize());
             setBackgroundBrush(QBrush(bg));
         }
+
+        void EtherScene::EmitSwitchSignal()
+        {
+            emit EtherSceneReadyForSwitch();
+        }
     }
 }

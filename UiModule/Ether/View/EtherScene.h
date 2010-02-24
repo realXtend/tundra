@@ -17,6 +17,7 @@ namespace Ether
 {
     namespace View
     {
+
         class EtherScene : public QGraphicsScene
         {
 
@@ -26,6 +27,7 @@ namespace Ether
             EtherScene(QObject *parent, const QRectF &scene_rect);
 
             void SupressKeyEvents(bool enabled) { supress_key_events_ = enabled; }
+            void EmitSwitchSignal();
 
         protected:
             void keyPressEvent(QKeyEvent *ke);
@@ -46,6 +48,8 @@ namespace Ether
             void EnterPressed();
 
             void ItemClicked(View::InfoCard *clicked_item);
+
+            void EtherSceneReadyForSwitch();
         };
     }
 }
