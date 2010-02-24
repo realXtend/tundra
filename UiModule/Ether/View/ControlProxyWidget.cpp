@@ -51,16 +51,15 @@ namespace Ether
 
         void ControlProxyWidget::InitCardWidgets()
         {
-            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px;";
-
             // Common text label for both types
             text_label_ = new QLabel(text_, parent_);
-            text_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-            text_label_->setMaximumWidth(490);
-            text_label_->setStyleSheet("color: white");
-            text_label_->setFont(QFont("Narkisim", 18));
+            text_label_->setMinimumSize(470,50);
+            text_label_->setMaximumSize(470,50);
             text_label_->setAlignment(Qt::AlignCenter);
-            text_label_->setMinimumWidth(490);
+            text_label_->setStyleSheet("color: rgb(238,238,238);");
+            text_label_->setFont(QFont("Narkisim", 22));     
+
+            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px;";
 
             if (direction_ == BottomToTop)
             {
@@ -84,8 +83,8 @@ namespace Ether
 
                 QPushButton *edit_avatar_button = new QPushButton(parent_);
                 edit_avatar_button->setFlat(true);
-                edit_avatar_button->setMaximumSize(299,30);
-                edit_avatar_button->setMinimumSize(299,30);
+                edit_avatar_button->setMaximumSize(430,42);
+                edit_avatar_button->setMinimumSize(430,42);
                 edit_avatar_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/button_EDITAVA_normal.png'); }"
                                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/button_EDITAVA_hover.png'); }"
                                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/button_EDITAVA_click.png'); }").arg(button_style));
@@ -93,7 +92,7 @@ namespace Ether
                 // Fill layout
                 QVBoxLayout *main_layout = new QVBoxLayout(parent_);
                 main_layout->setSpacing(0);
-                main_layout->setMargin(0);
+                main_layout->setContentsMargins(0,8,0,0);
 
                 QHBoxLayout *buttons_layout = new QHBoxLayout();
                 buttons_layout->setSpacing(0);
@@ -113,6 +112,9 @@ namespace Ether
                 parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_bottom.png');"
                                        "background-position: top left; background-repeat: no-repeat; }");
 
+                text_label_->setMinimumSize(460,50);
+                text_label_->setMaximumSize(460,50);
+
                 // Buttons
                 //QPushButton *add_button = new QPushButton(parent_);
                 //add_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/add_button.png'); }"
@@ -130,24 +132,24 @@ namespace Ether
 
                 QPushButton *info_world_button = new QPushButton(parent_);
                 info_world_button->setFlat(true);
-                info_world_button->setMaximumSize(105,30);
-                info_world_button->setMinimumSize(105,30);
+                info_world_button->setMaximumSize(149,42);
+                info_world_button->setMinimumSize(149,42);
                 info_world_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/button_INFOW_normal.png'); }"
-                                                       "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/button_INFOW_hover.png'); }"
-                                                       "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/button_INFOW_click.png'); }").arg(button_style));
+                                                 "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/button_INFOW_hover.png'); }"
+                                                 "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/button_INFOW_click.png'); }").arg(button_style));
 
                 QPushButton *register_world_button = new QPushButton(parent_);
                 register_world_button->setFlat(true);
-                register_world_button->setMaximumSize(83,30);
-                register_world_button->setMinimumSize(83,30);
+                register_world_button->setMaximumSize(118,42);
+                register_world_button->setMinimumSize(118,42);
                 register_world_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/button_REGW_normal.png'); }"
                                                      "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/button_REGW_hover.png'); }"
                                                      "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/button_REGW_click.png'); }").arg(button_style));
 
                 QPushButton *edit_world_button = new QPushButton(parent_);
                 edit_world_button->setFlat(true);
-                edit_world_button->setMaximumSize(105,30);
-                edit_world_button->setMinimumSize(105,30);
+                edit_world_button->setMaximumSize(148,42);
+                edit_world_button->setMinimumSize(148,42);
                 edit_world_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/button_EDITW_normal.png'); }"
                                                  "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/button_EDITW_hover.png'); }"
                                                  "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/button_EDITW_click.png'); }").arg(button_style));
@@ -155,7 +157,7 @@ namespace Ether
                 // Fill layout
                 QVBoxLayout *main_layout = new QVBoxLayout(parent_);
                 main_layout->setSpacing(0);
-                main_layout->setMargin(0);
+                main_layout->setContentsMargins(5,0,5,8);
                 QHBoxLayout *buttons_layout = new QHBoxLayout();
                 buttons_layout->setSpacing(0);
                 buttons_layout->setMargin(0);
@@ -230,7 +232,7 @@ namespace Ether
 
                 QVBoxLayout *layout_middle = new QVBoxLayout();
                 layout_middle->setSpacing(0);
-                layout_middle->setContentsMargins(0,0,0,30);
+                layout_middle->setContentsMargins(0,0,0,20);
                 layout_middle->addWidget(enter_world_button);
                 layout->addLayout(layout_middle);
 
@@ -238,8 +240,8 @@ namespace Ether
                 layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding));
 
                 // Set geometry
-                widget()->setMinimumHeight(86);
-                widget()->setMaximumHeight(86);
+                widget()->setMinimumHeight(76);
+                widget()->setMaximumHeight(76);
                 setGeometry(widget()->geometry());
 
                 // Init Animations
@@ -264,9 +266,9 @@ namespace Ether
                 }
 
                 // Calculate new geometry, set scale
-                QSize overlay_size(490,449);
-                int name_height = 50 * scale;
-                int button_height = 58 * scale;
+                QSize overlay_size(470,431);
+                int name_height = 48 * scale;
+                int button_height = 55 * scale;
                 if (direction_ == TopToBottom)
                     new_rect.setY(new_rect.y()-button_height + 15 * scale);
                 else if (direction_ == BottomToTop)
@@ -284,17 +286,16 @@ namespace Ether
                 QRectF calculated_rect = rect();
                 calculated_rect.setX(new_rect.width()/2 - rect().width()/2);
                 calculated_rect.setY(new_rect.y());
-                
-                if (scale < 0.5)
+
+                if (scale <= 0.6)
                     scale = 0.75;
-                else if (scale > 0.5 && scale < 1.0)
+                else if (scale > 0.6 && scale < 1.0)
                     scale = 1.0;
 
                 move_animation_->setStartValue(pos());
                 move_animation_->setEndValue(calculated_rect.topLeft());
                 scale_animation_->setStartValue(this->scale());
                 scale_animation_->setEndValue(scale);
-
                 all_action_widget_animations_->start();
             }
         }
