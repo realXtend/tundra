@@ -4,13 +4,16 @@
 #define incl_UiModule_MainPanelButton_h
 
 #include <QPushButton>
-#include <QWidget>
-#include <QString>
 
 namespace UiServices
 {
     class UiProxyWidget;
 }
+
+QT_BEGIN_NAMESPACE
+class QWidget;
+class QString;
+QT_END_NAMESPACE
 
 namespace CoreUi
 {
@@ -27,7 +30,7 @@ namespace CoreUi
         void ControlledWidgetHidden();
         void ControlledWidgetFocusIn();
         void ControlledWidgetFocusOut();
-    
+
     private:
         QString widget_name_;
         UiServices::UiProxyWidget *controlled_widget_;

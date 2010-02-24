@@ -29,9 +29,7 @@ namespace Asset
         // Assume that the asset manager has been instantiated at this point
         event_category_ = event_manager->QueryEventCategory("Asset");
         if (!event_category_)
-        {
             AssetModule::LogWarning("Could not get event category for Asset events");
-        }
     }
 
     UDPAssetProvider::~UDPAssetProvider()
@@ -41,7 +39,6 @@ namespace Asset
     const std::string& UDPAssetProvider::Name()
     {
         static const std::string name("Legacy UDP");
-        
         return name;
     }
 
@@ -93,10 +90,10 @@ namespace Asset
             RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
             data.resize(transfer->GetReceivedContinuous());
             transfer->AssembleData(&data[0]);
-            
+
             return asset_ptr;
         }
-        
+
         return Foundation::AssetPtr();
     }
 
@@ -121,7 +118,7 @@ namespace Asset
 
             return true;
         }
-        
+
         return false;
     }
 
@@ -224,7 +221,7 @@ namespace Asset
     void UDPAssetProvider::HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime)
     {
         UDPAssetTransferMap::iterator i = asset_transfers_.begin();
-        std::vector<RexUUID> erase_asset;   
+        std::vector<RexUUID> erase_asset;
         while(i != asset_transfers_.end())
         {
             bool erased = false;
@@ -391,6 +388,13 @@ namespace Asset
         default:
             return false;
         }
+    }
+
+    void UDPAssetProvider::ClearAllTransfers()
+    {
+        pending_requests_.clear();
+        asset_transfers_.clear();
+        texture_transfers_.clear();
     }
 
     void UDPAssetProvider::HandleTextureHeader(ProtocolUtilities::NetInMessage* msg)

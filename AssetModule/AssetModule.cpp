@@ -1,22 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "AssetManager.h"
 #include "AssetModule.h"
-
-#include "RexUUID.h"
+#include "AssetManager.h"
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
 #include "HttpAssetProvider.h"
-
-#include "RealXtend/RexProtocolMsgIDs.h"
-
-using namespace RexTypes;
+#include <NetworkEvents.h>
 
 namespace Asset
 {
-    AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_),
-        inboundcategory_id_(0)
+    AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_), inboundcategory_id_(0)
     {
     }
 
@@ -28,7 +22,7 @@ namespace Asset
     void AssetModule::Load()
     {
         LogInfo(Name() + " loaded.");
-        
+
         AutoRegisterConsoleCommand(Console::CreateCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
@@ -45,7 +39,7 @@ namespace Asset
     {
         manager_ = AssetManagerPtr(new AssetManager(framework_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_);
-        
+
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
 
@@ -55,40 +49,43 @@ namespace Asset
 
         try
         {
-    		http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
+            http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
             manager_->RegisterAssetProvider(http_asset_provider_);
-        } 
-        catch (Exception)
+        }
+        catch (Exception &/*e*/)
         {
             AssetModule::LogWarning("Failed to create HTTP asset provider.");
         }
 
         framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-        
+
         LogInfo(Name() + " initialized.");
     }
-    
+
     // virtual
     void AssetModule::PostInitialize()
     {
-
     }
 
     void AssetModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
-	{
-		protocolModule_ = currentProtocolModule;
-		udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
+    {
+        protocolModule_ = currentProtocolModule;
+        udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
+
+        network_state_category_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+        if (network_state_category_id_ == 0)
+            LogWarning("Failed to query \"NetworkState\" event category");
+
         inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
         if (inboundcategory_id_ == 0 )
             LogWarning("Unable to find event category for OpenSimNetwork events!");
-		else
-			LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
-	}
+        else
+            LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
+    }
 
-	void AssetModule::UnsubscribeNetworkEvents()
-	{
-
-	}
+    void AssetModule::UnsubscribeNetworkEvents()
+    {
+    }
 
     // virtual
     void AssetModule::Update(f64 frametime)
@@ -107,24 +104,22 @@ namespace Asset
         manager_->UnregisterAssetProvider(udp_asset_provider_);
         manager_->UnregisterAssetProvider(xmlrpc_asset_provider_);
         manager_->UnregisterAssetProvider(http_asset_provider_);
-    
+
         framework_->GetServiceManager()->UnregisterService(manager_);
         manager_.reset();
-        
+
         LogInfo(Name() + " uninitialized.");
     }
-    
+
     Console::CommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
     {
         if (params.size() != 2)
-        {
             return Console::ResultFailure("Usage: RequestAsset(uuid,assettype)");
-        }
 
         manager_->RequestAsset(params[0], params[1]);
         return Console::ResultSuccess();
     }
-    
+
     bool AssetModule::HandleEvent(
         event_category_id_t category_id,
         event_id_t event_id, 
@@ -143,9 +138,14 @@ namespace Asset
                 SubscribeToNetworkEvents(event_data->currentProtocolModule);
             return false;
         }
-       
+        if (category_id == network_state_category_id_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+        {
+            if (udp_asset_provider_)
+                checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->ClearAllTransfers();
+        }
+
         return false;
-    }    
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
