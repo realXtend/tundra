@@ -98,7 +98,7 @@ class ObjectEditWindow:
         self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
         
         self.proxywidget.connect('Visible(bool)', self.controller.on_hide)
-        self.tabwidget.connect('currentChanged(int)', self.tabChanged)
+        #self.tabwidget.connect('currentChanged(int)', self.tabChanged)
 
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
@@ -171,13 +171,14 @@ class ObjectEditWindow:
         self.unsetSelection()
         
     def unsetSelection(self):
-        for tWid in self.currentlySelectedTreeWidgetItem:
+        for tuples in self.mainTabList.values():
+            tWid = tuples[1]
             tWid.setSelected(False)
         
         self.currentlySelectedTreeWidgetItem = []
         
-    def updateMaterialTab(self):
-        ent = self.controller.active
+    def updateMaterialTab(self, ent):
+        #ent = self.controller.active
         if ent is not None:
             self.clearDialogForm()
             qprim = r.getQPrim(ent.id)
@@ -234,7 +235,8 @@ class ObjectEditWindow:
         current = self.mainTab.treeWidget.currentItem()
         text = current.text(0)
         if self.mainTabList.has_key(text):
-            self.controller.select(self.mainTabList[text][0])
+            ent = self.mainTabList[text][0]
+            self.controller.select(ent)
     
     def getButton(self, name, iconname, line, action):
         size = QSize(16, 16)
@@ -253,13 +255,13 @@ class ObjectEditWindow:
         line.buttons.append(button)
         return button
         
-    def tabChanged(self, index):
-        if index == 1:
-            self.updateMaterialTab()
-        #~ elif index == 0:
-            #~ print "Object Edit"
-        #~ else:
-            #~ print "nothing found!"
+    #~ def tabChanged(self, index):
+        #~ if index == 1:
+            #~ self.updateMaterialTab()
+        ##~ elif index == 0:
+            ##~ print "Object Edit"
+        ##~ else:
+            ##~ print "nothing found!"
             
     def manipulator_move(self):
         ent = self.controller.active
@@ -360,7 +362,6 @@ class ObjectEditWindow:
             tWid = self.mainTabList[str(ent.id)][1]
         
         tWid.setSelected(True)
-        self.currentlySelectedTreeWidgetItem.append(tWid)
             
         """show the id and name of the object. name is sometimes empty it seems. 
             swoot: actually, seems like the name just isn't gotten fast enough or 
@@ -373,7 +374,7 @@ class ObjectEditWindow:
         
         self.meshline.update_text(ent.mesh)
         
-        self.updateMaterialTab()
+        self.updateMaterialTab(ent)
         self.tabwidget.setTabEnabled(1, True)
 
         qprim = r.getQPrim(ent.id)
