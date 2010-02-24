@@ -397,28 +397,24 @@ namespace Ether
             pos4.setY(pos4.y() - diff - 3);
 
             anim1->setStartValue(last_active_top_card_->pos());
-            anim1->setKeyValueAt(0.3, QPointF(last_active_top_card_->pos().x(), last_active_top_card_->pos().y()-10));
             anim1->setEndValue(pos1);
             anim1->setDuration(2000);
-            anim1->setEasingCurve(QEasingCurve::OutBounce);
+            anim1->setEasingCurve(QEasingCurve::InOutSine);
 
             anim2->setStartValue(avatar_info_widget_->pos());
-            anim2->setKeyValueAt(0.3, QPointF(avatar_info_widget_->pos().x(), avatar_info_widget_->pos().y()-10));
             anim2->setEndValue(pos2);
             anim2->setDuration(2000);
-            anim2->setEasingCurve(QEasingCurve::OutBounce);
+            anim2->setEasingCurve(QEasingCurve::InOutSine);
 
             anim3->setStartValue(last_active_bottom_card_->pos());
-            anim3->setKeyValueAt(0.4, QPointF(last_active_bottom_card_->pos().x(), last_active_bottom_card_->pos().y()+10));
             anim3->setEndValue(pos3);
             anim3->setDuration(2000);
-            anim3->setEasingCurve(QEasingCurve::OutBounce);
+            anim3->setEasingCurve(QEasingCurve::InOutSine);
 
             anim4->setStartValue(world_info_widget_->pos());
-            anim4->setKeyValueAt(0.4, QPointF(world_info_widget_->pos().x(), world_info_widget_->pos().y()+10));
             anim4->setEndValue(pos4);
             anim4->setDuration(2000);
-            anim4->setEasingCurve(QEasingCurve::OutBounce);
+            anim4->setEasingCurve(QEasingCurve::InOutSine);
 
             // Add animations to the group
             login_animations_->addAnimation(anim1);
@@ -437,13 +433,13 @@ namespace Ether
                 login_animations_->pause();
             login_animations_->setDirection(QAbstractAnimation::Backward);
             
-            for(int i=0; i<login_animations_->animationCount(); i++)
-            {
-                QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(login_animations_->animationAt(i));
-                if (anim)
-                    if (anim->easingCurve() == QEasingCurve::OutBounce)
-                        anim->setEasingCurve(QEasingCurve::InBounce);
-            }
+            //for(int i=0; i<login_animations_->animationCount(); i++)
+            //{
+            //    QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(login_animations_->animationAt(i));
+            //    if (anim)
+            //        if (anim->easingCurve() == QEasingCurve::OutBounce)
+            //            anim->setEasingCurve(QEasingCurve::Linear);
+            //}
 
             login_animations_->start();
         }

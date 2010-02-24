@@ -6,6 +6,7 @@
 #include <QRadialGradient>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>
+#include <QFile>
 
 #include <QDebug>
 
@@ -45,9 +46,18 @@ namespace Ether
 
         void InfoCard::UpdatePixmap(QString pixmap_path)
         {
-            pixmap_path_ = pixmap_path;
+            // Check that file is valid, if not use default images
+            if (!QFile::exists(pixmap_path))
+            {
+                if (dataType() == Avatar)
+                    pixmap_path_ = "./data/ui/images/ether/naali.jpg";
+                else if (dataType() == World)
+                    pixmap_path_ = "./data/ui/images/ether/world.jpg";
+            }
+            else
+                pixmap_path_ = pixmap_path;
 
-            // Pixmap
+            // Setup pixmap
             QSize image_size(bounding_rectf_.width()-4*2, bounding_rectf_.height()-19-12);
 
             pixmap_.load(pixmap_path_);
