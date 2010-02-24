@@ -239,13 +239,13 @@ void OgreScriptEditor::InitEditorWindow()
     }
 
     mainWidget_ = loader.load(&file);
-    //mainWidget_->setAttribute(Qt::WA_DeleteOnClose, true);
     file.close();
 
     layout_ = new QVBoxLayout;
     layout_->addWidget(mainWidget_);
+    layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
-    resize(mainWidget_->size());
+    //resize(mainWidget_->size());
 
     // Get controls
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");

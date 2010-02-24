@@ -456,6 +456,7 @@ void MaterialWizard::InitWindow()
 
     layout_ = new QVBoxLayout;
     layout_->addWidget(mainWidget_);
+    layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
     // Connect parameter widgets' clicked signal to RefreshWidgets slot.
@@ -477,7 +478,7 @@ void MaterialWizard::InitWindow()
     QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
-        mainWidget_, UiServices::UiWidgetProperties("Material Wizard", UiServices::ModuleWidget));
+        this, UiServices::UiWidgetProperties("Material Wizard", UiServices::ModuleWidget));
 
     buttonCreate->setEnabled(false);
     RefreshWidgets();
