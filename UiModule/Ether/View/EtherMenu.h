@@ -20,17 +20,24 @@ namespace Ether
         //! note that this class is NOT responsible of deleting the QGraphicsobjects it animates
         class EtherMenu : public QObject
         {
-
-        Q_OBJECT
-        Q_PROPERTY(qreal scale_factor READ GetScaleFactor WRITE SetScaleFactor)
+            Q_OBJECT
+            Q_PROPERTY(qreal scale_factor READ GetScaleFactor WRITE SetScaleFactor)
 
         public:
             //! Type of EtherMenu is either ELLIPSE_OPENS_UP, ELLIPSE_OPENS_DOWN, LINEAR_TOP, LINEAR_MID, LINEAR_BOTTOM
             EtherMenu();
             virtual ~EtherMenu();
 
-            //! Initializes the menu with given bounds, items that menu has, maximum size of the biggest item, scalefactor (how much scale down when item is more far away from being first) and number of objects visible in menu
-            virtual void Initialize(const QRectF& bounds, const QVector<InfoCard *>& items, const QRectF& max_size, qreal scalef, int visible_objects=5, qreal opacity_factor=0, qreal max_gap=0);
+            //! Initializes the menu with given bounds, items that menu has, maximum size of the biggest item,
+            //! scalefactor (how much scale down when item is more far away from being first) and number of objects visible in menu
+            virtual void Initialize(
+                const QRectF& bounds,
+                const QVector<InfoCard *>& items,
+                const QRectF& max_size,
+                qreal scalef,
+                int visible_objects=5,
+                qreal opacity_factor=0,
+                qreal max_gap=0);
 
             //! Set new focus item to center
             virtual void SetFocusToCard(InfoCard *card);
@@ -41,20 +48,20 @@ namespace Ether
             virtual InfoCard *GetHighlighted();
 
             //! Returns the position of current index 0 (selected) item
-            virtual QPointF GetHightlightScenePos() { if (positions_.count() > 0) return positions_.at(0); else return QPointF(); }
+            virtual QPointF GetHightlightScenePos() const { if (positions_.count() > 0) return positions_.at(0); else return QPointF(); }
 
-			virtual void moveRight();
+            virtual void moveRight();
 
             virtual void moveLeft();
 
             virtual void SetScaleFactor(qreal sfactor){ scale_factor_ = sfactor; }
 
-            virtual qreal GetScaleFactor(){return scale_factor_;}
+            virtual qreal GetScaleFactor() const { return scale_factor_;}
 
-            virtual QVector<InfoCard *> GetObjects() { return objects_; }
+            virtual QVector<InfoCard *> GetObjects() const { return objects_; }
 
         signals:
-            virtual void ItemHighlighted(View::InfoCard*);
+            void ItemHighlighted(View::InfoCard*);
 
         protected:
             virtual void CalculateGap();
@@ -63,7 +70,6 @@ namespace Ether
             virtual void ZOrderObjectBasedOnPriority(int index, int priority, bool animated);
             virtual void ChangeObjectOpacityBasedOnPriority(int index,int priority);
             virtual void AssignObjectsToStates();
-
 
             //! Differs from AssignObjectsToStates() function so that this
             //! version does not animate some stages (like z buffer)
@@ -115,7 +121,8 @@ namespace Ether
             //! Determines the right limit. Meaning that the indexes right of this one on priority list are not visible
             int right_visible_limit_index_;
 
-            //! Opacity factor is used to scale cards transparency depending on the priority. 0 means that all the cards are completely opaque. 1 means that only highlighted card is opaque, rest of the cards are fully transparent.
+            //! Opacity factor is used to scale cards transparency depending on the priority. 0 means that all the cards are completely opaque.
+            //! 1 means that only highlighted card is opaque, rest of the cards are fully transparent.
             //! values between 1-0 increase transparenct when priority decreases.
             qreal opacity_factor_;
 
@@ -124,7 +131,6 @@ namespace Ether
 
             qreal visible_;
             qreal invisible_;
-
 
             qreal current_gap_;
             qreal max_gap_;
