@@ -21,7 +21,6 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 """
 
 import rexviewer as r
-import math
 from circuits import Component
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
@@ -88,6 +87,9 @@ class ObjectEdit(Component):
         }
         
         self.resetManipulators()
+        
+        #r.c = self #this is for using objectedit from command.py
+        
     def resetValues(self):
         self.left_button_down = False
         self.right_button_down = False
@@ -109,14 +111,21 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_FREEMOVE] =  manipulator.FreeMoveManipulator(self)
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
-        
-    def select(self, ent):
+ 
+    def baseselect(self, ent):
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
         self.updateSelectionBox()
-        self.window.selected(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
+    
+    def select(self, ent):
+        self.baseselect(ent)
+        self.window.selected(ent)
 
+    def multiselect(self, ent):
+        self.baseselect(ent)
+        self.window.selected(ent, True)
+    
     def deselect(self):
         if len(self.sels)>0:
             #XXX might need something here?!
@@ -221,9 +230,11 @@ class ObjectEdit(Component):
                     if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():#terrain seems to be 3 and scene objects always big numbers, so > 50 should be good
                         if not found:
                             self.sels = []
-                            self.sels.append(ent)   
-                        self.select(ent)
-                        self.canmove = True
+                            self.sels.append(ent)
+                        
+                            self.select(ent)
+                            self.canmove = True
+
                 elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
@@ -271,7 +282,7 @@ class ObjectEdit(Component):
                     if ent.id != 0 and ent.id > 50 and ent.id != r.getUserAvatarId():
                         if not found:
                             self.sels.append(ent)
-                            self.select(ent)
+                            self.multiselect(ent)
                         else:
                             for _ent in self.sels:
                                 if _ent.id == ent.id:
@@ -300,31 +311,22 @@ class ObjectEdit(Component):
                 #print "on_mousemove + hold:", mouseinfo
                 if ent is not None and self.sel_activated and self.canmove:
                     self.dragging = True
-                    fov = r.getCameraFOV()
 
-                    campos = Vector3(r.getCameraPosition())
-                    entpos = Vector3(ent.pos)
                     width, height = r.getScreenSize()
                     
                     normalized_width = 1/width
                     normalized_height = 1/height
                     mouse_abs_x = normalized_width * mouseinfo.x
                     mouse_abs_y = normalized_height * mouseinfo.y
-
-                    length = (campos-entpos).length
-                    worldwidth = (math.tan(fov/2)*length) * 2
-                    worldheight = (height*worldwidth) / width
+                                        
                     movedx = mouse_abs_x - self.prev_mouse_abs_x
                     movedy = mouse_abs_y - self.prev_mouse_abs_y
-                    #used in freemoving to get the size of movement right
-                    amountx = (worldwidth * movedx)
-                    amounty = (worldheight * movedy)
+
+                    self.manipulator.manipulate(self.sels, movedx, movedy)            
                     
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
                     
-                    self.manipulator.manipulate(self.sels, amountx, amounty)            
-
                     self.window.update_guivals(ent)
    
     def on_keyup(self, keycode, keymod, callback):

@@ -114,6 +114,8 @@ class ObjectEditWindow:
         self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
 
         self.mainTabList = {}
+        
+        self.currentlySelectedTreeWidgetItem = []
 
     def update_guivals(self, ent):   
         #from quat to euler x.y,z
@@ -165,6 +167,14 @@ class ObjectEditWindow:
         self.mainTab.move_button.setChecked(False)
         self.mainTab.rotate_button.setChecked(False)
         self.mainTab.scale_button.setChecked(False)
+        
+        self.unsetSelection()
+        
+    def unsetSelection(self):
+        for tWid in self.currentlySelectedTreeWidgetItem:
+            tWid.setSelected(False)
+        
+        self.currentlySelectedTreeWidgetItem = []
         
     def updateMaterialTab(self):
         ent = self.controller.active
@@ -331,10 +341,13 @@ class ObjectEditWindow:
         if freemove:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
-    def selected(self, ent):
+    def selected(self, ent, keepold=False):
         self.mainTab.move_button.setChecked(False)
         self.mainTab.rotate_button.setChecked(False)
         self.mainTab.scale_button.setChecked(False)
+        
+        if not keepold:
+            self.unsetSelection()
         
         if not self.mainTabList.has_key(str(ent.id)):
             tWid = QTreeWidgetItem(self.mainTab.treeWidget)
@@ -342,8 +355,12 @@ class ObjectEditWindow:
             tWid.setText(0, id)
             
             self.mainTabList[str(id)] = (ent, tWid)
-        #~ else:
-            #~ r.logInfo("selected else")
+        else:
+            #r.logInfo("selected else")
+            tWid = self.mainTabList[str(ent.id)][1]
+        
+        tWid.setSelected(True)
+        self.currentlySelectedTreeWidgetItem.append(tWid)
             
         """show the id and name of the object. name is sometimes empty it seems. 
             swoot: actually, seems like the name just isn't gotten fast enough or 
