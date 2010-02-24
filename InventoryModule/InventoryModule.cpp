@@ -126,8 +126,6 @@ void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPt
     networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
     if (networkStateEventCategory_ == 0)
         LogError("Failed to query \"NetworkState\" event category");
-    else
-        LogInfo("System " + Name() + " subscribed to [NetworkState]");
 
     networkInEventCategory_ = eventManager_->QueryEventCategory("NetworkIn");
     if (networkInEventCategory_ == 0)

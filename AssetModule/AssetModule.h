@@ -3,12 +3,9 @@
 #ifndef incl_AssetModule_h
 #define incl_AssetModule_h
 
-#include "Foundation.h"
-#include "ModuleInterface.h"
-
-#include "ConsoleCommandServiceInterface.h"
-#include "AssetProviderInterface.h"
 #include "AssetModuleApi.h"
+#include "ModuleInterface.h"
+#include "AssetProviderInterface.h"
 
 namespace Foundation
 {
@@ -17,7 +14,7 @@ namespace Foundation
 
 namespace ProtocolUtilities
 {
-	class ProtocolModuleInterface;
+    class ProtocolModuleInterface;
 }
 
 namespace Asset
@@ -52,14 +49,14 @@ namespace Asset
             event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
-		virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
-		void UnsubscribeNetworkEvents();
+        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+        void UnsubscribeNetworkEvents();
 
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
-        
+
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
@@ -73,19 +70,22 @@ namespace Asset
         Foundation::AssetProviderPtr xmlrpc_asset_provider_;
 
         //! Http asset provider
-		Foundation::AssetProviderPtr http_asset_provider_;
-        
+        Foundation::AssetProviderPtr http_asset_provider_;
+
         //! asset manager
         AssetManagerPtr manager_;
-        
+
         //! category id for incoming messages
         event_category_id_t inboundcategory_id_;
+
+        //! category id for network state events
+        event_category_id_t network_state_category_id_;
 
         //! framework id for internal events
         event_category_id_t framework_category_id_;
 
-		//! Pointer to current ProtocolModule
-		boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        //! Pointer to current ProtocolModule
+        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
     };
 }
 
