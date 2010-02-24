@@ -43,9 +43,8 @@ class Manipulator:
         self.grabbed = False
     
     def initVisuals(self):
-        r.logInfo("initVisuals in manipulator " + str(self.NAME))
+        #r.logInfo("initVisuals in manipulator " + str(self.NAME))
         if self.manipulator is None:
-            r.logInfo("self.manipulator was None, good")
             self.manipulator = self.createManipulator()
             self.hideManipulator()
         
