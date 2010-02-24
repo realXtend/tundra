@@ -188,7 +188,8 @@ class ObjectEdit(Component):
             
     def LeftMousePressed(self, mouseinfo):
         r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
-
+        self.dragStarted(mouseinfo)
+        
         if self.selection_box is None:
             self.selection_box = r.createEntity("Selection.mesh", 0)
         
@@ -210,17 +211,10 @@ class ObjectEdit(Component):
 
         #print "Got entity:", ent
         if ent is not None:
-            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id:
-                width, height = r.getScreenSize()
-                normalized_width = 1/width
-                normalized_height = 1/height
-                mouse_abs_x = normalized_width * mouseinfo.x
-                mouse_abs_y = normalized_height * mouseinfo.y
-                self.prev_mouse_abs_x = mouse_abs_x
-                self.prev_mouse_abs_y = mouse_abs_y
-
-                r.eventhandled = self.EVENTHANDLED
+            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id:                
                 #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
+                
+                r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
                     if entity.id == ent.id:
@@ -242,6 +236,15 @@ class ObjectEdit(Component):
             #print "canmove:", self.canmove
             self.canmove = False
             self.deselect()
+            
+    def dragStarted(self, mouseinfo):
+        width, height = r.getScreenSize()
+        normalized_width = 1/width
+        normalized_height = 1/height
+        mouse_abs_x = normalized_width * mouseinfo.x
+        mouse_abs_y = normalized_height * mouseinfo.y
+        self.prev_mouse_abs_x = mouse_abs_x
+        self.prev_mouse_abs_y = mouse_abs_y
 
     def LeftMouseReleased(self, mouseinfo):
         self.left_button_down = False
@@ -271,9 +274,10 @@ class ObjectEdit(Component):
             if results is not None and results[0] != 0:
                 id = results[0]
                 ent = r.getEntity(id)
+                
             found = False
             #print "Got entity:", ent
-            if ent is not None:
+            if ent is not None:                
                 for entity in self.sels:
                     if entity.id == ent.id:
                         found = True

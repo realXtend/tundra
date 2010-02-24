@@ -104,29 +104,30 @@ class Manipulator:
             fov = r.getCameraFOV()
             width, height = r.getScreenSize()
             campos = Vector3(r.getCameraPosition())
+            ent = ents[-1]
+            entpos = Vector3(ent.pos)#Vector3(ent.pos)
+            length = (campos-entpos).length
+                
+            worldwidth = (math.tan(fov/2)*length) * 2
+            worldheight = (height*worldwidth) / width
+                
+            #used in freemoving to get the size of movement right
+            amountx = (worldwidth * movedx)
+            amounty = (worldheight * movedy)
+            
+            if self.usesManipulator:
+                rightvec = Vector3(r.getCameraRight())
+                upvec = Vector3(r.getCameraUp())
+                temp = [0,0,0]
+                temp[self.grabbed_axis] = 1
+                axis_vec = Vector3(temp)
+                #print amountx, amounty
+                mousey_on_arrow_projection = upvec.dot(axis_vec) * axis_vec
+                lengthy = mousey_on_arrow_projection.length * amounty
+                mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
+                lengthx = mousex_on_arrow_projection.length * amountx
+            
             for ent in ents:
-                entpos = Vector3(ent.pos)
-                length = (campos-entpos).length
-                
-                worldwidth = (math.tan(fov/2)*length) * 2
-                worldheight = (height*worldwidth) / width
-                
-                #used in freemoving to get the size of movement right
-                amountx = (worldwidth * movedx)
-                amounty = (worldheight * movedy)
-                
-                if self.usesManipulator:
-                    rightvec = Vector3(r.getCameraRight())
-                    upvec = Vector3(r.getCameraUp())
-                    temp = [0,0,0]
-                    temp[self.grabbed_axis] = 1
-                    axis_vec = Vector3(temp)
-                    #print amountx, amounty
-                    mousey_on_arrow_projection = upvec.dot(axis_vec) * axis_vec
-                    lengthy = mousey_on_arrow_projection.length * amounty
-                    mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
-                    lengthx = mousex_on_arrow_projection.length * amountx
-                
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy)
 
 class MoveManipulator(Manipulator):
@@ -192,7 +193,6 @@ class FreeMoveManipulator(Manipulator):
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
         #print changevec.length
-        if changevec.length < 1.0:
-            entpos = Vector3(ent.pos)
-            newpos = entpos + changevec
-            ent.pos = newpos.x, newpos.y, newpos.z
+        entpos = Vector3(ent.pos)
+        newpos = entpos + changevec
+        ent.pos = newpos.x, newpos.y, newpos.z
