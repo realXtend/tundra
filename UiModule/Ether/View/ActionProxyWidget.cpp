@@ -247,7 +247,7 @@ namespace Ether
             QPushButton *button = new_os_avatar->findChild<QPushButton*>("pushButtonSave");
             connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
 
-            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/naali.jpg");
+            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/naali.png");
             QLabel *pic_label = new_os_avatar->findChild<QLabel*>("pictureLabel");
             pic_label->setPixmap(pic);
 
@@ -358,7 +358,7 @@ namespace Ether
             button = new_os_world_widget->findChild<QPushButton*>("pushButtonSave");
             connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
 
-            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/world.jpg");
+            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/world.png");
             QLabel *pic_label = new_os_world_widget->findChild<QLabel*>("pictureLabel");
             pic_label->setPixmap(pic);
 
@@ -476,7 +476,7 @@ namespace Ether
             QPushButton *button = new_rex_avatar->findChild<QPushButton*>("pushButtonSave");
             connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
 
-            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/naali.jpg");
+            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/naali.png");
             QLabel *pic_label = new_rex_avatar->findChild<QLabel*>("pictureLabel");
             pic_label->setPixmap(pic);
 
