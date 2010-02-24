@@ -203,7 +203,7 @@ namespace Ether
             bool do_fade = true;
             
             // Controls rect
-            controls_rect.setTopLeft(QPointF(0, new_rect.height()- control_widget_->rect().height()));
+            controls_rect.setTopLeft(QPointF(0, new_rect.height() - control_widget_->rect().height()));
             controls_rect.setHeight(control_widget_->rect().height());
             controls_rect.setWidth(new_rect.width());
 
@@ -238,7 +238,7 @@ namespace Ether
         void EtherSceneController::TheResizer()
         {
             // End crazy, but neccessary hack
-            if (last_scale_ != (int)(top_menu_->GetHighlighted()->scale()*10))
+            if (last_scale_ != (int)(top_menu_->GetHighlighted()->scale()*10) && top_menu_->GetHighlighted()->scale() < 0.95)
                 SceneRectChanged(scene_->sceneRect());
             disconnect(this, SLOT( TheResizer() ));
         }
@@ -432,15 +432,6 @@ namespace Ether
             if (login_animations_->state() == QAbstractAnimation::Running)
                 login_animations_->pause();
             login_animations_->setDirection(QAbstractAnimation::Backward);
-            
-            //for(int i=0; i<login_animations_->animationCount(); i++)
-            //{
-            //    QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(login_animations_->animationAt(i));
-            //    if (anim)
-            //        if (anim->easingCurve() == QEasingCurve::OutBounce)
-            //            anim->setEasingCurve(QEasingCurve::Linear);
-            //}
-
             login_animations_->start();
         }
 

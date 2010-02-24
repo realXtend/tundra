@@ -31,7 +31,7 @@ namespace Ether
               framework_(framework),
               view_(view),
               data_manager_(new Data::DataManager(this)),
-              card_size_(QRectF(0, 0, 490, 364)),
+              card_size_(QRectF(0, 0, 470, 349)),
               previous_scene_(0)
         {
             StoreDataToFilesIfEmpty();

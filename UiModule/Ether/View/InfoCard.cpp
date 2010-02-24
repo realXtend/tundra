@@ -58,9 +58,9 @@ namespace Ether
                 pixmap_path_ = pixmap_path;
 
             // Setup pixmap
-            QSize image_size(bounding_rectf_.width()-4*2, bounding_rectf_.height()-19-12);
-
+            QSize image_size(bounding_rectf_.width()-4*2, bounding_rectf_.height()-18-11);
             pixmap_.load(pixmap_path_);
+
             if (pixmap_.rect().width() < image_size.width() && pixmap_.rect().height() < image_size.height())
                 pixmap_ = pixmap_.scaled(image_size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
             else
@@ -89,15 +89,15 @@ namespace Ether
             QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
             effect->setColor(QColor(0,0,0,255));
             effect->setOffset(0,5);
-            effect->setBlurRadius(20);
+            effect->setBlurRadius(15);
 
             active_animations_ = new QSequentialAnimationGroup(this);
             blur_animation_ = new QPropertyAnimation(effect, "blurRadius", active_animations_);
             blur_animation_->setEasingCurve(QEasingCurve::Linear);
             blur_animation_->setDuration(750);
-            blur_animation_->setStartValue(25);
+            blur_animation_->setStartValue(30);
             blur_animation_->setKeyValueAt(0.5, 5);
-            blur_animation_->setEndValue(25);
+            blur_animation_->setEndValue(30);
             blur_animation_->setLoopCount(-1);
 
             jump_animation_ = new QPropertyAnimation(effect, "blurRadius", active_animations_);
@@ -141,9 +141,9 @@ namespace Ether
         {
             painter->drawPixmap(QPoint(0,0), frame_pixmap_);
             if (type_ == TopToBottom)
-                painter->drawPixmap(QPoint(4,20), pixmap_);
+                painter->drawPixmap(QPoint(4,18), pixmap_);
             else if (type_ == BottomToTop)
-                painter->drawPixmap(QPoint(4,12), pixmap_);
+                painter->drawPixmap(QPoint(4,11), pixmap_);
         }
     }
 }
