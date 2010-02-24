@@ -112,8 +112,8 @@ namespace Ether
                 parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_bottom.png');"
                                        "background-position: top left; background-repeat: no-repeat; }");
 
-                text_label_->setMinimumSize(460,50);
-                text_label_->setMaximumSize(460,50);
+                text_label_->setMinimumSize(430,50);
+                text_label_->setMaximumSize(430,50);
 
                 // Buttons
                 //QPushButton *add_button = new QPushButton(parent_);
@@ -157,7 +157,7 @@ namespace Ether
                 // Fill layout
                 QVBoxLayout *main_layout = new QVBoxLayout(parent_);
                 main_layout->setSpacing(0);
-                main_layout->setContentsMargins(5,0,5,8);
+                main_layout->setContentsMargins(20,0,20,8);
                 QHBoxLayout *buttons_layout = new QHBoxLayout();
                 buttons_layout->setSpacing(0);
                 buttons_layout->setMargin(0);
