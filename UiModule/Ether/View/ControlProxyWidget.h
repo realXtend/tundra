@@ -65,8 +65,9 @@ namespace Ether
             void InitActionWidgets();
             void ControlledWidgetStopped();
 
+            void RegisterHandler();
             void InfoHandler();
-            void QuestionHandler();
+            void EditHandler();
             void AddHandler();
             void RemoveHandler();
             void ExitHandler();
