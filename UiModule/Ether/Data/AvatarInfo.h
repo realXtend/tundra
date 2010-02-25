@@ -16,11 +16,10 @@ namespace Ether
     {
         class AvatarInfo : public QObject
         {
-
-        Q_OBJECT
-        Q_PROPERTY(QString id_string_ READ id)
-        Q_PROPERTY(QString password_ READ password)
-        Q_PROPERTY(QString path_to_pixmap_ READ pixmapPath WRITE setPixmapPath)
+            Q_OBJECT
+            Q_PROPERTY(QString id_string_ READ id)
+            Q_PROPERTY(QString password_ READ password)
+            Q_PROPERTY(QString path_to_pixmap_ READ pixmapPath WRITE setPixmapPath)
 
         public:
             AvatarInfo(Ether::AvatarTypes::Avatar avatar_type, QString password, QString path_to_pixmap, QUuid id);
@@ -29,14 +28,14 @@ namespace Ether
             virtual void Print() = 0;
 
             //! Getters
-            QString id()                            { return id_string_; }
-            QString password()                      { return password_; }
-            QString pixmapPath()                    { return path_to_pixmap_; }
-            Ether::AvatarTypes::Avatar avatarType() { return avatar_type_; }
+            QString id() const { return id_string_; }
+            QString password() const { return password_; }
+            QString pixmapPath() const { return path_to_pixmap_; }
+            Ether::AvatarTypes::Avatar avatarType() const { return avatar_type_; }
 
             //! Setters
-            void setPixmapPath(QString path)        { path_to_pixmap_ = path; }
-            void setPassword(QString password)      { password_ = password; }
+            void setPixmapPath(QString path) { path_to_pixmap_ = path; }
+            void setPassword(QString password) { password_ = password; }
 
         private:
             QUuid id_;
@@ -44,7 +43,6 @@ namespace Ether
             QString password_;
             QString path_to_pixmap_;
             Ether::AvatarTypes::Avatar avatar_type_;
-
         };
     }
 }

@@ -11,30 +11,29 @@ namespace OgreRenderer
     {
         public:
             QOgreWorldView (Ogre::RenderWindow *win);
-            virtual ~QOgreWorldView ();
+            virtual ~QOgreWorldView();
 
-            void InitializeOverlay (int width, int height);
+            void InitializeOverlay(int width, int height);
 
-            void ResizeWindow (int width, int height);
-            void ResizeOverlay (int width, int height);
+            void ResizeWindow(int width, int height);
+            void ResizeOverlay(int width, int height);
 
-            void RenderOneFrame ();
-            void OverlayUI (Ogre::PixelBox &ui);
+            void RenderOneFrame();
+            void OverlayUI(Ogre::PixelBox &ui);
 
             void ShowUiOverlay();
             void HideUiOverlay();
 
         private:
-            Ogre::Root              *root_;
+            Ogre::Root *root_;
 
-            Ogre::Viewport          *view_;
-            Ogre::RenderWindow      *win_;
+            Ogre::Viewport *view_;
+            Ogre::RenderWindow *win_;
 
-            Ogre::TexturePtr        ui_overlay_texture_;
-            Ogre::Overlay           *ui_overlay_;
-            Ogre::OverlayElement    *ui_overlay_container_;
+            Ogre::TexturePtr ui_overlay_texture_;
+            Ogre::Overlay *ui_overlay_;
+            Ogre::OverlayElement *ui_overlay_container_;
     };
-
 }
 
 #endif // incl_OgreRenderer_QOgreWorldView_h

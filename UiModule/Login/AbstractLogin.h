@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_AbstractLogin_h
 #define incl_UiModule_AbstractLogin_h
 
-#include <EventHandlers/LoginHandler.h>
+//#include <EventHandlers/LoginHandler.h>
 #include <QWidget>
 
 namespace RexLogic

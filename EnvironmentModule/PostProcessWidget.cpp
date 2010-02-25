@@ -44,7 +44,7 @@ namespace Environment
 
     void PostProcessWidget::AddHandler(OgreRenderer::CompositionHandler *handler)
     {
-        this->handler_ = handler;
+        handler_ = handler;
     }
 
     void PostProcessWidget::EnableEffect(const std::string &effect_name, bool enable)
@@ -66,12 +66,12 @@ namespace Environment
         }
     }
 
-    void PostProcessWidget::handleSelection(bool checked, const std::string &name)
+    void PostProcessWidget::HandleSelection(bool checked, const QString &name)
     {
         if (checked)
-            handler_->AddCompositorForViewport(name);
+            handler_->AddCompositorForViewport(name.toStdString());
         else
-            handler_->RemoveCompositorFromViewport(name);
+            handler_->RemoveCompositorFromViewport(name.toStdString());
     }
 
     void PostProcessWidget::AddEffects(std::vector<std::string> &effects)
@@ -98,6 +98,6 @@ namespace Environment
 
     void NamedCheckBox::ButtonToggled(bool checked)
     {
-        emit Toggled(checked, this->objectName().toStdString());
+        emit Toggled(checked, objectName());
     }
 }

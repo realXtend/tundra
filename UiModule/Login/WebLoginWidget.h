@@ -6,17 +6,19 @@
 #include "UiModuleApi.h"
 #include "AbstractLogin.h"
 
-#include "EventHandlers/LoginHandler.h"
 #include "NetworkEvents.h"
 
 #include "ui_WebLoginWidget.h"
+namespace RexLogic
+{
+    class TaigaLoginHandler;
+}
 
 namespace CoreUi
 {
     class WebLoginWidget :  public AbstractLogin
     {
-
-	Q_OBJECT
+        Q_OBJECT
 
     public:
         WebLoginWidget(LoginContainer *controller, RexLogic::TaigaLoginHandler *taiga_login_handler);
@@ -29,17 +31,16 @@ namespace CoreUi
         void UpdateUi(int progress);
         void ProcessPage(bool success);
 
-	private:
+    private:
         void InitWidget();
         void ConnectSignals();
-		void SetLoginHandler(RexLogic::TaigaLoginHandler *taiga_login_handler);
+        void SetLoginHandler(RexLogic::TaigaLoginHandler *taiga_login_handler);
 
         Ui::WebLogin weblogin_ui_;
         QString address_;
 
     signals:
         void WebLoginInfoRecieved(QWebFrame *);
-
     };
 }
 

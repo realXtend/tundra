@@ -58,15 +58,16 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        //environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
-
         //initialize postprocess dialog
-        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(
-            Foundation::Module::MT_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
+            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+        if (!rendering_module)
+            return;
+
         OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
 
-        postprocess_dialog_ = PostProcessWidgetPtr(new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors()));
-        postprocess_dialog_->AddHandler( &renderer->GetCompositionHandler() );
+        postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
+        postprocess_dialog_->AddHandler(&renderer->GetCompositionHandler() );
         postprocess_dialog_->AddSelfToScene(this);
     }
 
@@ -104,12 +105,12 @@ namespace Environment
 
     void EnvironmentModule::Uninitialize()
     {
+        SAFE_DELETE(environment_editor_);
+        SAFE_DELETE(postprocess_dialog_);
         terrain_.reset();
         water_.reset();
         environment_.reset();
         sky_.reset();
-        environment_editor_.reset();
-        postprocess_dialog_.reset();
         event_manager_.reset();
         currentWorldStream_.reset();
 
@@ -121,8 +122,8 @@ namespace Environment
     void EnvironmentModule::Update(f64 frametime)
     {
         // HACK Initialize editor_widget_ in correct time. 
-        if (environment_editor_.get() == 0 && terrain_.get() != 0 && water_.get() != 0)
-            environment_editor_ = EnvironmentEditorPtr(new EnvironmentEditor(this));
+        if (environment_editor_ == 0 && terrain_.get() != 0 && water_.get() != 0)
+            environment_editor_ = new EnvironmentEditor(this);
 
         if ((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
@@ -157,13 +158,10 @@ namespace Environment
                     CreateSky();
                 }
             }
+
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
-            {
-                if(postprocess_dialog_.get())
-                {
+                if(postprocess_dialog_)
                     postprocess_dialog_->DisableAllEffects();
-                }
-            }
         }
         else if(category_id == input_event_category_)
         {
@@ -194,11 +192,9 @@ namespace Environment
             }
             Foundation::TextureInterface *decoded_tex = decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
             if (decoded_tex)
-            {
                 // Pass the texture asset to environment editor.
-                if(environment_editor_.get())
+                if(environment_editor_)
                     environment_editor_->HandleResourceReady(res);
-            }
         }
 
         return false;
@@ -239,7 +235,7 @@ namespace Environment
                 {
                     static int count = 0;
                     bool kill_event = terrain_->HandleOSNE_LayerData(netdata);
-                    if(environment_editor_.get())
+                    if (environment_editor_)
                         environment_editor_->UpdateTerrain();
                     return kill_event;
                 }
@@ -260,7 +256,7 @@ namespace Environment
                         //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
                         //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
                         //button is checked
-                        if (postprocess_dialog_.get())
+                        if (postprocess_dialog_)
                         {
                             std::string effect_name = c_handler.MapNumberToEffectName(vec.at(0));
                             bool enabled = true;
@@ -408,7 +404,7 @@ namespace Environment
             case RexNetMsgRegionHandshake:
             {
                 bool kill_event = HandleOSNE_RegionHandshake(netdata);
-                if (environment_editor_.get())
+                if (environment_editor_)
                     environment_editor_->UpdateTerrainTextureRanges();
                 return kill_event;
             }
@@ -420,7 +416,7 @@ namespace Environment
                     waiting_for_regioninfomessage_ = false;
                 }
             }
-        };
+        }
 
         return false;
     }
@@ -428,12 +424,8 @@ namespace Environment
     bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if(event_id == Input::Events::MOUSEDRAG || event_id == Input::Events::MOUSEDRAG_STOPPED)
-        {
             if(environment_editor_ && environment_editor_->GetTerrainPaintMode() == EnvironmentEditor::Paint3D)
-            {
                 environment_editor_->HandleMouseDragEvent(event_id, data);
-            }
-        }
         return false;
     }
 
@@ -489,11 +481,6 @@ namespace Environment
     TerrainPtr EnvironmentModule::GetTerrainHandler()
     {
         return terrain_;
-    }
-
-    EnvironmentEditorPtr EnvironmentModule::GetEnvironmentEditor()
-    {
-        return environment_editor_;
     }
 
     EnvironmentPtr EnvironmentModule::GetEnvironmentHandler()
@@ -566,9 +553,7 @@ namespace Environment
         sky_->FindCurrentlyActiveSky();
 
         if (!GetEnvironmentHandler()->IsCaelum())
-        {
             sky_->CreateDefaultSky();
-        }
     }
 }
 

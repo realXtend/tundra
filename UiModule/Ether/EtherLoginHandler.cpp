@@ -7,6 +7,8 @@
 #include "Data/OpenSimAvatar.h"
 #include "Data/OpenSimWorld.h"
 
+#include "EventHandlers/LoginHandler.h"
+
 namespace Ether
 {
     namespace Logic

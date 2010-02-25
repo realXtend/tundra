@@ -3,9 +3,11 @@
 #include "StableHeaders.h"
 #include "WebLoginWidget.h"
 #include "LoginContainer.h"
+#include "EventHandlers/LoginHandler.h"
 
 #include <QFile>
 #include <QLineEdit>
+#include <QWebFrame>
 
 namespace CoreUi
 {

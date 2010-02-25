@@ -3,14 +3,9 @@
 #ifndef incl_OgreRenderer_Renderer_h
 #define incl_OgreRenderer_Renderer_h
 
-#include "Foundation.h"
-#include "RenderServiceInterface.h"
-#include "LogListenerInterface.h"
-#include "ResourceInterface.h"
 #include "OgreModuleApi.h"
+#include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
-
-#include <QWidget>
 
 namespace Foundation
 {
@@ -25,8 +20,11 @@ namespace Ogre
     class RenderWindow;
     class RaySceneQuery;
     class Viewport;
-    class Mesh;
 }
+
+QT_BEGIN_NAMESPACE
+class QWidget;
+QT_END_NAMESPACE
 
 namespace OgreRenderer
 {
@@ -87,10 +85,10 @@ namespace OgreRenderer
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
         //! set maximum view distance
-        virtual void SetViewDistance(Real distance);
+        virtual void SetViewDistance(Real distance) { view_distance_ = distance; }
 
         //! get maximum view distance
-        virtual Real GetViewDistance();
+        virtual Real GetViewDistance()const { return view_distance_; }
 
         //! force UI repaint
         virtual void RepaintUi();
@@ -194,7 +192,7 @@ namespace OgreRenderer
         void AddResourceDirectory(const std::string& directory);
 
         //! returns the composition handler responsible of the post-processing effects
-        CompositionHandler& GetCompositionHandler(){ return c_handler_; }
+        CompositionHandler &GetCompositionHandler() { return c_handler_; }
 
     private:
         //! Initialises Qt
@@ -202,9 +200,6 @@ namespace OgreRenderer
 
         //! Initialises the events related info for this module
         void InitializeEvents();
-
-        //! Sets visibility for all name display overlays, used in screenshot taking
-        void SetAllTextOverlaysVisible(bool visible);
 
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
@@ -216,8 +211,6 @@ namespace OgreRenderer
 
         //! Creates scenemanager & camera
         void SetupScene();
-
-        boost::mutex renderer_;
 
         //! Successfully initialized flag
         bool initialized_;
@@ -236,7 +229,7 @@ namespace OgreRenderer
 
         //! Maximum view distance
         Real view_distance_;
-        
+
         //! Viewport
         Ogre::Viewport* viewport_;
 
@@ -287,13 +280,13 @@ namespace OgreRenderer
 
         //! handler for post-processing effects
         CompositionHandler c_handler_;
-		
-		//! last window size used in rendering ui
-		int last_width_;
-		int last_height_;
-		
-		//! resized dirty count
-		int resized_dirty_;
+
+        //! last window size used in rendering ui
+        int last_width_;
+        int last_height_;
+
+        //! resized dirty count
+        int resized_dirty_;
     };
 }
 

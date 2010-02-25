@@ -48,7 +48,7 @@ namespace Environment
         void DisableAllEffects();
 
     public slots:
-        void handleSelection(bool checked, const std::string &name);
+        void HandleSelection(bool checked, const QString &name);
 
     private:
         //! Widget that this QWidget contains
@@ -71,7 +71,7 @@ namespace Environment
         void ButtonToggled(bool checked);
 
     signals:
-        void Toggled(bool checked, std::string name);
+        void Toggled(bool checked, const QString &name);
     };
 }
 

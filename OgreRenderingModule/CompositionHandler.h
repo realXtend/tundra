@@ -14,7 +14,7 @@ namespace Foundation
 
 namespace OgreRenderer
 {
-    ///\note This class and it's implementation is taken from the Ogre samples
+    ///\note This class and its implementation is taken from the Ogre samples
     class HDRListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -23,7 +23,8 @@ namespace OgreRenderer
         void notifyViewportSize(int width, int height);
         void notifyCompositor(Ogre::CompositorInstance* instance);
         virtual void notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
-        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
+        ///\todo Is this needed? Does nothing atm.
+        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat) {}
 
     protected:
         int mVpWidth, mVpHeight;
@@ -35,7 +36,7 @@ namespace OgreRenderer
         float mBloomTexOffsetsVert[15][4];
     };
 
-    ///\note This class and it's implementation is taken from the Ogre samples
+    ///\note This class and its implementation is taken from the Ogre samples
     class GaussianListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -43,7 +44,8 @@ namespace OgreRenderer
         virtual ~GaussianListener();
         void notifyViewportSize(int width, int height);
         virtual void notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
-        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
+        ///\todo Is this needed? Does nothing atm.
+        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat) {}
 
     protected:
         int mVpWidth, mVpHeight;
@@ -80,7 +82,7 @@ namespace OgreRenderer
         void ExecuteServersShaderRequest(const StringVector &parameters);
 
         //! Returns list of available post-processing effects
-        std::vector<std::string> &GetAvailableCompositors();
+        std::vector<std::string> &GetAvailableCompositors() { return postprocess_effects_; }
 
         //! Convenience function that will add specified compositor for the default viewport given in initialization
         bool AddCompositorForViewport(const std::string &compositor, int position = -1);
@@ -89,17 +91,14 @@ namespace OgreRenderer
         void RemoveCompositorFromViewport(const std::string &compositor);
 
     private:
-        //! effects available
-        typedef std::vector<std::string> Postprocesses;
-
         //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
-        Postprocesses postprocess_effects_;
+        std::vector<std::string> postprocess_effects_;
 
-        //! Ogres compositormanager
+        //! Compositor manager
         Ogre::CompositorManager* c_manager_;
 
-        //! Default viewport. This will be used if no other viewport is specified when enabling an effect
-        Ogre::Viewport* default_vp_;
+        //! Ogre viewport.
+        Ogre::Viewport* viewport_;
 
         //! Framelistener for HDR effect
         HDRListener hdr_listener_;

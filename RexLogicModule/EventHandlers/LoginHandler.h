@@ -8,7 +8,6 @@
 #include <QObject>
 #include <QUrl>
 #include <QMap>
-#include <QWebFrame>
 
 namespace Foundation
 {
@@ -32,6 +31,10 @@ namespace ProtocolUtilities
 {
     class LoginCredentialsInterface;
 }
+
+QT_BEGIN_NAMESPACE
+class QWebFrame;
+QT_END_NAMESPACE
 
 namespace RexLogic
 {

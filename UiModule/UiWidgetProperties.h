@@ -15,18 +15,18 @@ namespace UiServices
     enum WidgetType
     {
         //! Only to be used internally with CoreUi widgets in UiModule 
-        //  * QWidget without frames by default 
-        //  * Animations off by default
+        //!  * QWidget without frames by default 
+        //!  * Animations off by default
         CoreLayoutWidget,
 
         //! Module Widget, button is added to main panel to control show/hide 
-        //  * QDialog with frames by default 
-        //  * Animations on by default
+        //!  * QDialog with frames by default 
+        //!  * Animations on by default
         ModuleWidget,
 
         //! Normal Scene Widget, button not added to main panel. Just shown in the scene. 
-        //  * QDialog with frames by default 
-        //  * Animations on by default
+        //!  * QDialog with frames by default 
+        //!  * Animations on by default
         SceneWidget
     };
 

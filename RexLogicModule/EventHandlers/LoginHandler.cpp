@@ -1,9 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "LoginHandler.h"
 #include <DebugOperatorNew.h>
-#include <MemoryLeakCheck.h>
+#include "LoginHandler.h"
 #include "RexLogicModule.h"
 #include <WorldStream.h>
 #include <ProtocolModuleOpenSim.h>
@@ -15,10 +14,11 @@
 #include <Login/LoginCredentials.h>
 
 #include <QStringList>
+#include <QWebFrame>
+#include <MemoryLeakCheck.h>
 
 namespace RexLogic
 {
-
     AbstractLoginHandler::AbstractLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module) :
         framework_(framework),
         rex_logic_module_(rex_logic_module),
@@ -29,7 +29,7 @@ namespace RexLogic
 
     QUrl AbstractLoginHandler::ValidateServerUrl(QString urlString)
     {
-        QString sceme = urlString.midRef(0,7).toString();
+        QString sceme = urlString.mid(0,7);
         if (sceme != "http://")
         {
             urlString.insert(0, "http://");
@@ -117,7 +117,7 @@ namespace RexLogic
                 rex_logic_module_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
                 rex_logic_module_->GetServerConnection()->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
                 rex_logic_module_->GetServerConnection()->StoreCredentials(rexCredentials->GetIdentity().toStdString(),
-                    rexCredentials->GetPassword().toStdString(), rexCredentials->GetAuthenticationUrl().toString().toStdString());
+                rexCredentials->GetPassword().toStdString(), rexCredentials->GetAuthenticationUrl().toString().toStdString());
 
                 if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule() )
                 {    
@@ -258,10 +258,10 @@ namespace RexLogic
 
         pos1 = returnValue.indexOf(QString("http://"), 0);
         pos2 = returnValue.indexOf(QString("?"), 0);
-        entry_point_url = returnValue.midRef(pos1, pos2-pos1).toString();
+        entry_point_url = returnValue.mid(pos1, pos2-pos1);
 
         pos1 = returnValue.lastIndexOf(QString("&"));
-        identityUrl = returnValue.midRef(pos1+1, returnValue.length()-1).toString();
+        identityUrl = returnValue.mid(pos1+1, returnValue.length()-1);
         
         dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl(identityUrl);
         server_entry_point_url_ = ValidateServerUrl(entry_point_url);
