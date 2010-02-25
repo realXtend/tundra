@@ -88,7 +88,7 @@ class ObjectEdit(Component):
         
         self.resetManipulators()
         
-        #r.c = self #this is for using objectedit from command.py
+        r.c = self #this is for using objectedit from command.py
         
     def resetValues(self):
         self.left_button_down = False
