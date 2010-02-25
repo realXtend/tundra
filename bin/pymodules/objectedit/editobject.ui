@@ -104,9 +104,12 @@ QPushButton::pressed{
              <property name="styleSheet">
               <string/>
              </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::ExtendedSelection</enum>
+             </property>
              <column>
               <property name="text">
-               <string>scene objects</string>
+               <string>scene object ids</string>
               </property>
              </column>
             </widget>

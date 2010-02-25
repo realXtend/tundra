@@ -96,6 +96,7 @@ class ObjectEditWindow:
             scalewidget.connect('valueChanged(double)', scalechanger(i))
         
         self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
+        self.mainTab.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
         
         self.proxywidget.connect('Visible(bool)', self.controller.on_hide)
         #self.tabwidget.connect('currentChanged(int)', self.tabChanged)
