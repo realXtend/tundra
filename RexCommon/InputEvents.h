@@ -114,6 +114,16 @@ namespace Input
 
 		static const event_id_t PY_RESTART = 71;
 		static const event_id_t PY_RUN_COMMAND = 73;
+		static const event_id_t PY_DUPLICATE_DRAG = 80;
+
+		static const event_id_t PY_OBJECTEDIT_TOGGLE_MOVE = 81;
+		static const event_id_t PY_OBJECTEDIT_TOGGLE_SCALE = 83;
+		//static const event_id_t PY_OBJECTEDIT_TOGGLE_ROTATE = 85;
+
+		static const event_id_t NAALI_DELETE = 87;
+		static const event_id_t NAALI_UNDO = 89;
+
+
 
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
