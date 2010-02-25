@@ -64,7 +64,7 @@ namespace OgreRenderer
     private:
         //! renderer
         RendererPtr renderer_;
-        
+
         //! renderer settings
         RendererSettingsPtr renderer_settings_;
 
@@ -79,8 +79,6 @@ namespace OgreRenderer
 
         //! scene event category
         event_category_id_t scene_event_category_;
-
-
     };
 }
 

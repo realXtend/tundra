@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "TraditionalLoginWidget.h"
 #include "LoginContainer.h"
+#include "EventHandlers/LoginHandler.h"
 
 namespace CoreUi
 {

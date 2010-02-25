@@ -57,7 +57,7 @@ use_package (QT4)
 use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon RexLogicModule ProtocolUtilities SupportModules)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon ProtocolUtilities SupportModules RexLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -70,7 +70,7 @@ link_package (CURL)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
 # Precompiled headers on MSVC

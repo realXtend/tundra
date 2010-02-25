@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include <Ogre.h>
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 #include "ResourceHandler.h"
@@ -24,7 +24,7 @@
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
 #include "RendererSettings.h"
-
+#include <Ogre.h>
 
 namespace OgreRenderer
 {
@@ -84,11 +84,9 @@ namespace OgreRenderer
 #else
         std::string plugins_filename = "plugins-unix.cfg";
 #endif 
-    
         // create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-
-        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "window_title") 
-            + " " + VersionMajor() + "." + VersionMinor();
+        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(
+            Foundation::Framework::ConfigurationGroup(), "window_title") + " " + VersionMajor() + "." + VersionMinor();
 
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
     }
@@ -234,7 +232,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-
 
 using namespace OgreRenderer;
 

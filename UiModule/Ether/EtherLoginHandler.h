@@ -3,25 +3,28 @@
 #ifndef incl_UiModule_EtherLoginHandler_h
 #define incl_UiModule_EtherLoginHandler_h
 
-#include "EtherSceneController.h"
-
 #include "View/InfoCard.h"
 #include "Data/AvatarInfo.h"
 #include "Data/WorldInfo.h"
-#include "EventHandlers/LoginHandler.h"
 
 #include <QGraphicsScene>
 #include <QObject>
 #include <QPair>
 
+namespace RexLogic
+{
+    class OpenSimLoginHandler;
+}
+
 namespace Ether
 {
     namespace Logic
     {
+        class EtherSceneController;
+
         class EtherLoginHandler : public QObject
         {
-
-        Q_OBJECT
+            Q_OBJECT
 
         public:
             EtherLoginHandler(QObject *parent, EtherSceneController *scene_controller);
@@ -39,7 +42,6 @@ namespace Ether
             void StartOsLogin(QMap<QString, QString> info_map);
             void StartRexLogin(QMap<QString, QString> info_map);
             void Quit();
-
         };
     }
 }

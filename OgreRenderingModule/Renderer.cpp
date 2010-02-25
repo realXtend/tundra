@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "Renderer.h"
 #include "RendererEvents.h"
 #include "ResourceHandler.h"
@@ -23,6 +24,7 @@
 #include <QVBoxLayout>
 #include <QGraphicsScene>
 #include <QDebug>
+//#include "MemoryLeakCheck.h"
 
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
 //#include <OgreD3D9RenderWindow.h>
@@ -50,23 +52,18 @@ namespace OgreRenderer
             listeners_.remove(listener);
         }
 
-        void messageLogged( const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName )
+        void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
         {
-            for (ListenerList::iterator listener = listeners_.begin() ;
-                  listener != listeners_.end() ; 
-                  ++listener)
-            {
-                (*listener)->LogMessage(message);
-            }
+            for (ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
+                (*it)->LogMessage(message);
         }
+
     private:
         typedef std::list<Foundation::LogListenerPtr> ListenerList;
 
         //! list of subscribed listeners
         ListenerList listeners_;
     };
-
-///////////////////////////////////////////////////////////////////
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
@@ -88,33 +85,31 @@ namespace OgreRenderer
         last_width_(0),
         last_height_(0),
         resized_dirty_(0),
-        view_distance_(500.0)        
+        view_distance_(500.0)
     {
         InitializeQt();
         InitializeEvents();
     }
-    
+
     Renderer::~Renderer()
     {
         RemoveLogListener();
-        
+
         if (ray_query_)
-        {
             if (scenemanager_)
                 scenemanager_->destroyQuery(ray_query_);
             else
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
-        }
 
         if (renderwindow_)
         {
             int width, height, left, top;
             bool maximized = main_window_->isMaximized();
             left = main_window_->geometry().x();
-            top = main_window_->geometry().y();   
+            top = main_window_->geometry().y();
             width = main_window_->geometry().width();
             height = main_window_->geometry().height(); 
-            // Do not store the maximized geometry      
+            // Do not store the maximized geometry
             if (!maximized)
             {
                 framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
@@ -151,7 +146,7 @@ namespace OgreRenderer
         main_window_->setLayout(new QVBoxLayout(main_window_));
         main_window_->layout()->setMargin(0);
         main_window_->layout()->addWidget(q_ogre_ui_view_);
-        
+
         // Ownership of uiview passed to framework
         framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
     }
@@ -206,7 +201,8 @@ namespace OgreRenderer
 
 #ifdef _WINDOWS
         // WIN default to DirectX
-        rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>("OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
+        rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>(
+            "OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
 #else
         // X11/MAC default to OpenGL
         rendersystem_name = "OpenGL Rendering Subsystem";
@@ -221,7 +217,6 @@ namespace OgreRenderer
         if (!rendersystem)
             rendersystem = root_->getRenderSystemByName("OpenGL Rendering Subsystem");
 #endif
-
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 
@@ -229,7 +224,7 @@ namespace OgreRenderer
         Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
             rendersystem->setConfigOption("Floating-point mode", "Consistent");
-            
+
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
         // Initialise but dont create rendering window yet
@@ -241,23 +236,23 @@ namespace OgreRenderer
             main_window_->setWindowTitle(QString(window_title_.c_str()));
             main_window_->setGeometry(window_left, window_top, width, height);
             if (maximized)
-                main_window_->showMaximized();                       
+                main_window_->showMaximized();
             q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
             main_window_->show();
 
             // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering
-            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, fullscreen);           
+            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, fullscreen);
 
             // Create QOgreWorldView that controls ogres window and ui overlay
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
             q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
             q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->width(), q_ogre_ui_view_->height());
         }
-        catch (Ogre::Exception e) 
+        catch (Ogre::Exception &/*e*/)
         {
             OgreRenderingModule::LogError("Could not create ogre rendering window!");
         }
-        
+
         if (renderwindow_)
         {
             OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
@@ -407,7 +402,7 @@ namespace OgreRenderer
     {
         if (!initialized_) 
             return;
-            
+
         PROFILE(Renderer_Render);
 
         // If rendering into different size window, dirty the UI view for now & next frame
@@ -416,7 +411,7 @@ namespace OgreRenderer
             last_width_ = GetWindowWidth();
             last_height_ = GetWindowHeight();
             resized_dirty_ = 2;
-        }            
+        }
 
         if (q_ogre_ui_view_->isDirty() || resized_dirty_)
         {
@@ -448,7 +443,7 @@ namespace OgreRenderer
 
     uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)
     {
-        for (uint i = 0; i < submeshstartindex.size(); ++i)
+        for(uint i = 0; i < submeshstartindex.size(); ++i)
         {
             uint start = submeshstartindex[i];
             uint end;
@@ -484,14 +479,13 @@ namespace OgreRenderer
         Ogre::MeshPtr mesh = entity->getMesh();
 
         bool useSoftwareBlendingVertices = entity->hasSkeleton();
-
         if (useSoftwareBlendingVertices)
             entity->_updateAnimation();
 
         submeshstartindex.resize(mesh->getNumSubMeshes());
 
         // Calculate how many vertices and indices we're going to need
-        for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+        for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh( i );
             // We only need to add the shared vertices once
@@ -513,7 +507,6 @@ namespace OgreRenderer
             index_count += submesh->indexData->indexCount;
         }
 
-
         // Allocate space for the vertices and indices
         vertices.resize(vertex_count);
         texcoords.resize(vertex_count);
@@ -526,10 +519,7 @@ namespace OgreRenderer
         {
             Ogre::SubMesh* submesh = mesh->getSubMesh(i);
 
-            //----------------------------------------------------------------
-            // GET VERTEXDATA
-            //----------------------------------------------------------------
-
+            // Get vertex data
             //Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
             Ogre::VertexData* vertex_data;
 
@@ -588,19 +578,16 @@ namespace OgreRenderer
             size_t numTris = index_data->indexCount / 3;
             Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
 
-            bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-
             unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
             unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
-
-
             size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
 
+            bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
             if (use32bitindexes)
-                for ( size_t k = 0; k < numTris*3; ++k)
+                for(size_t k = 0; k < numTris*3; ++k)
                     indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
             else
-                for ( size_t k = 0; k < numTris*3; ++k)
+                for(size_t k = 0; k < numTris*3; ++k)
                     indices[index_offset++] = static_cast<uint>(pShort[k]) + static_cast<unsigned long>(offset);
 
             ibuf->unlock();
@@ -838,102 +825,96 @@ namespace OgreRenderer
         const std::string& worldfile,
         const std::string& avatarfile)
     {
-        if (renderwindow_)
+        if (!renderwindow_)
+            return;
+
+        if (worldfile.length() == 0)
         {
-            if (worldfile.length() == 0)
-            {
-                OgreRenderingModule::LogError("Empty filename for worldfile, cannot save.");
-                return;
-            }
-
-            if (avatarfile.length() == 0)
-            {
-                OgreRenderingModule::LogError("Empty filename for avatarfile, cannot save.");
-                return;
-            }
-
-            // Hide ui and name overlays
-            SetAllTextOverlaysVisible(false);
-            q_ogre_world_view_->HideUiOverlay();
-
-            /*** World image ***/
-            int window_width = renderwindow_->getWidth();
-            int window_height = renderwindow_->getHeight();
-            Ogre::Box bounds(0, 0, window_width, window_height);
-            Ogre::uchar* pixelData = new Ogre::uchar[window_width * window_height * 4];
-            Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
-
-            // Just use rendererwindow:s view for this
-            renderwindow_->copyContentsToMemory(pixels);
-
-            // Save pixeldata to image
-            Ogre::Image screenshot;
-            screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8, false);
-            screenshot.save(worldfile);
-
-            /*** Avatar image ***/
-            Ogre::Camera *screenshot_cam = GetSceneManager()->createCamera("ScreenshotCamera");
-            Ogre::Vector3 ogre_avatar_pos = ToOgreVector3(avatar_position);
-            Ogre::Quaternion ogre_avatar_orientation = ToOgreQuaternion(avatar_orientation);
-
-            // Setup camera
-            screenshot_cam->setNearClipDistance(0.1f);
-            screenshot_cam->setFarClipDistance(2000.f);
-            screenshot_cam->setAspectRatio(Ogre::Real(viewport_->getActualWidth() / Ogre::Real(viewport_->getActualHeight())));
-            screenshot_cam->setAutoAspectRatio(true);
-            
-            // Calculate positions
-            Vector3df pos = avatar_position;
-            pos += (avatar_orientation * Vector3df::UNIT_X * 0.6f);
-            pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
-            Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
-
-            // Create scenenode and attach camera to it
-            Ogre::SceneNode *cam_node = GetSceneManager()->createSceneNode("ScreenShotNode");
-            cam_node->attachObject(screenshot_cam);
-
-            // Setup camera to look at the avatar
-            cam_node->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
-            cam_node->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
-            cam_node->lookAt(Ogre::Vector3(lookat.x, lookat.y, lookat.z), Ogre::Node::TS_WORLD, Ogre::Vector3::NEGATIVE_UNIT_Z);
-      
-            // Render camera view to texture and save to file
-            Ogre::TexturePtr avatar_screenshot = 
-                Ogre::TextureManager::getSingleton().createManual("ScreenshotTexture",
-                                                                  Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-                                                                  Ogre::TEX_TYPE_2D, window_width, window_height, 0, 
-                                                                  Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
-
-            Ogre::RenderTexture *render_texture = avatar_screenshot->getBuffer()->getRenderTarget();
-            Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
-            render_texture->update();
-
-            pixelData = new Ogre::uchar[window_width * window_height * 4];
-            pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, pixelData);
-            render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
-            
-            screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8, false);
-            screenshot.save(avatarfile);
-
-            // Cleanup
-            Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
-            GetSceneManager()->destroySceneNode(cam_node);
-            GetSceneManager()->destroyCamera(screenshot_cam);
-
-            // Show ui and name overlays
-            SetAllTextOverlaysVisible(true);
-            q_ogre_world_view_->ShowUiOverlay();
+            OgreRenderingModule::LogError("Empty filename for worldfile, cannot save.");
+            return;
         }
+
+        if (avatarfile.length() == 0)
+        {
+            OgreRenderingModule::LogError("Empty filename for avatarfile, cannot save.");
+            return;
+        }
+
+        // Hide ui
+        q_ogre_world_view_->HideUiOverlay();
+
+        /*** World image ***/
+        int window_width = renderwindow_->getWidth();
+        int window_height = renderwindow_->getHeight();
+        Ogre::Box bounds(0, 0, window_width, window_height);
+        Ogre::uchar* pixelData = new Ogre::uchar[window_width * window_height * 4];
+        Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
+
+        // Just use rendererwindow:s view for this
+        renderwindow_->copyContentsToMemory(pixels);
+
+        // Save pixeldata to image
+        Ogre::Image screenshot;
+        screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8);
+        screenshot.save(worldfile);
+
+        /*** Avatar image ***/
+        Ogre::Camera *screenshot_cam = GetSceneManager()->createCamera("ScreenshotCamera");
+        Ogre::Vector3 ogre_avatar_pos = ToOgreVector3(avatar_position);
+        Ogre::Quaternion ogre_avatar_orientation = ToOgreQuaternion(avatar_orientation);
+
+        // Setup camera
+        screenshot_cam->setNearClipDistance(0.1f);
+        screenshot_cam->setFarClipDistance(2000.f);
+        screenshot_cam->setAspectRatio(Ogre::Real(viewport_->getActualWidth() / Ogre::Real(viewport_->getActualHeight())));
+        screenshot_cam->setAutoAspectRatio(true);
+
+        // Calculate positions
+        Vector3df pos = avatar_position;
+        pos += (avatar_orientation * Vector3df::UNIT_X * 0.6f);
+        pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
+        Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
+
+        // Create scenenode and attach camera to it
+        Ogre::SceneNode *cam_node = GetSceneManager()->createSceneNode("ScreenShotNode");
+        cam_node->attachObject(screenshot_cam);
+
+        // Setup camera to look at the avatar
+        cam_node->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        cam_node->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+        cam_node->lookAt(Ogre::Vector3(lookat.x, lookat.y, lookat.z), Ogre::Node::TS_WORLD, Ogre::Vector3::NEGATIVE_UNIT_Z);
+
+        // Render camera view to texture and save to file
+        Ogre::TexturePtr avatar_screenshot = Ogre::TextureManager::getSingleton().createManual(
+            "ScreenshotTexture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, window_width, window_height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+
+        Ogre::RenderTexture *render_texture = avatar_screenshot->getBuffer()->getRenderTarget();
+        Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
+        render_texture->update();
+
+        pixelData = new Ogre::uchar[window_width * window_height * 4];
+        pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, pixelData);
+        render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
+
+        screenshot.loadDynamicImage(pixelData, pixels.getWidth(), pixels.getHeight(), 1, Ogre::PF_A8R8G8B8);
+        screenshot.save(avatarfile);
+
+        // Cleanup
+        Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
+        GetSceneManager()->destroySceneNode(cam_node);
+        GetSceneManager()->destroyCamera(screenshot_cam);
+
+        // Show ui
+        q_ogre_world_view_->ShowUiOverlay();
     }
 
     void Renderer::AddResourceDirectory(const std::string& directory)
     {
         // Check to not add the same directory more than once
         for (uint i = 0; i < added_resource_directories_.size(); ++i)
-        {
             if (added_resource_directories_[i] == directory)
                 return;
-        }
 
         Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
 
@@ -971,45 +952,10 @@ namespace OgreRenderer
 
         added_resource_directories_.push_back(directory);
     }
-    
-    void Renderer::SetViewDistance(Real distance)
-    {
-        view_distance_ = distance;
-    }
-    
-    Real Renderer::GetViewDistance()
-    {
-        return view_distance_;
-    }
 
     void Renderer::RepaintUi()
     {
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
     }
-
-    void Renderer::SetAllTextOverlaysVisible(bool visible)
-    {
-        // Get all EC_OgreMovableTextOverlay from scene
-        QList<EC_OgreMovableTextOverlay *> name_overlay_list;
-        Scene::ScenePtr word_scene = framework_->GetDefaultWorldScene();
-        if (word_scene.get())
-        {
-            for (Scene::SceneManager::iterator iter = word_scene->begin(); iter != word_scene->end(); ++iter)
-            {
-                Scene::Entity &entity = **iter;
-                const Foundation::ComponentInterfacePtr &ogre_text_component = entity.GetComponent("EC_OgreMovableTextOverlay");
-                if (ogre_text_component)
-                {
-                    EC_OgreMovableTextOverlay *ogre_movable_text_overlay = checked_static_cast<EC_OgreMovableTextOverlay *>(ogre_text_component.get());
-                    name_overlay_list.append(ogre_movable_text_overlay);
-                }
-            }
-        }
-
-        // Set visibility for all found text overlays
-        foreach (EC_OgreMovableTextOverlay* overlay, name_overlay_list)
-            overlay->SetVisible(visible);
-    }
 }
-

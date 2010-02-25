@@ -32,7 +32,6 @@ namespace Foundation
     //! Render service interface.
     /*!
         \ingroup Services_group
-        
         Manages the rendering window, handles scene rendering, and manages renderer related resources.
         Implemented by the \ref OgreRenderingModule.
     */
@@ -72,7 +71,7 @@ namespace Foundation
         virtual void SetViewDistance(Real distance) = 0;
 
         //! get maximum view distance
-        virtual Real GetViewDistance() = 0;
+        virtual Real GetViewDistance() const = 0;
 
         //! force UI repaint
         virtual void RepaintUi() = 0;
@@ -99,23 +98,22 @@ namespace Foundation
             \param type Resource type
             \return pointer to resource, or null if not found
          */
-        virtual ResourcePtr GetResource(const std::string& id, const std::string& type) = 0;   
-        
+        virtual ResourcePtr GetResource(const std::string& id, const std::string& type) = 0;
+
         //! Requests a renderer-specific resource to be downloaded from the asset system
         /*! A RESOURCE_READY event will be sent when the resource is ready to use
             \param id Resource id
             \param type Resource type
             \return Request tag, or 0 if request could not be queued
-         */        
-        virtual request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;   
-        
+         */
+        virtual request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;
+
         //! Removes a renderer-specific resource
         /*! \param id Resource id
             \param type Resource type
          */
-        virtual void RemoveResource(const std::string& id, const std::string& type) = 0;  
+        virtual void RemoveResource(const std::string& id, const std::string& type) = 0;
     };
 }
 
 #endif
-

@@ -3,24 +3,21 @@
 #include "CompositionHandler.h"
 #include "OgreRenderingModule.h"
 
-#include <Ogre.h>
+#include <OgreCompositorManager.h>
+#include <OgreTechnique.h>
+#include <OgreCompositionTechnique.h>
 
 namespace OgreRenderer
 {
     CompositionHandler::CompositionHandler():
         c_manager_(0),
-        default_vp_(0),
+        viewport_(0),
         framework_(0)
     {
     }
 
     CompositionHandler::~CompositionHandler()
     {
-    }
-
-    std::vector<std::string> &CompositionHandler::GetAvailableCompositors()
-    {
-        return postprocess_effects_;
     }
 
     bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
@@ -41,10 +38,9 @@ namespace OgreRenderer
         postprocess_effects_.push_back("Motion Blur");
         postprocess_effects_.push_back("Radial Blur");
         postprocess_effects_.push_back("WetLens");
-        
 
         framework_ = framework;
-        default_vp_ = vp;
+        viewport_ = vp;
         c_manager_ = Ogre::CompositorManager::getSingletonPtr();
         if (c_manager_)
             return true;
@@ -131,12 +127,12 @@ namespace OgreRenderer
 
     bool CompositionHandler::AddCompositorForViewport(const std::string &compositor, int position)
     {
-        return AddCompositorForViewport(compositor, default_vp_, position);
+        return AddCompositorForViewport(compositor, viewport_, position);
     }
 
     void CompositionHandler::RemoveCompositorFromViewport(const std::string &compositor)
     {
-        return RemoveCompositorFromViewport(compositor, default_vp_);
+        return RemoveCompositorFromViewport(compositor, viewport_);
     }
 
 
@@ -248,10 +244,6 @@ namespace OgreRenderer
         }
     }
 
-    void HDRListener::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
-    {
-    }
-
     /*************************************************************************
     GaussianListener Methods
     *************************************************************************/
@@ -334,9 +326,5 @@ namespace OgreRenderer
             break;
         }
         }
-    }
-
-    void GaussianListener::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
-    {
     }
 }

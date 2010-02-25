@@ -3,12 +3,12 @@
 #ifndef incl_EC_OpenSimPrim_h
 #define incl_EC_OpenSimPrim_h
 
-#include <QVariant>
+#include "RexLogicModuleApi.h"
 #include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
-#include "RexTypes.h"
-#include "RexLogicModuleApi.h"
+
+#include <QVariant>
 
 namespace RexLogic
 {

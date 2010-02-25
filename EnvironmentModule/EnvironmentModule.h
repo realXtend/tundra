@@ -28,8 +28,6 @@ namespace Environment
 
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
-    typedef boost::shared_ptr<EnvironmentEditor> EnvironmentEditorPtr;
-    typedef boost::shared_ptr<PostProcessWidget> PostProcessWidgetPtr;
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
@@ -90,9 +88,6 @@ namespace Environment
 
         //! @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler();
-
-        //! @return The environment editor.
-        EnvironmentEditorPtr GetEnvironmentEditor();
 
         //! @return The environment handler.
         EnvironmentPtr GetEnvironmentHandler();
@@ -188,10 +183,10 @@ namespace Environment
         SkyPtr sky_;
 
         //! Terrain editor pointer.
-        EnvironmentEditorPtr environment_editor_;
+        EnvironmentEditor *environment_editor_;
 
         //! PostProcess dialog pointer
-        PostProcessWidgetPtr postprocess_dialog_;
+        PostProcessWidget *postprocess_dialog_;
 
         //! WorldStream will handle those network messages that we are wishing to send.
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;

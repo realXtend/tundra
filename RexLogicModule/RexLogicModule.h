@@ -206,6 +206,9 @@ namespace RexLogic
 
         void SendRexPrimData(entity_id_t entityid);
 
+        //! Sets visibility for all name display overlays, used e.g. in screenshot taking
+        void SetAllTextOverlaysVisible(bool visible);
+
     private:
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
@@ -257,7 +260,7 @@ namespace RexLogic
 
         //! Active scene pointer.
         Scene::ScenePtr activeScene_;
-        
+
         //! Current camera entity
         Scene::EntityWeakPtr camera_entity_;
 

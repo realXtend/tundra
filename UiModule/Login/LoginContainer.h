@@ -5,14 +5,20 @@
 
 #include "UiModuleApi.h"
 
-#include "EventHandlers/LoginHandler.h"
+//#include "EventHandlers/LoginHandler.h"
 #include "NetworkEvents.h"
 
 #include <QMap>
-#include <QString>
+//#include <QProgressBar>
+
 #include <QProgressBar>
 
 #include "ui_LoginControllerWidget.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace UiServices
 {

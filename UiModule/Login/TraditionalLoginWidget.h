@@ -5,10 +5,20 @@
 
 #include "AbstractLogin.h"
 
-#include "EventHandlers/LoginHandler.h"
+//#include "EventHandlers/LoginHandler.h"
 #include "NetworkEvents.h"
 
 #include "ui_TraditionalLoginWidget.h"
+
+namespace Foundation
+{
+    class Framework;
+}
+
+namespace RexLogic
+{
+    class OpenSimLoginHandler;
+}
 
 namespace CoreUi
 {
@@ -24,7 +34,7 @@ namespace CoreUi
         void DoCommandParameterLogin(QMap<QString, QString> &login_information);
 
         //! Semi hack to get stuff into the demo world frame
-        Ui::TraditionalLoginWidget GetUi() { return ui_; }
+        Ui::TraditionalLoginWidget GetUi() const { return ui_; }
 
     private:
         void InitWidget();
@@ -48,7 +58,6 @@ namespace CoreUi
         void Connecting();
         void ConnectOpenSim(QMap<QString, QString>);
         void ConnectRealXtend(QMap<QString, QString>);
-
     };
 }
 

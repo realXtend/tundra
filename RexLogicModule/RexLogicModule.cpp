@@ -41,6 +41,7 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreMovableTextOverlay.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -945,7 +946,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     if (parentid == 0)
     {
         // No parent, attach to scene root
-        child_placeable->SetParent(Foundation::ComponentPtr());        
+        child_placeable->SetParent(Foundation::ComponentPtr());
         return;
     }
     
@@ -958,7 +959,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     }   
     
     Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    child_placeable->SetParent(parent_placeable);           
+    child_placeable->SetParent(parent_placeable);
 }
 
 void RexLogicModule::HandleMissingParent(entity_id_t entityid)
@@ -983,9 +984,28 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     pending_parents_.erase(i);
 }
 
+void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
+{
+    QList<OgreRenderer::EC_OgreMovableTextOverlay *> overlays;
+    Scene::ScenePtr word_scene = framework_->GetDefaultWorldScene();
+    if (word_scene.get())
+    {
+        for (Scene::SceneManager::iterator iter = word_scene->begin(); iter != word_scene->end(); ++iter)
+        {
+            Scene::Entity &entity = **iter;
+            OgreRenderer::EC_OgreMovableTextOverlay *overlay = entity.GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+            if (overlay)
+                overlays.append(overlay);
+        }
+    }
+
+    // Set visibility for all found text overlays
+    foreach(OgreRenderer::EC_OgreMovableTextOverlay* overlay, overlays)
+        overlay->SetVisible(visible);
+}
+
 void RexLogicModule::AboutToDeleteWorld()
 {
-    // Lets take some screenshots before deleting the scene
     // Lets take some screenshots before deleting the scene
     boost::shared_ptr<UiServices::UiModule> ui_module =
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
@@ -1039,7 +1059,11 @@ void RexLogicModule::AboutToDeleteWorld()
 
         // Pass all variables to renderer for screenshot
         if (!paths.first.isEmpty() && !paths.second.isEmpty())
-            GetRendererPtr()->CaptureWorldAndAvatarToFile(avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
+        {
+            SetAllTextOverlaysVisible(false);
+            GetRendererPtr()->CaptureWorldAndAvatarToFile(
+                avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
+        }
     }
 }
 
