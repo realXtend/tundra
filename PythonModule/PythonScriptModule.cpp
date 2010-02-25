@@ -296,15 +296,17 @@ namespace PythonScript
             }
             
             //port to however uimodule does it, as it replaces OIS now
-			else if(event_id == Input::Events::INWORLD_CLICK || 
-				event_id == Input::Events::LEFT_MOUSECLICK_PRESSED || 
-				event_id == Input::Events::LEFT_MOUSECLICK_RELEASED)
-			{
-                Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-
-                value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
-            }
-
+	    else if(event_id == Input::Events::INWORLD_CLICK || 
+		    event_id == Input::Events::LEFT_MOUSECLICK_PRESSED || 
+		    event_id == Input::Events::LEFT_MOUSECLICK_RELEASED ||
+		    event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED || 
+		    event_id == Input::Events::RIGHT_MOUSECLICK_RELEASED)
+		{
+		    Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+		    
+		    value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
+		}
+	    
 			else if(event_id == Input::Events::MOUSEDRAG) 
 			{
                 Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
@@ -1820,7 +1822,7 @@ static PyMethodDef EmbMethods[] = {
     "Send the given text as an in-world chat message."},
 
     {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
-    "RandomTest function."},
+    "Random test function."},
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
