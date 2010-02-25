@@ -266,12 +266,12 @@ class ObjectEditWindow:
             
     def manipulator_move(self):
         ent = self.controller.active
-        #~ if self.controller.keypressed:
-            #~ self.controller.keypressed = False
-            #~ if not self.mainTab.move_button.isChecked():
-                #~ self.mainTab.move_button.setChecked(True)
-            #~ else:
-                #~ self.mainTab.move_button.setChecked(False)
+        if self.controller.keypressed:
+            self.controller.keypressed = False
+            if not self.mainTab.move_button.isChecked():
+                self.mainTab.move_button.setChecked(True)
+            else:
+                self.mainTab.move_button.setChecked(False)
         
         freemove = False
 
@@ -292,12 +292,12 @@ class ObjectEditWindow:
         
     def manipulator_scale(self):
         ent = self.controller.active
-        #~ if self.controller.keypressed:
-            #~ self.controller.keypressed = False
-            #~ if not self.mainTab.scale_button.isChecked():
-                #~ self.mainTab.scale_button.setChecked(True)
-            #~ else:
-                #~ self.mainTab.scale_button.setChecked(False)
+        if self.controller.keypressed:
+            self.controller.keypressed = False
+            if not self.mainTab.scale_button.isChecked():
+                self.mainTab.scale_button.setChecked(True)
+            else:
+                self.mainTab.scale_button.setChecked(False)
                 
         freemove = False
         if not self.mainTab.scale_button.isChecked():
@@ -318,12 +318,12 @@ class ObjectEditWindow:
     def manipulator_rotate(self):
         ent = self.controller.active
         
-        #~ if self.controller.keypressed:
-            #~ self.controller.keypressed = False
-            #~ if not self.mainTab.rotate_button.isChecked():
-                #~ self.mainTab.rotate_button.setChecked(True)
-            #~ else:
-                #~ self.mainTab.rotate_button.setChecked(False)
+        if self.controller.keypressed:
+            self.controller.keypressed = False
+            if not self.mainTab.rotate_button.isChecked():
+                self.mainTab.rotate_button.setChecked(True)
+            else:
+                self.mainTab.rotate_button.setChecked(False)
                 
         freemove = False
         if not self.mainTab.rotate_button.isChecked():

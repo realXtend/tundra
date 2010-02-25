@@ -77,13 +77,12 @@ class ObjectEdit(Component):
         }
 
         self.shortcuts = {
-            (OIS_KEY_ESC, 0): self.deselect,
-            (OIS_KEY_M, OIS_KEY_ALT): self.window.manipulator_move,#"ALT+M", #move
-            (OIS_KEY_S, OIS_KEY_ALT): self.window.manipulator_scale,#"ALT+S" #, #scale
-            (OIS_KEY_DEL, 0): self.deleteObject,
-            (OIS_KEY_Z, OIS_KEY_CTRL): self.undo, 
-            (OIS_KEY_D, OIS_KEY_ALT): self.duplicate, 
-            #(OIS_KEY_R, ALT): self.manipulator_rotate #rotate
+            #r.PyObjectEditDeselect: self.deselect,
+            r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
+            r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
+            r.Delete: self.deleteObject,
+            r.Undo: self.undo, 
+            r.PyDuplicateDrag: self.duplicate, 
         }
         
         self.resetManipulators()
@@ -339,12 +338,12 @@ class ObjectEdit(Component):
                     
                     self.window.update_guivals(ent)
    
-    def on_keyup(self, keycode, keymod, callback):
+    def on_input(self, evid, callback):
         if self.windowActive:
             #print keycode, keymod
-            if self.shortcuts.has_key((keycode, keymod)):
+            if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True
-                self.shortcuts[(keycode, keymod)]()
+                self.shortcuts[evid]()
                 callback(True)
         
     def on_inboundnetwork(self, evid, name, callback):
@@ -356,8 +355,9 @@ class ObjectEdit(Component):
         ent = self.active
         if ent is not None:
             self.worldstream.SendObjectUndoPacket(ent.uuid)
-            self.update_guivals(ent)
+            self.window.update_guivals(ent)
             self.modified = False
+            self.deselect()
 
     #~ def redo(self):
         #~ #print "redo clicked"

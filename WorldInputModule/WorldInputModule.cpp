@@ -40,12 +40,19 @@ namespace Input
         eventmgr-> RegisterEvent (eid, Input::Events::MOVE_FORWARD_RELEASED, "MoveForwardReleased");
 
         eventmgr-> RegisterEvent (eid, Input::Events::PY_RESTART, "PyRestart");
+		eventmgr-> RegisterEvent (eid, Input::Events::PY_DUPLICATE_DRAG, "PyDuplicateDrag");
         eventmgr-> RegisterEvent (eid, Input::Events::PY_RUN_COMMAND, "PyRunCommand");
+		
+		eventmgr-> RegisterEvent (eid, Input::Events::PY_OBJECTEDIT_TOGGLE_MOVE, "PyObjectEditToggleMove");
+		eventmgr-> RegisterEvent (eid, Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE, "PyObjectEditToggleScale");
+		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_DELETE, "Delete");
+		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_UNDO, "Undo");
 
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_PRESSED, "KeyPressed");
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_RELEASED, "KeyReleased");
 
         eventmgr-> RegisterEvent (eid, Input::Events::INWORLD_CLICK, "InWorldClick");
+		eventmgr-> RegisterEvent (eid, Input::Events::INWORLD_CLICK_REL, "InWorldClickReleased");
 
         eventmgr-> RegisterEvent (eid, Input::Events::LEFT_MOUSECLICK_PRESSED, "LeftMouseClickPressed");
         eventmgr-> RegisterEvent (eid, Input::Events::LEFT_MOUSECLICK_RELEASED, "LeftMouseClickReleased");

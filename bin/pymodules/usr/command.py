@@ -1021,3 +1021,11 @@ if 0:
     uism.AddProxyWidget(r.test)
     print r.test
     r.test.show()
+
+
+if 1:
+    print "swoot"
+    print r.c.window.mainTab.treeWidget.selectionMode
+    #print dir()
+    
+    

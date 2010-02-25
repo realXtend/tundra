@@ -23,6 +23,24 @@ namespace Input
 
         map.insert (make_pair (QKeySequence (Qt::Key_F1),
                     make_pair (Input::Events::SHOW_DEBUG_CONSOLE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_D), 
+					make_pair (Input::Events::PY_DUPLICATE_DRAG, 0)));
+		
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_M), 
+					make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_MOVE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_S), 
+				make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE, 0)));
+
+		//map.insert (make_pair (QKeySequence (Qt::ALT + Qt::Key_R), 
+					//make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_ROTATE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::Key_Delete), // XXX, alt+del viable?
+				make_pair (Input::Events::NAALI_DELETE, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Z), 
+				make_pair (Input::Events::NAALI_UNDO, 0)));
     }
 
     FirstPersonBindings::FirstPersonBindings ()
