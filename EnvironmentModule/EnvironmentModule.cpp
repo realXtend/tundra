@@ -27,7 +27,9 @@ namespace Environment
 {
     EnvironmentModule::EnvironmentModule() :
         ModuleInterfaceImpl(Foundation::Module::MT_Environment),
-        waiting_for_regioninfomessage_(false)
+        waiting_for_regioninfomessage_(false),
+        environment_editor_(0),
+        postprocess_dialog_(0)
     {
         resource_event_category_ = 0;
         scene_event_category_ = 0;

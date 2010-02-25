@@ -82,7 +82,7 @@ namespace Environment
             NamedCheckBox* c_box = new NamedCheckBox(effect_name.c_str(), this);
             c_box->setObjectName(effect_name.c_str());
 
-            QObject::connect(c_box, SIGNAL(Toggled(bool, std::string)), this, SLOT(handleSelection(bool, std::string)));
+            QObject::connect(c_box, SIGNAL(Toggled(bool, const QString &)), this, SLOT(HandleSelection(bool, const QString &)));
             widget_.checkboxlayout->addWidget(c_box);
         }
     }
