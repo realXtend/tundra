@@ -193,6 +193,7 @@ boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryParser::Extract
 
     if (inventoryLibOwnerId.IsNull())
         throw XmlRpcException("Failed to read inventory, inventory-lib-owner value agent_id was null or unparseable!");
+        return inventory;
 
     inventory->worldLibraryOwnerId = inventoryLibOwnerId;
 
@@ -200,7 +201,11 @@ boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryParser::Extract
     XMLRPC_VALUE inventoryLibraryNode = XMLRPC_VectorGetValueWithID(result, "inventory-skel-lib");
 
     if (!inventoryLibraryNode || XMLRPC_GetValueType(inventoryLibraryNode) != xmlrpc_vector)
-        throw XmlRpcException("Failed to read world inventory, inventory in the reply was not properly formed!");
+    {
+        // Note: E.g. ScienceSim doens't have have World Library. Don't throw exception, just return here.
+        //throw XmlRpcException("Failed to read world inventory, inventory in the reply was not properly formed!");
+        return inventory;
+    }
 
     DetachedInventoryFolderList library_folders;
 
