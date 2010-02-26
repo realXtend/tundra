@@ -75,6 +75,12 @@ namespace Asset
          */
         virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
         
+        //! Gets information about current status of asset memory cache
+        virtual Foundation::AssetCacheInfoMap GetAssetCacheInfo();
+
+        //! Gets information about current asset transfers
+        virtual Foundation::AssetTransferInfoVector GetAssetTransferInfo();
+                
         //! Registers an asset provider
         /*! \param asset_provider Provider to register
             \return true if successfully registered
@@ -91,7 +97,7 @@ namespace Asset
         /*! \param asset Asset to store
          */
         virtual void StoreAsset(Foundation::AssetPtr asset);
-        
+                
         //! Performs time-based update
         /*! Calls update function of all registered asset providers, and of cache
             \param frametime Seconds since last frame

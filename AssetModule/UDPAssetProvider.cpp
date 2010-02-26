@@ -636,4 +636,40 @@ namespace Asset
             AssetModule::LogError("Asset service not found, could not store asset to cache");
         }
     }
+    
+    Foundation::AssetTransferInfoVector UDPAssetProvider::GetTransferInfo()
+    {
+        Foundation::AssetTransferInfoVector ret;
+        
+        UDPAssetTransferMap::iterator i = texture_transfers_.begin();
+        while (i != texture_transfers_.end())
+        {
+            Foundation::AssetTransferInfo info;
+            info.id_ = i->second.GetAssetId();
+            info.type_ = GetTypeNameFromAssetType(i->second.GetAssetType());
+            info.provider_ = Name();
+            info.size_ = i->second.GetSize();
+            info.received_ = i->second.GetReceived();
+            info.received_continuous_ = i->second.GetReceivedContinuous();
+            ret.push_back(info);
+            ++i;
+        }
+        
+        i = asset_transfers_.begin();
+        while (i != asset_transfers_.end())
+        {
+            Foundation::AssetTransferInfo info;
+            info.id_ = i->second.GetAssetId();
+            info.type_ = GetTypeNameFromAssetType(i->second.GetAssetType());
+            info.provider_ = Name();
+            info.size_ = i->second.GetSize();
+            info.received_ = i->second.GetReceived();
+            info.received_continuous_ = i->second.GetReceivedContinuous();
+            ret.push_back(info);        
+            ++i;
+        }
+        
+        return ret;
+    }
+    
 }

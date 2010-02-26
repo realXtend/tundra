@@ -60,7 +60,10 @@ namespace Asset
             \return Pointer to asset
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
-
+        
+        //! Returns information about current asset transfers
+        virtual Foundation::AssetTransferInfoVector GetTransferInfo();
+        
         virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule);
 
         //! Performs time-based update 

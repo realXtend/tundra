@@ -53,7 +53,9 @@ class TimeProfilerWindow : public QWidget
     QPushButton *push_button_collapse_all_;
     QPushButton *push_button_expand_all_;
     QPushButton *push_button_show_unused_;
-
+    QTreeWidget *tree_asset_cache_;
+    QTreeWidget *tree_asset_transfers_;
+        
     int frame_time_update_x_pos_;
 
     // If true, profiling data is shown in a tree, otherwise using a flat list.
@@ -90,6 +92,7 @@ public slots:
     void CollapseAllButtonPressed();
     void ExpandAllButtonPressed();
     void ShowUnusedButtonPressed();
+    void RefreshAssetProfilingData();
     
 public slots:
     void Closed();

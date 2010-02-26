@@ -211,4 +211,35 @@ namespace Asset
         asset = cache_->GetAsset(asset_id, false, true);    
         return asset;    
     }
+    
+    Foundation::AssetCacheInfoMap AssetManager::GetAssetCacheInfo()
+    {
+        Foundation::AssetCacheInfoMap ret;
+        if (!cache_)
+            return ret;
+            
+        const AssetCache::AssetMap& assets = cache_->GetAssets();
+        AssetCache::AssetMap::const_iterator i = assets.begin();
+        while (i != assets.end())
+        {
+            ret[i->second->GetType()].count_++;
+            ret[i->second->GetType()].size_ += i->second->GetSize();
+            ++i;
+        }
+        
+        return ret;
+    }    
+    
+    Foundation::AssetTransferInfoVector AssetManager::GetAssetTransferInfo()
+    {
+        Foundation::AssetTransferInfoVector ret;
+        AssetProviderVector::iterator i = providers_.begin();
+        while (i != providers_.end())
+        {
+            Foundation::AssetTransferInfoVector transfers = (*i)->GetTransferInfo();
+            ret.insert(ret.end(), transfers.begin(), transfers.end());
+            ++i;
+        } 
+        return ret;
+    }
 }

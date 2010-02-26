@@ -1294,6 +1294,103 @@
           </column>
          </widget>
         </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Assets</string>
+         </attribute>
+         <widget class="QLabel" name="labelAssetCache">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Memory asset cache</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelAssetTransfers">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>260</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Asset transfers</string>
+          </property>
+         </widget>
+         <widget class="QTreeWidget" name="treeAssetCache">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>651</width>
+            <height>221</height>
+           </rect>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>651</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Count</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QTreeWidget" name="treeAssetTransfers">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>280</y>
+            <width>651</width>
+            <height>221</height>
+           </rect>
+          </property>
+          <column>
+           <property name="text">
+            <string>ID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Provider</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Received</string>
+           </property>
+          </column>
+         </widget>
+        </widget>
        </widget>
       </item>
      </layout>
