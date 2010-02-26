@@ -1023,9 +1023,33 @@ if 0:
     r.test.show()
 
 
-if 1:
-    print "swoot"
-    print r.c.window.mainTab.treeWidget.selectionMode
-    #print dir()
+if 0:
+    import PythonQt
+    from PythonQt.QtUiTools import QUiLoader
+    from PythonQt.QtCore import QFile, QSize
+    from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon, QWidget
+    loader = QUiLoader()
+    uifile = QFile("pymodules/objectedit/selection.ui")
+    ui = loader.load(uifile)
+    uism = r.getUiSceneManager()
+    uiprops = r.createUiWidgetProperty(2)
+    uiprops.widget_name_ = "Thingie Rect"
     
+    #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
+    proxy = r.createUiProxyWidget(ui, uiprops)
+    uism.AddProxyWidget(proxy)
+    proxy.setWindowFlags(0)
+    
+    ui.show()
+    
+    r.c.ui = ui
+    print r.c.ui.geometry
+    #~ r.c.ui.setGeometry(10, 60, 400, 400)
+    
+    #~ r.c.ui.hide()
+    #~ r.c.ui = None
+    
+    #~ print r.c.ui
+    #~ r.c.ui.setGeometry
+
     
