@@ -234,7 +234,11 @@ void RexLogicModule::PostInitialize()
 
     boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
-        ui_module->SetLoginHandlers(os_login_handler_);
+    {
+        QObject *notifier = ui_module->GetEtherLoginNotifier();
+        os_login_handler_->SetLoginNotifier(notifier);
+        // Add taiga handler set notifier later when done in ether..
+    }
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)

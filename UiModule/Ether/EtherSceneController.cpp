@@ -170,17 +170,27 @@ namespace Ether
             scene_->addItem(action_proxy_widget_);
 
             // Avatar info frame
-            avatar_info_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::CardControl, View::ControlProxyWidget::BottomToTop, "No Name");
+            avatar_info_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::CardControl, View::ControlProxyWidget::BottomToTop);
             avatar_info_widget_->SetActionWidget(action_proxy_widget_);
             scene_->addItem(avatar_info_widget_);
 
+            // Add/remove for avatar
+            avatar_addremove_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::AddRemoveControl, View::ControlProxyWidget::BottomToTop);
+            avatar_addremove_widget_->SetActionWidget(action_proxy_widget_);
+            scene_->addItem(avatar_addremove_widget_);
+
             // World info frame
-            world_info_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::CardControl, View::ControlProxyWidget::TopToBottom, "No Name");
+            world_info_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::CardControl, View::ControlProxyWidget::TopToBottom);
             world_info_widget_->SetActionWidget(action_proxy_widget_);
             scene_->addItem(world_info_widget_);
 
+            // Add/remove for world
+            world_addremove_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::AddRemoveControl, View::ControlProxyWidget::TopToBottom);
+            world_addremove_widget_->SetActionWidget(action_proxy_widget_);
+            scene_->addItem(world_addremove_widget_);
+
             // Bottom controls
-            control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::TopToBottom, "");
+            control_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::ActionControl, View::ControlProxyWidget::TopToBottom);
             connect(control_widget_, SIGNAL( ActionRequest(QString) ), SLOT( ControlsWidgetHandler(QString) ));
             scene_->addItem(control_widget_);
         }
@@ -225,6 +235,10 @@ namespace Ether
             avatar_info_widget_->UpdateGeometry(hightlight_top->mapRectToScene(hightlight_top->boundingRect()), present_scale, do_fade);
             // Update world info geometry (highlighted card size and pos)
             world_info_widget_->UpdateGeometry(hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect()), present_scale, do_fade);
+            // Update avatar add/remove widget
+            avatar_addremove_widget_->UpdateGeometry(avatar_info_widget_->mapRectToScene(avatar_info_widget_->boundingRect()), present_scale, do_fade);
+            // Update world add/remove widget
+            world_addremove_widget_->UpdateGeometry(world_info_widget_->mapRectToScene(world_info_widget_->boundingRect()), present_scale, do_fade);
             // Update control widget position (bottom of screen, pos calculated inside)
             control_widget_->UpdateGeometry(controls_rect, present_scale, !do_fade);
             // Update action widgets geometry (full screen)
@@ -279,11 +293,13 @@ namespace Ether
             {
                 last_active_bottom_card_ = card;
                 world_info_widget_->UpdateContollerCard(last_active_bottom_card_);
+                world_addremove_widget_->UpdateContollerCard(last_active_bottom_card_);
             }
             else if (card->arragementType() == View::InfoCard::TopToBottom)
             {
                 last_active_top_card_ = card;
                 avatar_info_widget_->UpdateContollerCard(last_active_top_card_);
+                avatar_addremove_widget_->UpdateContollerCard(last_active_top_card_);
             }
         }
 
@@ -343,6 +359,8 @@ namespace Ether
             selected_cards.second = bottom_menu_->GetHighlighted();
             
             scene_->SupressKeyEvents(true);
+            SuppressControlWidgets(true);
+
             StartLoginAnimation();
             emit LoginRequest(selected_cards);
         }
@@ -356,12 +374,13 @@ namespace Ether
             QVector<View::InfoCard*> t_obj = top_menu_->GetObjects();
             t_obj += bottom_menu_->GetObjects();
 
+            QPropertyAnimation *anim;
             foreach (View::InfoCard* card, t_obj)
             {
                 // Animate opacity from current to 0 for every card except the selected cards
                 if (card != last_active_bottom_card_ && card != last_active_top_card_)
                 {
-                    QPropertyAnimation* anim = new QPropertyAnimation(card, "opacity", login_animations_);
+                    anim = new QPropertyAnimation(card, "opacity", login_animations_);
                     anim->setStartValue(card->opacity());
                     anim->setEndValue(0);
                     anim->setDuration(2000);
@@ -369,6 +388,21 @@ namespace Ether
                     login_animations_->addAnimation(anim);
                 }
             }
+
+            // Fade animation for add remove widgets
+            anim = new QPropertyAnimation(avatar_addremove_widget_, "opacity", login_animations_);
+            anim->setStartValue(avatar_addremove_widget_->opacity());
+            anim->setEndValue(0);
+            anim->setDuration(2000);
+            anim->setEasingCurve(QEasingCurve::InOutSine);
+            login_animations_->addAnimation(anim);
+
+            anim = new QPropertyAnimation(world_addremove_widget_, "opacity", login_animations_);
+            anim->setStartValue(world_addremove_widget_->opacity());
+            anim->setEndValue(0);
+            anim->setDuration(2000);
+            anim->setEasingCurve(QEasingCurve::InOutSine);
+            login_animations_->addAnimation(anim);
 
             // Animate selected cards position
             QPropertyAnimation* anim1 = new QPropertyAnimation(last_active_top_card_, "pos", login_animations_);
@@ -439,6 +473,13 @@ namespace Ether
         {
             if (login_animations_->direction() == QAbstractAnimation::Backward && change_scene_after_anims_finish_)
                 scene_->EmitSwitchSignal();
+            if (login_animations_->direction() == QAbstractAnimation::Backward)
+                SuppressControlWidgets(false);
+        }
+
+        void EtherSceneController::SuppressControlWidgets(bool suppress)
+        {
+            control_widget_->SuppressButtons(suppress);
         }
     }
 }

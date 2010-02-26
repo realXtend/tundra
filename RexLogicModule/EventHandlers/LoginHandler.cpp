@@ -70,6 +70,15 @@ namespace RexLogic
         delete realxtend_world_session_;
     }
 
+    void OpenSimLoginHandler::SetLoginNotifier(QObject *notifier)
+    {
+        connect(notifier, SIGNAL( StartOsLogin(QMap<QString, QString>) ), 
+                SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
+        connect(notifier, SIGNAL( StartRexLogin(QMap<QString, QString>) ), 
+                SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
+        connect(notifier, SIGNAL( Quit() ), SLOT( Quit() ));
+    }
+
     void OpenSimLoginHandler::InstantiateWorldSession()
     {
         bool success = false;
@@ -214,6 +223,11 @@ namespace RexLogic
     {
         delete credentials_;
         delete taiga_world_session_;
+    }
+
+    void TaigaLoginHandler::SetLoginNotifier(QObject *notifier)
+    {
+
     }
 
     void TaigaLoginHandler::InstantiateWorldSession()

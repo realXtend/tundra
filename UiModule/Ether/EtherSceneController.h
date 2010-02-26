@@ -60,6 +60,8 @@ namespace Ether
             void StartLoginAnimation();
             void RevertLoginAnimation(bool change_scene_after_anims_finish);
 
+            void SuppressControlWidgets(bool suppress);
+
         private slots:
             void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);
@@ -94,7 +96,9 @@ namespace Ether
 
             //! Information widgets
             View::ControlProxyWidget *avatar_info_widget_;
+            View::ControlProxyWidget *avatar_addremove_widget_;
             View::ControlProxyWidget *world_info_widget_;
+            View::ControlProxyWidget *world_addremove_widget_;
 
             //! Control widget
             View::ControlProxyWidget *control_widget_;

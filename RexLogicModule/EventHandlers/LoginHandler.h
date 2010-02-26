@@ -47,6 +47,7 @@ namespace RexLogic
     public:
         AbstractLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
         virtual void InstantiateWorldSession() = 0;
+        virtual void SetLoginNotifier(QObject *notifier) = 0;
         virtual QUrl ValidateServerUrl(QString urlString);
 
         ProtocolUtilities::LoginCredentialsInterface *credentials_;
@@ -74,6 +75,7 @@ namespace RexLogic
         OpenSimLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
         virtual ~OpenSimLoginHandler();
         void InstantiateWorldSession();
+        void SetLoginNotifier(QObject *notifier);
 
     public slots:
         void ProcessOpenSimLogin(QMap<QString, QString> map);
@@ -94,6 +96,7 @@ namespace RexLogic
         TaigaLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module);
         virtual ~TaigaLoginHandler();
         void InstantiateWorldSession();
+        void SetLoginNotifier(QObject *notifier);
 
     public slots:
         void ProcessCommandParameterLogin(QString &entry_point_url);

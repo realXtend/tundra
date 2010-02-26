@@ -26,7 +26,8 @@ namespace Ether
             enum ControlType
             {
                 CardControl,
-                ActionControl
+                ActionControl,
+                AddRemoveControl
             };
 
             enum LayoutDirection
@@ -51,18 +52,20 @@ namespace Ether
                 NonePosition
             };
 
-            ControlProxyWidget(ControlType type, LayoutDirection direction, QString text);
+            ControlProxyWidget(ControlType type, LayoutDirection direction, QString text = QString());
             void EmitActionRequest(QString type);
 
         public slots:
             void UpdateGeometry(QRectF rect, qreal scale, bool do_fade);
             void UpdateContollerCard(InfoCard *new_card);
-
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
+            void SuppressButtons(bool suppress);
 
         private slots:
             void InitCardWidgets();
             void InitActionWidgets();
+            void InitAddRemoveControl();
+
             void ControlledWidgetStopped();
 
             void RegisterHandler();
@@ -94,6 +97,8 @@ namespace Ether
             QPropertyAnimation *move_animation_;
 
             QRectF last_scene_rect_;
+
+            bool suppress_buttons_;
 
         signals:
             void ActionRequest(QString);
