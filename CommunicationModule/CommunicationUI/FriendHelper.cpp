@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "FriendHelper.h"
 #include "FriendListItem.h"
 //#include "interface.h"
@@ -15,6 +16,8 @@
 #include <UiProxyWidget.h>
 
 #include <QLabel>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiHelpers
 {

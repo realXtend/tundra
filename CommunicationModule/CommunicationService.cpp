@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include "CommunicationService.h"
 #include <QList>
@@ -12,6 +13,8 @@
 #include "FriendRequestInterface.h"
 #include "Framework.h"
 #include "CoreException.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace Communication
 {

@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiProxyWidget.h"
 
 #include "MainPanel/MainPanelButton.h"
@@ -11,6 +12,8 @@
 #include <QTimeLine>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiServices
 {

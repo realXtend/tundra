@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "VideoWidget.h"
 
 #include <QApplication>
@@ -12,6 +13,8 @@
 #include <QDebug>
 
 #include <gst/interfaces/xoverlay.h>
+
+#include "MemoryLeakCheck.h"
 
 #ifdef Q_WS_X11
 extern void qt_x11_set_global_double_buffer(bool);

@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Connection>

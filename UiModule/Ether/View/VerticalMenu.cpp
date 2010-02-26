@@ -1,10 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "VerticalMenu.h"
 
 #include <QDebug>
 #include <math.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

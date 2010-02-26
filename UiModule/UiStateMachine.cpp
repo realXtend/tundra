@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiStateMachine.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsWidget>
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiServices
 {

@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include <QtCore>
 #include <QApplication>
@@ -11,6 +12,8 @@
 #include <Poco/Environment.h>
 #include "CoreDefines.h"
 #include "CoreException.h"
+
+#include "MemoryLeakCheck.h"
 
 // #include <TelepathyQt4/Debug__> // disabled because header not found on Linux
 
