@@ -82,7 +82,7 @@ class ObjectEdit(Component):
             r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
             r.Delete: self.deleteObject,
             r.Undo: self.undo, 
-            r.PyDuplicateDrag: self.duplicate, 
+            r.PyDuplicateDrag: self.duplicateStart, 
         }
         
         self.resetManipulators()
@@ -175,8 +175,8 @@ class ObjectEdit(Component):
             self.manipulator.hideManipulator()
             self.manipulator = newmanipu
         
-        ent = self.active
-        self.manipulator.showManipulator(ent)
+        #ent = self.active
+        self.manipulator.showManipulator(self.sels)
     
     def hideManipulator(self):
         self.manipulator.hideManipulator()
@@ -259,6 +259,7 @@ class ObjectEdit(Component):
             self.dragging = False
             
         self.manipulator.stopManipulating()
+        self.duplicateDragStart = False #XXXchange?
         
     def RightMousePressed(self, mouseinfo):
         #r.logInfo("rightmouse down")
@@ -313,25 +314,30 @@ class ObjectEdit(Component):
     def on_mousemove(self, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
-        
         if self.windowActive:
-            if self.left_button_down :
+            
+            width, height = r.getScreenSize()
+            
+            normalized_width = 1/width
+            normalized_height = 1/height
+            mouse_abs_x = normalized_width * mouseinfo.x
+            mouse_abs_y = normalized_height * mouseinfo.y
+                                
+            movedx = mouse_abs_x - self.prev_mouse_abs_x
+            movedy = mouse_abs_y - self.prev_mouse_abs_y
+            
+            if self.left_button_down:
+                if self.duplicateDragStart:
+                    for ent in self.sels:
+                        self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 0, 0, 0) #nasty hardcoded offset
+                    self.duplicateDragStart = False
+                        
                 ent = self.active
                 #print "on_mousemove + hold:", mouseinfo
                 if ent is not None and self.sel_activated and self.canmove:
                     self.dragging = True
 
-                    width, height = r.getScreenSize()
-                    
-                    normalized_width = 1/width
-                    normalized_height = 1/height
-                    mouse_abs_x = normalized_width * mouseinfo.x
-                    mouse_abs_y = normalized_height * mouseinfo.y
-                                        
-                    movedx = mouse_abs_x - self.prev_mouse_abs_x
-                    movedy = mouse_abs_y - self.prev_mouse_abs_y
-
-                    self.manipulator.manipulate(self.sels, movedx, movedy)            
+                    self.manipulator.manipulate(self.sels, movedx, movedy)
                     
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
@@ -340,7 +346,6 @@ class ObjectEdit(Component):
    
     def on_input(self, evid, callback):
         if self.windowActive:
-            #print keycode, keymod
             if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True
                 self.shortcuts[evid]()
@@ -376,6 +381,9 @@ class ObjectEdit(Component):
         #if ent is not None:
         for ent in self.sels:
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
+        
+    def duplicateStart(self):
+        self.duplicateDragStart = True
         
     def createObject(self):
         ent_id = r.getUserAvatarId()
@@ -425,7 +433,7 @@ class ObjectEdit(Component):
                 #converted to list to have it mutable
                 ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
                 #print "=>", ent.pos
-                self.manipulator.moveTo(pos)
+                self.manipulator.moveTo(self.sels)
                 #self.selection_box.pos = pos[0], pos[1], pos[2]
 
                 #self.window.update_posvals(pos)
@@ -538,7 +546,7 @@ class ObjectEdit(Component):
                             self.time = 0
                             self.selection_box.pos = ent_pos
                         if arr_pos != ent_pos:
-                            self.manipulator.moveTo(ent_pos)
+                            self.manipulator.moveTo(self.sels)
                     except RuntimeError, e:
                         r.logDebug("update: scene not found")
    

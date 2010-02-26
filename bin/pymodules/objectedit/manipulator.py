@@ -26,9 +26,12 @@ class Manipulator:
                 return True
         return False
         
-    def moveTo(self, pos):
+    def moveTo(self, ents):
         if self.manipulator:
-            self.manipulator.pos = pos[0], pos[1], pos[2]
+            pos = self.getPivotPos(ents)
+            #print "Showing at: ", pos
+            self.manipulator.pos = pos
+            #self.manipulator.pos = pos[0], pos[1], pos[2]
             
     def getManipulatorPosition(self):
         if self.manipulator:
@@ -50,13 +53,31 @@ class Manipulator:
             self.manipulator = self.createManipulator()
             self.hideManipulator()
         
-    def showManipulator(self, ent):
+    def showManipulator(self, ents):
         #print "Showing arrows!"
         if self.usesManipulator:
-            self.manipulator.pos = ent.pos
+            self.moveTo(ents)
             self.manipulator.scale = 0.2, 0.2, 0.2
             self.manipulator.orientation = 0, 0, 0, 1
     
+    def getPivotPos(self, ents):
+        positions = []
+        
+        for ent in ents:
+            #print ent.id, ent.pos
+            pos = list(ent.pos)
+            positions.append(pos)
+        
+        minpos = Vector3(min(positions))
+        maxpos = Vector3(max(positions))
+        median = (minpos + maxpos) / 2
+        #print positions
+        #print "Min:", minpos
+        #print "Max:", minpos
+        #print "Median:", median
+        
+        return median.x, median.y, median.z
+        
     def hideManipulator(self):
         #r.logInfo("hiding manipulator")
         if self.usesManipulator:
@@ -129,6 +150,9 @@ class Manipulator:
             
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy)
+                
+            if self.usesManipulator:
+                self.moveTo(ents)
 
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -157,7 +181,7 @@ class MoveManipulator(Manipulator):
             #print pos[self.manipulatorGrabbed_axis]
             
             ent.pos = pos[0], pos[1], pos[2]
-            self.manipulator.pos = pos[0], pos[1], pos[2]
+            #self.manipulator.pos = pos[0], pos[1], pos[2]
         
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
