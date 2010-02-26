@@ -4,6 +4,8 @@
 #define incl_Foundation_ThreadTask_h
 
 #include "EventDataInterface.h"
+#include "CoreTypes.h"
+#include "CoreThread.h"
 
 namespace Foundation
 {

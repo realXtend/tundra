@@ -4,6 +4,7 @@
 #define incl_Interfaces_TextureInterface_h
 
 #include "ResourceInterface.h"
+#include "CoreModuleApi.h"
 
 namespace Foundation
 {

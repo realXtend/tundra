@@ -3,6 +3,7 @@
 #ifndef incl_SceneSceneManager_h
 #define incl_SceneSceneManager_h
 
+#include "CoreAnyIterator.h"
 #include "Entity.h"
 
 namespace Scene

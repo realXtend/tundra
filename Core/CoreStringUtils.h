@@ -8,6 +8,9 @@
 #include <Poco/LocalDateTime.h>
 #include <boost/lexical_cast.hpp>
 
+#include "CoreDefines.h"
+#include "CoreTypes.h"
+
 static std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');

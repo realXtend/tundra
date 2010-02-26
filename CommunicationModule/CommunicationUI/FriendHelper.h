@@ -3,7 +3,7 @@
 #ifndef incl_Communication_FriendHelper_h
 #define incl_Communication_FriendHelper_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 #include "ui_FriendListWidget.h"
 #include "ui_RequestManagerWidget.h"
 
@@ -11,7 +11,13 @@
 #include <QMap>
 #include <QString>
 
-#include "interface.h"
+//#include "interface.h"
+#include "CommunicationModuleFwd.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace UiHelpers
 {
@@ -21,11 +27,11 @@ namespace UiHelpers
     Q_OBJECT
 
     public:
-        FriendHelper(Foundation::Framework *framework);
+        explicit FriendHelper(Foundation::Framework *framework);
         virtual ~FriendHelper();
 
         //! Setters
-        void SetupUi(Ui::FrienListWidget *friend_list_ui) { SAFE_DELETE(friend_list_ui_); friend_list_ui_ = friend_list_ui; }
+        void SetupUi(Ui::FrienListWidget *friend_list_ui);
 
         //! Getters
         QMap<QString, Communication::ContactInterface*> GetContactsMap() { return contacts_map_; }

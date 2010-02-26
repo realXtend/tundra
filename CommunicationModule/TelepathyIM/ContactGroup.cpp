@@ -2,6 +2,9 @@
 
 #include "StableHeaders.h"
 #include "ContactGroup.h"
+#include "CoreDefines.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace TelepathyIM
 {

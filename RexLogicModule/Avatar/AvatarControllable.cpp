@@ -11,6 +11,11 @@
 #include "SceneManager.h"
 #include "EC_OgrePlaceable.h"
 #include "InputServiceInterface.h"
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "WorldStream.h"
+
+using namespace RexTypes;
 
 namespace RA = RexTypes::Actions;
 

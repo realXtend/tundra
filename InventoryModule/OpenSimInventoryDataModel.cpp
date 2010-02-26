@@ -12,8 +12,10 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 #include "J2kEncoder.h"
+#include "Framework.h"
 
 #include "UiModule.h"
+#include "UiNotificationManager.h"
 #include "Inventory/InventorySkeleton.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
@@ -24,6 +26,11 @@
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
 
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "EventManager.h"
+#include "RexTypes.h"
+
 #include <QDir>
 #include <QFile>
 #include <QImage>
@@ -32,6 +39,8 @@
 
 #include <OgreImage.h>
 #include <OgreException.h>
+
+using namespace RexTypes;
 //#include "MemoryLeakCheck.h"
 
 namespace Inventory
@@ -439,7 +448,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
     ///         Ogre seems to be able to create files from AssetReady events.
 
     Resource::Events::ResourceReady* resourceReady = checked_static_cast<Resource::Events::ResourceReady *>(data);
-    RexTypes::asset_type_t asset_type = RexAT_Texture;
+    asset_type_t asset_type = RexAT_Texture;
     request_tag_t tag = resourceReady->tag_;
 //    QString asset_id = resourceReady->id_.c_str();
 
@@ -611,7 +620,7 @@ void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventData
 }
 
 bool OpenSimInventoryDataModel::UploadFile(
-    const RexTypes::asset_type_t &asset_type,
+    const asset_type_t &asset_type,
     std::string filename,
     const std::string &name,
     const std::string &description,
@@ -655,7 +664,7 @@ bool OpenSimInventoryDataModel::UploadFile(
 }
 
 bool OpenSimInventoryDataModel::UploadBuffer(
-    const RexTypes::asset_type_t &asset_type,
+    const asset_type_t &asset_type,
     const std::string& filename,
     const std::string& name,
     const std::string& description,
@@ -889,7 +898,7 @@ void OpenSimInventoryDataModel::ThreadedUploadFiles(QStringList &filenames, QStr
 
         emit UploadStarted(real_filename);
 
-        RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename.toStdString());
+        asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename.toStdString());
         if (asset_type == RexAT_None)
         {
             emit Notification(QString("Could not upload %1 Invalid file type").arg(real_filename), 9000);
@@ -963,7 +972,7 @@ void OpenSimInventoryDataModel::ThreadedUploadBuffers(QStringList filenames, QVe
     while(it.hasNext())
     {
         QString filename = it.next();
-        RexTypes::asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename.toStdString());
+        asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename.toStdString());
         if (asset_type == RexAT_None)
         {
             InventoryModule::LogError("Invalid file extension. File can't be uploaded: " + filename.toStdString());

@@ -8,6 +8,11 @@
 #include "Test.h"
 #include "OpensimIM/ConnectionProvider.h"
 #include "TelepathyIM/ConnectionProvider.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
+#include "Interfaces/ProtocolModuleInterface.h"
+#include "UiSceneManager.h"
 
 #include <RexLogicModule.h>
 #include <UiModule.h>

@@ -6,17 +6,12 @@
 #ifndef incl_Terrain_h
 #define incl_Terrain_h
 
+#include "ForwardDefines.h"
 #include "EC_Terrain.h"
 #include "EnvironmentModuleApi.h"
+#include "RexTypes.h"
 
 #include <QObject>
-
-namespace Scene
-{
-    class Entity;
-    typedef boost::weak_ptr<Entity> EntityWeakPtr;
-    typedef boost::shared_ptr<Entity> EntityPtr;
-}
 
 namespace Resource
 {

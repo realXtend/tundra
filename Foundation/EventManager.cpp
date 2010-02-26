@@ -3,6 +3,7 @@
 #include "EventDataInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
+#include "CoreException.h"
 
 #include <QDomDocument>
 #include <QDomElement>

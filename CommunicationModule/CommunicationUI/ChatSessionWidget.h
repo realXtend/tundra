@@ -4,7 +4,8 @@
 #define incl_Communication_ChatSessionWidget_h
 
 #include "ui_ChatSessionWidget.h"
-#include "interface.h"
+#include "CommunicationModuleFwd.h"
+//#include "interface.h"
 
 namespace CommunicationUI
 {
@@ -31,7 +32,7 @@ namespace CommunicationUI
         void ContactStateChanged(const QString &status, const QString &message);
 
     private slots:
-        void SendMessage();
+        void SendChatMessage();
         void CloseConversation();
 
     signals:

@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 
 #include "ChatMessage.h"
+#include "ChatSessionParticipant.h"
 
 namespace OpensimIM
 {

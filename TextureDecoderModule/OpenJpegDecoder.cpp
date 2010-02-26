@@ -35,10 +35,12 @@
  */
 
 #include "StableHeaders.h"
+#include "CoreDefines.h"
 #include "TextureResource.h"
 #include "TextureDecoderModule.h"
 #include "ThreadTaskManager.h"
 #include "OpenJpegDecoder.h"
+#include "Profiler.h"
 
 #include <openjpeg.h>
 

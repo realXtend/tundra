@@ -2,6 +2,9 @@
 
 #include "StableHeaders.h"
 #include "ChatMessage.h"
+#include "ChatSessionParticipant.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace TelepathyIM
 {

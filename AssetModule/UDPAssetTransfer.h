@@ -3,6 +3,7 @@
 #ifndef incl_Asset_UDPAssetTransfer_h
 #define incl_Asset_UDPAssetTransfer_h
 
+#include "CoreTypes.h"
 namespace Asset
 {
     //! Stores data related to an UDP asset transfer that is in progress. Not necessary to clients of the AssetModule.

@@ -3,8 +3,12 @@
 #include "StableHeaders.h"
 #include "TimeProfilerWindow.h"
 #include "Profiler.h"
-#include "NetworkMessages/NetMessageManager.h"
+#include "UiSceneManager.h"
 #include "DebugStats.h"
+#include "HighPerfClock.h"
+#include "Framework.h"
+#include "NetworkMessages/NetInMessage.h"
+#include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
 
 #include <utility>
@@ -246,7 +250,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
             if (timings_node->num_called_custom_ > 0)
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
             item->setText(4, str);
-            sprintf(str, "%d", timings_node->num_called_custom_);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
             item->setText(1, str);
 
             timings_node->num_called_custom_ = 0;
@@ -384,7 +388,7 @@ int TimeProfilerWindow::ReadProfilingRefreshInterval()
 }
 
 template<typename T>
-int CountSize(Ogre::MapIterator<T> &iter)
+int CountSize(Ogre::MapIterator<T> iter)
 {
     int count = 0;
     while(iter.hasMoreElements())
@@ -432,10 +436,11 @@ std::string FormatBytes(double bytes)
 static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 {
     char str[256];
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
     sprintf(str, "Budget: %s, Usage: %s, # of resources: %d",
         FormatBytes((int)manager.getMemoryBudget()).c_str(),
         FormatBytes((int)manager.getMemoryUsage()).c_str(),
-        CountSize(manager.getResourceIterator()));
+        CountSize(iter));
     return str;
 }
 
@@ -545,7 +550,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
             if (timings_node->num_called_custom_ > 0)
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
             item->setText(4, str);
-            sprintf(str, "%d", timings_node->num_called_custom_);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
             item->setText(1, str);
 
             timings_node->num_called_custom_ = 0;
@@ -615,7 +620,7 @@ void TimeProfilerWindow::RefreshProfilingDataList()
         if (timings_node->num_called_custom_ > 0)
             sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
         item->setText(4, str);
-        sprintf(str, "%d", timings_node->num_called_custom_);
+        sprintf(str, "%d", (int)timings_node->num_called_custom_);
         item->setText(1, str);
 
         timings_node->num_called_custom_ = 0;

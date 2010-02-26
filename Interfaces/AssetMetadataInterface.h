@@ -3,6 +3,9 @@
 #ifndef incl_Interfaces_AssetMetadataInterface_h
 #define incl_Interfaces_AssetMetadataInterface_h
 
+#include <map>
+#include <string>
+
 namespace Foundation
 {
 	//! Maps methods in form <method name> <method url>

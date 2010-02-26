@@ -3,13 +3,19 @@
 #include "StableHeaders.h"
 #include "DebugStats.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "ConsoleCommand.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "Framework.h"
+#include "NetworkMessages/NetInMessage.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 
 #include <utility>
 
-using namespace Core;
 using namespace std;
 
 namespace DebugStats
@@ -36,6 +42,14 @@ void DebugStatsModule::Load()
     AutoRegisterConsoleCommand(Console::CreateCommand("Prof", 
         "Shows the profiling window.",
         Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
+
+    AutoRegisterConsoleCommand(Console::CreateCommand("rin", 
+        "Sends a random network message in.",
+        Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
+
+    AutoRegisterConsoleCommand(Console::CreateCommand("rout", 
+        "Sends a random network message out.",
+        Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
 
     LogInfo(Name() + " loaded.");
@@ -148,7 +162,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id,
     {
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
+            ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
             if (event_data)
                 current_world_stream_ = event_data->WorldStream;
             if (profilerWindow_)
@@ -179,6 +193,49 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id,
 
 
     return false;
+}
+
+//void DebugStatsModule::SendRandomNetworkInPacket()
+Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
+{
+    if (params.size() == 0)
+        return Console::ResultSuccess();
+
+    int numMessages = atoi(params[0].c_str());
+    for(int i = 0; i < numMessages; ++i)
+    {
+        std::vector<char> data;
+        int dataLen = rand() % 1600 + 1;
+        for(int i = 0; i < dataLen; ++i)
+            data.push_back(rand() % 256);
+
+        try
+        {
+            ProtocolUtilities::NetInMessage msg(rand(), (boost::uint8_t *)&data[0], dataLen, false);
+            ProtocolUtilities::NetMsgID id = rand();
+
+            ProtocolUtilities::NetworkEventInboundData inData(id , &msg);
+            framework_->GetEventManager()->SendEvent(networkEventCategory_, id, &inData);
+        }
+        catch(const Exception &e)
+        {
+            LogInfo(std::string("Exception thrown: ") + e.what());
+        }
+        catch(const std::exception &e)
+        {
+            LogInfo(std::string("std::exception thrown: ") + e.what());
+        }
+        catch(...)
+        {
+            LogInfo("Unknown exception thrown.");
+        }
+    }
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult DebugStatsModule::SendRandomNetworkOutPacket(const StringVector &params)
+{
+    return Console::ResultSuccess();
 }
 
 }

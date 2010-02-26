@@ -2,8 +2,17 @@
 
 #include <StableHeaders.h>
 #include "CommunicationModule.h"
+#include "CommunicationService.h"
+#include "Credentials.h"
+#include "ConnectionInterface.h"
+#include "ChatSessionInterface.h"
+#include "ChatMessageInterface.h"
+#include "ChatSessionParticipantInterface.h"
+#include "CoreException.h"
 
 #include "OpenSimChatWidget.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CommunicationUI
 {
@@ -82,7 +91,7 @@ namespace CommunicationUI
         QObject::connect(publicChat_, SIGNAL( MessageReceived(const Communication::ChatMessageInterface&) ),
                          this, SLOT ( MessageRecieved(const Communication::ChatMessageInterface& ) ));
         QObject::connect(opensim_chat_ui_.sendMessageLineEdit, SIGNAL( returnPressed() ),
-                         this, SLOT( SendMessage() ));
+                         this, SLOT( SendChatMessage() ));
     }
 
     void OpenSimChatWidget::MessageRecieved(const Communication::ChatMessageInterface &msg)
@@ -106,12 +115,12 @@ namespace CommunicationUI
         opensim_chat_ui_.worldChatTextEdit->appendHtml(htmlcontent);
     }
 
-    void OpenSimChatWidget::SendMessage()
+    void OpenSimChatWidget::SendChatMessage()
     {
         if (!opensim_chat_ui_.sendMessageLineEdit->text().isEmpty())
         {
             QString message(opensim_chat_ui_.sendMessageLineEdit->text());
-            publicChat_->SendMessage(message);
+            publicChat_->SendChatMessage(message);
             opensim_chat_ui_.sendMessageLineEdit->clear();
         }
     }

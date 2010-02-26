@@ -2,6 +2,9 @@
 
 #include "StableHeaders.h"
 #include "ThreadTaskManager.h"
+#include "ForwardDefines.h"
+#include "Framework.h"
+#include "EventManager.h"
 
 namespace Foundation
 {

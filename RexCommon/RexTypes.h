@@ -8,8 +8,10 @@
 #ifndef incl_RexTypes_h
 #define incl_RexTypes_h
 
-#include "CoreStableHeaders.h"
-#include "boost/cstdint.hpp"
+//#include "CoreStableHeaders.h"
+#include <map>
+#include <boost/cstdint.hpp>
+#include "Vector3D.h"
 
 ///\todo Move all these to core framework headers.
 using boost::uint8_t;
@@ -20,6 +22,9 @@ using boost::int8_t;
 using boost::int16_t;
 using boost::int32_t;
 using boost::int64_t;
+
+typedef int asset_type_t;
+typedef int inventory_type_t;
 
 namespace RexTypes
 {
@@ -141,9 +146,6 @@ namespace RexTypes
         /// 
         AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
     };
-
-    typedef int asset_type_t;
-    typedef int inventory_type_t;
 
     ///\note When adding new asset/inventory types, remember also to add them to the functions.
     // UDP Asset types

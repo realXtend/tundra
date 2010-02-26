@@ -9,8 +9,9 @@
 #include <QLabel>
 #include <QPushButton>
 
-#include "InfoCard.h"
-#include "ActionProxyWidget.h"
+#include "UiModuleFwd.h"
+//#include "InfoCard.h"
+//#include "ActionProxyWidget.h"
 
 namespace Ether
 {

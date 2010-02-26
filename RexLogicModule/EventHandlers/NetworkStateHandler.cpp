@@ -5,6 +5,9 @@
 #include "RexLogicModule.h"
 #include "Login/LoginContainer.h"
 #include "NetworkEvents.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "WorldStream.h"
 
 namespace RexLogic
 {
@@ -30,7 +33,7 @@ namespace RexLogic
 
                 // Send WorldStream as internal event
                 event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
-                Foundation::WorldStreamReadyEvent event_data(rexlogicmodule_->GetServerConnection());
+                ProtocolUtilities::WorldStreamReadyEvent event_data(rexlogicmodule_->GetServerConnection());
                 framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
 
                 break;

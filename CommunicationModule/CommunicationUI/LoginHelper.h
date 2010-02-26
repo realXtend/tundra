@@ -6,7 +6,8 @@
 #include "UiDefines.h"
 #include "ui_LoginWidget.h"
 
-#include "interface.h"
+//#include "interface.h"
+#include "CommunicationModuleFwd.h"
 
 #include <QMap>
 
@@ -23,10 +24,10 @@ namespace UiHelpers
         virtual ~LoginHelper();
 
         //! Setters
-        void SetupUi(Ui::LoginWidget *login_ui) { SAFE_DELETE(login_ui_); login_ui_ = login_ui; }
+        void SetupUi(Ui::LoginWidget *login_ui);
 
         //! Getters
-        QString GetErrorMessage() { return error_message_; }
+        QString GetErrorMessage();
         QMap<QString,QString> GetPreviousCredentials();
         Communication::ConnectionInterface *GetConnectionInterface() { return im_connection_; }
 

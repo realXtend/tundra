@@ -1,9 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 
 #include "ProtocolModuleTaiga.h"
 #include "TaigaWorldSession.h"
+#include "Framework.h"
+#include "ModuleManager.h"
 
 namespace TaigaProtocol
 {

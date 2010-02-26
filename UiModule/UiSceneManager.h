@@ -5,7 +5,7 @@
 
 #include "UiModuleApi.h"
 
-#include <Foundation.h>
+//#include <Foundation.h>
 
 #include <QObject>
 #include <QList>
@@ -14,6 +14,12 @@ class QRectF;
 class QGraphicsLinearLayout;
 class QGraphicsWidget;
 class QGraphicsScene;
+class QGraphicsView;
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace CoreUi
 {

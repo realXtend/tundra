@@ -25,8 +25,14 @@
 #include "Terrain.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
+#include "ServiceManager.h"
+#include "RexTypes.h"
+#include "NetworkMessages/NetInMessage.h"
 
 #include "Entity.h"
+
+#include <OgreMesh.h>
+#include <OgreEntity.h>
 
 namespace
 {
@@ -413,7 +419,7 @@ namespace Environment
         }
     }
 
-    const RexAssetID &Terrain::GetTerrainTextureID(int index) const
+    const RexTypes::RexAssetID &Terrain::GetTerrainTextureID(int index) const
     {
         if(index < 0) index = 0;
         if(index > num_terrain_textures) index = num_terrain_textures;

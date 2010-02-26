@@ -3,7 +3,13 @@
 #ifndef incl_InputEventHandler_h
 #define incl_InputEventHandler_h
 
-#include "Foundation.h"
+#include "CoreTypes.h"
+
+namespace Foundation
+{
+    class Framework;
+    class EventDataInterface;
+}
 
 namespace RexLogic
 {

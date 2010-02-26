@@ -3,8 +3,8 @@
 #ifndef incl_ProtocolModuleOpenSim_ProtocolModuleOpenSim_h
 #define incl_ProtocolModuleOpenSim_ProtocolModuleOpenSim_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "ProtocolModuleOpenSimApi.h"
 #include "OpenSimLoginThread.h"
 
@@ -14,6 +14,7 @@
 #include "NetworkEvents.h"
 #include "NetworkConnection.h"
 
+#include "CoreThread.h"
 #include "RexUUID.h"
 
 namespace OpenSimProtocol

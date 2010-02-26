@@ -3,7 +3,6 @@
 #ifndef incl_Protocol_OpenSimWorldSession_h
 #define incl_Protocol_OpenSimWorldSession_h
 
-#include "Foundation.h"
 #include "Login/LoginCredentials.h"
 
 #include "ProtocolModuleOpenSimApi.h"

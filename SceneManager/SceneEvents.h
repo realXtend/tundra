@@ -4,6 +4,8 @@
 #define incl_SceneEvents_h
 
 #include "EventDataInterface.h"
+#include "Vector3D.h"
+#include "ForwardDefines.h"
 
 namespace Scene
 {
@@ -139,9 +141,9 @@ namespace Scene
         class SceneEventData: public Foundation::EventDataInterface
         {
         public:
-            SceneEventData(const std::string &scene_name) : sceneName(scene_name) {}
-            SceneEventData(entity_id_t id) : localID(id) {}
-            virtual ~SceneEventData() {}
+            explicit SceneEventData(const std::string &scene_name);
+            explicit SceneEventData(entity_id_t id);
+            virtual ~SceneEventData();
             
             entity_id_t localID;
             std::string sceneName;
@@ -157,9 +159,8 @@ namespace Scene
         class RaycastEventData : public SceneEventData
         {
         public:
-
-            RaycastEventData(entity_id_t id) : SceneEventData(id) {}
-            virtual ~RaycastEventData() {}
+            explicit RaycastEventData(entity_id_t id);
+            virtual ~RaycastEventData();
             
              //! World coordinates of hit position
             Vector3df pos;
@@ -169,22 +170,19 @@ namespace Scene
             Real u;
             //! V coord in entity. 0 if no texture mapping
             Real v;
-
         };
 
         class CreateEntityEventData : public Foundation::EventDataInterface
         {
         public:
-            CreateEntityEventData(Vector3df pos) : position(pos){}
-            virtual ~CreateEntityEventData() {}
+            CreateEntityEventData(Vector3df pos);
+            virtual ~CreateEntityEventData();
             Vector3df position;
         };
 
         class TerrainTexturesEventData : public Foundation::EventDataInterface
         {
         public:
-            TerrainTexturesEventData() {}
-            virtual ~TerrainTexturesEventData() {}
             /// should be same as RexTypes::RexAssetID. std::string is used because we dont want more dependences.
             std::string terrain[4];
         };
@@ -192,33 +190,14 @@ namespace Scene
         class WaterEventData : public Foundation::EventDataInterface
         {
         public:
-            WaterEventData() : height(0.0) {}
-            WaterEventData(float h) : height(h) {}
-            virtual ~WaterEventData() {}
+            WaterEventData();
+            explicit WaterEventData(float h);
+            virtual ~WaterEventData();
             /// Water height 
             float height;
         };
 
-        namespace
-        {
-            void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
-            {
-                event_category_id_t scene_event_category = event_manager->RegisterEventCategory("Scene");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_SCENE_ADDED, "Scene Added");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_SCENE_DELETED, "Scene Deleted");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_SCENE_CLONED, "Scene Cloned"); ///\todo
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_ADDED, "Entity Added");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_UPDATED, "Entity Updated");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DELETED, "Entity Deleted");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECT, "Entity Select");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECTED, "Entity Selected");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
-
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");
-                event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
-            }
-        }
+        void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager);
     }
 }
 

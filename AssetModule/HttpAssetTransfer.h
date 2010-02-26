@@ -3,10 +3,11 @@
 #ifndef incl_Asset_HttpAssetTransfer_h
 #define incl_Asset_HttpAssetTransfer_h
 
+#include "CoreTypes.h"
+
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
-
 
 namespace Asset
 {

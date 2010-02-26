@@ -1,9 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+#include "StableHeaders.h"
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <cstring>
+#include <boost/timer.hpp>
 
 #include "DebugOperatorNew.h"
 
@@ -279,7 +282,13 @@ namespace ProtocolUtilities
             std::vector<uint32_t> appended_acks = GetAppendedAckList(&data[0], numBytes);
             
             NetInMessage msg(seqNum, &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
-            msg.SetMessageInfo(messageList->GetMessageInfoByID(msg.GetMessageID()));
+            const NetMessageInfo *messageInfo = messageList->GetMessageInfoByID(msg.GetMessageID());
+            if (!messageInfo)
+            {
+                cout << "Unknown message received with Message ID " << msg.GetMessageID() << "!" << endl;
+                continue;
+            }
+            msg.SetMessageInfo(messageInfo);
 
             // Process appended acks
             if (appended_acks.size() > 0)

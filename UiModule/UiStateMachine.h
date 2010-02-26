@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_UiStateMachine_h
 #define incl_UiModule_UiStateMachine_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 #include "UiModuleApi.h"
 
 #include <QStateMachine>
@@ -12,6 +12,11 @@
 #include <QGraphicsScene>
 #include <QKeyEvent>
 #include <QMap>
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace UiServices
 {

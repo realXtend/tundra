@@ -3,12 +3,18 @@
 #ifndef incl_Communication_OpensimIM_ChatSession_h
 #define incl_Communication_OpensimIM_ChatSession_h
 
-#include "Foundation.h"
-#include "NetworkEvents.h"
-#include "interface.h"
+#include <boost/shared_ptr.hpp>
+//#include "Foundation.h"
+//#include "NetworkEvents.h"
+//#include "interface.h"
 #include "ChatSessionParticipant.h"
 #include "ChatMessage.h"
+#include "ChatSessionInterface.h"
 
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace OpensimIM
 {
@@ -25,7 +31,7 @@ namespace OpensimIM
         virtual ~ChatSession();
 
         //! \todo support to other range options
-        virtual void SendMessage(const QString &text);
+        virtual void SendChatMessage(const QString &text);
 
         //! @return State of the session
         virtual State GetState() const;

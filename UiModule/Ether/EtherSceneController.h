@@ -5,20 +5,24 @@
 
 #include <QObject>
 #include <QGraphicsScene>
+#include <QUuid>
 
+#include "UiModuleFwd.h"
+//#include "View/EtherScene.h"
+//#include "View/VerticalMenu.h"
 #include <QScopedPointer>
 #include <QParallelAnimationGroup>
 
 #include "View/EtherScene.h"
 #include "View/VerticalMenu.h"
 
-#include "Data/DataManager.h"
-#include "Data/AvatarInfo.h"
+//#include "Data/DataManager.h"
+//#include "Data/AvatarInfo.h"
 #include "Data/WorldInfo.h"
 
-#include "View/InfoCard.h"
-#include "View/ControlProxyWidget.h"
-#include "View/ActionProxyWidget.h"
+//#include "View/InfoCard.h"
+//#include "View/ControlProxyWidget.h"
+//#include "View/ActionProxyWidget.h"
 
 namespace Ether
 {
@@ -42,8 +46,8 @@ namespace Ether
 
             void UpPressed();
             void DownPressed();
-            void LeftPressed() { active_menu_->moveLeft(); }
-            void RightPressed() { active_menu_->moveRight(); }
+            void LeftPressed();
+            void RightPressed();
             void TryStartLogin();
             void ItemActivatedWithMouse(View::InfoCard *clicked_item);
 

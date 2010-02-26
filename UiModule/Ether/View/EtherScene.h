@@ -11,7 +11,8 @@
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 
-#include "InfoCard.h"
+#include "UiModuleFwd.h"
+//#include "InfoCard.h"
 
 namespace Ether
 {

@@ -4,6 +4,7 @@
 #include "Foundation.h"
 #include "ThreadTask.h"
 #include "ThreadTaskManager.h"
+#include "ForwardDefines.h"
 
 namespace Foundation
 {

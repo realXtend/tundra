@@ -3,11 +3,13 @@
 #ifndef incl_Communication_OpensimIM_ChatMessage_h
 #define incl_Communication_OpensimIM_ChatMessage_h
 
-#include "Foundation.h"
-#include "NetworkEvents.h"
-#include "interface.h"
-#include "ChatSessionParticipant.h"
+//#include "Foundation.h"
+//#include "NetworkEvents.h"
+//#include "interface.h"
+//#include "ChatSessionParticipant.h"
 
+#include "CommunicationModuleFwd.h"
+#include "ChatMessageInterface.h"
 
 namespace OpensimIM
 {
@@ -26,7 +28,6 @@ namespace OpensimIM
         const QDateTime time_stamp_;
         const QString text_;
     };
-    typedef std::vector<ChatMessage*> ChatMessageVector;
     
 } // end of namespace: OpensimIM 
 

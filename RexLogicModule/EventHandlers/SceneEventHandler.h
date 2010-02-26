@@ -4,7 +4,12 @@
 #define incl_SceneEventHandler_h
 
 #include "ComponentInterface.h"
-#include "Foundation.h"
+#include "CoreTypes.h"
+
+namespace Foundation
+{
+    class EventDataInterface;
+}
 
 namespace RexLogic
 {

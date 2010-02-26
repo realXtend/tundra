@@ -16,6 +16,10 @@
 #include "RexTypes.h"
 #include "HttpAssetProvider.h"
 #include "AssetServiceInterface.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+#include "ConfigurationManager.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;

@@ -5,7 +5,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
-#include "interface.h"
+//#include "interface.h"
 
 namespace TelepathyIM
 {
@@ -61,7 +61,7 @@ namespace TelepathyIM
         void Accepted(OutgoingFriendRequest *request); // @todo needed?
         void Rejected(OutgoingFriendRequest *request); // @todo needed?
     };
-    typedef std::vector<OutgoingFriendRequest*> OutgoingFriendRequestVector;
+//    typedef std::vector<OutgoingFriendRequest*> OutgoingFriendRequestVector;
 
 } // end of namespace: TelepathyIM
 

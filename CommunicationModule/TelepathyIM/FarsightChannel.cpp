@@ -1,9 +1,10 @@
 #include "StableHeaders.h"
 
+#include "CoreException.h"
 #include "FarsightChannel.h"
+#include "CoreDefines.h"
 #include <TelepathyQt4/Farsight/Channel>
 #include <QFile>
-
 
 namespace TelepathyIM
 {

@@ -1,3 +1,4 @@
+#include "StableHeaders.h"
 //#include <Python.h> //to add CreateCanvas first as a normal py func
 #include "RexPythonQt.h"
 #include <PythonQt.h>

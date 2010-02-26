@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "PostProcessWidget.h"
 #include "EnvironmentModule.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include <CompositionHandler.h>
 

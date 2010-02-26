@@ -3,9 +3,12 @@
 #ifndef incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 #define incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
+#include "Color.h"
+#include "Declare_EC.h"
 
 #include <OgreVector2.h>
 

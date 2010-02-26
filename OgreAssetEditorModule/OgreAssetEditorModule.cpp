@@ -11,6 +11,11 @@
 #include "OgreScriptEditor.h"
 #include "MaterialWizard.h"
 #include "EditorManager.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include "Inventory/InventoryEvents.h"
 #include "UiModule.h"
@@ -99,7 +104,7 @@ bool OgreAssetEditorModule::HandleEvent(
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
             Inventory::InventoryItemDownloadedEventData *downloaded = checked_static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
-            RexTypes::asset_type_t at = downloaded->assetType;
+            asset_type_t at = downloaded->assetType;
             switch(at)
             {
             case RexTypes::RexAT_ParticleScript:
@@ -111,8 +116,8 @@ bool OgreAssetEditorModule::HandleEvent(
                 {
                     OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, downloaded->name.c_str());
 
-                    QObject::connect(editor, SIGNAL(Closed(const QString &, RexTypes::asset_type_t)),
-                        editorManager_, SLOT(Delete(const QString &, RexTypes::asset_type_t)));
+                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                        editorManager_, SLOT(Delete(const QString &, asset_type_t)));
 
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);

@@ -3,9 +3,15 @@
 #ifndef incl_SceneEntity_h
 #define incl_SceneEntity_h
 
-#include "Foundation.h"
+#include "ForwardDefines.h"
+#include "CoreTypes.h"
 
 #include <QObject>
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace Scene
 {
@@ -28,7 +34,7 @@ namespace Scene
         
     private:
         //! constructor
-        Entity(Foundation::Framework* framework);
+        explicit Entity(Foundation::Framework* framework);
 
         //! constructor that takes an id for the entity
         /*!

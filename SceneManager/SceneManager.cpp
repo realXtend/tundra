@@ -4,6 +4,9 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
+#include "Framework.h"
+#include "ComponentManager.h"
+#include "EventManager.h"
 
 namespace Scene
 {

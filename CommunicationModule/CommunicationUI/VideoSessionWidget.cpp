@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "VideoSessionWidget.h"
 #include "UiDefines.h"
+#include "VideoPlaybackWidgetInterface.h"
+#include "ConnectionInterface.h"
+#include "ChatSessionParticipantInterface.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>

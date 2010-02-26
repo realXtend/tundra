@@ -11,6 +11,10 @@
 #include "LLSDUtilities.h"
 #include "XMLRPCAssetProvider.h"
 #include "AssetServiceInterface.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+#include "ConfigurationManager.h"
 
 #include "Poco/URI.h"
 #include "Poco/Base64Decoder.h"

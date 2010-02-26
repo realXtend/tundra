@@ -1,14 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "StableHeaders.h"
 #include "PythonScriptModule.h"
-
-//disabled now 'cause couldn't get working the own version for this module for some reason
-//#include "StableHeaders.h"
-#include "CoreStdIncludes.h"
-#include "Core.h"
-#include "Foundation.h"
-
 #include "DebugOperatorNew.h"
+
+#include "ModuleManager.h"
+#include "EventManager.h"
 
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
@@ -25,6 +22,8 @@
 #include "InputEvents.h" //handling input events
 #include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
+#include "Inventory/InventorySkeleton.h"
+#include "UiSceneManager.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
@@ -58,6 +57,7 @@
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
+#include <QGraphicsView>
 #include "UiWidgetProperties.h"
 #include "UiProxyWidget.h"
 
@@ -77,6 +77,16 @@
 
 namespace PythonScript
 {
+    class PythonScriptModule;
+}
+
+namespace
+{
+    PythonScript::PythonScriptModule *pythonScriptModuleInstance_ = 0;
+}
+
+namespace PythonScript
+{
     PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
     {
         pythonqt_inited = false;
@@ -88,6 +98,7 @@ namespace PythonScript
 
     PythonScriptModule::~PythonScriptModule()
     {
+        pythonScriptModuleInstance_ = 0;
     }
 
     // virtual
@@ -119,62 +130,7 @@ namespace PythonScript
     void PythonScriptModule::Unload()
     {
         LogInfo(Name() + " unloaded.");
-    }
-
-    // virtual
-    void PythonScriptModule::Initialize()
-    {
-        PythonScript::pythonscriptmodule_ = this;
-        if (!engine_)
-        {
-            engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
-        }
-        engine_->Initialize();
-              
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
-        //XXX hack to have a ref to framework for api funcs
-        PythonScript::staticframework = framework_;
-        apiModule = PythonScript::initpymod(); //initializes the rexviewer module to be imported within py
-
-        //init PythonQt, implemented in RexPythonQt.cpp
-        if (!pythonqt_inited)
-        {
-            PythonScript::initRexQtPy(apiModule);
-            //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            //mainModule.addObject("qtmodule", wrappedModule); 
-            pythonqt_inited = true;
-            
-            //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
-			//PythonQt::self()->registerClass(&Vector3::staticMetaObject);
-        }
-
-        //load the py written module manager using the py c api directly
-        pmmModule = PyImport_ImportModule("modulemanager");
-        if (pmmModule == NULL) {
-            LogError("Failed to import py modulemanager");
-            return;
-        }
-        pmmDict = PyModule_GetDict(pmmModule);
-        if (pmmDict == NULL) {
-            LogError("Unable to get modulemanager module namespace");
-            return;
-        }
-        pmmClass = PyDict_GetItemString(pmmDict, "ModuleManager");
-        if(pmmClass == NULL) {
-            LogError("Unable get ModuleManager class from modulemanager namespace");
-            return;
-        }
-        //instanciating the manager moved to PostInitialize, 
-        //'cause it does autoload.py where TestComponent expects the event constants to be there already
-
-        //std::string error;
-        //modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
-        //modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
-        mouse_left_button_down_ = false;
-        mouse_right_button_down_ = false;
-
-        LogInfo(Name() + " initialized succesfully.");
+        pythonScriptModuleInstance_ = 0;
     }
 
     void PythonScriptModule::PostInitialize()
@@ -193,8 +149,8 @@ namespace PythonScript
             LogError("Unable to find event category for Input");
 
         // Scene (SceneManager)
-        PythonScript::scene_event_category_ = em_->QueryEventCategory("Scene");
-        if (PythonScript::scene_event_category_ == 0)
+        scene_event_category_ = em_->QueryEventCategory("Scene");
+        if (scene_event_category_ == 0)
             LogWarning("Unable to find event category for Scene events!");
         
         /* add events constants - now just the input events */
@@ -249,7 +205,6 @@ namespace PythonScript
         } else {
             LogError("Unable to create instance from class ModuleManager");
         }
-
     }
 
     void PythonScriptModule::SubscribeToNetworkEvents()
@@ -606,7 +561,12 @@ namespace PythonScript
    //             PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);                
 			//}
    //     }
+    }
 
+    PythonScriptModule *PythonScriptModule::GetInstance()
+    {
+        assert(pythonScriptModuleInstance_);
+        return pythonScriptModuleInstance_;
     }
 }
 
@@ -784,7 +744,9 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 
     ent_id = (entity_id_t) ent_id_int;
 
-    Scene::ScenePtr scene = PythonScript::GetScene();
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+
+    Scene::ScenePtr scene = owner->GetScene();
 
     if (scene == 0)
     {
@@ -801,7 +763,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
     */
     //if would just store the id and always re-get ptr, would do this:
     if (scene->HasEntity(ent_id))
-        return entity_create(ent_id);
+        return owner->entity_create(ent_id);
 
     else
     {
@@ -822,6 +784,8 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 	RexUUID ruuid = RexUUID();
 	ruuid.FromString(std::string(uuidstr));
 
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+
 	RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -830,7 +794,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         Scene::EntityPtr entity = rexlogic_->GetPrimEntity(ruuid);
         if (entity)
         {
-            return entity_create(entity->GetId());
+            return owner->entity_create(entity->GetId());
         }
         else
         {
@@ -1192,7 +1156,8 @@ PyObject* GetQPlaceable(PyObject* self, PyObject* args)
     entity_id_t ent_id;
     Scene::EntityPtr entity;
     OgreRenderer::EC_OgrePlaceable* placeable = 0;
-    Scene::ScenePtr scene = PythonScript::GetScene();
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    Scene::ScenePtr scene = owner->GetScene();
 
     if(!PyArg_ParseTuple(args, "I", &ent_id_int))
     {
@@ -1233,7 +1198,8 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
     meshname = std::string(c_text);
 
-    Scene::ScenePtr scene = PythonScript::GetScene();        
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    Scene::ScenePtr scene = owner->GetScene();
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
         return NULL;   
@@ -1260,7 +1226,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 	ogremesh.SetPlaceable(placeable);
 	ogremesh.SetMesh(meshname, true);
 	
-        return entity_create(ent_id); //return the py wrapper for the new entity
+        return owner->entity_create(ent_id); //return the py wrapper for the new entity
     }
     
     PyErr_SetString(PyExc_ValueError, "placeable not found."); //XXX change the exception
@@ -1704,7 +1670,8 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 
     ent_id = (entity_id_t) ent_id_int;
     
-    Scene::ScenePtr scene = PythonScript::GetScene();
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    Scene::ScenePtr scene = owner->GetScene();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -1714,7 +1681,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     Scene::EntityPtr entity = scene->GetEntity(ent_id);
     Scene::Events::SceneEventData event_data(ent_id);
     event_data.entity_ptr_list.push_back(entity);
-    PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(PythonScript::scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
+    PythonScript::self()->GetFramework()->GetEventManager()->SendEvent(owner->scene_event_category_, Scene::Events::EVENT_ENTITY_UPDATED, &event_data);
 	
     Py_RETURN_NONE;
 }
@@ -1961,499 +1928,75 @@ static PyMethodDef EmbMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
 
-static PyObject* PythonScript::initpymod()
+
+namespace PythonScript
 {
-    PyObject* m;
-    
-    m = Py_InitModule("rexviewer", EmbMethods);
-
-    //event constants are now put in PostInit so that the other modules have registered theirs already.
-    //XXX what about new event types defined in py-written modules?
-
-    entity_init(m); 
-    /* this is planned to be vice versa: 
-       the implementing modules, like here scene§ for Entity,
-       would call something here to get a ref to the module, or something?
-    */
-
-    return m;
-}
-
-/* this belongs to Entity.cpp but when added to the api from there, the staticframework is always null */
-PyObject* PythonScript::entity_getattro(PyObject *self, PyObject *name)
-{
-    PyObject* tmp;
-
-    if (!(tmp = PyObject_GenericGetAttr((PyObject*)self, name))) {
-        if (!PyErr_ExceptionMatches(PyExc_AttributeError))
+    // virtual
+    void PythonScriptModule::Initialize()
+    {
+        if (!engine_)
         {
-            //std::cout << "..attribute error" << std::endl;
-            return NULL;
+            engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
         }
+        engine_->Initialize();
+              
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
 
-        PyErr_Clear();
-    }
-    else
-        return tmp;
+        assert(!pythonScriptModuleInstance_);
+        pythonScriptModuleInstance_ = this;
 
-    const char* c_name = PyString_AsString(name);
-    std::string s_name = std::string(c_name);
+        apiModule = Py_InitModule("rexviewer", EmbMethods);
+        assert(apiModule);
+        if (!apiModule)
+            return;
 
-    //std::cout << "Entity: getting unknown attribute: " << s_name;
-    
-    //entity_ptrs map usage
-    /* this crashes now in boost, 
-       void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-    std::map<entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
-    Scene::EntityPtr entity = ep_iter->second;
-    fix.. */
+        //event constants are now put in PostInit so that the other modules have registered theirs already.
+        //XXX what about new event types defined in py-written modules?
 
-    /* re-getting the EntityPtr as it wasn't stored anywhere yet,
-       is copy-paste from PythonScriptModule GetEntity 
-       but to be removed when that map is used above.*/
-    Scene::ScenePtr scene = PythonScript::GetScene();
-    if (!scene)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
-        return NULL;
-    }
+        entity_init(apiModule); 
+        /* this is planned to be vice versa: 
+           the implementing modules, like here scene§ for Entity,
+           would call something here to get a ref to the module, or something?
+        */
 
-    rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
-    Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
-
-    const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-    RexLogic::EC_OpenSimPrim *prim = 0;
-    if (prim_component)
-	prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-	
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    OgreRenderer::EC_OgrePlaceable *placeable = 0;
-    if (ogre_component)
-	placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-    
-    if (s_name.compare("id") == 0)
-    {
-        return Py_BuildValue("I", eob->ent_id); //unsigned int - is verified to be correct, same as c++ shows (at least in GetEntity debug print)
-    }
-    else if (s_name.compare("prim") == 0)
-    {
-        if (!prim)
+        //init PythonQt, implemented in RexPythonQt.cpp
+        if (!pythonqt_inited)
         {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }  
-        //m->AddU32(prim->LocalId);
-        std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-        return PyString_FromString(retstr.c_str());
-    }
-    else if (s_name.compare("name") == 0)
-    {
-        //std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-        return PyString_FromString(prim->ObjectName.c_str());
-    }
-
-    else if (s_name.compare("mesh") == 0)
-	{
-        //std::cout << ".. getting prim in mesh getting" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }  
-        return PyString_FromString(prim->MeshID.c_str());	
-        
-        /* was a test thing, just changes what ogre shows locally
-        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-		Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-		if (placeable)
-		{
-			OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-			
-			std::string text = ogremesh.GetMeshName();
-			return PyString_FromString(text.c_str());
-		}*/
-    }
-	else if(s_name.compare("uuid") == 0)
-	{
-		//std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-		return PyString_FromString(prim->FullId.ToString().c_str());
-	}
-	else if(s_name.compare("updateflags") == 0)
-	{
-		//std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-		return Py_BuildValue("I", prim->UpdateFlags);
-	}
-	else if(s_name.compare("editable") == 0)
-	{
-		// refactor to take into account permissions etc aswell later?
-		if(!placeable)
-			Py_RETURN_FALSE;
-		else
-			Py_RETURN_TRUE;
-	}
-
-    else if (s_name.compare("pos") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }       
-		//std::cout << placeable->GetSelectPriority() << std::endl;
-        /* this must probably return a new object, a 'Place' instance, that has these.
-           or do we wanna hide the E-C system in the api and have these directly on entity? 
-           probably not a good idea to hide the actual system that much. or? */
-        Vector3df pos = placeable->GetPosition();
-        //RexTypes::Vector3 scale = ogre_pos->GetScale();
-        //RexTypes::Vector3 rot = PackQuaternionToFloat3(ogre_pos->GetOrientation());
-        /* .. i guess best to wrap the Rex Vector and other types soon,
-           the pyrr irrlicht binding project does it for these using swig,
-           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i 
-	Now am experimenting with the new QVector3D type, see GetQPlaceable*/
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
-    }
-
-    else if (s_name.compare("scale") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }     
-		Vector3df scale = placeable->GetScale();
-
-        return Py_BuildValue("fff", scale.x, scale.y, scale.z);
-    }
-
-    else if (s_name.compare("orientation") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }         
-        
-        Quaternion orient = placeable->GetOrientation();
-        return Py_BuildValue("ffff", orient.x, orient.y, orient.z, orient.w);
-    }
-
-    else if (s_name.compare("text") == 0)
-    {
-        const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-
-        if (!overlay)
-        {
-            PyErr_SetString(PyExc_AttributeError, "overlay not found.");
-            return NULL;   
-        }  
-        OgreRenderer::EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay *>(overlay.get());
-        std::string text = name_overlay->GetText();
-        return PyString_FromString(text.c_str());
-    }
-	else if (s_name.compare("boundingbox") == 0)
-	{
-		if (!placeable)
-		{
-			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;  
-		}
-		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-		if (meshptr)
-		{
-			OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
-			Vector3df min, max;
-
-			cobj.GetBoundingBox(min, max);
-
-			return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
-		}
-		else
-		{
-			meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-			if (meshptr) 
-			{
-				OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-				Vector3df min, max;
-
-				mesh.GetBoundingBox(min, max);
-
-				return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
-			}
-		}
-		
-		PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
-        return NULL;  
-	}
-
-
-    std::cout << "unknown component type."  << std::endl;
-    return NULL;
-}
-
-int PythonScript::entity_setattro(PyObject *self, PyObject *name, PyObject *value)
-{
-    /*
-    if (!(tmp = PyObject_GenericSetAttr((PyObject*)self, name, value))) {
-        if (!PyErr_ExceptionMatches(PyExc_AttributeError))
-            return NULL;
-        PyErr_Clear();
-    }*/
-
-    const char* c_name = PyString_AsString(name);
-    std::string s_name = std::string(c_name);
-
-    //std::cout << "Entity: setting unknown attribute: " << s_name;
-    rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
-
-    //entity_ptrs map usage
-    /* this crashes now in boost, 
-       void add_ref_copy() { BOOST_INTERLOCKED_INCREMENT( &use_count_ );
-    std::map<entity_id_t, Scene::EntityPtr>::iterator ep_iter = entity_ptrs.find(self->ent_id);
-    Scene::EntityPtr entity = ep_iter->second;
-    fix.. */
-
-    /* re-getting the EntityPtr as it wasn't stored anywhere yet,
-       is copy-paste from PythonScriptModule GetEntity 
-       but to be removed when that map is used above.*/
-    Scene::ScenePtr scene = PythonScript::GetScene();
-    if (!scene)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
-        return -1;
-    }
-
-    Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
-
-    const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-	RexLogic::EC_OpenSimPrim *prim = 0;
-    if (prim_component)
-	   prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-	
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-	OgreRenderer::EC_OgrePlaceable *placeable = 0;
-    if (ogre_component)
-		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-    
-    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
-    
-    /*if (s_name.compare("prim") == 0)
-    {
-        std::cout << ".. getting prim" << std::endl;
-        const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-        if (!prim_component)
-            return NULL; //XXX report AttributeError
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
+            PythonScript::initRexQtPy(apiModule);
+            //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+            //mainModule.addObject("qtmodule", wrappedModule); 
+            pythonqt_inited = true;
             
-        //m->AddU32(prim->LocalId);
-        std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-        return PyString_FromString(retstr.c_str());
-    }*/
-	//PyObject_Print(value, stdout, 0);
-	//std::cout << "\n" << std::endl;
-    //else 
-    if (s_name.compare("pos") == 0)
-    {
-        /* this must probably return a new object, a 'Place' instance, that has these.
-           or do we wanna hide the E-C system in the api and have these directly on entity? 
-           probably not a good idea to hide the actual system that much. or? */
-        float x, y, z;
-		x = 0;
-		y = 0;
-		z = 0;
-
-		//int parsing;
-		//parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
-		/*
-		PyObject* pos;
-		if(!parsing) {
-			parsing = PyArg_ParseTuple(value, "O", &pos);
-			if (parsing != 0)
-			{
-				PyErr_SetString(PyExc_ValueError, "it worked.");
-				return -1;
-			}
-		}
-		*/
-        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {	
-            //std::cout << "...parse error" << std::endl;
-            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
-            return -1;
+            //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
+            //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
+			//PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
-		
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;
-        }  
 
-        // Set the new values.
-        placeable->SetPosition(Vector3df(x, y, z));
-        if (networkpos)
-        {
-            // Override the dead reckoning system
-            networkpos->SetPosition(placeable->GetPosition());
+        //load the py written module manager using the py c api directly
+        pmmModule = PyImport_ImportModule("modulemanager");
+        if (pmmModule == NULL) {
+            LogError("Failed to import py modulemanager");
+            return;
         }
-            
-        //ogre_pos->SetScale(OpenSimToOgreCoordinateAxes(scale));
-        //ogre_pos->SetOrientation(OpenSimToOgreQuaternion(quat));
-        /* .. i guess best to wrap the Rex Vector and other types soon,
-           the pyrr irrlicht binding project does it for these using swig,
-           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
+        pmmDict = PyModule_GetDict(pmmModule);
+        if (pmmDict == NULL) {
+            LogError("Unable to get modulemanager module namespace");
+            return;
+        }
+        pmmClass = PyDict_GetItemString(pmmDict, "ModuleManager");
+        if(pmmClass == NULL) {
+            LogError("Unable get ModuleManager class from modulemanager namespace");
+            return;
+        }
+        //instanciating the manager moved to PostInitialize, 
+        //'cause it does autoload.py where TestComponent expects the event constants to be there already
 
-        /* sending a scene updated event to trigger network synch,
-           copy-paste from DebugStats, 
-           perhaps there'll be some MoveEntity thing in logic that can reuse for this? */
-        return 0; //success.
+        //std::string error;
+        //modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
+        //modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
+        mouse_left_button_down_ = false;
+        mouse_right_button_down_ = false;
+
+        LogInfo(Name() + " initialized succesfully.");
     }
-
-    else if (s_name.compare("scale") == 0)
-    {
-        float x, y, z;
-		x = 0;
-		y = 0;
-		z = 0;
-        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {
-            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
-            return -1;   
-        }
-
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;   
-        }  
-        // Set the new values.
-        placeable->SetScale(Vector3df(x, y, z));
- 
-        return 0; //success.
-    }
-    
-    else if (s_name.compare("orientation") == 0)
-    {
-        float x, y, z, w;
-        if(!PyArg_ParseTuple(value, "ffff", &x, &y, &z, &w))
-        {
-            PyErr_SetString(PyExc_ValueError, "params should be (float, float, float, float)"); //XXX change the exception
-            return NULL;   
-        }
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;   
-        }          
-        // Set the new values.
-        placeable->SetOrientation(Quaternion(x, y, z, w));
-        if (networkpos)
-        {
-            // Override the dead reckoning system
-            networkpos->SetOrientation(placeable->GetOrientation());
-        }
-                    
-        return 0; //success.
-    }
-
-    else if (s_name.compare("text") == 0)
-    {
-        if (PyString_Check(value) || PyUnicode_Check(value)) 
-        {
-            const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-            const char* c_text = PyString_AsString(value);
-            std::string text = std::string(c_text);
-            if (overlay)
-            {
-                OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
-                name_overlay.SetText(text);
-                //name_overlay.SetPlaceable(placeable); //is this actually needed for something?
-            }
-            else //xxx
-            {
-                PyErr_SetString(PyExc_ValueError, "overlay not found."); //XXX change the exception
-                return -1;   
-            }
-        
-        }
-        else
-        {
-            PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
-            return -1;
-        }
-        
-        //if(!PyArg_ParseTuple(value, "s", c_text))
-        //    return NULL; //XXX report ArgumentException error
-                
-
-
-        return 0;
-    }
-	else if (s_name.compare("mesh") == 0)
-	{
-	    //std::cout << "Setting mesh" << std::endl;
-		if (PyString_Check(value) || PyUnicode_Check(value))
-        {
-			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
-			const char* c_text = PyString_AsString(value);
-			std::string text = std::string(c_text);
-
-            //std::cout << ".. getting prim in mesh setting" << std::endl;
-			if (!prim)
-			{
-				PyErr_SetString(PyExc_AttributeError, "prim not found.");
-				return -1;   
-			}  
-
-            prim->MeshID = text;
-            prim->DrawType = RexTypes::DRAWTYPE_MESH;
-
-            return 0;
-        }
-        
-        /* was a test thing, just changes what ogre shows locally
-
-			
-            /*Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-			Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-			if (placeable)
-			{
-				OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-				
-				ogremesh.SetMesh(text);
-
-				PythonScript::self()->LogInfo("Entity's mesh changed locally.");
-				return NULL;
-			}*/
-
-        else
-        {
-            PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
-            return -1;
-        }
-	}
-	
-    //XXX why does this even exist when uuid is not settable?
-	else if(s_name.compare("uuid") == 0)
-	{
-        PythonScript::self()->LogInfo("UUID cannot be set manually.");
-        return 0;   
-	}
-
-    //std::cout << "unknown component type."  << std::endl;
-	PythonScript::self()->LogDebug("Unknown component type.");
-    return -1; //the way for setattr to report a failure
 }

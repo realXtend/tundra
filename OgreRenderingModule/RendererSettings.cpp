@@ -3,6 +3,10 @@
 #include "StableHeaders.h"
 #include "RendererSettings.h"
 #include "OgreRenderingModule.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include <QUiLoader>
 #include <QFile>

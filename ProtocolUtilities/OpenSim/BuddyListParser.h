@@ -8,6 +8,8 @@
 #ifndef incl_Protocol_BuddyListParser_h
 #define incl_Protocol_BuddyListParser_h
 
+#include "OpenSim/BuddyList.h"
+
 namespace ProtocolUtilities
 {
     class BuddyListParser

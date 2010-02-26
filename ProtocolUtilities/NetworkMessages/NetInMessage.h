@@ -5,8 +5,11 @@
 #include "RexTypes.h"
 #include "NetMessageList.h"
 #include "NetMessageException.h"
+#include "Quaternion.h"
 
 using namespace RexTypes;
+
+class RexUUID;
 
 namespace ProtocolUtilities
 {

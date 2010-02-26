@@ -12,6 +12,9 @@
 #include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
+#include "ModuleManager.h"
+#include "EventManager.h"
+#include "UiSceneManager.h"
 
 #include "Framework.h"
 #include "Inventory/InventoryEvents.h"
@@ -38,7 +41,7 @@ namespace OgreAssetEditor
 OgreScriptEditor::OgreScriptEditor(
     Foundation::Framework *framework,
     const QString &inventory_id,
-    const RexTypes::asset_type_t &asset_type,
+    const asset_type_t &asset_type,
     const QString &name,
     QWidget *parent) :
     framework_(framework),

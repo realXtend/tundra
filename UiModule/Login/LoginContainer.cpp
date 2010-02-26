@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "LoginContainer.h"
 
 #include "WebLoginWidget.h"
@@ -10,11 +11,15 @@
 #include "UiSceneManager.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
+#include "ModuleManager.h"
+#include "Framework.h"
 
 #include "../RexLogicModule/EventHandlers/LoginHandler.h"
 
 #include <QUiLoader>
 #include <QFile>
+#include <QTimer>
+#include <QGraphicsScene>
 
 namespace CoreUi
 {

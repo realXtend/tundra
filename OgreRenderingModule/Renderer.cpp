@@ -12,6 +12,10 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "SceneEvents.h"
 #include "SceneManager.h"
+#include "ConfigurationManager.h"
+#include "EventManager.h"
+#include "Platform.h"
+#include "CoreException.h"
 #include "Entity.h"
 
 #include <Ogre.h>

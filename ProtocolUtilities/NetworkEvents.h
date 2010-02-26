@@ -5,13 +5,24 @@
 
 #include "EventDataInterface.h"
 #include "RexUUID.h"
-#include "NetworkMessages/NetInMessage.h"
-#include "NetworkMessages/NetOutMessage.h"
-#include "Inventory/InventorySkeleton.h"
-#include "OpenSim/BuddyList.h"
+#include "NetworkMessages/NetMessage.h"
+//#include "NetworkMessages/NetInMessage.h"
+//#include "NetworkMessages/NetOutMessage.h"
+//#include "Inventory/InventorySkeleton.h"
+//#include "OpenSim/BuddyList.h"
+
+#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace ProtocolUtilities
 {
+    class NetInMessage;
+    class NetOutMessage;
+    class ProtocolModuleInterface;
+    class WorldStream;
+    class InventorySkeleton;
+    class BuddyList;
+
       /// Protocol type enumeration.
     enum ProtocolType
     {
@@ -25,31 +36,10 @@ namespace ProtocolUtilities
     {
     public:
         /// Default constructor.
-        ClientParameters() :
-            agentID(RexUUID()),
-            sessionID(RexUUID()),
-            regionID(RexUUID()),
-            circuitCode(0),
-            sessionHash(""),
-            gridUrl(""),
-            avatarStorageUrl(""),
-            seedCapabilities("") {}
+        ClientParameters();
 
         /// Resets parameters.
-        void Reset()
-        {
-            agentID = RexUUID();
-            sessionID = RexUUID();
-            regionID = RexUUID();
-            uint32_t circuitCode = 0;
-            std::string sessionHash = "";
-            std::string gridUrl = "";
-            std::string avatarStorageUrl = "";
-            std::string seedCapabilities = "";
-            //inventory.reset();
-            if (buddy_list)
-                buddy_list->Clear();
-        }
+        void Reset();
 
         RexUUID agentID;
         RexUUID sessionID;
@@ -60,7 +50,7 @@ namespace ProtocolUtilities
         std::string avatarStorageUrl;
         std::string seedCapabilities;
         boost::shared_ptr<InventorySkeleton> inventory;
-        BuddyListPtr buddy_list;
+        boost::shared_ptr<BuddyList> buddy_list;
     };
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
@@ -181,6 +171,25 @@ namespace ProtocolUtilities
 
         NetMsgID messageID;
         const NetOutMessage *message;
+    };
+
+    class NetworkingRegisteredEvent : public Foundation::EventDataInterface
+    {
+    public:
+        explicit NetworkingRegisteredEvent(boost::weak_ptr<ProtocolModuleInterface> pModule);
+        virtual ~NetworkingRegisteredEvent();
+
+        // boost weak pointer to the changed protocolmodule
+        boost::weak_ptr<ProtocolModuleInterface> currentProtocolModule;
+    };
+
+    class WorldStreamReadyEvent : public Foundation::EventDataInterface
+    {
+    public:
+        explicit WorldStreamReadyEvent(boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream);
+        virtual ~WorldStreamReadyEvent();
+        // Pointer to the current WorldStream
+        boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStream;
     };
 }
 

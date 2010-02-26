@@ -1,7 +1,10 @@
 #ifndef incl_OgreLocalResourceUtils_h
 #define incl_OgreLocalResourceUtils_h
 
-#include <Ogre.h>
+#include <OgreMesh.h>
+#include <OgreSkeleton.h>
+#include <OgreMaterial.h>
+#include <OgreTexture.h>
 
 #include "OgreModuleApi.h"
 

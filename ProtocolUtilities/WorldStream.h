@@ -4,9 +4,13 @@
 #define incl_ProtocolUtilities_WorldStream_h
 
 #include "Interfaces/ProtocolModuleInterface.h"
-#include "NetworkEvents.h"
 #include "RexUUID.h"
+#include "ModuleLoggingFunctions.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
+#include "NetworkEvents.h"
 
+#include <boost/smart_ptr.hpp>
 #include <QObject>
 
 namespace OpenSimProtocol
@@ -19,8 +23,14 @@ namespace TaigaProtocol
     class ProtocolModuleTaiga;
 }
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace ProtocolUtilities
 {
+    class WorldStream;
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 
     /// Connection type enumeration.
@@ -63,11 +73,11 @@ namespace ProtocolUtilities
         MODULE_LOGGING_FUNCTIONS;
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return loggerName; }
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
+//        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
         /// Constructor.
         /// @param framework Pointer to framework.
-        WorldStream(Foundation::Framework *framework);
+        explicit WorldStream(Foundation::Framework *framework);
 
         /// Destructor.
         virtual ~WorldStream();
@@ -218,7 +228,7 @@ namespace ProtocolUtilities
         void SendCreateInventoryFolderPacket(
             const RexUUID &parent_id,
             const RexUUID &folder_id,
-            const RexTypes::asset_type_t &type,
+            const asset_type_t &type,
             const std::string &name);
 
         /** Sends a which moves inventory folder and its contains to other folder.
@@ -302,8 +312,8 @@ namespace ProtocolUtilities
         void SendUpdateInventoryItemPacket(
             const RexUUID &item_id,
             const RexUUID &folder_id,
-            const RexTypes::asset_type_t &asset_type,
-            const RexTypes::inventory_type_t &inventory_type,
+            const asset_type_t &asset_type,
+            const inventory_type_t &inventory_type,
             const std::string &name,
             const std::string &description);
 

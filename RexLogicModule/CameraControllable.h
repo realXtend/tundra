@@ -4,6 +4,13 @@
 #define incl_RexLogic_CameraControllable_h
 
 #include "InputEvents.h"
+#include "ForwardDefines.h"
+#include "Vector3D.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace RexLogic
 {

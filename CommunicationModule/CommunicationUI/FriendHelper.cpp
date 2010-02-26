@@ -3,6 +3,13 @@
 #include "StableHeaders.h"
 #include "FriendHelper.h"
 #include "FriendListItem.h"
+//#include "interface.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "FriendRequestInterface.h"
+#include "ContactInterface.h"
+#include "CoreDefines.h"
+#include "Framework.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
@@ -23,6 +30,12 @@ namespace UiHelpers
     FriendHelper::~FriendHelper()
     {
         friend_list_ui_ = 0;
+    }
+
+    void FriendHelper::SetupUi(Ui::FrienListWidget *friend_list_ui)
+    { 
+        SAFE_DELETE(friend_list_ui_); 
+        friend_list_ui_ = friend_list_ui;
     }
 
     void FriendHelper::NewFriendRequest(Communication::FriendRequestInterface &friend_request)

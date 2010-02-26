@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "QOgreUIView.h"
+#include "CoreStringUtils.h"
 
 #ifdef Q_WS_X11
 #include <QX11Info>

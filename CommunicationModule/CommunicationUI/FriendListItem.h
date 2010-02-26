@@ -9,7 +9,7 @@
 #include <QIcon>
 #include <QString>
 
-#include "interface.h"
+//#include "interface.h"
 
 namespace CommunicationUI
 {

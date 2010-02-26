@@ -12,6 +12,7 @@
 namespace Foundation
 {
     class Framework;
+    class EventDataInterface;
 }
 
 namespace OpenALAudio

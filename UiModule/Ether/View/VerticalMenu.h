@@ -5,7 +5,6 @@
 
 #include "EtherMenu.h"
 
-
 namespace Ether
 {
     namespace View

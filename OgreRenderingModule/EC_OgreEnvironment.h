@@ -3,9 +3,12 @@
 #ifndef incl_OgreRenderer_EC_OgreEnvironment_h
 #define incl_OgreRenderer_EC_OgreEnvironment_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+
+#include "Color.h"
+#include "Vector3D.h"
+#include "Declare_EC.h"
 
 #include <OgreColourValue.h>
 #include <OgreVector3.h>

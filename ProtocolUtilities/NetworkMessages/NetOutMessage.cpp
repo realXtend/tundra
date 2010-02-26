@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+#include "StableHeaders.h"
 #include "NetOutMessage.h"
 #include "QuatUtils.h"
+#include "NetworkEvents.h"
 
 #include <iostream>
 #include <cstring>

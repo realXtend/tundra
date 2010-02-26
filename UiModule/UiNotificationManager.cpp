@@ -1,14 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiNotificationManager.h"
 #include "UiSceneManager.h"
 
 #include "ui_NotificationWidget.h"
 #include "Notify/NotifyProxyWidget.h"
 #include "Notify/NotifyLabel.h"
+#include "CoreDefines.h"
 
 #include <QLabel>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiServices
 {

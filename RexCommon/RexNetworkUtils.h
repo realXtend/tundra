@@ -5,6 +5,9 @@
 
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "Color.h"
+#include "Quaternion.h"
+#include "Vector3D.h"
 
 namespace RexTypes
 {       

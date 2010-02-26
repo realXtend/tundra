@@ -3,8 +3,8 @@
 #ifndef incl_OgreRenderingModule_h
 #define incl_OgreRenderingModule_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "Renderer.h"
 #include "OgreModuleApi.h"
 

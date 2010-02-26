@@ -3,7 +3,7 @@
 /// @file OpenSimLoginThread.cpp
 /// @brief XML-RPC login worker.
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "OpenSimLoginThread.h"
 #include "ProtocolModuleOpenSim.h"
 #include "XmlRpcEpi.h"
@@ -13,7 +13,10 @@
 #include "OpenSim/Grid.h"
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
+#include "Inventory/InventorySkeleton.h"
 #include "Md5.h"
+#include "Framework.h"
+#include "ConfigurationManager.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
@@ -335,7 +338,7 @@ namespace OpenSimProtocol
             }
             catch (XmlRpcException &/*ex*/)
             {
-                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address propably not valid.");
+                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address probably not valid.");
                 ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;

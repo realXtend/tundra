@@ -6,9 +6,12 @@
 #include <QObject>
 #include <QSettings>
 #include <QMap>
+#include <QUuid>
 
-#include "AvatarInfo.h"
-#include "WorldInfo.h"
+#include "UiModuleFwd.h"
+
+//#include "AvatarInfo.h"
+//#include "WorldInfo.h"
 #include "EtherDataTypes.h"
 
 namespace Ether

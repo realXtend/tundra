@@ -3,9 +3,10 @@
 #ifndef incl_OpenALAudio_EC_AttachedSound_h
 #define incl_OpenALAudio_EC_AttachedSound_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexLogicModuleApi.h"
+#include "Vector3D.h"
+#include "Declare_EC.h"
 
 namespace RexLogic
 {

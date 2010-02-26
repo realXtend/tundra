@@ -9,6 +9,9 @@
 #include "ProtocolModuleTaiga.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
+#include "Framework.h"
+#include "ConfigurationManager.h"
+#include "ModuleManager.h"
 
 #include <QString>
 #include <QUrl>
@@ -785,7 +788,7 @@ void WorldStream::SendTextureCommitMessage()
 void WorldStream::SendCreateInventoryFolderPacket(
     const RexUUID &parent_id,
     const RexUUID &folder_id,
-    const RexTypes::asset_type_t &type,
+    const asset_type_t &type,
     const std::string &name)
 {
     if (!connected_)
@@ -1033,8 +1036,8 @@ void WorldStream::SendUpdateInventoryFolderPacket(
 void WorldStream::SendUpdateInventoryItemPacket(
     const RexUUID &item_id,
     const RexUUID &folder_id,
-    const RexTypes::asset_type_t &asset_type,
-    const RexTypes::inventory_type_t &inventory_type,
+    const asset_type_t &asset_type,
+    const inventory_type_t &inventory_type,
     const std::string &name,
     const std::string &description)
 {

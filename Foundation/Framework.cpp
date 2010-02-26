@@ -7,18 +7,28 @@
 #include <Poco/FormattingChannel.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/LocalDateTime.h>
-#include "Poco/Path.h"
-#include "Poco/UnicodeConverter.h"
+#include <Poco/Path.h>
+#include <Poco/UnicodeConverter.h>
 
 #include <QApplication>
 
+#include "Framework.h"
+
+#include "Application.h"
+#include "Platform.h"
 #include "Foundation.h"
 #include "SceneManager.h"
+#include "ConfigurationManager.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "ComponentManager.h"
+#include "ServiceManager.h"
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include "FrameworkQtApplication.h"
 
@@ -588,8 +598,41 @@ namespace Foundation
         return engine_->GetUIView();
     }
 
+    Profiler &Framework::GetProfiler()
+    { 
+        return profiler_;
+    }
+
     void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
     {
         engine_->SetUIView(view);
+    }
+
+    ComponentManagerPtr Framework::GetComponentManager() const { return component_manager_; }
+    ModuleManagerPtr Framework::GetModuleManager() const { return module_manager_; }
+    ServiceManagerPtr Framework::GetServiceManager() const { return service_manager_; }
+    EventManagerPtr Framework::GetEventManager() const { return event_manager_; }
+    PlatformPtr Framework::GetPlatform() const { return platform_; }
+    ConfigurationManagerPtr Framework::GetConfigManager() { return config_manager_;}
+    ThreadTaskManagerPtr Framework::GetThreadTaskManager() { return thread_task_manager_;}
+
+    ConfigurationManager &Framework::GetDefaultConfig() { return *(config_manager_.get()); }
+
+    ConfigurationManager *Framework::GetDefaultConfigPtr() { return config_manager_.get(); }
+
+    bool Framework::HasScene(const std::string &name) const { return scenes_.find(name) != scenes_.end(); }
+
+    //! Returns the currently set default world scene, for convinience
+    const Scene::ScenePtr &Framework::GetDefaultWorldScene() const { return default_scene_; }
+
+    //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene) { default_scene_ = scene; }
+
+    //! Returns the scene map for self reflection / introspection.
+    const Framework::SceneMap &Framework::GetSceneMap() const { return scenes_; }
+
+    ProgramOptionsEvent::ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av)
+    :options(vars), argc(ac), argv(av)
+    {
     }
 }

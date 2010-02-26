@@ -4,6 +4,9 @@
 #include "OpenALAudioModule.h"
 #include "SoundSystem.h"
 #include "SoundSettings.h"
+#include "Framework.h"
+#include "ServiceManager.h"
+#include "EventManager.h"
 
 namespace OpenALAudio
 {

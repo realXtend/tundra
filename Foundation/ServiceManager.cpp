@@ -2,11 +2,28 @@
 
 #include "StableHeaders.h"
 #include "ServiceManager.h"
+#include "ForwardDefines.h"
+#include "CoreStringUtils.h"
 
 namespace Foundation
 {
     ServiceManager::ServiceManager(Framework *framework) : framework_(framework)
     {
+    }
+
+    ServiceWeakPtr ServiceManager::GetService(service_type_t type)
+    {
+        ServicesMap::iterator it = services_.find(type);
+        if (it == services_.end())
+        {
+            //std::string what("Service type ");
+            //what += boost::lexical_cast<std::string>(type) + " not registered!";
+            //Foundation::RootLogDebug(what);
+
+            return ServiceWeakPtr();
+        }
+
+        return it->second;
     }
 
     void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &service)

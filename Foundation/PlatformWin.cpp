@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "PlatformWin.h"
 #include "Framework.h"
+#include "ConfigurationManager.h"
+#include "CoreException.h"
+#include "CoreStringUtils.h"
 
 #if defined(_WINDOWS)
 

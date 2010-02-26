@@ -3,10 +3,22 @@
 #ifndef incl_RexLogicModule_h
 #define incl_RexLogicModule_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "RexLogicModuleApi.h"
-#include "WorldStream.h"
+#include "ForwardDefines.h"
+#include "NetworkEvents.h"
+//#include "WorldStream.h"
+#include "Quaternion.h"
+
+#include <boost/smart_ptr.hpp>
+#include <boost/function.hpp>
+
+#include <QString>
+#include <map>
+#include <set>
+
+class RexUUID;
 
 namespace CoreUi
 {
@@ -17,6 +29,13 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<OgreRenderer::Renderer> RendererPtr;
+}
+
+namespace ProtocolUtilities
+{
+    class WorldStream;
+    class InventorySkeleton;
+    class ProtocolModuleInterface;
 }
 
 namespace RexLogic

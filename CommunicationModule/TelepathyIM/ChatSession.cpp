@@ -5,6 +5,10 @@
 #include <TelepathyQt4/ContactManager>
 #include "ChatSession.h"
 #include "Connection.h"
+#include "ContactGroup.h"
+#include "ChatMessage.h"
+#include "CoreDefines.h"
+#include "CoreException.h"
 
 
 namespace TelepathyIM
@@ -59,7 +63,7 @@ namespace TelepathyIM
         message_history_.clear();
     }
 
-    void ChatSession::SendMessage(const QString &text)
+    void ChatSession::SendChatMessage(const QString &text)
     {
         if (state_ == STATE_CLOSED)
             throw Exception("Channel closed");
@@ -202,7 +206,7 @@ namespace TelepathyIM
         emit Ready(this);
         emit Opened(this);
         for (QStringList::iterator i = send_buffer_.begin(); i != send_buffer_.end(); ++i)
-            SendMessage( *i);
+            SendChatMessage( *i);
     }
 
     void ChatSession::OnOutgoingTextChannelReady(Tp::PendingOperation* op)
@@ -254,7 +258,7 @@ namespace TelepathyIM
         for (QStringList::iterator i = send_buffer_.begin(); i != send_buffer_.end(); ++i)
         {
             QString text = *i;
-            SendMessage(text);
+            SendChatMessage(text);
         }
     }
 

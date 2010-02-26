@@ -1,8 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InworldLoginDialog.h"
-
+#include "ConfigurationManager.h"
+#include "CoreDefines.h"
+#include "Framework.h"
 #include <QUiLoader>
 #include <QFile>
 

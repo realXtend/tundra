@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "InputStateMachine.h"
+#include "EventManager.h"
+#include "Framework.h"
 
 namespace Input
 {

@@ -8,6 +8,7 @@
 #include "RexUUID.h"
 
 #include <iomanip>
+#include <cstring>
 
 using namespace std;
 

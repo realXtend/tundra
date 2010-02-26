@@ -3,10 +3,10 @@
 #ifndef incl_OgreRenderer_EC_OgreSky_h
 #define incl_OgreRenderer_EC_OgreSky_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
 #include "OgreModuleApi.h"
+#include "Declare_EC.h"
 
 namespace OgreRenderer
 {

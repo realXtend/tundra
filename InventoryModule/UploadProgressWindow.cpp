@@ -8,6 +8,9 @@
 #include "StableHeaders.h"
 #include "UploadProgressWindow.h"
 #include "InventoryModule.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>

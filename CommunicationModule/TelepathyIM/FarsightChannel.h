@@ -11,6 +11,8 @@
 #include <TelepathyQt4/Farsight/Channel>
 #include <Foundation.h>
 #include "VideoWidget.h"
+#include "ModuleLoggingFunctions.h"
+#include "CoreThread.h"
 
 namespace TelepathyIM
 {

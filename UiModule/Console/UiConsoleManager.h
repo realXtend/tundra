@@ -3,10 +3,16 @@
 #ifndef incl_UiModule_UiConsoleManager_h
 #define incl_UiModule_UiConsoleManager_h
 
-#include "Framework.h"
-
 #include <QObject>
 #include <QPropertyAnimation>
+#include <QGraphicsView>
+
+#include "CoreTypes.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace Ui
 {

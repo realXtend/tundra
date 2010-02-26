@@ -9,6 +9,7 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
 #include "SoundServiceInterface.h"
+#include "WorldStream.h"
 
 #include "Login/LoginContainer.h" 
 

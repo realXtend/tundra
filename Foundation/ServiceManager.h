@@ -4,6 +4,7 @@
 #define incl_Foundation_ServiceManager_h
 
 #include "ServiceInterface.h"
+#include "CoreTypes.h"
 
 namespace Foundation
 {
@@ -34,20 +35,7 @@ namespace Foundation
         void UnregisterService(const ServiceWeakPtr &service);
 
         //! Returns un-casted service from service type
-        __inline ServiceWeakPtr GetService(service_type_t type)
-        {
-            ServicesMap::iterator it = services_.find(type);
-            if (it == services_.end())
-            {
-                //std::string what("Service type ");
-                //what += boost::lexical_cast<std::string>(type) + " not registered!";
-                //Foundation::RootLogDebug(what);
-
-                return ServiceWeakPtr();
-            }
-
-            return it->second;
-        }
+        ServiceWeakPtr GetService(service_type_t type);
 
         //! Returns service from service type.
         /*! Returns empty weak pointer if the service is not registered

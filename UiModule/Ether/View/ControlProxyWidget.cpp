@@ -1,7 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ControlProxyWidget.h"
+#include "Ether/View/InfoCard.h"
+#include "Ether/View/ActionProxyWidget.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>

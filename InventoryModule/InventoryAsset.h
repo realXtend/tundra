@@ -13,8 +13,6 @@
 
 namespace Inventory
 {
-    using namespace RexTypes;
-
     class InventoryFolder;
 
     class InventoryAsset : public AbstractInventoryItem

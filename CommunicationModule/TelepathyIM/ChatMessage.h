@@ -3,10 +3,12 @@
 #ifndef incl_Communication_TelepathyIM_ChatMessage_h
 #define incl_Communication_TelepathyIM_ChatMessage_h
 
-#include "Foundation.h"
-#include "NetworkEvents.h"
-#include "interface.h"
-#include "ChatSessionParticipant.h"
+//#include "Foundation.h"
+//#include "NetworkEvents.h"
+//#include "interface.h"
+//#include "ChatSessionParticipant.h"
+#include "CommunicationModuleFwd.h"
+#include "ChatMessageInterface.h"
 
 namespace TelepathyIM
 {
@@ -24,9 +26,7 @@ namespace TelepathyIM
         const QDateTime time_stamp_;
         const QString text_;
         bool acknowledged_; //! @todo IMPLEMENT
-    };
-    typedef std::vector<ChatMessage*> ChatMessageVector;
-    
+    };    
 } // end of namespace: TelepathyIM 
 
 #endif // incl_Communication_TelepathyIM_ChatMessage_h

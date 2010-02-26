@@ -50,6 +50,7 @@
 
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
+#include "WorldStream.h"
 
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
@@ -57,6 +58,12 @@
 #include "UiModule.h"
 #include "Login/LoginContainer.h"
 
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "ModuleManager.h"
+#include "ConsoleCommand.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "ServiceManager.h"
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic

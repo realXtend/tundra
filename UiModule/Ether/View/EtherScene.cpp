@@ -1,7 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EtherScene.h"
+
+#include "Ether/View/InfoCard.h"
 
 #include <QKeyEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -10,6 +13,8 @@
 #include <QBrush>
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

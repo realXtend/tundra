@@ -1,3 +1,5 @@
+#include "StableHeaders.h"
+
 #include "BuddyList.h"
 
 namespace ProtocolUtilities

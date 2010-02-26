@@ -4,7 +4,6 @@
 #define incl_NetworkEventHandler_h
 
 #include "ComponentInterface.h"
-#include "Foundation.h"
 #include "NetworkEvents.h"
 
 namespace ProtocolUtilities

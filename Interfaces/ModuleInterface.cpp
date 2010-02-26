@@ -1,7 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "ModuleInterface.h"
+#include <boost/smart_ptr.hpp>
+#include <Poco/Logger.h>
 #include <Framework.h>
+#include "ModuleInterface.h"
+#include "ConfigurationManager.h"
+#include "ServiceManager.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace Foundation
 {

@@ -1,8 +1,6 @@
 #ifndef incl_Environment_TerrainLabel_h
 #define incl_Environment_TerrainLabel_h
 
-#include <Foundation.h>
-
 #include <QLabel>
 
 namespace Environment

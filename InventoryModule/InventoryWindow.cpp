@@ -13,6 +13,8 @@
 #include "AbstractInventoryDataModel.h"
 #include "InventoryTreeView.h"
 #include "InventoryAsset.h"
+#include "ModuleManager.h"
+#include "Framework.h"
 
 #include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
@@ -21,7 +23,8 @@
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 #include <UiWidgetProperties.h>
-//#include <DirectoryView.h>
+#include "UiSceneManager.h"
+#include "UiNotificationManager.h"
 #include <RenderServiceInterface.h>
 
 #include <QUiLoader>

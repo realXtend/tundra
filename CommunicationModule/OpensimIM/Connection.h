@@ -3,15 +3,29 @@
 #ifndef incl_Communication_OSIMConnection_h
 #define incl_Communication_OSIMConnection_h
 
-#include <Foundation.h>
+//#include <Foundation.h>
 #include <QStringList>
-#include "interface.h"
+//#include "interface.h"
 #include "ChatSession.h"
 #include "Contact.h"
 #include "FriendRequest.h"
 #include "ContactGroup.h"
+#include "ModuleLoggingFunctions.h"
 
-#include "NetworkMessages/NetInMessage.h"
+//#include "NetworkMessages/NetInMessage.h"
+
+#include "CommunicationModuleFwd.h"
+#include "ConnectionInterface.h"
+
+namespace Foundation
+{
+    class EventDataInterface;
+}
+
+namespace ProtocolUtilities
+{
+    class NetInMessage;
+}
 
 namespace OpensimIM
 {

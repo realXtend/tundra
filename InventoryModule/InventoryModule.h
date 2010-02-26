@@ -13,7 +13,8 @@
 #ifndef incl_InventoryModule_h
 #define incl_InventoryModule_h
 
-#include <ModuleInterface.h>
+#include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
 #include <QMap>

@@ -3,9 +3,14 @@
 #ifndef incl_Communication_ConfigHelper_h
 #define incl_Communication_ConfigHelper_h
 
-#include <Foundation.h>
+//#include <Foundation.h>
 #include <QObject>
 #include <QMap>
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace Ui 
 {
@@ -20,7 +25,7 @@ namespace UiHelpers
     Q_OBJECT
     
     public:
-        ConfigHelper(Foundation::Framework *framework);
+        explicit ConfigHelper(Foundation::Framework *framework);
         virtual ~ConfigHelper();
 
         void ReadLoginData(Ui::LoginWidget *login_ui);

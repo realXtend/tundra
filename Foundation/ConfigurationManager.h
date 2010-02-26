@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_ConfigurationManager_h
 #define incl_Foundation_ConfigurationManager_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "boost/filesystem.hpp" 
 #include "Poco/Util/XMLConfiguration.h"
 

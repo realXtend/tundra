@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "PlatformNix.h"
 #include "Framework.h"
+#include "ConfigurationManager.h"
+#include "CoreStringUtils.h"
+#include "CoreException.h"
 
 #if !defined(_WINDOWS)
 

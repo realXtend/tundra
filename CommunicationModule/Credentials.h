@@ -3,9 +3,11 @@
 #ifndef incl_Comm_Credentials_h
 #define incl_Comm_Credentials_h
 
-#include <Foundation.h>
-#include <EventDataInterface.h>
-#include "interface.h"
+//#include <Foundation.h>
+//#include <EventDataInterface.h>
+#include "CredentialsInterface.h"
+#include <QString>
+//#include "interface.h"
 
 
 namespace TpQt4Communication
@@ -14,7 +16,7 @@ namespace TpQt4Communication
     /**
      *  Credential for connecting to IM server
      *
-     *  NOTE: Propably attribute map with arbitrary keys value pairs are the best choise here...
+     *  NOTE: Probably attribute map with arbitrary keys value pairs are the best choise here...
      *
      */
     class Credentials

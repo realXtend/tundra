@@ -3,6 +3,8 @@
 #ifndef incl_FoundationPlatform_h
 #define incl_FoundationPlatform_h
 
+#include <boost/filesystem.hpp>
+
 #include "PlatformWin.h"
 #include "PlatformNix.h"
 

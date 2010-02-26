@@ -3,9 +3,9 @@
 #ifndef incl_EC_Water_h
 #define incl_EC_Water_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
+#include "Declare_EC.h"
 
 namespace Ogre
 {

@@ -4,6 +4,7 @@
 #define incl_TestModuleB_h
 
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "TestServiceInterface.h"
 
 using namespace std;

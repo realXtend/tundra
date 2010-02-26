@@ -3,8 +3,9 @@
 #ifndef incl_Communication_TelepathyIM_VoiceSessionParticipant_h
 #define incl_Communication_TelepathyIM_VoiceSessionParticipant_h
 
-#include "interface.h"
-#include "Contact.h"
+//#include "interface.h"
+#include "CommunicationModuleFwd.h"
+#include "VoiceSessionParticipantInterface.h"
 
 namespace TelepathyIM
 {
@@ -16,7 +17,7 @@ namespace TelepathyIM
     {
         Q_OBJECT
     public:
-        VoiceSessionParticipant(Contact *contact);
+        explicit VoiceSessionParticipant(Contact *contact);
         virtual ~VoiceSessionParticipant();
 
         //! @return contact object if the participant have one

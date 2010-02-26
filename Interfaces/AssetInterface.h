@@ -4,6 +4,8 @@
 #define incl_Interfaces_AssetInterface_h
 
 #include "AssetMetadataInterface.h"
+#include "CoreModuleApi.h"
+#include "CoreTypes.h"
 
 namespace Foundation
 {

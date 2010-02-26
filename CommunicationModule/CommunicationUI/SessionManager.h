@@ -3,10 +3,10 @@
 #ifndef incl_Communication_SessionManager_h
 #define incl_Communication_SessionManager_h
 
-#include "MasterWidget.h"
-#include "SessionHelper.h"
-#include "FriendListWidget.h"
-#include "ChatSessionWidget.h"
+//#include "MasterWidget.h"
+//#include "SessionHelper.h"
+//#include "FriendListWidget.h"
+//#include "ChatSessionWidget.h"
 #include "UiDefines.h"
 
 #include "EventHandler.h"
@@ -18,7 +18,14 @@
 #include "ui_SessionManagerWidget.h"
 #include "ui_SpatialVoiceConfigureWidget.h"
 
-#include "interface.h"
+//#include "interface.h"
+
+#include "CommunicationModuleFwd.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace UiManagers
 {
@@ -36,7 +43,7 @@ namespace UiManagers
         //! Start the ui manager
         void Start(const QString &username, Communication::ConnectionInterface *im_connection, CommunicationUI::EventHandler *event_handler);      
         //! Hide Friend List Widget
-        void HideFriendListWidget() { if (friend_list_widget_) return friend_list_widget_->hide(); }
+        void HideFriendListWidget();
 
     private:
         QWidget *spatial_voice_manager_widget_;
@@ -70,15 +77,15 @@ namespace UiManagers
 
         void SignOut();
         void Show3DSoundManager();
-        void Hide()               { main_parent_->hide(); }
-        void StatusAvailable()    { emit StatusChange(QString("available")); }
-        void StatusChatty()       { emit StatusChange(QString("chat"));      }
-        void StatusAway()         { emit StatusChange(QString("away"));      }
-        void StatusExtendedAway() { emit StatusChange(QString("xa"));        }
-        void StatusBusy()         { emit StatusChange(QString("dnd"));       }
-        void StatusHidden()       { emit StatusChange(QString("hidden"));    }
+        void Hide();
+        void StatusAvailable();
+        void StatusChatty();
+        void StatusAway();
+        void StatusExtendedAway();
+        void StatusBusy();
+        void StatusHidden();
 
-        void ToggleShowFriendList() { if (friend_list_widget_->isVisible()) friend_list_widget_->hide(); else friend_list_widget_->show(); } 
+        void ToggleShowFriendList();
         void JoinChatRoom();
 
         void ChatSessionReceived(Communication::ChatSessionInterface& chat_session);

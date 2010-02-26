@@ -5,8 +5,13 @@
 
 #include "Credentials.h"
 #include "CommunicationService.h"
+#include "ConnectionInterface.h"
+#include "CoreDefines.h"
+#include "CoreException.h"
 
 #include <QUrl>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiHelpers
 {
@@ -28,6 +33,17 @@ namespace UiHelpers
         login_ui_ = 0;
         im_connection_ = 0;
         communication_service_ = 0;
+    }
+
+    void LoginHelper::SetupUi(Ui::LoginWidget *login_ui)
+    { 
+        SAFE_DELETE(login_ui_); 
+        login_ui_ = login_ui;
+    }
+
+    QString LoginHelper::GetErrorMessage()
+    { 
+        return error_message_;
     }
 
     QMap<QString, QString> LoginHelper::GetPreviousCredentials()

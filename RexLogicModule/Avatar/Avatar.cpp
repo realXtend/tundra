@@ -21,6 +21,10 @@
 #include "ConversionUtils.h"
 #include "SceneManager.h"
 #include "GenericMessageUtils.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
+#include "UiNotificationManager.h"
 
 #include "Poco/DOM/DOMParser.h"
 #include "Poco/DOM/Element.h"

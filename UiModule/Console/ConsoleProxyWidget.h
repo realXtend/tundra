@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_ConsoleProxyWidget_h
 #define incl_UiModule_ConsoleProxyWidget_h
 
-#include "UiWidgetProperties.h"
+//#include "UiWidgetProperties.h"
 #include <QGraphicsProxyWidget>
 
 namespace CoreUi
@@ -14,7 +14,7 @@ namespace CoreUi
     Q_OBJECT
         
     public:
-        ConsoleProxyWidget(QWidget *widget);
+        explicit ConsoleProxyWidget(QWidget *widget);
         virtual ~ConsoleProxyWidget(void);
         
         //! Sets consoles relative height (0-1), 

@@ -3,9 +3,11 @@
 #ifndef incl_OgreRenderer_EC_OgreLight_h
 #define incl_OgreRenderer_EC_OgreLight_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+#include "Color.h"
+#include "Vector3D.h"
+#include "Declare_EC.h"
 
 namespace Ogre
 {

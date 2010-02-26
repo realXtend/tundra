@@ -8,6 +8,7 @@
 #include "EC_OgreEnvironment.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
+#include "NetworkMessages/NetInMessage.h"
 
 #include <QVector>
 

@@ -3,8 +3,10 @@
 #ifndef incl_Communication_TelepathyIM_ChatSessionParticipant_h
 #define incl_Communication_TelepathyIM_ChatSessionParticipant_h
 
-#include "interface.h"
-#include "Contact.h"
+//#include "interface.h"
+//#include "Contact.h"
+#include "CommunicationModuleFwd.h"
+#include "ChatSessionParticipantInterface.h"
 
 namespace TelepathyIM
 {
@@ -34,7 +36,6 @@ namespace TelepathyIM
         QString id_;
         Contact *contact_;
     };
-    typedef std::vector<ChatSessionParticipant*> ChatSessionParticipantVector;
 
 } // end of namespace: TelepathyIM
 

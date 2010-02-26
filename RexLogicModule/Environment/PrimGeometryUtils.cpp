@@ -39,6 +39,8 @@
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "Renderer.h"
+#include "ServiceManager.h"
+#include "CoreException.h"
 
 #include <Ogre.h>
 

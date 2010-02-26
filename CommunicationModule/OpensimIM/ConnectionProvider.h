@@ -3,13 +3,22 @@
 #ifndef incl_Communication_OpensimIM_Provider_h
 #define incl_Communication_OpensimIM_Provider_h
 
-#include <Foundation.h>
-#include "interface.h"
+//#include <Foundation.h>
+//#include "interface.h"
 #include "CommunicationService.h"
 #include "Connection.h"
 
+#include "CommunicationModuleFwd.h"
+#include "ConnectionProviderInterface.h"
+#include "CommunicationService.h"
+
 #define OPENSIM_IM_PROTOCOL "opensim_udp"
 #define MODREX_IM_PROTOCOL "ModRex"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace OpensimIM
 {
@@ -28,7 +37,7 @@ namespace OpensimIM
         
     public:
         //! \param framework Framework object 
-        ConnectionProvider(Foundation::Framework* framework);
+        explicit ConnectionProvider(Foundation::Framework* framework);
 
         //! Deconstructor 
         virtual ~ConnectionProvider();

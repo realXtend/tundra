@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "ConsoleModule.h"
+#include "ModuleInterface.h"
+#include "Profiler.h"
 
 using namespace Console;
 

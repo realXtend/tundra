@@ -3,9 +3,9 @@
 #ifndef incl_OgreRenderer_EC_OgreCamera_h
 #define incl_OgreRenderer_EC_OgreCamera_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+#include "Declare_EC.h"
 
 namespace Ogre
 {

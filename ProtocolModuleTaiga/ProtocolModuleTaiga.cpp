@@ -1,13 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "ProtocolModuleTaiga.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "HttpRequest.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
 
 #include "Poco/Net/NetException.h"
+#include <Poco/ClassLibrary.h>
 
 namespace TaigaProtocol
 {
@@ -82,7 +86,7 @@ namespace TaigaProtocol
         if (modulePointerToThis.lock().get())
         {
             event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
-            Foundation::NetworkingRegisteredEvent event_data(modulePointerToThis);
+            ProtocolUtilities::NetworkingRegisteredEvent event_data(modulePointerToThis);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
             LogInfo("Sending Networking Registered event");
         }

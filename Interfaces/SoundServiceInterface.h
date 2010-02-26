@@ -4,6 +4,9 @@
 #define incl_Interfaces_SoundServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "CoreTypes.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
 
 namespace Foundation
 {

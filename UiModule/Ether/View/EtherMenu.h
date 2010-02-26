@@ -10,7 +10,8 @@
 #include <QParallelAnimationGroup>
 #include <QTimer>
 
-#include "InfoCard.h"
+#include "UiModuleFwd.h"
+//#include "InfoCard.h"
 
 namespace Ether
 {

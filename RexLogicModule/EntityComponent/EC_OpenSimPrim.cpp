@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "RexLogicModule.h"
+#include "ModuleManager.h"
 #include <QStringList>
 
 namespace RexLogic

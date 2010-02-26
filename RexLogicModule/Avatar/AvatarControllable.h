@@ -6,6 +6,7 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
+#include "Quaternion.h"
 
 namespace ProtocolUtilities
 {

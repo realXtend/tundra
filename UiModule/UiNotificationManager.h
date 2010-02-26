@@ -3,12 +3,17 @@
 #ifndef incl_UiModule_UiNotificationManager_h
 #define incl_UiModule_UiNotificationManager_h
 
-#include "Framework.h"
+//#include "Framework.h"
 #include "UiModuleApi.h"
 
 #include <QObject>
 #include <QGraphicsView>
 #include <QTimer>
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace CoreUi
 {

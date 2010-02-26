@@ -14,7 +14,7 @@
 #include "CoreException.h"
 #pragma warning( pop )
 
-#include "CoreAnyIterator.h"
+//#include "CoreAnyIterator.h"
 
 #include "CoreMath.h"
 #include "Vector3D.h"
@@ -22,7 +22,7 @@
 #include "Quaternion.h"
 #include "Color.h"
 #include "CoreStringUtils.h"
-#include "IntervalTimer.h"
+#include "CoreThread.h"
 
 
 //! Core contains functionality and definitions that are common to all subprojects in the viewer.

@@ -31,6 +31,10 @@
 #include "AssetServiceInterface.h"
 #include "RenderServiceInterface.h"
 #include "Inventory/InventoryEvents.h"
+#include "ConfigurationManager.h"
+#include "ServiceManager.h"
+#include "EventManager.h"
+#include "WorldStream.h"
 
 #include "Poco/URI.h"
 
@@ -39,6 +43,8 @@
 #include <QTime>
 
 #include <Ogre.h>
+
+using namespace RexTypes;
 
 static const Real FIXED_HEIGHT_OFFSET = -0.87f;
 static const Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;

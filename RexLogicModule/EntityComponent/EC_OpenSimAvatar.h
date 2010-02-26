@@ -3,11 +3,10 @@
 #ifndef incl_EC_OpenSimAvatar_h
 #define incl_EC_OpenSimAvatar_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
-#include "Foundation.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
 
 namespace RexLogic
 {

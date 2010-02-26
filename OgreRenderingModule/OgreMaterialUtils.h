@@ -1,7 +1,7 @@
 #ifndef incl_OgreMaterialUtils_h
 #define incl_OgreMaterialUtils_h
 
-#include <Ogre.h>
+#include <OgreMaterial.h>
 
 #include "OgreModuleApi.h"
 #include "ResourceInterface.h"

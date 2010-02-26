@@ -3,7 +3,11 @@
 #ifndef incl_OgreRenderer_QOgreWorldView_h
 #define incl_OgreRenderer_QOgreWorldView_h
 
-#include <Ogre.h>
+#include <OgreRenderWindow.h>
+#include <OgreRoot.h>
+#include <OgreViewport.h>
+#include <OgreTexture.h>
+#include <OgreOverlay.h>
 
 namespace OgreRenderer
 {

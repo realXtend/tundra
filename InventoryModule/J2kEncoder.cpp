@@ -7,6 +7,7 @@
 #include "DebugOperatorNew.h"
 #include "J2kEncoder.h"
 #include "InventoryModule.h"
+#include <OgreColourValue.h>
 
 #include "openjpeg.h"
 #include "MemoryLeakCheck.h"

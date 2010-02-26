@@ -4,6 +4,10 @@
 #include "SoundSettings.h"
 #include "OpenALAudioModule.h"
 #include "SoundServiceInterface.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include <QUiLoader>
 #include <QFile>

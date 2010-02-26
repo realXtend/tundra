@@ -3,7 +3,7 @@
 #ifndef incl_SupportModules_ConsoleEvents_h
 #define incl_SupportModules_ConsoleEvents_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "EventDataInterface.h"
 
 namespace Console

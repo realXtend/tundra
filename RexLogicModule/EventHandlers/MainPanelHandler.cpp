@@ -2,7 +2,10 @@
 
 #include "StableHeaders.h"
 #include "MainPanelHandler.h"
+#include "ModuleManager.h"
 
+#include "Framework.h"
+#include "WorldStream.h"
 #include <boost/shared_ptr.hpp>
 #include <UiModule.h>
 #include <UiSceneManager.h>

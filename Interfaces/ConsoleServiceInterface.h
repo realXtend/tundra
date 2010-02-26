@@ -4,6 +4,7 @@
 #define incl_Interfaces_ConsoleServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "CoreTypes.h"
 
 namespace Console
 {

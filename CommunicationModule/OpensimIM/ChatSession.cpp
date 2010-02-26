@@ -1,11 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include <RexLogicModule.h>
 #include <QTime>
 
 #include "ChatSession.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
+#include "CoreDefines.h"
+#include "CoreException.h"
+#include "Framework.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace OpensimIM
 {
@@ -44,7 +52,7 @@ namespace OpensimIM
         message_history_.clear();
     }
 
-    void ChatSession::SendMessage(const QString &text)
+    void ChatSession::SendChatMessage(const QString &text)
     {
         if (private_im_session_)
             SendPrivateIMMessage(text);

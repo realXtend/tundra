@@ -3,8 +3,6 @@
 #ifndef incl_RexLogic_AvatarEditor_h
 #define incl_RexLogic_AvatarEditor_h
 
-#include "Foundation.h"
-
 #include <QObject>
 
 class QTabWidget;

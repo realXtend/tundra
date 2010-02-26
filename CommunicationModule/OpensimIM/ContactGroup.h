@@ -3,9 +3,11 @@
 #ifndef incl_Communication_OpensimIM_ContactGroup_h
 #define incl_Communication_OpensimIM_ContactGroup_h
 
-#include <Foundation.h>
-#include "interface.h"
+//#include <Foundation.h>
+//#include "interface.h"
 #include "Contact.h"
+
+#include "CommunicationModuleFwd.h"
 
 namespace OpensimIM
 {

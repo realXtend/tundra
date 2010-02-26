@@ -6,6 +6,9 @@
 #include "ServiceInterface.h"
 #include "ResourceInterface.h"
 #include "LogListenerInterface.h"
+#include "CoreModuleApi.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
 
 namespace Scene
 {

@@ -3,6 +3,8 @@
 #ifndef RexLogic_BitStream_h
 #define RexLogic_BitStream_h
 
+#include "CoreTypes.h"
+
 namespace ProtocolUtilities
 {
     /// A stream reader utility for reading a byte array bit-by-bit.

@@ -3,9 +3,9 @@
 #ifndef incl_OgreRenderer_EC_OgreConsoleOverlay_h
 #define incl_OgreRenderer_EC_OgreConsoleOverlay_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
-
+#include "Declare_EC.h"
+#include "CoreThread.h"
 
 namespace Ogre
 {

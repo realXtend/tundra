@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "CoreDefines.h"
 #include "OgreMaterialProperties.h"
 #include "OgreMaterialResource.h"
 

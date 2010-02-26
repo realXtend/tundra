@@ -6,7 +6,12 @@
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
 #include "HttpAssetProvider.h"
-#include <NetworkEvents.h>
+#include "NetworkEvents.h"
+#include "Framework.h"
+#include "Profiler.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+#include "CoreException.h"
 
 namespace Asset
 {
@@ -133,7 +138,7 @@ namespace Asset
         }
         else if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
         {
-            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
                 SubscribeToNetworkEvents(event_data->currentProtocolModule);
             return false;

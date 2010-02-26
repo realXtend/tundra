@@ -14,6 +14,9 @@
 #include "UiModule.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
 
 #include "Inventory/InventoryEvents.h"
 

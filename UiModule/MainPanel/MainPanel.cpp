@@ -1,12 +1,20 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "CoreDefines.h"
 #include "MainPanel.h"
 #include "MainPanelButton.h"
+#include "ConfigurationManager.h"
+#include "Login/InworldLoginDialog.h"
+#include "UiProxyWidget.h"
+#include "Framework.h"
 
 #include <QUiLoader>
 #include <QFile>
 #include <QUrl>
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {

@@ -3,7 +3,7 @@
 /// @file TaigaLoginThread.cpp
 /// @brief XML-RPC login worker.
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "TaigaLoginThread.h"
 #include "ProtocolModuleTaiga.h"
 #include "XmlRpcEpi.h"
@@ -13,8 +13,11 @@
 #include "OpenSim/Grid.h"
 #include "OpenSim/BuddyListParser.h"
 #include "Inventory/InventoryParser.h"
+#include "Inventory/InventorySkeleton.h"
 #include "Md5.h"
 #include "Platform.h"
+#include "Framework.h"
+#include "ConfigurationManager.h"
 
 // Extenal lib includes
 #include <boost/shared_ptr.hpp>
@@ -193,7 +196,7 @@ namespace TaigaProtocol
             }
             catch (XmlRpcException &/*ex*/)
             {
-                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address propably not valid.");
+                threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address probably not valid.");
                 ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
             }
             return false;

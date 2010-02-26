@@ -3,7 +3,6 @@
 #ifndef incl_RexLogicModule_Sky_h
 #define incl_RexLogicModule_Sky_h
 
-#include "Foundation.h"
 #include "EC_OgreSky.h"
 #include "EnvironmentModuleApi.h"
 

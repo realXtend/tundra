@@ -3,9 +3,9 @@
 #ifndef incl_UiModule_MainPanel_h
 #define incl_UiModule_MainPanel_h
 
-#include "Foundation.h"
-#include "UiProxyWidget.h"
-#include "Login/InworldLoginDialog.h"
+//#include "Foundation.h"
+//#include "UiProxyWidget.h"
+//#include "Login/InworldLoginDialog.h"
 #include "SettingsWidget.h"
 
 #include <QWidget>
@@ -13,6 +13,24 @@
 #include <QHBoxLayout>
 #include <QString>
 #include <QObject>
+#include <QFrame>
+#include <QComboBox>
+
+namespace CoreUi
+{
+    class MainPanelButton;
+    class InworldLoginDialog;
+}
+
+namespace Foundation
+{
+    class Framework;
+}
+
+namespace UiServices
+{
+    class UiProxyWidget;
+}
 
 namespace CoreUi
 {
@@ -21,7 +39,7 @@ namespace CoreUi
         Q_OBJECT
 
     public:
-        MainPanel(Foundation::Framework *framework);
+        explicit MainPanel(Foundation::Framework *framework);
         virtual ~MainPanel();
 
         //! Adds a widget to the main panel.

@@ -4,7 +4,8 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Contact>
 #include <Foundation.h>
-#include "interface.h"
+//#include "interface.h"
+#include "ContactInterface.h"
 
 namespace TelepathyIM
 {
@@ -55,7 +56,7 @@ namespace TelepathyIM
         void PresenceSubscriptionCanceled(Contact* contact);
 
     };
-    typedef std::vector<Contact*> ContactVector;
+//    typedef std::vector<Contact*> ContactVector;
 
 } // end of namespace: TelepathyIM
 

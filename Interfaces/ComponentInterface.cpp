@@ -1,7 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include <boost/smart_ptr.hpp>
+
 #include "Framework.h"
 #include "ComponentInterface.h"
+#include "ServiceInterface.h"
+#include "ServiceManager.h"
 
 namespace Foundation
 {

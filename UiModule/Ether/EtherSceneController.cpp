@@ -1,12 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EtherSceneController.h"
+#include "Data/DataManager.h"
+#include "Data/AvatarInfo.h"
+
+#include "View/EtherScene.h"
+#include "View/InfoCard.h"
+#include "View/EtherMenu.h"
+#include "View/ActionProxyWidget.h"
+#include "View/ControlProxyWidget.h"
 
 #include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QImage>
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {
@@ -270,6 +281,9 @@ namespace Ether
             if (last_active_bottom_card_)
                 ActiveItemChanged(last_active_bottom_card_);
         }
+
+        void EtherSceneController::LeftPressed() { active_menu_->moveLeft(); }
+        void EtherSceneController::RightPressed() { active_menu_->moveRight(); }
 
         void EtherSceneController::ItemActivatedWithMouse(View::InfoCard *clicked_item)
         {

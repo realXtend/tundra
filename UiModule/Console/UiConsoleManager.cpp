@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
@@ -8,11 +9,16 @@
 #include "ConsoleEvents.h"
 #include "ConsoleManager.h"
 #include "ConsoleModule.h"
+#include "EventManager.h"
+
+#include "Framework.h"
 
 #include <QGraphicsView>
 #include <QString>
 #include <QRegExp>
 #include <QRectF>
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {

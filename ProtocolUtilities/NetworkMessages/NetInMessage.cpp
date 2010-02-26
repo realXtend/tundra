@@ -1,4 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+#include "StableHeaders.h"
+
 #include <iostream>
 
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
@@ -7,6 +9,7 @@
 #include "ZeroCode.h"
 
 #include "QuatUtils.h"
+#include "RexUUID.h"
 
 using namespace RexTypes;
 
@@ -677,6 +680,8 @@ void *NetInMessage::ReadBytesUnchecked(size_t count)
 
 void NetInMessage::SkipToPacketEnd()
 {
+    assert(messageInfo);
+
     currentBlock = messageInfo->blocks.size();
     currentBlockInstanceCount = 0;
     currentVariable = 0;
@@ -686,6 +691,8 @@ void NetInMessage::SkipToPacketEnd()
 
 void NetInMessage::RequireNextVariableType(NetVariableType type)
 {
+    assert(messageInfo);
+
     const NetMessageBlock &curBlock = messageInfo->blocks[currentBlock];
     
     // Current block is variable, but user hasn't called ReadCurrentBlockInstanceCount().

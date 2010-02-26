@@ -3,12 +3,14 @@
 #ifndef incl_RexLogic_EC_AvatarAppearance_h
 #define incl_RexLogic_EC_AvatarAppearance_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
 
 namespace RexLogic
 {

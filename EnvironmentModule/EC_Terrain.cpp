@@ -5,6 +5,8 @@
 
 #include <Ogre.h>
 #include "Renderer.h"
+#include "ModuleInterface.h"
+#include "ServiceManager.h"
 
 namespace Environment
 {

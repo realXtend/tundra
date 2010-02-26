@@ -3,9 +3,11 @@
 #ifndef incl_OgreRenderer_EC_OgreCustomObject_h
 #define incl_OgreRenderer_EC_OgreCustomObject_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "OgreModuleApi.h"
+#include "Declare_EC.h"
+
+#include "Vector3D.h"
 
 namespace Ogre
 {

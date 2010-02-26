@@ -3,6 +3,8 @@
 #ifndef incl_Core_Color_h
 #define incl_Core_Color_h
 
+#include "CoreTypes.h"
+
 //! A 4-component color value.
 class Color
 {

@@ -3,6 +3,12 @@
 #ifndef incl_Foundation_Profiler_h
 #define incl_Foundation_Profiler_h
 
+#ifdef _WINDOWS
+#include <Winsock2.h>
+#include <Windows.h>
+#endif
+
+#include "boost/thread.hpp"
 #if defined(_WINDOWS) && defined(PROFILING)
 //! Profiles a block of code in current scope. Ends the profiling when it goes out of scope
 /*! Name of the profiling block must be unique in the scope, so do not use the name of the function
@@ -293,10 +299,10 @@ namespace Foundation
         }
 
         //! Number of times this profile has been called during the execution of the program
-        ulong num_called_total_;
+        unsigned long num_called_total_;
 
         //! Number of times this profile was called during last frame
-        ulong num_called_;
+        unsigned long num_called_;
 
         //! Total time spend in this profile during the execution of the program
         double total_;
@@ -313,13 +319,13 @@ namespace Foundation
         // Profiling data is also accumulated here, and can be resetted on a custom interval.
         // Mutable since the application can alter these at will, but the above "official"
         // values may not be touched.
-        mutable ulong num_called_custom_;
+        mutable unsigned long num_called_custom_;
         mutable double total_custom_;
         mutable double custom_elapsed_min_;
         mutable double custom_elapsed_max_;
 
     private:
-        ulong num_called_current_;
+        unsigned long num_called_current_;
         double elapsed_current_;
         double elapsed_min_current_;
         double elapsed_max_current_;
@@ -439,7 +445,7 @@ namespace Foundation
         //! container for all the root profile nodes for each thread.
         std::list<ProfilerNodeTree*> thread_root_nodes_;
 
-        Mutex mutex_;
+        boost::mutex mutex_;
     };
 
     //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope
