@@ -15,7 +15,20 @@ namespace Foundation
     typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
-    
+ 
+    //! Asset transfer info
+    struct AssetTransferInfo
+    {
+        std::string id_;
+        std::string type_;
+        std::string provider_;
+        uint size_;
+        uint received_;
+        uint received_continuous_;
+    };
+   
+    typedef std::vector<AssetTransferInfo> AssetTransferInfoVector;
+        
     /*! Asset provider. Can be registered to the AssetService to add possibility of downloading assets by different
         means (legacy UDP, http etc.)
         
@@ -80,6 +93,9 @@ namespace Foundation
             \return Pointer to asset
          */
         virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;   
+
+        //! Returns information about current asset transfers
+        virtual AssetTransferInfoVector GetTransferInfo() = 0;
 
         //! Sets current protocolmodule
         virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule) {};

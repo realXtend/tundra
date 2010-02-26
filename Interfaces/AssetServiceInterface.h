@@ -4,6 +4,7 @@
 #define incl_Interfaces_AssetServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "AssetProviderInterface.h"
 
 namespace Foundation
 {
@@ -13,6 +14,21 @@ namespace Foundation
     class AssetProviderInterface;
     typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
     
+    //! Asset cache info per assettype
+    struct AssetCacheInfo
+    {
+        uint count_;
+        uint size_;
+        
+        AssetCacheInfo() :
+            count_(0),
+            size_(0)
+        {
+        }
+    };
+    
+    typedef std::map<std::string, AssetCacheInfo> AssetCacheInfoMap;
+            
     /*! An asset container service implements this interface to provide client modules
         with asset request and retrieval functionality.
         See \ref AssetModule "Using the asset module" for details on how to use the asset service.
@@ -72,6 +88,12 @@ namespace Foundation
          */
         virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous) = 0;
 
+        //! Gets information about current status of asset memory cache
+        virtual AssetCacheInfoMap GetAssetCacheInfo() = 0;
+
+        //! Gets information about current asset transfers
+        virtual AssetTransferInfoVector GetAssetTransferInfo() = 0;
+                
         //! Registers an asset provider
         /*! \param asset_provider Provider to register
             \return true if successfully registered

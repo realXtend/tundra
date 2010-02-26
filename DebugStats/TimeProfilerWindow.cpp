@@ -5,6 +5,7 @@
 #include "Profiler.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "DebugStats.h"
+#include "AssetServiceInterface.h"
 
 #include <utility>
 
@@ -108,6 +109,15 @@ TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
     assert(push_button_expand_all_);
     assert(push_button_show_unused_);
 
+    tree_asset_cache_ = findChild<QTreeWidget*>("treeAssetCache");
+    tree_asset_transfers_ = findChild<QTreeWidget*>("treeAssetTransfers");
+    assert(tree_asset_cache_);
+    assert(tree_asset_transfers_);
+    tree_asset_cache_->header()->resizeSection(1, 60);
+    tree_asset_transfers_->header()->resizeSection(0, 240);
+    tree_asset_transfers_->header()->resizeSection(1, 90);
+    tree_asset_transfers_->header()->resizeSection(2, 90);
+    
    QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
    QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
@@ -173,6 +183,10 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         break;
     case 3:
         RefreshNetworkProfilingData();
+        break;
+    case 5:
+        RefreshAssetProfilingData();
+        break;
     }
 }
 
@@ -827,6 +841,51 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     }
     int pidStat = simStats->ReadS32();
     label_pid_stat_->setText(QString("%1").arg(pidStat));
+}
+
+void TimeProfilerWindow::RefreshAssetProfilingData()
+{
+    if (!tab_widget_ || tab_widget_->currentIndex() != 5)
+        return;
+        
+    tree_asset_cache_->clear();
+    tree_asset_transfers_->clear();
+        
+    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+        framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+    if (!asset_service)
+        return;
+        
+    Foundation::AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
+    Foundation::AssetCacheInfoMap::const_iterator i = cache_map.begin();
+    while (i != cache_map.end())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
+        tree_asset_cache_->addTopLevelItem(item);
+        
+        item->setText(0, QString(i->first.c_str()));
+        item->setText(1, QString(QString("%1").arg(i->second.count_)));
+        item->setText(2, QString(FormatBytes((int)i->second.size_).c_str()));
+        
+        ++i;
+    }
+    
+    Foundation::AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
+    Foundation::AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
+    while (j != transfer_vector.end())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
+        tree_asset_transfers_->addTopLevelItem(item);
+        
+        item->setText(0, QString((*j).id_.c_str()));
+        item->setText(1, QString((*j).type_.c_str()));
+        item->setText(2, QString((*j).provider_.c_str()));
+        item->setText(3, QString(FormatBytes((int)(*j).size_).c_str()));
+        item->setText(4, QString(FormatBytes((int)(*j).received_).c_str()));
+        ++j;
+    }
+        
+    QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
 
 void TimeProfilerWindow::Closed()

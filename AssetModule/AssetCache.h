@@ -11,6 +11,8 @@ namespace Asset
     class AssetCache
     {
     public:
+        typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
+            
         //! Constructor
         /*! \param framework Framework
          */ 
@@ -32,6 +34,9 @@ namespace Asset
          */
         void StoreAsset(Foundation::AssetPtr asset);
 
+        //! Returns all assets
+        const AssetMap& GetAssets() const { return assets_; }
+        
         //! Update. Adds age to assets, removes oldest if cache size too big
         void Update(f64 frametime);
 
@@ -44,7 +49,6 @@ namespace Asset
         std::string GetHash(const std::string &asset_id);
 
         //! Asset memory cache
-        typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
         AssetMap assets_;
 
         //! Current disk asset cache path

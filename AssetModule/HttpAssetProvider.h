@@ -64,6 +64,9 @@ namespace Asset
          */
         virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
         
+        //! Returns information about current asset transfers
+        virtual Foundation::AssetTransferInfoVector GetTransferInfo() { return Foundation::AssetTransferInfoVector(); }
+                
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
          */
