@@ -36,6 +36,7 @@ namespace RexLogic
         bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEventInboundData *data);
+		bool HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEventInboundData *data);
 
         //! Handler functions for GenericMessages
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
