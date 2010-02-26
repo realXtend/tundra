@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "VideoSessionWidget.h"
 #include "UiDefines.h"
 #include "VideoPlaybackWidgetInterface.h"
@@ -11,6 +12,8 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+
+#include "MemoryLeakCheck.h"
 
 namespace CommunicationUI
 {

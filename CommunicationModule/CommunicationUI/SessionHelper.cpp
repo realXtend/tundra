@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "SessionHelper.h"
 #include "FriendListWidget.h"
 #include "ChatSessionWidget.h"
@@ -14,6 +15,8 @@
 #include <QDebug>
 #include <QPair>
 #include <QPixmap>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiHelpers
 {

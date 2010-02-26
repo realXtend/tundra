@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "DataManager.h"
 
 #include "RealXtendAvatar.h"
@@ -11,6 +12,8 @@
 #include <QStringList>
 
 #include <QFile>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

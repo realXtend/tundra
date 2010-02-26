@@ -21,6 +21,8 @@
 #include <QTimer>
 #include <QGraphicsScene>
 
+#include "MemoryLeakCheck.h"
+
 namespace CoreUi
 {
     LoginContainer::LoginContainer(Foundation::Framework *framework, RexLogic::OpenSimLoginHandler *os_login_handler, RexLogic::TaigaLoginHandler *taiga_login_handler) 

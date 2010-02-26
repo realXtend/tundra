@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiModule.h"
 #include "UiSceneManager.h"
 #include "UiProxyWidget.h"
@@ -16,6 +17,8 @@
 #include <QGraphicsWidget>
 #include <QGraphicsView>
 #include <QGraphicsScene>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiServices
 {

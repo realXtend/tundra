@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "FriendListWidget.h"
 #include "FriendHelper.h"
 #include "SessionHelper.h"

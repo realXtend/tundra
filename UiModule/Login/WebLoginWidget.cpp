@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "WebLoginWidget.h"
 #include "LoginContainer.h"
 #include "../RexLogicModule/EventHandlers/LoginHandler.h"
@@ -8,6 +9,8 @@
 #include <QFile>
 #include <QLineEdit>
 #include <QWebFrame>
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {

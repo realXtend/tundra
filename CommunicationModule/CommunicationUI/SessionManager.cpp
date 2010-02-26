@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "SessionManager.h"
 
 #include <UiModule.h>
@@ -17,6 +18,8 @@
 
 #include <QDebug>
 #include <QMessageBox>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiManagers
 {

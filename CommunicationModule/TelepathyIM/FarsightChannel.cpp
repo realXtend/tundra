@@ -1,10 +1,13 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include "CoreException.h"
 #include "FarsightChannel.h"
 #include "CoreDefines.h"
 #include <TelepathyQt4/Farsight/Channel>
 #include <QFile>
+
+#include "MemoryLeakCheck.h"
 
 namespace TelepathyIM
 {

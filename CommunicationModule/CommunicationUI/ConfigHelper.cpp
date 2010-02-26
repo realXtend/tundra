@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ConfigHelper.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
 
 #include "ui_LoginWidget.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace UiHelpers
 {

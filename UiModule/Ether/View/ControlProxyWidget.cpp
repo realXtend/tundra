@@ -14,6 +14,8 @@
 
 #include <QDebug>
 
+#include "MemoryLeakCheck.h"
+
 namespace Ether
 {
     namespace View

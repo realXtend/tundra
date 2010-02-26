@@ -9,6 +9,8 @@
 #include <QUiLoader>
 #include <QFile>
 
+#include "MemoryLeakCheck.h"
+
 namespace CoreUi
 {
 

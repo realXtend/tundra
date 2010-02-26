@@ -1,12 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ChatSessionWidget.h"
 #include "UiDefines.h"
 #include "ChatSessionInterface.h"
 #include "ChatSessionParticipantInterface.h"
 #include "ContactInterface.h"
 #include "ChatMessageInterface.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CommunicationUI
 {

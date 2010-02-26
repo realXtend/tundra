@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "MainPanelButton.h"
 #include "UiProxyWidget.h"
 
 #include <QWidget>
 #include <QString>
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {

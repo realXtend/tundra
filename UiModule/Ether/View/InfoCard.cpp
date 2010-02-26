@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InfoCard.h"
 
 #include <QRadialGradient>
@@ -9,6 +10,8 @@
 #include <QFile>
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

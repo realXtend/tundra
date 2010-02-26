@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "CommunicationModule.h"
 #include "CommunicationService.h"
 #include "CommunicationUI/MasterWidget.h"
@@ -17,6 +18,8 @@
 #include <RexLogicModule.h>
 #include <UiModule.h>
 #include <UiProxyWidget.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace Communication
 {

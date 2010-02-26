@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include <StableHeaders.h>
+#include "DebugOperatorNew.h"
 #include <RexLogicModule.h> // chat
 #include <RealXtend/RexProtocolMsgIDs.h>
 
@@ -13,6 +14,8 @@
 #include "ServiceManager.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "Framework.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace OpensimIM
 {

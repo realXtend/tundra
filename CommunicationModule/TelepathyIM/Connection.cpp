@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/StreamedMediaChannel>
@@ -13,6 +14,8 @@
 #include "CredentialsInterface.h"
 #include "CoreDefines.h"
 #include "CoreException.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace TelepathyIM
 {

@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include <RexLogicModule.h>
 #include "ChatSessionParticipant.h"
 #include "Contact.h"
-                           
+
+#include "MemoryLeakCheck.h"
+
 namespace OpensimIM
 {
     ChatSessionParticipant::ChatSessionParticipant(const QString &uuid, const QString &name): uuid_(uuid), name_(name)

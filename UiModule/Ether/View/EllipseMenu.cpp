@@ -1,7 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EllipseMenu.h"
+
+#include "MemoryLeakCheck.h"
 
 #include <math.h>
 #define M_PI_2     1.57079632679489661923 // In naali this didnt get defined from math.h
