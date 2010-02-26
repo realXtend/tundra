@@ -3,8 +3,6 @@
 #ifndef incl_UiModule_EtherLogic_h
 #define incl_UiModule_EtherLogic_h
 
-#include "Foundation.h"
-
 #include <QObject>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -12,20 +10,20 @@
 #include <QUuid>
 #include <QPair>
 
+#include "UiModuleFwd.h"
+
+namespace Foundation
+{
+    class Framework;
+}
+
+namespace RexLogic
+{
+    class OpenSimLoginHandler;
+}
+
 namespace Ether
 {
-    namespace Data
-    {
-        class DataManager;
-        class AvatarInfo;
-        class WorldInfo;
-    }
-
-    namespace View
-    {
-        class InfoCard;
-        class EtherScene;
-    }
 
     namespace Logic
     {
@@ -52,7 +50,7 @@ namespace Ether
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }
 
-            QObject *EtherLogic::GetLoginNotifier();
+            QObject *GetLoginNotifier();
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
 

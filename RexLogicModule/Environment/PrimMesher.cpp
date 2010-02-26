@@ -39,7 +39,10 @@
  */
 
 #include "StableHeaders.h"
+
 #include "Environment/PrimMesher.h"
+#include "CoreMath.h"
+#include "CoreException.h"
 
 namespace PrimMesher
 {

@@ -9,8 +9,15 @@
 #include <TelepathyQt4/PendingChannel>
 #include "VoiceSession.h"
 #include <CommunicationService.h>
+#include "ServiceManager.h"
+#include "VoiceSessionParticipant.h"
+#include "SoundServiceInterface.h"
+#include "Contact.h"
+#include "CoreException.h"
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace TelepathyIM
 {

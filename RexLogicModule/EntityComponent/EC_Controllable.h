@@ -3,11 +3,12 @@
 #ifndef incl_RexLogic_EC_Controllable_h
 #define incl_RexLogic_EC_Controllable_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
+#include "ModuleInterface.h"
 
 namespace RexLogic
 {

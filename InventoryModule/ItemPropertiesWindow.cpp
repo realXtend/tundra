@@ -10,6 +10,9 @@
 #include "ItemPropertiesWindow.h"
 #include "InventoryModule.h"
 #include "InventoryAsset.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "Framework.h"
 
 #include <AssetEvents.h>
 

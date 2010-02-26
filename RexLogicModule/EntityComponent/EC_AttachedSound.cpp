@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "SoundServiceInterface.h"
+#include "ModuleInterface.h"
+#include "ServiceManager.h"
 #include "EC_AttachedSound.h"
 
 namespace RexLogic

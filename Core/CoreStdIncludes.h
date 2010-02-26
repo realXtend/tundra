@@ -37,8 +37,10 @@
 #include <queue>
 #include <fstream>
 #include <math.h>
+#include <limits>
 
 #include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
@@ -47,6 +49,7 @@
 #include <boost/optional.hpp>
 #include <boost/timer.hpp>
 #include <boost/program_options.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>
@@ -54,6 +57,7 @@
 #include <Poco/ClassLoader.h>
 #include <Poco/Util/XMLConfiguration.h>
 #include <Poco/XML/XMLWriter.h>
+#include <Poco/Logger.h>
 
 #include <Poco/Channel.h>
 #include <Poco/Formatter.h>

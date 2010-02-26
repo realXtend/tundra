@@ -3,10 +3,9 @@
 #ifndef incl_EC_FreeData_h
 #define incl_EC_FreeData_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
-#include "Foundation.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
 
 #include <QDomDocument>
 

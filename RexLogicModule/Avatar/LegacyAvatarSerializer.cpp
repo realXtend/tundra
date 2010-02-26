@@ -10,6 +10,7 @@
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
 #include "OgreSkeletonResource.h"
+#include "RexNetworkUtils.h"
 
 #include "HttpUtilities.h"
 
@@ -18,6 +19,8 @@
 #include <QFile>
 
 #include <Ogre.h>
+
+using namespace RexTypes;
 
 namespace RexLogic
 {

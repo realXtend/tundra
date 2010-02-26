@@ -18,7 +18,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
-use_modules (Core Foundation Interfaces SceneManager RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim OgreRenderingModule)
+use_modules (Core Interfaces Foundation SceneManager)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 

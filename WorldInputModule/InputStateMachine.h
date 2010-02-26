@@ -41,6 +41,12 @@ extern "C"
 #define AutoRepeatModeOn	1
 #endif
 
+namespace Foundation
+{
+    class EventManager;
+    class Framework;
+}
+
 namespace Input
 {
     struct KeyInfo;
@@ -399,7 +405,7 @@ namespace Input
     class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
         public:
-            WorldInputLogic (Foundation::Framework *fw);
+            explicit WorldInputLogic (Foundation::Framework *fw);
 
             void Update (f64 frametime);
 

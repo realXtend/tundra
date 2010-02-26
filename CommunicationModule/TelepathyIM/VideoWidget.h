@@ -7,7 +7,9 @@
 #include <gst/gst.h>
 #include <gst/farsight/fs-element-added-notifier.h>
 
-#include "../interface.h"
+#include "VideoPlaybackWidgetInterface.h"
+#include "AudioDataProducerInterface.h"
+//#include "../interface.h"
 
 namespace TelepathyIM
 {

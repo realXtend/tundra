@@ -13,6 +13,9 @@
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
 #include "math.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "UiSceneManager.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
@@ -26,6 +29,9 @@
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>
+#include <OgreSceneManager.h>
+#include <OgreMesh.h>
+#include <OgreEntity.h>
 #include "OgreMaterialUtils.h"
 
 #include <QUiLoader>

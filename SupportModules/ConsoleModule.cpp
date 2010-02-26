@@ -7,6 +7,10 @@
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "ConsoleEvents.h"
+#include "Framework.h"
+#include "Profiler.h"
+#include "ServiceManager.h"
+#include "EventManager.h"
 
 namespace Console
 {

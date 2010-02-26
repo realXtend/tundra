@@ -10,8 +10,6 @@
 
 namespace ProtocolUtilities
 {
-    using namespace RexTypes;
-
     class InventoryAssetSkeleton
     {
     public:

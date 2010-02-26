@@ -2,6 +2,9 @@
 
 #include "StableHeaders.h"
 #include "Profiler.h"
+#include "CoreDefines.h"
+#include "CoreMath.h"
+#include "CoreStringUtils.h"
 
 namespace Foundation
 {

@@ -5,6 +5,9 @@
 #include "AssetModule.h"
 #include "AssetEvents.h"
 #include "AssetCache.h"
+#include "Framework.h"
+#include "Platform.h"
+#include "ConfigurationManager.h"
 
 #include <QCryptographicHash>
 #include <QString>

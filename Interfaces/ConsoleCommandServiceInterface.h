@@ -4,25 +4,13 @@
 #define incl_Interfaces_ConsoleCommandServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "CoreStringUtils.h"
+#include "ConsoleCommand.h"
 
 #include <boost/optional.hpp>
 
 namespace Console
 {
-    //! A result from executing a console command.
-    /*! A callback function for console command should return an instance.
-        
-        \ingroup DebugConsole_group
-    */
-    struct CommandResult
-    {
-        //! Set to true if command was completed succesfully, false otherwise
-        bool success_;
-        //! Print out reason for failure (or success).
-        std::string why_;
-        //! True for delayed execution. For internal use, this doesn't need to be set normally
-        bool delayed_;
-    };
     //! Returns a succesful CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false}; return result; }
     //! Returns a failure CommandResult. \ingroup DebugConsole_group
@@ -31,18 +19,6 @@ namespace Console
     __inline static CommandResult ResultInvalidParameters() { CommandResult result = { false, "Invalid parameters.", false}; return result; }
     //! Returns a delayed CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
-
-    //! Interface for console command callback
-    class CallbackInterface
-    {
-    public:
-        CallbackInterface() {}
-        virtual ~CallbackInterface() {}
-
-        //! Calls the function
-        virtual CommandResult operator()(const StringVector &params) = 0;
-    };
-    typedef boost::shared_ptr<CallbackInterface> CallbackPtr;
 
     //! typedef for static callback
     typedef CommandResult (*StaticCallback)(const StringVector&);
@@ -123,22 +99,6 @@ namespace Console
     private:
         //! pointer to function
         StaticCallback function_;
-    };
-
-    //! A console command
-    /*!
-        \ingroup DebugConsole_group
-    */
-    struct Command
-    {
-        //! internal name for the command, case insensitive
-        std::string name_;
-        //! short description of the command
-        std::string description_;
-        //! callback for the command
-        CallbackPtr callback_;
-        //! is the handling of the command immediate, or delayed
-        bool delayed_;
     };
 
     //! Creates a console command with member function callback

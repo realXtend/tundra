@@ -5,6 +5,8 @@
 #include "WorldInputModule.h"
 #include "InputEvents.h"
 #include "InputStateMachine.h"
+#include "Framework.h"
+#include "EventManager.h"
 
 namespace Input
 {

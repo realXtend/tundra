@@ -3,9 +3,12 @@
 #ifndef incl_Communication_OpensimIM_ChatSessionParticipant_h
 #define incl_Communication_OpensimIM_ChatSessionParticipant_h
 
-#include <Foundation.h>
-#include "interface.h"
-#include "Contact.h"
+//#include <Foundation.h>
+//#include "interface.h"
+//#include "Contact.h"
+
+#include "CommunicationModuleFwd.h"
+#include "ChatSessionParticipantInterface.h"
 
 namespace OpensimIM
 {

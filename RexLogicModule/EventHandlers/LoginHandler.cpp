@@ -12,6 +12,8 @@
 #include <TaigaWorldSession.h>
 #include <Interfaces/LoginCredentialsInterface.h>
 #include <Login/LoginCredentials.h>
+#include "Framework.h"
+#include "ConfigurationManager.h"
 
 #include <QStringList>
 #include <QWebFrame>

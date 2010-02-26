@@ -10,6 +10,11 @@
 #include "TextureService.h"
 #include "RexTypes.h"
 #include "AssetServiceInterface.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+#include "ThreadTaskManager.h"
+#include "ConfigurationManager.h"
 
 namespace TextureDecoder
 {

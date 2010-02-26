@@ -5,6 +5,7 @@
 #include <boost/tokenizer.hpp>
 #include "CommandManager.h"
 #include "ConsoleModule.h"
+#include "Framework.h"
 
 bool nocase_compare(const std::string &lhs, const std::string &rhs)
 {

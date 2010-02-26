@@ -3,12 +3,15 @@
 
 #include <QProcess>
 #include <QStringList>
-#include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/PendingOperation>
-#include <Foundation.h>
-#include "interface.h"
-#include "Connection.h"
+//#include <TelepathyQt4/ConnectionInterface>
+//#include <TelepathyQt4/ConnectionManager>
+//#include <TelepathyQt4/PendingOperation>
+//#include <Foundation.h>
+//#include "interface.h"
 #include "GMainLoopThread.h"
+#include "ModuleLoggingFunctions.h"
+#include "Connection.h"
+#include "ConnectionProviderInterface.h"
 
 namespace TelepathyIM
 {

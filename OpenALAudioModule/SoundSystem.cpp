@@ -8,6 +8,10 @@
 #include "RexTypes.h"
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
+#include "Framework.h"
+#include "ConfigurationManager.h"
+#include "ThreadTaskManager.h"
+#include "ServiceManager.h"
 
 #include <boost/thread/mutex.hpp>
 

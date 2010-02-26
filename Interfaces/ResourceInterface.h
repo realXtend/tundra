@@ -3,8 +3,10 @@
 #ifndef incl_Interfaces_ResourceInterface_h
 #define incl_Interfaces_ResourceInterface_h
 
+#include <map>
 #include "CoreTypes.h"
 #include "EventDataInterface.h"
+#include "CoreModuleApi.h"
 
 namespace Foundation
 {

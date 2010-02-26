@@ -5,9 +5,12 @@
 #ifndef incl_RexLogicModule_Environment_h
 #define incl_RexLogicModule_Environment_h
 
-#include <Foundation.h>
-#include <RexTypes.h>
+#include <boost/smart_ptr.hpp>
+
+#include "RexTypes.h"
 #include "EnvironmentModuleApi.h"
+#include "ForwardDefines.h"
+
 #include <QVector>
 #include <QObject>
 #include <iostream>

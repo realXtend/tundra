@@ -8,14 +8,17 @@
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
-#include <Foundation.h>
-#include "interface.h"
-#include "Contact.h"
+//#include <Foundation.h>
+//#include "interface.h"
+//#include "Contact.h"
 #include "ContactGroup.h"
-#include "ChatSession.h"
-#include "FriendRequest.h"
-#include "OutgoingFriendRequest.h"
-#include "VoiceSession.h"
+//#include "ChatSession.h"
+//#include "FriendRequest.h"
+//#include "OutgoingFriendRequest.h"
+//#include "VoiceSession.h"
+#include "ModuleLoggingFunctions.h"
+#include "CommunicationModuleFwd.h"
+#include "ConnectionInterface.h"
 
 namespace TelepathyIM
 {

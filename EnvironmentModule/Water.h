@@ -7,7 +7,7 @@
 #define incl_Water_h
 
 #include "EnvironmentModuleApi.h"
-#include <Foundation.h>
+#include "ForwardDefines.h"
 
 #include <QObject>
 

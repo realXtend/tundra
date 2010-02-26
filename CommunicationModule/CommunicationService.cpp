@@ -5,6 +5,13 @@
 #include "CommunicationService.h"
 #include <QList>
 #include "NetworkEvents.h"
+#include "EventManager.h"
+#include "ConnectionProviderInterface.h"
+#include "CredentialsInterface.h"
+#include "ConnectionInterface.h"
+#include "FriendRequestInterface.h"
+#include "Framework.h"
+#include "CoreException.h"
 
 namespace Communication
 {

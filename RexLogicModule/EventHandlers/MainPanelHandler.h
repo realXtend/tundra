@@ -3,7 +3,6 @@
 #ifndef incl_RexLogic_MainPanelHandler_h
 #define incl_RexLogic_MainPanelHandler_h
 
-#include "Foundation.h"
 #include "RexLogicModule.h"
 
 #include <QObject>

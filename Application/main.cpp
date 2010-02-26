@@ -7,6 +7,7 @@
 #include "MemoryLeakCheck.h"
 
 #include "Foundation.h"
+#include "ModuleManager.h"
 
 #include "TestModuleB.h"
 
@@ -57,8 +58,8 @@ int main (int argc, char **argv)
        _CrtSetReportFile(_CRT_WARN, hLogFile);
        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
        _CrtSetReportFile(_CRT_ERROR, hLogFile);
-       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+//       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+//       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
     }
 #endif
 

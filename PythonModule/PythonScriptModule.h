@@ -15,11 +15,11 @@
     #include <Python.h>
 #endif
 
-//#include "StableHeaders.h"
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
@@ -38,12 +38,6 @@ namespace RexLogic
 
 namespace PythonScript
 {
-     //hack to have a ref to framework so can get the module in api funcs
-    static Foundation::Framework *staticframework;
-
-    // Category id for scene events - outside the module class 'cause entity_setattro wants this too
-    static event_category_id_t scene_event_category_ ;
-
     class PythonEngine;
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
@@ -91,9 +85,21 @@ namespace PythonScript
         event_category_id_t inputeventcategoryid;
         event_category_id_t networkstate_category_id;
         event_category_id_t framework_category_id;
-        
+        event_category_id_t scene_event_category_ ;
+
+        /// Returns the currently initialized PythonScriptModule.
+        static PythonScriptModule *GetInstance();
+
+        Scene::ScenePtr GetScene() { return framework_->GetScene("World"); }
+
+        PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);
+
+        PyTypeObject *GetRexPyTypeObject();
+
     private:
-        
+
+//        void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
+
         PythonEnginePtr engine_;
         bool pythonqt_inited;
 
@@ -124,33 +130,9 @@ namespace PythonScript
 
         // EventManager to member variable to be accessed from SubscribeNetworkEvents()
         Foundation::EventManagerPtr em_;
-
     };
 
-    static PyObject* initpymod();
-    //static Scene::ScenePtr GetScene();
-
-    //a helper and to avoid copy-paste when doing the get in Entity.getattro
-    static Scene::ScenePtr GetScene() 
-    {
-        //PythonScript::PythonScriptModule::LogDebug("Getting scene..");
-
-        //in this way, the staticframework pointer gotten is 0 also in GetEntity
-        //Foundation::Framework *framework_ = PythonScript::PythonScriptModule::GetStaticFramework(); 
-
-        //this works when GetEntity calls this, but not anymore when entity_getattro does.
-        Foundation::Framework *framework_ = PythonScript::staticframework;
-
-        Scene::ScenePtr scene = framework_->GetScene("World"); //XXX hardcoded scene name, like in debugstats now
-        //Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); //this seems to have appeared, change to this XXX
-        return scene;
-    }
-
-    static PythonScriptModule* pythonscriptmodule_;
-    static PythonScriptModule* self() { return pythonscriptmodule_; }
-
-    //the impl for this func - not py specific, should be in rexlogic or qtmodule or somewhere.
-    //void _ApplyUICanvasToSubmeshesWithTexture(QtUI::UICanvas* canvas, RexUUID textureuuid);
+    static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }
 }
 
 #endif

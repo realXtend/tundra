@@ -9,6 +9,8 @@
 #include "CoreTypes.h"
 #include "OgreTextureResource.h"
 #include "NetworkEvents.h"
+#include "ServiceManager.h"
+#include "NetworkMessages/NetInMessage.h"
 
 namespace Environment
 {

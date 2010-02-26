@@ -3,19 +3,21 @@
 #ifndef incl_Communication_SessionHelper_h
 #define incl_Communication_SessionHelper_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 #include "ui_SessionManagerWidget.h"
 
 #include "ChatSessionWidget.h"
 #include "VideoSessionWidget.h"
 
-#include "EventHandler.h"
+//#include "EventHandler.h"
 
 #include <QObject>
 #include <QMap>
 #include <QPair>
 
-#include "interface.h"
+//#include "interface.h"
+
+#include "CommunicationModuleFwd.h"
 
 namespace CommunicationUI
 {

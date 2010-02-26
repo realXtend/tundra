@@ -7,6 +7,12 @@
 #include "Connection.h"
 #include "ConnectionProvider.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
+#include "OpenSim/BuddyList.h"
+#include "ServiceManager.h"
+#include "NetworkMessages/NetInMessage.h"
+#include "Framework.h"
 
 namespace OpensimIM
 {

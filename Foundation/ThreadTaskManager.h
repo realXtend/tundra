@@ -22,7 +22,7 @@ namespace Foundation
         //! Constructor
         /*! \param framework Framework, needed for sending events
          */
-        ThreadTaskManager(Framework* framework);
+        explicit ThreadTaskManager(Framework* framework);
         
         //! Destructor
         ~ThreadTaskManager();

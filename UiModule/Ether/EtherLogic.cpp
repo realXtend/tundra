@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EtherLogic.h"
 
 #include "EtherSceneController.h"
@@ -15,12 +16,16 @@
 
 #include "View/InfoCard.h"
 #include "View/VerticalMenu.h"
+#include "View/EtherScene.h"
 
+#include "CoreDefines.h"
 #include <QStringList>
 #include <QTimer>
 #include <QDir>
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

@@ -3,9 +3,12 @@
 #ifndef incl_AssetModule_h
 #define incl_AssetModule_h
 
-#include "AssetModuleApi.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
+
+#include "ConsoleCommandServiceInterface.h"
 #include "AssetProviderInterface.h"
+#include "AssetModuleApi.h"
 
 namespace Foundation
 {

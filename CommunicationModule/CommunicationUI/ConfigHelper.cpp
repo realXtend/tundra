@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "ConfigHelper.h"
+#include "ConfigurationManager.h"
+#include "Framework.h"
 
 #include "ui_LoginWidget.h"
 

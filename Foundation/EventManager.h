@@ -5,8 +5,9 @@
 
 #include "ModuleReference.h"
 #include "EventDataInterface.h"
+#include "CoreThread.h"
 
-#include <Qt>
+#include <qnamespace.h>
 
 class QDomElement;
 

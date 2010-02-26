@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ConfigurationManager.h"
+#include "CoreException.h"
 
 
 namespace Foundation

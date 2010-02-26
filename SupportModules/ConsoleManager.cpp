@@ -3,6 +3,10 @@
 #include "StableHeaders.h"
 #include "ConsoleManager.h"
 #include "ConsoleEvents.h"
+#include "ModuleInterface.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
 
 #include <RenderServiceInterface.h>
 

@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreLocalResourceUtils.h"
 #include "OgreRenderingModule.h"
+#include <Ogre.h>
 
 namespace OgreRenderer
 {

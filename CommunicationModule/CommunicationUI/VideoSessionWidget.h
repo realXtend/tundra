@@ -5,7 +5,10 @@
 
 #include "ui_VideoSessionWidget.h"
 #include "ui_VideoSessionControlsWidget.h"
-#include "interface.h"
+#include "VoiceSessionInterface.h"
+//#include "interface.h"
+
+#include "CommunicationModuleFwd.h"
 
 namespace CommunicationUI
 {

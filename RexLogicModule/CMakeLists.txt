@@ -51,7 +51,7 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (XMLRPC)
 
-use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
+use_modules (RexLogicModule Core Foundation RexLogicModule Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})

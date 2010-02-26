@@ -3,6 +3,11 @@
 #ifndef incl_Foundation_EC_Define_h
 #define incl_Foundation_EC_Define_h
 
+#include "ComponentInterface.h"
+#include "ComponentManager.h"
+#include "ForwardDefines.h"
+#include "Framework.h"
+
 namespace Foundation
 {
     class ModuleInterface;

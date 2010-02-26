@@ -16,6 +16,8 @@
 #ifndef incl_Core_Math_h
 #define incl_Core_Math_h
 
+#include "CoreTypes.h"
+#include <cmath>
 
 #if defined(_IRR_SOLARIS_PLATFORM_) || defined(__BORLANDC__) || defined (__BCPLUSPLUS__) || defined (_WIN32_WCE)
 #define sqrtf(X) (f32)sqrt((f64)(X))

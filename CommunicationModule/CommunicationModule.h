@@ -3,7 +3,8 @@
 #ifndef incl_Comm_CommunicationModule_h
 #define incl_Comm_CommunicationModule_h
 
-#include <ModuleInterface.h>
+#include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 
 #include "CommunicationModuleApi.h"
 

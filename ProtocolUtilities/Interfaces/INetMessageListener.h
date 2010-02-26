@@ -4,6 +4,7 @@
 #define incl_ProtocolUtilities_INetMessageListener_h
 
 #include "CoreDefines.h"
+#include "CoreModuleApi.h"
 
 namespace ProtocolUtilities
 {

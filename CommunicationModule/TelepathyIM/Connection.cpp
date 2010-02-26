@@ -5,6 +5,14 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include "Connection.h"
+#include "ChatSession.h"
+#include "FriendRequest.h"
+#include "OutgoingFriendRequest.h"
+#include "VoiceSession.h"
+#include "Contact.h"
+#include "CredentialsInterface.h"
+#include "CoreDefines.h"
+#include "CoreException.h"
 
 namespace TelepathyIM
 {

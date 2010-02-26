@@ -3,18 +3,21 @@
 #ifndef incl_Communication_TelepathyIM_GMainLoopThread_h
 #define incl_Communication_TelepathyIM_GMainLoopThread_h
 
-#include <Foundation.h>
-#include <glib-object.h>
-#include <gst/gst.h>
-#include <glib.h>
+//#include <Foundation.h>
+//#include <glib-object.h>
+//#include <gst/gst.h>
+//#include <glib.h>
+#include <glib/gmain.h>
 
 #include <QThread>
 //#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/PendingReady>
+//#include <TelepathyQt4/Connection>
+//#include <TelepathyQt4/StreamedMediaChannel>
+//#include <TelepathyQt4/PendingReady>
 
-              
+#include "ModuleLoggingFunctions.h"
+
+
 namespace TelepathyIM
 {
     /**

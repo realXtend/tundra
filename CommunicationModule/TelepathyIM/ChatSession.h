@@ -3,6 +3,7 @@
 #ifndef incl_Communication_TelepathyIM_ChatSession_h
 #define incl_Communication_TelepathyIM_ChatSession_h
 
+#include <string>
 #include <QStringList>
 #include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Connection>
@@ -10,11 +11,14 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/ReceivedMessage>
-#include <Foundation.h>
-#include "interface.h"
-#include "ContactGroup.h"
-#include "ChatMessage.h"
+//#include <Foundation.h>
+//#include "interface.h"
+//#include "ContactGroup.h"
+//#include "ChatMessage.h"
+#include "ChatSessionInterface.h"
 #include "ChatSessionParticipant.h"
+#include "ModuleLoggingFunctions.h"
+#include "CommunicationModuleFwd.h"
 
 namespace TelepathyIM
 {
@@ -48,7 +52,7 @@ namespace TelepathyIM
 
         //! Send a text message to chat session
         //! @param text The message
-        virtual void SendMessage(const QString &text);
+        virtual void SendChatMessage(const QString &text);
 
         //! @return State of the session
         virtual Communication::ChatSessionInterface::State GetState() const;
@@ -91,7 +95,7 @@ namespace TelepathyIM
     signals:
         void Ready(ChatSession* session);
     };
-    typedef std::vector<ChatSession*> ChatSessionVector;
+//    typedef std::vector<ChatSession*> ChatSessionVector;
     
 } // end of namespace: TelepathyIM
 

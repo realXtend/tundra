@@ -2,10 +2,17 @@
 
 #include "StableHeaders.h"
 
+#include "CoreException.h"
 #include "Test.h"
 #include "Credentials.h"
 #include "CommunicationService.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "ServiceManager.h"
+#include "ContactInterface.h"
+#include "ChatSessionInterface.h"
+#include "VoiceSessionInterface.h"
+#include "ChatSessionParticipantInterface.h"
+#include "ChatMessageInterface.h"
 
 namespace CommunicationTest
 {
@@ -119,7 +126,7 @@ namespace CommunicationTest
             for (Communication::ContactVector::iterator i = contacts.begin(); i != contacts.end(); ++i)
             {
                 Communication::ChatSessionInterface* chat = jabber_connection_->OpenPrivateChatSession(**i);
-                chat->SendMessage("Hello world");
+                chat->SendChatMessage("Hello world");
             }
         }
         catch(Exception &e)
@@ -173,7 +180,7 @@ namespace CommunicationTest
         try
         {
             Communication::ChatSessionInterface* chat = jabber_connection_->OpenChatSession("my_test_123@conference.jabber.org");
-            chat->SendMessage("Hello world!");
+            chat->SendChatMessage("Hello world!");
         }
         catch(Exception &e)
         {
@@ -303,7 +310,7 @@ namespace CommunicationTest
         {
             LogInfo( (*i)->GetText().toStdString() );
         }
-        chat.SendMessage("Hello world");
+        chat.SendChatMessage("Hello world");
     }
 
     void Test::OnVoiceSessionReceived( Communication::VoiceSessionInterface& session)
@@ -325,7 +332,7 @@ namespace CommunicationTest
         try
         {
             Communication::ChatSessionInterface* public_chat = connection.OpenChatSession("0"); // public chat channel 0
-            public_chat->SendMessage("Hello world");
+            public_chat->SendChatMessage("Hello world");
             public_chat->Close();
         }
         catch (Exception /*&e*/)

@@ -4,9 +4,10 @@
 #define incl_EC_OpenSimPrim_h
 
 #include "RexLogicModuleApi.h"
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
+#include "Color.h"
+#include "Declare_EC.h"
 
 #include <QVariant>
 

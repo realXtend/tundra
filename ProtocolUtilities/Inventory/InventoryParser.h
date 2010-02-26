@@ -10,6 +10,8 @@
 
 namespace ProtocolUtilities
 {
+    class InventoryFolderSkeleton;
+
     class InventoryParser
     {
     public:

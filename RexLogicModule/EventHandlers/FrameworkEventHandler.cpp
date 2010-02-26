@@ -8,6 +8,8 @@
 #include "EventHandlers/LoginHandler.h"
 #include "WorldStream.h"
 #include "ScriptServiceInterface.h"
+#include "Framework.h"
+#include "ServiceManager.h"
 
 #include <QMap>
 
@@ -53,7 +55,7 @@ namespace RexLogic
         }
         else if (event_id == Foundation::NETWORKING_REGISTERED)
         {
-            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
                 rexLogic_->SubscribeToNetworkEvents(event_data->currentProtocolModule);
         }

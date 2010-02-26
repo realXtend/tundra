@@ -5,8 +5,9 @@
 
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/PendingOperation>
-#include "interface.h"
-
+//#include "interface.h"
+#include "ModuleLoggingFunctions.h"
+#include "FriendRequestInterface.h"
 namespace TelepathyIM
 {
     /**
@@ -46,7 +47,7 @@ namespace TelepathyIM
         void Canceled(FriendRequest*request);
 
     };
-    typedef std::vector<FriendRequest*> FriendRequestVector;
+//    typedef std::vector<FriendRequest*> FriendRequestVector;
 
 } // end of namespace: TelepathyIM
 

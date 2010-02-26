@@ -3,16 +3,20 @@
 #ifndef incl_UiModule_UiModule_h
 #define incl_UiModule_UiModule_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "UiModuleApi.h"
 
 // UiModule Public Service includes
-#include "UiSceneManager.h"
-#include "UiNotificationManager.h"
+//#include "UiSceneManager.h"
+//#include "UiNotificationManager.h"
 
+#include <QPair>
+#include <QString>
 #include <QStringList>
 #include <QMap>
+#include <QGraphicsView>
 
 namespace RexLogic
 {
@@ -42,6 +46,8 @@ namespace UiServices
     class UiProxyWidget;
     class UiWidgetProperties;
     class UiStateMachine;
+    class UiSceneManager;
+    class UiNotificationManager;
 
     /** UiModule hadles the shown ui scene, creates 
       * core modules ui and provides ui services to modules 

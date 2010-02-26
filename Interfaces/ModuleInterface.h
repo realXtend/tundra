@@ -6,26 +6,21 @@
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommand.h"
+//#include "ConsoleCommandServiceInterface.h"
+#include "CoreModuleApi.h"
 
-#include <Poco/ClassLibrary.h>
-#include <Poco/Logger.h>
+//#include <Poco/ClassLibrary.h>
 
 //! this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \
     { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
-#define MODULE_LOGGING_FUNCTIONS                                                                                            \
-    static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal("Fatal: " + msg);         }     \
-    static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical("Critical: " + msg);   }     \
-    static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error("Error: " + msg);         }     \
-    static void LogWarning(const std::string &msg)  { Poco::Logger::get(NameStatic()).warning("Warning: " + msg);     }     \
-    static void LogNotice(const std::string &msg)   { Poco::Logger::get(NameStatic()).notice("Notice: " + msg);       }     \
-    static void LogInfo(const std::string &msg)     { Poco::Logger::get(NameStatic()).information(msg);               }     \
-    static void LogTrace(const std::string &msg)    { Poco::Logger::get(NameStatic()).trace("Trace: " + msg);         }     \
-    static void LogDebug(const std::string &msg)    { Poco::Logger::get(NameStatic()).debug("Debug: " + msg);         }
-
+namespace Console
+{
+    struct Command;
+}
 
 namespace Foundation
 {

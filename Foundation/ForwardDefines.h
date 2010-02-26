@@ -4,7 +4,7 @@
 #define incl_Framework_ForwardDefines_h
 
 #include <boost/shared_ptr.hpp>
-#include <Poco/Logger.h>
+#include <boost/smart_ptr.hpp>
 
 namespace Scene
 {
@@ -16,6 +16,11 @@ namespace Scene
     typedef boost::weak_ptr<Entity> EntityWeakPtr;
     typedef boost::shared_ptr<Entity> EntityPtr;
 } 
+
+namespace Console
+{
+    struct CommandResult;
+}
 
 namespace Foundation
 {
@@ -30,6 +35,7 @@ namespace Foundation
     class ConfigurationManager;
     class ComponentInterface;
     class ThreadTaskManager;
+    class Profiler;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
@@ -44,40 +50,16 @@ namespace Foundation
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
     typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
-    
-    //! Use root logging only in foundation classes.
-    static void RootLogFatal(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").fatal("Fatal: " + msg);
-    }
-    static void RootLogCritical(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").critical("Critical: " + msg);
-    }
-    static void RootLogError(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").error("Error: " + msg);
-    }
-    static void RootLogWarning(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").warning("Warning: " + msg);
-    }
-    static void RootLogNotice(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").notice("Notice: " + msg);
-    }
-    static void RootLogInfo(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").information(msg);
-    }
-    static void RootLogTrace(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").trace("Trace: " + msg);
-    }
-    static void RootLogDebug(const std::string &msg)
-    {
-        Poco::Logger::get("Foundation").debug("Debug: " + msg);
-    }
+
+    void RootLogFatal(const std::string &msg);
+    void RootLogCritical(const std::string &msg);
+    void RootLogError(const std::string &msg);
+    void RootLogWarning(const std::string &msg);
+    void RootLogNotice(const std::string &msg);
+    void RootLogInfo(const std::string &msg);
+    void RootLogTrace(const std::string &msg);
+    void RootLogDebug(const std::string &msg);
+
 }
 
 #endif

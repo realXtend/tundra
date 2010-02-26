@@ -5,6 +5,12 @@
 
 #include "ConsoleCommandServiceInterface.h"
 #include "ConsoleServiceInterface.h"
+#include "CoreThread.h"
+
+namespace Foundation
+{
+    class ModuleInterface;
+}
 
 namespace Console
 {

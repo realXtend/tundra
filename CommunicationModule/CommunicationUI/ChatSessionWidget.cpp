@@ -3,6 +3,10 @@
 #include "StableHeaders.h"
 #include "ChatSessionWidget.h"
 #include "UiDefines.h"
+#include "ChatSessionInterface.h"
+#include "ChatSessionParticipantInterface.h"
+#include "ContactInterface.h"
+#include "ChatMessageInterface.h"
 
 namespace CommunicationUI
 {
@@ -58,11 +62,11 @@ namespace CommunicationUI
         MessageToConversation(html);
     }
 
-    void ChatSessionWidget::SendMessage()
+    void ChatSessionWidget::SendChatMessage()
     {
         QString message(chat_session_ui_.sendMessageLineEdit->text());
         chat_session_ui_.sendMessageLineEdit->clear();
-        chat_session_->SendMessage(message);
+        chat_session_->SendChatMessage(message);
 
         QString html("<span style='color:#828282;'>[");
         html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());

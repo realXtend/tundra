@@ -6,6 +6,7 @@
 
 #include <OgreMaterial.h>
 #include <OgreCompositorInstance.h>
+#include "CoreTypes.h"
 
 namespace Foundation
 {

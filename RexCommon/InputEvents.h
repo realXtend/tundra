@@ -4,6 +4,7 @@
 #define incl_Input_InputEvents_h
 
 #include "EventDataInterface.h"
+#include "CoreTypes.h"
 
 namespace Input
 {

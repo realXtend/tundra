@@ -3,11 +3,19 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
-#include "ConfigurationManager.h"
-#include "ServiceManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include <boost/smart_ptr.hpp>
+//#include <Poco/Formatter.h>
+#include <boost/program_options.hpp>
+#include <boost/timer.hpp>
+
 #include "EventDataInterface.h"
 #include "Profiler.h"
+
+#include "ServiceManager.h"
+//#include "ConsoleCommandServiceInterface.h"
+
+#include "CoreTypes.h"
+#include "ForwardDefines.h"
 
 class QApplication;
 class QGraphicsView;
@@ -17,12 +25,8 @@ class QObject;
 namespace Poco
 {
     class SplitterChannel;
-}
-
-namespace ProtocolUtilities
-{
-    class ProtocolModuleInterface;
-    class WorldStream;
+    class Channel;
+    class Formatter;
 }
 
 namespace Foundation
@@ -78,13 +82,13 @@ namespace Foundation
         //! Runs through a single frame of logic update and rendering.
         void ProcessOneFrame();
 
-        ComponentManagerPtr GetComponentManager() const { return component_manager_; }
-        ModuleManagerPtr GetModuleManager() const { return module_manager_; }
-        ServiceManagerPtr GetServiceManager() const { return service_manager_; }
-        EventManagerPtr GetEventManager() const { return event_manager_; }
-        PlatformPtr GetPlatform() const { return platform_; }
-        ConfigurationManagerPtr GetConfigManager() { return config_manager_;}
-        ThreadTaskManagerPtr GetThreadTaskManager() { return thread_task_manager_;}
+        ComponentManagerPtr GetComponentManager() const;
+        ModuleManagerPtr GetModuleManager() const;
+        ServiceManagerPtr GetServiceManager() const;
+        EventManagerPtr GetEventManager() const;
+        PlatformPtr GetPlatform() const;
+        ConfigurationManagerPtr GetConfigManager();
+        ThreadTaskManagerPtr GetThreadTaskManager();
 
         //! Signal the framework to exit at first possible opportunity
         void Exit();
@@ -96,10 +100,10 @@ namespace Foundation
         bool Initialized() const { return initialized_; }
 
         //! Returns the default configuration
-        ConfigurationManager &GetDefaultConfig() { return *(config_manager_.get()); }
+        ConfigurationManager &GetDefaultConfig();
 
         //! Returns pointer to the default configuration
-        ConfigurationManager *GetDefaultConfigPtr() { return config_manager_.get(); }
+        ConfigurationManager *GetDefaultConfigPtr();
 
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
@@ -140,20 +144,20 @@ namespace Foundation
         Scene::ScenePtr GetScene(const std::string &name) const;
 
         //! Returns true if specified scene exists, false otherwise
-        bool HasScene(const std::string &name) const { return scenes_.find(name) != scenes_.end(); }
+        bool HasScene(const std::string &name) const;
 
         //! Returns the currently set default world scene, for convinience
-        const Scene::ScenePtr &GetDefaultWorldScene() const { return default_scene_; }
+        const Scene::ScenePtr &GetDefaultWorldScene() const;
 
         //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-        void SetDefaultWorldScene(const Scene::ScenePtr &scene) { default_scene_ = scene; }
+        void SetDefaultWorldScene(const Scene::ScenePtr &scene);
 
         //! Returns the scene map for self reflection / introspection.
-        const SceneMap &GetSceneMap() const { return scenes_; }
+        const SceneMap &GetSceneMap() const;
 
         //! Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
         //! Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
-        Profiler &GetProfiler() { return profiler_; }
+        Profiler &GetProfiler();
 
         //! Add a new log listener for poco log
         void AddLogChannel(Poco::Channel *channel);
@@ -283,33 +287,13 @@ namespace Foundation
     {
         ProgramOptionsEvent();
     public:
-        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) : options(vars), argc(ac), argv(av) {}
+        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av);
 
         //! parsed program options
         const boost::program_options::variables_map &options;
         //! command line arguments as supplied by the operating system
         int argc;
         char **argv;
-    };
-
-    class NetworkingRegisteredEvent : public EventDataInterface
-    {
-    public:
-        NetworkingRegisteredEvent(const boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> pModule)
-            : currentProtocolModule(pModule) {}
-        virtual ~NetworkingRegisteredEvent() {}
-        // boost weak pointer to the changed protocolmodule
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule;
-    };
-
-    class WorldStreamReadyEvent : public EventDataInterface
-    {
-    public:
-        WorldStreamReadyEvent(const boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream)
-            : WorldStream(currentWorldStream) {}
-        virtual ~WorldStreamReadyEvent() {}
-        // Pointer to the current WorldStream
-        boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStream;
     };
 }
 

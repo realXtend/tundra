@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "WorldInputModule.h"
+#include "Profiler.h"
 
 using namespace Input;
 

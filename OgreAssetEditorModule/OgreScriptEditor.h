@@ -50,7 +50,7 @@ namespace OgreAssetEditor
         /// @param name Name.
         OgreScriptEditor(Foundation::Framework *framework,
             const QString &inventory_id,
-            const RexTypes::asset_type_t &asset_type,
+            const asset_type_t &asset_type,
             const QString &name,
             QWidget *parent = 0);
 
@@ -82,7 +82,7 @@ namespace OgreAssetEditor
 
     signals:
         /// This signal is emitted when the editor is closed.
-        void Closed(const QString &inventory_id, RexTypes::asset_type_t asset_type);
+        void Closed(const QString &inventory_id, asset_type_t asset_type);
 
     private:
         Q_DISABLE_COPY(OgreScriptEditor);
@@ -127,7 +127,7 @@ namespace OgreAssetEditor
         QString inventoryId_;
 
         /// Asset type.
-        const RexTypes::asset_type_t assetType_;
+        const asset_type_t assetType_;
 
         /// Script name.
         QString name_;

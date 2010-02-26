@@ -7,6 +7,10 @@
 #include "Connection.h"
 #include "Credentials.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "NetworkEvents.h"
+#include "ServiceManager.h"
+#include "Framework.h"
+#include "CoreDefines.h"
 
 namespace OpensimIM
 {

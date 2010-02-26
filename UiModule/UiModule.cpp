@@ -1,11 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "UiModule.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
 #include "UiStateMachine.h"
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "UiSceneManager.h"
+#include "UiNotificationManager.h"
+#include "Framework.h"
 
 // Private managers
 #include "Console/UiConsoleManager.h"
@@ -18,6 +24,8 @@
 
 #include <QApplication>
 #include <QDir>
+
+#include "MemoryLeakCheck.h"
 
 namespace UiServices
 {

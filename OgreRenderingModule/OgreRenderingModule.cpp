@@ -23,7 +23,11 @@
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
+#include "ConsoleCommand.h"
+#include "ConsoleCommandServiceInterface.h"
 #include "RendererSettings.h"
+#include "ConfigurationManager.h"
+#include "EventManager.h"
 #include <Ogre.h>
 
 namespace OgreRenderer

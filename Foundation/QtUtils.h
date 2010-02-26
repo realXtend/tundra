@@ -6,6 +6,7 @@
 #ifndef incl_Foundation_QtUtils_h
 #define incl_Foundation_QtUtils_h
 
+#include "CoreTypes.h"
 #include <QStringList>
 
 namespace Foundation

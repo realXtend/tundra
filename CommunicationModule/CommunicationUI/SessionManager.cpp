@@ -5,6 +5,15 @@
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
+#include "MasterWidget.h"
+#include "SessionHelper.h"
+#include "FriendListWidget.h"
+#include "ChatSessionWidget.h"
+#include "ModuleManager.h"
+#include "UiSceneManager.h"
+#include "ConnectionInterface.h"
+#include "ChatSessionInterface.h"
+#include "Framework.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -63,6 +72,12 @@ namespace UiManagers
         // Connect slots to ConnectionInterface
         connect(im_connection_, SIGNAL( ChatSessionReceived(Communication::ChatSessionInterface& ) ), SLOT( ChatSessionReceived(Communication::ChatSessionInterface&) ));
         connect(im_connection_, SIGNAL( VoiceSessionReceived(Communication::VoiceSessionInterface&) ), SLOT( VideoSessionReceived(Communication::VoiceSessionInterface&) ));
+    }
+
+    void SessionManager::HideFriendListWidget()
+    {
+        if (friend_list_widget_) 
+            return friend_list_widget_->hide();
     }
 
     QMenuBar *SessionManager::ConstructMenuBar()
@@ -247,6 +262,44 @@ namespace UiManagers
                 QMessageBox::information(0, "Manager Error", "Could not update avatars from world, are you sure you are connected to a server?");
         }
     }
+
+    void SessionManager::Hide()
+    {
+        main_parent_->hide();
+    }
+
+    void SessionManager::StatusAvailable()
+    {
+        emit StatusChange(QString("available"));
+    }
+    void SessionManager::StatusChatty()
+    {
+        emit StatusChange(QString("chat"));
+    }
+    void SessionManager::StatusAway()
+    { 
+        emit StatusChange(QString("away"));
+    }
+    void SessionManager::StatusExtendedAway()
+    { 
+        emit StatusChange(QString("xa"));
+    }
+    void SessionManager::StatusBusy()
+    { 
+        emit StatusChange(QString("dnd"));
+    }
+    void SessionManager::StatusHidden()
+    {
+        emit StatusChange(QString("hidden"));
+    }
+
+    void SessionManager::ToggleShowFriendList()
+    { 
+        if (friend_list_widget_->isVisible()) 
+            friend_list_widget_->hide(); 
+        else 
+            friend_list_widget_->show();
+    } 
 
     void SessionManager::UpdateAvatarList()
     {

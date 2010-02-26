@@ -19,6 +19,10 @@
 #include "WebdavInventoryDataModel.h"
 #include "InventoryAsset.h"
 #include "ItemPropertiesWindow.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "Framework.h"
 
 #include <NetworkEvents.h>
 #include <RexLogicModule.h>
@@ -28,7 +32,10 @@
 #include <ConsoleCommandServiceInterface.h>
 #include <ResourceInterface.h>
 #include <RealXtend/RexProtocolMsgIDs.h>
+#include "NetworkMessages/NetInMessage.h"
+
 #include <UiModule.h>
+#include "UiSceneManager.h"
 #include <AssetServiceInterface.h>
 
 #include <QObject>
@@ -291,7 +298,7 @@ bool InventoryModule::HandleEvent(
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
         {
-            Foundation::NetworkingRegisteredEvent *event_data = dynamic_cast<Foundation::NetworkingRegisteredEvent *>(data);
+            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
                 SubscribeToNetworkEvents(event_data->currentProtocolModule);
             return false;
@@ -299,7 +306,7 @@ bool InventoryModule::HandleEvent(
 
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
+            ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
             if (event_data)
                 currentWorldStream_ = event_data->WorldStream;
 

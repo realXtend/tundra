@@ -4,6 +4,9 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "TextureService.h"
 #include "TextureDecoderModule.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
 
 namespace TextureDecoder
 {

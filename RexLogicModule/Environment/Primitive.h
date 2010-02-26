@@ -5,6 +5,8 @@
 
 #include "NetworkEvents.h"
 #include "ResourceInterface.h"
+#include "Entity.h"
+#include "Color.h"
 
 namespace RexLogic
 {
@@ -36,7 +38,7 @@ namespace RexLogic
 
         void HandleLogout();
         
-        typedef std::map<std::pair<request_tag_t, RexTypes::asset_type_t>, entity_id_t> EntityResourceRequestMap;
+        typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
         void SendRexPrimData(entity_id_t entityid);

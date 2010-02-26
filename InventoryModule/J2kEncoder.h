@@ -6,7 +6,8 @@
 #ifndef incl_InventoryModule_J2kEncoder_h
 #define incl_InventoryModule_J2kEncoder_h
 
-#include <Ogre.h>
+#include <OgreImage.h>
+#include "CoreTypes.h"
 
 namespace J2k
 {

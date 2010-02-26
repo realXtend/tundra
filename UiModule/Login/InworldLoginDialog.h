@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_InworldLoginDialog_h
 #define incl_UiModule_InworldLoginDialog_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 
 #include <QObject>
 #include <QRadioButton>
@@ -13,6 +13,11 @@
 #include <QDialog>
 #include <QLabel>
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace CoreUi
 {
     class InworldLoginDialog : public QObject
@@ -20,7 +25,7 @@ namespace CoreUi
         Q_OBJECT
 
     public:
-        InworldLoginDialog(Foundation::Framework *framework);
+        explicit InworldLoginDialog(Foundation::Framework *framework);
         virtual ~InworldLoginDialog();
 
     private:

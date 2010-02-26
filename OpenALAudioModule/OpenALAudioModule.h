@@ -3,8 +3,8 @@
 #ifndef incl_OpenALAudio_OpenALAudioModule_h
 #define incl_OpenALAudio_OpenALAudioModule_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "OpenALAudioModuleApi.h"
 
 namespace Foundation

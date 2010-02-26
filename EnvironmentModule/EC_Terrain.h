@@ -4,9 +4,9 @@
 #define incl_EC_TerrainPatch_h
 
 #include "EnvironmentModuleApi.h"
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
+#include "Declare_EC.h"
 
 namespace Ogre
 {

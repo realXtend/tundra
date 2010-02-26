@@ -6,6 +6,7 @@
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
+#include <Ogre.h>
 
 namespace OgreRenderer
 {

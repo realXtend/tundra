@@ -2,6 +2,9 @@
 
 #include "StableHeaders.h"
 #include "QOgreWorldView.h"
+#include "Profiler.h"
+
+#include <Ogre.h>
 
 namespace OgreRenderer
 {

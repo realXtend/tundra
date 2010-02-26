@@ -38,6 +38,10 @@ if (MSVC)
    add_definitions (-DPROFILING)
 endif (MSVC)
 
+# On all platforms, we enable PCH files by default.
+add_definitions (-DPCH_ENABLED)
+SET (PCH_ENABLED 1)
+
 # Set normalized path for common environment variables
 file (TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QT_DIR}" ENV_QT_DIR)

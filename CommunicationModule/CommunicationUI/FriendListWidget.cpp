@@ -2,9 +2,16 @@
 
 #include "StableHeaders.h"
 #include "FriendListWidget.h"
+#include "FriendHelper.h"
+#include "SessionHelper.h"
+#include "FriendListItem.h"
+#include "ConnectionInterface.h"
+#include "ContactInterface.h"
 
 #include <QDebug>
 #include <QMenu>
+
+#include "MemoryLeakCheck.h"
 
 namespace CommunicationUI
 {

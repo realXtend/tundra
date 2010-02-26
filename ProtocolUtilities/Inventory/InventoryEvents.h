@@ -8,6 +8,7 @@
 #ifndef incl_Protocol_InventoryEvents_h
 #define incl_Protocol_InventoryEvents_h
 
+#include "EventDataInterface.h"
 #include <RexUUID.h>
 #include <AssetServiceInterface.h>
 
@@ -16,8 +17,6 @@
 
 namespace Inventory
 {
-    using namespace RexTypes;
-
     namespace Events
     {
         /// Event informing about new item inventory. Use this when creating new inventory items outside

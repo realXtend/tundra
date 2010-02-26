@@ -3,6 +3,8 @@
 #ifndef incl_HttpUtilities_HttpRequest_h__
 #define incl_HttpUtilities_HttpRequest_h__
 
+#include "CoreTypes.h"
+
 namespace HttpUtilities
 {
     //! Performs a blocking http request

@@ -3,10 +3,16 @@
 #include "StableHeaders.h"
 #include "EventHandler.h"
 
+#include "Foundation.h"
+#include "SceneEvents.h"
+#include "SceneManager.h"
+
 #include "EntityComponent/EC_OpenSimPresence.h"
 #include "EC_OgrePlaceable.h"
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace CommunicationUI
 {

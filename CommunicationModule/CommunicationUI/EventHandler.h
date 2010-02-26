@@ -3,14 +3,21 @@
 #ifndef incl_Communication_EventHandler_UI_h
 #define incl_Communication_EventHandler_UI_h
 
-#include "Foundation.h"
-#include "SceneEvents.h"
-#include "SceneManager.h"
+//#include "Foundation.h"
+//#include "SceneEvents.h"
+//#include "SceneManager.h"
 
 #include <QObject>
 #include <QStringList>
 #include <QTimer>
 #include <QMap>
+
+#include "Vector3D.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace CommunicationUI
 {
@@ -20,7 +27,7 @@ namespace CommunicationUI
     Q_OBJECT
     
     public:
-        EventHandler(Foundation::Framework *framework);
+        explicit EventHandler(Foundation::Framework *framework);
         virtual ~EventHandler();
 
     public slots:

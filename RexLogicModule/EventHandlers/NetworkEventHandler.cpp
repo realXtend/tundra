@@ -16,6 +16,9 @@
 #include "SoundServiceInterface.h"
 #include "AssetServiceInterface.h"
 #include "GenericMessageUtils.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "WorldStream.h"
 
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
@@ -427,7 +430,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEven
 	std::string last_name = msg.ReadString(); // LastName
 	std::string object_name = msg.ReadString(); // ObjectName
 	std::string message = msg.ReadString(); // Message
-	UINT32 chat_channel = msg.ReadS32(); // ChatChannel
+	u32 chat_channel = msg.ReadS32(); // ChatChannel
 	std::string image_id = msg.ReadUUID().ToString(); // ImageID
 	
     size_t instance_count = data->message->ReadCurrentBlockInstanceCount();

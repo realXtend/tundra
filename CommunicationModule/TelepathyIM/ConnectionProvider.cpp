@@ -9,6 +9,8 @@
 #include "ConnectionProvider.h"
 #include "FarsightChannel.h"
 #include <Poco/Environment.h>
+#include "CoreDefines.h"
+#include "CoreException.h"
 
 // #include <TelepathyQt4/Debug__> // disabled because header not found on Linux
 

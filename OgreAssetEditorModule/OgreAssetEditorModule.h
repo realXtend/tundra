@@ -9,8 +9,8 @@
 #ifndef incl_OgreAssetEditorModule_h
 #define incl_OgreAssetEditorModule_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "RexUUID.h"
 
 namespace Foundation

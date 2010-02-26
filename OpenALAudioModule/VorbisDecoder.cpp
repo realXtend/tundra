@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "VorbisDecoder.h"
 #include "OpenALAudioModule.h"
+#include "Profiler.h"
 
 #include <vorbis/vorbisfile.h>
 

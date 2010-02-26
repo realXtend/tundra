@@ -3,8 +3,8 @@
 #ifndef incl_ProtocolModuleTaiga_ProtocolModuleTaiga_h
 #define incl_ProtocolModuleTaiga_ProtocolModuleTaiga_h
 
-#include "Foundation.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "ProtocolModuleTaigaApi.h"
 #include "TaigaLoginThread.h"
 
@@ -15,6 +15,7 @@
 #include "NetworkConnection.h"
 
 #include "RexUUID.h"
+#include "CoreThread.h"
 
 namespace TaigaProtocol
 {

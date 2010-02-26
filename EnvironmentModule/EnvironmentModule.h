@@ -9,8 +9,9 @@
 #define incl_EnvironmentModule_h
 
 #include "EnvironmentModuleApi.h"
-#include <ModuleInterface.h>
-#include <WorldStream.h>
+#include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
+#include "WorldStream.h"
 
 namespace Foundation
 {

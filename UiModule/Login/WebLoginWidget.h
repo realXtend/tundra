@@ -6,7 +6,7 @@
 #include "UiModuleApi.h"
 #include "AbstractLogin.h"
 
-#include "NetworkEvents.h"
+//#include "NetworkEvents.h"
 
 #include "ui_WebLoginWidget.h"
 namespace RexLogic

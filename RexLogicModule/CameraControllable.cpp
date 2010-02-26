@@ -16,7 +16,10 @@
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "EC_Terrain.h"
-
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "ServiceManager.h"
+#include "ModuleManager.h"
 #include <Ogre.h>
 
 namespace RexLogic

@@ -3,10 +3,12 @@
 #ifndef incl_Communication_MasterWidget_h
 #define incl_Communication_MasterWidget_h
 
-#include "Foundation.h"
+//#include "Foundation.h"
 #include "UiDefines.h"
 
-#include "EventHandler.h"
+//#include "EventHandler.h"
+
+#include "CommunicationModuleFwd.h"
 
 #include <QWidget>
 #include <QSize>
@@ -29,6 +31,11 @@ namespace Ui
     class SessionManagerWidget;
 }
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace CommunicationUI
 {
     class MasterWidget : public QWidget
@@ -38,7 +45,7 @@ namespace CommunicationUI
     Q_PROPERTY(UiDefines::UiStates::ConnectionState ui_state_ READ uiState WRITE setUiState)
 
     public:
-        MasterWidget(Foundation::Framework *framework);
+        explicit MasterWidget(Foundation::Framework *framework);
         virtual ~MasterWidget();
 
     public slots:

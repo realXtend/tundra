@@ -4,6 +4,7 @@
 #define incl_WorldInputModule
 
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "InputServiceInterface.h"
 
 #include "WorldInputModuleApi.h"

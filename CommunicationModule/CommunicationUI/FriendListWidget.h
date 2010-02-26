@@ -3,13 +3,19 @@
 #ifndef incl_Communication_FriendListWidget_h
 #define incl_Communication_FriendListWidget_h
 
-#include "FriendHelper.h"
-#include "SessionHelper.h"
-#include "FriendListItem.h"
+//#include "FriendHelper.h"
+//#include "SessionHelper.h"
+//#include "FriendListItem.h"
 #include "UiDefines.h"
 #include "ui_FriendListWidget.h"
 
-#include "interface.h"
+//#include "interface.h"
+#include "CommunicationModuleFwd.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace CommunicationUI
 {

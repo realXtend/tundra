@@ -3,7 +3,6 @@
 #ifndef incl_ProtocolUtilities_TaigaWorldSession_h
 #define incl_ProtocolUtilities_TaigaWorldSession_h
 
-#include "Foundation.h"
 #include "Login/LoginCredentials.h"
 
 #include "ProtocolModuleTaigaApi.h"

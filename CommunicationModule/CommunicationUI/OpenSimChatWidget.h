@@ -3,14 +3,15 @@
 #ifndef incl_CommunicationUI_OpenSimChatWidget_h
 #define incl_CommunicationUI_OpenSimChatWidget_h
 
-#include "StableHeaders.h"
+//#include "StableHeaders.h"
 #include "NetworkEvents.h"
 
 #include "ui_OpenSimChatWidget.h"
 
-#include "interface.h"
-#include "Credentials.h"
-#include "CommunicationService.h"
+//#include "interface.h"
+//#include "Credentials.h"
+//#include "CommunicationService.h"
+#include "CommunicationModuleFwd.h"
 
 namespace CommunicationUI
 {
@@ -20,7 +21,7 @@ namespace CommunicationUI
     Q_OBJECT
 
     public:
-        OpenSimChatWidget(ProtocolUtilities::ClientParameters clientParams);
+        explicit OpenSimChatWidget(ProtocolUtilities::ClientParameters clientParams);
         virtual ~OpenSimChatWidget();
 
     public slots:
@@ -28,7 +29,7 @@ namespace CommunicationUI
         void OnOpensimUdpConnectionError(Communication::ConnectionInterface&);
         
         void MessageRecieved(const Communication::ChatMessageInterface &msg);
-        void SendMessage();
+        void SendChatMessage();
     
     private:
         void InitCommunicationConnections();

@@ -5,6 +5,8 @@
 #include "AssetManager.h"
 #include "AssetCache.h"
 #include "RexAsset.h"
+#include "Framework.h"
+#include "EventManager.h"
 
 using namespace RexTypes;
 

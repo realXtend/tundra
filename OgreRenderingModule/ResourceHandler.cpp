@@ -15,6 +15,10 @@
 #include "RexTypes.h"
 #include "TextureServiceInterface.h"
 #include "AssetServiceInterface.h"
+#include "Framework.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+
 
 namespace OgreRenderer
 {

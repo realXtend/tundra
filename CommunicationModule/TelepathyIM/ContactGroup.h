@@ -4,7 +4,7 @@
 #define incl_Communication_TelepathyIM_ContactGroup_h
 
 #include <Foundation.h>
-#include "interface.h"
+//#include "interface.h"
 #include "Contact.h"
 
 namespace TelepathyIM

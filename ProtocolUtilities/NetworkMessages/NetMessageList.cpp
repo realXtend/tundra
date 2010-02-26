@@ -1,13 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+#include "StableHeaders.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <boost/cstdint.hpp>
 
 #include "NetMessageList.h"
+#include "CoreDefines.h"
 
 using namespace std;
+using boost::uint32_t;
 
 namespace ProtocolUtilities
 {

@@ -3,16 +3,24 @@
 #ifndef incl_UiModule_EtherLoginNotifier_h
 #define incl_UiModule_EtherLoginNotifier_h
 
-#include "View/InfoCard.h"
-#include "Data/AvatarInfo.h"
-#include "Data/WorldInfo.h"
+//#include "View/InfoCard.h"
+//#include "Data/AvatarInfo.h"
+//#include "Data/WorldInfo.h"
 
-#include <QGraphicsScene>
+//#include <QGraphicsScene>
 #include <QObject>
 #include <QPair>
+#include <QMap>
+#include <QString>
 
 namespace Ether
 {
+    namespace Data
+    {
+        class AvatarInfo;
+        class WorldInfo;
+    }
+
     namespace Logic
     {
         class EtherSceneController;

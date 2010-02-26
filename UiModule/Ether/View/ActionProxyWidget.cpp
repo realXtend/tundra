@@ -1,8 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ActionProxyWidget.h"
 #include "OpenSim/GridInfoHelper.h"
+#include "CoreDefines.h"
+#include "Ether/View/InfoCard.h"
+#include "Ether/Data/DataManager.h"
+#include "Ether/Data/AvatarInfo.h"
+#include "Ether/Data/OpenSimAvatar.h"
+#include "Ether/Data/RealXtendAvatar.h"
+#include "Ether/Data/WorldInfo.h"
+#include "Ether/Data/OpenSimWorld.h"
 
 #include <QLayoutItem>
 #include <QHBoxLayout>
@@ -15,6 +24,8 @@
 #include <QFile>
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {

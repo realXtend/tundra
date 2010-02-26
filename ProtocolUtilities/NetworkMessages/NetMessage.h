@@ -4,8 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "RexTypes.h"
-#include "RexUUID.h"
+//#include "RexTypes.h"
 
 namespace ProtocolUtilities
 {
@@ -107,10 +106,6 @@ namespace ProtocolUtilities
         static const int cVariableCount = -1;
     };
 
-    /// Identifies different UDP message packets.
-    /// \ingroup OpenSimProtocolClient
-    typedef uint32_t NetMsgID;
-
     // Probably going to remove this, useless (for now at least).
     /*enum NetPriorityLevel
     {
@@ -120,6 +115,10 @@ namespace ProtocolUtilities
         NetPriorityLow,
         NetPriorityEnumCount
     };*/
+
+    /// Identifies different UDP message packets.
+    /// \ingroup OpenSimProtocolClient
+    typedef unsigned long NetMsgID;
 
     /// Describes the format of an UDP network message.
     /// \ingroup OpenSimProtocolClient

@@ -2,8 +2,6 @@
 #ifndef incl_OgreRenderingModule_PostProcessWidget_h
 #define incl_OgreRenderingModule_PostProcessWidget_h
 
-#include <Foundation.h>
-
 #include "ui_postprocesswidget.h"
 
 #include <QWidget>

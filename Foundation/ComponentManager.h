@@ -3,6 +3,10 @@
 #ifndef incl_Foundation_ComponentManager_h
 #define incl_Foundation_ComponentManager_h
 
+#include "ForwardDefines.h"
+
+#include <map>
+
 namespace Foundation
 {
     class Framework;

@@ -8,6 +8,7 @@
 #include "ModuleManager.h"
 #include "ConfigurationManager.h"
 #include "Poco/UnicodeConverter.h"
+#include "CoreException.h"
 
 #include <QString>
 

@@ -5,8 +5,13 @@
 #ifndef incl_OgreConversionUtils_h
 #define incl_OgreConversionUtils_h
 
-#include <Ogre.h>
+#include <OgreColourValue.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
 
+#include "Color.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
 #include "OgreModuleApi.h"
 
 namespace OgreRenderer

@@ -6,6 +6,7 @@
 #include "CoreDefines.h"
 #include "ComponentFactoryInterface.h"
 #include "ComponentRegistrarInterface.h"
+#include "CoreModuleApi.h"
 
 #include <QObject>
 

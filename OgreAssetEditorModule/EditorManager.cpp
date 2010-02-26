@@ -20,7 +20,7 @@ EditorManager::~EditorManager()
     DeleteAll();
 }
 
-bool EditorManager::Add(const QString &inventory_id, RexTypes::asset_type_t asset_type, QWidget *editor)
+bool EditorManager::Add(const QString &inventory_id, asset_type_t asset_type, QWidget *editor)
 {
     if (!editor || inventory_id.isEmpty() || asset_type == RexTypes::RexAT_None)
         return false;
@@ -29,7 +29,7 @@ bool EditorManager::Add(const QString &inventory_id, RexTypes::asset_type_t asse
     return true;
 }
 
-QWidget *EditorManager::GetEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+QWidget *EditorManager::GetEditor(const QString &inventory_id, asset_type_t asset_type)
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     EditorMapIter it = editors_.find(key);
@@ -39,13 +39,13 @@ QWidget *EditorManager::GetEditor(const QString &inventory_id, RexTypes::asset_t
         return 0;
 }
 
-bool EditorManager::Exists(const QString &inventory_id, RexTypes::asset_type_t asset_type) const
+bool EditorManager::Exists(const QString &inventory_id, asset_type_t asset_type) const
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     return editors_.contains(key);
 }
 
-bool EditorManager::Delete(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+bool EditorManager::Delete(const QString &inventory_id, asset_type_t asset_type)
 {
     QWidget *editor = TakeEditor(inventory_id, asset_type);
     if (editor)
@@ -71,7 +71,7 @@ void EditorManager::DeleteAll(bool delete_later)
     }
 }
 
-QWidget *EditorManager::TakeEditor(const QString &inventory_id, RexTypes::asset_type_t asset_type)
+QWidget *EditorManager::TakeEditor(const QString &inventory_id, asset_type_t asset_type)
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
     EditorMapIter it = editors_.find(key);

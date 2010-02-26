@@ -3,10 +3,10 @@
 #ifndef incl_RexLogic_EC_OpenSimPresence_h
 #define incl_RexLogic_EC_OpenSimPresence_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
 
 namespace RexLogic
 {

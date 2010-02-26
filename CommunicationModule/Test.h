@@ -5,7 +5,10 @@
 
 #include <QObject>
 #include <Foundation.h>
-#include "interface.h"
+//#include "interface.h"
+#include "ModuleLoggingFunctions.h"
+#include "CredentialsInterface.h"
+#include "ConnectionInterface.h"
 
 namespace CommunicationTest
 {

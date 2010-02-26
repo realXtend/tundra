@@ -3,7 +3,6 @@
 #ifndef incl_ProtocolUtilities_WorldSessionInterface_h
 #define incl_ProtocolUtilities_WorldSessionInterface_h
 
-#include "Foundation.h"
 #include "LoginCredentialsInterface.h"
 #include "NetworkEvents.h"
 

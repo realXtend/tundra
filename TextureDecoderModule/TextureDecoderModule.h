@@ -4,6 +4,7 @@
 #define incl_TextureDecoderModule_h
 
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "TextureDecoderModuleApi.h"
 
 namespace Foundation

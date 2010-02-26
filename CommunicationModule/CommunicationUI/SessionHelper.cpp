@@ -6,6 +6,10 @@
 #include "ChatSessionWidget.h"
 #include "VideoSessionWidget.h"
 #include "UiDefines.h"
+#include "EventHandler.h"
+#include "ConnectionInterface.h"
+#include "ChatSessionParticipantInterface.h"
+#include "VoiceSessionParticipantInterface.h"
 
 #include <QDebug>
 #include <QPair>

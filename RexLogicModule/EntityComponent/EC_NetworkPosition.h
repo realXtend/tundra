@@ -3,11 +3,13 @@
 #ifndef incl_EC_NetworkPosition_h
 #define incl_EC_NetworkPosition_h
 
-#include "Foundation.h"
 #include "ComponentInterface.h"
-#include "Foundation.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
+#include "Declare_EC.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
+#include "CoreTypes.h"
 
 namespace RexLogic
 {

@@ -4,6 +4,7 @@
 
 #include <RexLogicModule.h>
 #include "ChatSessionParticipant.h"
+#include "Contact.h"
                            
 namespace OpensimIM
 {

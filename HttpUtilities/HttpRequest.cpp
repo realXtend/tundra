@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "HttpRequest.h"
+#include "ForwardDefines.h"
 
 #include "curl/curl.h"
 

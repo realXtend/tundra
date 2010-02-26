@@ -22,6 +22,8 @@
 #include <GenericMessageUtils.h>
 #include <OgreRenderingModule.h>
 #include "PostProcessWidget.h"
+#include "ModuleManager.h"
+#include "EventManager.h"
 
 namespace Environment
 {
@@ -214,7 +216,7 @@ namespace Environment
             }
             case Foundation::WORLD_STREAM_READY:
             {
-                Foundation::WorldStreamReadyEvent *event_data = dynamic_cast<Foundation::WorldStreamReadyEvent *>(data);
+                ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
                 if (event_data)
                     currentWorldStream_ = event_data->WorldStream;
 

@@ -27,6 +27,10 @@
 
 #include	<boost/shared_ptr.hpp>
 #include	<boost/any.hpp>
+// Boost recommends doing this here: but it is not compatible with this header...
+//#include	<boost/spirit/include/classic_core.hpp>
+//#include	<boost/spirit/include/classic_loops.hpp>
+
 #include	<boost/spirit/core.hpp>
 #include	<boost/spirit/utility/loops.hpp>
 #include	<boost/lexical_cast.hpp>

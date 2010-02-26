@@ -3,7 +3,7 @@
 #ifndef incl_Communication_TelepathyIM_VideoSession_h
 #define incl_Communication_TelepathyIM_VideoSession_h
 
-#include "interface.h"
+//#include "interface.h"
 
 namespace TelepathyIM
 {

@@ -3,10 +3,17 @@
 #ifndef incl_Comm_CommunicationService_h
 #define incl_Comm_CommunicationService_h
 
-#include <ModuleInterface.h> // for logger
 #include <QMap>
 #include <QStringList>
-#include "interface.h"
+#include "ModuleLoggingFunctions.h"
+#include "CommunicationServiceInterface.h"
+#include "CoreTypes.h"
+
+namespace Foundation
+{
+    class EventDataInterface;
+    class Framework;
+}
 
 namespace Communication
 {
@@ -34,7 +41,7 @@ namespace Communication
         //! returns name of this module. Needed for logging.
         static const std::string NameStatic() { return "Communication"; } // for logging functionality
     public:
-        CommunicationService(Foundation::Framework* framework);
+        explicit CommunicationService(Foundation::Framework* framework);
         ~CommunicationService();
         static void CreateInstance(Foundation::Framework* framework);
 

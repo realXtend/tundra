@@ -8,6 +8,7 @@
 
 #include "DebugStatsModuleApi.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "EventDataInterface.h"
 #include "TimeProfilerWindow.h"
 #include "WorldStream.h"
@@ -61,6 +62,13 @@ private:
  
     void operator=(const DebugStatsModule &);
     DebugStatsModule(const DebugStatsModule &);
+
+    Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
+    Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
+
+//    void SendRandomNetworkInPacket();
+//    void SendRandomNetworkOutPacket();
+
 
     event_category_id_t frameworkEventCategory_;
     event_category_id_t networkEventCategory_;

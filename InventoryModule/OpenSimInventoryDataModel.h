@@ -155,7 +155,7 @@ namespace Inventory
          *  @return true if successful
          */
         bool UploadFile(
-            const RexTypes::asset_type_t &asset_type,
+            const asset_type_t &asset_type,
             std::string filename,
             const std::string &name,
             const std::string &description,
@@ -172,7 +172,7 @@ namespace Inventory
          */
 
         bool UploadBuffer(
-            const RexTypes::asset_type_t &asset_type,
+            const asset_type_t &asset_type,
             const std::string &filename,
             const std::string &name,
             const std::string &description,

@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "VoiceSessionParticipant.h"
+#include "Contact.h"
 
 namespace TelepathyIM
 {

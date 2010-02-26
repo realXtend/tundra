@@ -7,15 +7,17 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/PendingReady>
-#include <Foundation.h>
-#include <ServiceInterface.h>
-#include <SoundServiceInterface.h>
+#include "ModuleLoggingFunctions.h"
+//#include <Foundation.h>
+//#include "ServiceInterface.h"
+//#include "SoundServiceInterface.h"
 
-#include "interface.h"
-#include "Contact.h"
+//#include "interface.h"
+//#include "Contact.h"
 #include "FarsightChannel.h"
-#include "VoiceSessionParticipant.h"
-
+//#include "VoiceSessionParticipant.h"
+#include "CommunicationModuleFwd.h"
+#include "VoiceSessionInterface.h"
 
 namespace TelepathyIM
 {
@@ -135,7 +137,7 @@ namespace TelepathyIM
         void Ready(VoiceSession* session);
     };
 
-    typedef std::vector<VoiceSession*> VoiceSessionVector;
+//    typedef std::vector<VoiceSession*> VoiceSessionVector;
 
 } // end of namespace: TelepathyIM
 

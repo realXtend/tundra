@@ -7,6 +7,7 @@
 #include "EC_OgreConsoleOverlay.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "ConfigurationManager.h"
 
 namespace OgreRenderer
 {

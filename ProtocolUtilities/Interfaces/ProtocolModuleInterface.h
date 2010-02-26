@@ -3,17 +3,14 @@
 #ifndef incl_ProtocolUtilities_ProtocolModuleInterface_h
 #define incl_ProtocolUtilities_ProtocolModuleInterface_h
 
-#include "Foundation.h"
 #include "CoreDefines.h"
 #include "NetworkEvents.h"
+#include "CoreModuleApi.h"
 
 namespace ProtocolUtilities
 {
-class NetMessageManager;
-}
+    class NetMessageManager;
 
-namespace ProtocolUtilities
-{
     class MODULE_API ProtocolModuleInterface
     {
 

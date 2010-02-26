@@ -3,7 +3,6 @@
 #ifndef incl_DebugStats_TimeProfilerWindow_h
 #define incl_DebugStats_TimeProfilerWindow_h
 
-#include "Framework.h"
 #include "WorldStream.h"
 
 #include <QTreeWidget>
@@ -29,6 +28,13 @@ namespace UiServices
 namespace DebugStats
 {
     class DebugStatsModule;
+}
+
+namespace Foundation
+{
+    class Framework;
+    class ProfilerNodeTree;
+    class ProfilerNode;
 }
 
 class TimeProfilerWindow : public QWidget
