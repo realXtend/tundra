@@ -72,7 +72,7 @@ namespace UiServices
 
         UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
 
-        void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
+        QObject *GetEtherLoginNotifier();
 
         QPair<QString, QString> GetScreenshotPaths();
 

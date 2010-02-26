@@ -194,9 +194,9 @@ namespace UiServices
         }
     }
 
-    void UiModule::SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler) 
+    QObject *UiModule::GetEtherLoginNotifier() 
     { 
-        ether_logic_->SetLoginHandlers(os_login_handler); 
+        return ether_logic_->GetLoginNotifier();
     }
 
     QPair<QString, QString> UiModule::GetScreenshotPaths()

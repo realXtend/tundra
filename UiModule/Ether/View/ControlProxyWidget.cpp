@@ -24,7 +24,9 @@ namespace Ether
               all_action_widget_animations_(0),
               fade_animation_(0),
               scale_animation_(0),
-              move_animation_(0)
+              move_animation_(0),
+              text_label_(0),
+              suppress_buttons_(false)
         {
             parent_->setObjectName("containerWidget");
             setWidget(parent_);
@@ -37,8 +39,11 @@ namespace Ether
                     break;
 
                 case ActionControl:
-                    parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
                     InitActionWidgets();
+                    break;
+                    
+                case AddRemoveControl:
+                    InitAddRemoveControl();
                     break;
             }
 
@@ -187,6 +192,7 @@ namespace Ether
 
         void ControlProxyWidget::InitActionWidgets()
         {
+            parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
             QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 1px; color: white;";
 
             if (direction_ == TopToBottom)
@@ -254,17 +260,81 @@ namespace Ether
                 scale_animation_->setEasingCurve(QEasingCurve::InOutSine);
             }
         }
+        
+        void ControlProxyWidget::InitAddRemoveControl()
+        {
+            parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
+            //QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 1px; color: white;";
+
+            // Remove card button
+            QPushButton *remove_button = new QPushButton("-", parent_);
+            remove_button->setMaximumSize(25,25);
+            //remove_button->setFlat(true);
+            //remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
+            //                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_hover.png'); }"
+            //                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_click.png'); }").arg(button_style));
+
+            QPushButton *add_button = new QPushButton("+", parent_);
+            add_button->setMaximumSize(25,25);
+            //remove_button->setFlat(true);
+
+            QHBoxLayout *layout = new QHBoxLayout(parent_);
+            layout->setSpacing(0);
+            layout->setMargin(0);
+            parent_->setLayout(layout);
+
+            if (direction_ == TopToBottom)
+            {
+                // set style, world graphics
+                //remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
+                //                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_hover.png'); }"
+                //                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_click.png'); }").arg(button_style));
+
+                //layout->addWidget(add_button);
+                //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Preferred));
+                //layout->addWidget(remove_button);
+            }
+            else if (direction_ == BottomToTop)
+            {
+                // set style, avatar graphics
+                //remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
+                //                                   "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_hover.png'); }"
+                //                                   "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_click.png'); }").arg(button_style));
+
+                //layout->addWidget(remove_button);
+                //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Preferred));
+                //layout->addWidget(add_button);
+            }
+
+            layout->addWidget(add_button);
+            layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Preferred));
+            layout->addWidget(remove_button);
+
+            connect(remove_button, SIGNAL( clicked() ), SLOT( RemoveHandler() ));
+            connect(add_button, SIGNAL( clicked() ), SLOT( AddHandler() ));
+
+            widget()->setMaximumHeight(25);
+            widget()->setMinimumHeight(25);
+
+            // Init animations
+            fade_animation_ = new QPropertyAnimation(this, "opacity", this);
+            fade_animation_->setDuration(1000);
+            fade_animation_->setEasingCurve(QEasingCurve::Linear);
+            fade_animation_->setStartValue(0);
+            fade_animation_->setEndValue(1);   
+        }
 
         void ControlProxyWidget::UpdateGeometry(QRectF new_rect, qreal scale, bool do_fade)
         {
+            if (do_fade)
+            {
+                hide();
+                setOpacity(0);
+                return;
+            }
+
             if (type_ == CardControl)
             {
-                if (do_fade)
-                {
-                    hide();
-                    setOpacity(0);
-                }
-
                 // Calculate new geometry, set scale
                 QSize overlay_size(470,431);
                 int name_height = 48 * scale;
@@ -298,12 +368,36 @@ namespace Ether
                 scale_animation_->setEndValue(scale);
                 all_action_widget_animations_->start();
             }
+            else if (type_ == AddRemoveControl)
+            {
+                qreal width = 470 * scale + 60;
+                setMaximumWidth(width);
+                setMinimumWidth(width);
+
+                QPointF calculated_pos;
+                if (direction_ == BottomToTop)
+                {
+                    calculated_pos.setY(new_rect.bottom());
+                    calculated_pos.setX(new_rect.center().x());
+                    calculated_pos.setY(calculated_pos.y() - size().height());
+                    calculated_pos.setX(calculated_pos.x() - size().width()/2);
+                }
+                else if (direction_ == TopToBottom)
+                {
+                    calculated_pos.setY(new_rect.top());
+                    calculated_pos.setX(new_rect.center().x());
+                    calculated_pos.setX(calculated_pos.x() - size().width()/2);
+                }
+
+                setPos(calculated_pos);
+            }
         }
 
         void ControlProxyWidget::UpdateContollerCard(InfoCard *new_card)
         {
             controlled_card_ = new_card;
-            text_label_->setText(controlled_card_->title());
+            if (text_label_)
+                text_label_->setText(controlled_card_->title());
 
             disconnect();
             connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL( finished()),
@@ -353,7 +447,8 @@ namespace Ether
         }
         void ControlProxyWidget::ConnectHandler()
         {
-            emit ActionRequest("connect");
+            if (!suppress_buttons_)
+                emit ActionRequest("connect");
         }
         void ControlProxyWidget::HelpHandler()
         {
@@ -362,7 +457,13 @@ namespace Ether
 
         void ControlProxyWidget::EmitActionRequest(QString type)
         {
-            action_widget_->ShowWidget(type, controlled_card_);
-        }   
+            if (!suppress_buttons_)
+                action_widget_->ShowWidget(type, controlled_card_);
+        }
+
+        void ControlProxyWidget::SuppressButtons(bool suppress)
+        {
+            suppress_buttons_ = suppress;
+        }
     }
 }

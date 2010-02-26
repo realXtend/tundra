@@ -12,11 +12,6 @@
 #include <QUuid>
 #include <QPair>
 
-namespace RexLogic
-{
-    class OpenSimLoginHandler;
-}
-
 namespace Ether
 {
     namespace Data
@@ -36,7 +31,7 @@ namespace Ether
     {
         class EtherSceneController;
         class EtherStateMachine;
-        class EtherLoginHandler;
+        class EtherLoginNotifier;
 
         class EtherLogic : public QObject
         {
@@ -57,7 +52,7 @@ namespace Ether
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }
 
-            void SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler);
+            QObject *EtherLogic::GetLoginNotifier();
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
 
@@ -81,7 +76,7 @@ namespace Ether
             Data::DataManager *data_manager_;
             View::EtherScene *scene_;
             EtherSceneController *scene_controller_;
-            EtherLoginHandler *login_handler_;
+            EtherLoginNotifier *login_notifier_;
 
             QGraphicsScene *previous_scene_;
 

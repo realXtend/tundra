@@ -11,7 +11,7 @@
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
-#include "EventHandlers/LoginHandler.h"
+#include "../RexLogicModule/EventHandlers/LoginHandler.h"
 
 #include <QUiLoader>
 #include <QFile>

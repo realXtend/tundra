@@ -4,7 +4,7 @@
 #include "EtherLogic.h"
 
 #include "EtherSceneController.h"
-#include "EtherLoginHandler.h"
+#include "EtherLoginNotifier.h"
 
 #include "Data/RealXtendAvatar.h"
 #include "Data/OpenSimAvatar.h"
@@ -63,11 +63,11 @@ namespace Ether
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
             
             // Create login handler
-            login_handler_ = new EtherLoginHandler(this, scene_controller_); 
+            login_notifier_ = new EtherLoginNotifier(this, scene_controller_); 
 
             // Signals from scene contoller
             connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
-                    login_handler_, SLOT( ExitApplication() ));
+                    login_notifier_, SLOT( ExitApplication() ));
             connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
                     SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
             connect(scene_controller_, SIGNAL( ObjectRemoved(QUuid) ),
@@ -247,9 +247,9 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetLoginHandlers(RexLogic::OpenSimLoginHandler *os_login_handler)
+        QObject *EtherLogic::GetLoginNotifier()
         {
-            login_handler_->SetOpenSimLoginHandler(os_login_handler);
+            return login_notifier_;
         }
 
         void EtherLogic::ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*> ui_cards)
@@ -260,7 +260,7 @@ namespace Ether
             {
                 data_cards.first = avatar_map_[ui_cards.first->id()];
                 data_cards.second = world_map_[ui_cards.second->id()];
-                login_handler_->ParseInfoFromData(data_cards);
+                login_notifier_->ParseInfoFromData(data_cards);
                 last_login_cards_ = data_cards;
             }
         }
@@ -422,9 +422,8 @@ namespace Ether
                 scene_controller_->RevertLoginAnimation(false);
             else if (state == "connected")
                 scene_controller_->RevertLoginAnimation(true);
-            else if (state == "disconnected")
-                return;
-
+            //else if (state == "disconnected")
+                
             scene_->SupressKeyEvents(false);
         }
 
