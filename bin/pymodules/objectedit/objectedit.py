@@ -191,6 +191,7 @@ class ObjectEdit(Component):
             
     def LeftMousePressed(self, mouseinfo):
         r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
+        r.logInfo("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
         self.dragStarted(mouseinfo)
         
         if self.selection_box is None:
