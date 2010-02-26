@@ -116,6 +116,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
     case RexNetMsgPreloadSound:
         return HandleOSNE_PreloadSound(netdata);
 
+	case RexNetMsgScriptDialog:
+		return HandleOSNE_ScriptDialog(netdata);
+
     default:
         break;
     }
@@ -412,6 +415,32 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     soundsystem->SetGain(new_sound, gain);
 
     return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEventInboundData* data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+	std::string object_id = msg.ReadUUID().ToString(); // ObjectID
+	std::string first_name = msg.ReadString(); // FirstName
+	std::string last_name = msg.ReadString(); // LastName
+	std::string object_name = msg.ReadString(); // ObjectName
+	std::string message = msg.ReadString(); // Message
+	UINT32 chat_channel = msg.ReadS32(); // ChatChannel
+	std::string image_id = msg.ReadUUID().ToString(); // ImageID
+	
+    size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+    while(instance_count)
+    {
+		std::string button_label = msg.ReadString(); // ButtonLabel
+        --instance_count;
+	}
+
+	// TODO: Show dialog with message and buttons
+	//   ScriptDialog dialog = ScriptDialog(object_name, message, buttons);
+	
+	return false;
 }
 
 } //namespace RexLogic
