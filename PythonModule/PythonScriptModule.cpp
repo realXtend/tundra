@@ -1,8 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "PythonScriptModule.h"
 #include "DebugOperatorNew.h"
+#include "PythonScriptModule.h"
 
 #include "ModuleManager.h"
 #include "EventManager.h"
@@ -74,6 +74,8 @@
 
 #include "QEC_Prim.h"
 #include "RexUUID.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace PythonScript
 {

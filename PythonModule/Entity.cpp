@@ -1,4 +1,5 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "PythonScriptModule.h" //for the staticframework hack, for entityptr re-get workaround
 #include "Entity.h"
 
@@ -10,6 +11,8 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+
+#include "MemoryLeakCheck.h"
 
 static PyObject* entity_getattro(PyObject *self, PyObject *name);
 static int entity_setattro(PyObject *self, PyObject *name, PyObject *value);

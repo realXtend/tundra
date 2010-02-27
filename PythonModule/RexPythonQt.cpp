@@ -1,4 +1,5 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 //#include <Python.h> //to add CreateCanvas first as a normal py func
 #include "RexPythonQt.h"
 #include <PythonQt.h>
@@ -13,6 +14,8 @@
 //#include "UICanvas.h"
 //#include "PythonScriptModule.h"
 //#include "gui/PythonQtScriptingConsole.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace PythonScript
 {

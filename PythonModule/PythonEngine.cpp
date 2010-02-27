@@ -1,8 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "PythonScriptModule.h"
 #include "PythonEngine.h"
+
+#include "MemoryLeakCheck.h"
 
 using namespace Foundation;
 
