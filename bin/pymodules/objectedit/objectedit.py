@@ -22,6 +22,8 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 import rexviewer as r
 from circuits import Component
+from PythonQt.QtUiTools import QUiLoader
+from PythonQt.QtCore import QFile
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 
@@ -61,6 +63,8 @@ class ObjectEdit(Component):
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
     
+    SELECTIONRECT = "pymodules/objectedit/selection.ui"
+
     def __init__(self):
         self.sels = []  
         Component.__init__(self)
@@ -87,6 +91,21 @@ class ObjectEdit(Component):
         
         self.resetManipulators()
         
+        loader = QUiLoader()
+        selectionfile = QFile(self.SELECTIONRECT)
+        self.selection_rect = loader.load(selectionfile)
+        rectprops = r.createUiWidgetProperty(2)
+        #uiprops.widget_name_ = "Selection Rect"
+        
+        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
+        proxy = r.createUiProxyWidget(self.selection_rect, rectprops)
+        uism = r.getUiSceneManager()
+        uism.AddProxyWidget(proxy)
+        proxy.setWindowFlags(0) #changing it to Qt::Widget
+        
+        self.selection_rect.setGeometry(0,0,0,0)
+        self.selection_rect_startpos = None
+        
         r.c = self #this is for using objectedit from command.py
         
     def resetValues(self):
@@ -101,6 +120,7 @@ class ObjectEdit(Component):
         self.windowActive = False
         self.canmove = False
         self.selection_box = None
+        self.selection_rect_startpos = None
     
     def resetManipulators(self):
         self.manipulatorsInit = False
@@ -191,13 +211,15 @@ class ObjectEdit(Component):
             
     def LeftMousePressed(self, mouseinfo):
         r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
-        r.logInfo("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
+        r.logDebug("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
         self.dragStarted(mouseinfo)
         
         if self.selection_box is None:
             self.selection_box = r.createEntity("Selection.mesh", 0)
         
         self.left_button_down = True
+        self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+        
         results = []
         results = r.rayCast(mouseinfo.x, mouseinfo.y)
         ent = None
@@ -261,6 +283,33 @@ class ObjectEdit(Component):
             
         self.manipulator.stopManipulating()
         self.duplicateDragStart = False #XXXchange?
+        
+        if self.selection_rect_startpos is not None:
+            self.selection_rect.hide()
+            
+            rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
+            if rectwidth != 0 and rectheight != 0:
+                r.logInfo("Hiding the selection_rect, end size was: " +str(rectwidth) +","+str(rectheight) + " and the position was: (" +str(rectx) + "," +str(recty) + ")") 
+                self.selection_rect.setGeometry(0,0,0,0)
+                self.selection_rect_startpos = None
+    
+    def selectionRectDimensions(self, mouseinfo):
+        rectx = self.selection_rect_startpos[0]
+        recty = self.selection_rect_startpos[1]
+        
+        rectwidth = (mouseinfo.x - rectx)
+        rectheight = (mouseinfo.y - recty)
+        
+        if rectwidth < 0:
+            rectx += rectwidth
+            rectwidth *= -1
+            
+        if rectheight < 0:
+            recty += rectheight
+            rectheight *= -1
+            
+        return rectx, recty, rectwidth, rectheight
+        
         
     def RightMousePressed(self, mouseinfo):
         #r.logInfo("rightmouse down")
@@ -328,22 +377,28 @@ class ObjectEdit(Component):
             movedy = mouse_abs_y - self.prev_mouse_abs_y
             
             if self.left_button_down:
-                if self.duplicateDragStart:
-                    for ent in self.sels:
-                        self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 0, 0, 0) #nasty hardcoded offset
-                    self.duplicateDragStart = False
-                        
-                ent = self.active
-                #print "on_mousemove + hold:", mouseinfo
-                if ent is not None and self.sel_activated and self.canmove:
-                    self.dragging = True
+                if self.selection_rect_startpos is not None:
+                    rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
+                    #print rectwidth, rectheight
+                    self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
+                    self.selection_rect.show() #XXX change?
+                else:
+                    if self.duplicateDragStart:
+                        for ent in self.sels:
+                            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 0, 0, 0) #nasty hardcoded offset
+                        self.duplicateDragStart = False
+                            
+                    ent = self.active
+                    #print "on_mousemove + hold:", mouseinfo
+                    if ent is not None and self.sel_activated and self.canmove:
+                        self.dragging = True
 
-                    self.manipulator.manipulate(self.sels, movedx, movedy)
-                    
-                    self.prev_mouse_abs_x = mouse_abs_x
-                    self.prev_mouse_abs_y = mouse_abs_y
-                    
-                    self.window.update_guivals(ent)
+                        self.manipulator.manipulate(self.sels, movedx, movedy)
+                        
+                        self.prev_mouse_abs_x = mouse_abs_x
+                        self.prev_mouse_abs_y = mouse_abs_y
+                        
+                        self.window.update_guivals(ent)
    
     def on_input(self, evid, callback):
         if self.windowActive:
