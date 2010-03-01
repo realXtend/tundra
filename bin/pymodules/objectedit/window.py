@@ -183,7 +183,6 @@ class ObjectEditWindow:
             if listid == str(id):
                 tuple = self.mainTabList[listid]
                 tWid = tuple[1]
-                
                 tWid.setSelected(False)
             
     def updateMaterialTab(self, ent):
@@ -390,9 +389,6 @@ class ObjectEditWindow:
         if qprim is not None:
             self.propedit.setObject(qprim)
             self.tabwidget.setTabEnabled(2, True)
-            
-            if qprim.ParentId != 0:
-                print "swoot"
 
         self.update_guivals(ent)
         

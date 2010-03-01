@@ -149,6 +149,8 @@ class Manipulator:
                 lengthx = mousex_on_arrow_projection.length * amountx
             
             for ent in ents:
+                #qprim = r.getQPrim(ent.id)
+                #if qprim is not None and qprim.ParentId == 0:
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy)
                 
             if self.usesManipulator:

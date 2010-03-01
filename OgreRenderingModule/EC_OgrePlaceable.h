@@ -104,7 +104,7 @@ namespace OgreRenderer
         //! experimental accessors that use the new 3d vector etc types in Qt 4.6, for qproperties
         QVector3D GetQPosition() const;
         void SetQPosition(const QVector3D newpos);
-        
+
     private:
         //! constructor
         /*! \param module renderer module

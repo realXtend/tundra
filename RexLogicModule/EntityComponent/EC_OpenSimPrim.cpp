@@ -4,7 +4,8 @@
 #include "EntityComponent/EC_OpenSimPrim.h"
 #include "RexLogicModule.h"
 #include "ModuleManager.h"
-#include <QStringList>
+#include "SceneManager.h"
+
 
 namespace RexLogic
 {
@@ -186,5 +187,30 @@ void EC_OpenSimPrim::PrintDebug()
     RexLogicModule::LogInfo("SelectPriority:" + ToString(SelectPriority));
 }
 #endif
+
+QStringList EC_OpenSimPrim::GetChildren() 
+{
+	QStringList prim_children;
+	Scene::ScenePtr scene = GetFramework()->GetScene("World");
+	RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+
+	for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+		Scene::Entity &entity = **iter;
+
+		Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        if (!primentity) continue;
+
+        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+		if(prim.ParentId == LocalId){
+			QString id;
+			id.setNum(prim.LocalId);
+			prim_children.append(id);
+		}
+	}
+	return prim_children;
+}
+
 
 } // namespace RexLogic
