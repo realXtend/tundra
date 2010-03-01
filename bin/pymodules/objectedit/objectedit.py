@@ -218,7 +218,6 @@ class ObjectEdit(Component):
             self.selection_box = r.createEntity("Selection.mesh", 0)
         
         self.left_button_down = True
-        self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
         
         results = []
         results = r.rayCast(mouseinfo.x, mouseinfo.y)
@@ -255,6 +254,7 @@ class ObjectEdit(Component):
                     self.canmove = True
                     
         else:
+            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
             #print "canmove:", self.canmove
             self.canmove = False
             self.deselect()
@@ -286,12 +286,13 @@ class ObjectEdit(Component):
         
         if self.selection_rect_startpos is not None:
             self.selection_rect.hide()
-            
+
             rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
             if rectwidth != 0 and rectheight != 0:
-                r.logInfo("Hiding the selection_rect, end size was: " +str(rectwidth) +","+str(rectheight) + " and the position was: (" +str(rectx) + "," +str(recty) + ")") 
+                r.logInfo("The selection rect was at: (" +str(rectx) + ", " +str(recty) + ") and size was: (" +str(rectwidth) +", "+str(rectheight)+")") 
                 self.selection_rect.setGeometry(0,0,0,0)
-                self.selection_rect_startpos = None
+            
+            self.selection_rect_startpos = None
     
     def selectionRectDimensions(self, mouseinfo):
         rectx = self.selection_rect_startpos[0]
@@ -309,7 +310,6 @@ class ObjectEdit(Component):
             rectheight *= -1
             
         return rectx, recty, rectwidth, rectheight
-        
         
     def RightMousePressed(self, mouseinfo):
         #r.logInfo("rightmouse down")
@@ -377,7 +377,7 @@ class ObjectEdit(Component):
             movedy = mouse_abs_y - self.prev_mouse_abs_y
             
             if self.left_button_down:
-                if self.selection_rect_startpos is not None:
+                if self.selection_rect_startpos is not None:# and self.active is None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
                     #print rectwidth, rectheight
                     self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
