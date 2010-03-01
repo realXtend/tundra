@@ -139,9 +139,16 @@ class ObjectEdit(Component):
     
     def select(self, ent):
         self.sels = []
-        self.sels.append(ent)
         self.canmove = True
-        
+        qprim = r.getQPrim(ent.id)
+        if qprim is not None:
+            if qprim.ParentId != 0:
+                r.logInfo("Entity had a parent, lets pick that instead!")
+                ent = r.getEntity(qprim.ParentId)
+            #~ else:
+                #~ print qprim.GetChildren()
+        print dir(qprim)        
+        self.sels.append(ent)
         self.baseselect(ent)
         self.window.selected(ent)
 
@@ -341,6 +348,7 @@ class ObjectEdit(Component):
                             for _ent in self.sels:
                                 if _ent.id == ent.id:
                                     self.sels.remove(_ent)
+                                    self.window.deselectSelection(_ent.id)
                         self.canmove = True
                         
             #r.logInfo(str(self.sels))

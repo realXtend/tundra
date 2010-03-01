@@ -178,6 +178,14 @@ class ObjectEditWindow:
         
         self.currentlySelectedTreeWidgetItem = []
         
+    def deselectSelection(self, id):
+        for listid in self.mainTabList.keys():
+            if listid == str(id):
+                tuple = self.mainTabList[listid]
+                tWid = tuple[1]
+                
+                tWid.setSelected(False)
+            
     def updateMaterialTab(self, ent):
         #ent = self.controller.active
         if ent is not None:
@@ -381,7 +389,10 @@ class ObjectEditWindow:
         qprim = r.getQPrim(ent.id)
         if qprim is not None:
             self.propedit.setObject(qprim)
-            self.tabwidget.setTabEnabled(2, True)        
+            self.tabwidget.setTabEnabled(2, True)
+            
+            if qprim.ParentId != 0:
+                print "swoot"
 
         self.update_guivals(ent)
         
