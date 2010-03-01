@@ -131,30 +131,42 @@ class ObjectEdit(Component):
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
-    def baseselect(self, ent):
+    def baseselect(self, ent, multiselect):
+        parent = False
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
         self.updateSelectionBox()
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
+        
+        #~ qprim = r.getQPrim(ent.id)
+        #~ if qprim is not None:
+            #~ if qprim.ParentId != 0:
+                #~ r.logInfo("Entity had a parent, lets pick that instead!")
+                #~ ent = r.getEntity(qprim.ParentId)
+                #~ qprim = r.getQPrim(ent.id)
+                #~ if qprim is not None:
+                    #~ parent = True
+            #~ else:
+                #~ parent = True
+        
+        #~ if parent:
+            #~ children = qprim.GetChildren()
+            #~ for child in children:
+                #~ _ent = r.getEntity(int(child))
+                #~ #self.window.selected(_ent, True)
+                #~ self.sels.append(_ent)
+                #~ multiselect = True
+
+        self.window.selected(ent, multiselect) 
     
     def select(self, ent):
         self.sels = []
         self.canmove = True
-        qprim = r.getQPrim(ent.id)
-        if qprim is not None:
-            if qprim.ParentId != 0:
-                r.logInfo("Entity had a parent, lets pick that instead!")
-                ent = r.getEntity(qprim.ParentId)
-            #~ else:
-                #~ print qprim.GetChildren()
-        print dir(qprim)        
         self.sels.append(ent)
-        self.baseselect(ent)
-        self.window.selected(ent)
+        self.baseselect(ent, False)
 
     def multiselect(self, ent):
-        self.baseselect(ent)
-        self.window.selected(ent, True)
+        self.baseselect(ent, True)
     
     def deselect(self):
         if len(self.sels)>0:
@@ -277,11 +289,11 @@ class ObjectEdit(Component):
 
     def LeftMouseReleased(self, mouseinfo):
         self.left_button_down = False
-        ent = self.active
-        if ent: #XXX something here?
+        if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
-                #print "LeftMouseReleased, networkUpdate call"
-                r.networkUpdate(ent.id)
+                for ent in self.sels:
+                    #print "LeftMouseReleased, networkUpdate call"
+                    r.networkUpdate(ent.id)
             
             self.sel_activated = True
         

@@ -10,6 +10,7 @@
 #include "Declare_EC.h"
 
 #include <QVariant>
+#include <QStringList>
 
 namespace RexLogic
 {
@@ -364,7 +365,10 @@ namespace RexLogic
         void setSelectPriority(QVariant value) { SelectPriority = value.toULongLong(); }
         QVariant getSelectPriority() const { return QVariant(static_cast<qulonglong>(SelectPriority)); }
 
-        void setParentId(unsigned int value) { ParentId = value; }
+        void setParentId(unsigned int value) { 
+			ParentId = value; 
+			//send the update packet upstream
+		}
         unsigned int getParentId() const { return ParentId; }
 
         void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
@@ -372,9 +376,14 @@ namespace RexLogic
 
         QVariantMap getMaterials();
         void setMaterials(QVariantMap qvmap);
+	
+	public slots:
+		QStringList GetChildren();
 
     private:
         EC_OpenSimPrim(Foundation::ModuleInterface* module);
+
+
     };
 }
 
