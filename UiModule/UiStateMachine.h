@@ -3,7 +3,6 @@
 #ifndef incl_UiModule_UiStateMachine_h
 #define incl_UiModule_UiStateMachine_h
 
-//#include "Foundation.h"
 #include "UiModuleApi.h"
 
 #include <QStateMachine>
@@ -26,7 +25,7 @@ namespace UiServices
     Q_OBJECT
 
     public:
-        UiStateMachine(QObject *parent, QGraphicsView *view);
+        UiStateMachine(QGraphicsView *view, QObject *parent = 0);
 
     public slots:
         void SwitchToInworldScene();

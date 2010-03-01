@@ -22,6 +22,7 @@
 #include <QStringList>
 #include <QTimer>
 #include <QDir>
+#include <QList>
 
 #include <QDebug>
 
@@ -79,6 +80,18 @@ namespace Ether
                     SLOT( RemoveObjectFromData(QUuid) ));
         }
 
+        EtherLogic::~EtherLogic()
+        {
+            foreach (Data::AvatarInfo *avatar, avatar_map_.values())
+                SAFE_DELETE(avatar);
+            foreach (Data::WorldInfo *world, world_map_.values())
+                SAFE_DELETE(world);
+            foreach (View::InfoCard *infocard, avatar_card_map_.values())
+                SAFE_DELETE(infocard);
+            foreach (View::InfoCard *infocard, world_card_map_.values())
+                SAFE_DELETE(infocard);
+        }
+
         void EtherLogic::Start()
         {
             last_login_cards_.first = 0;
@@ -87,9 +100,39 @@ namespace Ether
             GenerateAvatarInfoCards();
             GenerateWorldInfoCards();
 
+            // For first start of ether, lets look if the user has used ether before and read the selected cards
+            // Set them to be selected for first start
+            QVector<View::InfoCard*> avatar_vector = avatar_card_map_.values().toVector();
+            QVector<View::InfoCard*> world_vector = world_card_map_.values().toVector();
+            QPair<QUuid, QUuid> last_run_selected = data_manager_->GetLastSelectedCards();
+
+            if (!last_run_selected.first.isNull())
+            {
+                if (avatar_card_map_.contains(last_run_selected.first))
+                {
+                    View::InfoCard *last_selected_avatar = avatar_card_map_[last_run_selected.first];
+                    if (last_selected_avatar)
+                    {
+                        avatar_vector.remove(avatar_vector.indexOf(last_selected_avatar));
+                        avatar_vector.insert(0, last_selected_avatar);
+                    }
+                }
+            }
+            if (!last_run_selected.second.isNull())
+            {
+                if (world_card_map_.contains(last_run_selected.second))
+                {
+                    View::InfoCard *last_selected_world = world_card_map_[last_run_selected.second];
+                    if (last_selected_world)
+                    {
+                        world_vector.remove(world_vector.indexOf(last_selected_world));
+                        world_vector.insert(0, last_selected_world);
+                    }
+                }
+            }
+
             scene_controller_->LoadActionWidgets();
-            scene_controller_->LoadAvatarCardsToScene(avatar_card_map_, top_menu_visible_items_, true);
-            scene_controller_->LoadWorldCardsToScene(world_card_map_, bottom_menu_visible_items_, true);
+            scene_controller_->LoadStartUpCardsToScene(avatar_vector, top_menu_visible_items_, world_vector, bottom_menu_visible_items_);
 
             // HACK to put focus for avatar row :)
             QTimer::singleShot(500, scene_controller_, SLOT(UpPressed()));

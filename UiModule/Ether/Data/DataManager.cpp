@@ -21,6 +21,7 @@ namespace Ether
     {
         DataManager::DataManager(QObject *parent)
             : QObject(parent),
+              ether_config_("ether/ethersettings"),
               avatar_settings_name_("ether/avatarinfocards"),
               worldserver_settings_name_("ether/worldserverinfocards")
         {
@@ -391,6 +392,24 @@ namespace Ether
                 return true;
             }
             return false;
+        }
+
+        void DataManager::StoreSelectedCards(QUuid avatar_id, QUuid world_id)
+        {
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", ether_config_);
+            if (avatar_map_.contains(avatar_id))
+                ether_config.setValue("selectedcards/avatar", avatar_map_[avatar_id]->id());
+            if (world_map_.contains(world_id))
+                ether_config.setValue("selectedcards/world", world_map_[world_id]->id());
+        }
+
+        QPair<QUuid, QUuid> DataManager::GetLastSelectedCards()
+        {
+            QPair<QUuid, QUuid> selected_pair;
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", ether_config_);
+            selected_pair.first = QUuid(ether_config.value("selectedcards/avatar", QString()).toString());
+            selected_pair.second = QUuid(ether_config.value("selectedcards/world", QString()).toString());
+            return selected_pair;
         }
 
         /*****     GETTERS     *****/

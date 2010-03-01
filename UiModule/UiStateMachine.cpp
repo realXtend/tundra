@@ -12,7 +12,7 @@
 
 namespace UiServices
 {
-    UiStateMachine::UiStateMachine(QObject *parent, QGraphicsView *view)
+    UiStateMachine::UiStateMachine(QGraphicsView *view, QObject *parent)
         : QStateMachine(parent),
           view_(view),
           current_scene_(view->scene())

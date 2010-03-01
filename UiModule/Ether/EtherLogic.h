@@ -38,6 +38,7 @@ namespace Ether
 
         public:
             EtherLogic(Foundation::Framework *framework, QGraphicsView *view);
+            virtual ~EtherLogic();
 
         public slots:
             void Start();

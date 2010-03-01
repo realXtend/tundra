@@ -25,6 +25,7 @@ namespace Ether
 
         public:
             EtherScene(QObject *parent, const QRectF &scene_rect);
+            virtual ~EtherScene();
 
             void SupressKeyEvents(bool enabled) { supress_key_events_ = enabled; }
             void EmitSwitchSignal();

@@ -8,21 +8,12 @@
 #include <QUuid>
 
 #include "UiModuleFwd.h"
-//#include "View/EtherScene.h"
-//#include "View/VerticalMenu.h"
 #include <QScopedPointer>
 #include <QParallelAnimationGroup>
 
 #include "View/EtherScene.h"
 #include "View/VerticalMenu.h"
-
-//#include "Data/DataManager.h"
-//#include "Data/AvatarInfo.h"
 #include "Data/WorldInfo.h"
-
-//#include "View/InfoCard.h"
-//#include "View/ControlProxyWidget.h"
-//#include "View/ActionProxyWidget.h"
 
 namespace Ether
 {
@@ -36,9 +27,12 @@ namespace Ether
         public:
             EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EtherMenu*, View::EtherMenu*> menus,
                                  QRectF card_size, int top_items, int bottom_items);
+            virtual ~EtherSceneController();
 
         public slots:
             void LoadActionWidgets();
+
+            void LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items, QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items);
             void LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene);
             void NewAvatarToScene(View::InfoCard *new_card, QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items);
             void LoadWorldCardsToScene(QMap<QUuid, View::InfoCard*> world_map, int visible_bottom_items,  bool add_to_scene);
