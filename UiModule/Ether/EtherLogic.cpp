@@ -424,11 +424,19 @@ namespace Ether
         void EtherLogic::SetConnectionState(QString state)
         {
             if (state == "failed")
+            {
                 scene_controller_->RevertLoginAnimation(false);
+                scene_->SetConnectionStatus(false);
+            }
             else if (state == "connected")
+            {
                 scene_controller_->RevertLoginAnimation(true);
-            //else if (state == "disconnected")
-                
+                scene_->SetConnectionStatus(true);
+            }
+            else if (state == "disconnected")
+            {
+                scene_->SetConnectionStatus(false);
+            }
             scene_->SupressKeyEvents(false);
         }
 

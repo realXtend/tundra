@@ -74,8 +74,6 @@ namespace Ether
             world_info_widget_ = 0;
             control_widget_ = 0;
             action_proxy_widget_ = 0;
-
-
         }
 
         void EtherSceneController::LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene)
@@ -188,6 +186,7 @@ namespace Ether
             // Add/remove for avatar
             avatar_addremove_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::AddRemoveControl, View::ControlProxyWidget::BottomToTop);
             avatar_addremove_widget_->SetActionWidget(action_proxy_widget_);
+            avatar_addremove_widget_->SetOverlayWidget(avatar_info_widget_);
             scene_->addItem(avatar_addremove_widget_);
 
             // World info frame
@@ -198,6 +197,7 @@ namespace Ether
             // Add/remove for world
             world_addremove_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::AddRemoveControl, View::ControlProxyWidget::TopToBottom);
             world_addremove_widget_->SetActionWidget(action_proxy_widget_);
+            world_addremove_widget_->SetOverlayWidget(world_info_widget_);
             scene_->addItem(world_addremove_widget_);
 
             // Bottom controls
@@ -242,14 +242,16 @@ namespace Ether
             top_menu_->RectChanged(top_rect);
             bottom_menu_->RectChanged(bottom_rect);
             
+            QRectF top_scene_rect = hightlight_top->mapRectToScene(hightlight_top->boundingRect());
+            QRectF bottom_scene_rect = hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect());
             // Update avatar info geometry (highlighted card size and pos)
-            avatar_info_widget_->UpdateGeometry(hightlight_top->mapRectToScene(hightlight_top->boundingRect()), present_scale, do_fade);
+            avatar_info_widget_->UpdateGeometry(top_scene_rect, present_scale, do_fade);
             // Update world info geometry (highlighted card size and pos)
-            world_info_widget_->UpdateGeometry(hightlight_bottom->mapRectToScene(hightlight_bottom->boundingRect()), present_scale, do_fade);
+            world_info_widget_->UpdateGeometry(bottom_scene_rect, present_scale, do_fade);
             // Update avatar add/remove widget
-            avatar_addremove_widget_->UpdateGeometry(avatar_info_widget_->mapRectToScene(avatar_info_widget_->boundingRect()), present_scale, do_fade);
+            avatar_addremove_widget_->UpdateGeometry(top_scene_rect, present_scale, do_fade);
             // Update world add/remove widget
-            world_addremove_widget_->UpdateGeometry(world_info_widget_->mapRectToScene(world_info_widget_->boundingRect()), present_scale, do_fade);
+            world_addremove_widget_->UpdateGeometry(bottom_scene_rect, present_scale, do_fade);
             // Update control widget position (bottom of screen, pos calculated inside)
             control_widget_->UpdateGeometry(controls_rect, present_scale, !do_fade);
             // Update action widgets geometry (full screen)

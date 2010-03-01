@@ -12,7 +12,6 @@
 #include <QPropertyAnimation>
 
 #include "UiModuleFwd.h"
-//#include "InfoCard.h"
 
 namespace Ether
 {
@@ -29,6 +28,7 @@ namespace Ether
 
             void SupressKeyEvents(bool enabled) { supress_key_events_ = enabled; }
             void EmitSwitchSignal();
+            void SetConnectionStatus(bool connected);
 
         protected:
             void keyPressEvent(QKeyEvent *ke);
@@ -38,8 +38,9 @@ namespace Ether
             void RectChanged(const QRectF &new_rect);
 
         private:
-            QPixmap bg_image_;
+            QPixmap bg_image_connected_, bg_image_disconnected_;
             bool supress_key_events_;
+            bool connected_;
 
         signals:
             void UpPressed();
