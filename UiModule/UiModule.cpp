@@ -42,6 +42,8 @@ namespace UiServices
         SAFE_DELETE(ui_state_machine_);
         SAFE_DELETE(ui_scene_manager_);
         SAFE_DELETE(ui_notification_manager_);
+        SAFE_DELETE(ui_console_manager_);
+        SAFE_DELETE(ether_logic_);
     }
 
     /*************** ModuleInterfaceImpl ***************/
@@ -65,7 +67,7 @@ namespace UiServices
         {
             LogDebug("Acquired Ogre QGraphicsView shared pointer from framework");
 
-            ui_state_machine_ = new UiStateMachine(0, ui_view_);
+            ui_state_machine_ = new UiStateMachine(ui_view_);
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             LogDebug("State Machine STARTED");
 

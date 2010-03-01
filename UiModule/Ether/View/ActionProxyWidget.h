@@ -4,11 +4,6 @@
 #define incl_UiModule_ActionProxyWidget_h
 
 #include "UiModuleFwd.h"
-//#include "InfoCard.h"
-//#include "Ether/Data/DataManager.h"
-//#include "Ether/Data/OpenSimAvatar.h"
-//#include "Ether/Data/OpenSimWorld.h"
-//#include "Ether/Data/RealXtendAvatar.h"
 
 #include <QGraphicsProxyWidget>
 #include <QPropertyAnimation>

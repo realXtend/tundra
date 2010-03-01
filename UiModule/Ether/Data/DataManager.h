@@ -9,9 +9,6 @@
 #include <QUuid>
 
 #include "UiModuleFwd.h"
-
-//#include "AvatarInfo.h"
-//#include "WorldInfo.h"
 #include "EtherDataTypes.h"
 
 namespace Ether
@@ -43,7 +40,11 @@ namespace Ether
             Data::WorldInfo *GetWorldInfo(QString uuid);
             QMap<QUuid, Data::WorldInfo *> GetWorldMap();
 
+            void StoreSelectedCards(QUuid avatar_id, QUuid world_id);
+            QPair<QUuid, QUuid> DataManager::GetLastSelectedCards();
+
         private:
+            QString ether_config_;
             QString avatar_settings_name_;
             QString worldserver_settings_name_;
 

@@ -34,6 +34,10 @@ namespace Ether
                     SLOT( RectChanged(const QRectF &) ));
         }
 
+        EtherScene::~EtherScene()
+        {
+        }
+
         void EtherScene::keyPressEvent(QKeyEvent *ke)
         {
             QGraphicsScene::keyPressEvent(ke);

@@ -76,6 +76,36 @@ namespace Ether
             action_proxy_widget_ = 0;
         }
 
+        EtherSceneController::~EtherSceneController()
+        {
+            SAFE_DELETE(top_menu_);
+            SAFE_DELETE(bottom_menu_);
+        }
+
+        void EtherSceneController::LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items, QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items)
+        {
+            top_menu_visible_items_ = visible_top_items;
+            bottom_menu_visible_items_ = visible_bottom_items;
+
+            // Add to scene
+            foreach (View::InfoCard *avatar_card, avatar_ordered_vector)
+                scene_->addItem(avatar_card);
+            foreach (View::InfoCard *world_card, world_ordered_vector)
+                scene_->addItem(world_card);
+
+            // Calculate rects
+            QRectF top_rect = scene_->sceneRect();
+            top_rect.setHeight(top_rect.height()/2 - 5);
+
+            QRectF bottom_rect = scene_->sceneRect();
+            bottom_rect.setY(scene_->height()/2 + 5);
+            bottom_rect.setHeight(scene_->height()/2);
+
+            // Start menus
+            top_menu_->Initialize(top_rect, avatar_ordered_vector, card_size_, 0.95, top_menu_visible_items_, 0.05, menu_cap_size_);
+            bottom_menu_->Initialize(bottom_rect, world_ordered_vector, card_size_, 0.95, bottom_menu_visible_items_, 0.05, menu_cap_size_);
+        }
+
         void EtherSceneController::LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene)
         {
             top_menu_visible_items_ = visible_top_items;
@@ -363,7 +393,11 @@ namespace Ether
             if (request_type == "connect")
                 TryStartLogin();
             else if (request_type == "exit")
+            {
+                if (last_active_top_card_ && last_active_bottom_card_)
+                    data_manager_->StoreSelectedCards(last_active_top_card_->id(), last_active_bottom_card_->id());
                 emit ApplicationExitRequested();
+            }
             else if (request_type == "help")
                 return; // Do nothing atm
         }
