@@ -92,7 +92,7 @@ namespace UiServices
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
-        //ui_state_machine_->SwitchToEtherScene(); // uncomment when ether is default on startup
+        ui_state_machine_->SwitchToEtherScene(); // comment to set classic login as default on startup
         LogDebug("Ether Logic STARTED");
     }
 
@@ -135,7 +135,7 @@ namespace UiServices
                 {
                     ether_logic_->UpdateUiPixmaps();
                     ether_logic_->SetConnectionState("disconnected");
-                    //ui_state_machine_->SwitchToEtherScene();
+                    ui_state_machine_->SwitchToEtherScene(); // comment to set classic login as default when disconnecting
                     ui_scene_manager_->Disconnected();
                     break;
                 }

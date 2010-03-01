@@ -22,10 +22,12 @@ namespace Ether
     {
         EtherScene::EtherScene(QObject *parent, const QRectF &scene_rect)
             : QGraphicsScene(scene_rect, parent),
-              supress_key_events_(false)
+              supress_key_events_(false),
+              connected_(false)
         {
-            bg_image_ = QPixmap("./data/ui/images/ether/main_background.png");
-            QBrush bg_brush(bg_image_);            
+            bg_image_disconnected_ = QPixmap("./data/ui/images/ether/main_background_disconnected.png");
+            bg_image_connected_ = QPixmap("./data/ui/images/ether/main_background_connected.png");
+            QBrush bg_brush(bg_image_disconnected_);            
             setBackgroundBrush(bg_brush);
 
             connect(this, SIGNAL( sceneRectChanged(const QRectF &) ),
@@ -82,9 +84,19 @@ namespace Ether
             QGraphicsScene::mousePressEvent(mouse_event);
         }
 
+        void EtherScene::SetConnectionStatus(bool connected) 
+        {
+            connected_ = connected;
+            RectChanged(sceneRect());
+        }
+
         void EtherScene::RectChanged(const QRectF &new_rect)
         {
-            QPixmap bg = bg_image_.scaled(new_rect.size().toSize());
+            QPixmap bg;
+            if (connected_)
+                bg = bg_image_connected_.scaled(new_rect.size().toSize());
+            else
+                bg = bg_image_disconnected_.scaled(new_rect.size().toSize());
             setBackgroundBrush(QBrush(bg));
         }
 

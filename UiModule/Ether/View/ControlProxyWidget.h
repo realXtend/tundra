@@ -60,6 +60,7 @@ namespace Ether
             void UpdateGeometry(QRectF rect, qreal scale, bool do_fade);
             void UpdateContollerCard(InfoCard *new_card);
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
+            void SetOverlayWidget(ControlProxyWidget *overlay_widget) { overlay_widget_ =  overlay_widget; }
             void SuppressButtons(bool suppress);
 
         private slots:
@@ -91,13 +92,12 @@ namespace Ether
 
             View::InfoCard *controlled_card_;
             ActionProxyWidget *action_widget_;
+            ControlProxyWidget *overlay_widget_;
 
             QParallelAnimationGroup *all_action_widget_animations_;
             QPropertyAnimation *fade_animation_;
             QPropertyAnimation *scale_animation_;
             QPropertyAnimation *move_animation_;
-
-            QRectF last_scene_rect_;
 
             bool suppress_buttons_;
 
