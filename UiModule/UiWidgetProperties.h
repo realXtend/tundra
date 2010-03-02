@@ -44,6 +44,7 @@ namespace UiServices
         // READ & WRITE
         Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
         Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
+        Q_ENUMS(WidgetType)
         
 
     public:
