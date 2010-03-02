@@ -15,6 +15,8 @@ namespace RexLogic
 {
     struct DecodedTerrainPatch;
     class RexLogicModule;
+	class ScriptDialogHandler;
+	typedef boost::shared_ptr<ScriptDialogHandler> ScriptDialogHandlerPtr;
 
     /// Handles incoming SLUDP network events in a reX-specific way. \todo Break down into more logical functions.
     class NetworkEventHandler
@@ -47,6 +49,8 @@ namespace RexLogic
         boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 
         RexLogicModule *rexlogicmodule_;
+
+		ScriptDialogHandlerPtr script_dialog_handler_;
     };
 }
 

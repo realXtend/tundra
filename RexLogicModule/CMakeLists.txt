@@ -21,13 +21,14 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h)
+file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Communications/*.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
 AddSourceFolder (EntityComponent)
 AddSourceFolder (EventHandlers)
 AddSourceFolder (Environment)
+AddSourceFolder (Communications)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()

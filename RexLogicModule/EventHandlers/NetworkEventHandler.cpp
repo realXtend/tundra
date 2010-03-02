@@ -19,7 +19,7 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
-
+#include "Communications/ScriptDialogHandler.h"
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
 
@@ -67,6 +67,8 @@ NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLo
         DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
         DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
     }
+
+	script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(framework));
 }
 
 NetworkEventHandler::~NetworkEventHandler()
@@ -430,19 +432,23 @@ bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEven
 	std::string last_name = msg.ReadString(); // LastName
 	std::string object_name = msg.ReadString(); // ObjectName
 	std::string message = msg.ReadString(); // Message
-	u32 chat_channel = msg.ReadS32(); // ChatChannel
+	s32 chat_channel = msg.ReadS32(); // ChatChannel
 	std::string image_id = msg.ReadUUID().ToString(); // ImageID
 	
     size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+	std::vector<std::string> button_labels;
     while(instance_count)
     {
 		std::string button_label = msg.ReadString(); // ButtonLabel
+		button_labels.push_back(button_label);
         --instance_count;
 	}
 
-	// TODO: Show dialog with message and buttons
-	//   ScriptDialog dialog = ScriptDialog(object_name, message, buttons);
-	
+	std::string owners_name = first_name + " " + last_name;
+	ScriptDialogRequest request(object_name, owners_name, message, chat_channel, button_labels);
+	if (script_dialog_handler_)
+		script_dialog_handler_->Handle(request);
+
 	return false;
 }
 

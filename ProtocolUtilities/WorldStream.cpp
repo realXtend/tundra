@@ -228,7 +228,7 @@ void WorldStream::SendLogoutRequestPacket()
     LogInfo("Sent a Logout Request to the server... waiting for reply before quitting.");
 }
 
-void WorldStream::SendChatFromViewerPacket(const std::string &text)
+void WorldStream::SendChatFromViewerPacket(const std::string &text, s32 channel)
 {
     if (!connected_)
         return;
@@ -238,9 +238,9 @@ void WorldStream::SendChatFromViewerPacket(const std::string &text)
 
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-    m->AddBuffer(text.length(), (uint8_t*)text.c_str());
-    m->AddU8(1);
-    m->AddS32(0);
+    m->AddBuffer(text.length(), (uint8_t*)text.c_str()); // Message
+    m->AddU8(1); // Type
+    m->AddS32(channel); // Channel
 
     FinishMessageBuilding(m);
 }

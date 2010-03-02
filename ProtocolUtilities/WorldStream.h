@@ -101,7 +101,7 @@ namespace ProtocolUtilities
         //------------------- Packet sending functions ------------------- //
 
         /// Send the UDP chat packet.
-        void SendChatFromViewerPacket(const std::string &text);
+        void SendChatFromViewerPacket(const std::string &text, s32 channel = 0);
 
         /// Sends the first UDP packet to open up the circuit with the server.
         void SendUseCircuitCodePacket();
