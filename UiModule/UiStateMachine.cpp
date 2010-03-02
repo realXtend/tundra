@@ -130,7 +130,7 @@ namespace UiServices
         disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
         
         current_scene_ = scene_map_[name];
-        current_scene_->setSceneRect(view_->rect());
+        current_scene_->setSceneRect(view_->viewport()->rect());
         if (view_->scene() != current_scene_)
             view_->setScene(current_scene_);
                 

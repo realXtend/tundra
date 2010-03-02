@@ -250,7 +250,7 @@ namespace OgreRenderer
             // Create QOgreWorldView that controls ogres window and ui overlay
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
             q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
-            q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->width(), q_ogre_ui_view_->height());
+            q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
         }
         catch (Ogre::Exception &/*e*/)
         {
@@ -421,7 +421,7 @@ namespace OgreRenderer
         {
             PROFILE(Renderer_Render_QtBlit);
 
-            QSize viewsize(q_ogre_ui_view_-> size());
+            QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
             // Compositing back buffer
