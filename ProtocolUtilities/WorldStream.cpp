@@ -1474,6 +1474,46 @@ void WorldStream::SendUUIDGroupNameRequestPacket(const std::vector<RexUUID> &gro
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectLink);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+
+    // ObjectData
+    m->SetVariableBlockCount(local_ids.size());
+    for(int i = 0; i < local_ids.size(); ++i)
+        m->AddU32(local_ids[i]);
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectDelink);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+
+    // ObjectData
+    m->SetVariableBlockCount(local_ids.size());
+    for(int i = 0; i < local_ids.size(); ++i)
+        m->AddU32(local_ids[i]);
+
+    FinishMessageBuilding(m);
+}
+
 std::string WorldStream::GetCapability(const std::string &name)
 {
     protocolModule_ = GetCurrentProtocolModule();

@@ -433,6 +433,14 @@ namespace ProtocolUtilities
         ///@param group_ids List of group ID's.
         void SendUUIDGroupNameRequestPacket(const std::vector<RexUUID> &group_ids);
 
+        /// Sends an ObjectLink packet.
+        ///@param local_ids List of local entity ID's.
+        void SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids);
+
+        /// Sends an ObjectDelink packet.
+        ///@param local_ids List of local entity ID's.
+        void SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids);
+
         //------------------- Utility functions ------------------- //
 
         /// Set the connection type.
