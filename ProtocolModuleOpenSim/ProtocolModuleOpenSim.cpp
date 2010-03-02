@@ -141,9 +141,24 @@ namespace OpenSimProtocol
     //virtual
     void ProtocolModuleOpenSim::OnNetworkMessageReceived(ProtocolUtilities::NetMsgID msgID, ProtocolUtilities::NetInMessage *msg)
     {
-        // Send a Network event. The message ID functions as the event ID.
-        ProtocolUtilities::NetworkEventInboundData data(msgID, msg);
-        eventManager_->SendEvent(networkEventInCategory_, msgID, &data);
+        try
+        {
+            // Send a Network event. The message ID functions as the event ID.
+            ProtocolUtilities::NetworkEventInboundData data(msgID, msg);
+            eventManager_->SendEvent(networkEventInCategory_, msgID, &data);
+        }
+        catch(const Exception &e)
+        {
+            LogInfo(std::string("Warning: Handling an inbound network message threw an exception: ") + e.what());
+        }
+        catch(const std::exception &e)
+        {
+            LogInfo(std::string("Warning: Handling an inbound network message threw an exception: ") + e.what());
+        }
+        catch(...)
+        {
+            LogInfo("Warning: Handling an inbound network message threw an unknown exception.");
+        }
     }
 
     //virtual

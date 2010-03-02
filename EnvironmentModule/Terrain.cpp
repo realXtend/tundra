@@ -436,6 +436,8 @@ namespace Environment
         u8 layerID = msg.ReadU8();
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
+        if (!packedData)
+            return false;
         ProtocolUtilities::BitStream bits(packedData, sizeBytes);
         TerrainPatchGroupHeader header;
 

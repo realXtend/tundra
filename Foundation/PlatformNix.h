@@ -4,6 +4,9 @@
 #define incl_FoundationPlatformNix_h
 
 #if !defined(_WINDOWS)
+
+#include <iostream>
+
 namespace Foundation
 {
     class Framework;
@@ -15,7 +18,7 @@ namespace Foundation
     {
     public:
         //! default constructor
-        PlatformNix(Framework *framework) : framework_(framework) {}
+        explicit PlatformNix(Framework *framework) : framework_(framework) {}
         //! destructor
         virtual ~PlatformNix() {}
 

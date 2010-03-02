@@ -113,6 +113,7 @@ namespace Environment
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];
 
         /// Just need to have this here to be able to destroy the terrain nodes.
+        ///\todo This can be removed. The parent class contains this.
         Foundation::Framework* framework_; 
     };
 }

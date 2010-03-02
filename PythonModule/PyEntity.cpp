@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "PythonScriptModule.h" //for the staticframework hack, for entityptr re-get workaround
-#include "Entity.h"
+#include "PyEntity.h"
 
 #include "PythonScriptModule.h"
 #include "RexLogicModule.h" //for getting prim component data

@@ -43,6 +43,8 @@ namespace OgreRenderer
     /// is derived from the LitTextured material.
     Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLitTexturedMaterial(const std::string& materialName);
 
+    Ogre::MaterialPtr OGRE_MODULE_API CloneMaterial(const std::string& sourceMaterialName, const std::string &newName);
+
     //! Creates legacy material variations from texture
     /*! @param texture_name texture to use
         @param update if true, will recreate the materials even if they already exist (used when updating the texture, and

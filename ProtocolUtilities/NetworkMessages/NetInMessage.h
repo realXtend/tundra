@@ -118,7 +118,11 @@ namespace ProtocolUtilities
 
         /// Resets the reading of the message stream and jumps back to the first block & variable.
         void ResetReading();
-        
+
+#ifdef _DEBUG
+        /// Overrides the MsgID of this message with another. Only for debugging purposes.
+        void SetMessageID(NetMsgID id);
+#endif
     private:
         void operator=(const NetInMessage &);
         

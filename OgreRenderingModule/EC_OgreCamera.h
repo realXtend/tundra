@@ -79,7 +79,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreCamera(Foundation::ModuleInterface* module);
+        explicit EC_OgreCamera(Foundation::ModuleInterface* module);
         
         //! attaches camera to placeable
         void AttachCamera();

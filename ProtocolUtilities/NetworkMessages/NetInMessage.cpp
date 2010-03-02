@@ -176,11 +176,20 @@ void NetInMessage::ResetReading()
     ReadNextVariableSize();
 }
 
+#ifdef _DEBUG
+void NetInMessage::SetMessageID(NetMsgID id)
+{
+    messageID = id;
+}
+#endif
+
 uint8_t NetInMessage::ReadU8()
 {
     RequireNextVariableType(NetVarU8);
 
     uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(uint8_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadU8 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -191,6 +200,8 @@ uint16_t NetInMessage::ReadU16()
     RequireNextVariableType(NetVarU16);
     
     uint16_t *data = (uint16_t*)ReadBytesUnchecked(sizeof(uint16_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadU16 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -201,6 +212,8 @@ uint32_t NetInMessage::ReadU32()
     RequireNextVariableType(NetVarU32);
 
     uint32_t *data = (uint32_t*)ReadBytesUnchecked(sizeof(uint32_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadU32 failed!");
     AdvanceToNextVariable();
     return *data;
 }
@@ -210,6 +223,8 @@ uint64_t NetInMessage::ReadU64()
     RequireNextVariableType(NetVarU64);
 
     uint64_t *data = (uint64_t*)ReadBytesUnchecked(sizeof(uint64_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadU64 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -220,6 +235,8 @@ int8_t NetInMessage::ReadS8()
     RequireNextVariableType(NetVarS8);
 
     uint8_t *data = (uint8_t*)ReadBytesUnchecked(sizeof(int8_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadS8 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -230,6 +247,8 @@ int16_t NetInMessage::ReadS16()
     RequireNextVariableType(NetVarS16);
 
     int16_t *data = (int16_t*)ReadBytesUnchecked(sizeof(int16_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadS16 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -240,6 +259,8 @@ int32_t NetInMessage::ReadS32()
     RequireNextVariableType(NetVarS32);
 
     int32_t *data = (int32_t*)ReadBytesUnchecked(sizeof(int32_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadS32 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -250,6 +271,8 @@ int64_t NetInMessage::ReadS64()
     RequireNextVariableType(NetVarS64);
 
     int64_t *data = (int64_t*)ReadBytesUnchecked(sizeof(int64_t));
+    if (!data)
+        throw Exception("NetInMessage::ReadS64 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -260,6 +283,8 @@ float NetInMessage::ReadF32()
     RequireNextVariableType(NetVarF32);
 
     float *data = (float*)ReadBytesUnchecked(sizeof(float));
+    if (!data)
+        throw Exception("NetInMessage::ReadF32 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -270,6 +295,8 @@ double NetInMessage::ReadF64()
     RequireNextVariableType(NetVarF64);
 
     double *data = (double*)ReadBytesUnchecked(sizeof(double));
+    if (!data)
+        throw Exception("NetInMessage::ReadF64 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -280,6 +307,8 @@ bool NetInMessage::ReadBool()
     RequireNextVariableType(NetVarBOOL);
 
     bool *data = (bool*)ReadBytesUnchecked(sizeof(bool));
+    if (!data)
+        throw Exception("NetInMessage::ReadBool failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -290,6 +319,8 @@ Vector3 NetInMessage::ReadVector3()
     RequireNextVariableType(NetVarVector3);
 
     Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+    if (!data)
+        throw Exception("NetInMessage::ReadVector3 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -300,6 +331,8 @@ Vector3d NetInMessage::ReadVector3d()
     RequireNextVariableType(NetVarVector3d);
 
     Vector3d *data = (Vector3d*)ReadBytesUnchecked(sizeof(Vector3d));
+    if (!data)
+        throw Exception("NetInMessage::ReadVector3d failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -310,6 +343,8 @@ Vector4 NetInMessage::ReadVector4()
     RequireNextVariableType(NetVarVector4);
 
     Vector4 *data = (Vector4*)ReadBytesUnchecked(sizeof(Vector4));
+    if (!data)
+        throw Exception("NetInMessage::ReadVector4 failed!");
     AdvanceToNextVariable();
 
     return *data;
@@ -320,6 +355,8 @@ Quaternion NetInMessage::ReadQuaternion()
     RequireNextVariableType(NetVarQuaternion);
 
     Vector3 *data = (Vector3*)ReadBytesUnchecked(sizeof(Vector3));
+    if (!data)
+        throw Exception("NetInMessage::ReadQuaternion failed!");
     Quaternion quat = UnpackQuaternionFromFloat3(*data);
     AdvanceToNextVariable();
 
@@ -331,6 +368,8 @@ RexUUID NetInMessage::ReadUUID()
     RequireNextVariableType(NetVarUUID);
 
     RexUUID *data = (RexUUID*)ReadBytesUnchecked(sizeof(RexUUID));
+    if (!data)
+        throw Exception("NetInMessage::ReadUUID failed!");
     AdvanceToNextVariable();
 
     return *data;
