@@ -42,6 +42,12 @@
 #include "ServiceManager.h"
 #include "CoreException.h"
 
+#ifndef unix
+#include <float.h>
+#else
+#include "CoreTypes.h"
+#endif
+
 #include <Ogre.h>
 
 namespace RexLogic
@@ -64,6 +70,15 @@ namespace RexLogic
         uv += half;
     }
 
+    bool CheckCoord(const PrimMesher::Coord& pos)
+    {
+        if (_isnan(pos.X) || _isnan(pos.Y) || _isnan(pos.Z))
+            return false;
+        if (!_finite(pos.X) || !_finite(pos.Y) || !_finite(pos.Z))
+            return false;
+        
+        return true;
+    }
 
     void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
     {
@@ -142,11 +157,22 @@ namespace RexLogic
                 primMesh.taperY = primitive.PathTaperY;
                 primMesh.ExtrudeCircular();
             }
-
+            
             if (object)
             {
                 PROFILE(Primitive_CreateManualObject)
                 object->clear();
+                object->setBoundingBox(Ogre::AxisAlignedBox());
+                
+                // Check for highly illegal coordinates in any of the faces
+                for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
+                {
+                    if (!(CheckCoord(primMesh.viewerFaces[i].v1) && CheckCoord(primMesh.viewerFaces[i].v2) && CheckCoord(primMesh.viewerFaces[i].v3)))
+                    {
+                        RexLogicModule::LogError("NaN or infinite number encountered in prim face coordinates. Skipping geometry creation.");
+                        return;
+                    }
+                }
                 
                 RexTypes::RexAssetID texture_id; 
                 RexTypes::RexAssetID prev_texture_id;
@@ -162,7 +188,7 @@ namespace RexLogic
                     ColorMap::const_iterator c = primitive.PrimColors.find(facenum);
                     if (c != primitive.PrimColors.end())
                         color = c->second;
-                                             
+                    
                     // Skip face if very transparent
                     if (color.a <= 0.11f)
                         continue;
