@@ -26,14 +26,10 @@ namespace Ether
               pixmap_(QPixmap()),
               bounding_rectf_(bounding_rect),
               active_animations_(),
-              frame_pixmap_(bounding_rect.width(), bounding_rect.height())
+              frame_pixmap_(bounding_rect.size().toSize()),
+              combined_pixmap_(bounding_rect.size().toSize())
         {
             resize(bounding_rectf_.size());
-            frame_pixmap_.load("./data/ui/images/ether/card_frame_top.png", "PNG");
-
-            UpdatePixmap(pixmap_path);
-            InitPaintHelpers();
-            InitDecorations();
 
             if (type == TopToBottom)
             {
@@ -45,6 +41,10 @@ namespace Ether
                 data_type_ = World;
                 frame_pixmap_.load("./data/ui/images/ether/card_frame_bottom.png", "PNG");
             }
+            
+            UpdatePixmap(pixmap_path);
+            InitPaintHelpers();
+            InitDecorations();
         }
 
         void InfoCard::UpdatePixmap(QString pixmap_path)
@@ -71,6 +71,14 @@ namespace Ether
                 pixmap_ = pixmap_.scaledToHeight(image_size.height(), Qt::SmoothTransformation);
                 pixmap_ = pixmap_.copy(QRect(QPoint(pixmap_.width()/2-image_size.width()/2,0), QPoint(pixmap_.width()/2+image_size.width()/2, pixmap_.height())));
             }
+
+            QPainter p(&combined_pixmap_);
+            p.fillRect(bounding_rectf_, Qt::transparent);
+            p.drawPixmap(QPointF(0,0), frame_pixmap_, bounding_rectf_);
+            if (type_ == TopToBottom)
+                p.drawPixmap(QPointF(4,18), pixmap_);
+            else if (type_ == BottomToTop)
+                p.drawPixmap(QPointF(4,11), pixmap_);
         }
 
         void InfoCard::InitPaintHelpers()
@@ -142,11 +150,7 @@ namespace Ether
 
         void InfoCard::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
-            painter->drawPixmap(QPoint(0,0), frame_pixmap_);
-            if (type_ == TopToBottom)
-                painter->drawPixmap(QPoint(4,18), pixmap_);
-            else if (type_ == BottomToTop)
-                painter->drawPixmap(QPoint(4,11), pixmap_);
+            painter->drawPixmap(QPointF(0,0), combined_pixmap_, bounding_rectf_);
         }
     }
 }
