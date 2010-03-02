@@ -3,9 +3,11 @@
 #ifndef incl_Foundation_EC_Define_h
 #define incl_Foundation_EC_Define_h
 
-#include "ComponentInterface.h"
+//#include "ComponentInterface.h"
 #include "ComponentManager.h"
-#include "ForwardDefines.h"
+//#include "ForwardDefines.h"
+#include "ComponentRegistrarInterface.h"
+#include "ComponentFactoryInterface.h"
 #include "Framework.h"
 
 namespace Foundation
@@ -18,38 +20,49 @@ namespace Foundation
     \ingroup Scene_group
 */
 #define DECLARE_EC(component)                                                               \
-    public:                                                                                 \
-    class component##Registrar : public Foundation::ComponentRegistrarInterface {           \
+  public:                                                                                   \
+    class component##Registrar : public Foundation::ComponentRegistrarInterface             \
+    {                                                                                       \
     public:                                                                                 \
         component##Registrar() {}                                                           \
         virtual ~component##Registrar() {}                                                  \
+                                                                                            \
         virtual void Register(Foundation::Framework *framework,                             \
-            Foundation::ModuleInterface* module) {                                          \
+            Foundation::ModuleInterface* module)                                            \
+        {                                                                                   \
             component::RegisterComponent(framework, module);                                \
         }                                                                                   \
-        virtual void Unregister(Foundation::Framework *framework) {                         \
+        virtual void Unregister(Foundation::Framework *framework)                           \
+        {                                                                                   \
             component::UnregisterComponent(framework);                                      \
         }                                                                                   \
     };                                                                                      \
-    private:                                                                                \
-    class component##Factory : public Foundation::ComponentFactoryInterface {               \
+                                                                                            \
+  private:                                                                                  \
+    class component##Factory : public Foundation::ComponentFactoryInterface                 \
+    {                                                                                       \
     public:                                                                                 \
         component##Factory(Foundation::ModuleInterface* module) : module_(module) {}        \
         virtual ~component##Factory() {}                                                    \
                                                                                             \
-        virtual Foundation::ComponentInterfacePtr  operator()() {                           \
+        virtual Foundation::ComponentInterfacePtr  operator()()                             \
+        {                                                                                   \
             return Foundation::ComponentInterfacePtr(new component(module_));               \
         }                                                                                   \
+                                                                                            \
         virtual Foundation::ComponentInterfacePtr  operator()(                              \
-                const Foundation::ComponentInterfacePtr &other) {                           \
+                    const Foundation::ComponentInterfacePtr &other)                         \
+        {                                                                                   \
            return Foundation::ComponentInterfacePtr(                                        \
-                  new component(*dynamic_cast<component*>(other.get())));                   \
+                    new component(*dynamic_cast<component*>(other.get())));                 \
         }                                                                                   \
     private:                                                                                \
         Foundation::ModuleInterface* module_;                                               \
     };                                                                                      \
+                                                                                            \
     friend class component##Factory;                                                        \
-    public:                                                                                 \
+                                                                                            \
+  public:                                                                                   \
     static void RegisterComponent(const Foundation::Framework *framework,                   \
         Foundation::ModuleInterface* module)                                                \
     {                                                                                       \
@@ -57,18 +70,23 @@ namespace Foundation
             Foundation::ComponentFactoryInterfacePtr(new component##Factory(module));       \
         framework->GetComponentManager()->RegisterFactory(NameStatic(), factory);           \
     }                                                                                       \
-    static void UnregisterComponent(const Foundation::Framework *framework) {               \
+                                                                                            \
+    static void UnregisterComponent(const Foundation::Framework *framework)                 \
+    {                                                                                       \
         framework->GetComponentManager()->UnregisterFactory(NameStatic());                  \
     }                                                                                       \
+                                                                                            \
     static const std::string &NameStatic()                                                  \
     {                                                                                       \
         static const std::string name(#component);                                          \
         return name;                                                                        \
     }                                                                                       \
-    virtual const std::string &Name() const {                                               \
+                                                                                            \
+    virtual const std::string &Name() const                                                 \
+    {                                                                                       \
         return component::NameStatic();                                                     \
     }                                                                                       \
-    private:                                                                                \
+  private:                                                                                  \
 
 
 #endif

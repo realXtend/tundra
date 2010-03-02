@@ -39,6 +39,7 @@ namespace Foundation
     private:
         ComponentInterface();
         
+    protected:
         //! Pointer to framework
         Foundation::Framework* framework_;
         //! Pointer to parent entity (null if not attached to any entity)

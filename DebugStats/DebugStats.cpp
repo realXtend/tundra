@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "DebugStats.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "EventManager.h"
@@ -10,11 +12,14 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "Framework.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "NetworkMessages/NetMessageManager.h"
 
 #include <UiModule.h>
 #include <UiProxyWidget.h>
 
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 
@@ -209,12 +214,26 @@ Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringV
         for(int i = 0; i < dataLen; ++i)
             data.push_back(rand() % 256);
 
+        int msgID = rand();
+
+        ProtocolUtilities::NetMessageManager *messageManager = current_world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
+        if (!messageManager)
+            return Console::ResultSuccess();
+
         try
         {
-            ProtocolUtilities::NetInMessage msg(rand(), (boost::uint8_t *)&data[0], dataLen, false);
-            ProtocolUtilities::NetMsgID id = rand();
+            ProtocolUtilities::NetInMessage msg(msgID, (boost::uint8_t *)&data[0], dataLen, false);
+#ifdef _DEBUG
+            msg.SetMessageID(msgID);
+#endif
+            ProtocolUtilities::NetMsgID id = msgID;
 
             ProtocolUtilities::NetworkEventInboundData inData(id , &msg);
+            const ProtocolUtilities::NetMessageInfo *messageInfo = messageManager->GetMessageInfoByID(msgID);
+            if (!messageInfo)
+                continue;
+
+            msg.SetMessageInfo(messageInfo);
             framework_->GetEventManager()->SendEvent(networkEventCategory_, id, &inData);
         }
         catch(const Exception &e)

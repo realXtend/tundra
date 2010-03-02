@@ -47,6 +47,9 @@ namespace ProtocolUtilities
         /// Interprets the given byte stream as a message and dumps it contents out to the log. Useful only for diagnostics and such.
         void DumpNetworkMessage(NetMsgID id, NetInMessage *msg);
 
+        /// @return The Message Info structure associated with the given message ID.
+        const NetMessageInfo *GetMessageInfoByID(NetMsgID id) const;
+
     #ifndef RELEASE
         void DebugSendHardcodedTestPacket();
         void DebugSendHardcodedRandomPacket(size_t numBytes);

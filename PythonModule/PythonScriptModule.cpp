@@ -49,7 +49,7 @@
 #include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
 #include "Avatar/AvatarControllable.h"
 
-#include "Entity.h"
+#include "PyEntity.h"
 #include "RexPythonQt.h"
 
 //had to move the createcanvas func here due to the staticframework ref prob

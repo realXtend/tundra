@@ -71,6 +71,17 @@ namespace OgreRenderer
         return MaterialSuffix[variation];
     }
 
+    Ogre::MaterialPtr CloneMaterial(const std::string& sourceMaterialName, const std::string &newName)
+    {
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mm.getByName(sourceMaterialName);
+
+        material = material->clone(newName);
+
+        assert(material.get());
+        return material;
+    }
+
     Ogre::MaterialPtr GetOrCreateLitTexturedMaterial(const std::string& materialName)
     {
         const char baseMaterialName[] = "LitTextured";

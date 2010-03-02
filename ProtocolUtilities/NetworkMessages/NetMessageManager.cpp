@@ -206,6 +206,11 @@ namespace ProtocolUtilities
         }
     }
 
+    const NetMessageInfo *NetMessageManager::GetMessageInfoByID(NetMsgID id) const
+    {
+        return messageList->GetMessageInfoByID(id);
+    }
+
     /// Polls the inbound socket until the message queue is empty. Also resends any timed out reliable messages.
     void NetMessageManager::ProcessMessages()
     {

@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "TimeProfilerWindow.h"
 #include "Profiler.h"
 #include "UiSceneManager.h"
@@ -22,6 +24,8 @@
 
 #include <Ogre.h>
 #include <OgreFontManager.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 
