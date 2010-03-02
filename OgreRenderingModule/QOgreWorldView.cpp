@@ -42,7 +42,7 @@ namespace OgreRenderer
 
         ui_overlay_container_->setMaterialName("test/material/UI");
         ui_overlay_container_->setMetricsMode(Ogre::GMM_PIXELS);
-        ui_overlay_container_-> setPosition (0, 0);
+        ui_overlay_container_->setPosition(0, 0);
 
         ui_overlay_->add2D(static_cast <Ogre::OverlayContainer *>(ui_overlay_container_));
         ui_overlay_->setZOrder(Ogre::ushort(500));
@@ -66,9 +66,14 @@ namespace OgreRenderer
         if (Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
         {
             PROFILE(QOgreWorldView_ResizeOverlay);
+            
+            // recenter the overlay
+            int left = (win_->getWidth() - width) / 2;
+            int top = (win_->getHeight() - height) / 2;
 
             // resize the container
-            ui_overlay_container_-> setDimensions (width, height);
+            ui_overlay_container_->setDimensions(width, height);
+            ui_overlay_container_->setPosition(left, top);
 
             // resize the backing texture
             ui_overlay_texture_->freeInternalResources();

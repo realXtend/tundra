@@ -178,12 +178,12 @@ namespace OgreRenderer
         if (view_) 
         {
             view_->ResizeWindow(width(), height());
-            view_->ResizeOverlay(width(), height());
+            view_->ResizeOverlay(viewport()->width(), viewport()->height());
         }
         
         // Resize the scene to view rect
         if (scene())
-            scene()->setSceneRect(rect());          
+            scene()->setSceneRect(viewport()->rect());          
     }
 
     void QOgreUIView::SceneChange()
