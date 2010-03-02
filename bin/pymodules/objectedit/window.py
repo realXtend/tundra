@@ -225,6 +225,7 @@ class ObjectEditWindow:
                 
                 self.materialTabFormWidget.materialFormLayout.addRow(combobox, box)
                 
+            self.tabwidget.setTabEnabled(1, True)
 
     def clearDialogForm(self):
         children = self.materialTabFormWidget.children()
@@ -352,45 +353,59 @@ class ObjectEditWindow:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
             
     def selected(self, ent, keepold=False):
-        self.mainTab.move_button.setChecked(False)
-        self.mainTab.rotate_button.setChecked(False)
-        self.mainTab.scale_button.setChecked(False)
+        self.untoggleButtons()
         
         if not keepold:
             self.unsetSelection()
         
-        if not self.mainTabList.has_key(str(ent.id)):
-            tWid = QTreeWidgetItem(self.mainTab.treeWidget)
-            id = ent.id
-            tWid.setText(0, id)
-            
-            self.mainTabList[str(id)] = (ent, tWid)
-        else:
-            #r.logInfo("selected else")
-            tWid = self.mainTabList[str(ent.id)][1]
+        self.addToList(ent)
         
-        tWid.setSelected(True)
+        self.highlightEntityFromList(ent)
             
+        self.showName(ent)
+        
+        self.meshline.update_text(ent.mesh)
+        
+        self.updateMaterialTab(ent)
+
+        self.updatePropertyEditor(ent)
+
+        self.update_guivals(ent)
+    
+    def updatePropertyEditor(self, ent):
+        qprim = r.getQPrim(ent.id)
+        if qprim is not None:
+            self.propedit.setObject(qprim)
+            self.tabwidget.setTabEnabled(2, True)
+            
+    def untoggleButtons(self):
+        self.mainTab.move_button.setChecked(False)
+        self.mainTab.rotate_button.setChecked(False)
+        self.mainTab.scale_button.setChecked(False)
+        
+    def highlightEntityFromList(self, ent):
+        if self.mainTabList.has_key(str(ent.id)):
+            tWid = self.mainTabList[str(ent.id)][1]
+            tWid.setSelected(True)
+        
+    def addToList(self, ent):
+        if not self.mainTabList.has_key(str(ent.id)):
+           tWid = QTreeWidgetItem(self.mainTab.treeWidget)
+           id = ent.id
+           tWid.setText(0, id)
+            
+           self.mainTabList[str(id)] = (ent, tWid)
+           return True
+        return False
+    def showName(self, ent):
         """show the id and name of the object. name is sometimes empty it seems. 
-            swoot: actually, seems like the name just isn't gotten fast enough or 
-            something.. next time you click on the same entity, it has a name."""
+        swoot: actually, seems like the name just isn't gotten fast enough or 
+        something.. next time you click on the same entity, it has a name."""
             
         name = ent.name
         if name == "":
             name = "n/a"
         self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
-        
-        self.meshline.update_text(ent.mesh)
-        
-        self.updateMaterialTab(ent)
-        self.tabwidget.setTabEnabled(1, True)
-
-        qprim = r.getQPrim(ent.id)
-        if qprim is not None:
-            self.propedit.setObject(qprim)
-            self.tabwidget.setTabEnabled(2, True)
-
-        self.update_guivals(ent)
         
     def on_exit(self):
         self.proxywidget.hide()

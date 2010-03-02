@@ -131,43 +131,59 @@ class ObjectEdit(Component):
         #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
-    def baseselect(self, ent, multiselect):
-        parent = False
+    def baseselect(self, ent):
+        ent, children = self.parentalCheck(ent)
+        
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
         self.updateSelectionBox()
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
-        #~ qprim = r.getQPrim(ent.id)
-        #~ if qprim is not None:
-            #~ if qprim.ParentId != 0:
-                #~ r.logInfo("Entity had a parent, lets pick that instead!")
-                #~ ent = r.getEntity(qprim.ParentId)
-                #~ qprim = r.getQPrim(ent.id)
-                #~ if qprim is not None:
-                    #~ parent = True
-            #~ else:
-                #~ parent = True
+        return ent, children
         
-        #~ if parent:
-            #~ children = qprim.GetChildren()
-            #~ for child in children:
-                #~ _ent = r.getEntity(int(child))
-                #~ #self.window.selected(_ent, True)
-                #~ self.sels.append(_ent)
-                #~ multiselect = True
-
-        self.window.selected(ent, multiselect) 
-    
+    def parentalCheck(self, ent):
+        exitLoop = False
+        parent = False
+        children = []
+        
+        while(not exitLoop):
+            qprim = r.getQPrim(ent.id)
+            if qprim is not None:
+                if qprim.ParentId != 0:
+                    #~ r.logInfo("Entity had a parent, lets pick that instead!")
+                    ent = r.getEntity(qprim.ParentId)
+                else:
+                    #~ r.logInfo("Entity had no parent, maybe it has children?")
+                    children = qprim.GetChildren()
+                    if len(children)>0:
+                        parent = True
+                        
+                    exitLoop = True
+                    
+        return ent, children
+        
     def select(self, ent):
         self.sels = []
-        self.canmove = True
+        ent, children = self.baseselect(ent)
         self.sels.append(ent)
-        self.baseselect(ent, False)
+        self.window.selected(ent, False) 
+        self.canmove = True
+        
+        self.highlightChildren(children)
 
     def multiselect(self, ent):
-        self.baseselect(ent, True)
+        self.sels.append(ent)
+        ent, children = self.baseselect(ent)
+        self.window.selected(ent, True) 
+        
+        self.highlightChildren(children)
     
+    def highlightChildren(self, children):
+        for child_id in children:
+            child = r.getEntity(int(child_id))
+            self.window.addToList(child)
+            self.window.highlightEntityFromList(child)
+            
     def deselect(self):
         if len(self.sels)>0:
             #XXX might need something here?!
@@ -292,8 +308,12 @@ class ObjectEdit(Component):
         if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
                 for ent in self.sels:
-                    #print "LeftMouseReleased, networkUpdate call"
+                    #~ print "LeftMouseReleased, networkUpdate call"
+                    parent, children = self.parentalCheck(ent)
                     r.networkUpdate(ent.id)
+                    for child in children:
+                        child_id = int(child)
+                        r.networkUpdate(child_id)
             
             self.sel_activated = True
         
@@ -354,7 +374,6 @@ class ObjectEdit(Component):
                 if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
                     if self.validId(ent.id):
                         if not found:
-                            self.sels.append(ent)
                             self.multiselect(ent)
                         else:
                             for _ent in self.sels:
@@ -479,8 +498,18 @@ class ObjectEdit(Component):
         if self.active is not None:
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.id))
-                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
-                self.window.objectDeleted(str(ent.id))
+                ent, children = self.parentalCheck(ent)
+                #~ for child_id in children:
+                    #~ child = r.getEntity(int(child_id))
+                    #~ self.window.addToList(child)
+                    #~ print "deleting", child
+                    #~ self.worldstream.SendObjectDeRezPacket(child.id, r.getTrashFolderId())
+                    #~ self.window.objectDeleted(str(child.id))
+                if len(children) == 0:
+                    self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+                    self.window.objectDeleted(str(ent.id))
+                else:
+                    r.logInfo("trying to delete a parent, need to fix this!")
             
             self.manipulator.hideManipulator()
             self.hideSelector()        
