@@ -687,6 +687,7 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
         return false;
 
     RexUUID fullid;
+	RexUUID childfullid;
     fullid.SetNull();
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(objectid);
     if(!entity)
@@ -698,6 +699,24 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
         fullid = prim->FullId;
     }
     
+	//need to remove children aswell... is there a better way of doing this?
+	for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+		Scene::Entity &entity = **iter;
+
+		Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        if (!primentity) continue;
+
+        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+		if(prim.ParentId == objectid){
+			childfullid.SetNull();
+			childfullid = prim.FullId;
+
+			scene->RemoveEntity(prim.LocalId);
+			rexlogicmodule_->UnregisterFullId(childfullid);
+		}
+	}
+
     scene->RemoveEntity(objectid);
     rexlogicmodule_->UnregisterFullId(fullid);
     return false;

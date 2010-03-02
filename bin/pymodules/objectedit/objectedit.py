@@ -505,11 +505,11 @@ class ObjectEdit(Component):
                     #~ print "deleting", child
                     #~ self.worldstream.SendObjectDeRezPacket(child.id, r.getTrashFolderId())
                     #~ self.window.objectDeleted(str(child.id))
-                if len(children) == 0:
-                    self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
-                    self.window.objectDeleted(str(ent.id))
-                else:
-                    r.logInfo("trying to delete a parent, need to fix this!")
+                #~ if len(children) == 0:
+                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+                self.window.objectDeleted(str(ent.id))
+                #~ else:
+                    #~ r.logInfo("trying to delete a parent, need to fix this!")
             
             self.manipulator.hideManipulator()
             self.hideSelector()        
