@@ -14,8 +14,8 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string>border: 1px solid rgba(0,0,0,100);
-background-color: rgba(255,255,255,50)</string>
+   <string>border: 1px solid rgba(220,50,255,100);
+background-color: rgba(220,100,255,50)</string>
   </property>
  </widget>
  <resources/>
