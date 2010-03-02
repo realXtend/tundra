@@ -41,7 +41,7 @@ namespace Ether
             QMap<QUuid, Data::WorldInfo *> GetWorldMap();
 
             void StoreSelectedCards(QUuid avatar_id, QUuid world_id);
-            QPair<QUuid, QUuid> DataManager::GetLastSelectedCards();
+            QPair<QUuid, QUuid> GetLastSelectedCards();
 
         private:
             QString ether_config_;
