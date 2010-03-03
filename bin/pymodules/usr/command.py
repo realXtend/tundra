@@ -1053,3 +1053,13 @@ if 0:
     #~ r.c.ui.setGeometry
 
     
+if 0:
+    for ent in r.c.sels:
+        print ent.id
+    worldstream = r.getServerConnection()
+    print dir(worldstream)
+    id1 = 1250116908
+    id2 = 1250116909
+    ids = [id1, id2]
+    worldstream.SendObjectLinkPacket(ids)
+    #~ worldstream.SendObjectDelinkPacket(ids)
