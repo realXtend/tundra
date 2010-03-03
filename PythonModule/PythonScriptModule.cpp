@@ -253,7 +253,8 @@ namespace PythonScript
             }
             
             //port to however uimodule does it, as it replaces OIS now
-	    else if(event_id == Input::Events::INWORLD_CLICK || 
+	    else if(event_id == Input::Events::MOUSEMOVE ||
+		    event_id == Input::Events::INWORLD_CLICK || 
 		    event_id == Input::Events::LEFT_MOUSECLICK_PRESSED || 
 		    event_id == Input::Events::LEFT_MOUSECLICK_RELEASED ||
 		    event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED || 

@@ -96,6 +96,8 @@ class ObjectEdit(Component):
         selectionfile = QFile(self.SELECTIONRECT)
         self.selection_rect = loader.load(selectionfile)
         rectprops = r.createUiWidgetProperty(2)
+        print type(rectprops), dir(rectprops)
+        #print rectprops.WidgetType
         #uiprops.widget_name_ = "Selection Rect"
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
@@ -408,10 +410,16 @@ class ObjectEdit(Component):
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
+        #r.logInfo("on_mouseclick %d" % (click_id))
+
+    def on_mousemove(self, entid, mouseinfo, callback):
+        """for hilighting manipulator parts when hovering over them"""
+        #print "m"
                 
-    def on_mousemove(self, mouseinfo, callback):
+    def on_mousedrag(self, move_id, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
+        #print "mousedrag:", move_id, mouseinfo
         if self.windowActive:
             width, height = r.getScreenSize()
             

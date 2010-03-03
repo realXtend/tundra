@@ -158,10 +158,22 @@ namespace Input
     struct MouseActiveState : public InputState
     {
         MouseActiveState (QString name, QGraphicsScene *s, QState::ChildMode m, QState *p = 0);
-
+        
         QGraphicsScene  *scene;
     };
-
+    
+    struct MouseMoveActiveState : public InputState
+    {
+        MouseMoveActiveState (QString name, Foundation::EventManager* em, QState::ChildMode m,  QState *p = 0);
+        
+        void onEntry (QEvent *event);
+        
+        Input::Events::Movement     movement;
+        
+        event_category_id_t         catid;
+        Foundation::EventManager*   eventmgr;
+    };
+    
     struct LeftButtonActiveState : public InputState
     {
         LeftButtonActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
