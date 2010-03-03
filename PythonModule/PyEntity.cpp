@@ -137,7 +137,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
     RexLogic::EC_OpenSimPrim *prim = 0;
     if (prim_component)
-	prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
+		prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
 	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
     OgreRenderer::EC_OgrePlaceable *placeable = 0;
@@ -214,7 +214,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 	else if(s_name.compare("editable") == 0)
 	{
 		// refactor to take into account permissions etc aswell later?
-		if(!placeable)
+		if(!prim_component || !placeable)
 			Py_RETURN_FALSE;
 		else
 			Py_RETURN_TRUE;

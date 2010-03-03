@@ -87,6 +87,7 @@ class ObjectEdit(Component):
             r.Delete: self.deleteObject,
             r.Undo: self.undo, 
             r.PyDuplicateDrag: self.duplicateStart, 
+            r.ObjectLink: self.linkObjects
         }
         
         self.resetManipulators()
@@ -136,7 +137,7 @@ class ObjectEdit(Component):
         
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
-        self.updateSelectionBox()
+        self.updateSelectionBox(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
         return ent, children
@@ -199,8 +200,7 @@ class ObjectEdit(Component):
 
             self.window.deselected()
 
-    def updateSelectionBox(self): 
-        ent = self.active #XXX use first or last... ?
+    def updateSelectionBox(self, ent): 
         if ent is not None:
             bb = list(ent.boundingbox)
             scale = list(ent.scale)
@@ -211,9 +211,9 @@ class ObjectEdit(Component):
             depth = abs(bb[5] - bb[2])
 
             if 1:#bb[6] == 0: #0 means CustomObject
-                height += scale[0]#*1.2
-                width += scale[1] #*1.2
-                depth += scale[2]#*1.2
+                #~ height += scale[0]#*1.2
+                #~ width += scale[1] #*1.2
+                #~ depth += scale[2]#*1.2
 
                 self.selection_box.pos = ent.pos
                 
@@ -245,6 +245,13 @@ class ObjectEdit(Component):
         except RuntimeError, e:
             r.logDebug("hideSelector failed")
             
+    def linkObjects(self):
+        ids = []
+        for ent in self.sels:
+            ids.append(ent.id)
+            
+        self.worldstream.SendObjectLinkPacket(ids)
+        
     def LeftMousePressed(self, mouseinfo):
         r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
         r.logDebug("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
@@ -270,9 +277,10 @@ class ObjectEdit(Component):
             
         self.manipulator.initManipulation(ent, results)
 
-        #print "Got entity:", ent
+        
         if ent is not None:
-            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id:                
+            print "Got entity:", ent, ent.editable
+            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id and ent.editable:                
                 #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
                 
                 r.eventhandled = self.EVENTHANDLED
@@ -571,7 +579,7 @@ class ObjectEdit(Component):
                 
                 self.modified = True
 
-                self.updateSelectionBox()
+                self.updateSelectionBox(ent)
             
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -597,7 +605,9 @@ class ObjectEdit(Component):
                 self.selection_box.orientation = ort
                 
     def updateSelectionBoxPositionAndOrientation(self, ent): #XXX riiiight, rename please!
+        print "updateSelectionBoxPositionAndOrientation"
         self.selection_box.pos = ent.pos
+        self.selection_box.scale = ent.scale
         self.selection_box.orientation = ent.orientation
     
     def getActive(self):

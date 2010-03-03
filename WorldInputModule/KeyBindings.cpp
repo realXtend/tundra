@@ -41,6 +41,10 @@ namespace Input
 
 		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Z), 
 				make_pair (Input::Events::NAALI_UNDO, 0)));
+
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_L), 
+				make_pair (Input::Events::NAALI_OBJECTLINK, 0)));
+
     }
 
     FirstPersonBindings::FirstPersonBindings ()
