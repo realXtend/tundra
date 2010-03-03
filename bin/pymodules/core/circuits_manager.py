@@ -50,7 +50,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout']
+        ignchannames = ['update', 'on_mousemove', 'on_mousedrag', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout']
         ignchannels = [('*', n) for n in ignchannames]
         
         # Note: instantiating Manager with debugger causes severe lag when running as a true windowed app (no console), so instantiate without debugger
@@ -117,14 +117,17 @@ class ComponentRunner(Component):
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         #print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
-        self.m.send(MouseMove(self.mouseinfo, self.callback), "on_mousemove")
+        self.m.send(MouseMove(event, self.mouseinfo, self.callback), "on_mousedrag")
         return self.eventhandled
         
     def MOUSE_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         #print "CircuitsManager got a mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
         self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        self.m.send(MouseClick(event, self.mouseinfo, self.callback), "on_mouseclick")
+        if event == r.MouseMove:
+            self.m.send(MouseMove(event, self.mouseinfo, self.callback), "on_mousemove")
+        else:
+            self.m.send(MouseClick(event, self.mouseinfo, self.callback), "on_mouseclick")
         return self.eventhandled
         
     def SCENE_EVENT(self, evid, entid):

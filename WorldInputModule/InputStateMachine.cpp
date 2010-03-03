@@ -202,6 +202,32 @@ namespace Input
     MouseActiveState::MouseActiveState (QString name, QGraphicsScene *s, QState::ChildMode m, QState *p)
         : InputState (name, m, p), scene (s)
     {
+
+    }
+
+    //=========================================================================
+    //
+    MouseMoveActiveState::MouseMoveActiveState (QString name, Foundation::EventManager* em, QState::ChildMode m, QState *p)
+        : InputState (name, p), eventmgr (em)
+    {
+	catid = eventmgr-> QueryEventCategory ("Input");
+    }
+
+    void MouseMoveActiveState::onEntry (QEvent *event)
+    {
+        State::onEntry (event);
+
+        QMouseEvent *e = static_cast <QMouseEvent *> (event);
+        movement.x_.rel_ = 0;
+        movement.y_.rel_ = 0;
+        movement.x_.abs_ = e-> x();
+        movement.y_.abs_ = e-> y();
+        movement.x_.screen_ = e-> globalX();
+        movement.y_.screen_ = e-> globalY();
+
+        //std::cout << "MOUSEMOVE\n";
+
+        eventmgr-> SendEvent (catid, Input::Events::MOUSEMOVE, &movement);
     }
 
     //=========================================================================
@@ -622,7 +648,7 @@ namespace Input
         QFinalState *exit;
 
         InputState *active, *unfocused,
-            *perspective, *wheel, *wheel_waiting,
+            *perspective, *move, *move_waiting, *wheel, *wheel_waiting,
             *left_button, *right_button, *mid_button,
             *left_button_waiting, *right_button_waiting, *mid_button_waiting,
             *button, *button_active, *button_waiting, *gesture_waiting;
@@ -630,6 +656,7 @@ namespace Input
         InputActiveState        *focused;
         KeyboardActiveState     *keyboard_active;
         MouseActiveState        *mouse_active;
+        MouseMoveActiveState    *move_active;
         WheelActiveState        *wheel_active;
         LeftButtonActiveState   *left_button_active;
         RightButtonActiveState  *right_button_active;
@@ -652,6 +679,11 @@ namespace Input
 
         keyboard_active = new KeyboardActiveState ("keyboard", QState::ParallelStates, focused);
         mouse_active = new MouseActiveState ("mouse active", view_-> scene(), QState::ParallelStates, focused);
+
+        move = new InputState("move", mouse_active);
+        move_waiting = new InputState("move_waiting", move);
+        move-> setInitialState (move_waiting);
+        move_active = new MouseMoveActiveState("move active", eventmgr_, QState::ParallelStates, move);
 
         wheel = new InputState ("wheel", mouse_active);
         wheel_active = new WheelActiveState ("wheel active", eventmgr_, wheel);
@@ -706,8 +738,10 @@ namespace Input
         (new RightButtonRelease (right_button_active))-> setTargetState (right_button_waiting);
         
         (new EventTransition <QEvent::MouseButtonPress> (button_waiting))-> setTargetState (button_active);
+        (new EventTransition <QEvent::MouseMove> (move_waiting))-> setTargetState (move_active);
+        (new EventTransition <QEvent::MouseMove> (move_active))-> setTargetState (move_active);
         (new EventTransition <QEvent::MouseMove> (gesture_waiting))-> setTargetState (gesture_active);
-
+ 
         (new EventTransition <QEvent::MouseButtonRelease> (button_active))-> setTargetState (button_waiting);
         (new EventTransition <QEvent::MouseButtonRelease> (gesture_active))-> setTargetState (button_waiting);
         (new GestureActive (gesture_state_, eventmgr_, gesture_active));

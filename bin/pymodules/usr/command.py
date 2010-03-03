@@ -277,7 +277,7 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    print dir(PythonQt)
+    #print dir(PythonQt)
     #print "Importing PythonQt.QtGui..."
     #import PythonQt.QtGui as gui
     #print dir(gui)
@@ -285,6 +285,11 @@ if 0: #pythonqt introspec
     #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
 
+    UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
+    print type(UiWidgetProperties), dir(UiWidgetProperties)
+    #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
+
+if 0: #QVector3D
     #V3 works :)
     import PythonQt.QtGui
     print dir(PythonQt.QtGui)
