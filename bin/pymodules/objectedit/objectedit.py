@@ -183,6 +183,7 @@ class ObjectEdit(Component):
             child = r.getEntity(int(child_id))
             self.window.addToList(child)
             self.window.highlightEntityFromList(child)
+            #self.sels.append(child)
             
     def deselect(self):
         if len(self.sels)>0:
@@ -404,7 +405,6 @@ class ObjectEdit(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         if self.windowActive:
-            
             width, height = r.getScreenSize()
             
             normalized_width = 1/width

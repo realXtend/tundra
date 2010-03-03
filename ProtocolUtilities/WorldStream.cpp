@@ -1494,6 +1494,20 @@ void WorldStream::SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectLinkPacket(const QStringList& strings)
+{
+	std::vector<entity_id_t> vec;
+
+    for (QStringList::const_iterator const_iter = strings.constBegin();
+        const_iter != strings.constEnd(); ++const_iter)
+    {
+        QString qstr = *const_iter;
+		vec.push_back(qstr.toUInt());
+    }
+
+    SendObjectLinkPacket(vec);
+}
+
 void WorldStream::SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids)
 {
     if (!connected_)
@@ -1512,6 +1526,20 @@ void WorldStream::SendObjectDelinkPacket(const std::vector<entity_id_t> &local_i
         m->AddU32(local_ids[i]);
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDelinkPacket(const QStringList& strings)
+{
+	std::vector<entity_id_t> vec;
+
+    for (QStringList::const_iterator const_iter = strings.constBegin();
+        const_iter != strings.constEnd(); ++const_iter)
+    {
+        QString qstr = *const_iter;
+		vec.push_back(qstr.toUInt());
+    }
+
+    SendObjectDelinkPacket(vec);
 }
 
 std::string WorldStream::GetCapability(const std::string &name)

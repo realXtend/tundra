@@ -436,10 +436,11 @@ namespace ProtocolUtilities
         /// Sends an ObjectLink packet.
         ///@param local_ids List of local entity ID's.
         void SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids);
-
+		void SendObjectLinkPacket(const QStringList& strings);
         /// Sends an ObjectDelink packet.
         ///@param local_ids List of local entity ID's.
         void SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids);
+		void SendObjectDelinkPacket(const QStringList& strings);
 
         //------------------- Utility functions ------------------- //
 

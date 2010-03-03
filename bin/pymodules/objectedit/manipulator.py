@@ -149,13 +149,17 @@ class Manipulator:
                 lengthx = mousex_on_arrow_projection.length * amountx
             
             for ent in ents:
-                #qprim = r.getQPrim(ent.id)
-                #if qprim is not None and qprim.ParentId == 0:
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy)
                 
             if self.usesManipulator:
                 self.moveTo(ents)
-
+                
+    def hasParent(self, ent):
+        qprim = r.getQPrim(ent.id)
+        if qprim is not None and qprim.ParentId == 0:
+            return False
+        return True
+        
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     #MANIPULATOR_MESH_NAME = "axes.mesh"
@@ -206,8 +210,14 @@ class ScaleManipulator(Manipulator):
                 mov *= rightvec[self.grabbed_axis]/div
                 scale[self.grabbed_axis] += mov
            
-            ent.scale = scale[0], scale[1],scale[2]
-            self.controller.updateSelectionBox()  
+            ent.scale = scale[0], scale[1], scale[2]
+            self.controller.updateSelectionBox() 
+            qprim = r.getQPrim(ent.id)
+            if qprim is not None:
+                children = qprim.GetChildren()
+                for child_id in children:
+                    child = r.getEntity(int(child_id))
+                    child.scale = scale[0], scale[1], scale[2]
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
@@ -215,6 +225,7 @@ class FreeMoveManipulator(Manipulator):
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         #freemove
         #r.logInfo("_manipulate")
+
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
