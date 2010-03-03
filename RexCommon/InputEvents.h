@@ -123,7 +123,8 @@ namespace Input
 
 		static const event_id_t NAALI_DELETE = 87;
 		static const event_id_t NAALI_UNDO = 89;
-
+		
+		static const event_id_t NAALI_OBJECTLINK = 91;
 
 
         //! Event for buffered key input. 

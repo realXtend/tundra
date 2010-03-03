@@ -124,7 +124,7 @@ class ObjectEditWindow:
             self.update_posvals(ent.pos)
             self.update_scalevals(ent.scale)
             self.update_rotvals(ent.orientation)
-            self.controller.updateSelectionBoxPositionAndOrientation(ent)
+            self.controller.updateSelectionBox(ent) #PositionAndOrientation(ent)
         
     def update_scalevals(self, scale):
         x, y, z = scale

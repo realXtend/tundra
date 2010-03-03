@@ -49,6 +49,8 @@ namespace Input
 		eventmgr-> RegisterEvent (eid, Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE, "PyObjectEditToggleScale");
 		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_DELETE, "Delete");
 		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_UNDO, "Undo");
+		
+		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_OBJECTLINK, "ObjectLink");
 
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_PRESSED, "KeyPressed");
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_RELEASED, "KeyReleased");

@@ -652,8 +652,10 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
 	//Scene::Entity *entity = render->Raycast(x, y).entity_;
 	Foundation::RaycastResult result = render->Raycast(x, y);
-	if (result.entity_)
+
+	if (result.entity_){
 		return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+	}
 	else
 		Py_RETURN_NONE;
 	/*
