@@ -165,9 +165,7 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.reset_guivals()
         
-        self.mainTab.move_button.setChecked(False)
-        self.mainTab.rotate_button.setChecked(False)
-        self.mainTab.scale_button.setChecked(False)
+        self.untoggleButtons()
         
         self.unsetSelection()
         

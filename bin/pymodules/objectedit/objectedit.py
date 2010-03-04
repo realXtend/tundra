@@ -87,7 +87,8 @@ class ObjectEdit(Component):
             r.Delete: self.deleteObject,
             r.Undo: self.undo, 
             r.PyDuplicateDrag: self.duplicateStart, 
-            r.ObjectLink: self.linkObjects
+            r.ObjectLink: self.linkObjects,
+            r.ObjectUnlink: self.unlinkObjects,
         }
         
         self.resetManipulators()
@@ -246,18 +247,35 @@ class ObjectEdit(Component):
                 self.selection_box.pos = 0.0, 0.0, 0.0
         except RuntimeError, e:
             r.logDebug("hideSelector failed")
-            
-    def linkObjects(self):
+        
+    def getSelectedObjectIds(self):
         ids = []
         for ent in self.sels:
+            qprim = r.getQPrim(ent.id)
+            children = qprim.GetChildren()
+            for child_id in children:
+                #child =  r.getEntity(int(child_id))
+                id = int(child_id)
+                if id not in ids:
+                    ids.append(id)
             ids.append(ent.id)
-            
+        return ids
+    
+    def linkObjects(self):
+        ids = self.getSelectedObjectIds()
         self.worldstream.SendObjectLinkPacket(ids)
+        self.deselect()
+        
+    def unlinkObjects(self):
+        ids = self.getSelectedObjectIds()
+        self.worldstream.SendObjectDelinkPacket(ids)
+        self.deselect()
         
     def LeftMousePressed(self, mouseinfo):
-        r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
-        r.logDebug("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
-        self.dragStarted(mouseinfo)
+        #r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
+        #r.logDebug("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
+        
+        self.dragStarted(mouseinfo) #need to call this to enable working dragging
         
         if self.selection_box is None:
             self.selection_box = r.createEntity("Selection.mesh", 0)
@@ -279,9 +297,8 @@ class ObjectEdit(Component):
             
         self.manipulator.initManipulation(ent, results)
 
-        
         if ent is not None:
-            print "Got entity:", ent, ent.editable
+            #print "Got entity:", ent, ent.editable
             if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id and ent.editable:                
                 #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
                 
@@ -412,9 +429,18 @@ class ObjectEdit(Component):
                 #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
         #r.logInfo("on_mouseclick %d" % (click_id))
 
-    def on_mousemove(self, entid, mouseinfo, callback):
+    def on_mousemove(self, event_id, mouseinfo, callback):
         """for hilighting manipulator parts when hovering over them"""
-        #print "m"
+        if 0: #self.windowActive:# and event_id == :
+            #print "m"
+            results = []
+            results = r.rayCast(mouseinfo.x, mouseinfo.y)
+            if results is not None and results[0] != 0:
+                id = results[0]
+                
+                if self.manipulator.compareIds(id):
+                    self.manipulator.highlight(results)
+        
                 
     def on_mousedrag(self, move_id, mouseinfo, callback):
         """dragging objects around - now free movement based on view,
@@ -456,6 +482,7 @@ class ObjectEdit(Component):
                         self.window.update_guivals(ent)
    
     def on_input(self, evid, callback):
+        #print "input", evid
         if self.windowActive:
             if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True

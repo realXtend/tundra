@@ -51,6 +51,7 @@ namespace Input
 	eventmgr-> RegisterEvent (eid, Input::Events::NAALI_UNDO, "Undo");
 		
 		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_OBJECTLINK, "ObjectLink");
+		eventmgr-> RegisterEvent (eid, Input::Events::NAALI_OBJECTUNLINK, "ObjectUnlink");
 
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_PRESSED, "KeyPressed");
         eventmgr-> RegisterEvent (eid, Input::Events::KEY_RELEASED, "KeyReleased");
