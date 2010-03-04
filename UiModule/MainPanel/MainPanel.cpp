@@ -6,7 +6,6 @@
 #include "MainPanel.h"
 #include "MainPanelButton.h"
 #include "ConfigurationManager.h"
-#include "Login/InworldLoginDialog.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Framework.h"
 
