@@ -3,6 +3,12 @@
 #ifndef incl_Interfaces_ModuleInterface_h
 #define incl_Interfaces_ModuleInterface_h
 
+// Disable C4251 warnings in MSVC.
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4251 )
+#endif
+
 #include "ComponentRegistrarInterface.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
@@ -324,5 +330,9 @@ namespace Foundation
         Module::State state_;
     };
 }
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #endif

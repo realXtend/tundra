@@ -32,6 +32,8 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "Inventory/InventoryEvents.h"
 
+#include <EC_Billboard.h>
+
 // Ogre -specific
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
@@ -102,7 +104,8 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
-    
+    DECLARE_MODULE_EC(EC_Billboard);
+
     AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -906,7 +909,7 @@ void RexLogicModule::UpdateAvatarOverlays()
             if (overlay)
                 overlay->Update();
         }
-    } 
+    }
 }
 
 void RexLogicModule::UpdateSoundListener()

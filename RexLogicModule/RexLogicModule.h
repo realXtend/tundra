@@ -229,6 +229,9 @@ namespace RexLogic
         void SetAllTextOverlaysVisible(bool visible);
 
     private:
+        RexLogicModule(const RexLogicModule &);
+        RexLogicModule &operator=(const RexLogicModule &);
+
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
         //!              Add functionality if you need something done before logout.
