@@ -401,6 +401,8 @@ namespace Input
 
     class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
+        Q_OBJECT 
+        
         public:
             explicit WorldInputLogic (Foundation::Framework *fw);
 
@@ -418,9 +420,9 @@ namespace Input
 
             QEvent *clone_event_ (QEvent *event);
 
-            void post_simulated_focus_click ();
-
             void update_dynamic_key_bindings_ ();
+
+            void post_simulated_focus_click ();
 
         private:
             Foundation::Framework       *framework_;
