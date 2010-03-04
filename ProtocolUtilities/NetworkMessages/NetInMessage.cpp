@@ -105,8 +105,12 @@ NetInMessage::NetInMessage(size_t seqNum, const uint8_t *data, size_t numBytes, 
     if (zeroCoded)
     {
         size_t decodedLength = CountZeroDecodedLength(data, numBytes);
+        if (decodedLength == 0)
+            throw Exception("Corrupted zero-encoded stream received!");
         messageData.resize(decodedLength, 0); ///\todo Can optimize here for extra-extra bit of performance if profiling shows the need for so..
-        ZeroDecode(&messageData[0], decodedLength, data, numBytes);
+        bool success = ZeroDecode(&messageData[0], decodedLength, data, numBytes);
+        if (!success)
+            throw Exception("Zero-decoding input data failed!");
     }
     else
     {
@@ -418,6 +422,8 @@ const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)
         *bytesRead = currentVariableSize;
 
     const uint8_t *data = (const uint8_t *)ReadBytesUnchecked(currentVariableSize);
+    if (!data)
+        throw Exception("NetInMessage::ReadBuffer failed!");
     AdvanceToNextVariable();
 
     return data;

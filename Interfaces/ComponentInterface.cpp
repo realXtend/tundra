@@ -22,4 +22,14 @@ ComponentInterface::~ComponentInterface()
 {
 }
 
+void ComponentInterface::SetParentEntity(Scene::Entity* entity)
+{ 
+    parent_entity_ = entity;
+}
+
+Scene::Entity* ComponentInterface::GetParentEntity() const
+{ 
+    return parent_entity_;
+}
+
 }

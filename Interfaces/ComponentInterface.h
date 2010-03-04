@@ -22,7 +22,7 @@ namespace Foundation
     //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
-    class MODULE_API ComponentInterface : public QObject
+    class /*MODULE_API*/ ComponentInterface : public QObject
     {
         Q_OBJECT
         
@@ -33,8 +33,8 @@ namespace Foundation
         virtual const std::string &Name() const = 0;
         Foundation::Framework* GetFramework() const { return framework_; }
         
-        void SetParentEntity(Scene::Entity* entity) { parent_entity_ = entity; }
-        Scene::Entity* GetParentEntity() const { return parent_entity_; }
+        void SetParentEntity(Scene::Entity* entity);
+        Scene::Entity* GetParentEntity() const;
         
     private:
         ComponentInterface();

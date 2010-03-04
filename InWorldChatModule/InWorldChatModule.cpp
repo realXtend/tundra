@@ -9,13 +9,17 @@
 #include "StableHeaders.h"
 #include "InWorldChatModule.h"
 
-#include <EC_ChatBubble.h>
-#include <EventManager.h>
-#include <ModuleManager.h>
-#include <RealXtend/RexProtocolMsgIDs.h>
-#include <NetworkMessages/NetInMessage.h>
-#include <CoreStringUtils.h>
-#include <UiModule.h>
+#include "EC_ChatBubble.h"
+#include "EC_Billboard.h"
+
+#include "WorldStream.h"
+//#include "SceneManager.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "NetworkMessages/NetInMessage.h"
+#include "CoreStringUtils.h"
+#include "UiModule.h"
 
 
 namespace
@@ -73,19 +77,12 @@ InWorldChatModule::~InWorldChatModule()
 
 void InWorldChatModule::Load()
 {
+    DECLARE_MODULE_EC(EC_Billboard);
     DECLARE_MODULE_EC(EC_ChatBubble);
 
-    LogInfo(Name() + " loaded.");
-}
-
-void InWorldChatModule::Unload()
-{
-    LogInfo(Name() + " unloaded.");
-}
-
-void InWorldChatModule::Initialize()
-{
-    LogInfo(Name() + " initialized.");
+    AutoRegisterConsoleCommand(Console::CreateCommand("bbtest", 
+        "Adds a billboard to each entity in the scene.",
+        Console::Bind(this, &InWorldChatModule::TestAddBillboard)));
 }
 
 void InWorldChatModule::PostInitialize()
@@ -95,11 +92,6 @@ void InWorldChatModule::PostInitialize()
         LogError("Failed to query \"Framework\" event category");
 
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
-}
-
-void InWorldChatModule::Uninitialize()
-{
-    LogInfo(Name() + " uninitialized.");
 }
 
 void InWorldChatModule::Update(f64 frametime)
@@ -219,6 +211,23 @@ const std::string InWorldChatModule::moduleName = std::string("InWorldChatModule
 const std::string &InWorldChatModule::NameStatic()
 {
     return moduleName;
+}
+
+Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
+{/*
+    Scene::ScenePtr scene = framework_->GetScene("World"); ///\todo If we'd like to know which scene RexLogic currently has active, we'd need a dependency to that module.
+    /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one instead of RexLogicModule, so no dependency to it is needed.
+
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::EntityPtr entity = *iter;
+        entity->AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
+        EC_Billboard *billboard = entity->GetComponent<EC_Billboard>().get();
+        assert(billboard);
+        billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "bubble.png");
+    }
+*/
+    return Console::ResultSuccess();
 }
 
 void InWorldChatModule::SendChatFromViewer(const QString &msg)

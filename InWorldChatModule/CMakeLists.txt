@@ -26,19 +26,21 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 use_package (BOOST)
 use_package (POCO)
+use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
-use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule EC_ChatBubble)
+use_package (OGRE)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule EC_ChatBubble EC_Billboard)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule EC_ChatBubble)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule EC_ChatBubble EC_Billboard)
 link_package (BOOST)
 link_package (POCO)
+link_package (OGRE)
+link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)
-link_package (QT4)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

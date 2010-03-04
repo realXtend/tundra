@@ -53,12 +53,10 @@ namespace UiServices
     {
         QApplication::setStyle(new UiProxyStyle());
         event_query_categories_ << "Framework" << "Scene"  << "Console";
-        LogInfo(Name() + " loaded.");
     }
 
     void UiModule::Unload()
     {
-        LogInfo(Name() + " unloaded.");
     }
 
     void UiModule::Initialize()
@@ -80,8 +78,6 @@ namespace UiServices
 
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
             LogDebug("Console UI READY");
-
-            LogInfo(Name() + " initialized.");
         }
         else
             LogWarning("Could not accuire QGraphicsView shared pointer from framework, UiServices are disabled");
@@ -101,7 +97,6 @@ namespace UiServices
 
     void UiModule::Uninitialize()
     {
-        LogInfo(Name() + " uninitialized.");
     }
 
     void UiModule::Update(f64 frametime)

@@ -269,20 +269,35 @@ namespace Foundation
         void UnloadModule(Module::Entry &entry);
 
     private:
+        /// Stores the information contained in a single shared library XML file.
+        struct ModuleLoadDescription
+        {
+            boost::filesystem::path moduleDescFilename;
+            StringVector moduleNames; ///< The names of the modules contained in this shared library.
+            StringVector dependencies;
 
-        //! Loads module
-        /*!
-            \param path path to module definition file (xml)
-            \param all_files stringvector of all module definitions, so that dependencies can be processed
-        */
-        void LoadModule(const fs::path &path, const StringVectorPtr &all_files);
+            bool Precedes(const ModuleLoadDescription &rhs) const;
+
+            std::string ToString() const;
+        };
+
+        void ParseModuleXMLFile(const fs::path &path, std::vector<ModuleLoadDescription> &out, StringVector &relativePathDependencyAdditions);
+
+        static void SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modules);
+
+        static void CheckDependencies(const std::vector<ModuleLoadDescription> &modules);
+
+        static const ModuleLoadDescription *FindModuleLoadDescriptionWithEntry(const std::vector<ModuleLoadDescription> &modules, const std::string &entryName);
+
+        /// Parses and returns all the dependencies that the given module has from its dependency .xml file.
+        StringVector LoadModuleDependencies(const std::string &name);
 
         //! loads module
         /*!
             \param moduleName path to the shared lib containing the modules
             \param entries name of the entry classes in the lib
         */
-        void LoadModule(const std::string &moduleName,  const StringVector &entries);
+        void LoadModule(const std::string &moduleName, const StringVector &entries);
 
         //! returns true if module is present
         bool HasModule(ModuleInterface *module) const;

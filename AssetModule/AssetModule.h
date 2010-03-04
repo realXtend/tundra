@@ -41,10 +41,8 @@ namespace Asset
         virtual ~AssetModule();
 
         virtual void Load();
-        virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void PostInitialize();
         virtual void Update(f64 frametime);
 
         virtual bool HandleEvent(

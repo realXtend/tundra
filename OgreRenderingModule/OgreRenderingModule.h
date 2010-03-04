@@ -36,7 +36,6 @@ namespace OgreRenderer
         virtual ~OgreRenderingModule();
 
         virtual void Load();
-        virtual void Unload();
         virtual void PreInitialize();
         virtual void Initialize();
         virtual void PostInitialize();

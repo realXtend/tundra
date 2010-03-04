@@ -3,7 +3,7 @@
 /**
  *  @file   InventoryModule.cpp
  *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
- *          Implement data model -spesific event handling etc. here, not in InventoryWindow
+ *          Implement data model -specific event handling etc. here, not in InventoryWindow
  *          or InventoryItemModel classes.
  *
  *          It's not recommended to get any pointers to InventoryModule from other modules
@@ -64,16 +64,6 @@ InventoryModule::~InventoryModule()
 {
 }
 
-void InventoryModule::Load()
-{
-    LogInfo("System " + Name() + " loaded.");
-}
-
-void InventoryModule::Unload()
-{
-    LogInfo("System " + Name() + " unloaded.");
-}
-
 void InventoryModule::Initialize()
 {
     // Register event category and events.
@@ -97,8 +87,6 @@ void InventoryModule::Initialize()
         console->RegisterCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
             Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
     }
-
-    LogInfo("System " + Name() + " initialized.");
 }
 
 void InventoryModule::PostInitialize()
@@ -124,8 +112,6 @@ void InventoryModule::Uninitialize()
     eventManager_.reset();
     currentWorldStream_.reset();
     inventory_.reset();
-
-    LogInfo("System " + Name() + " uninitialized.");
 }
 
 void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule)

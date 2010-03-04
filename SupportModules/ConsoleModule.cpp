@@ -23,18 +23,6 @@ namespace Console
     }
 
     // virtual
-    void ConsoleModule::Load()
-    {
-        LogInfo(Name() + " loaded.");
-    }
-
-    // virtual
-    void ConsoleModule::Unload()
-    {
-        LogInfo(Name() + " unloaded.");
-    }
-
-    // virtual
     void ConsoleModule::PreInitialize()
     {
         manager_ = ConsolePtr(new ConsoleManager(this));
@@ -46,8 +34,6 @@ namespace Console
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
             checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
-
-        LogInfo(Name() + " initialized.");
     }
 
     void ConsoleModule::PostInitialize()
@@ -115,7 +101,5 @@ namespace Console
 
         assert (manager_);
         manager_.reset();
-
-        LogInfo(Name() + " uninitialized.");
     }
 }
