@@ -98,6 +98,10 @@ add_subdirectory (ProtocolModuleTaiga)
 add_subdirectory (InventoryModule)
 add_subdirectory (OgreAssetEditorModule)
 
+# Entity Components
+add_subdirectory (EC_Billboard)
+add_subdirectory (EC_ChatBubble)
+
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.
 if (NOT EXISTS CMakeOptionalModules.txt)

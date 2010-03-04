@@ -71,7 +71,7 @@ float EC_Terrain::InterpolateHeightValue(float x, float y)
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    const int cMin = 0.0f;
+    const int cMin = 0;
     const int cMax = 256;
 
     xFloor = clamp(xFloor, cMin, cMax);

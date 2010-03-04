@@ -47,7 +47,6 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     // Get widgets and connect signals
     lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
     lineEditDescription_ = mainWidget_->findChild<QLineEdit *>("lineEditDescription");
-
     labelAssetIdData_ = mainWidget_->findChild<QLabel *>("labelAssetIdData");
     labelTypeData_ = mainWidget_->findChild<QLabel *>("labelTypeData");
     labelFileSizeData_ = mainWidget_->findChild<QLabel *>("labelFileSizeData");
