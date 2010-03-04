@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Login/LoginContainer.h"
 #include "RexLogicModule.h"
 
 #include "EventHandlers/FrameworkEventHandler.h"
@@ -34,7 +33,12 @@ namespace RexLogic
             {
                 if (command == "-loginuri" && !parameter.isEmpty() && parameter.startsWith("http://", Qt::CaseInsensitive))
                 {
-    				rexLogic_->GetLogin()->StartParameterLoginTaiga(parameter);
+                    // Fix this to work again later (taiga login from command line)
+                    //CoreUi::LoginContainer *login_ui = rexLogic_->GetLogin();
+                    //if (login_ui)
+                    //    login_ui->StartParameterLoginTaiga(parameter);
+                    //else
+                    //    rexLogic_->LogInfo("Could not do parameter login due login path now awailable"); // Fix after refactor
                 }
 
     			if (command == "-python" || command == "-p")                   

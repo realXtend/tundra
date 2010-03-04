@@ -23,7 +23,6 @@
 #include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
-#include "UiSceneManager.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
@@ -58,11 +57,12 @@
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
 #include <QGraphicsView>
-#include "UiWidgetProperties.h"
-#include "UiProxyWidget.h"
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
+#include <Inworld/InworldSceneController.h>
+#include <Inworld/View/UiProxyWidget.h>
+#include <Inworld/View/UiWidgetProperties.h>
 
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
@@ -1477,7 +1477,7 @@ PyObject* GetUiSceneManager(PyObject *self)
         return NULL;
     }
 
-    return PythonQt::self()->wrapQObject(ui_module->GetSceneManager());
+    return PythonQt::self()->wrapQObject(ui_module->GetInworldSceneController());
 }
 
 PyObject* GetUIView(PyObject *self)

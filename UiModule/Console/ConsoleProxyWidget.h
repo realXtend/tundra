@@ -3,7 +3,6 @@
 #ifndef incl_UiModule_ConsoleProxyWidget_h
 #define incl_UiModule_ConsoleProxyWidget_h
 
-//#include "UiWidgetProperties.h"
 #include <QGraphicsProxyWidget>
 
 namespace CoreUi

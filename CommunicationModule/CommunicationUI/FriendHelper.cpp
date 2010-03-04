@@ -6,14 +6,15 @@
 #include "FriendListItem.h"
 //#include "interface.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+
 #include "FriendRequestInterface.h"
 #include "ContactInterface.h"
 #include "CoreDefines.h"
 #include "Framework.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
+#include <Inworld/InworldSceneController.h>
+#include <Inworld/View/UiProxyWidget.h>
 
 #include <QLabel>
 
@@ -101,7 +102,7 @@ namespace UiHelpers
         if (ui_module.get())
         {
             UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SceneWidget);
-            UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(request_manager_widget_, widget_properties);
+            UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(request_manager_widget_, widget_properties);
             proxy->show();
         }
     }

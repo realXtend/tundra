@@ -51,6 +51,9 @@ namespace Ether
                 case AddRemoveControl:
                     InitAddRemoveControl();
                     break;
+
+                case StatusWidget:
+                    InitStatusWidget();
             }
 
             QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
@@ -76,21 +79,6 @@ namespace Ether
             {
                 parent_->setStyleSheet("QWidget#containerWidget { background: transparent; background-image: url('./data/ui/images/ether/card_frame_selected_top.png');"
                                        "background-position: top left; background-repeat: no-repeat; }");   
-
-                // Buttons
-                //QPushButton *add_button = new QPushButton(parent_);
-                //add_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/add_button.png'); }"
-                //                                  "QPushButton::hover { background-image: url('./data/ui/images/ether/add_button_hover.png'); }"
-                //                                  "QPushButton::pressed { background-image: url('./data/ui/images/ether/add_button_pressed.png'); }").arg(button_style));
-                //add_button->setFlat(true);
-                //add_button->resize(button_size);
-
-                //QPushButton *remove_button = new QPushButton(parent_);
-                //remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/remove_button.png'); }"
-                //                                     "QPushButton::hover { background-image: url('./data/ui/images/ether/remove_button_hover.png'); }"
-                //                                     "QPushButton::pressed { background-image: url('./data/ui/images/ether/remove_button_pressed.png'); }").arg(button_style));
-                //remove_button->setFlat(true);
-                //remove_button->resize(button_size);
 
                 QPushButton *edit_avatar_button = new QPushButton(parent_);
                 edit_avatar_button->setFlat(true);
@@ -125,21 +113,6 @@ namespace Ether
 
                 text_label_->setMinimumSize(430,50);
                 text_label_->setMaximumSize(430,50);
-
-                // Buttons
-                //QPushButton *add_button = new QPushButton(parent_);
-                //add_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/add_button.png'); }"
-                //                                  "QPushButton::hover { background-image: url('./data/ui/images/ether/add_button_hover.png'); }"
-                //                                  "QPushButton::pressed { background-image: url('./data/ui/images/ether/add_button_pressed.png'); }").arg(button_style));
-                //add_button->setFlat(true);
-                //add_button->resize(button_size);
-
-                //QPushButton *remove_button = new QPushButton(parent_);
-                //remove_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/remove_button.png'); }"
-                //                                     "QPushButton::hover { background-image: url('./data/ui/images/ether/remove_button_hover.png'); }"
-                //                                     "QPushButton::pressed { background-image: url('./data/ui/images/ether/remove_button_pressed.png'); }").arg(button_style));
-                //remove_button->setFlat(true);
-                //remove_button->resize(button_size);
 
                 QPushButton *info_world_button = new QPushButton(parent_);
                 info_world_button->setFlat(true);
@@ -266,7 +239,7 @@ namespace Ether
                 scale_animation_->setEasingCurve(QEasingCurve::InOutSine);
             }
         }
-        
+
         void ControlProxyWidget::InitAddRemoveControl()
         {
             parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
@@ -334,6 +307,25 @@ namespace Ether
             fade_animation_->setEasingCurve(QEasingCurve::Linear);
             fade_animation_->setStartValue(0);
             fade_animation_->setEndValue(1);   
+        }
+
+        void ControlProxyWidget::InitStatusWidget()
+        {
+            setZValue(51);
+            parent_->setStyleSheet("QWidget#containerWidget { background: transparent; }");
+
+            text_label_ = new QLabel(parent_);
+            text_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            text_label_->setAlignment(Qt::AlignCenter);
+            text_label_->setStyleSheet("color: rgb(238,238,238);");
+            text_label_->setFont(QFont("Narkisim", 24));
+
+            QHBoxLayout *layout = new QHBoxLayout(parent_);
+            layout->setSpacing(0);
+            layout->setContentsMargins(0,5,0,5);
+            parent_->setLayout(layout);
+
+            layout->addWidget(text_label_);    
         }
 
         void ControlProxyWidget::UpdateGeometry(QRectF new_rect, qreal scale, bool do_fade)
@@ -415,8 +407,7 @@ namespace Ether
         void ControlProxyWidget::UpdateContollerCard(InfoCard *new_card)
         {
             controlled_card_ = new_card;
-            if (text_label_)
-                text_label_->setText(controlled_card_->title());
+            UpdateStatusText(controlled_card_->title());
 
             disconnect();
             connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL( finished()),
@@ -440,46 +431,68 @@ namespace Ether
                 fade_animation_->start();
         }
 
+        void ControlProxyWidget::UpdateStatusText(QString text)
+        {
+            if (text_label_)
+                text_label_->setText(text);
+        }
+
         // Emit type of action request
 
         void ControlProxyWidget::RegisterHandler()
         {
             EmitActionRequest("register");
         }
+
         void ControlProxyWidget::InfoHandler()
         {
             EmitActionRequest("info");
         }
+
         void ControlProxyWidget::EditHandler()
         {
             EmitActionRequest("edit");
         }
+
         void ControlProxyWidget::AddHandler()
         {
             EmitActionRequest("add");
         }
+
         void ControlProxyWidget::RemoveHandler()
         {
             EmitActionRequest("remove");
         }
+
         void ControlProxyWidget::ExitHandler()
         {
             emit ActionRequest("exit");
         }
+
         void ControlProxyWidget::ConnectHandler()
         {
             if (!suppress_buttons_)
                 emit ActionRequest("connect");
+            else 
+                qDebug() << "<Ether::ControlProxyWidget> Suppressed connect action, login is in progress";
         }
+
         void ControlProxyWidget::HelpHandler()
         {
             emit ActionRequest("help");
+        }
+
+        void ControlProxyWidget::HideHandler()
+        {
+            emit ActionRequest("hide");
         }
 
         void ControlProxyWidget::EmitActionRequest(QString type)
         {
             if (!suppress_buttons_)
                 action_widget_->ShowWidget(type, controlled_card_);
+            else 
+                qDebug() << "<Ether::ControlProxyWidget> Suppressed action '" << type << "'";
         }
 
         void ControlProxyWidget::SuppressButtons(bool suppress)

@@ -2,8 +2,8 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "UiNotificationManager.h"
-#include "UiSceneManager.h"
+#include "NotificationManager.h"
+#include "InworldSceneController.h"
 
 #include "ui_NotificationWidget.h"
 #include "Notify/NotifyProxyWidget.h"
@@ -16,7 +16,7 @@
 
 namespace UiServices
 {
-    UiNotificationManager::UiNotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view) 
+    NotificationManager::NotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view) 
         : QObject(),
           framework_(framework),
           ui_view_(ui_view),
@@ -34,13 +34,13 @@ namespace UiServices
         ui_view_->scene()->addItem(notification_proxy_widget_);
     }
 
-    UiNotificationManager::~UiNotificationManager()
+    NotificationManager::~NotificationManager()
     {
         SAFE_DELETE(notification_widget_);
         SAFE_DELETE(notification_ui_);
     }
 
-    void UiNotificationManager::ShowInformationString(const QString &text, int duration_msec)
+    void NotificationManager::ShowInformationString(const QString &text, int duration_msec)
     {
         if (!notification_proxy_widget_->isVisible())
             notification_proxy_widget_->show();
@@ -53,7 +53,7 @@ namespace UiServices
         ResizeAndPositionNotifyArea();
     }
 
-    void UiNotificationManager::DestroyNotifyLabel(CoreUi::NotifyLabel *notification)
+    void NotificationManager::DestroyNotifyLabel(CoreUi::NotifyLabel *notification)
     {
         int index = notification_ui_->verticalMainLayout->indexOf(notification);
         if (index != -1)
@@ -68,7 +68,7 @@ namespace UiServices
         }
     }
 
-    void UiNotificationManager::ResizeAndPositionNotifyArea()
+    void NotificationManager::ResizeAndPositionNotifyArea()
     {
         int count = notification_ui_->verticalMainLayout->count();
         if (count > 0)

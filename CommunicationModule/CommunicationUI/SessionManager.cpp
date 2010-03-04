@@ -5,13 +5,14 @@
 #include "SessionManager.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
+#include <Inworld/View/UiProxyWidget.h>
+#include <Inworld/InworldSceneController.h>
+
 #include "MasterWidget.h"
 #include "SessionHelper.h"
 #include "FriendListWidget.h"
 #include "ChatSessionWidget.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
 #include "ConnectionInterface.h"
 #include "ChatSessionInterface.h"
 #include "Framework.h"
@@ -168,7 +169,7 @@ namespace UiManagers
         if (ui_module.get())
         {
             UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SceneWidget);
-            ui_module->GetSceneManager()->AddWidgetToScene(friend_list_widget_, widget_properties);
+            ui_module->GetInworldSceneController()->AddWidgetToScene(friend_list_widget_, widget_properties);
         }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),
                 session_helper_, SLOT( SetMyStatus(const QString &) ));

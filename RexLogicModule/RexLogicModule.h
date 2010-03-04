@@ -20,11 +20,6 @@
 
 class RexUUID;
 
-namespace CoreUi
-{
-    class LoginContainer;
-}
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -112,9 +107,6 @@ namespace RexLogic
 
         /// @return Invetory pointer.
         InventoryPtr GetInventory() const;
-
-        /// @return Login UI
-        CoreUi::LoginContainer *GetLogin()  const { return login_ui_; }
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable()  const { return camera_controllable_; }
@@ -322,9 +314,6 @@ namespace RexLogic
         
         //! current camera state
         CameraState camera_state_;
-
-        //! Pointer to the login window
-        CoreUi::LoginContainer *login_ui_;
 
         //! OpenSim login handler
         OpenSimLoginHandler *os_login_handler_;

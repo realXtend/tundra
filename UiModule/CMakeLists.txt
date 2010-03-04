@@ -8,7 +8,7 @@ macro (AddSourceFolder folder_name)
 endmacro (AddSourceFolder)
 
 macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx */*/*.cxx)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx */*/*.cxx */*/*/*.cxx)
     source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro (MocFolder)
 
@@ -32,11 +32,16 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 # SubFolders to project with filtering
 AddSourceFolder (Ether)
 AddSourceFolder (Ether/View)
+AddSourceFolder (Ether/View/Classical)
 AddSourceFolder (Ether/Data)
-AddSourceFolder (Login)
+
+AddSourceFolder (Inworld)
+AddSourceFolder (Inworld/View)
+
 AddSourceFolder (MainPanel)
 AddSourceFolder (Notify)
 AddSourceFolder (Console)
+AddSourceFolder (Common)
 
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup

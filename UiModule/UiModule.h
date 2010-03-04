@@ -41,8 +41,10 @@ namespace UiServices
     class UiProxyWidget;
     class UiWidgetProperties;
     class UiStateMachine;
-    class UiSceneManager;
-    class UiNotificationManager;
+    class InworldSceneController;
+    class NotificationManager;
+
+    enum ConnectionState { Connected, Disconnected, Failed };
 
     /** UiModule hadles the shown ui scene, creates 
       * core modules ui and provides ui services to modules 
@@ -66,12 +68,12 @@ namespace UiServices
 
         /*************** UiModule Services ***************/
 
-        //! UiSceneManager will give you a QObject derived class that will give you all
+        //! InworldSceneController will give you a QObject derived class that will give you all
         //! the UI related services like adding your own QWidgets into the 2D scene 
-        //! \return UiSceneManager The scene manager with scene services
-        UiSceneManager *GetSceneManager() const { return ui_scene_manager_; }
+        //! \return InworldSceneController The scene manager with scene services
+        InworldSceneController *GetInworldSceneController() const { return inworld_scene_controller_; }
 
-        UiNotificationManager *GetNotificationManager() const { return ui_notification_manager_; }
+        NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
 
         QObject *GetEtherLoginNotifier();
 
@@ -87,6 +89,9 @@ namespace UiServices
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_UiServices;
 
     private:
+        //! Notify all ui module components of connected/disconnected state
+        void PublishConnectionState(ConnectionState connection_state);
+
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
 
@@ -102,11 +107,11 @@ namespace UiServices
         //! UiConsoleManager pointer
         CoreUi::UiConsoleManager* ui_console_manager_;
 
-        //! UiSceneManager pointer
-        UiSceneManager *ui_scene_manager_;
+        //! InworldSceneController pointer
+        InworldSceneController *inworld_scene_controller_;
 
-        //! UiNotificationManager pointer
-        UiNotificationManager *ui_notification_manager_;
+        //! NotificationManager pointer
+        NotificationManager *inworld_notification_manager_;
 
         UiStateMachine *ui_state_machine_;
 

@@ -18,10 +18,10 @@
 #include <QScrollBar>
 #include <QTabWidget>
 
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
@@ -73,7 +73,7 @@ namespace RexLogic
         if (!avatar_widget_)
             return;
 
-        avatar_editor_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor", UiServices::ModuleWidget));
+        avatar_editor_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor", UiServices::ModuleWidget));
 
         // Connect signals.
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");

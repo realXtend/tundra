@@ -10,8 +10,6 @@
 #include <QPushButton>
 
 #include "UiModuleFwd.h"
-//#include "InfoCard.h"
-//#include "ActionProxyWidget.h"
 
 namespace Ether
 {
@@ -28,7 +26,8 @@ namespace Ether
             {
                 CardControl,
                 ActionControl,
-                AddRemoveControl
+                AddRemoveControl,
+                StatusWidget
             };
 
             enum LayoutDirection
@@ -59,14 +58,18 @@ namespace Ether
         public slots:
             void UpdateGeometry(QRectF rect, qreal scale, bool do_fade);
             void UpdateContollerCard(InfoCard *new_card);
+            void UpdateStatusText(QString text);
+
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
             void SetOverlayWidget(ControlProxyWidget *overlay_widget) { overlay_widget_ =  overlay_widget; }
+
             void SuppressButtons(bool suppress);
 
         private slots:
             void InitCardWidgets();
             void InitActionWidgets();
             void InitAddRemoveControl();
+            void InitStatusWidget();
 
             void ControlledWidgetStopped();
 
@@ -78,6 +81,7 @@ namespace Ether
             void ExitHandler();
             void ConnectHandler();
             void HelpHandler();
+            void HideHandler();
 
         private:
             ControlType type_;

@@ -6,7 +6,7 @@
 #include "SoundServiceInterface.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include <QUiLoader>
@@ -51,7 +51,7 @@ namespace OpenALAudio
         if (!settings_widget_)
             return;
 
-        ui_module->GetSceneManager()->AddSettingsWidget(settings_widget_, "Sound");
+        ui_module->GetInworldSceneController()->AddSettingsWidget(settings_widget_, "Sound");
 
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())

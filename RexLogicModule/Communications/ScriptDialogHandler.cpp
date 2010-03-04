@@ -1,13 +1,15 @@
 #include "StableHeaders.h"
 #include <QString>
 #include "Communications/ScriptDialogHandler.h"
-#include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiSceneManager.h>
+
 #include "Communications/ScriptDialogWidget.h"
 #include "ModuleManager.h"
 #include "RexLogicModule.h"
 #include "WorldStream.h"
+
+#include <UiModule.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include <Inworld/InworldSceneController.h>
 
 namespace RexLogic
 {
@@ -52,7 +54,7 @@ namespace RexLogic
 		connect(widget, SIGNAL( OnClosed(s32, QString)), this, SLOT( OnDialogClosed(s32, QString)) );
 
 		UiServices::UiWidgetProperties widget_properties(widget_name, UiServices::SceneWidget);
-		UiServices::UiProxyWidget *proxy_widget = ui_module->GetSceneManager()->AddWidgetToScene(widget, widget_properties); // we don't need to store a proxy widget here..
+		UiServices::UiProxyWidget *proxy_widget = ui_module->GetInworldSceneController()->AddWidgetToScene(widget, widget_properties); // we don't need to store a proxy widget here..
 
 		proxy_widget->show();
 	}

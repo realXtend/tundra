@@ -565,7 +565,20 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_Close">
+              <widget class="QPushButton" name="pushButton_ReturnToEther">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Return to Ether</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_Exit">
                <property name="text">
                 <string>Exit</string>
                </property>

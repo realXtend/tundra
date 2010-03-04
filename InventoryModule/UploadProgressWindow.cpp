@@ -9,12 +9,12 @@
 #include "UploadProgressWindow.h"
 #include "InventoryModule.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -48,7 +48,7 @@ UploadProgressWindow::UploadProgressWindow(InventoryModule *owner, QWidget *pare
     if (!ui_module.get())
         return;
 
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Upload Progress Window", UiServices::SceneWidget));
 }
 
@@ -70,7 +70,7 @@ void UploadProgressWindow::OpenUploadProgress(size_t file_count)
     progressBar_->setRange(0, file_count);
     progressBar_->setValue(uploadCount_);
     proxyWidget_->show();
-    ui_module->GetSceneManager()->BringProxyToFront(proxyWidget_);
+    ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
 }
 
 void UploadProgressWindow::UploadStarted(const QString &filename)

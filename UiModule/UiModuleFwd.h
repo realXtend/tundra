@@ -9,10 +9,17 @@ namespace CoreUi
     class UiConsoleManager;
 }
 
+namespace UiServices
+{
+    class InworldSceneController;
+    class UiProxyWidget;
+}
+
 namespace Ether
 {
     namespace Logic
     {
+        class EtherLogic;
         class EtherSceneController;
     }
     namespace View
@@ -32,7 +39,6 @@ namespace Ether
         class OpenSimAvatar;
         class RealXtendAvatar;
         class OpenSimWorld;
-
     }
 }
 

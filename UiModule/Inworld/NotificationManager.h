@@ -1,9 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_UiNotificationManager_h
-#define incl_UiModule_UiNotificationManager_h
+#ifndef incl_UiModule_NotificationManager_h
+#define incl_UiModule_NotificationManager_h
 
-//#include "Framework.h"
 #include "UiModuleApi.h"
 
 #include <QObject>
@@ -28,16 +27,16 @@ namespace Ui
 
 namespace UiServices
 {
-    class UiSceneManager;
+    class InworldSceneController;
 
-    class UI_MODULE_API UiNotificationManager : public QObject
+    class UI_MODULE_API NotificationManager : public QObject
     {
 
     Q_OBJECT
 
     public:
-        UiNotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view);
-        virtual ~UiNotificationManager();
+        NotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+        virtual ~NotificationManager();
 
     public slots:
         void ShowInformationString(const QString &text, int duration_msec = 5000);
@@ -58,4 +57,4 @@ namespace UiServices
     };
 }
 
-#endif // incl_UiModule_UiNotificationManager_h
+#endif // incl_UiModule_NotificationManager_h

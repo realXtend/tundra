@@ -15,7 +15,8 @@
 #include "Framework.h"
 
 #include "UiModule.h"
-#include "UiNotificationManager.h"
+#include "Inworld/NotificationManager.h"
+
 #include "Inventory/InventorySkeleton.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
