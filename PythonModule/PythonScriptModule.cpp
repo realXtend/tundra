@@ -40,7 +40,6 @@
 #include "GenericMessageUtils.h"
 
 #include "RexLogicModule.h" 
-//#include "Login/LoginUI.h" //in rexlogic
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
