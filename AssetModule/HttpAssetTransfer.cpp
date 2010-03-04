@@ -211,7 +211,7 @@ namespace Asset
         
 		int new_size = received_data_.size() + size;
 		received_data_.resize(new_size);
-		memcpy(&received_data_[0], data, size);
+		memcpy(&received_data_[received_data_.size()-size], data, size);
 		received_count_ += size;
     }
     
@@ -227,7 +227,7 @@ namespace Asset
         
 		int new_size = received_metadata_.size() + size;
 		received_metadata_.resize(new_size);
-		memcpy(&received_metadata_[0], data, size);
+		memcpy(&received_metadata_[received_metadata_.size()-size], data, size);
         received_count_ += size;
     }
 
