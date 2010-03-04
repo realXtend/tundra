@@ -4,7 +4,7 @@
 #include "RexPythonQt.h"
 #include <PythonQt.h>
 #include <PythonQt_QtAll.h>
-#include "UiWidgetProperties.h"
+#include "Inworld/View/UiWidgetProperties.h"
 //#include "UiProxyWidget.h"
 
 //#include <QGroupBox> //just for testing addObject

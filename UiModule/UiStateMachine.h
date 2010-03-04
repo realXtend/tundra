@@ -4,6 +4,7 @@
 #define incl_UiModule_UiStateMachine_h
 
 #include "UiModuleApi.h"
+#include "UiModule.h"
 
 #include <QStateMachine>
 #include <QParallelAnimationGroup>
@@ -33,6 +34,8 @@ namespace UiServices
         void RegisterScene(QString name, QGraphicsScene *scene);
         void SwitchToScene(QString name);
 
+        void SetConnectionState(ConnectionState new_connection_state);
+
     private slots:
         void SetTransitions();
         void ViewKeyEvent(QKeyEvent *key_event);
@@ -54,6 +57,8 @@ namespace UiServices
 
         QMap<QString, QGraphicsScene*> scene_map_;
         QMap<QGraphicsScene*, QParallelAnimationGroup*> animations_map_;
+
+        UiServices::ConnectionState connection_state_;
 
     signals:
         void EtherTogglePressed();

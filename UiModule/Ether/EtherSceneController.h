@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QGraphicsScene>
 #include <QUuid>
+#include <QTimer>
 
 #include "UiModuleFwd.h"
 #include <QScopedPointer>
@@ -15,10 +16,22 @@
 #include "View/VerticalMenu.h"
 #include "Data/WorldInfo.h"
 
+namespace CoreUi
+{
+    class AnchorLayoutManager;
+
+    namespace Classical
+    {
+        class ClassicalLoginWidget;
+    }
+}
+
 namespace Ether
 {
     namespace Logic
     {
+        class EtherLoginNotifier;
+
         class EtherSceneController : public QObject
         {
 
@@ -31,6 +44,7 @@ namespace Ether
 
         public slots:
             void LoadActionWidgets();
+            void LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data);
 
             void LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items, QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items);
             void LoadAvatarCardsToScene(QMap<QUuid, View::InfoCard*> avatar_map, int visible_top_items, bool add_to_scene);
@@ -59,6 +73,10 @@ namespace Ether
             void RevertLoginAnimation(bool change_scene_after_anims_finish);
 
             void SuppressControlWidgets(bool suppress);
+            void ShowStatusInformation(QString text);
+            
+            void TryExitApplication();
+            void StoreConfigs();
 
         private slots:
             void ControlsWidgetHandler(QString request_type);
@@ -66,6 +84,7 @@ namespace Ether
             void SceneRectChanged(const QRectF &new_rect);
 
             void LoginAnimationFinished();
+            void HideStatusWidget();
 
         private:
             //! Pointer to data manager
@@ -97,6 +116,11 @@ namespace Ether
             View::ControlProxyWidget *avatar_addremove_widget_;
             View::ControlProxyWidget *world_info_widget_;
             View::ControlProxyWidget *world_addremove_widget_;
+            View::ControlProxyWidget *status_widget_;
+            
+            // Classic login widget
+            QGraphicsProxyWidget *classic_login_proxy_;
+            CoreUi::Classical::ClassicalLoginWidget *classical_login_widget_;
 
             //! Control widget
             View::ControlProxyWidget *control_widget_;
@@ -104,9 +128,14 @@ namespace Ether
             //! Action widget
             View::ActionProxyWidget *action_proxy_widget_;
 
-            int last_scale_;
+            //! Anchor layout manager
+            CoreUi::AnchorLayoutManager *layout_manager_;
 
+            //! Random locals
+            int last_scale_;
             bool change_scene_after_anims_finish_;
+
+            QTimer *info_hide_timer_;
 
         signals:
             void ApplicationExitRequested();

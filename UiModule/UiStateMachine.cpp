@@ -15,7 +15,8 @@ namespace UiServices
     UiStateMachine::UiStateMachine(QGraphicsView *view, QObject *parent)
         : QStateMachine(parent),
           view_(view),
-          current_scene_(view->scene())
+          current_scene_(view->scene()),
+          connection_state_(Disconnected)
     {
         state_ether_ = new QState(this);
         state_inworld_ = new QState(this);
@@ -44,7 +45,29 @@ namespace UiServices
         switch (key_event->key())
         {
             case Qt::Key_Escape:
-               emit EtherTogglePressed(); 
+                if (connection_state_ == Connected)
+                    emit EtherTogglePressed();
+                break;
+        }
+    }
+
+    void UiStateMachine::SetConnectionState(ConnectionState new_connection_state)
+    {
+        connection_state_ = new_connection_state;
+
+        switch (connection_state_)
+        {
+            case Disconnected:
+                SwitchToEtherScene();
+                break;
+            case Connected:
+                SwitchToInworldScene();
+                break;
+            case Failed:
+                connection_state_ = Disconnected;
+                break;
+            default:
+                return;
         }
     }
 

@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "UiProxyWidget.h"
+#include "Inworld/View/UiProxyWidget.h"
 
 #include "MainPanel/MainPanelButton.h"
 

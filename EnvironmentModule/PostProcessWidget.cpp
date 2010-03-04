@@ -4,14 +4,15 @@
 #include "PostProcessWidget.h"
 #include "EnvironmentModule.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+
 #include "Framework.h"
 
 #include <CompositionHandler.h>
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QString>
 
@@ -42,7 +43,7 @@ namespace Environment
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
-        ui_module->GetSceneManager()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Post-processing", UiServices::ModuleWidget));
+        ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Post-processing", UiServices::ModuleWidget));
     }
 
     void PostProcessWidget::AddHandler(OgreRenderer::CompositionHandler *handler)

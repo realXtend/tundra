@@ -12,11 +12,11 @@
 
 #include "Framework.h"
 #include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 
 #include "Inventory/InventoryEvents.h"
 
@@ -480,7 +480,7 @@ void MaterialWizard::InitWindow()
     QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Cancel()));
     QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Material Wizard", UiServices::ModuleWidget));
 
     buttonCreate->setEnabled(false);

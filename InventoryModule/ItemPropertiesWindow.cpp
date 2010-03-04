@@ -11,14 +11,14 @@
 #include "InventoryModule.h"
 #include "InventoryAsset.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include <AssetEvents.h>
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -71,13 +71,13 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     if (!ui_module.get())
         return;
 
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Item Properties", UiServices::SceneWidget));
 
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Cancel()));
 
     proxyWidget_->show();
-    ui_module->GetSceneManager()->BringProxyToFront(proxyWidget_);
+    ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
 }
 
 ItemPropertiesWindow::~ItemPropertiesWindow()
@@ -138,7 +138,7 @@ void ItemPropertiesWindow::Save()
     if (!ui_module.get())
         return;
 
-    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
     owner_->CloseItemPropertiesWindow(inventoryId_, true);
 }
 
@@ -151,7 +151,7 @@ void ItemPropertiesWindow::Cancel()
     if (!ui_module.get())
         return;
 
-    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
     owner_->CloseItemPropertiesWindow(inventoryId_, false);
 }
 

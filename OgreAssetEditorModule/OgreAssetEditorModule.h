@@ -68,6 +68,9 @@ namespace OgreAssetEditor
         /// Resource event category.
         event_category_id_t resourceEventCategory_;
 
+        /// NetworkState event category.
+        event_category_id_t networkStateEventCategory_;
+
         /// Editor manager.
         EditorManager *editorManager_;
 

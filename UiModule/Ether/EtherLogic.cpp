@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EtherLogic.h"
+#include "UiModule.h"
 
 #include "EtherSceneController.h"
 #include "EtherLoginNotifier.h"
@@ -82,6 +83,8 @@ namespace Ether
 
         EtherLogic::~EtherLogic()
         {
+            scene_controller_->StoreConfigs();
+
             foreach (Data::AvatarInfo *avatar, avatar_map_.values())
                 SAFE_DELETE(avatar);
             foreach (Data::WorldInfo *world, world_map_.values())
@@ -94,6 +97,16 @@ namespace Ether
 
         void EtherLogic::Start()
         {
+            // Check default view for ether and setup classic login widget
+            QString view = data_manager_->GetDefaultView();
+            QMap<QString, QString> last_login_data = data_manager_->GetClassicLoginInfo();
+
+            bool classic_view = false;
+            if (view == "classic")
+                classic_view = true;
+            scene_controller_->LoadClassicLoginWidget(login_notifier_, classic_view, last_login_data);
+
+            // Generate ethers graphical content
             last_login_cards_.first = 0;
             last_login_cards_.second = 0;
 
@@ -464,21 +477,24 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetConnectionState(QString state)
+        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state)
         {
-            if (state == "failed")
+            switch (connection_state)
             {
-                scene_controller_->RevertLoginAnimation(false);
-                scene_->SetConnectionStatus(false);
-            }
-            else if (state == "connected")
-            {
-                scene_controller_->RevertLoginAnimation(true);
-                scene_->SetConnectionStatus(true);
-            }
-            else if (state == "disconnected")
-            {
-                scene_->SetConnectionStatus(false);
+                case UiServices::Connected:
+                    scene_controller_->ShowStatusInformation("Connected");
+                    scene_controller_->RevertLoginAnimation(true);
+                    scene_->SetConnectionStatus(true);
+                    break;
+                case UiServices::Disconnected:
+                    UpdateUiPixmaps();
+                    scene_->SetConnectionStatus(false);
+                    break;
+                case UiServices::Failed:
+                    scene_controller_->ShowStatusInformation("Failed to connect");
+                    scene_controller_->RevertLoginAnimation(false);
+                    scene_->SetConnectionStatus(false);
+                    break;
             }
             scene_->SupressKeyEvents(false);
         }

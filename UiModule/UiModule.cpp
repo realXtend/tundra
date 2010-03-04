@@ -3,17 +3,18 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 #include "UiProxyStyle.h"
 #include "UiStateMachine.h"
+
 #include "EventManager.h"
 #include "ConfigurationManager.h"
-#include "UiSceneManager.h"
-#include "UiNotificationManager.h"
 #include "Framework.h"
 
-// Private managers
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/NotificationManager.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
+
 #include "Console/UiConsoleManager.h"
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
@@ -32,16 +33,16 @@ namespace UiServices
     UiModule::UiModule() 
         : Foundation::ModuleInterfaceImpl(Foundation::Module::MT_UiServices),
           event_query_categories_(QStringList()),
-          ui_scene_manager_(0),
-          ui_notification_manager_(0)
+          inworld_scene_controller_(0),
+          inworld_notification_manager_(0)
     {
     }
 
     UiModule::~UiModule()
     {
         SAFE_DELETE(ui_state_machine_);
-        SAFE_DELETE(ui_scene_manager_);
-        SAFE_DELETE(ui_notification_manager_);
+        SAFE_DELETE(inworld_scene_controller_);
+        SAFE_DELETE(inworld_notification_manager_);
         SAFE_DELETE(ui_console_manager_);
         SAFE_DELETE(ether_logic_);
     }
@@ -71,10 +72,10 @@ namespace UiServices
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             LogDebug("State Machine STARTED");
 
-            ui_scene_manager_ = new UiSceneManager(GetFramework(), ui_view_);
+            inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
-            ui_notification_manager_ = new UiNotificationManager(GetFramework(), ui_view_);
+            inworld_notification_manager_ = new NotificationManager(GetFramework(), ui_view_);
             LogDebug("Notification Manager service READY");
 
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
@@ -130,15 +131,12 @@ namespace UiServices
             {
                 case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
-                    ether_logic_->SetConnectionState("failed");
+                    PublishConnectionState(Failed);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
-                    ether_logic_->UpdateUiPixmaps();
-                    ether_logic_->SetConnectionState("disconnected");
-                    ui_state_machine_->SwitchToEtherScene(); // comment to set classic login as default when disconnecting
-                    ui_scene_manager_->Disconnected();
+                    PublishConnectionState(Disconnected);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
@@ -174,16 +172,13 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    ui_state_machine_->SwitchToInworldScene();
-                    ui_scene_manager_->Connected();
-                    ether_logic_->SetConnectionState("connected");
-
+                    PublishConnectionState(Connected);
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())
                         welcome_message = current_avatar_ + " welcome to " + current_server_;
                     else
                         welcome_message = "Welcome to " + current_server_;
-                    ui_notification_manager_->ShowInformationString(welcome_message, 10000);
+                    inworld_notification_manager_->ShowInformationString(welcome_message, 10000);
                     break;
                 }
                 default:
@@ -192,6 +187,29 @@ namespace UiServices
         }
 
         return false;
+    }
+
+    void UiModule::PublishConnectionState(ConnectionState connection_state)
+    {
+        switch (connection_state)
+        {
+            case Connected:
+                ui_state_machine_->SetConnectionState(connection_state);
+                ether_logic_->SetConnectionState(connection_state);
+                break;
+
+            case Disconnected:
+                ether_logic_->SetConnectionState(connection_state);
+                ui_state_machine_->SetConnectionState(connection_state);
+                break;
+
+            case Failed:
+                ether_logic_->SetConnectionState(connection_state);
+                break;
+
+            default:
+                return;
+        }
     }
 
     void UiModule::SubscribeToEventCategories()

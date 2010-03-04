@@ -3,9 +3,6 @@
 #ifndef incl_UiModule_MainPanel_h
 #define incl_UiModule_MainPanel_h
 
-//#include "Foundation.h"
-//#include "UiProxyWidget.h"
-//#include "Login/InworldLoginDialog.h"
 #include "SettingsWidget.h"
 
 #include <QWidget>
@@ -19,7 +16,6 @@
 namespace CoreUi
 {
     class MainPanelButton;
-    class InworldLoginDialog;
 }
 
 namespace Foundation
@@ -68,10 +64,6 @@ namespace CoreUi
         QPushButton *quit_button;
 
     private:
-        //! Init internal widgets
-        void initialize_();
-        void InitBookmarks();
-
         QWidget *panel_widget_;
         QHBoxLayout *layout_;
         QHBoxLayout *topcontrols_;
@@ -88,21 +80,13 @@ namespace CoreUi
         //! Pointer to framework for configs
         Foundation::Framework *framework_;
 
-        //! Pointer to inworld login dialog
-        CoreUi::InworldLoginDialog *inworld_login_dialog_;
-
         //! Settings Widget
         SettingsWidget settings_widget_;
 
     private slots:
+        void Initialise();
         void HideWidgets();
-        void ToggleNavigation();
-        void Navigate();
-        void ParseAndEmitLogin(QMap<QString,QString> &input_map);
 
-    signals:
-        void CommandLoginOpenSim(QString &, QString &, QString &);
-        void CommandLoginRealxtend(QString &, QString &, QString &, QString &);
     };
 }
 

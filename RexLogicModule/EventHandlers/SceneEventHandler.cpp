@@ -11,8 +11,6 @@
 #include "SoundServiceInterface.h"
 #include "WorldStream.h"
 
-#include "Login/LoginContainer.h" 
-
 namespace RexLogic
 {
 
@@ -85,8 +83,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
         break;
     }
     case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
-    {            
-        rexlogicmodule_->GetLogin()->UpdateLoginProgressUI(QString("Downloading of terrain and avatar completed"), 100, ProtocolUtilities::Connection::STATE_ENUM_COUNT);
+    {
         break;
     }
     default:

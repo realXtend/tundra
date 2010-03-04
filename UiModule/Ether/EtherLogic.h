@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_EtherLogic_h
 #define incl_UiModule_EtherLogic_h
 
+#include "UiModule.h"
+
 #include <QObject>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -46,7 +48,7 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void SetConnectionState(QString state);
+            void SetConnectionState(UiServices::ConnectionState connection_state);
 
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }

@@ -6,11 +6,12 @@
 
 #include "Framework.h"
 #include "WorldStream.h"
+
 #include <boost/shared_ptr.hpp>
+
 #include <UiModule.h>
-#include <UiSceneManager.h>
+#include <Inworld/InworldSceneController.h>
 #include <MainPanel/MainPanel.h>
-#include <Login/LoginContainer.h>
 
 namespace RexLogic
 {
@@ -25,7 +26,7 @@ namespace RexLogic
 
         if (ui_module.get())
         {
-            CoreUi::MainPanel *main_panel = ui_module->GetSceneManager()->GetMainPanel();
+            CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
             QObject::connect(main_panel->logout_button, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
             QObject::connect(main_panel->quit_button, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
         }
@@ -38,18 +39,18 @@ namespace RexLogic
 
     void MainPanelHandler::ConnectToLoginHandler()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>
-            (Foundation::Module::MT_UiServices).lock();
+        //boost::shared_ptr<UiServices::UiModule> ui_module = 
+        //    framework_->GetModuleManager()->GetModule<UiServices::UiModule>
+        //    (Foundation::Module::MT_UiServices).lock();
 
-        if (ui_module.get())
-        {
-            CoreUi::MainPanel *main_panel = ui_module->GetSceneManager()->GetMainPanel();
-            QObject::connect(main_panel, SIGNAL( CommandLoginOpenSim(QString &, QString &, QString &) ),
-                             rex_logic_module_->GetLogin(), SLOT( StartParameterLoginOpenSim(QString &, QString &, QString &) ));
-            QObject::connect(main_panel, SIGNAL( CommandLoginRealxtend(QString &, QString &, QString &, QString &) ),
-                             rex_logic_module_->GetLogin(), SLOT( StartParameterLoginRealXtend(QString &, QString &, QString &, QString &) ));
-        }
+        //if (ui_module.get())
+        //{
+        //    CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
+        //    QObject::connect(main_panel, SIGNAL( CommandLoginOpenSim(QString &, QString &, QString &) ),
+        //                     rex_logic_module_->GetLogin(), SLOT( StartParameterLoginOpenSim(QString &, QString &, QString &) ));
+        //    QObject::connect(main_panel, SIGNAL( CommandLoginRealxtend(QString &, QString &, QString &, QString &) ),
+        //                     rex_logic_module_->GetLogin(), SLOT( StartParameterLoginRealXtend(QString &, QString &, QString &, QString &) ));
+        //}
     }
 
     void MainPanelHandler::LogoutRequested()

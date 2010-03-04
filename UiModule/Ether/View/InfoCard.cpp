@@ -72,8 +72,8 @@ namespace Ether
                 pixmap_ = pixmap_.copy(QRect(QPoint(pixmap_.width()/2-image_size.width()/2,0), QPoint(pixmap_.width()/2+image_size.width()/2, pixmap_.height())));
             }
 
+            combined_pixmap_.fill(Qt::transparent);
             QPainter p(&combined_pixmap_);
-            p.fillRect(bounding_rectf_, Qt::transparent);
             p.drawPixmap(QPointF(0,0), frame_pixmap_, bounding_rectf_);
             if (type_ == TopToBottom)
                 p.drawPixmap(QPointF(4,18), pixmap_);

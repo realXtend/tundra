@@ -5,7 +5,7 @@
 #include "OgreRenderingModule.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include <QUiLoader>
@@ -50,7 +50,7 @@ namespace OgreRenderer
         if (!settings_widget_)
             return;
 
-        ui_module->GetSceneManager()->AddSettingsWidget(settings_widget_, "Rendering");
+        ui_module->GetInworldSceneController()->AddSettingsWidget(settings_widget_, "Rendering");
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();

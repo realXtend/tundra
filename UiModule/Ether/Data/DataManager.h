@@ -43,8 +43,15 @@ namespace Ether
             void StoreSelectedCards(QUuid avatar_id, QUuid world_id);
             QPair<QUuid, QUuid> GetLastSelectedCards();
 
+            void StoreDefaultView(QString default_view);
+            QString GetDefaultView();
+
+            void StoreClassicLoginInfo(QMap<QString, QString> classic_login_info);
+            QMap<QString, QString> GetClassicLoginInfo();
+
         private:
-            QString ether_config_;
+            QString config_settings_name_;
+            QString classic_settings_name_;
             QString avatar_settings_name_;
             QString worldserver_settings_name_;
 

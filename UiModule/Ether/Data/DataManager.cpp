@@ -21,7 +21,8 @@ namespace Ether
     {
         DataManager::DataManager(QObject *parent)
             : QObject(parent),
-              ether_config_("ether/ethersettings"),
+              config_settings_name_("ether/config"),
+              classic_settings_name_("ether/classiclogin"),
               avatar_settings_name_("ether/avatarinfocards"),
               worldserver_settings_name_("ether/worldserverinfocards")
         {
@@ -396,7 +397,7 @@ namespace Ether
 
         void DataManager::StoreSelectedCards(QUuid avatar_id, QUuid world_id)
         {
-            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", ether_config_);
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
             if (avatar_map_.contains(avatar_id))
                 ether_config.setValue("selectedcards/avatar", avatar_map_[avatar_id]->id());
             if (world_map_.contains(world_id))
@@ -406,10 +407,49 @@ namespace Ether
         QPair<QUuid, QUuid> DataManager::GetLastSelectedCards()
         {
             QPair<QUuid, QUuid> selected_pair;
-            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", ether_config_);
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
             selected_pair.first = QUuid(ether_config.value("selectedcards/avatar", QString()).toString());
             selected_pair.second = QUuid(ether_config.value("selectedcards/world", QString()).toString());
             return selected_pair;
+        }
+
+        void DataManager::StoreDefaultView(QString default_view)
+        {
+            if (default_view == "ether" || default_view == "classic")
+            {
+                QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+                ether_config.setValue("defaultview/name", default_view);
+            }
+        }
+
+        QString DataManager::GetDefaultView()
+        {
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+            QString default_view = ether_config.value("defaultview/name").toString();
+            if (default_view == "ether" || default_view == "classic")
+                return default_view;
+            else
+                return QString();
+        }
+
+        void DataManager::StoreClassicLoginInfo(QMap<QString, QString> classic_login_info)
+        {
+            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", classic_settings_name_);
+            classic_settings.setValue("avatar/type", classic_login_info["avatartype"]);
+            classic_settings.setValue("avatar/account", classic_login_info["account"]);
+            classic_settings.setValue("avatar/password", QByteArray(classic_login_info["password"].toStdString().c_str()).toBase64());
+            classic_settings.setValue("world/loginurl", QUrl(classic_login_info["loginurl"]));
+        }
+
+        QMap<QString, QString> DataManager::GetClassicLoginInfo()
+        {
+            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", classic_settings_name_);
+            QMap<QString, QString> data_map;
+            data_map["avatartype"] = classic_settings.value("avatar/type").toString();
+            data_map["account"] = classic_settings.value("avatar/account").toString();;
+            data_map["password"] = QByteArray::fromBase64(classic_settings.value("avatar/password").toByteArray());
+            data_map["loginurl"] = classic_settings.value("world/loginurl").toUrl().toString();
+            return data_map;
         }
 
         /*****     GETTERS     *****/

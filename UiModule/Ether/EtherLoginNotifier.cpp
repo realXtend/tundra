@@ -18,6 +18,7 @@ namespace Ether
             : QObject(parent),
               scene_controller_(scene_controller)
         {
+
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
@@ -54,6 +55,21 @@ namespace Ether
                     break;
                 }
             }
+        }
+
+        void EtherLoginNotifier::EmitOpenSimLogin(QMap<QString, QString> info_map)
+        {
+            emit StartOsLogin(info_map);
+        }
+
+        void EtherLoginNotifier::EmitRealXtendLogin(QMap<QString, QString> info_map)
+        {
+            emit StartRexLogin(info_map);
+        }
+
+        void EtherLoginNotifier::EmitTaigaLogin(QWebFrame *web_frame)
+        {
+            emit StartTaigaLogin(web_frame);
         }
 
         void EtherLoginNotifier::ExitApplication()

@@ -3,15 +3,11 @@
 #ifndef incl_UiModule_EtherLoginNotifier_h
 #define incl_UiModule_EtherLoginNotifier_h
 
-//#include "View/InfoCard.h"
-//#include "Data/AvatarInfo.h"
-//#include "Data/WorldInfo.h"
-
-//#include <QGraphicsScene>
 #include <QObject>
 #include <QPair>
 #include <QMap>
 #include <QString>
+#include <QWebFrame>
 
 namespace Ether
 {
@@ -34,6 +30,9 @@ namespace Ether
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
+            void EmitOpenSimLogin(QMap<QString, QString> info_map);
+            void EmitRealXtendLogin(QMap<QString, QString> info_map);
+            void EmitTaigaLogin(QWebFrame *web_frame);
             void ExitApplication();
 
         private:
@@ -42,6 +41,7 @@ namespace Ether
         signals:
             void StartOsLogin(QMap<QString, QString> info_map);
             void StartRexLogin(QMap<QString, QString> info_map);
+            void StartTaigaLogin(QWebFrame *web_frame);
             void Quit();
         };
     }

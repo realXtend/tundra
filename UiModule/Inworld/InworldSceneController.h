@@ -1,11 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_UiSceneManager_h
-#define incl_UiModule_UiSceneManager_h
+#ifndef incl_UiModule_InworldSceneController_h
+#define incl_UiModule_InworldSceneController_h
 
 #include "UiModuleApi.h"
-
-//#include <Foundation.h>
 
 #include <QObject>
 #include <QList>
@@ -25,6 +23,7 @@ namespace CoreUi
 {
     class MainPanel;
     class SettingsWidget;
+    class AnchorLayoutManager;
 }
 
 namespace UiServices
@@ -32,7 +31,7 @@ namespace UiServices
     class UiProxyWidget;
     class UiWidgetProperties;
 
-    class UI_MODULE_API UiSceneManager : public QObject
+    class UI_MODULE_API InworldSceneController : public QObject
     {
         Q_OBJECT
 
@@ -40,10 +39,10 @@ namespace UiServices
         //! Constructor.
         //! \param framework Framework pointer.
         //! \param ui_view UI view for this scene manager.
-        UiSceneManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+        InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view);
 
         //! Destructor.
-        ~UiSceneManager();
+        ~InworldSceneController();
 
     public slots:
         //! Adds a Qt Widget to the settings widget as its own tab
@@ -98,27 +97,15 @@ namespace UiServices
         //! \return The main panel pointer.
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
 
-        //! Set the login proxy widget
-        void SetLoginProxyWidget(UiServices::UiProxyWidget *login_proxy_widget) { login_proxy_widget_ = login_proxy_widget; }
-
         //! Set the demo login widget from python module, dont call this anywhere else!
         //! Semi-hack for 0.1 release to get easy accessible demo worlds login without authentication
         void SetDemoLoginWidget(QWidget *widget);
 
-        //! Inits the ui for connected state
-        void Connected();
-
-        //! Inits the ui for disconnected state
-        void Disconnected();
-
     private:
-        Q_DISABLE_COPY(UiSceneManager);
+        Q_DISABLE_COPY(InworldSceneController);
 
-        //! Inits the full screen widget and its layout
-        void InitMasterLayout();
-
-        //! Removes all widgets from the full screen widget layout
-        void ClearContainerLayout();
+        //! Inits internals
+        void InitInternals();
 
         //! Pointer to main QGraphicsView
         QGraphicsView *ui_view_;
@@ -126,18 +113,14 @@ namespace UiServices
         //! Pointer to inworld widget scene
         QGraphicsScene *inworld_scene_;
 
-        //! Main layout for full screen widgets
-        QGraphicsLinearLayout *container_layout_;
-
-        //! Bottom container widget for main layout
-        QGraphicsWidget *container_widget_;
+        //! Layout manager
+        CoreUi::AnchorLayoutManager *layout_manager_;
 
         //! CoreUi Widgets
         CoreUi::MainPanel *main_panel_;
         CoreUi::SettingsWidget *settings_widget_;
 
         //! Proxy widgets
-        UiProxyWidget *login_proxy_widget_;
         UiProxyWidget *main_panel_proxy_widget_;
         UiProxyWidget *settings_proxy_widget_;
 
@@ -148,16 +131,7 @@ namespace UiServices
         //! Slot for applying new ui settings to all proxy widgets
         void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
 
-        //! Slot for keeping full screen/layout core widgets properly sized
-        void SceneRectChanged(const QRectF &new_scene_rect);
-
-    signals:
-        //! Emits when connected for modules to utilise
-        void UiStateChangeConnected();
-
-        //! Emits when disconnected for modules to utilise
-        void UiStateChangeDisconnected();
     };
 }
 
-#endif // incl_UiModule_UiSceneManager_h
+#endif // incl_UiModule_InworldSceneController_h

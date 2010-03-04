@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MainPanelButton.h"
-#include "UiProxyWidget.h"
+#include "Inworld/View/UiProxyWidget.h"
 
 #include <QWidget>
 #include <QString>

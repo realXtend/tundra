@@ -35,7 +35,7 @@
 #include "NetworkMessages/NetInMessage.h"
 
 #include <UiModule.h>
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include <AssetServiceInterface.h>
 
 #include <QObject>
@@ -222,13 +222,13 @@ bool InventoryModule::HandleEvent(
             {
                 if (inventoryWindow_)
                 {
-                    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(inventoryWindow_);
+                    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(inventoryWindow_);
                     inventoryWindow_->deleteLater();
                     inventoryWindow_ = 0;
                 }
                 if (uploadProgressWindow_)
                 {
-                    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(uploadProgressWindow_);
+                    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(uploadProgressWindow_);
                     uploadProgressWindow_->deleteLater();
                     uploadProgressWindow_ = 0;
                 }
@@ -435,7 +435,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
         if (!ui_module.get())
             return;
 
-        ui_module->GetSceneManager()->BringProxyToFront(it.value());
+        ui_module->GetInworldSceneController()->BringProxyToFront(it.value());
         return;
     }
 

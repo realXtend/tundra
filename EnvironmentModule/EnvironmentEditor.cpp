@@ -15,7 +15,7 @@
 #include "math.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
@@ -24,8 +24,8 @@
 #include "OgreRenderingModule.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>
@@ -231,7 +231,7 @@ namespace Environment
             return;
 
         EnvironmentEditorProxyWidget_ = 
-            ui_module->GetSceneManager()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties("Environment Editor", UiServices::ModuleWidget));
+            ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties("Environment Editor", UiServices::ModuleWidget));
         //EnvironmentEditorProxyWidget_->updateGeometry();
 
         InitTerrainTabWindow();

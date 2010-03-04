@@ -13,11 +13,12 @@
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "Interfaces/ProtocolModuleInterface.h"
-#include "UiSceneManager.h"
+
 
 #include <RexLogicModule.h>
 #include <UiModule.h>
-#include <UiProxyWidget.h>
+#include <Inworld/InworldSceneController.h>
+#include <Inworld/View/UiProxyWidget.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -186,12 +187,12 @@ namespace Communication
             if (name == "World Chat")
             {
                 UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
-                opensim_chat_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(opensim_chat_ui_, widget_properties);
+                opensim_chat_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(opensim_chat_ui_, widget_properties);
             }
             else if (name == "IM")
             {
                 UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
-                im_ui_proxy_widget_ = ui_module->GetSceneManager()->AddWidgetToScene(im_ui_, widget_properties);
+                im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
             }
         }
     }
@@ -200,7 +201,7 @@ namespace Communication
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
-            ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxy_widget);
+            ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy_widget);
     }
 }
 

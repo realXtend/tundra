@@ -58,7 +58,6 @@
 #include "RexTypes.h"
 
 #include "UiModule.h"
-#include "Login/LoginContainer.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -82,7 +81,6 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     framework_handler_(0),
     os_login_handler_(0),
     taiga_login_handler_(0),
-    login_ui_(0),
     main_panel_handler_(0)
 {
 }
@@ -236,18 +234,20 @@ void RexLogicModule::PostInitialize()
 
     send_input_state_ = true;
 
-    // Create the login window, give it the loginhandlers
+    // Create login handlers, get login notifier from ether and pass
+    // that into rexlogic login handlers for slots/signals setup
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
-    login_ui_ = new CoreUi::LoginContainer(framework_, os_login_handler_, taiga_login_handler_);
-    main_panel_handler_->ConnectToLoginHandler();
 
     boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
-        os_login_handler_->SetLoginNotifier(notifier);
-        // Add taiga handler set notifier later when done in ether..
+        if (notifier)
+        {
+            os_login_handler_->SetLoginNotifier(notifier);
+            taiga_login_handler_->SetLoginNotifier(notifier);
+        }
     }
 }
 
@@ -331,7 +331,6 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(os_login_handler_);
     SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
-    SAFE_DELETE(login_ui_);
 
     LogInfo(Name() + " uninitialized.");
 }
@@ -379,19 +378,9 @@ void RexLogicModule::Update(f64 frametime)
         // update sound listener position/orientation
         UpdateSoundListener();
 
-        // Poll the connection state and update the info to the UI.
-        ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
-        if (present_state == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
-        {
-            GetLogin()->ShowMessageToUser(QString(world_stream_->GetConnectionErrorMessage().c_str()), 10);
-            world_stream_->SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
-        }
-        else if(present_state != ProtocolUtilities::Connection::STATE_CONNECTED &&
-                present_state != ProtocolUtilities::Connection::STATE_DISCONNECTED &&
-                present_state != ProtocolUtilities::Connection::STATE_ENUM_COUNT)
-        {
-            GetLogin()->UpdateLoginProgressUI(QString(""), 0, present_state);
-        }
+        //! This is not needed anymore, as ether is the new login ui. If we want to send these world stream states to ui layer,
+        //! 
+        //ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
 
         /// \todo Move this to OpenSimProtocolModule.
         if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
@@ -639,7 +628,8 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
     {
         LogoutAndDeleteWorld();
         return Console::ResultSuccess();
-    } else
+    } 
+    else
     {
         return Console::ResultFailure("Not connected to server.");
     }
@@ -647,7 +637,16 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 
 void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort)
 {
-    login_ui_->StartParameterLoginOpenSim(qfirstAndLast, qpassword, qserverAddressWithPort);
+    if (!qserverAddressWithPort.startsWith("http://"))
+        qserverAddressWithPort = "http://" + qserverAddressWithPort;
+
+    QMap<QString, QString> map;
+    map["AuthType"] = "OpenSim";
+    map["Username"] = qfirstAndLast;
+    map["Password"] = qpassword;
+    map["WorldAddress"] = qserverAddressWithPort;
+
+    os_login_handler_->ProcessOpenSimLogin(map);
 }
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)

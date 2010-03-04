@@ -14,15 +14,15 @@
 #include "PropertyTableWidget.h"
 #include "ModuleManager.h"
 #include "EventManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 
 #include "Framework.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -118,7 +118,7 @@ void OgreScriptEditor::Close()
     if (!ui_module.get())
         return;
 
-    ui_module->GetSceneManager()->RemoveProxyWidgetFromScene(proxyWidget_);
+    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
 
     emit Closed(inventoryId_, assetType_);
 }
@@ -260,13 +260,13 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     // Add widget to UI via ui services module
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("OGRE Script Editor: " + name_, UiServices::SceneWidget));
 
     QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
 
     proxyWidget_->show();
-    ui_module->GetSceneManager()->BringProxyToFront(proxyWidget_);
+    ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
 }
 
 void OgreScriptEditor::CreateTextEdit()

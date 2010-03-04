@@ -14,11 +14,12 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiSceneManager.h"
+#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include "Inventory/InventoryEvents.h"
 #include "UiModule.h"
+#include "NetworkEvents.h"
 
 #include <QStringList>
 #include <QVector>
@@ -32,6 +33,7 @@ OgreAssetEditorModule::OgreAssetEditorModule() :
     inventoryEventCategory_(0),
     assetEventCategory_(0),
     resourceEventCategory_(0),
+    networkStateEventCategory_(0),
     materialWizard_(0),
     editorManager_(0)
 {
@@ -73,13 +75,12 @@ void OgreAssetEditorModule::PostInitialize()
     if (resourceEventCategory_ == 0)
         LogError("Failed to query \"Resource\" event category");
 
+    networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
+    if (networkStateEventCategory_ == 0)
+        LogError("Failed to query \"NetworkState\" event category");
+
     materialWizard_ = new MaterialWizard(framework_);
     editorManager_ = new EditorManager();
-
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-        QObject::connect(ui_module->GetSceneManager(), SIGNAL(UiStateChangeDisconnected()), editorManager_, SLOT(DeleteAll()));
 }
 
 void OgreAssetEditorModule::Uninitialize()
@@ -131,7 +132,7 @@ bool OgreAssetEditorModule::HandleEvent(
                         boost::shared_ptr<UiServices::UiModule> ui_module = 
                         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                         if (ui_module)
-                            ui_module->GetSceneManager()->BringProxyToFront(editor);
+                            ui_module->GetInworldSceneController()->BringProxyToFront(editor);
                     }
                 }
 
@@ -144,6 +145,11 @@ bool OgreAssetEditorModule::HandleEvent(
                 return false;
             }
         }
+    }
+    else if (category_id == networkStateEventCategory_)
+    {
+        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+            editorManager_->DeleteAll();
     }
 
     return false;

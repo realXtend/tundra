@@ -229,7 +229,8 @@ namespace RexLogic
 
     void TaigaLoginHandler::SetLoginNotifier(QObject *notifier)
     {
-
+        connect(notifier, SIGNAL( StartTaigaLogin(QWebFrame *) ),
+                SLOT( ProcessWebLogin(QWebFrame *) ));
     }
 
     void TaigaLoginHandler::InstantiateWorldSession()

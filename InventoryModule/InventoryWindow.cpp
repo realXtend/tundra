@@ -21,10 +21,10 @@
 #include "QtUtils.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
-#include <UiWidgetProperties.h>
-#include "UiSceneManager.h"
-#include "UiNotificationManager.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/NotificationManager.h"
 #include <RenderServiceInterface.h>
 
 #include <QUiLoader>
@@ -371,7 +371,7 @@ void InventoryWindow::InitInventoryWindow()
 
 //    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
 
-    proxyWidget_ = ui_module->GetSceneManager()->AddWidgetToScene(
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
 
     connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),

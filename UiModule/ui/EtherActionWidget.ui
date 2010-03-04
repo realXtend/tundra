@@ -21,7 +21,13 @@
 QFrame#ContainerFrame {
 	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(222, 227, 236, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.65 rgba(179, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
 	border: 1px solid black;
-	border-radius: 15px;
+	border-radius: 0px;
+}
+
+QLabel#titleLabel {
+	background-image: url('./data/ui/images/ether/title_bg.png');
+	background-position: top left;
+	background-repeat: repeat-x;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -65,22 +71,47 @@ QFrame#ContainerFrame {
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="margin">
-           <number>12</number>
+           <number>0</number>
           </property>
           <item>
            <layout class="QVBoxLayout" name="mainLayout">
+            <property name="spacing">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QLabel" name="titleLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>45</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>45</height>
+               </size>
+              </property>
               <property name="font">
                <font>
-                <pointsize>14</pointsize>
+                <family>Narkisim</family>
+                <pointsize>18</pointsize>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">padding-bottom: 15px;</string>
+               <string notr="true">color: white; padding-top: 8px;</string>
               </property>
               <property name="text">
                <string>Title is here</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
               <property name="indent">
                <number>0</number>
@@ -88,10 +119,35 @@ QFrame#ContainerFrame {
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="widgetLayout"/>
+             <layout class="QVBoxLayout" name="widgetLayout">
+              <property name="leftMargin">
+               <number>12</number>
+              </property>
+              <property name="topMargin">
+               <number>12</number>
+              </property>
+              <property name="rightMargin">
+               <number>12</number>
+              </property>
+              <property name="bottomMargin">
+               <number>3</number>
+              </property>
+             </layout>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="leftMargin">
+               <number>12</number>
+              </property>
+              <property name="topMargin">
+               <number>3</number>
+              </property>
+              <property name="rightMargin">
+               <number>12</number>
+              </property>
+              <property name="bottomMargin">
+               <number>12</number>
+              </property>
               <item>
                <spacer name="horizontalSpacer">
                 <property name="orientation">
