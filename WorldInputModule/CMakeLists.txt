@@ -5,7 +5,10 @@ init_target (WorldInputModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 
 add_definitions (-DWORLDINPUT_MODULE_EXPORTS)
 
@@ -14,7 +17,7 @@ use_package (POCO)
 use_package (QT4)
 use_modules (Core Foundation Interfaces RexCommon)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
