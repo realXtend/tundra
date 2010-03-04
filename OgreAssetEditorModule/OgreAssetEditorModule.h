@@ -33,8 +33,6 @@ namespace OgreAssetEditor
         ~OgreAssetEditorModule();
 
         /// ModuleInterfaceImpl overrides.
-        void Load();
-        void Unload();
         void Initialize();
         void PostInitialize();
         void Uninitialize();

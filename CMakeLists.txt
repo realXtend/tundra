@@ -38,6 +38,11 @@ if (MSVC)
    add_definitions (-DPROFILING)
 endif (MSVC)
 
+# Enable memory leak checking in all core modules.
+if (MSVC)
+	add_definitions (-DMEMORY_LEAK_CHECK)
+endif (MSVC)
+
 # On all platforms, we enable PCH files by default.
 add_definitions (-DPCH_ENABLED)
 SET (PCH_ENABLED 1)
@@ -97,10 +102,6 @@ add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
 add_subdirectory (InventoryModule)
 add_subdirectory (OgreAssetEditorModule)
-
-# Entity Components
-add_subdirectory (EC_Billboard)
-add_subdirectory (EC_ChatBubble)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.

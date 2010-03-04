@@ -43,22 +43,10 @@ OgreAssetEditorModule::~OgreAssetEditorModule()
 {
 }
 
-void OgreAssetEditorModule::Load()
-{
-    LogInfo("System " + Name() + " loaded.");
-}
-
-void OgreAssetEditorModule::Unload()
-{
-    LogInfo("System " + Name() + " unloaded.");
-}
-
 void OgreAssetEditorModule::Initialize()
 {
     // Get event manager.
     eventManager_ = framework_->GetEventManager();
-
-    LogInfo("System " + Name() + " initialized.");
 }
 
 void OgreAssetEditorModule::PostInitialize()
@@ -88,7 +76,6 @@ void OgreAssetEditorModule::Uninitialize()
     SAFE_DELETE(materialWizard_);
     SAFE_DELETE(editorManager_);
     eventManager_.reset();
-    LogInfo("System " + Name() + " uninitialized.");
 }
 
 void OgreAssetEditorModule::Update(f64 frametime)

@@ -85,7 +85,10 @@ namespace ProtocolUtilities
         
         /// Sends pending acks to the server.
         void SendPendingACKs();
-        
+
+        /// Processes a single raw datagram received from the network.
+        void HandleInboundBytes(std::vector<uint8_t> &data);
+
         /// Processes a received PacketAck message.
         void ProcessPacketACK(NetInMessage *msg);
         

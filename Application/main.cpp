@@ -13,7 +13,7 @@
 
 #include "HttpUtilities.h"
 
-#if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
 #endif
@@ -45,22 +45,12 @@ int main (int argc, char **argv)
     // Note that this file is written to the same directory where the executable resides,
     // so you can only use this in a development version where you have write access to
     // that directory.
-#if defined(_MSC_VER) && defined(_DMEMORYLEAKS)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag(tmpDbgFlag);
 
     HANDLE hLogFile = CreateFileW(L"fullmemoryleaklog.txt", GENERIC_WRITE, 
       FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-    if (hLogFile != INVALID_HANDLE_VALUE)
-    {
-       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_WARN, hLogFile);
-       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ERROR, hLogFile);
-//       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-//       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
-    }
 #endif
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
@@ -73,6 +63,18 @@ int main (int argc, char **argv)
     }
     __except(generate_dump(GetExceptionInformation()))
     {
+    }
+#endif
+
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+    if (hLogFile != INVALID_HANDLE_VALUE)
+    {
+       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_WARN, hLogFile);
+       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ERROR, hLogFile);
+       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
     }
 #endif
 

@@ -21,13 +21,11 @@ namespace OpenALAudio
     //Virtual
     void OpenALAudioModule::Load()
     {
-        LogInfo(Name() + " loaded.");
     }
 
     //Virtual
     void OpenALAudioModule::Unload()
     {
-        LogInfo(Name() + " unloaded.");
     }
 
     void OpenALAudioModule::PreInitialize()
@@ -57,8 +55,6 @@ namespace OpenALAudio
     {
         framework_->GetServiceManager()->UnregisterService(soundsystem_);
         soundsystem_.reset();
-
-        LogInfo(Name() + " uninitialized.");
     }
 
     void OpenALAudioModule::Update(f64 frametime)

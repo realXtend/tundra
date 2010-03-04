@@ -31,18 +31,6 @@ namespace TaigaProtocol
 	}
 
 	// virtual
-	void ProtocolModuleTaiga::Load()
-	{
-		LogInfo(Name() + " loaded.");
-	}
-
-	// virtual
-	void ProtocolModuleTaiga::Unload()
-	{
-		LogInfo(Name() + " unloaded.");
-	}
-
-	// virtual
 	void ProtocolModuleTaiga::Initialize()
 	{
         loginWorker_.SetFramework(GetFramework());
@@ -62,8 +50,6 @@ namespace TaigaProtocol
 			networkManager_->UnregisterNetworkListener(this);
             networkManager_.reset();
         }
-
-		LogInfo(Name() + " uninitialized.");
 	}
 
     void ProtocolModuleTaiga::RegisterNetworkEvents()

@@ -47,17 +47,6 @@ namespace Environment
     {
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
-
-        LogInfo("System " + Name() + " loaded.");
-    }
-
-    void EnvironmentModule::Unload()
-    {
-        LogInfo("System " + Name() + " unloaded.");
-    }
-
-    void EnvironmentModule::PreInitialize()
-    {
     }
 
     void EnvironmentModule::Initialize()
@@ -119,8 +108,6 @@ namespace Environment
         currentWorldStream_.reset();
 
         waiting_for_regioninfomessage_ = false;
-
-        LogInfo("System " + Name() + " uninitialized.");
     }
 
     void EnvironmentModule::Update(f64 frametime)

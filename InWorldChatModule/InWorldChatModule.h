@@ -12,6 +12,7 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include <QObject>
 
@@ -46,10 +47,7 @@ namespace Naali
 
         /// ModuleInterfaceImpl overrides.
         void Load();
-        void Unload();
-        void Initialize();
         void PostInitialize();
-        void Uninitialize();
         void Update(f64 frametime);
         bool HandleEvent(
             event_category_id_t category_id,
@@ -65,6 +63,8 @@ namespace Naali
 
         /// Name of this module.
         static const std::string moduleName;
+
+        Console::CommandResult TestAddBillboard(const StringVector &params);
 
     public slots:
         ///

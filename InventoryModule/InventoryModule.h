@@ -60,8 +60,6 @@ namespace Inventory
         ~InventoryModule();
 
         /// ModuleInterfaceImpl overrides.
-        void Load();
-        void Unload();
         void Initialize();
         void PostInitialize();
         void Uninitialize();

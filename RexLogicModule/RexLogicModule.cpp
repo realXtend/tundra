@@ -32,8 +32,6 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "Inventory/InventoryEvents.h"
 
-#include <EC_Billboard.h>
-
 // Ogre -specific
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
@@ -65,6 +63,7 @@
 #include "ConsoleCommand.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ServiceManager.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic
@@ -102,8 +101,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
-    DECLARE_MODULE_EC(EC_Billboard);
-
+    
     AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -115,14 +113,6 @@ void RexLogicModule::Load()
     AutoRegisterConsoleCommand(Console::CreateCommand("Fly",
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
-
-    LogInfo(Name() + " loaded.");
-}
-
-// virtual
-void RexLogicModule::Unload()
-{
-    LogInfo(Name() + " unloaded.");
 }
 
 // virtual
@@ -156,8 +146,6 @@ void RexLogicModule::Initialize()
 
     camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
-
-    LogInfo(Name() + " initialized.");
 }
 
 // virtual
@@ -331,8 +319,6 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(os_login_handler_);
     SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
-
-    LogInfo(Name() + " uninitialized.");
 }
 
 #ifdef _DEBUG

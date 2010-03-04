@@ -43,8 +43,6 @@ namespace TaigaProtocol
         ProtocolModuleTaiga();
         virtual ~ProtocolModuleTaiga();
 
-        virtual void Load();
-        virtual void Unload();
         virtual void Initialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);

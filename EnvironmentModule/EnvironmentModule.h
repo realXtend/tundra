@@ -49,9 +49,7 @@ namespace Environment
         virtual ~EnvironmentModule();
 
         void Load();
-        void Unload();
         void Initialize();
-        void PreInitialize();
         void PostInitialize();
         void Uninitialize();
         void SubscribeToNetworkEvents();

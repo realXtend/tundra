@@ -248,6 +248,14 @@ namespace Foundation
         /// Destructor.
         virtual ~ModuleInterfaceImpl();
 
+        virtual void Load() {}
+
+        virtual void Unload() {}
+
+        virtual void Initialize() {}
+
+        virtual void Uninitialize() {}
+
         /// ModuleInterface override.
         virtual void PreInitialize() {}
 

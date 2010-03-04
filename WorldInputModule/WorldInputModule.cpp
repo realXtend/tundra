@@ -22,13 +22,11 @@ namespace Input
     // virtual
     void WorldInputModule::Load()
     {
-        LogInfo(Name() + " loaded.");
     }
 
     // virtual
     void WorldInputModule::Unload()
     {
-        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -85,8 +83,6 @@ namespace Input
     {
         GetFramework()-> GetServiceManager()-> 
             UnregisterService (state_machine_);
-
-        LogInfo(Name() + " uninitialized.");
     }
 
     // virtual 

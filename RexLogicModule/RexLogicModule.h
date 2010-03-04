@@ -75,7 +75,6 @@ namespace RexLogic
         virtual ~RexLogicModule();
 
         virtual void Load();
-        virtual void Unload();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();

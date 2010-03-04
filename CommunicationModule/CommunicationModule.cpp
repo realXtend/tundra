@@ -43,18 +43,15 @@ namespace Communication
 
     void CommunicationModule::Load()
     {
-        LogInfo("System " + Name() + " loaded");
     }
 
     void CommunicationModule::Unload()
     {
-        LogInfo("System " + Name() + " unloaded");
     }
 
     void CommunicationModule::Initialize() 
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-        LogInfo(Name() + " initialized");
     }
 
     void CommunicationModule::PostInitialize()
@@ -105,8 +102,6 @@ namespace Communication
 
         CommunicationService::CleanUp();
         communication_service_ = NULL;
-
-        LogInfo("System " + Name() + " uninitialized.");
     }
 
     void CommunicationModule::Update(f64 frametime)

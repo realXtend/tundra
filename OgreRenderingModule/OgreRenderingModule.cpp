@@ -49,8 +49,6 @@ namespace OgreRenderer
     {
         using namespace OgreRenderer;
 
-        LogInfo(Name() + " loaded.");
-
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
         DECLARE_MODULE_EC(EC_OgreLight);
@@ -66,12 +64,6 @@ namespace OgreRenderer
         AutoRegisterConsoleCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
-    }
-
-    // virtual
-    void OgreRenderingModule::Unload()
-    {
-        LogInfo(Name() + " unloaded.");
     }
 
     // virtual
@@ -103,8 +95,6 @@ namespace OgreRenderer
         renderer_->Initialize();
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
-
-        LogInfo(Name() + " initialized.");
         
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
@@ -122,7 +112,6 @@ namespace OgreRenderer
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
         
-
         renderer_->PostInitialize();
     }
 
@@ -195,8 +184,6 @@ namespace OgreRenderer
 
         renderer_settings_.reset();
         renderer_.reset();
-        
-        LogInfo(Name() + " uninitialized.");
     }
     
     // virtual

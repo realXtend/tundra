@@ -30,22 +30,9 @@ namespace OpenSimProtocol
     }
 
     // virtual
-    void ProtocolModuleOpenSim::Load()
-    {
-        LogInfo(Name() + " loaded.");
-    }
-
-    // virtual
-    void ProtocolModuleOpenSim::Unload()
-    {
-        LogInfo(Name() + " unloaded.");
-    }
-
-    // virtual
     void ProtocolModuleOpenSim::Initialize()
     {
         loginWorker_.SetFramework(GetFramework());
-        LogInfo(Name() + " initialized.");
     }
 
     // virtual 
@@ -60,7 +47,6 @@ namespace OpenSimProtocol
             networkManager_->UnregisterNetworkListener((ProtocolUtilities::INetMessageListener *)this);
 
         eventManager_.reset();
-        LogInfo(Name() + " uninitialized.");
     }
 
     void ProtocolModuleOpenSim::RegisterNetworkEvents()

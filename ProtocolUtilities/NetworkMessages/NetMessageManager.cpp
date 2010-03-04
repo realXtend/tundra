@@ -20,6 +20,8 @@
 
 using namespace std;
 
+//#define PROTOCOL_STRESS_TEST
+
 namespace ProtocolUtilities
 {
 
@@ -211,6 +213,111 @@ namespace ProtocolUtilities
         return messageList->GetMessageInfoByID(id);
     }
 
+    void NetMessageManager::HandleInboundBytes(std::vector<uint8_t> &data)
+    {
+        const size_t numBytes = data.size();
+#ifdef PROFILING
+        receivedDatagrams.InsertRecord(1.0);
+        receivedDatabytes.InsertRecord(numBytes);
+#endif
+
+        if (!messageListener)
+        {
+            cout << "No UDP message listener set! Dropping incoming packet as unhandled:" << endl;
+//            DumpNetworkMessage(&data[0], numBytes);
+            return;
+        }
+
+        uint32_t seqNum = ExtractNetworkMessageSequenceNumber(&data[0], numBytes);
+
+#ifdef PROFILING
+        if (receivedSequenceNumbers.size() > 0 && seqNum - lastReceivedSequenceNumber < 16)
+        {
+            for(int i = lastReceivedSequenceNumber+1; i < seqNum; ++i)
+                if (receivedSequenceNumbers.find(i) == receivedSequenceNumbers.end())
+                    lostPackets.InsertRecord(1.0);
+        }
+#endif
+        lastReceivedSequenceNumber = seqNum;
+
+        // Send ACK for reliable messages.
+        if ((data[0] & NetFlagReliable) != 0)
+            QueuePacketACK(seqNum);
+
+        // We need to do pruning of inbound duplicates, so add the sequence number to the set of received sequence numbers, 
+        // and check if we've seen this packet before.
+        pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
+        if (ret.second == false) 
+        {
+#ifdef PROFILING
+            duplicatesReceived.InsertRecord(1.0);
+#endif
+            return; // A message with this sequence number has already been given to the application for processing. Drop it this time.
+        }
+
+//        NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
+
+        size_t messageLength = 0;
+        const uint8_t *message = ComputeMessageBodyStartAddrAndLength(&data[0], numBytes, &messageLength);
+        if (!message)
+        {
+            cout << "Malformed packet received, could not determine message size" << endl;
+            return;
+        }
+        
+        std::vector<uint32_t> appended_acks = GetAppendedAckList(&data[0], numBytes);
+        
+        try
+        {
+            NetInMessage msg(seqNum, &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
+
+            const NetMessageInfo *messageInfo = messageList->GetMessageInfoByID(msg.GetMessageID());
+            if (!messageInfo)
+            {
+                cout << "Unknown message received with Message ID " << msg.GetMessageID() << "!" << endl;
+                return;
+            }
+            msg.SetMessageInfo(messageInfo);
+
+            // Process appended acks
+            if (appended_acks.size() > 0)
+            {
+                for(unsigned i = 0; i < appended_acks.size(); ++i)
+                    ProcessPacketACK(appended_acks[i]);
+            }
+            
+            // NetMessageManager handles all Acks and Pings. Those are not passed to the application.
+            switch(msg.GetMessageID())
+            {
+            case RexNetMsgPacketAck:
+                ProcessPacketACK(&msg);
+                break;
+            case RexNetMsgStartPingCheck:
+                SendCompletePingCheck(msg.ReadU8());
+                break;
+            default:
+                // Pass the message to the listener(s).
+                messageListener->OnNetworkMessageReceived(msg.GetMessageID(), &msg);
+                break;
+            }
+        }
+        catch (Exception &e)
+        {
+            cout << "Parsing inbound bytes to a network message failed: " << e.what() << endl;
+            return;
+        }
+    }
+
+    static void FlipBits(std::vector<uint8_t> &data, int numBitsToFlip)
+    {
+        while(numBitsToFlip-- > 0)
+        {
+            int idx = rand() % data.size();
+            uint8_t bit = 1 << (rand() % 8);
+            data[idx] ^= bit;
+        }
+    }
+
     /// Polls the inbound socket until the message queue is empty. Also resends any timed out reliable messages.
     void NetMessageManager::ProcessMessages()
     {
@@ -235,87 +342,19 @@ namespace ProtocolUtilities
             if (numBytes == 0)
                 break;
 
-#ifdef PROFILING
-            receivedDatagrams.InsertRecord(1.0);
-            receivedDatabytes.InsertRecord(numBytes);
+            data.resize(numBytes);
+
+#ifdef PROTOCOL_STRESS_TEST
+            const int numDuplications = 10;
+            const double bitErrorRate = 0.05;
+            for(int i = 0; i < numDuplications; ++i)
+            {
 #endif
-
-            if (!messageListener)
-            {
-                cout << "No UDP message listener set! Dropping incoming packet as unhandled:" << endl;
-    //            DumpNetworkMessage(&data[0], numBytes);
-                continue;
-            }
-
-            uint32_t seqNum = ExtractNetworkMessageSequenceNumber(&data[0], numBytes);
-
-#ifdef PROFILING
-            if (receivedSequenceNumbers.size() > 0 && seqNum - lastReceivedSequenceNumber < 16)
-            {
-                for(int i = lastReceivedSequenceNumber+1; i < seqNum; ++i)
-                    if (receivedSequenceNumbers.find(i) == receivedSequenceNumbers.end())
-                        lostPackets.InsertRecord(1.0);
+                HandleInboundBytes(data);
+#ifdef PROTOCOL_STRESS_TEST
+                FlipBits(data, (int)ceil(data.size() * bitErrorRate));
             }
 #endif
-            lastReceivedSequenceNumber = seqNum;
-
-            // Send ACK for reliable messages.
-            if ((data[0] & NetFlagReliable) != 0)
-                QueuePacketACK(seqNum);
-
-            // We need to do pruning of inbound duplicates, so add the sequence number to the set of received sequence numbers, 
-            // and check if we've seen this packet before.
-            pair<set<uint32_t>::iterator, bool> ret = receivedSequenceNumbers.insert(seqNum);
-            if (ret.second == false) 
-            {
-#ifdef PROFILING
-                duplicatesReceived.InsertRecord(1.0);
-#endif
-                continue; // A message with this sequence number has already been given to the application for processing. Drop it this time.
-            }
-
-    //        NetMsgID id = ExtractNetworkMessageNumber(&data[0], numBytes);
-
-            size_t messageLength = 0;
-            const uint8_t *message = ComputeMessageBodyStartAddrAndLength(&data[0], numBytes, &messageLength);
-            if (!message)
-            {
-                cout << "Malformed packet received, could not determine message size" << endl;
-                continue;
-            }
-            
-            std::vector<uint32_t> appended_acks = GetAppendedAckList(&data[0], numBytes);
-            
-            NetInMessage msg(seqNum, &message[0], messageLength, (data[0] & NetFlagZeroCode) != 0);
-            const NetMessageInfo *messageInfo = messageList->GetMessageInfoByID(msg.GetMessageID());
-            if (!messageInfo)
-            {
-                cout << "Unknown message received with Message ID " << msg.GetMessageID() << "!" << endl;
-                continue;
-            }
-            msg.SetMessageInfo(messageInfo);
-
-            // Process appended acks
-            if (appended_acks.size() > 0)
-            {
-                for (unsigned i = 0; i < appended_acks.size(); ++i)
-                    ProcessPacketACK(appended_acks[i]);
-            }
-            
-            // NetMessageManager handles all Acks and Pings. Those are not passed to the application.
-            switch(msg.GetMessageID())
-            {
-            case RexNetMsgPacketAck:
-                ProcessPacketACK(&msg);
-                break;
-            case RexNetMsgStartPingCheck:
-                SendCompletePingCheck(msg.ReadU8());
-                break;
-            default:
-                // Pass the message to the listener(s).
-                messageListener->OnNetworkMessageReceived(msg.GetMessageID(), &msg);
-                break;
-            }
         }
         
         if (!connection->Open())

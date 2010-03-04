@@ -46,24 +46,22 @@ namespace ProtocolUtilities
         size_t i = 0;
         while(i < numBytes)
         {
+            // If we encounter a zero, the next byte in the stream tells us how many times we duplicate that zero.
             if (data[i] == 0)
             {
                 ++i;
-                if (i >= numBytes)
-                {
-                    ///\todo Warning log out.
+                if (i >= numBytes) // Oops! We received a stream where the last byte was zero. We should have had a length byte after this.. Malformed packet!
                     return 0; // return 0 instead of length to signal that this packet is malformed.
-                }
+
                 size_t numZeroes = data[i++];
                 
-                //! \todo Additional zeroes indicate more than 256 (one byte) zeros -cm
-                if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed. (Actually no, see above todo -cm)
-                    bool lol = true; //! REMOVE //LogWarning("Warning! A run of zero zeroes ('00 00') detected on a zeroencoded packet!");
-                //return 0; ///\todo Warning log out.
+                if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed.
+                    return 0; // \todo Have heard of rumors that a sequence '00 00 AA BB' would signal a larger block of zeroes, e.g. using a u16 as the length counter.
+                              //       libopenmetaverse's code doesn't do this however, so we conclude this case to result in a corrupted stream. 
 
                 length += numZeroes;
             }
-            else
+            else // A normal non-zero byte.
             {
                 ++length;
                 ++i;
@@ -82,16 +80,12 @@ namespace ProtocolUtilities
             if (srcData[src] == 0)
             {
                 ++src;
-                if (src >= srcBytes)
-                {
-                    ///\todo Warning log out.
-                    // assert(false && "Malformed zero-encoded packet found! (Ends in a zero without run-length!)"); 
+                if (src >= srcBytes) // Malformed zero-encoded packet found! (Ends in a zero without run-length!
                     return false;
-                }
+
                 size_t numZeroes = srcData[src++];
                 for(size_t i = 0; i < numZeroes; ++i)
                 {
-                    ///\todo Warning log out.
                     if (dst >= dstBytes)
                         return false; // Whoops! Caller didn't provide a buffer big enough!
 
@@ -100,7 +94,6 @@ namespace ProtocolUtilities
             }
             else
             {
-                ///\todo Warning log out.
                 if (dst >= dstBytes)
                     return false; // Whoops! Caller didn't provide a buffer big enough!
 

@@ -53,12 +53,12 @@ use_package (OPENJPEG)
 use_package (XMLRPC)
 
 use_modules (RexLogicModule Core Foundation RexLogicModule Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule EC_Billboard)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule EC_Billboard)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
 
 link_package (OGRE)
 link_package (BOOST)
