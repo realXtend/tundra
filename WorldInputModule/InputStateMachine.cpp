@@ -735,7 +735,7 @@ namespace Input
         postEvent (new QMouseEvent (QEvent::MouseButtonRelease, QPoint (mouse_state_.x, mouse_state_.y), 
                     Qt::LeftButton, (Qt::MouseButtons)mouse_state_.buttons, Qt::NoModifier));
     }
-    
+
     void WorldInputLogic::update_dynamic_key_bindings_ ()
     {
         KeyBindingMap *bindings;
