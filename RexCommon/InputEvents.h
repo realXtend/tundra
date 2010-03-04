@@ -125,6 +125,7 @@ namespace Input
 	//static const event_id_t PY_OBJECTEDIT_TOGGLE_ROTATE = 85;
 		
         static const event_id_t NAALI_OBJECTLINK = 91;
+		static const event_id_t NAALI_OBJECTUNLINK = 92;
 
         static const event_id_t NAALI_DELETE = 87;
         static const event_id_t NAALI_UNDO = 89;

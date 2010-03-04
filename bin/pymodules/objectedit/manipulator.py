@@ -136,7 +136,7 @@ class Manipulator:
             amountx = (worldwidth * movedx)
             amounty = (worldheight * movedy)
             
-            if self.usesManipulator:
+            if self.usesManipulator and self.grabbed_axis is not None:
                 rightvec = Vector3(r.getCameraRight())
                 upvec = Vector3(r.getCameraUp())
                 temp = [0,0,0]
@@ -159,6 +159,9 @@ class Manipulator:
         if qprim is not None and qprim.ParentId == 0:
             return False
         return True
+    
+    def highlight(self, raycast_results):
+        print "swoot", raycast_results
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
