@@ -130,7 +130,16 @@ namespace RexLogic
 
         //! discards request tags for certain entity
         void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
-        
+
+		//! Return valid uuid if given id is valid uuid or if given id
+		//! is valid asset url with format: 'http://domain/path/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+		//! Return zero uuid if either above works
+		static RexUUID UuidForRexObjectUpdatePacket(RexTypes::RexAssetID id);
+
+		//! Return valid url string if given id is valid url. 
+		//! Return empty string if given id is not valid url.
+		static std::string UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id);
+
         //! maps tags of all pending resource request to prim entities.
         EntityResourceRequestMap prim_resource_request_tags_;
         

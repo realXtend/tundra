@@ -35,6 +35,8 @@
 #include "WorldStream.h"
 
 #include <OgreSceneNode.h>
+#include <QUuid>
+#include <QUrl>
 
 namespace RexLogic
 {
@@ -465,12 +467,12 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     if (IsUrlBased(prim->MeshID) || IsUrlBased(prim->CollisionMeshID) || IsUrlBased(prim->ParticleScriptID) || IsUrlBased(prim->AnimationPackageID))
         send_asset_urls = true;
         
-    WriteUUIDToBytes(RexUUID(prim->MeshID), &buffer[0], idx);
-    WriteUUIDToBytes(RexUUID(prim->CollisionMeshID), &buffer[0], idx);
-    WriteUUIDToBytes(RexUUID(prim->ParticleScriptID), &buffer[0], idx);
+    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
+	WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
+	WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
 
     // Animation
-    WriteUUIDToBytes(RexUUID(prim->AnimationPackageID), &buffer[0], idx);
+    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->AnimationPackageID), &buffer[0], idx);
     WriteNullTerminatedStringToBytes(prim->AnimationName, &buffer[0], idx);
     WriteFloatToBytes(prim->AnimationRate, &buffer[0], idx);
 
@@ -484,7 +486,7 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
         if (IsUrlBased(i->second.asset_id))
             send_asset_urls = true;
         WriteUInt8ToBytes(i->second.Type, &buffer[0], idx);
-        WriteUUIDToBytes(RexUUID(i->second.asset_id), &buffer[0], idx);
+        WriteUUIDToBytes(UuidForRexObjectUpdatePacket(i->second.asset_id), &buffer[0], idx);
         WriteUInt8ToBytes(i->first, &buffer[0], idx);
         ++i;
     }
@@ -494,7 +496,7 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     // Sound
     if (IsUrlBased(prim->SoundID))
         send_asset_urls = true;
-    WriteUUIDToBytes(RexUUID(prim->SoundID), &buffer[0], idx);
+    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->SoundID), &buffer[0], idx);
     WriteFloatToBytes(prim->SoundVolume, &buffer[0], idx);
     WriteFloatToBytes(prim->SoundRadius, &buffer[0], idx);
     
@@ -503,15 +505,15 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     // Extension: url based asset id's
     if (send_asset_urls)
     {
-        WriteNullTerminatedStringToBytes(prim->MeshID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim->CollisionMeshID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim->ParticleScriptID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim->AnimationPackageID, &buffer[0], idx);
-        WriteNullTerminatedStringToBytes(prim->SoundID, &buffer[0], idx);
+		WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->AnimationPackageID), &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->SoundID), &buffer[0], idx);
         i = prim->Materials.begin();
         while (i != prim->Materials.end())
         {
-            WriteNullTerminatedStringToBytes(i->second.asset_id, &buffer[0], idx);
+            WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(i->second.asset_id), &buffer[0], idx);
             ++i;
         }
     }  
@@ -1792,6 +1794,34 @@ void Primitive::HandleLogout()
     prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
+}
+
+
+RexUUID Primitive::UuidForRexObjectUpdatePacket(RexTypes::RexAssetID id)
+{
+	if (RexUUID::IsValid(id))
+		return RexUUID(id);
+	else
+		if (QUrl(id.c_str()).isValid())
+		{
+			// todo: more clever parse logic
+			QString uuid_candidate = QUrl(id.c_str()).path().right(36);
+			if (RexUUID::IsValid(uuid_candidate.toStdString()))
+				return RexUUID(uuid_candidate.toStdString());
+			else
+				return RexUUID(); // zero uuid
+		}
+		else
+			return RexUUID(); // zero uuid
+}
+
+std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
+{
+	QUrl url(QString(id.c_str()));
+	if (url.isValid())
+		return url.toString().toStdString();
+	else
+		return "";
 }
 
 } // namespace RexLogic
