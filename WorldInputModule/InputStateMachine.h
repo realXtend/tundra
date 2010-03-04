@@ -162,18 +162,6 @@ namespace Input
         QGraphicsScene  *scene;
     };
     
-    struct MouseMoveActiveState : public InputState
-    {
-        MouseMoveActiveState (QString name, Foundation::EventManager* em, QState::ChildMode m,  QState *p = 0);
-        
-        void onEntry (QEvent *event);
-        
-        Input::Events::Movement     movement;
-        
-        event_category_id_t         catid;
-        Foundation::EventManager*   eventmgr;
-    };
-    
     struct LeftButtonActiveState : public InputState
     {
         LeftButtonActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
@@ -208,19 +196,6 @@ namespace Input
         void onExit (QEvent *event);
 
         Input::Events::Movement     movement;
-
-        event_category_id_t         catid;
-        Foundation::EventManager*   eventmgr;
-    };
-
-    struct WheelActiveState : public InputState
-    {
-        WheelActiveState (QString name, Foundation::EventManager* m, QState *p = 0);
-
-        void onEntry (QEvent *event);
-        void onExit (QEvent *event);
-
-        Input::Events::SingleAxisMovement   scroll;
 
         event_category_id_t         catid;
         Foundation::EventManager*   eventmgr;
@@ -379,13 +354,23 @@ namespace Input
         }
     };
 
-    struct GestureActive : public EventTransition <QEvent::MouseMove>
+    struct WheelActive : public EventTransition <QEvent::Wheel>
     {
-        GestureActive (GestureInfo &g, Foundation::EventManager* m, QState *p = 0);
+        WheelActive (Foundation::EventManager* m, QState *p = 0);
 
         void onTransition (QEvent *e);
 
-        GestureInfo &gesture;
+        Input::Events::SingleAxisMovement   scroll;
+
+        event_category_id_t         catid;
+        Foundation::EventManager*   eventmgr;
+    };
+
+    struct MoveActive : public EventTransition <QEvent::MouseMove>
+    {
+        MoveActive (Foundation::EventManager* m, QState *p = 0);
+
+        void onTransition (QEvent *e);
 
         Input::Events::Movement     movement;
 
