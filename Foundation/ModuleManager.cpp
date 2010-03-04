@@ -139,17 +139,6 @@ namespace Foundation
 
     void ModuleManager::LoadAvailableModules()
     {
-#ifndef _DEBUG
-        // Remove logging of debug messages in release mode.
-        std::string log_level = "information";
-        if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
-            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
-        else
-            framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
-
-        Poco::Logger::get(module->Name()).setLevel(log_level);
-#endif
-
         // Find all known module XML definition files.
         StringVectorPtr files;
         try
@@ -492,6 +481,17 @@ namespace Foundation
             }
 
             assert(HasModule(module) == false);
+
+#ifndef _DEBUG
+            // Remove logging of debug messages in release mode. \todo This is not applied for modules loaded explicitly in LoadModuleByName.
+            std::string log_level = "information";
+            if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
+                log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
+            else
+                framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
+
+            Poco::Logger::get(module->Name()).setLevel(log_level);
+#endif
 
             module->SetFramework(framework_);
             module->LoadInternal();
