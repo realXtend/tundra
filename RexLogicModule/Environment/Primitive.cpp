@@ -132,7 +132,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
 
         prim->Scale = OpenSimToOgreCoordinateAxes(msg->ReadVector3());
         // Scale is not handled by interpolation system, so set directly
-        HandlePrimScale(localid);
+        HandlePrimScaleAndVisibility(localid);
         
         size_t bytes_read = 0;
         const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
@@ -658,7 +658,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     // the Ogre materials on this prim have possibly changed. Issue requests of the new materials 
     // from the asset provider and bind the new materials to this prim.
     HandleDrawType(entityid);
-    HandlePrimScale(entityid);
+    HandlePrimScaleAndVisibility(entityid);
     // Handle sound parameters
     HandleAmbientSound(entityid);
 }
@@ -918,16 +918,6 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(particleptr);
         }
     }
-    
-    // Handle visibility via the placeable
-    {
-        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        if (placeable)
-        {
-            placeable->GetSceneNode()->setVisible(prim.IsVisible);
-        }
-    }
-    
 }
 
 void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
@@ -1258,7 +1248,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     Quaternion adjust(PI/2, 0, PI);
     mesh->SetAdjustOrientation(adjust);
 
-    HandlePrimScale(entityid);
+    HandlePrimScaleAndVisibility(entityid);
     
     // Check/set textures now that we have the mesh
     HandleMeshMaterials(entityid); 
@@ -1443,7 +1433,7 @@ void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResour
         map.erase(tags_to_remove[j]);
 }
 
-void Primitive::HandlePrimScale(entity_id_t entityid)
+void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
@@ -1489,6 +1479,9 @@ void Primitive::HandlePrimScale(entity_id_t entityid)
     }
 
     ogrepos->SetScale(prim->Scale);
+
+    // Handle visibility
+    ogrepos->GetSceneNode()->setVisible(prim->IsVisible);
 }
 
 void SkipTextureEntrySection(const uint8_t* bytes, int& idx, int length, int elementsize)

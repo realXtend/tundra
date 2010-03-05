@@ -125,8 +125,8 @@ namespace RexLogic
 
         void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
 
-        //! handles prim size
-        void HandlePrimScale(entity_id_t entityid);
+        //! handles prim size and visibility
+        void HandlePrimScaleAndVisibility(entity_id_t entityid);
 
         //! discards request tags for certain entity
         void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
