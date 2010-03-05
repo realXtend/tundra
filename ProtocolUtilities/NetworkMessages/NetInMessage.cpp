@@ -422,7 +422,7 @@ const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)
         *bytesRead = currentVariableSize;
 
     const uint8_t *data = (const uint8_t *)ReadBytesUnchecked(currentVariableSize);
-    if (!data)
+    if (!data && currentVariableSize != 0)
         throw Exception("NetInMessage::ReadBuffer failed!");
     AdvanceToNextVariable();
 
