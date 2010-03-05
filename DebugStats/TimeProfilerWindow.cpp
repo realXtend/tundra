@@ -5,7 +5,6 @@
 
 #include "TimeProfilerWindow.h"
 #include "Profiler.h"
-#include "UiSceneManager.h"
 #include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"

@@ -7,7 +7,7 @@
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "UiSceneManager.h"
+
 #include "ConsoleCommand.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "Framework.h"
@@ -15,7 +15,8 @@
 #include "NetworkMessages/NetMessageManager.h"
 
 #include <UiModule.h>
-#include <UiProxyWidget.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/InworldSceneController.h"
 
 #include <utility>
 
@@ -103,7 +104,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     }
 
     profilerWindow_ = new TimeProfilerWindow(ui_module.get(), this);
-    UiServices::UiProxyWidget *proxy = ui_module->GetSceneManager()->AddWidgetToScene(profilerWindow_,
+    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_,
         UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
     //Desired: profilerWindow_->show();
     // Instead of:
