@@ -132,7 +132,7 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_MOVE] =  manipulator.MoveManipulator(self)
         self.manipulators[self.MANIPULATE_SCALE] =  manipulator.ScaleManipulator(self)
         self.manipulators[self.MANIPULATE_FREEMOVE] =  manipulator.FreeMoveManipulator(self)
-        #self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotateManipulator(self)
+        self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotationManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
     def baseselect(self, ent):
@@ -431,7 +431,8 @@ class ObjectEdit(Component):
 
     def on_mousemove(self, event_id, mouseinfo, callback):
         """for hilighting manipulator parts when hovering over them"""
-        if 0: #self.windowActive:# and event_id == :
+        #print "m"
+        if self.windowActive:# and event_id == :
             #print "m"
             results = []
             results = r.rayCast(mouseinfo.x, mouseinfo.y)

@@ -1,6 +1,6 @@
 import rexviewer as r
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
-
+from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 import math
 
 AXIS_X = 0
@@ -100,17 +100,18 @@ class Manipulator:
                 return
                 
             if ent.id == self.manipulator.id:
+                    submeshid = results[-3]
                     u = results[-2]
                     v = results[-1]
                     #print "ARROW and UV", u, v
                     self.grabbed = True
-                    if u < 0.421875:
+                    if submeshid == 2 or (u != 0.0 and u < 0.421875):
                         #print "arrow is blue / z"
                         self.grabbed_axis = AXIS_Z
-                    elif u < 0.70703125:
+                    elif submeshid == 1 or (u != 0.0 and u < 0.70703125):
                         #print "arrow is green / y"
                         self.grabbed_axis = AXIS_Y
-                    elif u <= 1.0:
+                    elif submeshid == 3 or (u != 0.0 and u <= 1.0):
                         #print "arrow is red / x"
                         self.grabbed_axis = AXIS_X
                     else:
@@ -161,7 +162,8 @@ class Manipulator:
         return True
     
     def highlight(self, raycast_results):
-        print "swoot", raycast_results
+        pass
+        #print "swoot", raycast_results
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -228,7 +230,6 @@ class FreeMoveManipulator(Manipulator):
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         #freemove
         #r.logInfo("_manipulate")
-
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
@@ -236,3 +237,33 @@ class FreeMoveManipulator(Manipulator):
         entpos = Vector3(ent.pos)
         newpos = entpos + changevec
         ent.pos = newpos.x, newpos.y, newpos.z
+        
+class RotationManipulator(Manipulator):
+    NAME = "RotationManipulator"
+    MANIPULATOR_MESH_NAME = "rotate1.mesh"
+                        
+    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+        if self.grabbed:
+            #print "rotating...", self.grabbed_axis, amountx, amounty, lengthx, lengthy
+            rightvec = Vector3(r.getCameraRight())
+            upvec = Vector3(r.getCameraUp())
+            euler = list(quat_to_euler(ent.orientation))
+
+            if self.grabbed_axis == AXIS_Y:
+                #print "y axis", self.grabbed_axis, euler
+                mov = lengthx * 10
+                euler[self.grabbed_axis] += mov
+            elif self.grabbed_axis == AXIS_Z:
+                #print "z axis", self.grabbed_axis
+                mov = lengthy * 10
+                euler[self.grabbed_axis] -= mov
+            else:
+                #print "x axis", self.grabbed_axis
+                mov = lengthx * 10
+                euler[self.grabbed_axis] += mov 
+                
+            #~ print euler, mov
+            ort = euler_to_quat(euler)
+            #~ print ort
+            ent.orientation = ort
+            

@@ -335,15 +335,12 @@ class ObjectEditWindow:
         if not self.mainTab.rotate_button.isChecked():
             freemove = True
             self.controller.hideManipulator()
-            r.logInfo("not activated, something")
         else: #activated
             if ent is not None:
-                r.logInfo("activated, has selectiong")
                 self.controller.changeManipulator(self.controller.MANIPULATE_ROTATE)
                 self.mainTab.scale_button.setChecked(False)
                 self.mainTab.move_button.setChecked(False)
             else:
-                r.logInfo("activated, no selectiong")
                 self.mainTab.rotate_button.setChecked(False) 
                 freemove = True
         
@@ -395,6 +392,7 @@ class ObjectEditWindow:
            self.mainTabList[str(id)] = (ent, tWid)
            return True
         return False
+        
     def showName(self, ent):
         """show the id and name of the object. name is sometimes empty it seems. 
         swoot: actually, seems like the name just isn't gotten fast enough or 
