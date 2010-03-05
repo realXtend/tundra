@@ -401,8 +401,6 @@ namespace Input
 
     class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
-        Q_OBJECT 
-        
         public:
             explicit WorldInputLogic (Foundation::Framework *fw);
 

@@ -4,7 +4,7 @@ init_target (WorldInputModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_H_FILES InputStateMachine.h)
+#file (GLOB MOC_H_FILES )
 file (GLOB XML_FILES *.xml)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
