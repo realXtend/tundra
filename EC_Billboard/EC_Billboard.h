@@ -28,6 +28,7 @@ class EC_Billboard : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_Billboard);
 
+private:
     /// Constuctor.
     /// @param module Module.
     explicit EC_Billboard(Foundation::ModuleInterface *module);

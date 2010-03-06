@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ * For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OgreAssetEditorModule.h
  *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
  *          OGRE assets such as meshes and material scripts.
@@ -56,6 +56,9 @@ namespace OgreAssetEditor
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;
+
+        /// Inventory event category.
+        event_category_id_t frameworkEventCategory_;
 
         /// Inventory event category.
         event_category_id_t inventoryEventCategory_;

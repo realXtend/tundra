@@ -1,5 +1,4 @@
 <config>
-	<entry>OgreRenderingModule</entry>
-	<dependency>SupportModules</dependency>
-	<dependency>UiModule</dependency>
+    <entry>OgreRenderingModule</entry>
+    <dependency>UiModule</dependency>
 </config>

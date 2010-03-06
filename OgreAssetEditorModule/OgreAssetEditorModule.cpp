@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ * For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OgreAssetEditorModule.cpp
  *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
  *          OGRE assets such as meshes and material scripts.
@@ -30,6 +30,7 @@ namespace OgreAssetEditor
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
     ModuleInterfaceImpl(Foundation::Module::MT_OgreAssetEditor),
+    frameworkEventCategory_(0),
     inventoryEventCategory_(0),
     assetEventCategory_(0),
     resourceEventCategory_(0),
@@ -51,6 +52,10 @@ void OgreAssetEditorModule::Initialize()
 
 void OgreAssetEditorModule::PostInitialize()
 {
+    frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
+    if (frameworkEventCategory_ == 0)
+        LogError("Failed to query \"Framework\" event category");
+
     inventoryEventCategory_ = eventManager_->QueryEventCategory("Inventory");
     if (inventoryEventCategory_ == 0)
         LogError("Failed to query \"Inventory\" event category");
@@ -62,10 +67,6 @@ void OgreAssetEditorModule::PostInitialize()
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
     if (resourceEventCategory_ == 0)
         LogError("Failed to query \"Resource\" event category");
-
-    networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
-    if (networkStateEventCategory_ == 0)
-        LogError("Failed to query \"NetworkState\" event category");
 
     materialWizard_ = new MaterialWizard(framework_);
     editorManager_ = new EditorManager();
@@ -87,10 +88,24 @@ bool OgreAssetEditorModule::HandleEvent(
     event_id_t event_id,
     Foundation::EventDataInterface* data)
 {
+    if (category_id == frameworkEventCategory_)
+    {
+        if (event_id == Foundation::NETWORKING_REGISTERED)
+        {
+            networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
+            if (networkStateEventCategory_ == 0)
+                LogError("Failed to query \"NetworkState\" event category");
+            return false;
+        }
+    }
     if (category_id == inventoryEventCategory_)
     {
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            if (!ui_module)
+                return false;
+
             Inventory::InventoryItemDownloadedEventData *downloaded = checked_static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
             asset_type_t at = downloaded->assetType;
             switch(at)
@@ -115,12 +130,7 @@ bool OgreAssetEditorModule::HandleEvent(
                     // Bring editor to front
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
-                    {
-                        boost::shared_ptr<UiServices::UiModule> ui_module = 
-                        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                        if (ui_module)
                             ui_module->GetInworldSceneController()->BringProxyToFront(editor);
-                    }
                 }
 
                 downloaded->handled = true;

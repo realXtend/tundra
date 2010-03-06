@@ -5,7 +5,7 @@
 
 namespace Test
 {
-    const Core::service_type_t TestService::type_ = 667;
+    const service_type_t TestService::type_ = 667;
 
     bool TestService::DoTest() const
     {

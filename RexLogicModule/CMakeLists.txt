@@ -41,7 +41,6 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 #QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUSE_QT)
-
 add_definitions (-DREXLOGIC_MODULE_EXPORTS)
 
 use_package (BOOST)

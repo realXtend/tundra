@@ -1,5 +1,4 @@
 <config>
-	<entry>TestModule</entry>
-	<entry>TestModuleB</entry>
-	<dependency>SupportModules</dependency>
+    <entry>TestModule</entry>
+    <entry>TestModuleB</entry>
 </config>

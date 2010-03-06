@@ -1,9 +1,8 @@
 <config>
-   <entry>RexLogicModule</entry>
-   <dependency>ProtocolModuleOpenSim</dependency>
-   <dependency>ProtocolModuleTaiga</dependency>
-   <dependency>SupportModules</dependency>
-   <dependency>OgreRenderingModule</dependency>
-   <dependency>UiModule</dependency>
-   <dependency>EnvironmentModule</dependency>
+    <entry>RexLogicModule</entry>
+    <dependency>ProtocolModuleOpenSim</dependency>
+    <dependency>ProtocolModuleTaiga</dependency>
+    <dependency>OgreRenderingModule</dependency>
+    <dependency>UiModule</dependency>
+    <dependency>EnvironmentModule</dependency>
 </config>

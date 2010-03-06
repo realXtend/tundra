@@ -4,6 +4,7 @@
 #define incl_TestStaticModuleTest_h
 
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 
 namespace Test
 {
@@ -30,7 +31,7 @@ namespace Test
             LogInfo("Module " + Name() + " uninitialized.");
         }
 
-        virtual void Update(Core::f64 frametime) {}
+        virtual void Update(f64 frametime) {}
 
         MODULE_LOGGING_FUNCTIONS;
 
