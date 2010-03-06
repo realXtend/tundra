@@ -13,7 +13,7 @@
 #include "EC_Billboard.h"
 
 #include "WorldStream.h"
-//#include "SceneManager.h"
+#include "SceneManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -21,44 +21,7 @@
 #include "CoreStringUtils.h"
 #include "UiModule.h"
 
-
-namespace
-{
-/// Test code for getting pixmap with chat bubble image and text
-/// @param filename Filename for the image used as the basis for the chat bubble.
-/// @param text Text to be shown in the chat bubble.
-/// @return the rendered pixmap with image and embedded text or null if something goes wrong.
-QPixmap GetPixmap(const QString &image_name, const QString &text)
-{
-    int wanted_width = 400;
-    int wanted_height = 200;
-    QRect wanted_rect(0,0,wanted_width,wanted_height);
-
-    if (!QFile::exists(image_name))
-        return 0;
-
-    QPixmap pixmap;
-    pixmap.load(image_name);
-    pixmap = pixmap.scaled(wanted_rect.size());
-
-    QPainter painter(&pixmap);
-
-    // Draw rounded rect
-/*
-    QRectF rectangle(10.0, 20.0, 80.0, 60.0);
-    painter.setBrush(Qt::SolidPattern);
-    painter.drawRoundedRect(rectangle, 20.0, 15.0);
-*/
-
-    painter.setPen(Qt::white);
-    painter.setFont(QFont("Arial", 24));
-    // draw text
-    painter.drawText(wanted_rect, Qt::AlignCenter | Qt::TextWordWrap, text);
-
-    return pixmap;
-}
-
-}
+//#include <EntityComponent/EC_OpenSimPresence.h>
 
 namespace Naali
 {
@@ -164,16 +127,36 @@ bool InWorldChatModule::HandleEvent(
             ProtocolUtilities::NetInMessage &msg = *netdata->message;
             msg.ResetReading();
 
-            std::string name = msg.ReadString();
+            std::string fromName = msg.ReadString();
+            RexUUID sourceId = msg.ReadUUID();
+
             msg.SkipToFirstVariableByName("Message");
             std::string message = msg.ReadString();
             if (message.size() < 1)
                 return false;
 
-            ss << "[" << GetLocalTimeString() << "] " << name << ": " << message << std::endl;
+            ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message << std::endl;
 
             LogInfo(ss.str());
+/*
+            Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+            for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+            {
+                Scene::Entity &entity = **iter;
+                boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
+                if (!ec_presence)
+                    continue;
 
+                if (ec_presence->FullId != sourceId)
+                    continue;
+
+                Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::NameStatic());
+                assert(component.get());
+                EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
+                chatBubble.ShowMessage(message.c_str());
+            }
+
+/*
             QPixmap pixmap = GetPixmap("./media/textures/ChatBubble.png", message.c_str());
             if (!pixmap)
                 return false;
@@ -182,7 +165,7 @@ bool InWorldChatModule::HandleEvent(
             w->setPixmap(pixmap);
             w->setAttribute(Qt::WA_DeleteOnClose);
             w->show();
-
+*/
             // Connect chat ui to this modules ChatReceived
             // emit ChatReceived()
             //if (chatWindow_)

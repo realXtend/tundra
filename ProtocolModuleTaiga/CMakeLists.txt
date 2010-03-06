@@ -5,7 +5,7 @@ init_target (ProtocolModuleTaiga OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES InventoryWindow.h InventoryModel.h)
+file (GLOB MOC_FILES)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -20,11 +20,11 @@ use_package (POCO)
 use_package (XMLRPC)
 use_package (QT4)
 use_package (CURL)
-use_modules (Core Foundation Interfaces SceneManager RexCommon HttpUtilities RpcUtilities ProtocolUtilities)
+use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon HttpUtilities RpcUtilities ProtocolUtilities)
+link_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities ProtocolUtilities)
 link_package (BOOST)
 link_package (POCO)
 link_package (XMLRPC)

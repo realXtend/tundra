@@ -1,9 +1,8 @@
 <config>
-	<entry>CommunicationModule</entry>
-	<dependency>SupportModules</dependency>
+    <entry>CommunicationModule</entry>
     <dependency>RexLogicModule</dependency>
     <dependency>ProtocolModuleOpenSim</dependency>
     <dependency>UiModule</dependency>
-	<dependency>OgreRenderingModule</dependency>
-	<dependency_dir>gstreamer\bin</dependency_dir>
+    <dependency>OgreRenderingModule</dependency>
+    <dependency_dir>gstreamer\bin</dependency_dir>
 </config>

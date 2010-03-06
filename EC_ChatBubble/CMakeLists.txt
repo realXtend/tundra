@@ -5,7 +5,7 @@ init_target (EC_ChatBubble)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES )
+file (GLOB MOC_FILES EC_ChatBubble.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()

@@ -4,10 +4,13 @@
 #define incl_TestModule_h
 
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "TestServiceInterface.h"
 #include "TestService.h"
 #include "EventDataInterface.h"
 #include "ComponentInterface.h"
+
+
 
 namespace Foundation
 {
@@ -40,7 +43,7 @@ namespace Test
         virtual void Initialize();
         virtual void Uninitialize();
 
-        virtual void Update(Core::f64 frametime);
+        virtual void Update(f64 frametime);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -48,7 +51,6 @@ namespace Test
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Test;
-
 
     private:
         TestServicePtr test_service_;

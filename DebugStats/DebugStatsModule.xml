@@ -1,8 +1,7 @@
 <config>
-  <entry>DebugStatsModule</entry>
-  <dependency>ProtocolModuleOpenSim</dependency>
-  <dependency>ProtocolModuleTaiga</dependency>
-  <dependency>SupportModules</dependency>
-  <dependency>OgreRenderingModule</dependency>
-  <dependency>UiModule</dependency>
+    <entry>DebugStatsModule</entry>
+    <dependency>ProtocolModuleOpenSim</dependency>
+    <dependency>ProtocolModuleTaiga</dependency>
+    <dependency>OgreRenderingModule</dependency>
+    <dependency>UiModule</dependency>
 </config>

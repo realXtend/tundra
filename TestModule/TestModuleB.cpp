@@ -4,6 +4,9 @@
 
 #include "TestModuleB.h"
 #include "TestModule.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+
 #include <Poco/ClassLibrary.h>
 
 
@@ -54,7 +57,7 @@ namespace Test
     }
 
     // virtual
-    void TestModuleB::Update(Core::f64 frametime)
+    void TestModuleB::Update(f64 frametime)
     {
         try
         {
@@ -70,7 +73,7 @@ namespace Test
     }
 
     // virtual
-    bool TestModuleB::HandleEvent(Core::event_category_id_t category_id, Core::event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TestModuleB::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (framework_->GetEventManager()->QueryEventCategory("Test") == category_id)
         {

@@ -4,6 +4,7 @@
 #define incl_TestService_h
 
 #include "TestServiceInterface.h"
+#include "CoreTypes.h"
 
 namespace Test
 {
@@ -16,7 +17,7 @@ namespace Test
 
         virtual bool DoTest() const;
 
-        static const Core::service_type_t type_;
+        static const service_type_t type_;
     };
 }
 #endif

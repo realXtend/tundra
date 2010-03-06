@@ -44,7 +44,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (XMLRPC)
-use_modules (Core Foundation ProtocolUtilities Interfaces RexCommon RpcUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SceneManager)
+use_modules (Core Foundation ProtocolUtilities Interfaces RexCommon RpcUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 

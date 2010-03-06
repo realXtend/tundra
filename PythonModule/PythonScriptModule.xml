@@ -1,6 +1,5 @@
 <config>
-	<entry>PythonScriptModule</entry>
-	<dependency>SupportModules</dependency>
-	<dependency>RexLogicModule</dependency>
-	<dependency>UiModule</dependency>
+    <entry>PythonScriptModule</entry>
+    <dependency>RexLogicModule</dependency>
+    <dependency>UiModule</dependency>
 </config>

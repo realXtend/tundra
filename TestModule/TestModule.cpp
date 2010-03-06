@@ -3,13 +3,13 @@
 #include "StableHeaders.h"
 
 #include "TestModule.h"
+#include "EventManager.h"
 #include "EC_Dummy.h"
-#include <Poco/ClassLibrary.h>
+//#include <Poco/ClassLibrary.h>
 #include "TestServiceInterface.h"
 #include "TestService.h"
 #include "SceneManager.h"
-
-
+#include "ConfigurationManager.h"
 
 namespace Test
 {
@@ -25,7 +25,6 @@ namespace Test
     // virtual
     void TestModule::Load()
     {
-        using namespace Test;
         DECLARE_MODULE_EC(EC_Dummy);
 
         LogInfo("Module " + Name() + " loaded.");
@@ -60,7 +59,7 @@ namespace Test
     }
 
     // virtual
-    void TestModule::Update(Core::f64 frametime)
+    void TestModule::Update(f64 frametime)
     {
         LogInfo("");
 
@@ -84,17 +83,18 @@ namespace Test
         Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::NameStatic());
         assert (component.get() != 0 && "Failed to create dummy component.");
 
-        entity->AddEntityComponent(component);
+        entity->AddComponent(component);
         component = entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
 
         Foundation::ComponentPtr component_second = framework_->GetComponentManager()->CreateComponent(Test::EC_Dummy::NameStatic());
-        entity->AddEntityComponent(component_second);
+        entity->AddComponent(component_second);
         component = entity->GetComponent(component_second->Name());
         assert (component.get() != 0 && "Failed to get dummy component from entity.");
-        entity->RemoveEntityComponent(component_second);
+        entity->RemoveComponent(component_second);
         component_second.reset();
 
+/*
         int num_test_components = 0;
         for (Foundation::ComponentManager::const_iterator it = 
              framework_->GetComponentManager()->Begin(Test::EC_Dummy::NameStatic()) ;
@@ -105,13 +105,14 @@ namespace Test
             num_test_components++;
         }
         assert (num_test_components == 1 && "Component iterator failed.");
-
+*/
 
         Scene::ScenePtr cloned_scene = scene->Clone("Test clone scene");
         assert (sceneManager->HasScene("Test clone scene"));
         assert (cloned_scene->HasEntity(entity->GetId()) && "Failed to clone a scene");
 
-        Scene::EntityPtr cloned_entity = entity->Clone(cloned_scene);
+        //Scene::EntityPtr cloned_entity = entity->Clone(cloned_scene);
+        Scene::EntityPtr cloned_entity = cloned_scene->GetEntity(entity->GetId());
         component = cloned_entity->GetComponent(component->Name());
         assert (component.get() != 0 && "Failed to clone an entity.");
 

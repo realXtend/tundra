@@ -5,6 +5,7 @@
 
 #include "Foundation.h"
 #include "StaticModuleTest.h"
+#include "ModuleManager.h"
 
 namespace Test
 {

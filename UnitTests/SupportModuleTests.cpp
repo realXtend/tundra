@@ -2,12 +2,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <OISKeyboard.h>
+//#include <OISKeyboard.h>
 
 #include "CoreStdIncludes.h"
 #include "Core.h"
 #include "Foundation.h"
-#include "ServiceInterfaces.h"
+#include "ServiceInterface.h"
 #include "StaticModuleDefinitions.h"
 
 #include "ConsoleModuleApi.h"
@@ -17,9 +17,10 @@
 
 #include "InputEvents.h"
 
+///\todo Depends on OIS and OgreConsole which both are deprecated.
+/*
 //! Unit test for framework
 BOOST_AUTO_TEST_SUITE(support_modules)
-
 
 Foundation::Framework &CreateFramework()
 {
@@ -29,14 +30,14 @@ Foundation::Framework &CreateFramework()
 
 struct TestA
 {
-    Console::CommandResult TestCallbackSuccess(const Core::StringVector &params)
+    Console::CommandResult TestCallbackSuccess(const StringVector &params)
     {
         BOOST_CHECK_EQUAL(params[0], "paramA");
         BOOST_CHECK_EQUAL(params[1], "paramB");
 
         return Console::ResultSuccess("Success");
     }
-    Console::CommandResult TestCallbackFailure(const Core::StringVector &params)
+    Console::CommandResult TestCallbackFailure(const StringVector &params)
     {
         BOOST_CHECK_EQUAL(params.size(), 0);
 
@@ -46,7 +47,7 @@ struct TestA
 
 struct TestB
 {
-    Console::CommandResult TestCallbackThreaded(const Core::StringVector &params)
+    Console::CommandResult TestCallbackThreaded(const StringVector &params)
     {
         test_var_ = 1;
         return Console::ResultSuccess();
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE( console_commands )
     TestB testb;
     testb.fw_ = &fw;
 
-    Core::Thread thread(boost::ref(testb));
+    Thread thread(boost::ref(testb));
     console->QueueCommand("Test CommandC");
     thread.join();
     
@@ -211,4 +212,5 @@ BOOST_AUTO_TEST_CASE( console_ogre )
 
 
 BOOST_AUTO_TEST_SUITE_END()
+*/
 
