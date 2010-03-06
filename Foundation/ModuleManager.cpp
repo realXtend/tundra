@@ -94,16 +94,42 @@ namespace Foundation
 
     void ModuleManager::SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modules)
     {
-        for(size_t i = 0; i < modules.size(); ++i)
-            for(size_t j = 0; j < modules.size(); ++j)
-                if (i != j)
-                {
-                    size_t A = std::min(i, j);
-                    size_t B = std::max(i, j);
-                    if (modules[B].Precedes(modules[A]))
-                        std::swap(modules[A], modules[B]);
-                }
+        std::set<std::string> loadedDependencies;
 
+        // Do a straightforward selection sort to solve the partial ordering.
+        for(size_t i = 0; i < modules.size(); ++i)
+        {
+            size_t j = i;
+            // Find a suitable module to load next.
+            for(; j < modules.size(); ++j)
+            {
+                bool good = true;
+                for(size_t k = 0; k < modules[j].dependencies.size(); ++k)
+                    if (loadedDependencies.find(modules[j].dependencies[k]) == loadedDependencies.end())
+                    {
+                        good = false;
+                        break;
+                    }
+                if (good)
+                    break;
+            }
+            if (j >= modules.size())
+            {
+                Foundation::RootLogCritical(std::string("Could not find a module to load next! Candidates: "));
+                for(size_t k = i; k < modules.size(); ++k)
+                    Foundation::RootLogCritical(modules[i].moduleNames.front());
+
+                j = i; // Load an arbitrary module next.
+            }
+
+            // We will load module[j] next, so move it up to i'th index (in-place sorting)
+            std::swap(modules[i], modules[j]);
+            // Add all the modules in that shared library to the fulfilled dependency list.
+            for(size_t k = 0; k < modules[i].moduleNames.size(); ++k)
+                loadedDependencies.insert(modules[i].moduleNames[k]);
+        }
+
+        // Check that the above selection procedure formed a proper dependency order. It can only fail if there was a cyclic dependency.
         for(size_t i = 0; i < modules.size(); ++i)
             for(size_t j = i+1; j < modules.size(); ++j)
                 if (modules[j].Precedes(modules[i]))
@@ -253,6 +279,23 @@ namespace Foundation
         {
             Foundation::RootLogWarning(std::string("Exception thrown when parsing a module XML file: ") + e.what());
             return;
+        }
+
+        // Some modules have a dependency XML in the following form:
+        // <config>
+	    // <dependency>ModuleX</dependency>
+        // </config>
+        // instead of:
+        // Some modules have a dependency XML in the following form:
+        // <config>
+        // <entry>Module</entry>
+	    // <dependency>ModuleX</dependency>
+        // </config>
+        // In this case, try to guess the module name from the name of the XML file.
+        if (entries.empty())
+        {
+            Foundation::RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries! Guessing the shared library contains a module with the same name as the module filename.");
+            entries.push_back(modulePath.filename());
         }
 
         // The commented-out loop would add each individual entry(module) inside this shared library as a separate module load description object,

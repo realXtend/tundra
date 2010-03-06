@@ -299,6 +299,8 @@ namespace Foundation
         //! parent framework
         Framework *framework_;
 
+        void RegisterConsoleCommand(const Console::Command &command);
+
     private:
         virtual void LoadInternal() { assert(state_ == Module::MS_Unloaded); Load(); state_ = Module::MS_Loaded; }
         virtual void UnloadInternal() { assert(state_ == Module::MS_Loaded); Unload(); state_ = Module::MS_Unloaded; }

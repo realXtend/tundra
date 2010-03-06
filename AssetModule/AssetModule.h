@@ -42,6 +42,7 @@ namespace Asset
 
         virtual void Load();
         virtual void Initialize();
+        virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 

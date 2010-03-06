@@ -100,6 +100,9 @@ add_subdirectory (WorldInputModule)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
+
+# The following are optional, but contain 
+# commonly used functionality.
 add_subdirectory (InventoryModule)
 add_subdirectory (OgreAssetEditorModule)
 add_subdirectory (LegacyAvatarModule)

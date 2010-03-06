@@ -60,10 +60,6 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreAnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-                "RenderStats", "Prints out render statistics.", 
-                Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
 
     // virtual
@@ -113,6 +109,10 @@ namespace OgreRenderer
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
         
         renderer_->PostInitialize();
+
+        RegisterConsoleCommand(Console::CreateCommand(
+                "RenderStats", "Prints out render statistics.", 
+                Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
 
     // virtual
