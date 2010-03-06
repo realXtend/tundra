@@ -42,39 +42,24 @@ DebugStatsModule::~DebugStatsModule()
 {
 }
 
-void DebugStatsModule::Load()
-{
-#ifdef PROFILING
-    AutoRegisterConsoleCommand(Console::CreateCommand("Prof", 
-        "Shows the profiling window.",
-        Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
-
-    AutoRegisterConsoleCommand(Console::CreateCommand("rin", 
-        "Sends a random network message in.",
-        Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
-
-    AutoRegisterConsoleCommand(Console::CreateCommand("rout", 
-        "Sends a random network message out.",
-        Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
-#endif
-
-    LogInfo(Name() + " loaded.");
-}
-
-void DebugStatsModule::Unload()
-{
-    LogInfo(Name() + " unloaded.");
-}
-
-void DebugStatsModule::Initialize()
-{
-    LogInfo(Name() + " initialized.");
-}
-
 void DebugStatsModule::PostInitialize()
 {
 #ifdef _WINDOWS
     QueryPerformanceCounter(&lastCallTime);
+#endif
+
+#ifdef PROFILING
+    RegisterConsoleCommand(Console::CreateCommand("Prof", 
+        "Shows the profiling window.",
+        Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
+
+    RegisterConsoleCommand(Console::CreateCommand("rin", 
+        "Sends a random network message in.",
+        Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
+
+    RegisterConsoleCommand(Console::CreateCommand("rout", 
+        "Sends a random network message out.",
+        Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -134,10 +119,6 @@ void DebugStatsModule::CloseProfilingWindow()
 {
     profilerWindow_->deleteLater();
     profilerWindow_ = 0;
-}
-
-void DebugStatsModule::Uninitialize()
-{
 }
 
 void DebugStatsModule::Update(f64 frametime)

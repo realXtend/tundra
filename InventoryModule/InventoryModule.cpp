@@ -76,17 +76,12 @@ void InventoryModule::Initialize()
     eventManager_->RegisterEvent(inventoryEventCategory_, Events::EVENT_INVENTORY_ITEM_DOWNLOADED, "InventoryItemDownloaded");
 
     // Register console commands.
-    boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>
-        (Foundation::Service::ST_ConsoleCommand).lock();
-    if (console)
-    {
-        console->RegisterCommand(Console::CreateCommand("Upload",
+    RegisterConsoleCommand(Console::CreateCommand("Upload",
             "Upload an asset. Usage: Upload(AssetType, Name, Description)",
             Console::Bind(this, &Inventory::InventoryModule::UploadAsset)));
 
-        console->RegisterCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
+    RegisterConsoleCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
             Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
-    }
 }
 
 void InventoryModule::PostInitialize()

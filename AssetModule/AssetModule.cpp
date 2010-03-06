@@ -26,9 +26,6 @@ namespace Asset
     // virtual
     void AssetModule::Load()
     {
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-            "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
-            Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
     }
 
     // virtual
@@ -55,6 +52,13 @@ namespace Asset
         }
 
         framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+    }
+
+    void AssetModule::PostInitialize()
+    {
+        RegisterConsoleCommand(Console::CreateCommand(
+            "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
+            Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
     }
 
     void AssetModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)

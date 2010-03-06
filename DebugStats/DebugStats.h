@@ -27,17 +27,15 @@ namespace DebugStats
 
 /// This module shows information about internal core data structures in separate windows. Useful for verifying and understanding
 /// the internal state of the application.
-class DEBUGSTATS_MODULE_API DebugStatsModule : public Foundation::ModuleInterfaceImpl
+class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterfaceImpl
 {
+    Q_OBJECT
+
 public:
     DebugStatsModule();
     virtual ~DebugStatsModule();
 
-    void Load();
-    void Unload();
-    void Initialize();
     void PostInitialize();
-    void Uninitialize();
     void Update(f64 frametime);
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 

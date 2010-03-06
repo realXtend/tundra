@@ -21,7 +21,7 @@
 #include "CoreStringUtils.h"
 #include "UiModule.h"
 
-//#include <EntityComponent/EC_OpenSimPresence.h>
+#include "EntityComponent/EC_OpenSimPresence.h"
 
 namespace Naali
 {
@@ -42,10 +42,6 @@ void InWorldChatModule::Load()
 {
     DECLARE_MODULE_EC(EC_Billboard);
     DECLARE_MODULE_EC(EC_ChatBubble);
-
-    AutoRegisterConsoleCommand(Console::CreateCommand("bbtest", 
-        "Adds a billboard to each entity in the scene.",
-        Console::Bind(this, &InWorldChatModule::TestAddBillboard)));
 }
 
 void InWorldChatModule::PostInitialize()
@@ -55,6 +51,10 @@ void InWorldChatModule::PostInitialize()
         LogError("Failed to query \"Framework\" event category");
 
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
+
+    RegisterConsoleCommand(Console::CreateCommand("bbtest", 
+        "Adds a billboard to each entity in the scene.",
+        Console::Bind(this, &InWorldChatModule::TestAddBillboard)));
 }
 
 void InWorldChatModule::Update(f64 frametime)
@@ -138,7 +138,7 @@ bool InWorldChatModule::HandleEvent(
             ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message << std::endl;
 
             LogInfo(ss.str());
-/*
+
             Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
             for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
             {
@@ -197,8 +197,8 @@ const std::string &InWorldChatModule::NameStatic()
 }
 
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
-{/*
-    Scene::ScenePtr scene = framework_->GetScene("World"); ///\todo If we'd like to know which scene RexLogic currently has active, we'd need a dependency to that module.
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one instead of RexLogicModule, so no dependency to it is needed.
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
@@ -209,7 +209,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
         assert(billboard);
         billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "bubble.png");
     }
-*/
+
     return Console::ResultSuccess();
 }
 
