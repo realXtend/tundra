@@ -151,7 +151,7 @@ class ObjectEdit(Component):
         children = []
         
         while(not exitLoop):
-            qprim = r.getQPrim(ent.id)
+            qprim = ent.prim
             if qprim is not None:
                 if qprim.ParentId != 0:
                     #~ r.logInfo("Entity had a parent, lets pick that instead!")
@@ -251,7 +251,7 @@ class ObjectEdit(Component):
     def getSelectedObjectIds(self):
         ids = []
         for ent in self.sels:
-            qprim = r.getQPrim(ent.id)
+            qprim = ent.prim
             children = qprim.GetChildren()
             for child_id in children:
                 #child =  r.getEntity(int(child_id))
@@ -316,11 +316,11 @@ class ObjectEdit(Component):
                 elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
-        else:
-            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-            #print "canmove:", self.canmove
-            self.canmove = False
-            self.deselect()
+        #~ else:
+            #~ self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+            #~ #print "canmove:", self.canmove
+            #~ self.canmove = False
+            #~ self.deselect()
             
     def dragStarted(self, mouseinfo):
         width, height = r.getScreenSize()
@@ -433,7 +433,7 @@ class ObjectEdit(Component):
         """for hilighting manipulator parts when hovering over them"""
         #print "m"
         if self.windowActive:# and event_id == :
-            #print "m"
+            #~ print "m"
             results = []
             results = r.rayCast(mouseinfo.x, mouseinfo.y)
             if results is not None and results[0] != 0:
@@ -441,6 +441,8 @@ class ObjectEdit(Component):
                 
                 if self.manipulator.compareIds(id):
                     self.manipulator.highlight(results)
+            else:
+                self.manipulator.resethighlight()
         
                 
     def on_mousedrag(self, move_id, mouseinfo, callback):
@@ -543,12 +545,12 @@ class ObjectEdit(Component):
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.id))
                 ent, children = self.parentalCheck(ent)
-                #~ for child_id in children:
-                    #~ child = r.getEntity(int(child_id))
+                for child_id in children:
+                    child = r.getEntity(int(child_id))
                     #~ self.window.addToList(child)
                     #~ print "deleting", child
                     #~ self.worldstream.SendObjectDeRezPacket(child.id, r.getTrashFolderId())
-                    #~ self.window.objectDeleted(str(child.id))
+                    self.window.objectDeleted(str(child.id))
                 #~ if len(children) == 0:
                 self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
                 self.window.objectDeleted(str(ent.id))
