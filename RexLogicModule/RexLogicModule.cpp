@@ -101,18 +101,6 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
-    
-    AutoRegisterConsoleCommand(Console::CreateCommand("Login", 
-        "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
-        Console::Bind(this, &RexLogicModule::ConsoleLogin)));
-
-    AutoRegisterConsoleCommand(Console::CreateCommand("Logout", 
-        "Logout from server.",
-        Console::Bind(this, &RexLogicModule::ConsoleLogout)));
-        
-    AutoRegisterConsoleCommand(Console::CreateCommand("Fly",
-        "Toggle flight mode.",
-        Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 }
 
 // virtual
@@ -237,6 +225,19 @@ void RexLogicModule::PostInitialize()
             taiga_login_handler_->SetLoginNotifier(notifier);
         }
     }
+
+    RegisterConsoleCommand(Console::CreateCommand("Login", 
+        "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
+        Console::Bind(this, &RexLogicModule::ConsoleLogin)));
+
+    RegisterConsoleCommand(Console::CreateCommand("Logout", 
+        "Logout from server.",
+        Console::Bind(this, &RexLogicModule::ConsoleLogout)));
+        
+    RegisterConsoleCommand(Console::CreateCommand("Fly",
+        "Toggle flight mode.",
+        Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
+
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
