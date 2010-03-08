@@ -66,6 +66,8 @@ namespace Naali
 
         Console::CommandResult TestAddBillboard(const StringVector &params);
 
+        Console::CommandResult ConsoleChat(const StringVector &params);
+
     public slots:
         ///
         /// @param msg Chat message to be sent.

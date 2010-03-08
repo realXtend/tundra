@@ -5,8 +5,8 @@
  *  @brief  EC_ChatBubble 
 */
 
-#ifndef incl_EC_ChatBubble_ECBillBoard_h
-#define incl_EC_ChatBubble_ECBillBoard_h
+#ifndef incl_EC_ChatBubble_EC_ChatBubble_h
+#define incl_EC_ChatBubble_EC_ChatBubble_h
 
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
@@ -15,17 +15,12 @@
 #include <QStringList>
 #include <QFont>
 
-/*
-namespace Scene
-{
-    class Entity;
-}
-
 namespace Ogre
 {
-    class SceneManager;
+    class SceneNode;
+    class BillboardSet;
+    class Billboard;
 }
-*/
 
 class EC_ChatBubble : public Foundation::ComponentInterface
 {
@@ -34,7 +29,7 @@ class EC_ChatBubble : public Foundation::ComponentInterface
 
 private:
     /// Constuctor.
-    /// @param module Module.
+    /// @param module Owner module.
     explicit EC_ChatBubble(Foundation::ModuleInterface *module);
 
 public:
@@ -45,9 +40,9 @@ public:
     /// @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
     void Show(const Vector3df &offset, float timeToShow, const char *imageName);
 
-    ///
+    /// Sets the font used for the chat bubble text.
     /// @param
-    void SetFont(const QFont &font);
+    void SetFont(const QFont &font) { font_ = font; }
 
 public slots:
     /// @param msg Message to be shown.
@@ -72,6 +67,15 @@ private:
 
     ///
     QPixmap GetPixmap(const QString &text);
+
+    /// Ogre scene node for this chat bubble billboard.
+    Ogre::SceneNode *sceneNode_;
+
+    /// Ogre billboard set.
+    Ogre::BillboardSet *billboardSet_;
+
+    /// Ogre billboard.
+    Ogre::Billboard *billboard_;
 
     /// For used for the chat bubble text.
     QFont font_;

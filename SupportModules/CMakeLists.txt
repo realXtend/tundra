@@ -14,7 +14,7 @@ MocFolder ()
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOCH_FILES *.h)
+file (GLOB MOCH_FILES )
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap

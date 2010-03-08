@@ -55,6 +55,10 @@ void InWorldChatModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("bbtest", 
         "Adds a billboard to each entity in the scene.",
         Console::Bind(this, &InWorldChatModule::TestAddBillboard)));
+
+    RegisterConsoleCommand(Console::CreateCommand("chat", 
+        "Sends a chat message.  Usage: \"chat(message)\"",
+        Console::Bind(this, &InWorldChatModule::ConsoleChat)));
 }
 
 void InWorldChatModule::Update(f64 frametime)
@@ -122,6 +126,8 @@ bool InWorldChatModule::HandleEvent(
             if (!netdata)
                 return false;
 
+//            assert(currentWorldStream_);
+
             std::stringstream ss;
 
             ProtocolUtilities::NetInMessage &msg = *netdata->message;
@@ -130,12 +136,16 @@ bool InWorldChatModule::HandleEvent(
             std::string fromName = msg.ReadString();
             RexUUID sourceId = msg.ReadUUID();
 
+//            if (sourceId == currentWorldStream_->GetInfo().agentID)
+//                return false;
+
             msg.SkipToFirstVariableByName("Message");
             std::string message = msg.ReadString();
             if (message.size() < 1)
                 return false;
 
             ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message << std::endl;
+
 
             LogInfo(ss.str());
 
@@ -210,6 +220,15 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
         billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "bubble.png");
     }
 
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params)
+{
+    if (params.size() == 0)
+        return Console::ResultFailure("Can't send empty chat message!");
+
+    SendChatFromViewer(params[0].c_str());
     return Console::ResultSuccess();
 }
 
