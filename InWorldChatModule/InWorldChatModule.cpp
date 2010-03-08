@@ -19,6 +19,7 @@
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "CoreStringUtils.h"
+#include "GenericMessageUtils.h"
 #include "UiModule.h"
 
 #include "EntityComponent/EC_OpenSimPresence.h"
@@ -119,6 +120,27 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkInEventCategory_)
     {
+        if(event_id == RexNetMsgGenericMessage)
+        {
+            ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+            assert(netdata);
+            if (!netdata)
+                return false;
+            ProtocolUtilities::NetInMessage &msg = *netdata->message;
+            std::string method = ProtocolUtilities::ParseGenericMessageMethod(msg);
+            StringVector params = ProtocolUtilities::ParseGenericMessageParameters(msg);
+            if (method == "RexEmotionIcon")
+            {
+                // Param 0: avatar UUID
+                // Param 1: texture ID
+                // Param 2: timeout (remember to replace any , with . before parsing)
+                if (params.size() >= 3)
+                    LogInfo("Received RexEmotionIcon: " + params[0] + " " + params[1] + " " + params[2]);
+            }
+            
+            return false;
+        }
+        
         if(event_id == RexNetMsgChatFromSimulator)
         {
             ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
