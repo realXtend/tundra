@@ -15,13 +15,13 @@ add_definitions (-DMODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation SceneManager)
+use_modules (Core Foundation SceneManager Interfaces)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation SceneManager)
+link_modules (Core Foundation SceneManager Interfaces)
 
 final_target ()
