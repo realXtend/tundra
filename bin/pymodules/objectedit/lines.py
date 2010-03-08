@@ -98,7 +98,7 @@ class UUIDEditLine(DragDroppableEditline):
         self.deactivateButtons()
 
     def applyMaterial(self, ent, matinfo, index):
-        qprim = r.getQPrim(ent.id)
+        qprim =ent.prim
         mats = qprim.Materials
         mats[index]  = matinfo
         qprim.Materials = mats
@@ -107,7 +107,7 @@ class UUIDEditLine(DragDroppableEditline):
     def applyAction(self):
         ent = self.mainedit.active
         if self.combobox is not None and ent is not None:
-            qprim = r.getQPrim(ent.id)
+            qprim = ent.id.prim
             mats = qprim.Materials
             asset_type_text = self.combobox.currentText
             

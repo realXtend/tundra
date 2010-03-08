@@ -111,13 +111,13 @@ class Manipulator:
                     #print "ARROW and UV", u, v
                     self.grabbed = True
                     if submeshid == 3 or (u != 0.0 and u < 0.421875):
-                        print "arrow is blue"
+                        #~ print "arrow is blue"
                         self.grabbed_axis = AXIS_BLUE
                     elif submeshid == 2 or (u != 0.0 and u < 0.70703125):
-                        print "arrow is green"
+                        #~ print "arrow is green"
                         self.grabbed_axis = AXIS_GREEN
                     elif submeshid == 1 or (u != 0.0 and u <= 1.0):
-                        print "arrow is red"
+                        #~ print "arrow is red"
                         self.grabbed_axis = AXIS_RED
                     else:
                         print "arrow got screwed..."

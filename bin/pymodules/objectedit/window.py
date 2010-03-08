@@ -359,7 +359,7 @@ class ObjectEditWindow:
             
         self.showName(ent)
         
-        self.meshline.update_text(ent.meshid)
+        self.meshline.update_text(ent.prim.MeshID)
         
         self.updateMaterialTab(ent)
 
@@ -398,7 +398,7 @@ class ObjectEditWindow:
         swoot: actually, seems like the name just isn't gotten fast enough or 
         something.. next time you click on the same entity, it has a name."""
             
-        name = ent.name
+        name = ent.prim.ObjectName
         if name == "":
             name = "n/a"
         self.mainTab.label.text = "%d (name: %s)" % (ent.id, name)
