@@ -68,6 +68,10 @@ namespace Naali
 
         Console::CommandResult ConsoleChat(const StringVector &params);
 
+		void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
+
+		Scene::Entity *GetEntityWithID(const RexUUID &id);
+
     public slots:
         ///
         /// @param msg Chat message to be sent.
