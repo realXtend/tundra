@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_ChatBubble.h
- *  @brief  EC_ChatBubble 
+ *  @brief  EC_ChatBubble Chat bubble component wich shows billboard with chat bubble and text on entity.
 */
 
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
@@ -36,15 +36,17 @@ public:
     /// Destructor.
     ~EC_ChatBubble();
 
-    /// @param offset Offset position for the chat bubble. Entity's positon is used as the basis.
-    /// @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
-    void Show(const Vector3df &offset, float timeToShow, const char *imageName);
+    /// Sets postion for the chat bubble.
+    /// @param position Position.
+    /// @note The position is relative to the entity to which the chat bubble is attached.
+    void SetPosition(const Vector3df &position);
 
     /// Sets the font used for the chat bubble text.
-    /// @param
+    /// @param font Font.
     void SetFont(const QFont &font) { font_ = font; }
 
 public slots:
+    /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.
     void ShowMessage(const QString &msg);
 
@@ -55,18 +57,12 @@ private slots:
     /// Removes all the messages.
     void RemoveAllMessages();
 
-    ///
+    /// Redraws the chat bubble with current messages.
     void Refresh();
 
 private:
-    /// Test code for getting pixmap with chat bubble image and text
-    /// @param filename Filename for the image used as the basis for the chat bubble.
-    /// @param text Text to be shown in the chat bubble.
-    /// @return the rendered pixmap with image and embedded text or null if something goes wrong.
-    QPixmap GetPixmap(const QString &image_name, const QString &text);
-
-    ///
-    QPixmap GetPixmap(const QString &text);
+    /// Returns pixmap with chat bubble and current messages renderer to it.
+    QPixmap GetChatBubblePixmap();
 
     /// Ogre scene node for this chat bubble billboard.
     Ogre::SceneNode *sceneNode_;
