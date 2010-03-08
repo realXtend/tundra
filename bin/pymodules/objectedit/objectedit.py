@@ -316,11 +316,11 @@ class ObjectEdit(Component):
                 elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
-        #~ else:
-            #~ self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-            #~ #print "canmove:", self.canmove
-            #~ self.canmove = False
-            #~ self.deselect()
+        else:
+            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+            #print "canmove:", self.canmove
+            self.canmove = False
+            self.deselect()
             
     def dragStarted(self, mouseinfo):
         width, height = r.getScreenSize()
@@ -469,7 +469,7 @@ class ObjectEdit(Component):
                 else:
                     if self.duplicateDragStart:
                         for ent in self.sels:
-                            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 0, 0, 0) #nasty hardcoded offset
+                            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 0, 0, 0) #nasty hardcoded offset
                         self.duplicateDragStart = False
                             
                     ent = self.active
@@ -500,7 +500,7 @@ class ObjectEdit(Component):
         #print "undo clicked"
         ent = self.active
         if ent is not None:
-            self.worldstream.SendObjectUndoPacket(ent.uuid)
+            self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
             self.window.update_guivals(ent)
             self.modified = False
             self.deselect()
@@ -521,7 +521,7 @@ class ObjectEdit(Component):
         #ent = self.active
         #if ent is not None:
         for ent in self.sels:
-            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.updateflags, 1, 1, 1) #nasty hardcoded offset
+            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 1) #nasty hardcoded offset
         
     def duplicateStart(self):
         self.duplicateDragStart = True
