@@ -36,7 +36,7 @@ namespace OgreRenderer
         DECLARE_EC(EC_OgreMesh);
     public:
         virtual ~EC_OgreMesh();
-        
+    public slots:    
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
@@ -55,6 +55,7 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetMesh(const std::string& mesh_name, bool clone = false);
+        bool SetMesh(const QString& mesh_name); //same as above, just for PythonQt compatibility
 
         //! sets mesh with custom skeleton
         /*! if mesh already sets, removes the old one
@@ -71,7 +72,7 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetMaterial(uint index, const std::string& material_name);
-        
+        bool SetMaterial(uint index, const QString& material_name);
         //! sets adjustment (offset) position
         /*! \param position new position
          */
@@ -165,7 +166,7 @@ namespace OgreRenderer
             \return name if successful, empty if no entity / illegal index
          */
         const std::string& GetMaterialName(uint index) const;
-
+        const QString& GetMatName(uint index);
         //! gets material name from attachment mesh
         /*! \param index attachment index
             \param submesh_index submesh index

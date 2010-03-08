@@ -3,14 +3,18 @@ from vector3 import Vector3 #for view based editing calcs now that Vector3 not e
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 import math
 
-AXIS_X = 0
-AXIS_Y = 1
-AXIS_Z = 2
+AXIS_RED = 0
+AXIS_GREEN = 1
+AXIS_BLUE = 2
     
 class Manipulator:
     NAME = "Manipulator"
     MANIPULATOR_MESH_NAME = "axes.mesh"
     USES_MANIPULATOR = True
+    
+    MANIPULATORORIENTATION = 0, 0, 0, 1
+    
+    MATERIALNAMES = None
     
     def __init__(self, creator):
         self.controller = creator;
@@ -19,6 +23,7 @@ class Manipulator:
         self.grabbed = False
         self.usesManipulator = self.USES_MANIPULATOR    
         self.manipulator = None
+        self.highlightedSubMesh = None
 
     def compareIds(self, id):
         if self.usesManipulator:
@@ -58,7 +63,7 @@ class Manipulator:
         if self.usesManipulator:
             self.moveTo(ents)
             self.manipulator.scale = 0.2, 0.2, 0.2
-            self.manipulator.orientation = 0, 0, 0, 1
+            self.manipulator.orientation = self.MANIPULATORORIENTATION
     
     def getPivotPos(self, ents):
         positions = []
@@ -105,15 +110,15 @@ class Manipulator:
                     v = results[-1]
                     #print "ARROW and UV", u, v
                     self.grabbed = True
-                    if submeshid == 2 or (u != 0.0 and u < 0.421875):
-                        #print "arrow is blue / z"
-                        self.grabbed_axis = AXIS_Z
-                    elif submeshid == 1 or (u != 0.0 and u < 0.70703125):
-                        #print "arrow is green / y"
-                        self.grabbed_axis = AXIS_Y
-                    elif submeshid == 3 or (u != 0.0 and u <= 1.0):
-                        #print "arrow is red / x"
-                        self.grabbed_axis = AXIS_X
+                    if submeshid == 3 or (u != 0.0 and u < 0.421875):
+                        print "arrow is blue"
+                        self.grabbed_axis = AXIS_BLUE
+                    elif submeshid == 2 or (u != 0.0 and u < 0.70703125):
+                        print "arrow is green"
+                        self.grabbed_axis = AXIS_GREEN
+                    elif submeshid == 1 or (u != 0.0 and u <= 1.0):
+                        print "arrow is red"
+                        self.grabbed_axis = AXIS_RED
                     else:
                         print "arrow got screwed..."
                         self.grabbed_axis = None
@@ -156,14 +161,37 @@ class Manipulator:
                 self.moveTo(ents)
                 
     def hasParent(self, ent):
-        qprim = r.getQPrim(ent.id)
+        qprim = ent.prim
         if qprim is not None and qprim.ParentId == 0:
             return False
         return True
     
     def highlight(self, raycast_results):
-        pass
-        #print "swoot", raycast_results
+        if self.usesManipulator and self.MATERIALNAMES is not None:
+            
+            if self.highlightedSubMesh is not None:
+                self.resethighlight()
+            
+            #~ id = raycast_results[0]
+            #~ ent = r.getEntity(id)
+            #~ num = ent.mesh.GetNumMaterials()
+            submeshid = raycast_results[-3]
+            if submeshid > 0:
+                name =  self.MATERIALNAMES[submeshid] + str("_hi")
+                self.manipulator.mesh.SetMaterial(submeshid, name)
+                self.highlightedSubMesh = submeshid
+
+    def resethighlight(self):
+        if self.usesManipulator and self.highlightedSubMesh is not None:
+            whee = {
+                0: "asd", 
+                1: "resed", 
+                2: "resed2", 
+                3: "resed3"
+            }
+            name = self.MATERIALNAMES[self.highlightedSubMesh]
+            self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
+            self.highlightedSubMesh = None
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -175,7 +203,7 @@ class MoveManipulator(Manipulator):
             upvec = Vector3(r.getCameraUp())
             pos = list(ent.pos)
             #print rightvec[self.manipulatorGrabbed_axis], rightvec
-            if self.grabbed_axis == AXIS_Z:
+            if self.grabbed_axis == AXIS_BLUE:
                 mov = lengthy
                 #print mov, pos[self.manipulatorGrabbed_axis],
                 pos[self.grabbed_axis] -= mov
@@ -204,7 +232,7 @@ class ScaleManipulator(Manipulator):
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             
-            if self.grabbed_axis == AXIS_Z:
+            if self.grabbed_axis == AXIS_BLUE:
                 mov = lengthy
                 scale[self.grabbed_axis] -= mov
             else:
@@ -216,8 +244,8 @@ class ScaleManipulator(Manipulator):
                 scale[self.grabbed_axis] += mov
            
             ent.scale = scale[0], scale[1], scale[2]
-            self.controller.updateSelectionBox() 
-            qprim = r.getQPrim(ent.id)
+            self.controller.updateSelectionBox(ent) 
+            qprim = ent.prim
             if qprim is not None:
                 children = qprim.GetChildren()
                 for child_id in children:
@@ -227,6 +255,7 @@ class ScaleManipulator(Manipulator):
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
     USES_MANIPULATOR = False
+    
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         #freemove
         #r.logInfo("_manipulate")
@@ -241,27 +270,39 @@ class FreeMoveManipulator(Manipulator):
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
+    
+    MANIPULATORORIENTATION = 1, 0, 0, 1
+    
+    MATERIALNAMES = {
+        0: "asd",  #shodows?
+        1: "resed", 
+        2: "resed2", 
+        3: "resed3"
+    }
                         
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        if self.grabbed:
-            #print "rotating...", self.grabbed_axis, amountx, amounty, lengthx, lengthy
+        if self.grabbed and self.grabbed_axis is not None:
+            #~ print "rotating...", self.grabbed_axis
+            #~ print "amounts: ", amountx, amounty
+            #~ print "lengths: ", lengthx, lengthy
+            
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             euler = list(quat_to_euler(ent.orientation))
 
-            if self.grabbed_axis == AXIS_Y:
-                #print "y axis", self.grabbed_axis, euler
-                mov = lengthx * 10
-                euler[self.grabbed_axis] += mov
-            elif self.grabbed_axis == AXIS_Z:
-                #print "z axis", self.grabbed_axis
-                mov = lengthy * 10
-                euler[self.grabbed_axis] -= mov
-            else:
-                #print "x axis", self.grabbed_axis
-                mov = lengthx * 10
-                euler[self.grabbed_axis] += mov 
-                
+            if self.grabbed_axis == AXIS_GREEN: #rotate z-axis
+                #~ print "green axis", self.grabbed_axis, euler
+                mov = amountx * 100
+                euler[2] += mov
+            elif self.grabbed_axis == AXIS_BLUE: #rotate x-axis
+                #~ print "blue axis", self.grabbed_axis, euler
+                mov = amountx * 100
+                euler[1] -= mov
+            elif self.grabbed_axis == AXIS_RED: #rotate y-axis
+                #~ print "red axis", self.grabbed_axis, euler
+                mov = amounty * 100
+                euler[0] += mov 
+            #~ print mov
             #~ print euler, mov
             ort = euler_to_quat(euler)
             #~ print ort

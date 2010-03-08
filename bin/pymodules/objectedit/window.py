@@ -187,7 +187,7 @@ class ObjectEditWindow:
         #ent = self.controller.active
         if ent is not None:
             self.clearDialogForm()
-            qprim = r.getQPrim(ent.id)
+            qprim = ent.prim
             mats = qprim.Materials
             #print mats#, r.formwidget.formLayout.children() 
 
@@ -359,7 +359,7 @@ class ObjectEditWindow:
             
         self.showName(ent)
         
-        self.meshline.update_text(ent.mesh)
+        self.meshline.update_text(ent.meshid)
         
         self.updateMaterialTab(ent)
 
@@ -368,7 +368,7 @@ class ObjectEditWindow:
         self.update_guivals(ent)
     
     def updatePropertyEditor(self, ent):
-        qprim = r.getQPrim(ent.id)
+        qprim = ent.prim
         if qprim is not None:
             self.propedit.setObject(qprim)
             self.tabwidget.setTabEnabled(2, True)

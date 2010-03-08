@@ -195,7 +195,12 @@ namespace OgreRenderer
         AttachEntity();
         return true;
     }
-    
+
+    bool EC_OgreMesh::SetMesh(const QString& mesh_name) 
+    {
+        return SetMesh(mesh_name.toStdString(), false);
+    }
+
     bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
     {
         if (renderer_.expired())
@@ -467,6 +472,11 @@ namespace OgreRenderer
         
         return true;
     }
+
+    bool EC_OgreMesh::SetMaterial(uint index, const QString& material_name) 
+    {
+        return SetMaterial(index, material_name.toStdString());
+    }
     
     bool EC_OgreMesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
     {
@@ -538,6 +548,12 @@ namespace OgreRenderer
         return entity_->getSubEntity(index)->getMaterialName();
     }
     
+    const QString& EC_OgreMesh::GetMatName(uint index)
+    {
+        std::string name = GetMaterialName(index);
+        return QString(name.c_str());
+    }
+
     const std::string& EC_OgreMesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
     {
         const static std::string empty;
