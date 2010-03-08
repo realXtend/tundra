@@ -548,10 +548,10 @@ namespace OgreRenderer
         return entity_->getSubEntity(index)->getMaterialName();
     }
     
-    const QString& EC_OgreMesh::GetMatName(uint index)
+    const QString& EC_OgreMesh::GetMatName(uint index) const
     {
-        std::string name = GetMaterialName(index);
-        return QString(name.c_str());
+        const QString &name(GetMaterialName(index).c_str());
+        return name;
     }
 
     const std::string& EC_OgreMesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
