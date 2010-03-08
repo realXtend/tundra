@@ -23,6 +23,7 @@
 #include "UiModule.h"
 
 #include "EntityComponent/EC_OpenSimPresence.h"
+#include "EntityComponent/EC_OpenSimPrim.h"
 
 namespace Naali
 {
@@ -64,6 +65,46 @@ void InWorldChatModule::PostInitialize()
 
 void InWorldChatModule::Update(f64 frametime)
 {
+}
+
+Scene::Entity *InWorldChatModule::GetEntityWithID(const RexUUID &id)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+
+        boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
+        boost::shared_ptr<RexLogic::EC_OpenSimPrim> ec_prim = entity.GetComponent<RexLogic::EC_OpenSimPrim>();
+
+		if (ec_presence)
+		{
+			if (ec_presence->FullId == id)
+				return &entity;
+		}
+		else if (ec_prim)
+		{
+			if (ec_prim->FullId == id)
+				return &entity;
+		}
+    }
+
+	return 0;
+}
+
+void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow)
+{
+	boost::shared_ptr<EC_Billboard> ec_bb = entity.GetComponent<EC_Billboard>();
+
+	// If we didn't have the billboard component yet, create one now.
+	if (!ec_bb)
+	{
+        entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
+        ec_bb = entity.GetComponent<EC_Billboard>();
+		assert(ec_bb.get());
+	}
+
+	ec_bb->Show(Vector3df(0.f, 0.f, 1.5f), timeToShow, texture.c_str());
 }
 
 bool InWorldChatModule::HandleEvent(
@@ -134,8 +175,43 @@ bool InWorldChatModule::HandleEvent(
                 // Param 0: avatar UUID
                 // Param 1: texture ID
                 // Param 2: timeout (remember to replace any , with . before parsing)
-                if (params.size() >= 3)
-                    LogInfo("Received RexEmotionIcon: " + params[0] + " " + params[1] + " " + params[2]);
+                if (params.size() < 3)
+					throw Exception("Failed to parse RexEmotionIcon message!");
+
+				LogInfo("Received RexEmotionIcon: " + params[0] + " " + params[1] + " " + params[2]);
+
+				ReplaceCharInplace(params[2], ',', '.');
+
+				if (!RexUUID::IsValid(params[0]))
+					throw Exception("Invalid Entity UUID passed in RexEmotionIcon message!");
+
+				RexUUID entityUUID(params[0]);
+				if (entityUUID.IsNull())
+					throw Exception("Null Entity UUID passed in RexEmotionIcon message!");
+
+				Scene::Entity *entity = GetEntityWithID(entityUUID);
+				if (!entity)
+					throw Exception("Received RexEmotionIcon message for a nonexisting entity!");
+
+				// timeToShow: value of [-1, 0[ denotes "infinite".
+				//             a positive value between [0, 86400] denotes the number of seconds to show. (max roughly one day)
+				float timeToShow = atof(params[2].c_str());
+				if (!(timeToShow >= -2.f && timeToShow <= 86401.f)) // Checking through negation due to possible NaNs and infs. (being lax and also allowing off-by-one)
+					throw Exception("Invalid time-to-show passed in RexEmotionIcon message!");
+
+				if (RexUUID::IsValid(params[1]))
+				{
+					RexUUID textureID(params[1]);
+					// We've been passed a texture UUID to show on the billboard.
+					///\todo request the asset and show that on the billboard.
+				}
+				else // We've been passed a string URL or a filename on the local computer.
+				{
+					///\todo Request a download from that URL and show the resulting image on the billboard.
+
+					// Now assuming that the textureID points to a local file, just to get a proof-of-concept something showing in the UI.
+					ApplyBillboard(*entity, params[1], timeToShow);
+				}
             }
             
             return false;
