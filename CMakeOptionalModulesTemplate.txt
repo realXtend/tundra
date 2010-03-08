@@ -14,10 +14,12 @@
 
 #add_subdirectory (TestModule)
 #add_subdirectory (UnitTests) #TODO: didn't compile on fedora
-#add_subdirectory (DebugStats)
+#add_subdirectory (DebugStatsModule)
 #add_subdirectory (NetTestLogicModule)
-add_subdirectory (PythonModule)
+add_subdirectory (PythonScriptModule)
 add_subdirectory (CommunicationModule)
 add_subdirectory (OpenALAudioModule)
 #add_subdirectory (RexQtScriptModule)
 #add_subdirectory (InWorldChatModule)
+#add_subdirectory (EC_ChatBubble)   # declared by InWorldChatModule
+#add_subdirectory (EC_Billboard)    # declared by InWorldChatModule

@@ -15,7 +15,7 @@ add_definitions (-DMODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager ProtocolUtilities)
+use_modules (Core Foundation SceneManager)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
