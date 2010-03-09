@@ -1,5 +1,3 @@
 <config>
 	<entry>LegacyAvatarModule</entry>
-	<dependency>OpenSimProtocolModule</dependency>
-	<dependency>SupportModules</dependency>
 </config>
