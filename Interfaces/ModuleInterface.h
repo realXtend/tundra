@@ -69,6 +69,7 @@ namespace Foundation
             MT_OgreAssetEditor,
             MT_UiServices,
             MT_Environment,
+            MT_LegacyAvatar,
             MT_Unknown
         };
 
@@ -84,7 +85,7 @@ namespace Foundation
                  "OgreRenderingModule", "OgreGtkWindowModule", "OpenALAudioModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
                  "CommunicationModule", "CommunicationUIModule", "WorldInput", "TextureDecoderModule", "InventoryModule",
-                 "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule" };
+                 "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule", "LegacyAvatarModule" };
 
             return type_strings[type];
         }
