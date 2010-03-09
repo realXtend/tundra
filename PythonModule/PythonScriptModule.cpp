@@ -108,22 +108,6 @@ namespace PythonScript
         using namespace PythonScript;
 
         //DECLARE_MODULE_EC(EC_OgreEntity);
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-            "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
-        /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
-         * Also in the IPython shell 'run' refers to running an external file and not the given string
-         */
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
-
-        AutoRegisterConsoleCommand(Console::CreateCommand(
-            "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-            Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
-
     }
 
     // virtual
@@ -204,6 +188,22 @@ namespace PythonScript
         } else {
             LogError("Unable to create instance from class ModuleManager");
         }
+
+        RegisterConsoleCommand(Console::CreateCommand(
+            "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
+            Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
+        /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
+         * Also in the IPython shell 'run' refers to running an external file and not the given string
+         */
+
+        RegisterConsoleCommand(Console::CreateCommand(
+            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
+            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+
+        RegisterConsoleCommand(Console::CreateCommand(
+            "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
+            Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
+
     }
 
     void PythonScriptModule::SubscribeToNetworkEvents()

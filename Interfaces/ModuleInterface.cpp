@@ -84,10 +84,10 @@ std::string ModuleInterfaceImpl::VersionMinor() const
 void ModuleInterfaceImpl::RegisterConsoleCommand(const Console::Command &command)
 {
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
-    assert(console.get());
+    //assert(console.get());
     if (!console.get())
     {
-        Poco::Logger::get(Name()).warning("Warning: Unable to register console command " + command.name_);
+		Poco::Logger::get(Name()).error(std::string("Error: Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
         return;
     }
 
