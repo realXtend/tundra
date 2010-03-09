@@ -290,17 +290,14 @@ if 0: #pythonqt introspec
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
 if 0: #QVector3D
-    #~ #V3 works :)
     import PythonQt.QtGui
-    print dir(PythonQt.QtGui)
+    #print dir(PythonQt.QtGui)
     v3 = PythonQt.QtGui.QVector3D()
     print v3
     print dir(v3)
     v3.setX(1)
     print v3.x()
 
-if 0:
-    import PythonQt.QtGui
     pointa = PythonQt.QtGui.QVector3D(0,0,0)
     pointb = PythonQt.QtGui.QVector3D(2, 2, 0)
     direction = PythonQt.QtGui.QVector3D(1, 1, 0)
@@ -309,13 +306,16 @@ if 0:
 if 0: #QQuaterinion
     #Works...
     import PythonQt.QtGui
-    q1 = PythonQt.QtGui.QQuaternion(1, 0, 0, 0)
+    q1 = PythonQt.QtGui.QQuaternion(1, 0, 0, 1)
     q2 = PythonQt.QtGui.QQuaternion(0.707, 0, 0.707, 0)
     print q1.toString(), q2.toString()
     
     #doesn't work
     #q3 = q1*q2
-    #print q3.toString()
+    #q1 *= q2
+    #but this does! (is the same thing, different syntax)
+    q1.__imul__(q2)
+    print q1.toString()
     #~ print dir(q)
 
 if 0:
