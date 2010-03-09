@@ -14,6 +14,7 @@
 
 #include <QStringList>
 #include <QFont>
+#include <QColor>
 
 namespace Ogre
 {
@@ -45,6 +46,14 @@ public:
     /// @param font Font.
     void SetFont(const QFont &font) { font_ = font; }
 
+    /// Sets the color of the chat bubble text.
+    /// @param color Color.
+    void SetTextColor(const QColor &color) { textColor_ = color; }
+
+    /// Sets the color of the chat bubble.
+    /// @param color Color.
+    void SetBubbleColor(const QColor &color) { bubbleColor_ = color; }
+
 public slots:
     /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.
@@ -75,6 +84,12 @@ private:
 
     /// For used for the chat bubble text.
     QFont font_;
+
+    /// Color of the chat bubble text.
+    QColor textColor_;
+
+    /// Color of the chat bubble.
+    QColor bubbleColor_;
 
     /// List of visible chat messages.
     QStringList messages_;

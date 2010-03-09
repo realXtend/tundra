@@ -161,7 +161,7 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkInEventCategory_)
     {
-        if(event_id == RexNetMsgGenericMessage)
+        if (event_id == RexNetMsgGenericMessage)
         {
             ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
             assert(netdata);
@@ -217,14 +217,12 @@ bool InWorldChatModule::HandleEvent(
             return false;
         }
         
-        if(event_id == RexNetMsgChatFromSimulator)
+        if (event_id == RexNetMsgChatFromSimulator)
         {
             ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
             assert(netdata);
             if (!netdata)
                 return false;
-
-//            assert(currentWorldStream_);
 
             std::stringstream ss;
 
@@ -234,16 +232,12 @@ bool InWorldChatModule::HandleEvent(
             std::string fromName = msg.ReadString();
             RexUUID sourceId = msg.ReadUUID();
 
-//            if (sourceId == currentWorldStream_->GetInfo().agentID)
-//                return false;
-
             msg.SkipToFirstVariableByName("Message");
             std::string message = msg.ReadString();
             if (message.size() < 1)
                 return false;
 
-            ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message << std::endl;
-
+            ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message;
 
             LogInfo(ss.str());
 
@@ -264,16 +258,6 @@ bool InWorldChatModule::HandleEvent(
                 chatBubble.ShowMessage(message.c_str());
             }
 
-/*
-            QPixmap pixmap = GetPixmap("./media/textures/ChatBubble.png", message.c_str());
-            if (!pixmap)
-                return false;
-
-            QLabel *w = new QLabel;
-            w->setPixmap(pixmap);
-            w->setAttribute(Qt::WA_DeleteOnClose);
-            w->show();
-*/
             // Connect chat ui to this modules ChatReceived
             // emit ChatReceived()
             //if (chatWindow_)
