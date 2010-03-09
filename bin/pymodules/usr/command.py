@@ -1068,3 +1068,13 @@ if 0:
     ids = [id1, id2]
     worldstream.SendObjectLinkPacket(ids)
     #~ worldstream.SendObjectDelinkPacket(ids)
+    
+if 0:
+    
+    import PythonQt.QtGui
+    print dir(PythonQt.QtGui)
+    v3 = PythonQt.QtGui.QVector3D()
+    print v3
+    print dir(v3)
+    v3.setX(1)
+    print v3.x()
