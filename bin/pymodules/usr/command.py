@@ -290,7 +290,7 @@ if 0: #pythonqt introspec
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
 if 0: #QVector3D
-    #V3 works :)
+    #~ #V3 works :)
     import PythonQt.QtGui
     print dir(PythonQt.QtGui)
     v3 = PythonQt.QtGui.QVector3D()
@@ -298,6 +298,43 @@ if 0: #QVector3D
     print dir(v3)
     v3.setX(1)
     print v3.x()
+
+if 0:
+    import PythonQt.QtGui
+    pointa = PythonQt.QtGui.QVector3D(0,0,0)
+    pointb = PythonQt.QtGui.QVector3D(2, 2, 0)
+    direction = PythonQt.QtGui.QVector3D(1, 1, 0)
+    print pointa.distanceToLine(pointb, direction)
+    
+if 0: #QQuaterinion
+    #Works...
+    import PythonQt.QtGui
+    q1 = PythonQt.QtGui.QQuaternion(1, 0, 0, 0)
+    q2 = PythonQt.QtGui.QQuaternion(0.707, 0, 0.707, 0)
+    print q1.toString(), q2.toString()
+    
+    #doesn't work
+    #q3 = q1*q2
+    #print q3.toString()
+    #~ print dir(q)
+
+if 0:
+    import PythonQt.QtCore
+    
+    point_a_tl = PythonQt.QtCore.QPoint(2,2)
+    point_a_br = PythonQt.QtCore.QPoint(5,5)
+    
+    point_b_tl = PythonQt.QtCore.QPoint(3,3)
+    point_b_br = PythonQt.QtCore.QPoint(7,7)
+    
+    rect_a = PythonQt.QtCore.QRect(point_a_tl, point_a_br)
+    print "Rect A: ", rect_a.toString()
+    rect_b = PythonQt.QtCore.QRect(point_b_tl, point_b_br)
+    print "Rect B: ", rect_b.toString()
+    print "intersects: ", rect_a.intersects(rect_b)
+    
+    rect_c = rect_a.intersected(rect_b)
+    print "intersected:", rect_c.toString()
 
 if 0:
     from PythonQt.QtGui import *
@@ -1068,13 +1105,3 @@ if 0:
     ids = [id1, id2]
     worldstream.SendObjectLinkPacket(ids)
     #~ worldstream.SendObjectDelinkPacket(ids)
-    
-if 0:
-    
-    import PythonQt.QtGui
-    print dir(PythonQt.QtGui)
-    v3 = PythonQt.QtGui.QVector3D()
-    print v3
-    print dir(v3)
-    v3.setX(1)
-    print v3.x()
