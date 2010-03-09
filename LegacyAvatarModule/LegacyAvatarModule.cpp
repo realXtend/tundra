@@ -12,9 +12,18 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QFile>
+#include <string.h>
 
 namespace LegacyAvatar
 {
+	Mesh *LegacyAvatarModule::mesh_eye = 0;
+	Mesh *LegacyAvatarModule::mesh_eyelashes = 0;
+	Mesh *LegacyAvatarModule::mesh_hair = 0;
+	Mesh *LegacyAvatarModule::mesh_head = 0;
+	Mesh *LegacyAvatarModule::mesh_lower_body = 0;
+	Mesh *LegacyAvatarModule::mesh_skirt = 0;
+	Mesh *LegacyAvatarModule::mesh_upper_body = 0;
+
 	typedef struct tagVector2
 	{
 		float U;
@@ -30,9 +39,9 @@ namespace LegacyAvatar
 
 	typedef struct tagFace
 	{
-		int A;
-		int B;
-		int C;
+		short A;
+		short B;
+		short C;
 	} Face;
 
 	typedef struct tagVertex
@@ -54,7 +63,7 @@ namespace LegacyAvatar
 	
 	typedef struct tagMorph
 	{
-		QString morphName;
+		char morphName[64];
 		long numVertices;
 		MorphVertex *Vertices;
 	} Morph;
@@ -89,12 +98,12 @@ namespace LegacyAvatar
 		long numRemaps;
 		Remap* Remaps;
 
-		bool Load(char *file);
+		bool Load(const char *file);
 	};
 
 #define getvar(x) if (source.read((char *)&(x), sizeof(x)) != sizeof(x)) return false
 
-	bool Mesh::Load(char *file)
+	bool Mesh::Load(const char *file)
 	{
 		QString fileName(file);
 
@@ -179,22 +188,18 @@ namespace LegacyAvatar
 			char morphName[64];
 
 			getvar(morphName);
-			QString mname(morphName);
-			if (mname == "End Morphs")
+			if (!strcmp(morphName, "End Morphs"))
 				break;
 
 			if (numMorphs == 0)
-				Morphs = (Morph *)calloc(sizeof(Morph), 1);
+				Morphs = (Morph *)malloc(sizeof(Morph));
 			else
-			{
-				Morphs = (Morph *)realloc(Morphs, sizeof(Morph) * numMorphs + 1);
-				memset((char *)&Morphs[numMorphs], 0, sizeof(Morph));
-			}
+				Morphs = (Morph *)realloc(Morphs, sizeof(Morph) * (numMorphs + 1));
 
 			Morph *current = &Morphs[numMorphs];
 			numMorphs++;
 
-			current->morphName = mname;
+			memcpy(current->morphName, morphName, 64);
 			getvar(current->numVertices);
 
 			current->Vertices = (MorphVertex *)malloc(sizeof(MorphVertex) * current->numVertices);
@@ -229,6 +234,55 @@ namespace LegacyAvatar
 
     void LegacyAvatarModule::Load()
     {
+		if (mesh_eye == 0)
+		{
+			mesh_eye = new Mesh;
+			if(mesh_eye->Load("data/avatar_eye.llm"))
+				LogInfo("Eye mesh loaded");
+		}
+
+		if (mesh_eyelashes == 0)
+		{
+			mesh_eyelashes = new Mesh;
+			if(mesh_eyelashes->Load("data/avatar_eyelashes.llm"))
+				LogInfo("Eyelash mesh loaded");
+		}
+
+		if (mesh_hair == 0)
+		{
+			mesh_hair = new Mesh;
+			if(mesh_hair->Load("data/avatar_hair.llm"))
+				LogInfo("Hair mesh loaded");
+		}
+
+		if (mesh_head == 0)
+		{
+			mesh_head = new Mesh;
+			if(mesh_head->Load("data/avatar_head.llm"))
+				LogInfo("Head mesh loaded");
+		}
+
+		if (mesh_lower_body == 0)
+		{
+			mesh_lower_body = new Mesh;
+			if(mesh_lower_body->Load("data/avatar_lower_body.llm"))
+				LogInfo("Lower body mesh loaded");
+		}
+
+		if (mesh_skirt == 0)
+		{
+			mesh_skirt = new Mesh;
+			if(mesh_skirt->Load("data/avatar_skirt.llm"))
+				LogInfo("Skirt mesh loaded");
+		}
+
+		if (mesh_upper_body == 0)
+		{
+			mesh_upper_body = new Mesh;
+			if(mesh_upper_body->Load("data/avatar_upper_body.llm"))
+				LogInfo("Upper body mesh loaded");
+		}
+
         LogInfo("Module " + Name() + " loaded.");
     }
 

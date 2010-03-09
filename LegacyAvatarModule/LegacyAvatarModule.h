@@ -12,6 +12,8 @@ namespace Foundation
 
 namespace LegacyAvatar
 {
+	class Mesh;
+	
     //! Interface for modules
     class LegacyAvatarModule: public Foundation::ModuleInterfaceImpl
     {
@@ -45,7 +47,13 @@ namespace LegacyAvatar
         void operator=(const LegacyAvatarModule &);
         LegacyAvatarModule(const LegacyAvatarModule &);
                
-        // Pointer to rexlogic interface
+		static Mesh *mesh_eye;
+		static Mesh *mesh_eyelashes;
+		static Mesh *mesh_hair;
+		static Mesh *mesh_head;
+		static Mesh *mesh_lower_body;
+		static Mesh *mesh_skirt;
+		static Mesh *mesh_upper_body;
     };
 }
 #endif
