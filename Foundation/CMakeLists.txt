@@ -18,7 +18,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
-use_modules (Core Interfaces SceneManager)
+use_modules (Foundation Core Interfaces SceneManager)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
