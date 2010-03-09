@@ -105,7 +105,6 @@ add_subdirectory (ProtocolModuleTaiga)
 # commonly used functionality.
 add_subdirectory (InventoryModule)
 add_subdirectory (OgreAssetEditorModule)
-add_subdirectory (LegacyAvatarModule)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.
