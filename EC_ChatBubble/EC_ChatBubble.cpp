@@ -24,7 +24,9 @@
 
 EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
-    font_(QFont("Arial", 42)),
+    font_(QFont("Arial", 72)),
+    bubbleColor_(QColor(82, 134, 255, 210)),
+    textColor_(Qt::white),
     billboardSet_(0),
     billboard_(0)
 {
@@ -154,7 +156,10 @@ void EC_ChatBubble::Refresh()
         return;
 
     if (messages_.size() == 0)
+    {
         billboardSet_->setVisible(false);
+        return;
+    }
     else
         billboardSet_->setVisible(true);
 
@@ -168,36 +173,30 @@ void EC_ChatBubble::Refresh()
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
     std::string tex_name("ChatBubbleTexture" + renderer->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex2 = dynamic_cast<Ogre::Texture *>(manager.create(tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
-    assert(tex2);
+    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
+    assert(tex);
 
-    tex2->loadRawData(stream, img.width(), img.height(), Ogre::PF_R8G8B8A8);
+    tex->loadRawData(stream, img.width(), img.height(), Ogre::PF_A8R8G8B8);
 
     // Set new material with the new texture name in it.
     std::string newMatName = std::string("material") + renderer->GetUniqueObjectName(); 
     Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newMatName);
     OgreRenderer::SetTextureUnitOnMaterial(material, tex_name);
     billboardSet_->setMaterialName(newMatName);
-/*
-    Ogre::Vector3 offset(0,0,1.25f);
-    Ogre::Billboard *billboard = billboardSet->createBillboard(offset);
-    assert(billboard);
-    billboard->setDimensions(1, 1);
-
-    sceneNode_->attachObject(billboardSet);
-*/
 }
 
 QPixmap EC_ChatBubble::GetChatBubblePixmap()
 {
-    int max_width = 1000;
-    int max_height = 600;
-    QRect max_rect(15, 25, max_width, max_height);
+    int max_width = 1500;
+    int max_height = 800;
+    QRect max_rect(0, 0, max_width, max_height);
 
-    if (!QFile::exists("./media/textures/ChatBubble.png"))
+    const QString &filename("./media/textures/Transparent.png");
+    assert(QFile::exists(filename));
+    if (!QFile::exists(filename))
         return 0;
 
-    // Calculate the bounding rect size.
+    // Gather chat log.
     QStringListIterator it(messages_);
     QString fullChatLog;
     while(it.hasNext())
@@ -206,26 +205,29 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
         fullChatLog.append('\n');
     }
 
+    // Create pixmap and painter.
     QPixmap pixmap;
-    pixmap.load("./media/textures/ChatBubble.png");
+    pixmap.load(filename);
     pixmap = pixmap.scaled(max_rect.size());
 
     QPainter painter(&pixmap);
-    painter.setPen(Qt::white);
     painter.setFont(font_);
 
-    QRectF rect = painter.boundingRect(max_rect, Qt::AlignLeft | Qt::TextWordWrap, fullChatLog);
-//    rect.width()
+    // Calculate the bounding rect size.
+    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
+    // Set padding for text.
+//    rect.setX(rect.x() - 20);
+//    rect.setY(rect.y() - 20);
+    pixmap = pixmap.scaled(rect.size());
 
-    // Draw rounded rect
-//    QRectF rectangle(/*10*/0, 0/*20.0*/, 80.0, 60.0);
-
-    QBrush brush(Qt::blue, Qt::SolidPattern);
+    // Draw rounded rect.
+    QBrush brush(bubbleColor_, Qt::SolidPattern);
     painter.setBrush(brush);
-    painter.drawRoundedRect(max_rect/*rectangle*/, 40.0, 40.0);
+    painter.drawRoundedRect(rect, 20.0, 20.0);
 
-    // draw text
-    painter.drawText(max_rect/*rect*/, Qt::AlignLeft | Qt::TextWordWrap, fullChatLog);
+    // Draw text
+    painter.setPen(textColor_);
+    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
 
     return pixmap;
 }
