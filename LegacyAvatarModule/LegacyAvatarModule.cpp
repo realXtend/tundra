@@ -8,9 +8,215 @@
 #include <limits>
 #include <boost/math/special_functions/fpclassify.hpp>
 
+#include <QString>
+#include <QStringList>
+#include <QFileInfo>
+#include <QFile>
+
 namespace LegacyAvatar
 {
-    LegacyAvatarModule::LegacyAvatarModule() 
+	typedef struct tagVector2
+	{
+		float U;
+		float V;
+	} Vector2;
+
+	typedef struct tagVector3
+	{
+		float X;
+		float Y;
+		float Z;
+	} Vector3;
+
+	typedef struct tagFace
+	{
+		int A;
+		int B;
+		int C;
+	} Face;
+
+	typedef struct tagVertex
+	{
+		Vector3 baseCoords;
+		Vector3 baseNormals;
+		Vector3 baseBinormals;
+		Vector2 texCoords;
+	} Vertex;
+
+	typedef struct tagMorphVertex
+	{
+		unsigned long VertexIndex;
+		Vector3 Coords;
+		Vector3 Normal;
+		Vector3 Binormal;
+		Vector2 texCoord;
+	} MorphVertex;
+	
+	typedef struct tagMorph
+	{
+		QString morphName;
+		long numVertices;
+		MorphVertex *Vertices;
+	} Morph;
+
+	typedef struct tagRemap
+	{
+		long Source;
+		long Destination;
+	} Remap;
+
+	class Mesh
+	{
+	public:
+		QString Name;
+		QString Version;
+		char hasWeights;
+		char hasDetailTexCoords;
+		Vector3 position;
+		Vector3 rotationAngles;
+		char rotationOrder;
+		Vector3 Scale;
+		unsigned short numVertices;
+		Vertex *Vertices;
+		Vector2 *detailTexCoords;
+		float *Weights;
+		unsigned short numFaces;
+		Face *Faces;
+		unsigned short numSkinJoints;
+		QStringList jointNames;
+		long numMorphs;
+		Morph *Morphs;
+		long numRemaps;
+		Remap* Remaps;
+
+		bool Load(char *file);
+	};
+
+#define getvar(x) if (source.read((char *)&(x), sizeof(x)) != sizeof(x)) return false
+
+	bool Mesh::Load(char *file)
+	{
+		QString fileName(file);
+
+		QFileInfo sourceInfo(fileName);
+		QFile source(fileName);
+
+		if (!source.open(QIODevice::ReadOnly))
+			return false;
+
+		Name = QString("avatar/") + sourceInfo.baseName();
+
+		char version[25];
+		version[24] = '\0';
+
+		if (source.read(version, 24) != 24)
+			return false;
+
+		Version = QString(version);
+
+		getvar(hasWeights);
+		getvar(hasDetailTexCoords);
+
+		getvar(position);
+		getvar(rotationAngles);
+		getvar(rotationOrder);
+		getvar(Scale);
+		getvar(numVertices);
+
+		Vertices = (Vertex *)malloc(sizeof(Vertex) * numVertices);
+		Weights = (float *)calloc(sizeof(float), numVertices);
+		detailTexCoords = (Vector2 *)calloc(sizeof(Vector2), numVertices);
+
+		int i;
+
+		for (i = 0 ; i < numVertices ; i++)
+			getvar(Vertices[i].baseCoords);
+
+		for (i = 0 ; i < numVertices ; i++)
+			getvar(Vertices[i].baseNormals);
+
+		for (i = 0 ; i < numVertices ; i++)
+			getvar(Vertices[i].baseBinormals);
+
+		for (i = 0 ; i < numVertices ; i++)
+			getvar(Vertices[i].texCoords);
+
+		if (hasDetailTexCoords)
+		{
+			for (i = 0 ; i < numVertices ; i++)
+				getvar(detailTexCoords[i]);
+		}
+
+		if (hasWeights)
+		{
+			for (i = 0 ; i < numVertices ; i++)
+				getvar(Weights[i]);
+		}
+
+		getvar(numFaces);
+
+		Faces = (Face *)malloc(sizeof(Face) * numFaces);
+
+		for (i = 0 ; i < numFaces ; i++)
+			getvar(Faces[i]);
+
+		if (hasWeights)
+		{
+			char joint[64];
+
+			getvar(numSkinJoints);
+			for (i = 0 ; i < numSkinJoints ; i++)
+			{
+				getvar(joint);
+				jointNames.append(QString(joint));
+			}
+		}
+
+		numMorphs = 0;
+
+		while (true)
+		{
+			char morphName[64];
+
+			getvar(morphName);
+			QString mname(morphName);
+			if (mname == "End Morphs")
+				break;
+
+			if (numMorphs == 0)
+				Morphs = (Morph *)calloc(sizeof(Morph), 1);
+			else
+			{
+				Morphs = (Morph *)realloc(Morphs, sizeof(Morph) * numMorphs + 1);
+				memset((char *)&Morphs[numMorphs], 0, sizeof(Morph));
+			}
+
+			Morph *current = &Morphs[numMorphs];
+			numMorphs++;
+
+			current->morphName = mname;
+			getvar(current->numVertices);
+
+			current->Vertices = (MorphVertex *)malloc(sizeof(MorphVertex) * current->numVertices);
+			for (i = 0 ; i < current->numVertices ; i++)
+				getvar(current->Vertices[i]);
+		}
+
+		getvar(numRemaps);
+
+		if (numRemaps > 0)
+		{
+			Remaps = (Remap *)malloc(sizeof(Remap) * numRemaps);
+			for (i = 0 ; i < numRemaps ; i++)
+				getvar(Remaps[i]);
+		}
+
+		source.close();
+
+		return true;
+	}
+
+	LegacyAvatarModule::LegacyAvatarModule() 
     : ModuleInterfaceImpl("LegacyAvatarModule")
     {
     }
