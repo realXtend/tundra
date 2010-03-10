@@ -237,7 +237,7 @@ endmacro (configure_openjpeg)
 
 macro (configure_telepathy_qt4)
     sagase_configure_package (TELEPATHY_QT4 
-        NAMES QtTelepathy Telepathy-QT4 telepathy-qt4 TelepathyQt4
+        NAMES QtTelepathy Telepathy-QT4 telepathy-qt4 TelepathyQt4 telepathy-1.0
         COMPONENTS QtTelepathyCore QtTelepathyCommon QtTelepathyClient telepathy-qt4 telepathy-qt4-farsight connection # connection added here to help sagase to find include folder with connection.h file
         PREFIXES ${ENV_NAALI_DEP_PATH} )
     sagase_configure_report (TELEPATHY_QT4)
