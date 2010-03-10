@@ -59,6 +59,9 @@ namespace CoreUi
         // History view mode
         history_view_text_edit_ = new QPlainTextEdit(chatContentWidget);
         history_view_text_edit_->setReadOnly(true);
+        history_view_text_edit_->setObjectName("historyViewTextEdit");
+        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(0,0,0,175); }");
+        history_view_text_edit_->setFont(QFont("Arial", 10));
         stacked_layout_->addWidget(history_view_text_edit_);
 
         // Slim view mode
@@ -108,14 +111,14 @@ namespace CoreUi
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
     {
         // History view
-        QString htmlcontent("<span style='color:#99b2ff;'>[");
+        QString htmlcontent("<span style='color:grey;'>[");
         htmlcontent.append(timestamp);
         if (!self_sent_message)
             htmlcontent.append("]</span> <span style='color:#0099FF;'>");
         else
             htmlcontent.append("]</span> <span style='color:#FF3330;'>");
         htmlcontent.append(sender);
-        htmlcontent.append(": </span><span style='color:black;'>");
+        htmlcontent.append(": </span><span style='color:white;'>");
         htmlcontent.append(message);
         htmlcontent.append("</span>");
         history_view_text_edit_->appendHtml(htmlcontent);
@@ -147,7 +150,7 @@ namespace CoreUi
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->setMargin(0);
-        layout->setSpacing(0);
+        layout->setSpacing(4);
         layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
         setLayout(layout);
     }

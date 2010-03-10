@@ -41,7 +41,7 @@ namespace CommunicationUI
         connect(chat_session_, SIGNAL( MessageReceived(const Communication::ChatMessageInterface&)),
                 this, SLOT( MessageReceived(const Communication::ChatMessageInterface&)));
         connect(chat_session_ui_.sendMessageLineEdit, SIGNAL( returnPressed() ),
-                this, SLOT( SendMessage() ));
+                this, SLOT( SendChatMessage() ));
         connect(chat_session_ui_.closePushButton, SIGNAL( clicked() ),
                 this, SLOT( CloseConversation() ));
     }

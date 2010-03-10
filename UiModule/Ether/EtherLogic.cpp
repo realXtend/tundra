@@ -482,6 +482,7 @@ namespace Ether
             switch (connection_state)
             {
                 case UiServices::Connected:
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->ShowStatusInformation("Connected");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
@@ -491,6 +492,7 @@ namespace Ether
                     scene_->SetConnectionStatus(false);
                     break;
                 case UiServices::Failed:
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->ShowStatusInformation("Failed to connect");
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);

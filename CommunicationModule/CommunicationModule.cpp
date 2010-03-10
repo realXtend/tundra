@@ -33,7 +33,8 @@ namespace Communication
           communication_service_(0),
           test_(0),
           event_category_networkstate_(0),
-          event_category_framework_(0)
+          event_category_framework_(0),
+          os_chat_controller_(0)
     {
     }
 
@@ -65,12 +66,14 @@ namespace Communication
             return;
         }
         
-        connect(communication_service_, SIGNAL( NewProtocolSupported(QString &) ), SLOT( OnNewProtocol(QString &) ));
-        connect(communication_service_, SIGNAL( ProtocolSupportEnded(QString &) ), SLOT( OnProtocolSupportEnded(QString &) ));
-        QObject::connect(communication_service_, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ),
-            this, SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
-        QObject::connect(communication_service_, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ),
-            this, SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
+        connect(communication_service_, SIGNAL( NewProtocolSupported(QString &) ), 
+                SLOT( OnNewProtocol(QString &) ));
+        connect(communication_service_, SIGNAL( ProtocolSupportEnded(QString &) ), 
+                SLOT( OnProtocolSupportEnded(QString &) ));
+        connect(communication_service_, SIGNAL( ConnectionOpened(Communication::ConnectionInterface*) ),
+                SLOT( OnConnectionOpened(Communication::ConnectionInterface*) ));
+        connect(communication_service_, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ),
+                SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
 
         OpensimIM::ConnectionProvider* opensim = new OpensimIM::ConnectionProvider(framework_);
         communication_service_->RegisterConnectionProvider(opensim);
@@ -123,33 +126,11 @@ namespace Communication
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
                     os_chat_controller_ = new OpensimIM::ChatController(client_params);
                     UpdateChatControllerToUiModule();
-
-                    /* OLD OS UI, REMOVE THIS PROPERLY
-
-                    //! TODO: Currently we can have only one world_chat ui but this
-                    //!       should be changed to 1:1 relation between "WorldChatWidget" - "WorldConnectionWidget"
-                    SAFE_DELETE(opensim_chat_ui_);
-                    opensim_chat_ui_ = new CommunicationUI::OpenSimChatWidget(client_params);
-                    AddWidgetToUi("World Chat");
-
-                    */
-
                 }
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
                 SAFE_DELETE(os_chat_controller_);
-
-                /* OLD OS UI, REMOVE THIS PROPERLY
-
-                if (opensim_chat_ui_ && opensim_chat_proxy_widget_)
-                {
-                    RemoveProxyWidgetFromUi(opensim_chat_proxy_widget_);
-                    opensim_chat_proxy_widget_ = 0;
-                    SAFE_DELETE(opensim_chat_ui_);
-                }
-
-                */
             }
         }
 
