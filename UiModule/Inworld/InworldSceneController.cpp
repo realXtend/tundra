@@ -8,6 +8,7 @@
 #include "Common/AnchorLayoutManager.h"
 #include "View/UiProxyWidget.h"
 #include "View/UiWidgetProperties.h"
+#include "View/CommunicationWidget.h"
 
 #include "MainPanel/MainPanel.h"
 #include "MainPanel/SettingsWidget.h"
@@ -28,7 +29,8 @@ namespace UiServices
           framework_(framework),
           ui_view_(ui_view),
           inworld_scene_(0),
-          main_panel_(0)
+          main_panel_(0),
+          communication_widget_(0)
     {
         if (ui_view_)
         {
@@ -49,6 +51,9 @@ namespace UiServices
         if (settings_widget_)
             SAFE_DELETE(settings_widget_);
         settings_proxy_widget_ = 0;
+
+        if (communication_widget_)
+            SAFE_DELETE(communication_widget_);
     }
 
     /*************** UI Scene Manager Public Services ***************/
@@ -149,6 +154,12 @@ namespace UiServices
     /*************** Public Functions But Use With Caution ****************/
     /** As in don't touch if you are not 100% sure on what you are doing **/
 
+    void InworldSceneController::SetWorldChatController(QObject *controller)
+    {
+        if (communication_widget_)
+            communication_widget_->UpdateController(controller);
+    }
+
     void InworldSceneController::SetDemoLoginWidget(QWidget *widget)
     {
         //// Remove this code
@@ -181,15 +192,18 @@ namespace UiServices
         // Init settings widget, add control button to mainpanel
         settings_widget_ = new CoreUi::SettingsWidget();
         settings_proxy_widget_ = new UiProxyWidget(settings_widget_, UiWidgetProperties("Settings", UiServices::SceneWidget));
-        
+        connect(settings_proxy_widget_, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), SLOT( BringProxyToFront(UiProxyWidget*) ));
+        connect(settings_widget_, SIGNAL( NewUserInterfaceSettingsApplied(int, int) ), SLOT( ApplyNewProxySettings(int, int) ));
+
         // Do this part better after refactor!
         CoreUi::MainPanelButton *control_button = main_panel_->SetSettingsWidget(settings_proxy_widget_, "Settings");
         settings_proxy_widget_->SetControlButton(control_button);
         AddProxyWidget(settings_proxy_widget_);
-        connect(settings_proxy_widget_, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), 
-                this, SLOT( BringProxyToFront(UiProxyWidget*) ));
-        connect(settings_widget_, SIGNAL( NewUserInterfaceSettingsApplied(int, int) ),
-                this, SLOT( ApplyNewProxySettings(int, int) ));
+
+        // Communication core UI
+        communication_widget_ = new CoreUi::CommunicationWidget();
+        layout_manager_->AddCornerAnchor(communication_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
+
     }
 
     /*************** UI Scene Manager Private slots ***************/
