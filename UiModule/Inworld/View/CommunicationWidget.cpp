@@ -60,8 +60,8 @@ namespace CoreUi
         history_view_text_edit_ = new QPlainTextEdit(chatContentWidget);
         history_view_text_edit_->setReadOnly(true);
         history_view_text_edit_->setObjectName("historyViewTextEdit");
-        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(0,0,0,175); }");
-        history_view_text_edit_->setFont(QFont("Arial", 10));
+        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(0,0,0,190); }");
+        history_view_text_edit_->setFont(QFont("Calibri", 11));
         stacked_layout_->addWidget(history_view_text_edit_);
 
         // Slim view mode
@@ -111,23 +111,24 @@ namespace CoreUi
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
     {
         // History view
-        QString htmlcontent("<span style='color:grey;'>[");
+        timestamp = timestamp.midRef(timestamp.indexOf(" ")+1).toString(); // Cut the fat from timestamp for now
+        QString htmlcontent("<span style='color:grey'>[");
         htmlcontent.append(timestamp);
         if (!self_sent_message)
             htmlcontent.append("]</span> <span style='color:#0099FF;'>");
         else
             htmlcontent.append("]</span> <span style='color:#FF3330;'>");
         htmlcontent.append(sender);
-        htmlcontent.append(": </span><span style='color:white;'>");
+        htmlcontent.append(": </span><span style='color:#EFEFEF;'>");
         htmlcontent.append(message);
         htmlcontent.append("</span>");
         history_view_text_edit_->appendHtml(htmlcontent);
 
         // Normal view
         if (!self_sent_message)
-            normal_view_widget_->ShowChatMessage(QString("%1: %2").arg(sender, message));
+            normal_view_widget_->ShowChatMessage(self_sent_message, QString("%1: %2").arg(sender, message));
         else
-            normal_view_widget_->ShowChatMessage(QString("Me: %1").arg(message));
+            normal_view_widget_->ShowChatMessage(self_sent_message, QString("Me: %1").arg(message));
     }
 
     void CommunicationWidget::SendMessageRequested()
@@ -150,14 +151,14 @@ namespace CoreUi
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->setMargin(0);
-        layout->setSpacing(4);
+        layout->setSpacing(3);
         layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
         setLayout(layout);
     }
 
-    void NormalChatViewWidget::ShowChatMessage(QString message)
+    void NormalChatViewWidget::ShowChatMessage(bool own_message, QString message)
     {
-        ChatLabel *chat_label = new ChatLabel(message);
+        ChatLabel *chat_label = new ChatLabel(own_message, message);
         layout()->addWidget(chat_label);
         connect(chat_label, SIGNAL( DestroyMe(ChatLabel*) ), SLOT( RemoveChatLabel(ChatLabel*) ));
     }
@@ -176,13 +177,16 @@ namespace CoreUi
 
     // ChatLabel
 
-    ChatLabel::ChatLabel(QString message) :
+    ChatLabel::ChatLabel(bool own_message, QString message) :
         QLabel(message)
     {
         setFont(QFont("Arial", 12));
-        setStyleSheet("background-color: rgba(0,0,0,175); color: white; border-radius: 5px; padding: 3px;");
+        if (own_message)
+            setStyleSheet("background-color: rgba(0,0,0,255); color: white; border-radius: 5px; padding: 3px;");
+        else
+            setStyleSheet("background-color: rgba(0,0,0,200); color: white; border-radius: 5px; padding: 3px;");
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        QTimer::singleShot(6000, this, SLOT(TimeOut()));
+        QTimer::singleShot(10000, this, SLOT(TimeOut()));
     }
 
     void ChatLabel::TimeOut()

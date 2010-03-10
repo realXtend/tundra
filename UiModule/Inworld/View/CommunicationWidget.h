@@ -59,7 +59,7 @@ namespace CoreUi
         NormalChatViewWidget(QWidget *parent);
 
     public slots:
-        void ShowChatMessage(QString message);
+        void ShowChatMessage(bool own_message, QString message);
 
     private slots:
         void RemoveChatLabel(ChatLabel *label);
@@ -72,7 +72,7 @@ namespace CoreUi
     Q_OBJECT
     
     public:
-        ChatLabel(QString message);
+        ChatLabel(bool own_message, QString message);
 
     private slots:
         void TimeOut();
