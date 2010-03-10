@@ -78,6 +78,8 @@ namespace Ether
             void TryExitApplication();
             void StoreConfigs();
 
+            void SetConnectingState(bool connecting) { login_in_progress_ = connecting; }
+
         private slots:
             void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);
@@ -134,6 +136,7 @@ namespace Ether
             //! Random locals
             int last_scale_;
             bool change_scene_after_anims_finish_;
+            bool login_in_progress_;
 
             QTimer *info_hide_timer_;
 

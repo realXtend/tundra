@@ -113,7 +113,9 @@ namespace UiServices
             switch (event_id)
             {
                 case Foundation::NETWORKING_REGISTERED:
-                    event_query_categories_ << "NetworkState";
+                    // Do this only once
+                    if (!event_query_categories_.contains("NetworkState"))
+                        event_query_categories_ << "NetworkState";
                     SubscribeToEventCategories();
                     break;
                 default:
@@ -211,10 +213,7 @@ namespace UiServices
     {
         service_category_identifiers_.clear();
         foreach (QString category, event_query_categories_)
-        {
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
-            LogDebug(QString("Listening to event category %1").arg(category).toStdString());
-        }
     }
 
     QObject *UiModule::GetEtherLoginNotifier() 

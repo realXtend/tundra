@@ -43,7 +43,8 @@ namespace Ether
               last_active_top_card_(0),
               last_active_bottom_card_(0),
               layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
-              info_hide_timer_(new QTimer(this))
+              info_hide_timer_(new QTimer(this)),
+              login_in_progress_(false)
         {
             // Connect key press signals from scene
             connect(scene_, SIGNAL( UpPressed() ), SLOT( UpPressed() ));
@@ -455,7 +456,11 @@ namespace Ether
             SuppressControlWidgets(true);
 
             StartLoginAnimation();
-            emit LoginRequest(selected_cards);
+            if (!login_in_progress_)
+            {
+                emit LoginRequest(selected_cards);
+                login_in_progress_ = !login_in_progress_;
+            }
 
             ShowStatusInformation(QString("Connecting to %1 with %2").arg(selected_cards.second->title(), selected_cards.first->title()));
         }

@@ -418,11 +418,12 @@ namespace OpensimIM
 
     void Connection::OnWorldChatMessageReceived(const Communication::ChatMessageInterface &message)
     {
-        QString text = "OpensimIM, public chat: ";
-        text.append( message.GetOriginator()->GetName() );
-        text.append(" : ");
-        text.append( message.GetText() );
-        LogDebug( text.toStdString() );
+        // Please no debug prints, its working. These were showing in release mode too, dunno why. - Jonne
+        //QString text = "OpensimIM, public chat: ";
+        //text.append( message.GetOriginator()->GetName() );
+        //text.append(" : ");
+        //text.append( message.GetText() );
+        //LogDebug( text.toStdString() );
     }
 
     void Connection::OnIMMessage(const QString &from_id, const QString &from_name, const QString &text)
