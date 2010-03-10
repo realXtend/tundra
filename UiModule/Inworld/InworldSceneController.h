@@ -98,7 +98,11 @@ namespace UiServices
         //! \return The main panel pointer.
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
 
+        //! Set the current chat controller object to world chat widget
         void SetWorldChatController(QObject *controller);
+
+        //! Set the im proxy to world chat widget for show/hide toggling
+        void SetImWidget(UiProxyWidget *im_proxy);
 
         //! Set the demo login widget from python module, dont call this anywhere else!
         //! Semi-hack for 0.1 release to get easy accessible demo worlds login without authentication

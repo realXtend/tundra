@@ -141,7 +141,7 @@ namespace OgreRenderer
     void Renderer::InitializeQt()
     {
         main_window_ = new QWidget();
-        q_ogre_ui_view_ = new QOgreUIView(main_window_, new QGraphicsScene());
+        q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
         QPixmap pm(16,16);
