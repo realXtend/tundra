@@ -14,18 +14,17 @@
 
 namespace OgreRenderer
 {
-    QOgreUIView::QOgreUIView (QWidget *parent, QGraphicsScene *scene) : 
-        QGraphicsView(scene, parent),
+    QOgreUIView::QOgreUIView (QWidget *parent) : 
+        QGraphicsView(parent),
         win_(0),
         view_(0)
     {
+        setScene(new QGraphicsScene(this)); // Set parent to scene for qt cleanup
         Initialize_();
     }
 
     QOgreUIView::~QOgreUIView ()
     {
-        if (scene())
-            delete scene();
     }
 
     void QOgreUIView::Initialize_()

@@ -22,7 +22,7 @@ namespace OgreRenderer
     Q_PROPERTY(bool dirty_ WRITE setDirty READ isDirty)
 
     public:
-        QOgreUIView (QWidget *parent, QGraphicsScene *scene);
+        QOgreUIView (QWidget *parent);
         virtual ~QOgreUIView ();
 
         void SetWorldView(QOgreWorldView *view);

@@ -160,6 +160,12 @@ namespace UiServices
             communication_widget_->UpdateController(controller);
     }
 
+    void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy)
+    {
+        if (communication_widget_)
+            communication_widget_->UpdateImWidget(im_proxy);
+    }
+
     void InworldSceneController::SetDemoLoginWidget(QWidget *widget)
     {
         //// Remove this code

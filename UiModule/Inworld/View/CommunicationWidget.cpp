@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "CommunicationWidget.h"
+#include "UiProxyWidget.h"
 
 #include <QWidget>
 #include <QStackedLayout>
@@ -14,6 +15,7 @@ namespace CoreUi
         QGraphicsProxyWidget(),
         internal_widget_(new QWidget()),
         current_controller_(0),
+        im_proxy_(0),
         viewmode_(Normal)
     {
         Initialise();
@@ -41,6 +43,12 @@ namespace CoreUi
         // Clear old ui messages from history view
         if (history_view_text_edit_)
             history_view_text_edit_->clear();
+    }
+
+    void CommunicationWidget::UpdateImWidget(UiServices::UiProxyWidget *im_proxy)
+    {
+        im_proxy_ = im_proxy;
+        imButton->setEnabled(true);
     }
 
     // Private
@@ -71,7 +79,9 @@ namespace CoreUi
         stacked_layout_->setCurrentWidget(normal_view_widget_);
 
         connect(viewModeButton, SIGNAL( clicked() ), SLOT( ChangeViewPressed() ));
+        connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
+
     }
 
     void CommunicationWidget::ChangeViewPressed()
@@ -105,6 +115,17 @@ namespace CoreUi
                 stacked_layout_->setCurrentWidget(history_view_text_edit_);
                 viewModeButton->setText("Slim");
                 break;
+        }
+    }
+
+    void CommunicationWidget::ToggleImWidget()
+    {
+        if (im_proxy_)
+        {
+            if (!im_proxy_->isVisible())
+                im_proxy_->show();
+            else
+                im_proxy_->AnimatedHide();
         }
     }
 

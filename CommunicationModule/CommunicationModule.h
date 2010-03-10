@@ -81,12 +81,9 @@ namespace Communication
         // Run given test
         Console::CommandResult Test(const StringVector &params);
 
+        //! Ui related widgets/controllers
         CommunicationUI::MasterWidget* im_ui_;
-        CommunicationUI::OpenSimChatWidget* opensim_chat_ui_;
-
         UiServices::UiProxyWidget *im_ui_proxy_widget_;
-        UiServices::UiProxyWidget *opensim_chat_proxy_widget_;
-
         OpensimIM::ChatController *os_chat_controller_;
 
         CommunicationServiceInterface* communication_service_;

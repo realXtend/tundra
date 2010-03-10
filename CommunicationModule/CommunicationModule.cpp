@@ -28,8 +28,6 @@ namespace Communication
         : ModuleInterfaceImpl(type_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
-          opensim_chat_ui_(0),
-          opensim_chat_proxy_widget_(0),
           communication_service_(0),
           test_(0),
           event_category_networkstate_(0),
@@ -100,7 +98,6 @@ namespace Communication
     void CommunicationModule::Uninitialize()
     {
         SAFE_DELETE(im_ui_);
-        SAFE_DELETE(opensim_chat_ui_);
         SAFE_DELETE(os_chat_controller_);
         SAFE_DELETE(test_);
 
@@ -174,15 +171,12 @@ namespace Communication
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
         {
-            if (name == "World Chat")
+            if (name == "IM")
             {
-                UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
-                opensim_chat_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(opensim_chat_ui_, widget_properties);
-            }
-            else if (name == "IM")
-            {
-                UiServices::UiWidgetProperties widget_properties(name, UiServices::ModuleWidget);
+                UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);
                 im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
+                if (im_ui_proxy_widget_)
+                    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }
     }
