@@ -11,6 +11,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include <PythonQt.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -150,67 +151,35 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     }
     else if (s_name.compare("prim") == 0)
     {
+
         if (!prim)
         {
             PyErr_SetString(PyExc_AttributeError, "prim not found.");
             return NULL;   
         }  
+        /*
         //m->AddU32(prim->LocalId);
         std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
         return PyString_FromString(retstr.c_str());
-    }
-    else if (s_name.compare("name") == 0)
-    {
-        //std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-        return PyString_FromString(prim->ObjectName.c_str());
+        */
+
+        //RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+
+        return PythonQt::self()->wrapQObject(prim);
     }
 
     else if (s_name.compare("mesh") == 0)
 	{
-        //std::cout << ".. getting prim in mesh getting" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }  
-        return PyString_FromString(prim->MeshID.c_str());	
-        
-        /* was a test thing, just changes what ogre shows locally
-        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-		Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-		if (placeable)
-		{
-			OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-			
-			std::string text = ogremesh.GetMeshName();
-			return PyString_FromString(text.c_str());
-		}*/
+        Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+        //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+        return PythonQt::self()->wrapQObject(ogremesh);
     }
-	else if(s_name.compare("uuid") == 0)
-	{
-		//std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-		return PyString_FromString(prim->FullId.ToString().c_str());
-	}
-	else if(s_name.compare("updateflags") == 0)
-	{
-		//std::cout << ".. getting prim" << std::endl;
-        if (!prim)
-        {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
-            return NULL;   
-        }
-		return Py_BuildValue("I", prim->UpdateFlags);
-	}
+    else if (s_name.compare("placeable") == 0)
+	{    
+        return PythonQt::self()->wrapQObject(placeable);
+    }
+
 	else if(s_name.compare("editable") == 0)
 	{
 		// refactor to take into account permissions etc aswell later?
@@ -516,7 +485,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 
         return 0;
     }
-	else if (s_name.compare("mesh") == 0)
+	else if (s_name.compare("meshid") == 0)
 	{
 	    //std::cout << "Setting mesh" << std::endl;
 		if (PyString_Check(value) || PyUnicode_Check(value))
@@ -559,15 +528,8 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
             return -1;
         }
 	}
-	
-    //XXX why does this even exist when uuid is not settable?
-	else if(s_name.compare("uuid") == 0)
-	{
-        PythonScript::self()->LogInfo("UUID cannot be set manually.");
-        return 0;   
-	}
 
-    //std::cout << "unknown component type."  << std::endl;
+    //std::cout << "unknown component typse."  << std::endl;
 	PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }
