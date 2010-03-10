@@ -90,15 +90,34 @@ QWidget#chatContentWidget {
         <item>
          <layout class="QHBoxLayout" name="chatHorizontalLayout">
           <item>
-           <widget class="QLineEdit" name="chatLineEdit"/>
+           <widget class="QLineEdit" name="chatLineEdit">
+            <property name="font">
+             <font>
+              <family>Calibri</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: 1px solid rgba(255,255,255,150); border-top-right-radius: 7px;</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="viewModeButton">
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>60</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Calibri</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>History</string>
@@ -112,6 +131,12 @@ QWidget#chatContentWidget {
               <width>40</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Calibri</family>
+              <pointsize>10</pointsize>
+             </font>
             </property>
             <property name="text">
              <string>IM</string>
