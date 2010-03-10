@@ -8,12 +8,12 @@
 #include "CommunicationUI/OpenSimChatWidget.h"
 #include "Test.h"
 #include "OpensimIM/ConnectionProvider.h"
+#include "OpensimIM/ChatController.h"
 #include "TelepathyIM/ConnectionProvider.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "Interfaces/ProtocolModuleInterface.h"
-
 
 #include <RexLogicModule.h>
 #include <UiModule.h>
@@ -98,6 +98,7 @@ namespace Communication
     {
         SAFE_DELETE(im_ui_);
         SAFE_DELETE(opensim_chat_ui_);
+        SAFE_DELETE(os_chat_controller_);
         SAFE_DELETE(test_);
 
         CommunicationService::CleanUp();
@@ -120,21 +121,35 @@ namespace Communication
                 if (current_protocol_module.lock().get())
                 {
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
+                    os_chat_controller_ = new OpensimIM::ChatController(client_params);
+                    UpdateChatControllerToUiModule();
+
+                    /* OLD OS UI, REMOVE THIS PROPERLY
+
                     //! TODO: Currently we can have only one world_chat ui but this
                     //!       should be changed to 1:1 relation between "WorldChatWidget" - "WorldConnectionWidget"
                     SAFE_DELETE(opensim_chat_ui_);
                     opensim_chat_ui_ = new CommunicationUI::OpenSimChatWidget(client_params);
                     AddWidgetToUi("World Chat");
+
+                    */
+
                 }
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
+                SAFE_DELETE(os_chat_controller_);
+
+                /* OLD OS UI, REMOVE THIS PROPERLY
+
                 if (opensim_chat_ui_ && opensim_chat_proxy_widget_)
                 {
                     RemoveProxyWidgetFromUi(opensim_chat_proxy_widget_);
                     opensim_chat_proxy_widget_ = 0;
                     SAFE_DELETE(opensim_chat_ui_);
                 }
+
+                */
             }
         }
 
@@ -150,7 +165,6 @@ namespace Communication
             if (!im_ui_)
             {
                 im_ui_ = new CommunicationUI::MasterWidget(framework_);
-                //im_ui_->show();
                 AddWidgetToUi("IM");
             }
             return;
@@ -190,6 +204,13 @@ namespace Communication
                 im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
             }
         }
+    }
+
+    void CommunicationModule::UpdateChatControllerToUiModule()
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+            ui_module->GetInworldSceneController()->SetWorldChatController(os_chat_controller_);
     }
 
     void CommunicationModule::RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget)

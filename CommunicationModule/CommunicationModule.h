@@ -32,6 +32,11 @@ namespace Communication
     class ConnectionInterface;
 }
 
+namespace OpensimIM
+{
+    class ChatController;
+}
+
 namespace CommunicationTest
 {
     class Test;
@@ -82,6 +87,8 @@ namespace Communication
         UiServices::UiProxyWidget *im_ui_proxy_widget_;
         UiServices::UiProxyWidget *opensim_chat_proxy_widget_;
 
+        OpensimIM::ChatController *os_chat_controller_;
+
         CommunicationServiceInterface* communication_service_;
         CommunicationTest::Test* test_;
 
@@ -91,6 +98,7 @@ namespace Communication
 
     private:
         void AddWidgetToUi(const QString &name);
+        void UpdateChatControllerToUiModule();
         void RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget);
 
     private slots:

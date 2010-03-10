@@ -24,6 +24,7 @@ namespace CoreUi
     class MainPanel;
     class SettingsWidget;
     class AnchorLayoutManager;
+    class CommunicationWidget;
 }
 
 namespace UiServices
@@ -97,6 +98,8 @@ namespace UiServices
         //! \return The main panel pointer.
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
 
+        void SetWorldChatController(QObject *controller);
+
         //! Set the demo login widget from python module, dont call this anywhere else!
         //! Semi-hack for 0.1 release to get easy accessible demo worlds login without authentication
         void SetDemoLoginWidget(QWidget *widget);
@@ -119,6 +122,7 @@ namespace UiServices
         //! CoreUi Widgets
         CoreUi::MainPanel *main_panel_;
         CoreUi::SettingsWidget *settings_widget_;
+        CoreUi::CommunicationWidget *communication_widget_;
 
         //! Proxy widgets
         UiProxyWidget *main_panel_proxy_widget_;
