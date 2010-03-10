@@ -1,4 +1,6 @@
 import rexviewer as r
+import PythonQt.QtGui
+from PythonQt.QtGui import QQuaternion as quat
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 import math
@@ -110,7 +112,7 @@ class Manipulator:
                     u = results[-2]
                     v = results[-1]
                     #print "ARROW and UV", u, v
-                    print submeshid
+                    #print submeshid
                     self.grabbed = True
                     if submeshid in self.BLUEARROW or (u != 0.0 and u < 0.421875):
                         #~ print "arrow is blue"
@@ -311,23 +313,28 @@ class RotationManipulator(Manipulator):
             
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
-            euler = list(quat_to_euler(ent.orientation))
-
+            x, y, z, w = ent.orientation
+            
+            ort = quat(w, x, y, z)
+            euler = list((0, 0, 0))
+            
             if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #~ print "green axis", self.grabbed_axis, euler
-                mov = amountx * 100
+                #print "green axis", self.grabbed_axis
+                mov = amountx * 30 
                 euler[2] += mov
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #~ print "blue axis", self.grabbed_axis, euler
-                mov = amountx * 100
-                euler[1] -= mov
+                #print "blue axis", self.grabbed_axis
+                mov = amountx * 30
+                euler[1] += mov
             elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #~ print "red axis", self.grabbed_axis, euler
-                mov = amounty * 100
-                euler[0] += mov 
-            #~ print mov
-            #~ print euler, mov
-            ort = euler_to_quat(euler)
-            #~ print ort
-            ent.orientation = ort
+                #print "red axis", self.grabbed_axis
+                mov = amounty * 30
+                euler[0] -= mov 
+                
+            rotationQuat = list(euler_to_quat(euler))
+
+            ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
+            
+            ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
+
             
