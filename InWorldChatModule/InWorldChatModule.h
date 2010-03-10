@@ -4,6 +4,7 @@
  *  @file   InWorldChatModule.h
  *  @brief  Simple OpenSim world chat module. Listens for ChatFromSimulator packets and shows the chat on the UI.
  *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles
+ *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #ifndef incl_InWorldChatModule_InWorldChatModule_h
@@ -11,10 +12,11 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "WorldStream.h"
 #include "ConsoleCommandServiceInterface.h"
 
 #include <QObject>
+
+class RexUUID;
 
 namespace Foundation
 {
@@ -24,7 +26,9 @@ namespace Foundation
 namespace ProtocolUtilities
 {
     class ProtocolModuleInterface;
+    class WorldStream;
     typedef boost::weak_ptr<ProtocolModuleInterface> ProtocolWeakPtr;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
 namespace UiServices
@@ -68,9 +72,11 @@ namespace Naali
 
         Console::CommandResult ConsoleChat(const StringVector &params);
 
-		void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
+        void ApplyChatBubble(Scene::Entity &entity, const std::string &message);
 
-		Scene::Entity *GetEntityWithID(const RexUUID &id);
+        void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
+
+        Scene::Entity *GetEntityWithID(const RexUUID &id);
 
     public slots:
         ///

@@ -215,10 +215,10 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
 
     // Calculate the bounding rect size.
     QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
-    // Set padding for text.
+    ///\todo Set padding for text.
 //    rect.setX(rect.x() - 20);
 //    rect.setY(rect.y() - 20);
-    pixmap = pixmap.scaled(rect.size());
+//    pixmap = pixmap.scaled(rect.size());
 
     // Draw rounded rect.
     QBrush brush(bubbleColor_, Qt::SolidPattern);
