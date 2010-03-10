@@ -9,8 +9,6 @@
 #include "Foundation.h"
 #include "ModuleManager.h"
 
-#include "TestModuleB.h"
-
 #include "HttpUtilities.h"
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
@@ -88,8 +86,6 @@ int main (int argc, char **argv)
 //! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
-    fw.GetModuleManager()->ExcludeModule(Foundation::Module::MT_Test);
-    fw.GetModuleManager()->ExcludeModule(Test::TestModuleB::NameStatic());
 }
 
 int run (int argc, char **argv)
