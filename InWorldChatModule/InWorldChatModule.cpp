@@ -204,7 +204,7 @@ bool InWorldChatModule::HandleEvent(
 
             Scene::Entity *entity = GetEntityWithID(sourceId);
             if (entity)
-                ApplyChatBubble(*entity, message);
+                ApplyChatBubble(*entity, QString::fromUtf8(message.c_str()));
 
             // Connect chat ui to this modules ChatReceived
             // emit ChatReceived()
@@ -287,12 +287,12 @@ Scene::Entity *InWorldChatModule::GetEntityWithID(const RexUUID &id)
     return 0;
 }
 
-void InWorldChatModule::ApplyChatBubble(Scene::Entity &entity, const std::string &message)
+void InWorldChatModule::ApplyChatBubble(Scene::Entity &entity, const QString &message)
 {
     Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::NameStatic());
     assert(component.get());
     EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
-    chatBubble.ShowMessage(message.c_str());
+    chatBubble.ShowMessage(message);
 }
 
 void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow)

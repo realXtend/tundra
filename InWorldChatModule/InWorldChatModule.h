@@ -72,7 +72,7 @@ namespace Naali
 
         Console::CommandResult ConsoleChat(const StringVector &params);
 
-        void ApplyChatBubble(Scene::Entity &entity, const std::string &message);
+        void ApplyChatBubble(Scene::Entity &entity, const QString &message);
 
         void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
 
