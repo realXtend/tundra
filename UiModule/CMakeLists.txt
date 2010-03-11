@@ -37,6 +37,7 @@ AddSourceFolder (Ether/Data)
 
 AddSourceFolder (Inworld)
 AddSourceFolder (Inworld/View)
+AddSourceFolder (Inworld/Menus)
 
 AddSourceFolder (MainPanel)
 AddSourceFolder (Notify)

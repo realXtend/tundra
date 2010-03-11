@@ -31,6 +31,8 @@ namespace CoreUi
 
     }
 
+    // Private
+
     void AnchorLayoutManager::InitLayout()
     {
         anchor_layout_ = new QGraphicsAnchorLayout();
@@ -48,6 +50,17 @@ namespace CoreUi
         layout_container_->setGeometry(new_rect);
     }
 
+    void AnchorLayoutManager::CheckVisibility(QGraphicsLayoutItem *layout_item)
+    {
+        QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget *>(layout_item);
+        if (!widget)
+            return;
+        if (!widget->isVisible())
+            widget->show();
+    }
+
+    // Public
+
     void AnchorLayoutManager::AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner)
     {
         anchor_layout_->addCornerAnchors(anchor_layout_, layout_anchor_corner, layout_item, widget_anchor_corner);
@@ -60,12 +73,13 @@ namespace CoreUi
         CheckVisibility(layout_item);
     }
 
-    void AnchorLayoutManager::CheckVisibility(QGraphicsLayoutItem *layout_item)
+    void AnchorLayoutManager::AddItemToScene(QGraphicsWidget *graphics_widget)
     {
-        QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget *>(layout_item);
-        if (!widget)
-            return;
-        if (!widget->isVisible())
-            widget->show();
+        scene_->addItem(graphics_widget);
+    }
+
+    void AnchorLayoutManager::RemoveItemFromScene(QGraphicsWidget *graphics_widget)
+    {
+        scene_->removeItem(graphics_widget);
     }
 }
