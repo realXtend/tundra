@@ -87,7 +87,7 @@ void ModuleInterfaceImpl::RegisterConsoleCommand(const Console::Command &command
     //assert(console.get());
     if (!console.get())
     {
-		Poco::Logger::get(Name()).error(std::string("Error: Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
+        Poco::Logger::get(Name()).error(std::string("Error: Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
         return;
     }
 
@@ -112,8 +112,8 @@ void ModuleInterfaceImpl::InitializeInternal()
         // If you hit this assert, you're trying to register console commands before the console service even exists.
         // Workarounds: 1) Add a dependency to ConsoleModule into your module XML file (not preferred)
         //              2) Use RegisterConsoleCommand instead of AutoRegisterConsoleCommand to register the console command.
-		if (!console.get())
-	        Poco::Logger::get(Name()).error("Critical: Console service not loaded yet! Console command registration failed!");
+        if (!console.get())
+            Poco::Logger::get(Name()).error("Critical: Console service not loaded yet! Console command registration failed!");
 //        assert(console.get()); 
         if (GetFramework()->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand) && console.get())
         {

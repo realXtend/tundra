@@ -16,6 +16,11 @@
 #include <QFont>
 #include <QColor>
 
+namespace OgreRenderer
+{
+    class Renderer;
+}
+
 namespace Ogre
 {
     class SceneNode;
@@ -73,8 +78,8 @@ private:
     /// Returns pixmap with chat bubble and current messages renderer to it.
     QPixmap GetChatBubblePixmap();
 
-    /// Ogre scene node for this chat bubble billboard.
-    Ogre::SceneNode *sceneNode_;
+    /// Renderer pointer.
+    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
     /// Ogre billboard set.
     Ogre::BillboardSet *billboardSet_;

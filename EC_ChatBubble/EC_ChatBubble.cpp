@@ -30,43 +30,7 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     billboardSet_(0),
     billboard_(0)
 {
-/*
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (!renderer)
-        return;
-
-    Ogre::SceneManager *scene = renderer->GetSceneManager();
-    assert(scene);
-    if (!scene)
-        return;
-
-    Scene::Entity *entity = GetParentEntity();
-    assert(entity);
-    if (!entity)
-        return;
-
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (!node)
-        return;
-
-    sceneNode_ = node->GetSceneNode();
-    assert(sceneNode_);
-
-    billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName(), 1);
-    assert(billboardSet_);
-
-    std::string newName = std::string("material") + renderer->GetUniqueObjectName(); 
-    Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newName);
-    //OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
-    billboardSet_->setMaterialName(newName);
-
-    billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0,0,1.5));
-    assert(billboard_);
-    billboard_->setDimensions(1, 1);
-
-    sceneNode_->attachObject(billboardSet_);
-*/
+    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 }
 
 EC_ChatBubble::~EC_ChatBubble()
@@ -81,12 +45,10 @@ void EC_ChatBubble::SetPosition(const Vector3df& position)
 
 void EC_ChatBubble::ShowMessage(const QString &msg)
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (!renderer)
+    if (renderer_.expired())
         return;
 
-    Ogre::SceneManager *scene = renderer->GetSceneManager();
+    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
     assert(scene);
     if (!scene)
         return;
@@ -100,25 +62,26 @@ void EC_ChatBubble::ShowMessage(const QString &msg)
     if (!node)
         return;
 
-    sceneNode_ = node->GetSceneNode();
-    assert(sceneNode_);
+    Ogre::SceneNode *sceneNode = node->GetSceneNode();
+    assert(sceneNode);
+    if (!sceneNode)
+        return;
 
     // Create billboard if it doesn't exist.
     if (!billboardSet_ && !billboard_)
     {
-        billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName(), 1);
+        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
         assert(billboardSet_);
 
-        std::string newName = std::string("material") + renderer->GetUniqueObjectName(); 
+        std::string newName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newName);
-        //OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
         billboardSet_->setMaterialName(newName);
 
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0,0,1.5));
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
         assert(billboard_);
         billboard_->setDimensions(2, 1);
 
-        sceneNode_->attachObject(billboardSet_);
+        sceneNode->attachObject(billboardSet_);
     }
 
     if (msg.isNull() || msg.isEmpty())
@@ -127,8 +90,15 @@ void EC_ChatBubble::ShowMessage(const QString &msg)
     messages_.push_back(msg);
 
     // Set timer for removing the message
-    int time = msg.length() * 400;
-    QTimer::singleShot(time, this, SLOT(RemoveLastMessage()));
+    int timeToShow = 0;
+    const int minTime = 4000;
+
+    if (msg.length() * 400 < minTime)
+        timeToShow = minTime;
+    else
+        timeToShow = msg.length() * 400;
+
+    QTimer::singleShot(timeToShow, this, SLOT(RemoveLastMessage()));
 
     Refresh();
 }
@@ -147,14 +117,10 @@ void EC_ChatBubble::RemoveAllMessages()
 
 void EC_ChatBubble::Refresh()
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (!renderer)
+    if (renderer_.expired() ||!billboardSet_ || !billboard_)
         return;
 
-    if (!sceneNode_ || !billboardSet_ || !billboard_)
-        return;
-
+    // If no messages in the log, hide the chat bubble.
     if (messages_.size() == 0)
     {
         billboardSet_->setVisible(false);
@@ -171,7 +137,7 @@ void EC_ChatBubble::Refresh()
     // Create texture
     QImage img = pixmap.toImage();
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
-    std::string tex_name("ChatBubbleTexture" + renderer->GetUniqueObjectName());
+    std::string tex_name("ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
     Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
     assert(tex);
@@ -179,7 +145,7 @@ void EC_ChatBubble::Refresh()
     tex->loadRawData(stream, img.width(), img.height(), Ogre::PF_A8R8G8B8);
 
     // Set new material with the new texture name in it.
-    std::string newMatName = std::string("material") + renderer->GetUniqueObjectName(); 
+    std::string newMatName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
     Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newMatName);
     OgreRenderer::SetTextureUnitOnMaterial(material, tex_name);
     billboardSet_->setMaterialName(newMatName);
@@ -187,7 +153,18 @@ void EC_ChatBubble::Refresh()
 
 QPixmap EC_ChatBubble::GetChatBubblePixmap()
 {
-    int max_width = 1500;
+    if (renderer_.expired())
+        return 0;
+
+///\todo    Resize the chat bubble and font size according to the render window size and distance
+///         avatar's distance from the camera.
+//    const int minWidth =
+//    const int minHeight =
+//    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
+//    const int max_width = viewport->getActualWidth()/4;
+//    int max_height = viewport->getActualHeight()/10;
+
+    const int max_width = 1500;
     int max_height = 800;
     QRect max_rect(0, 0, max_width, max_height);
 
@@ -196,29 +173,42 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
     if (!QFile::exists(filename))
         return 0;
 
-    // Gather chat log.
+    // Create pixmap
+    QPixmap pixmap;//(max_rect.size());
+//    pixmap.fill(QColor(0,0,0,0));
+    pixmap.load(filename);
+    pixmap = pixmap.scaled(max_rect.size());
+
+    // Gather chat log and calculate the bounding rect size.
     QStringListIterator it(messages_);
     QString fullChatLog;
     while(it.hasNext())
     {
         fullChatLog.append(it.next());
-        fullChatLog.append('\n');
+        if (it.hasNext())
+            fullChatLog.append('\n');
     }
-
-    // Create pixmap and painter.
-    QPixmap pixmap;
-    pixmap.load(filename);
-    pixmap = pixmap.scaled(max_rect.size());
 
     QPainter painter(&pixmap);
     painter.setFont(font_);
 
-    // Calculate the bounding rect size.
+    // Set padding for text.
+    // Make the font size temporarily bigger when calculating bounding rect
+    // so we get padding without need to modify the rect itself.
+    QFont origFont = painter.font();
+    painter.setFont(QFont(origFont.family(), origFont.pointSize()+12));
     QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
-    ///\todo Set padding for text.
-//    rect.setX(rect.x() - 20);
-//    rect.setY(rect.y() - 20);
+    painter.setFont(origFont);
+    // could also try this:
+    // QFontMetrics metric(any_qfont); int width = metric.width(mytext) + padding;
+
+    rect.setHeight(rect.height() - 10);
+//    rect.setX(rect.x() - 40);
+//    rect.setY(rect.y() + 20);
+
+//    painter.end();
 //    pixmap = pixmap.scaled(rect.size());
+//    painter.begin(&pixmap);
 
     // Draw rounded rect.
     QBrush brush(bubbleColor_, Qt::SolidPattern);
