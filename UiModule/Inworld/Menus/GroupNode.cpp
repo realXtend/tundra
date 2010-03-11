@@ -138,8 +138,6 @@ namespace CoreUi
 
     void GroupNode::CalculatePosVec()
     {
-        if (!pos_vector_.isNull())
-            return;
         QVector2D addition(size().width(), size().height());
         pos_vector_ = addition;
         addition.normalize();
