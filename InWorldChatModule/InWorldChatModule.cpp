@@ -122,95 +122,31 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkInEventCategory_)
     {
+        using namespace ProtocolUtilities;
         if (event_id == RexNetMsgGenericMessage)
         {
-            ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+            NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
             assert(netdata);
             if (!netdata)
                 return false;
             ProtocolUtilities::NetInMessage &msg = *netdata->message;
-            std::string method = ProtocolUtilities::ParseGenericMessageMethod(msg);
-            StringVector params = ProtocolUtilities::ParseGenericMessageParameters(msg);
+            std::string method = ParseGenericMessageMethod(msg);
+            StringVector params = ParseGenericMessageParameters(msg);
+
             if (method == "RexEmotionIcon")
-            {
-                // Param 0: avatar UUID
-                // Param 1: texture ID
-                // Param 2: timeout (remember to replace any , with . before parsing)
-                if (params.size() < 3)
-                    throw Exception("Failed to parse RexEmotionIcon message!");
+                HandleRexEmotionIconMessage(params);
 
-                LogInfo("Received RexEmotionIcon: " + params[0] + " " + params[1] + " " + params[2]);
-
-                ReplaceCharInplace(params[2], ',', '.');
-
-                if (!RexUUID::IsValid(params[0]))
-                    throw Exception("Invalid Entity UUID passed in RexEmotionIcon message!");
-
-                RexUUID entityUUID(params[0]);
-                if (entityUUID.IsNull())
-                    throw Exception("Null Entity UUID passed in RexEmotionIcon message!");
-
-                Scene::Entity *entity = GetEntityWithID(entityUUID);
-                if (!entity)
-                    throw Exception("Received RexEmotionIcon message for a nonexisting entity!");
-
-                // timeToShow: value of [-1, 0[ denotes "infinite".
-                //             a positive value between [0, 86400] denotes the number of seconds to show. (max roughly one day)
-                float timeToShow = atof(params[2].c_str());
-                if (!(timeToShow >= -2.f && timeToShow <= 86401.f)) // Checking through negation due to possible NaNs and infs. (being lax and also allowing off-by-one)
-                    throw Exception("Invalid time-to-show passed in RexEmotionIcon message!");
-
-                if (RexUUID::IsValid(params[1]))
-                {
-                    RexUUID textureID(params[1]);
-                    // We've been passed a texture UUID to show on the billboard.
-                    ///\todo request the asset and show that on the billboard.
-                }
-                else // We've been passed a string URL or a filename on the local computer.
-                {
-                    ///\todo Request a download from that URL and show the resulting image on the billboard.
-
-                    // Now assuming that the textureID points to a local file, just to get a proof-of-concept something showing in the UI.
-                    ApplyBillboard(*entity, params[1], timeToShow);
-                }
-            }
-            
             return false;
         }
-        
         if (event_id == RexNetMsgChatFromSimulator)
         {
-            ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+            NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
             assert(netdata);
             if (!netdata)
                 return false;
 
-            ProtocolUtilities::NetInMessage &msg = *netdata->message;
-            msg.ResetReading();
-
-            std::string fromName = msg.ReadString();
-            RexUUID sourceId = msg.ReadUUID();
-
-            msg.SkipToFirstVariableByName("Message");
-            std::string message = msg.ReadString();
-            if (message.size() < 1)
-                return false;
-
-/*
-            std::stringstream ss;
-            ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message;
-            LogDebug(ss.str());
-*/
-
-            Scene::Entity *entity = GetEntityWithID(sourceId);
-            if (entity)
-                ApplyChatBubble(*entity, QString::fromUtf8(message.c_str()));
-
-            // Connect chat ui to this modules ChatReceived
-            // emit ChatReceived()
-            //if (chatWindow_)
-            //    chatWindow_->CharReceived(name, msg);
-
+            NetInMessage &msg = *netdata->message;
+            HandleChatFromSimulatorMesage(msg);
             return false;
         }
     }
@@ -236,11 +172,17 @@ const std::string &InWorldChatModule::NameStatic()
     return moduleName;
 }
 
+void InWorldChatModule::SendChatFromViewer(const QString &msg)
+{
+    if (currentWorldStream_)
+        currentWorldStream_->SendChatFromViewerPacket(msg.toStdString());
+}
+
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one instead of RexLogicModule, so no dependency to it is needed.
-
+    /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one
+    /// instead of RexLogicModule, so no dependency to it is needed.
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::EntityPtr entity = *iter;
@@ -310,11 +252,78 @@ void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string 
     ec_bb->Show(Vector3df(0.f, 0.f, 1.5f), timeToShow, texture.c_str());
 }
 
-void InWorldChatModule::SendChatFromViewer(const QString &msg)
+void InWorldChatModule::HandleRexEmotionIconMessage(StringVector &params)
 {
-    if (currentWorldStream_)
-        currentWorldStream_->SendChatFromViewerPacket(msg.toStdString());
+    // Param 0: avatar UUID
+    // Param 1: texture ID
+    // Param 2: timeout (remember to replace any , with . before parsing)
+    if (params.size() < 3)
+        throw Exception("Failed to parse RexEmotionIcon message!");
+
+    LogInfo("Received RexEmotionIcon: " + params[0] + " " + params[1] + " " + params[2]);
+
+    ReplaceCharInplace(params[2], ',', '.');
+
+    if (!RexUUID::IsValid(params[0]))
+        throw Exception("Invalid Entity UUID passed in RexEmotionIcon message!");
+
+    RexUUID entityUUID(params[0]);
+    if (entityUUID.IsNull())
+        throw Exception("Null Entity UUID passed in RexEmotionIcon message!");
+
+    Scene::Entity *entity = GetEntityWithID(entityUUID);
+    if (!entity)
+        throw Exception("Received RexEmotionIcon message for a nonexisting entity!");
+
+    // timeToShow: value of [-1, 0[ denotes "infinite".
+    //             a positive value between [0, 86400] denotes the number of seconds to show. (max roughly one day)
+    float timeToShow = atof(params[2].c_str());
+    if (!(timeToShow >= -2.f && timeToShow <= 86401.f)) // Checking through negation due to possible NaNs and infs. (being lax and also allowing off-by-one)
+        throw Exception("Invalid time-to-show passed in RexEmotionIcon message!");
+
+    if (RexUUID::IsValid(params[1]))
+    {
+        RexUUID textureID(params[1]);
+        // We've been passed a texture UUID to show on the billboard.
+        ///\todo request the asset and show that on the billboard.
+    }
+    else // We've been passed a string URL or a filename on the local computer.
+    {
+        ///\todo Request a download from that URL and show the resulting image on the billboard.
+
+        // Now assuming that the textureID points to a local file, just to get a proof-of-concept something showing in the UI.
+        ApplyBillboard(*entity, params[1], timeToShow);
+    }
 }
+
+void InWorldChatModule::HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMessage &msg)
+{
+    msg.ResetReading();
+
+    std::string fromName = msg.ReadString();
+    RexUUID sourceId = msg.ReadUUID();
+
+    msg.SkipToFirstVariableByName("Message");
+    std::string message = msg.ReadString();
+    if (message.size() < 1)
+        return;
+
+/*
+    std::stringstream ss;
+    ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message;
+    LogDebug(ss.str());
+*/
+
+    Scene::Entity *entity = GetEntityWithID(sourceId);
+    if (entity)
+        ApplyChatBubble(*entity, QString::fromUtf8(message.c_str()));
+
+    // Connect chat ui to this modules ChatReceived
+    // emit ChatReceived()
+    //if (chatWindow_)
+    //    chatWindow_->CharReceived(name, msg);
+}
+
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

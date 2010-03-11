@@ -18,6 +18,11 @@
 
 class RexUUID;
 
+namespace ProtocolUtilities
+{
+    class NetInMessage;
+}
+
 namespace Foundation
 {
     class EventDataInterface;
@@ -68,16 +73,6 @@ namespace Naali
         /// Name of this module.
         static const std::string moduleName;
 
-        Console::CommandResult TestAddBillboard(const StringVector &params);
-
-        Console::CommandResult ConsoleChat(const StringVector &params);
-
-        void ApplyChatBubble(Scene::Entity &entity, const QString &message);
-
-        void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
-
-        Scene::Entity *GetEntityWithID(const RexUUID &id);
-
     public slots:
         ///
         /// @param msg Chat message to be sent.
@@ -85,6 +80,37 @@ namespace Naali
 
     private:
         Q_DISABLE_COPY(InWorldChatModule);
+
+        ///
+        ///
+        Console::CommandResult TestAddBillboard(const StringVector &params);
+
+        ///
+        ///
+        Console::CommandResult ConsoleChat(const StringVector &params);
+
+        ///
+        ///
+        ///
+        void ApplyChatBubble(Scene::Entity &entity, const QString &message);
+
+        ///
+        ///
+        ///
+        ///
+        void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
+
+        ///
+        ///
+        Scene::Entity *GetEntityWithID(const RexUUID &id);
+
+        ///
+        ///
+        void HandleRexEmotionIconMessage(StringVector &params);
+
+        ///
+        ///
+        void HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMessage &msg);
 
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;
