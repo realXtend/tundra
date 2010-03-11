@@ -25,6 +25,7 @@ namespace CoreUi
     class SettingsWidget;
     class AnchorLayoutManager;
     class CommunicationWidget;
+    class MenuManager;
 }
 
 namespace UiServices
@@ -96,17 +97,13 @@ namespace UiServices
 
         //! Get the inworld controls
         //! \return The main panel pointer.
-        CoreUi::MainPanel *GetMainPanel() const { return main_panel_; }
+        CoreUi::MainPanel *GetMainPanel() const { return main_panel_widget_; }
 
         //! Set the current chat controller object to world chat widget
         void SetWorldChatController(QObject *controller);
 
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy);
-
-        //! Set the demo login widget from python module, dont call this anywhere else!
-        //! Semi-hack for 0.1 release to get easy accessible demo worlds login without authentication
-        void SetDemoLoginWidget(QWidget *widget);
 
     private:
         Q_DISABLE_COPY(InworldSceneController);
@@ -124,13 +121,16 @@ namespace UiServices
         CoreUi::AnchorLayoutManager *layout_manager_;
 
         //! CoreUi Widgets
-        CoreUi::MainPanel *main_panel_;
+        CoreUi::MainPanel *main_panel_widget_;
         CoreUi::SettingsWidget *settings_widget_;
         CoreUi::CommunicationWidget *communication_widget_;
+        CoreUi::MenuManager *menu_manager_;
 
         //! Proxy widgets
-        UiProxyWidget *main_panel_proxy_widget_;
         UiProxyWidget *settings_proxy_widget_;
+
+        //! Internal list of UiProxyWidgets in scene
+        QList<UiServices::UiProxyWidget *> all_proxy_widgets_in_scene_;
 
         //! Framework pointer.
         Foundation::Framework *framework_;

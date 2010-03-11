@@ -22,35 +22,6 @@ namespace CoreUi
         ChangeView(viewmode_);
     }
 
-    // Public
-
-    void CommunicationWidget::UpdateController(QObject *controller)
-    {
-        // Disconnect previous
-        if (current_controller_)
-        {
-            this->disconnect(SIGNAL( SendMessageToServer(const QString&) ));
-            this->disconnect(current_controller_);
-        }
-
-        // Connect present controller
-        current_controller_ = controller;
-        connect(current_controller_, SIGNAL( MessageReceived(bool, QString, QString, QString) ),
-                this, SLOT( ShowIncomingMessage(bool, QString, QString, QString) ));
-        connect(this, SIGNAL( SendMessageToServer(const QString&) ), 
-                current_controller_, SLOT( SendChatMessageToServer(const QString&) ));
-
-        // Clear old ui messages from history view
-        if (history_view_text_edit_)
-            history_view_text_edit_->clear();
-    }
-
-    void CommunicationWidget::UpdateImWidget(UiServices::UiProxyWidget *im_proxy)
-    {
-        im_proxy_ = im_proxy;
-        imButton->setEnabled(true);
-    }
-
     // Private
 
     void CommunicationWidget::Initialise()
@@ -68,7 +39,7 @@ namespace CoreUi
         history_view_text_edit_ = new QPlainTextEdit(chatContentWidget);
         history_view_text_edit_->setReadOnly(true);
         history_view_text_edit_->setObjectName("historyViewTextEdit");
-        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(0,0,0,190); }");
+        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(34,34,34,191); border-radius: 7px; border: 1px solid rgba(255,255,255,50); }");
         history_view_text_edit_->setFont(QFont("Calibri", 11));
         stacked_layout_->addWidget(history_view_text_edit_);
 
@@ -81,7 +52,6 @@ namespace CoreUi
         connect(viewModeButton, SIGNAL( clicked() ), SLOT( ChangeViewPressed() ));
         connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
-
     }
 
     void CommunicationWidget::ChangeViewPressed()
@@ -103,17 +73,14 @@ namespace CoreUi
         switch (viewmode_)
         {
             case Normal:
-                chatControlsWidget->setStyleSheet("QWidget#chatControlsWidget { border-top: 1px solid rgba(255,255,255,200); border-right: 1px solid rgba(255,255,255,200); border-top-right-radius: 10px; }");
-                chatContentWidget->setStyleSheet("QWidget#chatContentWidget { background-color: transparent; border: 0px; border-radius: 0px; }");
+                chatContentWidget->setStyleSheet("QWidget#chatContentWidget { background-color: transparent; border-top-left-radius: 0px; border-top-right-radius: 0px; }");
+                viewModeButton->setStyleSheet("QPushButton#viewModeButton { background-image: url('./data/ui/images/chat/uibutton_HISTORY_normal.png'); }");
                 stacked_layout_->setCurrentWidget(normal_view_widget_);
-                viewModeButton->setText("History");
                 break;
             case History:
-                chatControlsWidget->setStyleSheet("QWidget#chatControlsWidget { border-top: 0px; border-top-right-radius: 0px; }");
-                chatContentWidget->setStyleSheet("QWidget#chatContentWidget { background-color: rgba(0,0,0,175);"
-                                                 "border-top: 1px solid rgba(255,255,255,200); border-right: 1px solid rgba(255,255,255,200); border-top-right-radius: 10px; }");
+                chatContentWidget->setStyleSheet("QWidget#chatContentWidget { background-color: rgba(34,34,34,191); border-top-left-radius: 7px; border-top-right-radius: 7px; }");
+                viewModeButton->setStyleSheet("QPushButton#viewModeButton { background-image: url('./data/ui/images/chat/uibutton_HISTORY_click.png'); }");
                 stacked_layout_->setCurrentWidget(history_view_text_edit_);
-                viewModeButton->setText("Slim");
                 break;
         }
     }
@@ -162,6 +129,35 @@ namespace CoreUi
         emit SendMessageToServer(message);
     }
 
+    // Public
+
+    void CommunicationWidget::UpdateController(QObject *controller)
+    {
+        // Disconnect previous
+        if (current_controller_)
+        {
+            this->disconnect(SIGNAL( SendMessageToServer(const QString&) ));
+            this->disconnect(current_controller_);
+        }
+
+        // Connect present controller
+        current_controller_ = controller;
+        connect(current_controller_, SIGNAL( MessageReceived(bool, QString, QString, QString) ),
+                this, SLOT( ShowIncomingMessage(bool, QString, QString, QString) ));
+        connect(this, SIGNAL( SendMessageToServer(const QString&) ), 
+                current_controller_, SLOT( SendChatMessageToServer(const QString&) ));
+
+        // Clear old ui messages from history view
+        if (history_view_text_edit_)
+            history_view_text_edit_->clear();
+    }
+
+    void CommunicationWidget::UpdateImWidget(UiServices::UiProxyWidget *im_proxy)
+    {
+        im_proxy_ = im_proxy;
+        imButton->setEnabled(true);
+    }
+
     // NormalChatViewWidget : QWidget
 
     NormalChatViewWidget::NormalChatViewWidget(QWidget *parent) :
@@ -203,9 +199,9 @@ namespace CoreUi
     {
         setFont(QFont("Arial", 12));
         if (own_message)
-            setStyleSheet("background-color: rgba(0,0,0,255); color: white; border-radius: 5px; padding: 3px;");
+            setStyleSheet("background-color: rgba(34,34,34,191); color: white; border-radius: 5px; padding: 3px;");
         else
-            setStyleSheet("background-color: rgba(0,0,0,200); color: white; border-radius: 5px; padding: 3px;");
+            setStyleSheet("background-color: rgba(34,34,34,150); color: white; border-radius: 5px; padding: 3px;");
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         QTimer::singleShot(10000, this, SLOT(TimeOut()));
     }
@@ -214,4 +210,5 @@ namespace CoreUi
     {
         emit DestroyMe(this);
     }
+
 }

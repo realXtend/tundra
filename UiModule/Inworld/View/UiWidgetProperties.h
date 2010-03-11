@@ -56,7 +56,7 @@ namespace UiServices
             : QObject(),
               widget_name_(widget_name),
               widget_type_(widget_type),
-              position_(QPointF(10.0, 60.0))
+              position_(QPointF(10.0, 200.0))
         {
             switch (widget_type_)
             {

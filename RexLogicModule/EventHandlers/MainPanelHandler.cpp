@@ -27,8 +27,8 @@ namespace RexLogic
         if (ui_module.get())
         {
             CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
-            QObject::connect(main_panel->logout_button, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
-            QObject::connect(main_panel->quit_button, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
+            QObject::connect(main_panel->buttonLogout, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
+            QObject::connect(main_panel->buttonQuit, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
         }
     }
 

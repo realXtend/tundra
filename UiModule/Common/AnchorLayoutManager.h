@@ -27,6 +27,8 @@ namespace CoreUi
     public slots:
         void AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner);
         void AddSideAnchor(QGraphicsLayoutItem *layout_item, Qt::Orientation orientation);
+        void AddItemToScene(QGraphicsWidget *graphics_item);
+        void RemoveItemFromScene(QGraphicsWidget *graphics_widget);
 
     private slots:
         void InitLayout();
