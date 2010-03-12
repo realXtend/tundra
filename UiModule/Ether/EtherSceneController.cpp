@@ -44,7 +44,9 @@ namespace Ether
               last_active_bottom_card_(0),
               layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
               info_hide_timer_(new QTimer(this)),
-              login_in_progress_(false)
+              login_in_progress_(false),
+              classical_login_widget_(0)
+              
         {
             // Connect key press signals from scene
             connect(scene_, SIGNAL( UpPressed() ), SLOT( UpPressed() ));
