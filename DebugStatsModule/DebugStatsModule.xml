@@ -1,6 +1,5 @@
 <config>
     <entry>DebugStatsModule</entry>
-    <dependency>SupportModules</dependency>
     <dependency>ProtocolModuleOpenSim</dependency>
     <dependency>ProtocolModuleTaiga</dependency>
     <dependency>OgreRenderingModule</dependency>
