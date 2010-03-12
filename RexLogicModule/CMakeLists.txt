@@ -21,7 +21,8 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Communications/*.h)
+file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h
+    EntityComponent/EC_*.h Communications/*.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
@@ -51,13 +52,15 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (XMLRPC)
 
-use_modules (RexLogicModule Core Foundation RexLogicModule Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
+use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule
+    RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
+    EnvironmentModule EntityComponents/EC_Highlight)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule
+    RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
+    EnvironmentModule EC_Highlight)
 
 link_package (OGRE)
 link_package (BOOST)

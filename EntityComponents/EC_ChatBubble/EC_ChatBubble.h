@@ -3,6 +3,7 @@
  *
  *  @file   EC_ChatBubble.h
  *  @brief  EC_ChatBubble Chat bubble component wich shows billboard with chat bubble and text on entity.
+ *  @note   The entity must have both EC_OgrePlaceable and EC_OgreMesh components available in advance.
 */
 
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h

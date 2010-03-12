@@ -40,7 +40,7 @@ endif (MSVC)
 
 # Enable memory leak checking in all core modules.
 if (MSVC)
-	add_definitions (-DMEMORY_LEAK_CHECK)
+    add_definitions (-DMEMORY_LEAK_CHECK)
 endif (MSVC)
 
 # On all platforms, we enable PCH files by default.
@@ -85,6 +85,7 @@ add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 add_subdirectory (RexLogicModule)
+add_subdirectory (EntityComponents/EC_Highlight)    # declared by RexLogicModule
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (UiModule)
