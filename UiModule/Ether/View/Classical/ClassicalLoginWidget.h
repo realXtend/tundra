@@ -18,16 +18,16 @@ namespace CoreUi
 
         class ClassicalLoginWidget : public QWidget, private Ui::ClassicalLoginWidget
         {
-
-        Q_OBJECT
+            Q_OBJECT
 
         public:
             ClassicalLoginWidget(Ether::Logic::EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data);
+            ~ClassicalLoginWidget();
 
         public slots:
             QMap<QString, QString> GetLoginInfo();
             void AppExitRequest();
-        
+
         private:
             Ether::Logic::EtherLoginNotifier *login_notifier_;
             TraditionalLoginWidget *traditional_widget_;
@@ -35,7 +35,6 @@ namespace CoreUi
 
         signals:
             void AppExitRequested();
-
         };
     }
 }
