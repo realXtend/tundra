@@ -107,6 +107,7 @@ bool OgreAssetEditorModule::HandleEvent(
                 return false;
 
             Inventory::InventoryItemDownloadedEventData *downloaded = checked_static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
+            assert(downloaded);
             asset_type_t at = downloaded->assetType;
             switch(at)
             {
@@ -130,7 +131,7 @@ bool OgreAssetEditorModule::HandleEvent(
                     // Bring editor to front
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
-                            ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+                        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
                 }
 
                 downloaded->handled = true;
