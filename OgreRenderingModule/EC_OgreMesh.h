@@ -167,6 +167,7 @@ namespace OgreRenderer
          */
         const std::string& GetMaterialName(uint index) const;
         const QString& GetMatName(uint index) const;
+
         //! gets material name from attachment mesh
         /*! \param index attachment index
             \param submesh_index submesh index
@@ -177,24 +178,31 @@ namespace OgreRenderer
         //! returns bounding box of Ogre mesh entity
         //! returns zero box if no entity
         void GetBoundingBox(Vector3df& min, Vector3df& max) const;
-        
+
         //! returns adjustment position
         Vector3df GetAdjustPosition() const;
+
         //! returns adjustment orientation
         Quaternion GetAdjustOrientation() const;
+
         //! returns adjustment scale
         Vector3df GetAdjustScale() const;
-        
+
         //! returns offset position of attachment
         Vector3df GetAttachmentPosition(uint index) const;
+
         //! returns offset orientation of attachment
         Quaternion GetAttachmentOrientation(uint index) const;
+
         //! returns offset scale of attachment
         Vector3df GetAttachmentScale(uint index) const;
-        
+
         //! returns draw distance
         float GetDrawDistance() const { return draw_distance_; }
-        
+
+        //! Returns adjustment scene node (used for scaling/offset/orientation modifications)
+        Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
+
     private:
         //! constructor
         /*! \param module renderer module

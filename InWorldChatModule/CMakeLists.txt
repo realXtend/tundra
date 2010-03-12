@@ -31,7 +31,7 @@ use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule
-    EC_ChatBubble EC_Billboard RexLogicModule)
+    EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard RexLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 

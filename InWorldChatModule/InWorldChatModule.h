@@ -74,42 +74,43 @@ namespace Naali
         static const std::string moduleName;
 
     public slots:
-        ///
+        /// Sends chat message to server.
         /// @param msg Chat message to be sent.
         void SendChatFromViewer(const QString &msg);
 
     private:
         Q_DISABLE_COPY(InWorldChatModule);
 
-        ///
-        ///
+        /// Console command for testing billboards.
+        /// @param params Parameters.
         Console::CommandResult TestAddBillboard(const StringVector &params);
 
-        ///
-        ///
+        /// Console command for sending chat message to server.
+        /// @param params Parameters.
         Console::CommandResult ConsoleChat(const StringVector &params);
 
-        ///
-        ///
-        ///
+        /// Applies EC_ChatBubble to a scene entity.
+        /// @param entity Entity.
+        /// @message Message to be shown at the chat bubble.
         void ApplyChatBubble(Scene::Entity &entity, const QString &message);
 
-        ///
-        ///
-        ///
-        ///
+        /// Applies EC_ChatBubble to a scene entity.
+        /// @param entity Entity.
+        /// @param texture
+        /// @param timeToShow 
         void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
 
-        ///
-        ///
+        /// Returns scene entity pointer with the wanter ID:
+        /// @param id ID of the entity.
+        /// @return Entity pointer matching the id or 0 if not found.
         Scene::Entity *GetEntityWithID(const RexUUID &id);
 
-        ///
-        ///
+        /// Handles RexEmotionIcon generic message.
+        /// @param params Parameters.
         void HandleRexEmotionIconMessage(StringVector &params);
 
-        ///
-        ///
+        /// Handles ChatFromSimulator message.
+        /// @param msg Network message.
         void HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMessage &msg);
 
         /// NetworkState event category.

@@ -1,0 +1,10 @@
+material Highlight
+{
+    technique
+    {
+        pass
+        {
+            polygon_mode wireframe
+        }
+    }
+}

@@ -30,7 +30,8 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-#include "Inventory/InventoryEvents.h"
+
+#include "EC_Highlight.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -101,6 +102,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
+    DECLARE_MODULE_EC(EC_Highlight);
 }
 
 // virtual
@@ -108,7 +110,7 @@ void RexLogicModule::Initialize()
 {
     PROFILE(RexLogicModule_Initialize);
     Foundation::EventManagerPtr eventmgr = framework_->GetEventManager();
-    eventmgr-> RegisterEventCategory("Action");
+    eventmgr->RegisterEventCategory("Action");
 
     /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
     // WorldLogic::registerSystem(framework);
@@ -238,6 +240,9 @@ void RexLogicModule::PostInitialize()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
+    RegisterConsoleCommand(Console::CreateCommand("Highlight",
+        "Tests EC_Highlight. Adds EC_Highlight for every avatar.",
+        Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -640,6 +645,40 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 {
     event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
     GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
+{
+    if (!activeScene_)
+        return Console::ResultFailure("No active scene found.");
+
+    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        boost::shared_ptr<OgreRenderer::EC_OgreMesh> ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>();
+        if (!ec_mesh)
+            continue;
+
+        boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+        if (!highlight)
+        {
+            // If we didn't have the higihlight component yet, create one now and show it.
+            entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
+            highlight = entity.GetComponent<EC_Highlight>();
+            assert(highlight.get());
+            highlight->Show();
+        }
+        else
+        {
+            // EC_Highlight exists, toggle its visibility.
+            if (highlight->IsVisible())
+                highlight->Hide();
+            else
+                highlight->Show();
+        }
+    }
+
     return Console::ResultSuccess();
 }
 

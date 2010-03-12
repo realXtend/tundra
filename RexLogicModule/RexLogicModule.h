@@ -187,6 +187,9 @@ namespace RexLogic
         //! toggle fly mode through console
         Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
 
+        //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
+        Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
