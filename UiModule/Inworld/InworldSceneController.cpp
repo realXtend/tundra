@@ -6,13 +6,12 @@
 
 #include "InworldSceneController.h"
 #include "Common/AnchorLayoutManager.h"
+#include "Menus/MenuManager.h"
 #include "View/UiProxyWidget.h"
 #include "View/UiWidgetProperties.h"
 #include "View/CommunicationWidget.h"
-#include "Menus/MenuManager.h"
-
-#include "MainPanel/MainPanel.h"
-#include "MainPanel/SettingsWidget.h"
+#include "View/MainPanel.h"
+#include "View/SettingsWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>

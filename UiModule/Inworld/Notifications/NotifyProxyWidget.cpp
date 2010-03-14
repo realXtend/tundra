@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "Notify/NotifyProxyWidget.h"
+#include "NotifyProxyWidget.h"
 
 #include <QGraphicsScene>
 #include <QWidget>

@@ -11,7 +11,7 @@
 
 #include <UiModule.h>
 #include <Inworld/InworldSceneController.h>
-#include <MainPanel/MainPanel.h>
+#include <Inworld/View/MainPanel.h>
 
 namespace RexLogic
 {
@@ -27,30 +27,13 @@ namespace RexLogic
         if (ui_module.get())
         {
             CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
-            QObject::connect(main_panel->buttonLogout, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
-            QObject::connect(main_panel->buttonQuit, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
+            connect(main_panel->buttonLogout, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
+            connect(main_panel->buttonQuit, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
         }
     }
 
     MainPanelHandler::~MainPanelHandler()
     {
-
-    }
-
-    void MainPanelHandler::ConnectToLoginHandler()
-    {
-        //boost::shared_ptr<UiServices::UiModule> ui_module = 
-        //    framework_->GetModuleManager()->GetModule<UiServices::UiModule>
-        //    (Foundation::Module::MT_UiServices).lock();
-
-        //if (ui_module.get())
-        //{
-        //    CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
-        //    QObject::connect(main_panel, SIGNAL( CommandLoginOpenSim(QString &, QString &, QString &) ),
-        //                     rex_logic_module_->GetLogin(), SLOT( StartParameterLoginOpenSim(QString &, QString &, QString &) ));
-        //    QObject::connect(main_panel, SIGNAL( CommandLoginRealxtend(QString &, QString &, QString &, QString &) ),
-        //                     rex_logic_module_->GetLogin(), SLOT( StartParameterLoginRealXtend(QString &, QString &, QString &, QString &) ));
-        //}
     }
 
     void MainPanelHandler::LogoutRequested()

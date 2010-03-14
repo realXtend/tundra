@@ -2,9 +2,9 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 
-#include "MainPanel/MainPanelButton.h"
+#include "MainPanelButton.h"
 
 #include <QWidget>
 #include <QGraphicsEffect>

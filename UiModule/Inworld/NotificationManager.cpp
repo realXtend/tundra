@@ -6,8 +6,8 @@
 #include "InworldSceneController.h"
 
 #include "ui_NotificationWidget.h"
-#include "Notify/NotifyProxyWidget.h"
-#include "Notify/NotifyLabel.h"
+#include "Inworld/Notifications/NotifyProxyWidget.h"
+#include "Inworld/Notifications/NotifyLabel.h"
 #include "CoreDefines.h"
 
 #include <QLabel>
