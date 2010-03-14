@@ -18,8 +18,6 @@ namespace RexLogic
         MainPanelHandler(Foundation::Framework *framework, RexLogicModule *logic_module);
         ~MainPanelHandler();
 
-        void ConnectToLoginHandler();
-
     public slots:
         void LogoutRequested();
         void QuitRequested();

@@ -30,6 +30,8 @@ file (GLOB UI_FILES ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
 # SubFolders to project with filtering
+AddSourceFolder (Common)
+
 AddSourceFolder (Ether)
 AddSourceFolder (Ether/View)
 AddSourceFolder (Ether/View/Classical)
@@ -38,11 +40,8 @@ AddSourceFolder (Ether/Data)
 AddSourceFolder (Inworld)
 AddSourceFolder (Inworld/View)
 AddSourceFolder (Inworld/Menus)
-
-AddSourceFolder (MainPanel)
-AddSourceFolder (Notify)
-AddSourceFolder (Console)
-AddSourceFolder (Common)
+AddSourceFolder (Inworld/Console)
+AddSourceFolder (Inworld/Notifications)
 
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup
