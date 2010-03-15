@@ -121,25 +121,24 @@ class ObjectEditWindow:
     def update_guivals(self, ent):   
         #from quat to euler x.y,z
         if ent is not None:
-            self.update_posvals(ent.pos)
-            self.update_scalevals(ent.scale)
-            self.update_rotvals(ent.orientation)
+            self.update_posvals(ent.placeable.Position)
+            self.update_scalevals(ent.placeable.Scale)
+            self.update_rotvals(ent.placeable.Orientation)
             self.controller.updateSelectionBox(ent) #PositionAndOrientation(ent)
         
     def update_scalevals(self, scale):
-        x, y, z = scale
-        self.mainTab.scalex.setValue(x)
-        self.mainTab.scaley.setValue(y)
-        self.mainTab.scalez.setValue(z)
+        self.mainTab.scalex.setValue(scale.x())
+        self.mainTab.scaley.setValue(scale.y())
+        self.mainTab.scalez.setValue(scale.z())
         
     def update_posvals(self, pos):
-        x, y, z = pos
-        self.mainTab.xpos.setValue(x)
-        self.mainTab.ypos.setValue(y)
-        self.mainTab.zpos.setValue(z)
+        self.mainTab.xpos.setValue(pos.x())
+        self.mainTab.ypos.setValue(pos.y())
+        self.mainTab.zpos.setValue(pos.z())
         
     def update_rotvals(self, rot):
-        euler = quat_to_euler(rot)
+        qrot = list((rot.x(), rot.y(), rot.z(), rot.scalar()))
+        euler = quat_to_euler(qrot)
         self.mainTab.rot_x.setValue(euler[0])
         self.mainTab.rot_y.setValue(euler[1])
         self.mainTab.rot_z.setValue(euler[2])   

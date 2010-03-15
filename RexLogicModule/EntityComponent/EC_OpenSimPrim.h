@@ -227,7 +227,7 @@ namespace RexLogic
         void setSoundID(QString value) { SoundID = value.toStdString(); }
 
         QString getMeshID() const { return QString(MeshID.c_str()); }
-        void setMeshID(QString value) { MeshID = value.toStdString(); }
+        void setMeshID(QString value) { MeshID = value.toStdString(); DrawType = RexTypes::DRAWTYPE_MESH;}
 
         QString getParticleScriptID() const { return QString(ParticleScriptID.c_str()); }
         void setParticleScriptID(QString value) { ParticleScriptID = value.toStdString(); }

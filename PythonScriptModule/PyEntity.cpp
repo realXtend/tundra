@@ -333,22 +333,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
     
     RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
-    
-    /*if (s_name.compare("prim") == 0)
-    {
-        std::cout << ".. getting prim" << std::endl;
-        const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-        if (!prim_component)
-            return NULL; //XXX report AttributeError
-        RexLogic::EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());
-            
-        //m->AddU32(prim->LocalId);
-        std::string retstr = "local id:" + prim->FullId.ToString() + "- prim name: " + prim->ObjectName;
-        return PyString_FromString(retstr.c_str());
-    }*/
-	//PyObject_Print(value, stdout, 0);
-	//std::cout << "\n" << std::endl;
-    //else 
+
     if (s_name.compare("pos") == 0)
     {
         /* this must probably return a new object, a 'Place' instance, that has these.
@@ -472,62 +457,34 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
             }
         
         }
-        else
-        {
-            PyErr_SetString(PyExc_ValueError, "text is a string"); //XXX change the exception
-            return -1;
-        }
-        
-        //if(!PyArg_ParseTuple(value, "s", c_text))
-        //    return NULL; //XXX report ArgumentException error
-                
-
-
-        return 0;
     }
-	else if (s_name.compare("meshid") == 0)
-	{
-	    //std::cout << "Setting mesh" << std::endl;
-		if (PyString_Check(value) || PyUnicode_Check(value))
+    else if (s_name.compare("meshid") == 0)
+    {
+        //std::cout << "Setting mesh" << std::endl;
+        if (PyString_Check(value) || PyUnicode_Check(value))
         {
-			//NOTE: This is stricly done locally only for now, nothing is sent to the server.
-			const char* c_text = PyString_AsString(value);
-			std::string text = std::string(c_text);
+            //NOTE: This is stricly done locally only for now, nothing is sent to the server.
+            const char* c_text = PyString_AsString(value);
+            std::string text = std::string(c_text);
 
             //std::cout << ".. getting prim in mesh setting" << std::endl;
-			if (!prim)
-			{
-				PyErr_SetString(PyExc_AttributeError, "prim not found.");
-				return -1;   
-			}  
+            if (!prim)
+            {
+                PyErr_SetString(PyExc_AttributeError, "prim not found.");
+                return -1;   
+            }  
 
             prim->MeshID = text;
             prim->DrawType = RexTypes::DRAWTYPE_MESH;
 
             return 0;
         }
-        
-        /* was a test thing, just changes what ogre shows locally
-
-			
-            /*Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-			Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-			if (placeable)
-			{
-				OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-				
-				ogremesh.SetMesh(text);
-
-				PythonScript::self()->LogInfo("Entity's mesh changed locally.");
-				return NULL;
-			}*/
-
         else
         {
             PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
             return -1;
         }
-	}
+    }
 
     //std::cout << "unknown component typse."  << std::endl;
 	PythonScript::self()->LogDebug("Unknown component type.");

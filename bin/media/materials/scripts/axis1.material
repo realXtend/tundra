@@ -10,7 +10,8 @@ material axis_green
 			specular 0.000000 0.500000 0.000000 0.750000 12.750000
 			emissive 0.000000 0.000000 0.000000 0.750000
 			scene_blend alpha_blend
-			depth_write off
+            depth_check off
+            depth_write off
 		}
 	}
 }
@@ -26,7 +27,8 @@ material axis_red
 			specular 0.500000 0.036667 0.003333 0.750000 12.750000
 			emissive 0.000000 0.000000 0.000000 0.750000
 			scene_blend alpha_blend
-			depth_write off
+			depth_check off
+            depth_write off
 		}
 	}
 }
@@ -41,6 +43,8 @@ material axis_blue_hi
 			diffuse 0.000000 0.252631 0.800000 1.000000
 			specular 0.000000 0.236667 0.500000 1.000000 12.750000
 			emissive 0.000000 0.000000 0.000000 1.000000
+            scene_blend alpha_blend
+            depth_check off
 		}
 	}
 }
@@ -56,6 +60,7 @@ material axis_blue
 			specular 0.000000 0.236667 0.500000 0.750000 12.750000
 			emissive 0.000000 0.000000 0.000000 0.750000
 			scene_blend alpha_blend
+            depth_check off
 			depth_write off
 		}
 	}
@@ -71,6 +76,8 @@ material axis_red_hi
 			diffuse 0.800000 0.037333 0.000000 1.000000
 			specular 0.500000 0.020000 0.003333 1.000000 12.750000
 			emissive 0.000000 0.000000 0.000000 1.000000
+            scene_blend alpha_blend
+            depth_check off
 		}
 	}
 }
@@ -85,6 +92,8 @@ material axis_black
 			diffuse 0.054080 0.054080 0.054080 1.000000
 			specular 0.040460 0.040460 0.040460 1.000000 12.750000
 			emissive 0.000000 0.000000 0.000000 1.000000
+            scene_blend alpha_blend
+            depth_check off
 		}
 	}
 }
@@ -99,6 +108,8 @@ material axis_green_hi
 			diffuse 0.000000 0.800000 0.010667 1.000000
 			specular 0.000000 0.500000 0.000000 1.000000 12.750000
 			emissive 0.000000 0.000000 0.000000 1.000000
+            scene_blend alpha_blend
+            depth_check off
 		}
 	}
 }

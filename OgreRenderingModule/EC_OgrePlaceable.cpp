@@ -190,4 +190,27 @@ namespace OgreRenderer
 		SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
     }
     
+
+    QQuaternion EC_OgrePlaceable::GetQOrientation() const 
+    {
+        Quaternion rexort = GetOrientation();
+        return QQuaternion(rexort.w, rexort.x, rexort.y, rexort.z);
+    }
+
+    void EC_OgrePlaceable::SetQOrientation(const QQuaternion newort)
+    {
+        SetOrientation(Quaternion(newort.x(), newort.y(), newort.z(), newort.scalar()));
+    }
+
+    
+    QVector3D EC_OgrePlaceable::GetQScale() const
+    {
+        Vector3df rexscale = GetScale();
+        return QVector3D(rexscale.x, rexscale.y, rexscale.z);
+    }
+
+    void EC_OgrePlaceable::SetQScale(const QVector3D newscale)
+    {
+        SetScale(Vector3df(newscale.x(), newscale.y(), newscale.z()));
+    }
 }
