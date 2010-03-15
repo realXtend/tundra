@@ -21,12 +21,20 @@ namespace ProtocolUtilities
     class NetInMessage
     {
     public:
-        NetInMessage(size_t seqNum, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
+        /// Constructor.
+        /// @param seqNum Sequence number of this message.
+        /// @param data Data buffer.
+        /// @param numBytes Number of bytes.
+        /// @param zerEncoded Is this data zero-encoded.
+        NetInMessage(size_t seqNum, const uint8_t *data, size_t numBytes, bool zeroEncoded);
+
+        /// Destructor.
         ~NetInMessage();
-        
+
+        /// Copy-constuctor.
         NetInMessage(const NetInMessage &rhs);
-        
-        // The following functions all read data from the message and advance to the next variable in the message block.
+
+        /// The following functions all read data from the message and advance to the next variable in the message block.
         uint8_t  ReadU8();
         uint16_t ReadU16();
         uint32_t ReadU32();
@@ -55,11 +63,11 @@ namespace ProtocolUtilities
         void ReadString(char *dst, size_t maxSize);
         std::string ReadString();
 
-        /// Use to read a generic buffer of bytes from the stream. Use this to read a VarBufferXX variable.
+        /// Use to read a generic buffer of bytes from the stream. Use this to read a VarBufferXX and NetVarFixed variables.
         /// @param bytesRead [out] The number of bytes the returned buffer holds. Cannot pass in zero.
         /// @return A pointer to the memory area. The returned memory remains owned by NetInMessage so no need to free it.
         const uint8_t *ReadBuffer(size_t *bytesRead);
-        
+
         /// Check the type of the next variable in the message.
         /// @return NetVariableType enum.
         NetVariableType CheckNextVariableType() const;
