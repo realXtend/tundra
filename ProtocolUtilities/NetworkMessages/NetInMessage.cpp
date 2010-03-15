@@ -399,10 +399,10 @@ std::string NetInMessage::ReadString()
 {
     // The OpenSim protocol doesn't specify variable type for strings so use "NetVarNone".
     RequireNextVariableType(NetVarNone);
-    
+
     char tmp[257];
     ReadString(tmp, 256);
-    
+
     return std::string(tmp);
 }
 
@@ -410,7 +410,7 @@ std::string NetInMessage::ReadString()
 
 const uint8_t *NetInMessage::ReadBuffer(size_t *bytesRead)
 {
-    if (CheckNextVariableType() < NetVarBufferByte ||
+    if (CheckNextVariableType() < NetVarFixed ||
         CheckNextVariableType() > NetVarBuffer4Bytes)
     {
         throw NetMessageException(NetMessageException::ET_VariableTypeMismatch);
