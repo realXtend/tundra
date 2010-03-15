@@ -18,7 +18,6 @@ namespace Ether
             : QObject(parent),
               scene_controller_(scene_controller)
         {
-
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)

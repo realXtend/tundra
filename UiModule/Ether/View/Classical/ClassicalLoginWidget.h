@@ -25,8 +25,10 @@ namespace CoreUi
             ~ClassicalLoginWidget();
 
         public slots:
+            void RemoveEtherButton();
             QMap<QString, QString> GetLoginInfo();
             void AppExitRequest();
+            void StatusUpdate(bool connecting, QString message);
 
         private:
             Ether::Logic::EtherLoginNotifier *login_notifier_;
@@ -35,6 +37,7 @@ namespace CoreUi
 
         signals:
             void AppExitRequested();
+            void StatusUpdateToUi(QString);
         };
     }
 }

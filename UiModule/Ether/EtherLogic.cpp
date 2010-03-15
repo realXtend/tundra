@@ -41,6 +41,8 @@ namespace Ether
               card_size_(QRectF(0, 0, 470, 349)),
               previous_scene_(0)
         {
+
+#ifdef DYNAMIC_LOGIN_SCENE
             StoreDataToFilesIfEmpty();
 
             // Read avatars and worlds from file
@@ -79,6 +81,16 @@ namespace Ether
                     SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
             connect(scene_controller_, SIGNAL( ObjectRemoved(QUuid) ),
                     SLOT( RemoveObjectFromData(QUuid) ));
+#else
+            // Create login scene, store current scene
+            scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
+            // Create scene controller
+            scene_controller_ = new EtherSceneController(this, data_manager_, scene_);
+            // Create login handler
+            login_notifier_ = new EtherLoginNotifier(this, scene_controller_); 
+            connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
+                login_notifier_, SLOT( ExitApplication() ));
+#endif
         }
 
         EtherLogic::~EtherLogic()
@@ -98,8 +110,11 @@ namespace Ether
         void EtherLogic::Start()
         {
             // Check default view for ether and setup classic login widget
-            QString view = data_manager_->GetDefaultView();
             QMap<QString, QString> last_login_data = data_manager_->GetClassicLoginInfo();
+
+#ifdef DYNAMIC_LOGIN_SCENE
+            // In dynamic view check which view is defaulted
+            QString view = data_manager_->GetDefaultView();
 
             bool classic_view = false;
             if (view == "classic")
@@ -149,6 +164,9 @@ namespace Ether
 
             // HACK to put focus for avatar row :)
             QTimer::singleShot(500, scene_controller_, SLOT(UpPressed()));
+#else
+            scene_controller_->LoadStaticEther(login_notifier_, last_login_data);
+#endif
         }
 
         void EtherLogic::SetVisibleItems()

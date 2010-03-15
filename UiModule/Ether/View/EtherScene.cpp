@@ -25,6 +25,7 @@ namespace Ether
               supress_key_events_(false),
               connected_(false)
         {
+#ifdef DYNAMIC_LOGIN_SCENE
             bg_image_disconnected_ = QPixmap("./data/ui/images/ether/main_background_disconnected.png");
             bg_image_connected_ = QPixmap("./data/ui/images/ether/main_background_connected.png");
             QBrush bg_brush(bg_image_disconnected_);            
@@ -32,6 +33,7 @@ namespace Ether
 
             connect(this, SIGNAL( sceneRectChanged(const QRectF &) ),
                     SLOT( RectChanged(const QRectF &) ));
+#endif
         }
 
         EtherScene::~EtherScene()
@@ -91,7 +93,9 @@ namespace Ether
         void EtherScene::SetConnectionStatus(bool connected) 
         {
             connected_ = connected;
+#ifdef DYNAMIC_LOGIN_SCENE
             RectChanged(sceneRect());
+#endif
         }
 
         void EtherScene::RectChanged(const QRectF &new_rect)

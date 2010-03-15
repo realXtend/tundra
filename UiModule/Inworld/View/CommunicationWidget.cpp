@@ -31,7 +31,7 @@ namespace CoreUi
         imButton->setEnabled(false);
 
         // Stacked layout
-        stacked_layout_ = new QStackedLayout(chatContentWidget);
+        stacked_layout_ = new QStackedLayout();
         stacked_layout_->setMargin(0);
         contentContainerLayout->addLayout(stacked_layout_);
 

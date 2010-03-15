@@ -40,9 +40,12 @@ namespace Ether
         public:
             EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EtherMenu*, View::EtherMenu*> menus,
                                  QRectF card_size, int top_items, int bottom_items);
+            EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene);
             virtual ~EtherSceneController();
 
         public slots:
+            void LoadStaticEther(EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data);
+
             void LoadActionWidgets();
             void LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data);
 
@@ -87,6 +90,7 @@ namespace Ether
 
             void LoginAnimationFinished();
             void HideStatusWidget();
+            void StopActiveItemAnimations();
 
         private:
             //! Pointer to data manager
