@@ -6,8 +6,9 @@
 #include "UiModuleApi.h"
 
 #include <QObject>
-#include <QGraphicsView>
-#include <QTimer>
+#include <QGraphicsScene>
+#include <QList>
+#include <QRectF>
 
 namespace Foundation
 {
@@ -16,7 +17,6 @@ namespace Foundation
 
 namespace CoreUi
 {
-    class NotifyProxyWidget;
     class NotifyLabel;
 }
 
@@ -35,25 +35,30 @@ namespace UiServices
     Q_OBJECT
 
     public:
-        NotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+        NotificationManager(Foundation::Framework *framework, QGraphicsScene *scene);
         virtual ~NotificationManager();
 
     public slots:
         void ShowInformationString(const QString &text, int duration_msec = 5000);
         void DestroyNotifyLabel(CoreUi::NotifyLabel *notification);
+        void SceneRectChanged(const QRectF &rect);
+
 
     private slots:
         void ResizeAndPositionNotifyArea();
+        
     
     private:
-        QWidget *notification_widget_;
-        CoreUi::NotifyProxyWidget *notification_proxy_widget_;
-        Ui::NotificationWidget *notification_ui_;
+        QList<CoreUi::NotifyLabel*> notifications_;
+        QList<CoreUi::NotifyLabel*> visible_notifications_;
+
+        QRectF notice_size_;
+        QPointF start_point_;
+
 
         Foundation::Framework *framework_;
-        QGraphicsView *ui_view_;
+        QGraphicsScene *scene_;
 
-        int visible_notifications_;
     };
 }
 

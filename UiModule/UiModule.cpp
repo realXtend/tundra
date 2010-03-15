@@ -73,7 +73,7 @@ namespace UiServices
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
-            inworld_notification_manager_ = new NotificationManager(GetFramework(), ui_view_);
+            inworld_notification_manager_ = new NotificationManager(GetFramework(), ui_view_->scene());
             LogDebug("Notification Manager service READY");
 
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
@@ -87,7 +87,6 @@ namespace UiServices
     {
         SubscribeToEventCategories();
         ui_console_manager_->SendInitializationReadyEvent();
-
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
@@ -176,6 +175,8 @@ namespace UiServices
                     else
                         welcome_message = "Welcome to " + current_server_;
                     inworld_notification_manager_->ShowInformationString(welcome_message, 10000);
+                    inworld_notification_manager_->ShowInformationString(welcome_message, 1000);
+                    inworld_notification_manager_->ShowInformationString(welcome_message, 20000);
                     break;
                 }
                 default:

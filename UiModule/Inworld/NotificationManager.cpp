@@ -10,73 +10,61 @@
 #include "Inworld/Notifications/NotifyLabel.h"
 #include "CoreDefines.h"
 
-#include <QLabel>
+#include <QGraphicsScene>
 
 #include "MemoryLeakCheck.h"
 
 namespace UiServices
 {
-    NotificationManager::NotificationManager(Foundation::Framework *framework, QGraphicsView *ui_view) 
+    NotificationManager::NotificationManager(Foundation::Framework *framework, QGraphicsScene *scene) 
         : QObject(),
+          notice_size_(0,0,200,100),
+          start_point_(scene->width()-notice_size_.width()-5, 30),
           framework_(framework),
-          ui_view_(ui_view),
-          notification_widget_(new QWidget()),
-          notification_ui_(new Ui::NotificationWidget()),
-          notification_proxy_widget_(0),
-          visible_notifications_(0)
+          scene_(scene)
     {
-        notification_ui_->setupUi(notification_widget_);
-
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        notification_widget_->setSizePolicy(sizePolicy);
-
-        notification_proxy_widget_ = new CoreUi::NotifyProxyWidget(notification_widget_);
-        ui_view_->scene()->addItem(notification_proxy_widget_);
+        
+        connect(scene_, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(SceneRectChanged(const QRectF &)));
     }
 
     NotificationManager::~NotificationManager()
     {
-        SAFE_DELETE(notification_widget_);
-        SAFE_DELETE(notification_ui_);
+
+    }
+
+    void NotificationManager::SceneRectChanged(const QRectF &rect)
+    {
+        start_point_.setX(rect.width()-notice_size_.width());
+        ResizeAndPositionNotifyArea();
     }
 
     void NotificationManager::ShowInformationString(const QString &text, int duration_msec)
     {
-        if (!notification_proxy_widget_->isVisible())
-            notification_proxy_widget_->show();
-        visible_notifications_++;
-
         CoreUi::NotifyLabel *notify_label = new CoreUi::NotifyLabel(text, duration_msec);
-        connect(notify_label, SIGNAL( DestroyMe(CoreUi::NotifyLabel *)), SLOT( DestroyNotifyLabel(CoreUi::NotifyLabel *) ));
-
-        notification_ui_->verticalMainLayout->addWidget(notify_label);
+        notify_label->setParent(this);
+        connect(notify_label, SIGNAL( DestroyMe(CoreUi::NotifyLabel *)),this, SLOT( DestroyNotifyLabel(CoreUi::NotifyLabel *) ));
+        notifications_.append(notify_label);
+        visible_notifications_.append(notify_label);
+        scene_->addItem(notify_label);
         ResizeAndPositionNotifyArea();
+        notify_label->ShowNotification();
     }
 
     void NotificationManager::DestroyNotifyLabel(CoreUi::NotifyLabel *notification)
     {
-        int index = notification_ui_->verticalMainLayout->indexOf(notification);
-        if (index != -1)
-        {
-            visible_notifications_--;
-            notification_ui_->verticalMainLayout->removeItem(notification_ui_->verticalMainLayout->itemAt(index));
-            SAFE_DELETE(notification);
-            if (visible_notifications_ == 0)
-                notification_proxy_widget_->hide();
-            else
-                ResizeAndPositionNotifyArea();
-        }
+        visible_notifications_.removeOne(notification);
+        ResizeAndPositionNotifyArea();
     }
 
     void NotificationManager::ResizeAndPositionNotifyArea()
     {
-        int count = notification_ui_->verticalMainLayout->count();
-        if (count > 0)
+        QPointF current_pos = start_point_;
+
+        for(int i =0; i<visible_notifications_.size(); i++)
         {
-            int min_height = notification_ui_->verticalMainLayout->itemAt(0)->maximumSize().height();
-            notification_widget_->setMinimumHeight(count*min_height);
-            notification_widget_->resize(0, 18);
-            notification_proxy_widget_->CheckPosition();
+            CoreUi::NotifyLabel *notify_label = visible_notifications_.at(i);
+            notify_label->setPos(current_pos);
+            current_pos.setY(current_pos.y() + notify_label->geometry().height());
         }
     }
 }

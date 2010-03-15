@@ -3,13 +3,15 @@
 #ifndef incl_UiModule_NotifyLabel_h
 #define incl_UiModule_NotifyLabel_h
 
-#include <QLabel>
+#include <QGraphicsProxyWidget>
+#include <ui_NotificationWidget.h>
+#include <QPropertyAnimation>
+#include <QTimer>
 
 namespace CoreUi
 {
-    class NotifyLabel : public QLabel
+    class NotifyLabel : public QGraphicsProxyWidget, private Ui::NotificationWidget
     {
-
     Q_OBJECT
 
     public:
@@ -18,9 +20,18 @@ namespace CoreUi
     
     public slots:
         void TimeOut();
+        void AnimationFinished();
+        void ShowNotification();
+        void CloseClicked();
 
     signals:
         void DestroyMe(CoreUi::NotifyLabel *me);
+
+    private:
+    QWidget *internal_widget_;
+    QPropertyAnimation anim_;
+    QTimer timer_;
+    int current_time_;
 
     };
 }
