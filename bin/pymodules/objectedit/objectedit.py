@@ -26,6 +26,8 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
+from PythonQt.QtGui import QVector3D as vec
+from PythonQt.QtGui import QQuaternion as quat
 
 try:
     window
@@ -97,7 +99,7 @@ class ObjectEdit(Component):
         selectionfile = QFile(self.SELECTIONRECT)
         self.selection_rect = loader.load(selectionfile)
         rectprops = r.createUiWidgetProperty(2)
-        print type(rectprops), dir(rectprops)
+        #~ print type(rectprops), dir(rectprops)
         #print rectprops.WidgetType
         #uiprops.widget_name_ = "Selection Rect"
         
@@ -206,7 +208,8 @@ class ObjectEdit(Component):
     def updateSelectionBox(self, ent): 
         if ent is not None:
             bb = list(ent.boundingbox)
-            scale = list(ent.scale)
+            qscale = ent.placeable.Scale
+            scale = list((qscale.x(), qscale.y(), qscale.z()))
             min = Vector3(bb[0], bb[1], bb[2])
             max = Vector3(bb[3], bb[4], bb[5])
             height = abs(bb[4] - bb[1]) 
@@ -218,10 +221,10 @@ class ObjectEdit(Component):
                 #~ width += scale[1] #*1.2
                 #~ depth += scale[2]#*1.2
 
-                self.selection_box.pos = ent.pos
+                self.selection_box.placeable.Position = ent.placeable.Position
                 
-                self.selection_box.scale = height, width, depth#depth, width, height
-                self.selection_box.orientation = ent.orientation
+                self.selection_box.placeable.Scale = vec(height, width, depth)#depth, width, height
+                self.selection_box.placeable.Orientation = ent.placeable.Orientation
             else:
                 r.logDebug("EditGUI: EC_OgreMesh clicked...")
 
@@ -243,8 +246,8 @@ class ObjectEdit(Component):
     def hideSelector(self):
         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
             if self.selection_box is not None:
-                self.selection_box.scale = 0.0, 0.0, 0.0
-                self.selection_box.pos = 0.0, 0.0, 0.0
+                self.selection_box.placeable.Scale = vec(0.0, 0.0, 0.0)
+                self.selection_box.placeable.Position = vec(0.0, 0.0, 0.0)
         except RuntimeError, e:
             r.logDebug("hideSelector failed")
         
@@ -527,16 +530,16 @@ class ObjectEdit(Component):
         self.duplicateDragStart = True
         
     def createObject(self):
-        ent_id = r.getUserAvatarId()
-        ent = r.getEntity(ent_id)
-        x, y, z = ent.pos#r.getUserAvatarPos()
+        avatar_id = r.getUserAvatarId()
+        avatar = r.getEntity(avatar_id)
+        pos = avatar.placeable.Position#r.getUserAvatarPos()
 
-        start_x = x
-        start_y = y
-        start_z = z
-        end_x = x
-        end_y = y
-        end_z = z
+        start_x = pos.x()
+        start_y = pos.y()
+        start_z = pos.z()
+        end_x = start_x
+        end_y = start_y
+        end_z = start_z
 
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
@@ -576,18 +579,15 @@ class ObjectEdit(Component):
         ent = self.active
         
         if ent is not None:
-            #print "sel pos:", ent.pos, pos[i], v
-            pos = list(ent.pos) #should probably wrap Vector3, see test_move.py for refactoring notes. 
+            qpos = ent.placeable.Position
+            pos = list((qpos.x(), qpos.y(), qpos.z())) #should probably wrap Vector3, see test_move.py for refactoring notes. 
     
             if not self.float_equal(pos[i],v):
                 pos[i] = v
                 #converted to list to have it mutable
-                ent.pos = pos[0], pos[1], pos[2] #XXX API should accept a list/tuple too .. or perhaps a vector type will help here too
-                #print "=>", ent.pos
+                ent.placeable.Position = vec(pos[0], pos[1], pos[2])
                 self.manipulator.moveTo(self.sels)
-                #self.selection_box.pos = pos[0], pos[1], pos[2]
 
-                #self.window.update_posvals(pos)
                 self.modified = True
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -595,8 +595,9 @@ class ObjectEdit(Component):
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
-            oldscale = list(ent.scale)
-            scale = list(ent.scale)
+            qscale = ent.placeable.Scale
+            oldscale = list((qscale.x(), qscale.y(), qscale.z()))
+            scale = list((qscale.x(), qscale.y(), qscale.z()))
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
@@ -608,7 +609,7 @@ class ObjectEdit(Component):
                         if index != i:
                             scale[index] += diff
                 
-                ent.scale = scale[0], scale[1], scale[2]
+                ent.placeable.Scale = vec(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -625,28 +626,22 @@ class ObjectEdit(Component):
         #print "pos index %i changed to: %f" % (i, v)
         ent = self.active
         if ent is not None:
-            #print "sel orientation:", ent.orientation
-            #from euler x,y,z to to quat
-            euler = list(quat_to_euler(ent.orientation))
+            qquat = ent.placeable.Orientation
+            euler = list(quat_to_euler((qquat.x(), qquat.y(), qquat.z(), qquat.scalar())))
                 
             if not self.float_equal(euler[i],v):
                 euler[i] = v
                 ort = euler_to_quat(euler)
                 #print euler, ort
                 #print euler, ort
-                ent.orientation = ort
+                ort = quat(ort[3], ort[0], ort[1], ort[2])
+                ent.placeable.Orientation = ort
                 if not self.dragging:
                     r.networkUpdate(ent.id)
                     
                 self.modified = True
                 #self.window.update_rotvals(ort)
-                self.selection_box.orientation = ort
-                
-    def updateSelectionBoxPositionAndOrientation(self, ent): #XXX riiiight, rename please!
-        print "updateSelectionBoxPositionAndOrientation"
-        self.selection_box.pos = ent.pos
-        self.selection_box.scale = ent.scale
-        self.selection_box.orientation = ent.orientation
+                self.selection_box.placeable.Orientation = ort
     
     def getActive(self):
         if len(self.sels) > 0:
@@ -692,12 +687,12 @@ class ObjectEdit(Component):
                 ent = self.active
                 if self.time > self.UPDATE_INTERVAL:
                     try:
-                        sel_pos = self.selection_box.pos
+                        sel_pos = self.selection_box.placeable.Position
                         arr_pos = self.manipulator.getManipulatorPosition()
-                        ent_pos = ent.pos
+                        ent_pos = ent.placeable.Position
                         if sel_pos != ent_pos:
                             self.time = 0
-                            self.selection_box.pos = ent_pos
+                            self.selection_box.placeable.Position = ent_pos
                         if arr_pos != ent_pos:
                             self.manipulator.moveTo(self.sels)
                     except RuntimeError, e:

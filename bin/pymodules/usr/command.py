@@ -1105,3 +1105,26 @@ if 0:
     ids = [id1, id2]
     worldstream.SendObjectLinkPacket(ids)
     #~ worldstream.SendObjectDelinkPacket(ids)
+
+if 0:
+    import PythonQt.QtGui
+    id = 2302910681
+    ent = r.getEntity(id)
+    pos = PythonQt.QtGui.QVector3D(0, 0, 1)
+    print ent.placeable.Position.toString(), ent.placeable.Orientation.toString(), pos.toString()
+    ent.placeable.Position = ent.placeable.Position.__add__(pos)
+    
+    print ent.placeable.Position.toString(), ent.placeable.Orientation.toString(), pos.toString()
+    r.networkUpdate(id)
+
+if 0:
+    import PythonQt.QtGui
+    a = PythonQt.QtGui.QVector3D(5, 5, 1)
+    b = PythonQt.QtGui.QVector3D(5, 5, 0)
+    print a == b, a.toString(), b.toString()
+    
+if 0:
+    ent = r.getEntity(1876645602)
+    mesh = ent.mesh
+    if mesh is not None:
+        print "swoot"
