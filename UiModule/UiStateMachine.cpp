@@ -35,6 +35,7 @@ namespace UiServices
         state_ether_->addTransition(this, SIGNAL( EtherTogglePressed()), state_inworld_);
         state_inworld_->addTransition(this, SIGNAL( EtherTogglePressed()), state_ether_);
 
+
         connect(state_ether_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
         connect(state_inworld_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
         connect(view_, SIGNAL( ViewKeyPressed(QKeyEvent *) ), SLOT( ViewKeyEvent(QKeyEvent *) ));
