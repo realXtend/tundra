@@ -25,17 +25,22 @@ namespace CoreUi
             tabWidget->addTab(web_login_, " Weblogin");
 
             connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ),
-                login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
+                    login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
             connect(traditional_widget_, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ),
-                login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
+                    login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
             connect(traditional_widget_, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ),
-                login_notifier, SLOT( EmitRealXtendLogin(QMap<QString, QString>) ));
+                    login_notifier, SLOT( EmitRealXtendLogin(QMap<QString, QString>) ));
         }
 
         ClassicalLoginWidget::~ClassicalLoginWidget()
         {
             SAFE_DELETE(traditional_widget_);
             SAFE_DELETE(web_login_);
+        }
+
+        void ClassicalLoginWidget::RemoveEtherButton()
+        {
+            traditional_widget_->RemoveEtherButton();
         }
 
         QMap<QString, QString> ClassicalLoginWidget::GetLoginInfo()
@@ -46,6 +51,11 @@ namespace CoreUi
         void ClassicalLoginWidget::AppExitRequest()
         {
             emit AppExitRequested();
+        }
+
+        void ClassicalLoginWidget::StatusUpdate(bool connecting, QString message)
+        {
+            traditional_widget_->StatusUpdate(connecting, message);
         }
     }
 }

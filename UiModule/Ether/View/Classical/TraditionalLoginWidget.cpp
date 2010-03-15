@@ -10,9 +10,11 @@ namespace CoreUi
     namespace Classical
     {
         TraditionalLoginWidget::TraditionalLoginWidget(QWidget *parent, QMap<QString,QString> stored_login_data) :
-              QWidget(parent)
+            QWidget(parent),
+            progress_timer_(new QTimer())
         {
             InitWidget(stored_login_data);
+            connect(progress_timer_, SIGNAL( timeout() ), SLOT( UpdateProgressBar() ));
         }
 
         void TraditionalLoginWidget::InitWidget(QMap<QString,QString> stored_login_data)
@@ -22,6 +24,7 @@ namespace CoreUi
             // Init UI, hook up signals/slots
             DemoWorldFrame->hide();
             demoWorldLabel->hide();
+            progressBar->hide();
 
             connect(pushButton_Connect, SIGNAL( clicked() ), this, SLOT( ParseInputAndConnect() ));
             connect(pushButton_ReturnToEther, SIGNAL( clicked() ), parent(), SLOT( hide() ));
@@ -41,6 +44,11 @@ namespace CoreUi
             lineEdit_Username->setText(stored_login_data["account"]);
             lineEdit_Password->setText(stored_login_data["password"]);
             lineEdit_WorldAddress->setText(stored_login_data["loginurl"]);
+        }
+
+        void TraditionalLoginWidget::RemoveEtherButton()
+        {
+            pushButton_ReturnToEther->hide();
         }
 
         QMap<QString, QString> TraditionalLoginWidget::GetLoginInfo()
@@ -87,6 +95,33 @@ namespace CoreUi
                     emit ConnectRealXtend(map);
                 }
             }
+            StatusUpdate(true, QString("Connecting to %1 with %2").arg(map["WorldAddress"], map["Username"]));
+        }
+
+        void TraditionalLoginWidget::StatusUpdate(bool connecting, QString message)
+        {
+            if (connecting)
+            {
+                progressBar->setValue(0);
+                progressBar->show();
+                progress_timer_->start(30);
+            }
+            else
+            {
+                progress_timer_->stop();
+                progressBar->hide();
+            }
+            statusLabel->setText(message);
+        }
+
+        void TraditionalLoginWidget::UpdateProgressBar()
+        {
+            int value = progressBar->value();
+            if (value == 0)
+                progress_direction_ = 1;
+            else if (value == 100)
+                progress_direction_ = -1;
+            progressBar->setValue(value + progress_direction_);
         }
     }
 }

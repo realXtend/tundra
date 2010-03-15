@@ -46,7 +46,6 @@ namespace Ether
               info_hide_timer_(new QTimer(this)),
               login_in_progress_(false),
               classical_login_widget_(0)
-              
         {
             // Connect key press signals from scene
             connect(scene_, SIGNAL( UpPressed() ), SLOT( UpPressed() ));
@@ -82,12 +81,48 @@ namespace Ether
             world_info_widget_ = 0;
             control_widget_ = 0;
             action_proxy_widget_ = 0;
+            status_widget_ = 0;
+        }
+
+        EtherSceneController::EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene)
+            : QObject(parent),
+              data_manager_(data_manager),
+              scene_(scene),
+              layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
+              info_hide_timer_(new QTimer(this)),
+              login_in_progress_(false),
+              last_active_top_card_(0),
+              last_active_bottom_card_(0),
+              status_widget_(0),
+              top_menu_(0),
+              bottom_menu_(0),
+              login_animations_(0)
+        {
+            // Hide timer for status widget
+            info_hide_timer_->setSingleShot(true);
+            connect(info_hide_timer_, SIGNAL(timeout()), SLOT(HideStatusWidget()));
         }
 
         EtherSceneController::~EtherSceneController()
         {
             SAFE_DELETE(top_menu_);
             SAFE_DELETE(bottom_menu_);
+        }
+
+        void EtherSceneController::LoadStaticEther(EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data)
+        {
+            // Static login space widgets
+            classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data);
+            classical_login_widget_->RemoveEtherButton();
+
+            classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
+            classic_login_proxy_->setZValue(1);
+            classic_login_proxy_->setWidget(classical_login_widget_);
+
+            layout_manager_->AddFullscreenWidget(classic_login_proxy_);
+
+            // Connect static login signals/slots
+            connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
         void EtherSceneController::LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items, QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items)
@@ -278,7 +313,8 @@ namespace Ether
 
             // Connect classic login signals/slots
             connect(classical_login_button, SIGNAL( clicked() ), classical_login_widget_, SLOT( show() ));
-            connect(classical_login_widget_, SIGNAL( AppExitRequested() ), this, SLOT( TryExitApplication() ));
+            connect(classical_login_button, SIGNAL( clicked() ), SLOT( StopActiveItemAnimations() ));
+            connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
         void EtherSceneController::RecalculateMenus()
@@ -381,6 +417,9 @@ namespace Ether
             if (last_active_bottom_card_)
                 last_active_bottom_card_->IsActiveItem(false);
 
+            if (!card)
+                return;
+
             card->IsActiveItem(true);
 
             if (card->arragementType() == View::InfoCard::BottomToTop)
@@ -469,6 +508,9 @@ namespace Ether
 
         void EtherSceneController::StartLoginAnimation()
         {
+            if (!login_animations_)
+                return;
+
             login_animations_->clear();
             login_animations_->setDirection(QAbstractAnimation::Forward);
 
@@ -564,6 +606,9 @@ namespace Ether
 
         void EtherSceneController::RevertLoginAnimation(bool change_scene_after_anims_finish)
         {
+            if (!login_animations_)
+                return;
+
             change_scene_after_anims_finish_ = change_scene_after_anims_finish; 
             if (login_animations_->state() == QAbstractAnimation::Running)
                 login_animations_->pause();
@@ -573,6 +618,9 @@ namespace Ether
 
         void EtherSceneController::LoginAnimationFinished()
         {
+            if (!login_animations_)
+                return;
+
             if (login_animations_->direction() == QAbstractAnimation::Backward && change_scene_after_anims_finish_)
                scene_->EmitSwitchSignal();
             if (login_animations_->direction() == QAbstractAnimation::Backward && !change_scene_after_anims_finish_)
@@ -588,9 +636,14 @@ namespace Ether
 
         void EtherSceneController::ShowStatusInformation(QString text)
         {
-            status_widget_->UpdateStatusText(text);
-            status_widget_->show();
-            info_hide_timer_->start(7500);
+            if (status_widget_)
+            {
+                status_widget_->UpdateStatusText(text);
+                status_widget_->show();
+                info_hide_timer_->start(7500);
+            }
+
+            classical_login_widget_->StatusUpdate(login_in_progress_, text);
         }
 
         void EtherSceneController::HideStatusWidget()
@@ -606,11 +659,15 @@ namespace Ether
         void EtherSceneController::StoreConfigs()
         {
             // Store ether data
-            data_manager_->StoreSelectedCards(last_active_top_card_->id(), last_active_bottom_card_->id());
+            if (last_active_top_card_ && last_active_bottom_card_)
+                data_manager_->StoreSelectedCards(last_active_top_card_->id(), last_active_bottom_card_->id());
            
             // Store classic login data
-            QMap<QString, QString> classic_login_info = classical_login_widget_->GetLoginInfo();
-            data_manager_->StoreClassicLoginInfo(classic_login_info);
+            if (classical_login_widget_)
+            {
+                QMap<QString, QString> classic_login_info = classical_login_widget_->GetLoginInfo();
+                data_manager_->StoreClassicLoginInfo(classic_login_info);
+            }
 
             // Store default ether view
             if (classical_login_widget_->isVisible())
@@ -619,6 +676,9 @@ namespace Ether
                 data_manager_->StoreDefaultView("ether");
         }
 
-
+        void EtherSceneController::StopActiveItemAnimations()
+        {
+            ActiveItemChanged(0);
+        }
     }
 }

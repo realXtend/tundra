@@ -48,6 +48,8 @@ namespace CoreUi
     void AnchorLayoutManager::AdjustLayoutContainer(const QRectF &new_rect)
     {
         layout_container_->setGeometry(new_rect);
+        foreach (QGraphicsWidget *widget, full_screen_widgets_)
+            widget->setGeometry(new_rect);
     }
 
     void AnchorLayoutManager::CheckVisibility(QGraphicsLayoutItem *layout_item)
@@ -71,6 +73,12 @@ namespace CoreUi
     {
         anchor_layout_->addAnchors(anchor_layout_, layout_item, orientation);
         CheckVisibility(layout_item);
+    }
+
+    void AnchorLayoutManager::AddFullscreenWidget(QGraphicsWidget *graphics_widget)
+    {
+        AddItemToScene(graphics_widget);
+        full_screen_widgets_.append(graphics_widget);
     }
 
     void AnchorLayoutManager::AddItemToScene(QGraphicsWidget *graphics_widget)
