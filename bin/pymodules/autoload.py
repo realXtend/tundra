@@ -84,13 +84,13 @@ else:
     r.logDebug("   reloading apitest.pythonqt_gui")
     apitest.pythonqt_gui = reload(apitest.pythonqt_gui)
 
-try:
-    usr.anonlogin
-except: #first run
-    import usr.anonlogin
-else:
-    r.logDebug("   reloading usr.anonlogin")
-    usr.anonlogin = reload(usr.anonlogin)
+#~ try:
+    #~ usr.anonlogin
+#~ except: #first run
+    #~ import usr.anonlogin
+#~ else:
+    #~ r.logDebug("   reloading usr.anonlogin")
+    #~ usr.anonlogin = reload(usr.anonlogin)
 
 try:
     usr.sleeper
@@ -135,7 +135,7 @@ modules.extend([
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
     #objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout, #now at import for failsafety
-    usr.anonlogin.AnonLogin,
+    #usr.anonlogin.AnonLogin,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,

@@ -4,8 +4,6 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
-#include <QtGui/qvector3d.h>
-
 #include <Ogre.h>
 
 namespace OgreRenderer
@@ -187,7 +185,7 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::SetQPosition(const QVector3D newpos)
     {
-		SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
+        SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
     }
     
 

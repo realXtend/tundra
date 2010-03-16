@@ -11,6 +11,9 @@
 #include "Quaternion.h"
 #include "CoreTypes.h"
 
+#include <QtGui/qquaternion.h>
+#include <QtGui/qvector3d.h>
+
 namespace RexLogic
 {
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
@@ -21,6 +24,10 @@ namespace RexLogic
         Q_OBJECT
             
         DECLARE_EC(EC_NetworkPosition);
+
+        Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
+        Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
+
     public:
         virtual ~EC_NetworkPosition();
         
@@ -62,7 +69,14 @@ namespace RexLogic
         
         //! Set orientation forcibly, for example in editing tools
         void SetOrientation(const Quaternion& orientation);
-                
+
+        //! experimental accessors that use the new 3d vector etc types in Qt 4.6, for qproperties
+        QVector3D GetQPosition() const;
+        void SetQPosition(const QVector3D newpos);
+
+        QQuaternion GetQOrientation() const;
+        void SetQOrientation(const QQuaternion newort);
+
     private:
         EC_NetworkPosition(Foundation::ModuleInterface* module);        
 

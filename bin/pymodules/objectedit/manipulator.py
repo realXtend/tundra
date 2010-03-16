@@ -218,44 +218,45 @@ class MoveManipulator(Manipulator):
         6: None, #"axis_red"
     }
     """ Using Qt's QVector3D. Using prim.Position has some annoying issues... """
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ if self.grabbed:
-            #~ rightvec = Vector3(r.getCameraRight())
-            #~ upvec = Vector3(r.getCameraUp())
-            #~ qpos = ent.placeable.Position
-            #~ if self.grabbed_axis == self.AXIS_BLUE:
-                #~ mov = lengthy
-                #~ qpos.setZ(qpos.z()-mov)
-            #~ else:
-                #~ mov = lengthx 
-                #~ div = abs(rightvec[self.grabbed_axis])
-                #~ if div == 0:
-                    #~ div = 0.01 #not the best of ideas but...
-                #~ mov *= rightvec[self.grabbed_axis]/div
-                #~ if self.grabbed_axis == self.AXIS_GREEN:
-                    #~ qpos.setX(qpos.x()+mov)
-                #~ else:
-                    #~ qpos.setY(qpos.y()+mov)
-
-            #~ ent.placeable.Position = qpos
-
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         if self.grabbed:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
-            pos = list(ent.pos)
+            qpos = ent.placeable.Position
             if self.grabbed_axis == self.AXIS_BLUE:
                 mov = lengthy
-                pos[2] -= mov
+                qpos.setZ(qpos.z()-mov)
             else:
                 mov = lengthx 
                 div = abs(rightvec[self.grabbed_axis])
                 if div == 0:
                     div = 0.01 #not the best of ideas but...
                 mov *= rightvec[self.grabbed_axis]/div
-                pos[self.grabbed_axis] += mov
+                if self.grabbed_axis == self.AXIS_GREEN:
+                    qpos.setX(qpos.x()+mov)
+                else:
+                    qpos.setY(qpos.y()+mov)
+
+            ent.placeable.Position = qpos
+            ent.network.Position = qpos
+
+    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+        #~ if self.grabbed:
+            #~ rightvec = Vector3(r.getCameraRight())
+            #~ upvec = Vector3(r.getCameraUp())
+            #~ pos = list(ent.pos)
+            #~ if self.grabbed_axis == self.AXIS_BLUE:
+                #~ mov = lengthy
+                #~ pos[2] -= mov
+            #~ else:
+                #~ mov = lengthx 
+                #~ div = abs(rightvec[self.grabbed_axis])
+                #~ if div == 0:
+                    #~ div = 0.01 #not the best of ideas but...
+                #~ mov *= rightvec[self.grabbed_axis]/div
+                #~ pos[self.grabbed_axis] += mov
             
-            ent.pos = pos[0], pos[1], pos[2]
+            #~ ent.pos = pos[0], pos[1], pos[2]
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -298,23 +299,24 @@ class FreeMoveManipulator(Manipulator):
     USES_MANIPULATOR = False
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ rightvec = Vector3(r.getCameraRight())
-        #~ upvec = Vector3(r.getCameraUp())
-        #~ changevec = (amountx * rightvec) - (amounty * upvec)
-        #~ qpos = ent.placeable.Position
-        #~ entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
-        #~ newpos = entpos + changevec
-        #~ newpos = vec(newpos.x, newpos.y, newpos.z)
-        #~ ent.placeable.Position = newpos
-        
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
-        entpos = Vector3(ent.pos)
+        qpos = ent.placeable.Position
+        entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
         newpos = entpos + changevec
-        ent.pos = newpos.x, newpos.y, newpos.z    
+        newpos = vec(newpos.x, newpos.y, newpos.z)
+        ent.placeable.Position = newpos
+        ent.network.Position = newpos
+        
+    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+        #~ rightvec = Vector3(r.getCameraRight())
+        #~ upvec = Vector3(r.getCameraUp())
+        #~ changevec = (amountx * rightvec) - (amounty * upvec)
+        #~ entpos = Vector3(ent.pos)
+        #~ newpos = entpos + changevec
+        #~ ent.pos = newpos.x, newpos.y, newpos.z    
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -334,44 +336,12 @@ class RotationManipulator(Manipulator):
     GREENARROW = [2]
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ if self.grabbed and self.grabbed_axis is not None:
-            #~ rightvec = Vector3(r.getCameraRight())
-            #~ upvec = Vector3(r.getCameraUp())
-            
-            #~ ort = ent.placeable.Orientation
-            #~ euler = list((0, 0, 0))
-            
-            #~ if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #~ #print "green axis", self.grabbed_axis
-                #~ mov = amountx * 30 
-                #~ euler[2] += mov
-            #~ elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #~ #print "blue axis", self.grabbed_axis
-                #~ mov = amountx * 30
-                #~ euler[1] += mov
-            #~ elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #~ #print "red axis", self.grabbed_axis
-                #~ mov = amounty * 30
-                #~ euler[0] -= mov 
-                
-            #~ rotationQuat = list(euler_to_quat(euler))
-
-            #~ ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
-            
-            #~ ent.placeable.Orientation = ort
-
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         if self.grabbed and self.grabbed_axis is not None:
-            #~ print "rotating...", self.grabbed_axis
-            #~ print "amounts: ", amountx, amounty
-            #~ print "lengths: ", lengthx, lengthy
-            
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
-            x, y, z, w = ent.orientation
             
-            ort = quat(w, x, y, z)
+            ort = ent.placeable.Orientation
             euler = list((0, 0, 0))
             
             if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
@@ -391,6 +361,39 @@ class RotationManipulator(Manipulator):
 
             ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
             
-            ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
+            ent.placeable.Orientation = ort
+            ent.network.Orientation = ort
+
+    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+        #~ if self.grabbed and self.grabbed_axis is not None:
+            #~ #print "rotating...", self.grabbed_axis
+            #~ #print "amounts: ", amountx, amounty
+            #~ #print "lengths: ", lengthx, lengthy
+            
+            #~ rightvec = Vector3(r.getCameraRight())
+            #~ upvec = Vector3(r.getCameraUp())
+            #~ x, y, z, w = ent.orientation
+            
+            #~ ort = quat(w, x, y, z)
+            #~ euler = list((0, 0, 0))
+            
+            #~ if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
+                #~ #print "green axis", self.grabbed_axis
+                #~ mov = amountx * 30 
+                #~ euler[2] += mov
+            #~ elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
+                #~ #print "blue axis", self.grabbed_axis
+                #~ mov = amountx * 30
+                #~ euler[1] += mov
+            #~ elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
+                #~ #print "red axis", self.grabbed_axis
+                #~ mov = amounty * 30
+                #~ euler[0] -= mov 
+                
+            #~ rotationQuat = list(euler_to_quat(euler))
+
+            #~ ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
+            
+            #~ ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
 
                         

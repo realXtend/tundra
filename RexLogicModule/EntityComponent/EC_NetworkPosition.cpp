@@ -68,4 +68,24 @@ namespace RexLogic
     {
         rotvel_ = Vector3df::ZERO;
     }
+
+    QVector3D EC_NetworkPosition::GetQPosition() const
+    {
+        return QVector3D(position_.x, position_.y, position_.z);
+    }
+
+    void EC_NetworkPosition::SetQPosition(const QVector3D newpos)
+    {
+        SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
+    }
+
+    QQuaternion EC_NetworkPosition::GetQOrientation() const
+    {
+        return QQuaternion(orientation_.w, orientation_.x, orientation_.y, orientation_.z);
+    }
+
+    void EC_NetworkPosition::SetQOrientation(const QQuaternion newort)
+    {
+        SetOrientation(Quaternion(newort.x(), newort.y(), newort.z(), newort.scalar()));
+    }
 }
