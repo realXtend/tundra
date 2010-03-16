@@ -41,6 +41,11 @@ namespace UiServices
     class UiProxyWidget;
 }
 
+namespace CoreUi
+{
+    class NotificationBaseWidget;
+}
+
 namespace Inventory
 {
     class InventoryModule;
@@ -128,11 +133,15 @@ namespace Inventory
         /// @param asset_id Asset id.
         void CloseDownloadProgess(const QString &asset_id);
 
+        //! Sending notification from DL/UL thread, cant create widgets there
+        //! because its not the main ui thread
+        void CreateNotification(QString message, int hide_time);
+
     signals:
         /// Use this signal to send notification to the UI.
         /// @param message Message to be shown.
         /// @param duration Duration for which the message is visible.
-        void Notification(const QString &message, int duration);
+        void Notification(CoreUi::NotificationBaseWidget *);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);

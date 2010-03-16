@@ -24,7 +24,9 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+
 #include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/MessageNotification.h"
 
 #include "Poco/DOM/DOMParser.h"
 #include "Poco/DOM/Element.h"
@@ -200,7 +202,7 @@ namespace RexLogic
                 boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                 if (ui_module.get() && !sent_avatar_notifications_.contains(QString::fromStdString(presence->GetFullName()), Qt::CaseInsensitive))
                 {
-                    ui_module->GetNotificationManager()->ShowInformationString(QString("%1 joined the world").arg(QString::fromStdString(presence->GetFullName())));
+                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("%1 joined the world").arg(QString::fromStdString(presence->GetFullName()))));
                     sent_avatar_notifications_.append(QString::fromStdString(presence->GetFullName()));
                 }
             }
@@ -408,7 +410,7 @@ namespace RexLogic
                 boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                 if (ui_module.get())
                 {
-                    ui_module->GetNotificationManager()->ShowInformationString(QString("%1 logged out").arg(QString::fromStdString(presence->GetFullName())));
+                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("%1 logged out").arg(QString::fromStdString(presence->GetFullName()))));
                     sent_avatar_notifications_.removeOne(QString::fromStdString(presence->GetFullName()));
                 }
             }

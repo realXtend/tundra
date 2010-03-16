@@ -6,23 +6,14 @@
 #include "UiModuleApi.h"
 
 #include <QObject>
-#include <QGraphicsScene>
-#include <QList>
 #include <QRectF>
+#include <QPointF>
 
-namespace Foundation
-{
-    class Framework;
-}
+class QGraphicsScene;
 
 namespace CoreUi
 {
-    class NotifyLabel;
-}
-
-namespace Ui
-{
-    class NotificationWidget;
+    class NotificationBaseWidget;
 }
 
 namespace UiServices
@@ -35,29 +26,27 @@ namespace UiServices
     Q_OBJECT
 
     public:
-        NotificationManager(Foundation::Framework *framework, QGraphicsScene *scene);
+        NotificationManager(InworldSceneController *inworld_scene_controller);
         virtual ~NotificationManager();
 
     public slots:
-        void ShowInformationString(const QString &text, int duration_msec = 5000);
-        void DestroyNotifyLabel(CoreUi::NotifyLabel *notification);
-        void SceneRectChanged(const QRectF &rect);
-
+        void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
 
     private slots:
-        void ResizeAndPositionNotifyArea();
-        
-    
+        void InitSelf();
+        void UpdatePosition(const QRectF &scene_rect);
+        void UpdateStack();
+        void NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification);
+
     private:
-        QList<CoreUi::NotifyLabel*> notifications_;
-        QList<CoreUi::NotifyLabel*> visible_notifications_;
-
-        QRectF notice_size_;
-        QPointF start_point_;
-
-
-        Foundation::Framework *framework_;
+        InworldSceneController *inworld_scene_controller_;
         QGraphicsScene *scene_;
+
+        int notice_max_width_;
+        QPointF notice_start_pos_;
+
+        QList<CoreUi::NotificationBaseWidget *> notifications_history_;
+        QList<CoreUi::NotificationBaseWidget *> visible_notifications_;
 
     };
 }

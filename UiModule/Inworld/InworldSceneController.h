@@ -99,6 +99,9 @@ namespace UiServices
         //! \return The main panel pointer.
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_widget_; }
 
+        //! Get the inworld ui scene
+        QGraphicsScene *GetInworldScene() { return inworld_scene_; }
+
         //! Set the current chat controller object to world chat widget
         void SetWorldChatController(QObject *controller);
 

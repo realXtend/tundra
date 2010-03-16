@@ -832,17 +832,16 @@ namespace OgreRenderer
         if (!renderwindow_)
             return;
 
-        if (worldfile.length() == 0)
+        if (worldfile.length() == 0 || avatarfile.length() == 0)
         {
-            OgreRenderingModule::LogError("Empty filename for worldfile, cannot save.");
+            OgreRenderingModule::LogError("Empty filename for world or avatarfile, cannot save.");
             return;
         }
 
-        if (avatarfile.length() == 0)
-        {
-            OgreRenderingModule::LogError("Empty filename for avatarfile, cannot save.");
-            return;
-        }
+        // Set as active window so we wont take 
+        // screenshots of other applications
+        if (!main_window_->isActiveWindow())
+            main_window_->activateWindow();
 
         // Hide ui
         q_ogre_world_view_->HideUiOverlay();

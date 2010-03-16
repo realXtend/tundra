@@ -151,6 +151,11 @@ namespace Inventory
         /// @param asset_id
         void DownloadCompleted(const QString &asset_id);
 
+        /// This signal is emitted to show notification on the window.
+        /// @param message Message to be shown.
+        /// @param int how long until notification is autohidden
+        void Notification(QString message, int hide_time);
+
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
     };
