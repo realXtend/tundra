@@ -18,13 +18,13 @@
 
 namespace PythonScript
 {
-    class rexviewer_EntityObject
+    class PyEntity
     {
     public:
         PyObject_HEAD
         /* Type-specific fields go here. */
         //Scene::EntityPtr entity;
-        //smart_ptrs can't be just like this in pyobjects, see e.g. http://wiki.python.org/moin/boost.python/PointersAndSmartPointers 
+        //smart_ptrs can't be just like this in pyobjects, see e.g. http://wiki.python.org/moin/boost.python/PointersAndSmartPointers
         entity_id_t ent_id;
     };
 
