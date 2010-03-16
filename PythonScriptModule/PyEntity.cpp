@@ -142,9 +142,12 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
     OgreRenderer::EC_OgrePlaceable *placeable = 0;
+
     if (ogre_component)
-	placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-    
+	    placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+
+    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
+
     if (s_name.compare("id") == 0)
     {
         return Py_BuildValue("I", eob->ent_id); //unsigned int - is verified to be correct, same as c++ shows (at least in GetEntity debug print)
@@ -179,7 +182,10 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 	{    
         return PythonQt::self()->wrapQObject(placeable);
     }
-
+    else if (s_name.compare("network") == 0)
+    {
+        return PythonQt::self()->wrapQObject(networkpos);
+    }
 	else if(s_name.compare("editable") == 0)
 	{
 		// refactor to take into account permissions etc aswell later?
