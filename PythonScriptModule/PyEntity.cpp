@@ -11,6 +11,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include "EC_Highlight.h"
 #include <PythonQt.h>
 
 #include "MemoryLeakCheck.h"
@@ -18,13 +19,55 @@
 static PyObject* entity_getattro(PyObject *self, PyObject *name);
 static int entity_setattro(PyObject *self, PyObject *name, PyObject *value);
 
-namespace
+namespace PythonScript
 {
-    PyTypeObject rexviewer_EntityType = {
+    static PyObject* Entity_CreateComponent(PyEntity* self, PyObject* args)
+    {
+        const char* componentname;
+
+        if(!PyArg_ParseTuple(args, "s", &componentname))
+        {
+            PyErr_SetString(PyExc_ValueError, "createComponent expects the component type given as a string");
+            return NULL;
+        }
+        
+        PythonScriptModule *owner = PythonScriptModule::GetInstance();
+        Scene::ScenePtr scene = owner->GetScene();
+        if (!scene)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+            return NULL;
+        }
+
+        Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
+
+         const Foundation::ComponentInterfacePtr &newcomponent = owner->GetFramework()->GetComponentManager()->CreateComponent(componentname);
+         if (newcomponent)
+         {
+             entity->AddComponent(newcomponent);
+         }
+         else
+         {
+             owner->LogInfo("Create component: unknown component type string:");
+             owner->LogInfo(componentname);
+         }
+
+        //const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");        
+
+        Py_RETURN_NONE;
+    }
+
+    static PyMethodDef entity_methods[] = {
+        {"createComponent", (PyCFunction)Entity_CreateComponent, METH_VARARGS,
+         "Create a new component for this entity. The type constant is given as string"},
+        {NULL}  /* Sentinel */
+    };    
+
+    PyTypeObject PyEntityType = {
         PyObject_HEAD_INIT(NULL)
         0,                         /*ob_size*/
         "rexviewer.Entity",             /*tp_name*/
-        sizeof(PythonScript::rexviewer_EntityObject), /*tp_basicsize*/
+        sizeof(PythonScript::PyEntity), /*tp_basicsize*/
         0,                         /*tp_itemsize*/
         0,/*PyObject_Del,*/                         /*tp_dealloc*/
         0,                         /*tp_print*/
@@ -39,43 +82,53 @@ namespace
         0,                         /*tp_call*/
         0,                         /*tp_str*/
         entity_getattro,           /*tp_getattro*/
-        entity_setattro,          /*tp_setattro*/
+        entity_setattro,           /*tp_setattro*/
         0,                         /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT,        /*tp_flags*/
         "Entity object",           /* tp_doc */
-    };
-}
-
-namespace PythonScript
-{
-    static PyMethodDef entity_methods[] = {
-        {NULL}  /* Sentinel */
+        0,		           /* tp_traverse */
+        0,		           /* tp_clear */
+        0,		           /* tp_richcompare */
+        0,		           /* tp_weaklistoffset */
+        0,		           /* tp_iter */
+        0,		           /* tp_iternext */
+        entity_methods,            /* tp_methods */
+        0,                         /* tp_members */
+        0,                         /* tp_getset */
+        0,                         /* tp_base */
+        0,                         /* tp_dict */
+        0,                         /* tp_descr_get */
+        0,                         /* tp_descr_set */
+        0,                         /* tp_dictoffset */
+        0,                         /* tp_init */
+        0,                         /* tp_alloc */
+        0,                          /* tp_new */
     };
 
     void entity_init(PyObject* pyNamespace)
     {
-        rexviewer_EntityType.tp_new = PyType_GenericNew;
-        if (PyType_Ready(&rexviewer_EntityType) < 0)
+        PyEntityType.tp_new = PyType_GenericNew;
+        if (PyType_Ready(&PyEntityType) < 0)
         {
             //std::cout << "PythonScriptModule: EntityType not ready?" << std::endl;
             PythonScript::self()->LogDebug("PythonScriptModule: EntityType not ready?");
             return;
         }
 
-        Py_INCREF(&rexviewer_EntityType);
-        PyModule_AddObject(pyNamespace, "Entity", (PyObject *)&rexviewer_EntityType);
+        Py_INCREF(&PyEntityType);
+        PyModule_AddObject(pyNamespace, "Entity", (PyObject *)&PyEntityType);
     }
 
     PyTypeObject *GetRexPyTypeObject()
     {
-        return &rexviewer_EntityType;
+        return &PyEntityType;
     }
 
     PyObject* PythonScriptModule::entity_create(entity_id_t ent_id) //, Scene::EntityPtr entity)
     {
 //        rexviewer_EntityObject* eob;
         //std::cout << "Entity: creating a wrapper pyobject ..";
-        rexviewer_EntityObject *eob = PyObject_New(rexviewer_EntityObject, &rexviewer_EntityType); //sets refcount to 1
+        PyEntity *eob = PyObject_New(PyEntity, &PyEntityType); //sets refcount to 1
 
         //std::cout << "setting the pointer to the entity in the wrapper: " << entity << std::endl;
         //eob->entity = entity; //doesn't have a constructor, just this factory
@@ -92,7 +145,6 @@ namespace PythonScript
 
 using namespace PythonScript;
 
-/* this belongs to Entity.cpp but when added to the api from there, the staticframework is always null */
 static PyObject* entity_getattro(PyObject *self, PyObject *name)
 {
     PyObject* tmp;
@@ -132,19 +184,18 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         return NULL;
     }
 
-    rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
+    PyEntity *eob = (PyEntity*) self;
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
     const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
     RexLogic::EC_OpenSimPrim *prim = 0;
     if (prim_component)
-		prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
+        prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
 	
     const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
     OgreRenderer::EC_OgrePlaceable *placeable = 0;
-
     if (ogre_component)
-	    placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+        placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
 
     RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
 
@@ -154,7 +205,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     }
     else if (s_name.compare("prim") == 0)
     {
-
         if (!prim)
         {
             PyErr_SetString(PyExc_AttributeError, "prim not found.");
@@ -178,22 +228,25 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
         return PythonQt::self()->wrapQObject(ogremesh);
     }
+    
     else if (s_name.compare("placeable") == 0)
 	{    
         return PythonQt::self()->wrapQObject(placeable);
     }
+    
     else if (s_name.compare("network") == 0)
     {
         return PythonQt::self()->wrapQObject(networkpos);
     }
-	else if(s_name.compare("editable") == 0)
-	{
-		// refactor to take into account permissions etc aswell later?
-		if(!prim_component || !placeable)
-			Py_RETURN_FALSE;
-		else
-			Py_RETURN_TRUE;
-	}
+
+    else if(s_name.compare("editable") == 0)
+    {
+        // refactor to take into account permissions etc aswell later?
+        if(!prim_component || !placeable)
+            Py_RETURN_FALSE;
+        else
+            Py_RETURN_TRUE;
+    }
 
     else if (s_name.compare("pos") == 0)
     {
@@ -253,41 +306,53 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
-	else if (s_name.compare("boundingbox") == 0)
-	{
-		if (!placeable)
-		{
-			PyErr_SetString(PyExc_AttributeError, "placeable not found.");
+
+    else if (s_name.compare("boundingbox") == 0)
+    {
+        if (!placeable)
+        {
+            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;  
-		}
-		Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
-		if (meshptr)
-		{
-			OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
-			Vector3df min, max;
+        }
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+        if (meshptr)
+        {
+            OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
+            Vector3df min, max;
+            
+            cobj.GetBoundingBox(min, max);
 
-			cobj.GetBoundingBox(min, max);
+            return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
+        }
+        else
+        {
+            meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            if (meshptr) 
+            {
+                OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+                Vector3df min, max;
 
-			return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 0);
-		}
-		else
-		{
-			meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-			if (meshptr) 
-			{
-				OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-				Vector3df min, max;
+                mesh.GetBoundingBox(min, max);
 
-				mesh.GetBoundingBox(min, max);
-
-				return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
-			}
-		}
+                return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
+            }
+        }
 		
-		PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
+        PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
         return NULL;  
-	}
+    }
 
+    else if (s_name.compare("highlight") == 0)
+    {
+        //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+        const Foundation::ComponentInterfacePtr &highlight_componentptr = entity->GetComponent("EC_Highlight");
+        EC_Highlight* highlight = 0;
+        if (highlight_componentptr)
+        {
+            highlight = checked_static_cast<EC_Highlight *>(highlight_componentptr.get());
+            return PythonQt::self()->wrapQObject(highlight);
+        }
+    }
 
     std::cout << "unknown component type."  << std::endl;
     return NULL;
@@ -306,7 +371,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     std::string s_name = std::string(c_name);
 
     //std::cout << "Entity: setting unknown attribute: " << s_name;
-    rexviewer_EntityObject *eob = (rexviewer_EntityObject *)self;
+    PyEntity *eob = (PyEntity*) self;
 
     //entity_ptrs map usage
     /* this crashes now in boost, 
