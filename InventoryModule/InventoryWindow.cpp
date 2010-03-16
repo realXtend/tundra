@@ -25,6 +25,7 @@
 #include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/MessageNotification.h"
 #include <RenderServiceInterface.h>
 
 #include <QUiLoader>
@@ -133,6 +134,9 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     // Connect selectionChanged
     connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
         const QItemSelection &)), this, SLOT(UpdateActions()));
+
+    // Connect notification delayed sending to avoid ui thread problems when creating the notification widget
+    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(QString, int)), this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
 
     ///\todo Hack: connect this signal only for regular OS, causes problems with WebDAV.
     if (owner_->GetInventoryDataModelType() == InventoryModule::IDMT_OpenSim)
@@ -321,7 +325,7 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     msgBox->show();
 */
 
-    emit Notification(QString("Downloading %1").arg(name), 9000);
+    emit Notification(new UiServices::MessageNotification(QString("Downloading %1").arg(name), 9000));
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -374,8 +378,8 @@ void InventoryWindow::InitInventoryWindow()
     proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
 
-    connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),
-        SLOT(ShowInformationString(const QString &, int)));
+    connect(this, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
+        SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
 
     CreateActions();
 }
@@ -453,6 +457,11 @@ void InventoryWindow::CreateActions()
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
     connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));
     treeView_->addAction(actionCopyAssetReference_);
+}
+
+void InventoryWindow::CreateNotification(QString message, int hide_time)
+{
+    emit Notification(new UiServices::MessageNotification(message, hide_time));
 }
 
 } // namespace Inventory

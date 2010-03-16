@@ -14,9 +14,6 @@
 #include "J2kEncoder.h"
 #include "Framework.h"
 
-#include "UiModule.h"
-#include "Inworld/NotificationManager.h"
-
 #include "Inventory/InventorySkeleton.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
@@ -55,10 +52,6 @@ OpenSimInventoryDataModel::OpenSimInventoryDataModel(
     worldLibraryOwnerId_("")
 {
     SetupModelData(inventory_skeleton);
-
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-        connect(this, SIGNAL(Notification(const QString &, int)), ui_module->GetNotificationManager(),SLOT(ShowInformationString(const QString &, int)));
 }
 
 OpenSimInventoryDataModel::~OpenSimInventoryDataModel()
@@ -541,7 +534,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
         real_filename = real_filename.midRef(last_sep_index+1).toString();
     }
 
-    emit Notification(QString("%1 downloaded succesfully to %2").arg(real_filename, real_path), 9000);
+    //emit Notification(new UiServices::MessageNotification(QString("%1 downloaded succesfully to %2").arg(real_filename, real_path), 9000));
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);

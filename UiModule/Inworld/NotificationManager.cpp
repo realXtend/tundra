@@ -2,69 +2,105 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "NotificationManager.h"
 #include "InworldSceneController.h"
 
-#include "ui_NotificationWidget.h"
-#include "Inworld/Notifications/NotifyProxyWidget.h"
-#include "Inworld/Notifications/NotifyLabel.h"
-#include "CoreDefines.h"
+#include "Inworld/View/MainPanel.h"
+#include "Inworld/Notifications/NotificationBaseWidget.h"
 
 #include <QGraphicsScene>
+#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
 namespace UiServices
 {
-    NotificationManager::NotificationManager(Foundation::Framework *framework, QGraphicsScene *scene) 
-        : QObject(),
-          notice_size_(0,0,200,100),
-          start_point_(scene->width()-notice_size_.width()-5, 30),
-          framework_(framework),
-          scene_(scene)
+    NotificationManager::NotificationManager(InworldSceneController *inworld_scene_controller) : 
+        QObject(),
+        inworld_scene_controller_(inworld_scene_controller),
+        scene_(inworld_scene_controller->GetInworldScene()),
+        notice_max_width_(200),
+        notice_start_pos_(QPointF())
     {
-        
-        connect(scene_, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(SceneRectChanged(const QRectF &)));
+        InitSelf();
     }
 
     NotificationManager::~NotificationManager()
     {
-
+        // Clean up whole notification history
+        foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
+            SAFE_DELETE(notification);
     }
 
-    void NotificationManager::SceneRectChanged(const QRectF &rect)
+    // Private
+
+    void NotificationManager::InitSelf()
     {
-        start_point_.setX(rect.width()-notice_size_.width());
-        ResizeAndPositionNotifyArea();
+        connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
     }
 
-    void NotificationManager::ShowInformationString(const QString &text, int duration_msec)
+    void NotificationManager::UpdatePosition(const QRectF &scene_rect)
     {
-        CoreUi::NotifyLabel *notify_label = new CoreUi::NotifyLabel(text, duration_msec);
-        notify_label->setParent(this);
-        connect(notify_label, SIGNAL( DestroyMe(CoreUi::NotifyLabel *)),this, SLOT( DestroyNotifyLabel(CoreUi::NotifyLabel *) ));
-        notifications_.append(notify_label);
-        visible_notifications_.append(notify_label);
-        scene_->addItem(notify_label);
-        ResizeAndPositionNotifyArea();
-        notify_label->ShowNotification();
+        notice_start_pos_.setY(inworld_scene_controller_->GetMainPanel()->size().height());
+        notice_start_pos_.setX(scene_rect.right()-notice_max_width_);
+        UpdateStack();
     }
 
-    void NotificationManager::DestroyNotifyLabel(CoreUi::NotifyLabel *notification)
+    void NotificationManager::UpdateStack()
     {
-        visible_notifications_.removeOne(notification);
-        ResizeAndPositionNotifyArea();
-    }
+        if (visible_notifications_.isEmpty())
+            return;
 
-    void NotificationManager::ResizeAndPositionNotifyArea()
-    {
-        QPointF current_pos = start_point_;
-
-        for(int i =0; i<visible_notifications_.size(); i++)
+        // Iterate from start of stack and animate all items to correct positions
+        QPointF next_position = notice_start_pos_;
+        foreach(CoreUi::NotificationBaseWidget *notification, visible_notifications_)
         {
-            CoreUi::NotifyLabel *notify_label = visible_notifications_.at(i);
-            notify_label->setPos(current_pos);
-            current_pos.setY(current_pos.y() + notify_label->geometry().height());
+            notification->AnimateToPosition(next_position);
+            next_position.setY(next_position.y()+notification->size().height());
         }
     }
+
+    void NotificationManager::NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification)
+    {
+        if (visible_notifications_.contains(completed_notification))
+        {
+            visible_notifications_.removeOne(completed_notification);
+            UpdateStack();
+        }
+    }
+
+    // Public
+
+    void NotificationManager::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
+    {
+        // Don't show same item twice before first is hidden
+        if (visible_notifications_.contains(notification_widget))
+            return;
+
+        UpdatePosition(scene_->sceneRect());
+        QPointF add_position = notice_start_pos_;
+
+        // Get stacks last notifications y position
+        if (!visible_notifications_.isEmpty())
+        {
+            CoreUi::NotificationBaseWidget *last_notification = visible_notifications_.last();
+            add_position.setY(last_notification->mapRectToScene(last_notification->rect()).bottom());
+        }
+
+        // Set position and add to scene
+        notification_widget->setPos(add_position);
+        scene_->addItem(notification_widget);
+
+        // Connect completed (hide) signal to managers handler
+        connect(notification_widget, SIGNAL(Completed(CoreUi::NotificationBaseWidget *)),
+                SLOT(NotificationHideHandler(CoreUi::NotificationBaseWidget *)));
+
+        // Append to internal lists
+        notifications_history_.append(notification_widget);
+        visible_notifications_.append(notification_widget);
+
+        // Start notification
+        notification_widget->Start();
+    } 
 }

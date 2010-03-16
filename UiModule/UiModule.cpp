@@ -10,14 +10,15 @@
 #include "ConfigurationManager.h"
 #include "Framework.h"
 
+#include "Ether/EtherLogic.h"
+#include "Ether/View/EtherScene.h"
+
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/Console/UiConsoleManager.h"
-
-#include "Ether/EtherLogic.h"
-#include "Ether/View/EtherScene.h"
+#include "Inworld/Notifications/MessageNotification.h"
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
@@ -73,7 +74,7 @@ namespace UiServices
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
-            inworld_notification_manager_ = new NotificationManager(GetFramework(), ui_view_->scene());
+            inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
             LogDebug("Notification Manager service READY");
 
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
@@ -112,7 +113,6 @@ namespace UiServices
             switch (event_id)
             {
                 case Foundation::NETWORKING_REGISTERED:
-                    // Do this only once
                     if (!event_query_categories_.contains("NetworkState"))
                         event_query_categories_ << "NetworkState";
                     SubscribeToEventCategories();
@@ -174,9 +174,7 @@ namespace UiServices
                         welcome_message = current_avatar_ + " welcome to " + current_server_;
                     else
                         welcome_message = "Welcome to " + current_server_;
-                    inworld_notification_manager_->ShowInformationString(welcome_message, 10000);
-                    inworld_notification_manager_->ShowInformationString(welcome_message, 1000);
-                    inworld_notification_manager_->ShowInformationString(welcome_message, 20000);
+                    inworld_notification_manager_->ShowNotification(new MessageNotification(welcome_message));
                     break;
                 }
                 default:

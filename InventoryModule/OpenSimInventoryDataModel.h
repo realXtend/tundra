@@ -202,12 +202,6 @@ namespace Inventory
 
         typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
-    signals:
-        /// This signal is emitted to show notification on the window.
-        /// @param message Message to be shown.
-        /// @param int duration Duration in milliseconds.
-        void Notification(const QString &message, int duration);
-
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 
