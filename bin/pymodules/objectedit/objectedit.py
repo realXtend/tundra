@@ -585,7 +585,9 @@ class ObjectEdit(Component):
             if not self.float_equal(pos[i],v):
                 pos[i] = v
                 #converted to list to have it mutable
-                ent.placeable.Position = vec(pos[0], pos[1], pos[2])
+                newpos = vec(pos[0], pos[1], pos[2])
+                ent.placeable.Position = newpos
+                ent.network.Position = newpos
                 self.manipulator.moveTo(self.sels)
 
                 self.modified = True
@@ -636,6 +638,7 @@ class ObjectEdit(Component):
                 #print euler, ort
                 ort = quat(ort[3], ort[0], ort[1], ort[2])
                 ent.placeable.Orientation = ort
+                ent.network.Orientation = ort
                 if not self.dragging:
                     r.networkUpdate(ent.id)
                     
