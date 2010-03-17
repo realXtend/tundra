@@ -1,5 +1,42 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+/* NOTES FOR FURTHER CLEANUP: this module depends largely on the rexlogic module now. 
+   early on it was the thing that implemented much of the functionality,
+   and it also owns the scene which is the key for basic funcs like creating & getting scene entities.
+
+   the idea of rexlogic, however, is to be a replaceable thing that things in core don't generally depend on.
+   the framework has developed so that most things can already be gotten without referring to it, like
+   the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene(); etc.
+   if we could use the ECs without depending on the module itself, the dependency might be removed,
+   and it would be more feasible to replace rexlogic with something and still have the py module work.
+
+   event WORLD_STREAM_READY gives the WorldStream object, needed for getServerConnection here
+   (to be refactored to be just a naali.worldstream object readily there in the api)
+                framework too - and most stuff like creating entities, getting
+                existing entities etc. works via scene
+18:04 < antont> getting av and cam and doing session stuff like login&logout
+                remains open
+18:05 < Stinkfist> antont: pretty much, and after sempuki's re-factor,
+                   login-logout should be possible to be done also (if i have
+                   undestanded correctly)
+18:05 < Stinkfist> without use of rexlogic
+18:05 < sempuki> Stinkfist: yes
+18:05 < antont> yep was thinking of that too, there'd be some session service
+                thing or something by the new module
+18:06 < antont> ok i copy-paste this to a note in the source so can perhaps remove the rexlogic dep at some point
+
+rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
+18:16 < antont> ah it's world_stream_->GetInfo().inventory
+
+18:29 < antont> hm, there is also network sending code in rexlogic which we use
+                from py, like void Primitive::SendRexPrimData(entity_id_t
+                entityid)
+18:31 < antont> iirc there was some issue that 'cause the data for those is not
+                in rexlogic it makes the packets too, and not e.g. worldstream
+                which doesn't know EC_OpenSimPrim
+
+*/
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "PythonScriptModule.h"
@@ -1125,60 +1162,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 }*/
 
-PyObject* GetQPrim(PyObject* self, PyObject* args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        return NULL;
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    Scene::EntityPtr primentity = rexlogic_->GetPrimEntity(ent_id);
-    if (!primentity) 
-    {
-    PyErr_SetString(PyExc_ValueError, "The entity id given to getQPrim does not have a prim component.");
-    return NULL;
-    }
-    RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
-
-    return PythonQt::self()->wrapQObject(prim);
-}
-
-PyObject* GetQPlaceable(PyObject* self, PyObject* args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-    Scene::EntityPtr entity;
-    OgreRenderer::EC_OgrePlaceable* placeable = 0;
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        return NULL;
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-    entity = scene->GetEntity(ent_id);
-
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    
-    if (!ogre_component)
-    {
-    PyErr_SetString(PyExc_AttributeError, "GetQPlaceable: Given entity id does not have a placeable component.");
-    return NULL;   
-    }
-
-    placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-    return PythonQt::self()->wrapQObject(placeable);
-}
-
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
@@ -1541,30 +1524,6 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-PyObject* DeleteObject(PyObject *self, PyObject *args)
-{
-    RexLogic::RexLogicModule *rexlogic_;
-
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
-        return NULL;   
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    if (rexlogic_)
-    {
-        rexlogic_->GetServerConnection()->SendObjectDeletePacket(ent_id);
-    }
-
-    Py_RETURN_NONE;
-}
-
 PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
 {
     RexLogic::RexLogicModule *rexlogic_;
@@ -1800,12 +1759,6 @@ static PyMethodDef EmbMethods[] = {
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
 
-    {"getQPrim", (PyCFunction)GetQPrim, METH_VARARGS,
-    "Gets the prim component as a QObject from an entity with the given ID."},
-
-    {"getQPlaceable", (PyCFunction)GetQPlaceable, METH_VARARGS,
-    "Gets the placeable component as a QObject from an entity with the given ID."},
-
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
 
@@ -1900,9 +1853,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},
-
-    {"deleteObject", (PyCFunction)DeleteObject, METH_VARARGS, 
-    "deletes an object (not used)"},
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
