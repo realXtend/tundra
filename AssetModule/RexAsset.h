@@ -26,13 +26,13 @@ namespace Asset
         virtual ~RexAsset() {};
         
         //! returns asset ID
-        virtual const std::string& GetId() const { ResetAge(); return asset_id_; }
+        virtual const std::string& GetId() const { return asset_id_; }
         
         //! returns asset type
-        virtual const std::string& GetType() const { ResetAge(); return asset_type_; }
+        virtual const std::string& GetType() const { return asset_type_; }
         
         //! returns asset data size
-        virtual uint GetSize() const { ResetAge(); return data_.size(); }
+        virtual uint GetSize() const { return data_.size(); }
         
         //! returns asset data
         virtual const u8* GetData() const { ResetAge(); return &data_[0]; }

@@ -41,8 +41,10 @@ namespace Asset
         void Update(f64 frametime);
 
     private:
-        //! Check contents of disk cache
-        void CheckDiskCache();
+        //! Check contents of a disk cache path
+        /*! \param path Disk cache path
+         */
+        void CheckDiskCache(const std::string& path);
 
         //! Calculates hash from given asset id
         //! Used for file name generation
