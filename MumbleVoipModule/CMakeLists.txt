@@ -57,6 +57,7 @@ add_definitions (-DMUMBLE_VOIP_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
+use_package (QT4)
 
 use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon)
 
@@ -64,6 +65,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 
 link_package (BOOST)
 link_package (POCO)
+link_package (QT4)
 link_modules (Core Foundation Interfaces RexCommon)
 
 # Copy XML files from source directory to target directory
