@@ -1149,3 +1149,7 @@ if 0: #create a new component, hilight
     else:
         print "not"
         
+if 0: #log level visibility
+    r.logDebug("Debug")
+    #r.logWarning("Warning") #not implement now, should add i guess
+    r.logInfo("Info")
