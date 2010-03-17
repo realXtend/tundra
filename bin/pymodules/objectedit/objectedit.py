@@ -244,7 +244,7 @@ class ObjectEdit(Component):
         try:
             ent.highlight
         except AttributeError:
-            print ent.createComponent("EC_Highlight")
+            ent.createComponent("EC_Highlight")
             #print "created a new Highlight component"
 
         h = ent.highlight
@@ -432,12 +432,12 @@ class ObjectEdit(Component):
                 ent = r.getEntity(id)
                 
             found = False
-            print "Got entity:", ent.id
             if ent is not None:                
+                #print "Got entity:", ent.id
                 for entity in self.sels:
                     if entity.id == ent.id:
                         found = True #clicked on an already selected entity
-                        print "multiselect clicked entity is already in selection"
+                        #print "multiselect clicked entity is already in selection"
                 
                 #if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
                 if self.validId(ent.id):

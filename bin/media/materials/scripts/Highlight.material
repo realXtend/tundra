@@ -4,6 +4,7 @@ material Highlight
     {
         pass
         {
+            emissive 0.721723 0.800000 0.000000  1.000000
             polygon_mode wireframe
         }
     }
