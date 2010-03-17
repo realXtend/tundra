@@ -317,7 +317,7 @@ class ObjectEdit(Component):
         self.dragStarted(mouseinfo) #need to call this to enable working dragging
         
         if self.selection_box is None:
-            self.selection_box = r.createEntity("Selection.mesh", 0)
+            self.selection_box = r.createEntity("Selection.mesh", -10000)
         
         self.left_button_down = True
         
