@@ -20,7 +20,7 @@ namespace RexLogic
 {
     class RexLogicModule;
 
-    class Avatar
+    class REXLOGIC_MODULE_API Avatar
     {
      public:
         Avatar(RexLogicModule *rexlogicmodule);
