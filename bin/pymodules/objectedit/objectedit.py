@@ -418,7 +418,7 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
         
     def RightMousePressed(self, mouseinfo):
-        r.logInfo("rightmouse down")
+        #r.logInfo("rightmouse down")
         if self.windowActive:
             self.right_button_down = True
             
@@ -442,7 +442,7 @@ class ObjectEdit(Component):
                 #if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
                 if self.validId(ent.id):
                     if not found:
-                        print "new ent to add to multiselect found:", ent.id
+                        #print "new ent to add to multiselect found:", ent.id
                         self.multiselect(ent)
                     else: #remove this entity which was previously in the selection
                         self.deselect(ent)
@@ -577,6 +577,7 @@ class ObjectEdit(Component):
         end_z = start_z
 
         r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+        #XXX change to use worldstream and remove this py func from the hand made api
 
     def deleteObject(self):
         if self.active is not None:

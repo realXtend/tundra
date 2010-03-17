@@ -811,7 +811,9 @@ if 0:
     r.c.proxywidget.hide()
     
 if 0: #qprim
-    qprim = r.getQPrim(1680221423)
+    #qprim = r.getQPrim(1680221423)
+    e = r.getEntity(1680221423)
+    qprim = e.prim
     mats = qprim.Materials
     print mats
     
@@ -830,7 +832,9 @@ if 0: #qprim
 
 if 0: #qplaceable
     id = 2138143966
-    qplace = r.getQPlaceable(id)
+    #qplace = r.getQPlaceable(id)
+    e = e.getEntity(id)
+    qplace = e.placeable
     print qplace, qplace.Position
 
     oldz = qplace.Position.z()
