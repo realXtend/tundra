@@ -18,6 +18,7 @@ namespace Asset
 const char *DEFAULT_ASSET_CACHE_PATH = "/assetcache";
 const int DEFAULT_MEMORY_CACHE_SIZE = 32 * 1024 * 1024;
 const f64 CACHE_CHECK_INTERVAL = 1.0;
+const int CACHE_MAX_DELETES = 10;
 
 AssetCache::AssetCache(Foundation::Framework* framework) :
     framework_(framework), 
@@ -33,7 +34,11 @@ AssetCache::AssetCache(Foundation::Framework* framework) :
     // Set size of memory cache
     memory_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "memory_cache_size", DEFAULT_MEMORY_CACHE_SIZE);
 
-    CheckDiskCache();
+    // Get path of local secondary cache
+    std::string local_cache_path = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "local_cache_path", std::string("./data/assetcache"));
+    
+    CheckDiskCache(cache_path_);
+    CheckDiskCache(local_cache_path);
 
     md5_engine_ = new QCryptographicHash(QCryptographicHash::Md5);
 }
@@ -43,30 +48,40 @@ AssetCache::~AssetCache()
     SAFE_DELETE(md5_engine_);
 }
 
-void AssetCache::CheckDiskCache()
+void AssetCache::CheckDiskCache(const std::string& path)
 {
-    boost::filesystem::directory_iterator i(cache_path_);
-    boost::filesystem::directory_iterator end_iter;
-    while (i != end_iter)
+    try
     {
-        if (boost::filesystem::is_regular_file(i->status()))
+        boost::filesystem::directory_iterator i(path);
+        boost::filesystem::directory_iterator end_iter;
+        while (i != end_iter)
         {
-            std::string name = i->path().filename();
-            disk_cache_contents_.insert(name);
+            if (boost::filesystem::is_regular_file(i->status()))
+            {
+                disk_cache_contents_.insert(i->path().native_directory_string());
+            }
+            ++i;
         }
-        ++i;
     }
+    catch (std::exception e)
+    {
+    }
+}
+
+bool CompareAssetAge(RexAsset* lhs, RexAsset* rhs)
+{
+    // Favor oldest assets for deletion
+    return lhs->GetAge() > rhs->GetAge();
 }
 
 void AssetCache::Update(f64 frametime)
 {
-    update_time_ += frametime;   
+    update_time_ += frametime;
     if (update_time_ < CACHE_CHECK_INTERVAL)
         return;
     
     AssetMap::iterator i = assets_.begin();
-    AssetMap::iterator oldest_asset = assets_.end();
-    f64 oldest_age = 0;
+    std::vector<RexAsset*> oldest_assets;
     
     uint total_size = 0;
     while (i != assets_.end())
@@ -75,22 +90,35 @@ void AssetCache::Update(f64 frametime)
         if (asset)
         {
             asset->AddAge(update_time_);
+            oldest_assets.push_back(asset);
             total_size += asset->GetSize();
-            if (asset->GetAge() >= oldest_age)
-            {
-                oldest_age = asset->GetAge();
-                oldest_asset = i;
-            }
         }
-               
+        
         ++i;
     }
     
-    if (total_size > memory_cache_size_)
+    std::sort(oldest_assets.begin(), oldest_assets.end(), CompareAssetAge);
+    
+    int deletes = 0;
+    while ((total_size > memory_cache_size_) && (deletes < CACHE_MAX_DELETES) && (oldest_assets.size()))
     {
-        if (oldest_asset != assets_.end())   
-            assets_.erase(oldest_asset);
-    }    
+        RexAsset* asset = *oldest_assets.begin();
+        AssetMap::iterator i = assets_.begin();
+        while (i != assets_.end())
+        {
+            if (i->second.get() == asset)
+            {
+                total_size -= asset->GetSize();
+                AssetModule::LogDebug("Removed cached asset " + asset->GetId() + " age " + ToString<Real>(asset->GetAge()));
+                assets_.erase(i);
+                oldest_assets.erase(oldest_assets.begin());
+                break;
+            }
+            ++i;
+        }
+        
+        ++deletes;
+    }
     
     update_time_ = 0.0;
 }
@@ -110,13 +138,21 @@ Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool chec
         }
     }
     
+    std::string asset_hash = GetHash(asset_id);
+    
     if (check_disk)
     {
-        std::set<std::string>::iterator i = disk_cache_contents_.find(GetHash(asset_id));
+        std::set<std::string>::iterator i = disk_cache_contents_.begin();
+        while (i != disk_cache_contents_.end())
+        {
+            if (i->find(asset_hash) != std::string::npos)
+                break;
+            ++i;
+        }
         
         if (i != disk_cache_contents_.end())
         {
-            boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));      
+            boost::filesystem::path file_path(*i);
             std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
             if (filestr.good())
             {
@@ -195,7 +231,7 @@ void AssetCache::StoreAsset(Foundation::AssetPtr asset)
         filestr.write((const char *)&data[0], size);
         filestr.close();
 
-        disk_cache_contents_.insert(GetHash(asset_id));
+        disk_cache_contents_.insert(file_path.native_directory_string());
     }
     else
     {
