@@ -58,15 +58,19 @@ add_definitions (-DMUMBLE_VOIP_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
+use_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
+use_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
 
-use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon)
+use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces RexCommon)
+link_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
+link_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
+link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

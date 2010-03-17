@@ -2,6 +2,7 @@
 #define MumbleVoipModule_LinkPlugin_h
 
 #include <QObject>
+#include "Core.h"
 
 namespace MumbleVoip
 {
@@ -45,7 +46,7 @@ public slots:
 	//!  Z positive towards "into screen".
 	//!
 	//!  1 unit = 1 meter
-	virtual void SetAvatarPosition(float position[3], float front[3], float top[3]);
+	virtual void SetAvatarPosition(Vector3df position, Vector3df front, Vector3df top);
 
 	//! Set camera position vectors
     //!
@@ -55,7 +56,7 @@ public slots:
 	//!  Z positive towards "into screen".
 	//!
 	//!  1 unit = 1 meter
-	virtual void SetCameraPosition(float position[3], float front[3], float top[3]);
+	virtual void SetCameraPosition(Vector3df position, Vector3df front, Vector3df top);
 
 protected:
 	LinkedMem* linked_mem_;
@@ -63,12 +64,12 @@ protected:
     QString avatar_id_;
     QString avatar_group_id_;
     QString description_;
-    float avatar_position_[3];
-    float avatar_top_[3];
-    float avatar_front_[3];
-    float camera_position_[3];
-    float camera_top_[3];
-    float camera_front_[3];
+    Vector3df avatar_position_;
+    Vector3df avatar_top_;
+    Vector3df avatar_front_;
+    Vector3df camera_position_;
+    Vector3df camera_top_;
+    Vector3df camera_front_;
 };
 
 } // end of namespace: MumbleVoip

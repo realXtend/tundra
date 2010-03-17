@@ -51,6 +51,7 @@ namespace MumbleVoip
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
 
         LinkPlugin* link_plugin_;
+        
     };
 
 } // end of namespace: MumbleVoip
