@@ -11,12 +11,14 @@
 
 namespace MumbleVoip
 {
+    class LinkPlugin;
+
     /**
 	 *  Mumble support for Naali viewer.
 	 *
-     *  Implements Mumble Link plugin
-	 *  @see http://mumble.sourceforge.net/Link
-	 *
+     *  Offer user info with avatar and camera positions to Mumble client
+	 *  using Mumble Link Plugin.
+     *
 	 *  In future the Mumble client will be integrated to this module.
      */
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterfaceImpl
@@ -46,11 +48,9 @@ namespace MumbleVoip
 		//! Initialize Mumble Link plugin
 		virtual void InitializeLinkPlugin();
 
-		//! Read avatar position info from scene and offer the information to Mumble
-		//! client trhoug Mumble Link plugin interface
-		virtual void UpdateLinkPlugin();
-
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
+
+        LinkPlugin* link_plugin_;
     };
 
 } // end of namespace: MumbleVoip
