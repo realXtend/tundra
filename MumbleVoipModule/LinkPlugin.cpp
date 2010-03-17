@@ -63,29 +63,29 @@ namespace MumbleVoip
 		}
 		linked_mem_->uiTick++;
 
-		linked_mem_->fAvatarFront[0] = avatar_position_[0];
-		linked_mem_->fAvatarFront[1] = avatar_position_[1];
-		linked_mem_->fAvatarFront[2] = avatar_position_[2];
+		linked_mem_->fAvatarFront[0] = avatar_position_.x;
+		linked_mem_->fAvatarFront[1] = avatar_position_.y;
+		linked_mem_->fAvatarFront[2] = avatar_position_.z;
 
-		linked_mem_->fAvatarTop[0] = avatar_top_[0];
-		linked_mem_->fAvatarTop[1] = avatar_top_[1];
-		linked_mem_->fAvatarTop[2] = avatar_top_[2];
+		linked_mem_->fAvatarTop[0] = avatar_top_.x;
+		linked_mem_->fAvatarTop[1] = avatar_top_.y;
+		linked_mem_->fAvatarTop[2] = avatar_top_.z;
 
-		linked_mem_->fAvatarPosition[0] = avatar_front_[0];
-		linked_mem_->fAvatarPosition[1] = avatar_front_[1];
-		linked_mem_->fAvatarPosition[2] = avatar_front_[2];
+		linked_mem_->fAvatarPosition[0] = avatar_front_.x;
+		linked_mem_->fAvatarPosition[1] = avatar_front_.y;
+		linked_mem_->fAvatarPosition[2] = avatar_front_.z;
 
-        linked_mem_->fCameraFront[0] = camera_front_[0];
-		linked_mem_->fCameraFront[1] = camera_front_[1];
-		linked_mem_->fCameraFront[2] = camera_front_[2];
+        linked_mem_->fCameraFront[0] = camera_front_.x;
+		linked_mem_->fCameraFront[1] = camera_front_.y;
+		linked_mem_->fCameraFront[2] = camera_front_.z;
 
-		linked_mem_->fCameraTop[0] = camera_top_[0];
-		linked_mem_->fCameraTop[1] = camera_top_[1];
-		linked_mem_->fCameraTop[2] = camera_top_[2];
+		linked_mem_->fCameraTop[0] = camera_top_.x;
+		linked_mem_->fCameraTop[1] = camera_top_.y;
+		linked_mem_->fCameraTop[2] = camera_top_.z;
 
-		linked_mem_->fCameraPosition[0] = camera_position_[0];
-		linked_mem_->fCameraPosition[1] = camera_position_[1];
-		linked_mem_->fCameraPosition[2] = camera_position_[2];
+		linked_mem_->fCameraPosition[0] = camera_position_.x;
+		linked_mem_->fCameraPosition[1] = camera_position_.y;
+		linked_mem_->fCameraPosition[2] = camera_position_.z;
 
         // Identifier which uniquely identifies a certain player in a context (e.g. the ingame Name).
         wcsncpy(linked_mem_->identity, QStringToStdWString(avatar_id_).c_str(), 256);
@@ -121,34 +121,18 @@ namespace MumbleVoip
         description_.truncate(2047);
     }
 	
-	void LinkPlugin::SetAvatarPosition(float position[3], float front[3], float top[3])
+    void LinkPlugin::SetAvatarPosition(Vector3df position, Vector3df front, Vector3df top)
 	{
-        avatar_position_[0] = position[0];
-        avatar_position_[1] = position[1];
-        avatar_position_[2] = position[2];
-
-        avatar_top_[0] = top[0];
-        avatar_top_[1] = top[1];
-        avatar_top_[2] = top[2];
-
-        avatar_front_[0] = front[0];
-        avatar_front_[1] = front[1];
-        avatar_front_[2] = front[2];
+        avatar_position_ = position;
+        avatar_top_ = top;
+        avatar_front_ = front;
 	}
 	
-	void LinkPlugin::SetCameraPosition(float position[3], float front[3], float top[3])
+	void LinkPlugin::SetCameraPosition(Vector3df position, Vector3df front, Vector3df top)
 	{
-        linked_mem_->fCameraPosition[0] = 0.0f;
-		linked_mem_->fCameraPosition[1] = 0.0f;
-		linked_mem_->fCameraPosition[2] = 0.0f;
-
-		linked_mem_->fCameraFront[0] = 0.0f;
-		linked_mem_->fCameraFront[1] = 0.0f;
-		linked_mem_->fCameraFront[2] = 1.0f;
-
-	    linked_mem_->fCameraTop[0] = 0.0f;
-	    linked_mem_->fCameraTop[1] = 1.0f;
-        linked_mem_->fCameraTop[2] = 0.0f;
+        camera_position_ = position;
+        camera_top_ = top;
+        camera_front_ = front;
 	}
 
 } // end of namespace: MumbleVoip

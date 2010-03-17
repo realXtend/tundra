@@ -5,6 +5,12 @@
 #include "MumbleVoipModule.h"
 #include "MemoryLeakCheck.h"
 #include "LinkPlugin.h"
+#include "RexLogicModule.h"
+#include "ModuleManager.h"
+#include "Avatar/Avatar.h"
+#include "EC_OgrePlaceable.h"
+#include "SceneManager.h"
+
 
 namespace MumbleVoip
 {
@@ -48,6 +54,30 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Update(f64 frametime)
     {
+        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        if (!rex_logic_module)
+            return;
+
+        RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
+        if (!avatar)
+            return;
+
+        Scene::EntityPtr entity = avatar->GetUserAvatar();
+        if (!entity)
+            return;
+
+        const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
+        if (placeable_component)
+        {
+            OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+            Quaternion q = ogre_placeable->GetOrientation();
+            Vector3df position_vector = ogre_placeable->GetPosition(); 
+            Vector3df top_vector(0,0,1);
+            Vector3df front_vector(q.x,q.y,q.y);
+            link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
+            link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector); //todo: use real values from camera
+        }
+
         link_plugin_->SendData();
     }
 
