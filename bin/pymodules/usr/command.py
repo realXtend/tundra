@@ -1130,6 +1130,22 @@ if 0:
         print "swoot"
 
 if 0: #create a new component, hilight
-    e = r.getEntity(1876645581)
-    print e.createComponent("EC_Highlight")
-    print type(e.highlight), e.highlight
+    e = r.getEntity(1876645543)
+    try:
+        e.highlight
+    except AttributeError:
+        print e.createComponent("EC_Highlight")
+        print "created a new Highlight component"
+
+    h = e.highlight
+    print type(h), h
+    
+    h.Show()
+    #h.Hide()
+    
+    vis = h.IsVisible()
+    if vis:
+        print "vis"
+    else:
+        print "not"
+        

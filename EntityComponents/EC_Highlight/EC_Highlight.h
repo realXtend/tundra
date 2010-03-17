@@ -42,6 +42,7 @@ public:
     /// Destructor.
     ~EC_Highlight();
 
+public slots:
     /// Shows the highlighting effect.
     void Show();
 
