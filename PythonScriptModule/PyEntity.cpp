@@ -41,16 +41,18 @@ namespace PythonScript
 
         Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
 
-         const Foundation::ComponentInterfacePtr &newcomponent = owner->GetFramework()->GetComponentManager()->CreateComponent(componentname);
-         if (newcomponent)
-         {
-             entity->AddComponent(newcomponent);
-         }
-         else
-         {
+        //XXX \todo check whether a component of the given type exists already for this entity. raise exception is yes?
+        //entity->GetComponent("EC_Highlight")
+        const Foundation::ComponentInterfacePtr &newcomponent = owner->GetFramework()->GetComponentManager()->CreateComponent(componentname);
+        if (newcomponent)
+        {
+            entity->AddComponent(newcomponent);
+        }
+        else
+        {
              owner->LogInfo("Create component: unknown component type string:");
              owner->LogInfo(componentname);
-         }
+        }
 
         //const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");        
 
@@ -352,9 +354,14 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             highlight = checked_static_cast<EC_Highlight *>(highlight_componentptr.get());
             return PythonQt::self()->wrapQObject(highlight);
         }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a highlight component.");
+            return NULL;
+        }
     }
 
-    std::cout << "unknown component type."  << std::endl;
+    PyErr_SetString(PyExc_AttributeError, "Unknown component type.");
     return NULL;
 }
 
