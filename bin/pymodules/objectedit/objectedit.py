@@ -143,6 +143,7 @@ class ObjectEdit(Component):
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
         self.updateSelectionBox(ent)
+        self.highlight(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
         return ent, children
@@ -169,7 +170,7 @@ class ObjectEdit(Component):
         return ent, children
         
     def select(self, ent):
-        self.sels = []
+        self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
         self.window.selected(ent, False) 
@@ -189,11 +190,22 @@ class ObjectEdit(Component):
             child = r.getEntity(int(child_id))
             self.window.addToList(child)
             self.window.highlightEntityFromList(child)
+            self.highlight(child)
             #self.sels.append(child)
             
-    def deselect(self):
-        if len(self.sels)>0:
+    def deselect(self, ent):
+        self.remove_highlight(ent)
+        for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
+            if _ent.id == ent.id:
+                self.sels.remove(_ent)
+                self.window.deselectSelection(_ent.id)
+            
+    def deselect_all(self):
+        if len(self.sels) > 0:
             #XXX might need something here?!
+            
+            for ent in self.sels:
+                self.remove_highlight(ent)
             self.sels = []
             self.hideSelector()
             
@@ -227,6 +239,30 @@ class ObjectEdit(Component):
                 self.selection_box.placeable.Orientation = ent.placeable.Orientation
             else:
                 r.logDebug("EditGUI: EC_OgreMesh clicked...")
+                
+    def highlight(self, ent):
+        try:
+            ent.highlight
+        except AttributeError:
+            print ent.createComponent("EC_Highlight")
+            #print "created a new Highlight component"
+
+        h = ent.highlight
+        #print type(h), h
+    
+        if not h.IsVisible():
+            h.Show()
+            
+        else:
+            r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.id)
+            
+    def remove_highlight(self, ent):
+        try:
+            h = ent.highlight
+        except AttributeError:
+            r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.id)
+        else:
+            h.Hide()        
 
     def changeManipulator(self, id):
         #r.logInfo("changing manipulator to " + str(id))
@@ -267,12 +303,12 @@ class ObjectEdit(Component):
     def linkObjects(self):
         ids = self.getSelectedObjectIds()
         self.worldstream.SendObjectLinkPacket(ids)
-        self.deselect()
+        self.deselect_all()
         
     def unlinkObjects(self):
         ids = self.getSelectedObjectIds()
         self.worldstream.SendObjectDelinkPacket(ids)
-        self.deselect()
+        self.deselect_all()
         
     def LeftMousePressed(self, mouseinfo):
         #r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
@@ -323,7 +359,7 @@ class ObjectEdit(Component):
             self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
             #print "canmove:", self.canmove
             self.canmove = False
-            self.deselect()
+            self.deselect_all()
             
     def dragStarted(self, mouseinfo):
         width, height = r.getScreenSize()
@@ -382,7 +418,7 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
         
     def RightMousePressed(self, mouseinfo):
-        #r.logInfo("rightmouse down")
+        r.logInfo("rightmouse down")
         if self.windowActive:
             self.right_button_down = True
             
@@ -396,22 +432,21 @@ class ObjectEdit(Component):
                 ent = r.getEntity(id)
                 
             found = False
-            #print "Got entity:", ent
+            print "Got entity:", ent.id
             if ent is not None:                
                 for entity in self.sels:
                     if entity.id == ent.id:
-                        found = True
+                        found = True #clicked on an already selected entity
+                        print "multiselect clicked entity is already in selection"
                 
-                if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
-                    if self.validId(ent.id):
-                        if not found:
-                            self.multiselect(ent)
-                        else:
-                            for _ent in self.sels:
-                                if _ent.id == ent.id:
-                                    self.sels.remove(_ent)
-                                    self.window.deselectSelection(_ent.id)
-                        self.canmove = True
+                #if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
+                if self.validId(ent.id):
+                    if not found:
+                        print "new ent to add to multiselect found:", ent.id
+                        self.multiselect(ent)
+                    else: #remove this entity which was previously in the selection
+                        self.deselect(ent)
+                    self.canmove = True
                         
             #r.logInfo(str(self.sels))
     def validId(self, id):
@@ -506,7 +541,7 @@ class ObjectEdit(Component):
             self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
             self.window.update_guivals(ent)
             self.modified = False
-            self.deselect()
+            self.deselect_all()
 
     #~ def redo(self):
         #~ #print "redo clicked"
@@ -562,7 +597,7 @@ class ObjectEdit(Component):
             
             self.manipulator.hideManipulator()
             self.hideSelector()        
-            self.deselect()
+            self.deselect_all()
             self.sels = []
             
     def float_equal(self, a,b):
@@ -657,7 +692,7 @@ class ObjectEdit(Component):
     def on_exit(self):
         r.logInfo("Object Edit exiting...")
 
-        self.deselect()
+        self.deselect_all()
         self.window.on_exit()  
 
         r.logInfo("         ...exit done.")
@@ -678,9 +713,9 @@ class ObjectEdit(Component):
             except RuntimeError, e:
                 r.logDebug("on_hide: scene not found")
             else:
-                self.deselect()
+                self.deselect_all()
         else:
-            self.deselect()
+            self.deselect_all()
             
     def update(self, time):
         #print "here", time
@@ -703,7 +738,7 @@ class ObjectEdit(Component):
    
     def on_logout(self, id):
         r.logInfo("Object Edit resetting due to Logout.")
-        self.deselect()
+        self.deselect_all()
         self.sels = []
         self.selection_box = None
         self.resetValues()
