@@ -19,6 +19,8 @@ namespace CoreUi
         move_animations_(new QParallelAnimationGroup(this)),
         resize_animations_(new QParallelAnimationGroup(this)),
         adjust_position_animations_(new QParallelAnimationGroup(this)),
+        pos_vector_(0,0),
+        child_size_(0,0),
         root_(root),
         hgap_(hgap),
         vgap_(vgap),
@@ -42,19 +44,7 @@ namespace CoreUi
         
     }
 
-    //! Simple setters and getters
 
-    void GroupNode::setPos(qreal x, qreal y)
-    {
-        setPos(QPointF(x,y));
-        CalculatePosVec();
-    }
-
-    void GroupNode::setPos(const QPointF &pos)
-    {
-        QGraphicsProxyWidget::setPos(pos);
-        CalculatePosVec();
-    }
 
     //! Overrides
 
@@ -88,11 +78,13 @@ namespace CoreUi
     {
         children_.append(node);
 
+        if(child_size_.isNull())
+            child_size_ = node->size();
+
         node->show();
         node->setParent(this);
         node->SetTreeDepth(GetTreeDepth()+1);
 
-        CalculatePosVec();
         CalculateChildPositions();
     }
 
@@ -123,7 +115,7 @@ namespace CoreUi
 
     QPropertyAnimation* GroupNode::CalculateSizeAnimation(MenuNode *child_node)
     {
-        QSizeF anim_size = child_node->size();
+        QSizeF anim_size = child_size_;
         QPropertyAnimation *size_anim = new QPropertyAnimation(child_node, "size");
         // Set start size
         size_anim->setStartValue(anim_size);
@@ -148,19 +140,20 @@ namespace CoreUi
 
     void GroupNode::CalculateChildPositions()
     {
+        if(pos_vector_.isNull())
+            CalculatePosVec();
+        adjust_position_animations_->clear();
         resize_animations_->clear();
+        move_animations_->clear();
         qreal rad = pos_vector_.length();
         qreal cheight = 0;
         qreal cwidth = 0;
-        MenuNode *child = children_.at(0);
-        if (child)
-        {
-            cheight = child->geometry().height();
-            cwidth = child->geometry().width();
-        }
+
+        cheight = child_size_.height();
+        cwidth = child_size_.width();
 
         int index = 0;
-        move_animations_->clear();
+        
         int number_of_visible_objects = rad/cheight;
         qreal phase_change = M_PI_2/number_of_visible_objects;
 
@@ -173,6 +166,7 @@ namespace CoreUi
 
             qreal expanded_y_pos = index*(cheight + vgap_);
             qreal expanded_x_pos = rad*cos(asin((index*(cheight))/rad));
+
 
             qreal shrunken_y_pos = rad*sin(phase_change*index);
             qreal shrunken_x_pos = rad*cos(phase_change*index);
@@ -192,6 +186,10 @@ namespace CoreUi
 
             child_node->setPos(shrunken_end_position);
             child_node->hide();
+
+            GroupNode* gn = dynamic_cast<GroupNode*>(child_node);
+            if(gn)
+                gn->CalculatePosVec();
 
             // Move animations to move objects into their place
             QPropertyAnimation *anim = new QPropertyAnimation(child_node, "pos", move_animations_);
