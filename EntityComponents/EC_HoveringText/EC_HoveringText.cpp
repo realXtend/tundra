@@ -208,7 +208,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
     QBrush brush(backgroundColor_, Qt::SolidPattern);
     painter.setBrush(brush);
     if (backgroundColor_ != Qt::transparent)
-        painter.drawRect(rect);
+        painter.drawRoundedRect(rect, 20.0, 20.0);
 
     // Draw text
     painter.setPen(textColor_);

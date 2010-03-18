@@ -24,6 +24,7 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+#include "EC_HoveringText.h"
 
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
@@ -95,7 +96,9 @@ namespace RexLogic
         defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
         defaultcomponents.push_back(EC_AvatarAppearance::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
+        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        defaultcomponents.push_back(EC_HoveringText::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
@@ -458,42 +461,59 @@ namespace RexLogic
     {
         avatar_appearance_.Update(frametime);
     }
-            
+
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
             return;
-        
+
         Scene::EntityPtr entity = scene->GetEntity(entity_id);
         if (!entity)
             return;
-        
-        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+
+        // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
+        EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
+        //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
-            overlay->CreateOverlay(Vector3df(0.0f, 0.0f, 1.5f));
-            overlay->SetText(presence->GetFullName());
-            overlay->SetPlaceable(placeable);
+//            overlay->CreateOverlay(Vector3df(0.0f, 0.0f, 1.5f));
+//            overlay->SetText(presence->GetFullName());
+//            overlay->SetPlaceable(placeable);
+            overlay->SetTextColor(QColor(255,255,255,200));
+            overlay->SetBackgroundColor(QColor(0,0,0,200));
+            overlay->ShowMessage(presence->GetFullName().c_str());
         }
-    }   
+    }
+
     void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
             return;
-        
+
         Scene::EntityPtr entity = scene->GetEntity(entity_id);
         if (!entity)
             return;
-        
+
+        // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
+/*
         OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
             overlay->SetText(presence->GetFullName());
             overlay->SetVisible(true);
+        }
+*/
+        EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (overlay && presence)
+        {
+            overlay->SetTextColor(QColor(255,255,255,200));
+            overlay->SetBackgroundColor(QColor(0,0,0,200));
+            overlay->ShowMessage(presence->GetFullName().c_str());
         }
     }
     
