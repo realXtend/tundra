@@ -22,7 +22,6 @@ import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
-from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
@@ -214,29 +213,18 @@ class ObjectEdit(Component):
             self.canmove = False
 
             self.window.deselected()
-
+            
     def updateSelectionBox(self, ent): 
         if ent is not None:
             bb = list(ent.boundingbox)
-            qscale = ent.placeable.Scale
-            scale = list((qscale.x(), qscale.y(), qscale.z()))
-            min = Vector3(bb[0], bb[1], bb[2])
-            max = Vector3(bb[3], bb[4], bb[5])
             height = abs(bb[4] - bb[1]) 
             width = abs(bb[3] - bb[0])
             depth = abs(bb[5] - bb[2])
 
-            if 1:#bb[6] == 0: #0 means CustomObject
-                #~ height += scale[0]#*1.2
-                #~ width += scale[1] #*1.2
-                #~ depth += scale[2]#*1.2
-
-                self.selection_box.placeable.Position = ent.placeable.Position
-                
-                self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
-                self.selection_box.placeable.Orientation = ent.placeable.Orientation
-            else:
-                r.logDebug("EditGUI: EC_OgreMesh clicked...")
+            self.selection_box.placeable.Position = ent.placeable.Position
+            
+            self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
+            self.selection_box.placeable.Orientation = ent.placeable.Orientation
                 
     def highlight(self, ent):
         try:
