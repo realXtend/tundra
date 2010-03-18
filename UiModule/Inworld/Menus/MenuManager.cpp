@@ -165,6 +165,12 @@ namespace CoreUi
         {
             expanded_nodes_.removeOne(clicked_node);
             last_resize_animations_ = 0;
+            GroupNode* node = dynamic_cast<GroupNode*>(clicked_node->parent());
+            if(node)
+            {
+                node->AdjustNode(QAbstractAnimation::Forward);
+                last_resize_animations_ = node->GetResizeAnimations();
+            }
         }
 
         revert_group->setDirection(QAbstractAnimation::Backward);

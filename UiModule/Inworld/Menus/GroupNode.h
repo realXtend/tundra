@@ -38,6 +38,7 @@ namespace CoreUi
         QParallelAnimationGroup *GetResizeAnimations()  { return resize_animations_; }
         bool IsExpanded()                               { return is_expanded_; }
         void CalculatePosVec();
+        void AdjustNode(QAbstractAnimation::Direction dir);
 
     private slots:
         QPropertyAnimation* CalculateSizeAnimation(MenuNode *child_node);
