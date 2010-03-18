@@ -4,6 +4,7 @@
 #define incl_UiModule_NotificationManager_h
 
 #include "UiModuleApi.h"
+#include "UiModule.h"
 
 #include <QObject>
 #include <QRectF>
@@ -14,6 +15,7 @@ class QGraphicsScene;
 namespace CoreUi
 {
     class NotificationBaseWidget;
+    class NotificationBrowserWidget;
 }
 
 namespace UiServices
@@ -31,12 +33,15 @@ namespace UiServices
 
     public slots:
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
+        void SetConnectionState(ConnectionState connection_state);
 
     private slots:
         void InitSelf();
         void UpdatePosition(const QRectF &scene_rect);
         void UpdateStack();
         void NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification);
+
+        void ToggleNotificationBrowser();
 
     private:
         InworldSceneController *inworld_scene_controller_;
@@ -47,6 +52,8 @@ namespace UiServices
 
         QList<CoreUi::NotificationBaseWidget *> notifications_history_;
         QList<CoreUi::NotificationBaseWidget *> visible_notifications_;
+
+        CoreUi::NotificationBrowserWidget *browser_widget_;
 
     };
 }

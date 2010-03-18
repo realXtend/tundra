@@ -16,7 +16,9 @@ namespace CoreUi
         progress_animation_(new QPropertyAnimation(this)),
         move_animation_(new QPropertyAnimation(this)),
         timestamp_(QDateTime::currentDateTime()),
-        hide_in_msec_(hide_in_msec)
+        hide_in_msec_(hide_in_msec),
+        is_active_(false),
+        result_(QString())
     {
         InitSelf();
     }
@@ -63,7 +65,11 @@ namespace CoreUi
 
     void NotificationBaseWidget::TimedOut()
     {
-        fade_animation_->start(QAbstractAnimation::DeleteWhenStopped);
+        if (opacity() != 1.0)
+            return;
+
+        progress_animation_->stop();
+        fade_animation_->start();
     }
 
     void NotificationBaseWidget::WidgetHidden()
@@ -78,23 +84,38 @@ namespace CoreUi
         mainLayout->insertWidget(0, widget);
     }
 
+    void NotificationBaseWidget::SetCentralLayout(QLayout *layout)
+    {
+        mainLayout->insertLayout(0, layout);
+    }
+
     void NotificationBaseWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *hover_enter_event)
     {
         QGraphicsProxyWidget::hoverEnterEvent(hover_enter_event);
-        progress_animation_->pause();
+        if (progress_animation_->state() == QAbstractAnimation::Running)
+            progress_animation_->pause();
     }
 
     void NotificationBaseWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *hover_leave_event)
     {
         QGraphicsProxyWidget::hoverLeaveEvent(hover_leave_event);
-        progress_animation_->resume();
+        if (progress_animation_->state() == QAbstractAnimation::Paused)
+            progress_animation_->resume();
     }
 
     // Public
 
     void NotificationBaseWidget::Start()
     {
-        progress_animation_->start(QAbstractAnimation::DeleteWhenStopped);
+        if (hide_in_msec_ > 0)
+            progress_animation_->start();
+        else
+            timeoutProgressBar->setValue(0);
+    }
+
+    void NotificationBaseWidget::Hide()
+    {
+        TimedOut();
     }
 
     void NotificationBaseWidget::AnimateToPosition(QPointF end_pos)

@@ -8,6 +8,7 @@
 
 #include "Inworld/View/MainPanel.h"
 #include "Inworld/Notifications/NotificationBaseWidget.h"
+#include "Inworld/Notifications/NotificationBrowserWidget.h"
 
 #include <QGraphicsScene>
 #include <QDebug>
@@ -21,7 +22,8 @@ namespace UiServices
         inworld_scene_controller_(inworld_scene_controller),
         scene_(inworld_scene_controller->GetInworldScene()),
         notice_max_width_(200),
-        notice_start_pos_(QPointF())
+        notice_start_pos_(QPointF()),
+        browser_widget_(new CoreUi::NotificationBrowserWidget())
     {
         InitSelf();
     }
@@ -37,6 +39,12 @@ namespace UiServices
 
     void NotificationManager::InitSelf()
     {
+        browser_widget_->hide();
+        scene_->addItem(browser_widget_);
+
+        QPushButton *notification_toggle_button = inworld_scene_controller_->GetMainPanel()->GetNotificationsButton();
+        if (notification_toggle_button)
+            connect(notification_toggle_button, SIGNAL(clicked()), SLOT(ToggleNotificationBrowser()));
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
     }
 
@@ -70,6 +78,17 @@ namespace UiServices
         }
     }
 
+    void NotificationManager::ToggleNotificationBrowser()
+    {
+        if (!browser_widget_->isVisible())
+        {
+            browser_widget_->setPos(scene_->sceneRect().right()-browser_widget_->size().width(), inworld_scene_controller_->GetMainPanel()->size().height());
+            browser_widget_->ShowNotifications(notifications_history_);
+        }
+        else
+            browser_widget_->hide();
+    }
+
     // Public
 
     void NotificationManager::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
@@ -85,7 +104,7 @@ namespace UiServices
         if (!visible_notifications_.isEmpty())
         {
             CoreUi::NotificationBaseWidget *last_notification = visible_notifications_.last();
-            add_position.setY(last_notification->mapRectToScene(last_notification->rect()).bottom());
+            add_position.setY(notice_start_pos_.y() + last_notification->mapRectToScene(last_notification->rect()).bottom());
         }
 
         // Set position and add to scene
@@ -102,5 +121,21 @@ namespace UiServices
 
         // Start notification
         notification_widget->Start();
-    } 
+    }
+
+    void NotificationManager::SetConnectionState(ConnectionState connection_state)
+    {
+        switch (connection_state)
+        {
+            case Connected:
+                break;
+
+            case Disconnected:
+                foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
+                    SAFE_DELETE(notification);
+                notifications_history_.clear();
+                visible_notifications_.clear();
+                break;
+        }
+    }
 }

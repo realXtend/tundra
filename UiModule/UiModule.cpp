@@ -19,6 +19,9 @@
 #include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/Console/UiConsoleManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
+#include "Inworld/Notifications/InputNotification.h"
+#include "Inworld/Notifications/QuestionNotification.h"
+#include "Inworld/Notifications/ProgressNotification.h"
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
@@ -91,7 +94,7 @@ namespace UiServices
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
-        ui_state_machine_->SwitchToEtherScene(); // comment to set classic login as default on startup
+        ui_state_machine_->SwitchToEtherScene();
         LogDebug("Ether Logic STARTED");
     }
 
@@ -169,12 +172,21 @@ namespace UiServices
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
                     PublishConnectionState(Connected);
+
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())
                         welcome_message = current_avatar_ + " welcome to " + current_server_;
                     else
                         welcome_message = "Welcome to " + current_server_;
-                    inworld_notification_manager_->ShowNotification(new MessageNotification(welcome_message));
+
+                    inworld_notification_manager_->ShowNotification(new MessageNotification(welcome_message, 10000));
+                    inworld_notification_manager_->ShowNotification(new MessageNotification("I'm a non autohide message notification!"));
+                    inworld_notification_manager_->ShowNotification(new QuestionNotification("Do you like me?"));
+                    inworld_notification_manager_->ShowNotification(new InputNotification("What do you think of the ui?"));
+                    ProgressController *controller = new ProgressController(30000);
+                    inworld_notification_manager_->ShowNotification(new ProgressNotification("I'm making progress for 30 seconds!", controller));
+                    inworld_notification_manager_->ShowNotification(new QuestionNotification("Long text message on a question notification! Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea?", "Sure", "Nope", "Hell No!"));
+                    
                     break;
                 }
                 default:
@@ -192,9 +204,11 @@ namespace UiServices
             case Connected:
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
+                inworld_notification_manager_->SetConnectionState(connection_state);
                 break;
 
             case Disconnected:
+                inworld_notification_manager_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;

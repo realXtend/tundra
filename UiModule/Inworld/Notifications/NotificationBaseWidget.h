@@ -16,7 +16,7 @@ class QPropertyAnimation;
 
 namespace CoreUi
 {
-    class UI_MODULE_API NotificationBaseWidget : public QGraphicsProxyWidget, private Ui::NotificationBaseWidget
+    class UI_MODULE_API NotificationBaseWidget : public QGraphicsProxyWidget, protected Ui::NotificationBaseWidget
     {
     
     Q_OBJECT
@@ -25,18 +25,37 @@ namespace CoreUi
         NotificationBaseWidget(int hide_in_msec);
         
     public slots:
-        void Start();
+        //! Starts the notification timer, called by NotificationManager
+        virtual void Start();
+
+        //! Ends showing this notification in the scene
+        void Hide();
+
+        //! Animates the notification to a new position, called by NotificationManager
         void AnimateToPosition(QPointF end_pos);
 
-        QDateTime GetTimeStamp() { return timestamp_; }
+        //! Getters/setters
+        QDateTime GetTimeStamp()        { return timestamp_; }
+        void SetActive(bool active)     { is_active_ = active; }
+        bool IsActive()                 { return is_active_; }
+        void SetResult(QString result)  { result_ = result; }
+        QString GetResult()             { return result_; }
+        QWidget *GetContentWidget()     { return contentWidget; }
 
     protected:
+        //! Sets the content widget, called by subclasses
         void SetCentralWidget(QWidget *widget);
 
+        //! Sets the content layout, called by subclasses
+        void SetCentralLayout(QLayout *layout);
+
+        //! Pauses the hide timer when mouse enters notification rect
         void hoverEnterEvent(QGraphicsSceneHoverEvent *hover_enter_event);
+
+        //! Resumes the hide timer when mouse leaves notification rect
         void hoverLeaveEvent(QGraphicsSceneHoverEvent *hover_leave_event);
 
-    private slots:
+    protected slots:
         void InitSelf();
         void TimedOut();
         void WidgetHidden();
@@ -49,6 +68,8 @@ namespace CoreUi
         QDateTime timestamp_;
 
         int hide_in_msec_;
+        bool is_active_;
+        QString result_;
 
     signals:
         void Completed(CoreUi::NotificationBaseWidget *self);

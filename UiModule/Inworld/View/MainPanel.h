@@ -38,6 +38,10 @@ namespace CoreUi
         /// @return MainPanelButton
         MainPanelButton *SetSettingsWidget(UiServices::UiProxyWidget *settings_widget, const QString &widget_name);
 
+    public:
+        //! Getter for the button for NotificationManager
+        QPushButton *GetNotificationsButton() { return buttonNotifications; }
+
     private:
         //! Internal QWidget
         QWidget *internal_widget_;
