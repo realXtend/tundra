@@ -54,7 +54,7 @@ public slots:
     bool IsVisible() const;
 
 private:
-    /// Creates the clone entity for the
+    /// Creates the clone entity used for highlighting from the original.
     void Create();
 
     /// Renderer pointer.

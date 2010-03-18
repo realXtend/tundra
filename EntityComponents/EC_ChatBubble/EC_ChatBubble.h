@@ -3,7 +3,7 @@
  *
  *  @file   EC_ChatBubble.h
  *  @brief  EC_ChatBubble Chat bubble component wich shows billboard with chat bubble and text on entity.
- *  @note   The entity must have both EC_OgrePlaceable and EC_OgreMesh components available in advance.
+ *  @note   The entity must have EC_OgrePlaceable component available in advance.
 */
 
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
@@ -63,6 +63,7 @@ public:
 public slots:
     /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.
+    /// @note The time the message is shown is calculated from the message length.
     void ShowMessage(const QString &msg);
 
 private slots:

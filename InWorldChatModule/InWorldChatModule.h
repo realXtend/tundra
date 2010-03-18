@@ -41,6 +41,10 @@ namespace UiServices
     class UiModule;
 }
 
+QT_BEGIN_NAMESPACE
+class QColor;
+QT_END_NAMESPACE
+
 namespace Naali
 {
     class InWorldChatModule :  public QObject, public Foundation::ModuleInterfaceImpl
@@ -89,10 +93,10 @@ namespace Naali
         /// @param params Parameters.
         Console::CommandResult ConsoleChat(const StringVector &params);
 
-        /// Applies EC_ChatBubble to a scene entity.
+        /// Applies EC_ChatBubble to a scene entity with default parameters.
         /// @param entity Entity.
         /// @message Message to be shown at the chat bubble.
-        void ApplyChatBubble(Scene::Entity &entity, const QString &message);
+        void ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message);
 
         /// Applies EC_ChatBubble to a scene entity.
         /// @param entity Entity.
@@ -103,7 +107,7 @@ namespace Naali
         /// Returns scene entity pointer with the wanter ID:
         /// @param id ID of the entity.
         /// @return Entity pointer matching the id or 0 if not found.
-        Scene::Entity *GetEntityWithID(const RexUUID &id);
+        Scene::Entity *GetEntityWithId(const RexUUID &id);
 
         /// Handles RexEmotionIcon generic message.
         /// @param params Parameters.
@@ -111,7 +115,7 @@ namespace Naali
 
         /// Handles ChatFromSimulator message.
         /// @param msg Network message.
-        void HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMessage &msg);
+        void HandleChatFromSimulatorMessage(ProtocolUtilities::NetInMessage &msg);
 
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;
@@ -127,6 +131,9 @@ namespace Naali
 
         /// UiModule pointer.
         boost::weak_ptr<UiServices::UiModule> uiModule_;
+
+        /// Do we want to show the in-world chat bubbles
+        bool showChatBubbles_;
     };
 }
 

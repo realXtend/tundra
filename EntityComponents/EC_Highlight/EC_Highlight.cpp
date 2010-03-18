@@ -7,9 +7,11 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EC_Highlight.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
+#include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "Entity.h"
@@ -18,6 +20,8 @@
 #include <Poco/Logger.h>
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 #define LogInfo(msg) Poco::Logger::get("EC_Highlight").error("Error: " + msg);
 #define LogError(msg) Poco::Logger::get("EC_Highlight").information(msg);
@@ -98,18 +102,26 @@ void EC_Highlight::Create()
         return;
 
     // Prims have no EC_OgreMesh necessarily so no assertion here.
-    OgreRenderer::EC_OgreMesh *mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
     //assert(mesh);
-    if (!mesh)
+    if (!ec_mesh)
         return;
 
-    Ogre::Entity *ogre_entity = mesh->GetEntity();
+    Ogre::Entity *ogre_entity = ec_mesh->GetEntity();
     assert(ogre_entity);
     if (!ogre_entity)
         return;
 
-    sceneNode_ = mesh->GetAdjustmentSceneNode();
+    sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
+
+/*
+    StringVector material_names;
+    int mat_count = ec_mesh->GetNumMaterials();
+    for(i = 0; i < mat_count; ++i)
+        material_names.push_back(ec_mesh->GetMaterialName(i));
+*/
     //sceneNode_ = placeable->GetSceneNode();
+
     assert(sceneNode_);
     if (!sceneNode_)
         return;
@@ -117,15 +129,39 @@ void EC_Highlight::Create()
     cloneName_ = std::string("entity") + renderer_.lock()->GetUniqueObjectName();
     entityClone_ = ogre_entity->clone(cloneName_);
     assert(entityClone_);
+/*
+    const char *image_name = "rim.dds";
+    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
+    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(image_name).get());
+    if (!tex)
+    {
+        ///\bug OGRE doesn't seem to add all texture to the resource group although the texture
+        ///     exists in folder spesified in the resource.cfg
+        std::stringstream ss;
+        ss << "Ogre Texture \"" << image_name << "\" not found!";
+        std::cout << ss.str() << std::endl;
 
-    const std::string &material_name = "Highlight";
+        Ogre::ResourcePtr rp = manager.create(image_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        if (!rp.isNull())
+        {
+            std::cout << "But should be now..." << std::endl;
+        }
+    }
+*/
+//    std::string origMaterialName = ec_mesh->getmaterialGetMaterialName(0);
+
+    std::string newMatName = std::string("HighlightMaterial") + renderer_.lock()->GetUniqueObjectName();
     try
     {
-        entityClone_->setMaterialName(material_name);
+//        StringVector texture_names;
+//        OgreRenderer::GetTextureNamesFromMaterial(oldMaterial, StringVector& texture_names);
+        Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);
+//        OgreRenderer::SetTextureUnitOnMaterial(highlightMaterial, "Jack_body_yellow1.jpg");
+        entityClone_->setMaterialName(newMatName);
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Could not set material \"" + material_name + "\": " + std::string(e.what()));
+        LogError("Could not set material \"" + newMatName + "\": " + std::string(e.what()));
         return;
     }
 

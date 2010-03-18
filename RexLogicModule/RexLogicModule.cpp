@@ -5,7 +5,6 @@
 
 #include "RexLogicModule.h"
 #include "ComponentManager.h"
-#include "Poco/ClassLibrary.h"
 #include "EventDataInterface.h"
 #include "TextureInterface.h"
 #include "SoundServiceInterface.h"
@@ -31,7 +30,9 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 
+// External EC's
 #include "EC_Highlight.h"
+#include "EC_HoveringText.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -103,6 +104,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
     DECLARE_MODULE_EC(EC_Highlight);
+    DECLARE_MODULE_EC(EC_HoveringText);
 }
 
 // virtual

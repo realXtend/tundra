@@ -1,14 +1,14 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   EC_ChatBubble.cpp
- *  @brief  EC_ChatBubble Chat bubble component wich shows billboard with chat bubble and text on entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @file   EC_HoveringText.cpp
+ *  @brief  EC_HoveringText shows a hovering text attached to an entity.
+ *  @note   The entity must EC_OgrePlaceable available in advance.
  */
 
 #include "StableHeaders.h"
 //#include "DebugOperatorNew.h"
-#include "EC_ChatBubble.h"
+#include "EC_HoveringText.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -26,29 +26,67 @@
 
 //#include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
+EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 100)),
-    bubbleColor_(QColor(82, 134, 255, 210)),
-    textColor_(Qt::white),
+    backgroundColor_(Qt::transparent),
+    textColor_(Qt::black),
     billboardSet_(0),
-    billboard_(0)
+    billboard_(0),
+    text_("")
 {
     renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 }
 
-EC_ChatBubble::~EC_ChatBubble()
+EC_HoveringText::~EC_HoveringText()
 {
-    RemoveAllMessages();
 }
 
-void EC_ChatBubble::SetPosition(const Vector3df& position)
+void EC_HoveringText::SetPosition(const Vector3df& position)
 {
     if (billboard_)
         billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
 
-void EC_ChatBubble::ShowMessage(const QString &msg)
+void EC_HoveringText::SetFont(const QFont &font)
+{
+    font_ = font;
+    Redraw();
+}
+
+void EC_HoveringText::SetTextColor(const QColor &color)
+{
+    textColor_ = color;
+    Redraw();
+}
+
+void EC_HoveringText::SetBackgroundColor(const QColor &color)
+{
+    backgroundColor_ = color;
+    Redraw();
+}
+
+void EC_HoveringText::Show()
+{
+    if (billboardSet_)
+        billboardSet_->setVisible(true);
+}
+
+void EC_HoveringText::Hide()
+{
+    if (billboardSet_)
+        billboardSet_->setVisible(false);
+}
+
+bool EC_HoveringText::IsVisible() const
+{
+    if (billboardSet_)
+        return billboardSet_->isVisible();
+    else
+        return false;
+}
+
+void EC_HoveringText::ShowMessage(const QString &text)
 {
     if (renderer_.expired())
         return;
@@ -82,66 +120,35 @@ void EC_ChatBubble::ShowMessage(const QString &msg)
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newName);
         billboardSet_->setMaterialName(newName);
 
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.f));
         assert(billboard_);
         billboard_->setDimensions(2, 1);
 
         sceneNode->attachObject(billboardSet_);
     }
 
-    if (msg.isNull() || msg.isEmpty())
+    if (text.isNull() || text.isEmpty())
         return;
 
-    messages_.push_back(msg);
+    text_ = text;
 
-    // Set timer for removing the message
-    int timeToShow = 0;
-    const int minTime = 4000;
-    if (msg.length() * 400 < minTime)
-        timeToShow = minTime;
-    else
-        timeToShow = msg.length() * 400;
-
-    QTimer::singleShot(timeToShow, this, SLOT(RemoveLastMessage()));
-
-    Refresh();
+    Redraw();
 }
 
-void EC_ChatBubble::RemoveLastMessage()
-{
-    messages_.pop_front();
-    Refresh();
-}
-
-void EC_ChatBubble::RemoveAllMessages()
-{
-    messages_.clear();
-    Refresh();
-}
-
-void EC_ChatBubble::Refresh()
+void EC_HoveringText::Redraw()
 {
     if (renderer_.expired() ||!billboardSet_ || !billboard_)
         return;
 
-    // If no messages in the log, hide the chat bubble.
-    if (messages_.size() == 0)
-    {
-        billboardSet_->setVisible(false);
-        return;
-    }
-    else
-        billboardSet_->setVisible(true);
-
-    // Get pixmap with chat bubble and text rendered to it.
-    QPixmap pixmap = GetChatBubblePixmap();
+    // Get pixmap with text rendered to it.
+    QPixmap pixmap = GetTextPixmap();
     if (pixmap.isNull())
         return;
 
     // Create texture
     QImage img = pixmap.toImage();
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
-    std::string tex_name("ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName());
+    std::string tex_name("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
     Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
     assert(tex);
@@ -155,12 +162,12 @@ void EC_ChatBubble::Refresh()
     billboardSet_->setMaterialName(newMatName);
 }
 
-QPixmap EC_ChatBubble::GetChatBubblePixmap()
+QPixmap EC_HoveringText::GetTextPixmap()
 {
     if (renderer_.expired())
         return 0;
 
-///\todo    Resize the chat bubble and font size according to the render window size and distance
+///\todo    Resize the font size according to the render window size and distance
 ///         avatar's distance from the camera.
 //    const int minWidth =
 //    const int minHeight =
@@ -178,20 +185,9 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
         return 0;
 
     // Create pixmap
-    QPixmap pixmap;//(max_rect.size());
-//    pixmap.fill(QColor(0,0,0,0));
+    QPixmap pixmap;
     pixmap.load(filename);
     pixmap = pixmap.scaled(max_rect.size());
-
-    // Gather chat log and calculate the bounding rect size.
-    QStringListIterator it(messages_);
-    QString fullChatLog;
-    while(it.hasNext())
-    {
-        fullChatLog.append(it.next());
-        if (it.hasNext())
-            fullChatLog.append('\n');
-    }
 
     QPainter painter(&pixmap);
     painter.setFont(font_);
@@ -201,27 +197,22 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
     // so we get padding without need to modify the rect itself.
     QFont origFont = painter.font();
     painter.setFont(QFont(origFont.family(), origFont.pointSize()+12));
-    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
+    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
     painter.setFont(origFont);
     // could also try this:
     // QFontMetrics metric(any_qfont); int width = metric.width(mytext) + padding;
 
     rect.setHeight(rect.height() - 10);
-//    rect.setX(rect.x() - 40);
-//    rect.setY(rect.y() + 20);
-
-//    painter.end();
-//    pixmap = pixmap.scaled(rect.size());
-//    painter.begin(&pixmap);
 
     // Draw rounded rect.
-    QBrush brush(bubbleColor_, Qt::SolidPattern);
+    QBrush brush(backgroundColor_, Qt::SolidPattern);
     painter.setBrush(brush);
-    painter.drawRoundedRect(rect, 20.0, 20.0);
+    if (backgroundColor_ != Qt::transparent)
+        painter.drawRect(rect);
 
     // Draw text
     painter.setPen(textColor_);
-    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, fullChatLog);
+    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
 
     return pixmap;
 }

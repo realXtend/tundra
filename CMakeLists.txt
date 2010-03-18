@@ -88,7 +88,6 @@ add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 add_subdirectory (RexLogicModule)
-add_subdirectory (EntityComponents/EC_Highlight)    # declared by RexLogicModule
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
 add_subdirectory (UiModule)
@@ -109,6 +108,11 @@ add_subdirectory (ProtocolModuleTaiga)
 # commonly used functionality.
 add_subdirectory (InventoryModule)
 add_subdirectory (OgreAssetEditorModule)
+
+# Entity components. Note: at the current system if you disable one of these you must
+# comment out the declaration at the responsible module's Load() function.
+add_subdirectory (EntityComponents/EC_Highlight)    # declared by RexLogicModule
+add_subdirectory (EntityComponents/EC_HoveringText) # declared by RexLogicModule
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.

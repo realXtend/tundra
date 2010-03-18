@@ -8,6 +8,8 @@
 #include "Entity.h"
 #include "Color.h"
 
+class QColor;
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -31,13 +33,14 @@ namespace RexLogic
         
         bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
-        
+
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
-        
+
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
+
         void HandleLogout();
-        
+
         typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
@@ -108,10 +111,10 @@ namespace RexLogic
 
         //! handles skeleton resource (used in conjunction with a mesh) being ready
         void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
-        
+
         //! handles particle script resource being ready
         void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
-        
+
         /** Attachs a light component to a prim.
          * @param entity Entity pointer of the prim.
          * @param color Color.
@@ -119,7 +122,13 @@ namespace RexLogic
          * @param falloff Falloff factor of the light.
          */ 
         void AttachLightComponent(Scene::EntityPtr entity, Color color, float radius, float falloff);
-        
+
+        /// Creates hovering text above entity. Uses EC_ChatBubble.
+        /// @param entity Entity.
+        /// @param text Text to be shown. If null ("") the EC_ChatBubble will be removed from the entity.
+        /// @param text_color Color of the text.
+        void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
+
         //! handles mesh or prim texture resource being ready
         void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
 
@@ -131,24 +140,25 @@ namespace RexLogic
         //! discards request tags for certain entity
         void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
 
-		//! Return valid uuid if given id is valid uuid or if given id
-		//! is valid asset url with format: 'http://domain/path/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-		//! Return zero uuid if either above works
-		static RexUUID UuidForRexObjectUpdatePacket(RexTypes::RexAssetID id);
+        //! Return valid uuid if given id is valid uuid or if given id
+        //! is valid asset url with format: 'http://domain/path/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+        //! Return zero uuid if either above works
+        static RexUUID UuidForRexObjectUpdatePacket(RexTypes::RexAssetID id);
 
-		//! Return valid url string if given id is valid url. 
-		//! Return empty string if given id is not valid url.
-		static std::string UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id);
+        //! Return valid url string if given id is valid url. 
+        //! Return empty string if given id is not valid url.
+        static std::string UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id);
 
         //! maps tags of all pending resource request to prim entities.
         EntityResourceRequestMap prim_resource_request_tags_;
-        
+
         //! pending rexprimdatas. This map exists because in some cases the network messages that describe prim parameters
         //! are received before the actual objects have been created (first ObjectUpdate is received). Any such pending
         //! messages are queued here to wait that the object is created. The real problem here is that SLUDP doesn't give
         //! us any reliable ordered stream of communication.
         typedef std::map<RexUUID, std::vector<u8> > RexPrimDataMap;
         RexPrimDataMap pending_rexprimdata_;
+
         //! pending rexfreedatas
         typedef std::map<RexUUID, std::string > RexFreeDataMap;
         RexFreeDataMap pending_rexfreedata_;
