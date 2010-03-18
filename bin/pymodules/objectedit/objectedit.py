@@ -2,21 +2,19 @@
 """
 A gui tool for editing.
 
-Now a basic proof-of-concept and a test of the Python API:
-The qt integration for ui together with the manually wrapped entity-component data API,
+Originally was a basic proof-of-concept and a test of the Python API:
+The qt integration for ui together with the manually wrapped entity-component data API
 and the viewer non-qt event system for mouse events thru the py plugin system.
 
-Works for selecting an object with the mouse, and then changing the position 
-using the qt widgets. Is shown immediately in-world and synched over the net.
+Later has been developed to be an actually usable editing tool, and currently is the only tool for that for Naali.
 
 TODO (most work is in api additions on the c++ side, then simple usage here):
-- local & global movement - select box?
+- local & global movement
 - (WIP, needs network event refactoring) sync changes from over the net to the gui dialog: listen to scene objectupdates
   (this is needed/nice when someone else is moving the same obj at the same time,
    works correctly in slviewer, i.e. the dialogs there update on net updates)
 - hilite the selected object
 (- list all the objects to allow selection from there)
-
 
 """
 
@@ -26,8 +24,8 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
-from PythonQt.QtGui import QVector3D as vec
-from PythonQt.QtGui import QQuaternion as quat
+from PythonQt.QtGui import QVector3D as Vec
+from PythonQt.QtGui import QQuaternion as Quat
 
 try:
     window
@@ -235,7 +233,7 @@ class ObjectEdit(Component):
 
                 self.selection_box.placeable.Position = ent.placeable.Position
                 
-                self.selection_box.placeable.Scale = vec(height, width, depth)#depth, width, height
+                self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
                 self.selection_box.placeable.Orientation = ent.placeable.Orientation
             else:
                 r.logDebug("EditGUI: EC_OgreMesh clicked...")
@@ -282,8 +280,8 @@ class ObjectEdit(Component):
     def hideSelector(self):
         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
             if self.selection_box is not None:
-                self.selection_box.placeable.Scale = vec(0.0, 0.0, 0.0)
-                self.selection_box.placeable.Position = vec(0.0, 0.0, 0.0)
+                self.selection_box.placeable.Scale = Vec(0.0, 0.0, 0.0)
+                self.selection_box.placeable.Position = Vec(0.0, 0.0, 0.0)
         except RuntimeError, e:
             r.logDebug("hideSelector failed")
         
@@ -621,7 +619,7 @@ class ObjectEdit(Component):
             if not self.float_equal(pos[i],v):
                 pos[i] = v
                 #converted to list to have it mutable
-                newpos = vec(pos[0], pos[1], pos[2])
+                newpos = Vec(pos[0], pos[1], pos[2])
                 ent.placeable.Position = newpos
                 ent.network.Position = newpos
                 self.manipulator.moveTo(self.sels)
@@ -647,7 +645,7 @@ class ObjectEdit(Component):
                         if index != i:
                             scale[index] += diff
                 
-                ent.placeable.Scale = vec(scale[0], scale[1], scale[2])
+                ent.placeable.Scale = Vec(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -672,7 +670,7 @@ class ObjectEdit(Component):
                 ort = euler_to_quat(euler)
                 #print euler, ort
                 #print euler, ort
-                ort = quat(ort[3], ort[0], ort[1], ort[2])
+                ort = Quat(ort[3], ort[0], ort[1], ort[2])
                 ent.placeable.Orientation = ort
                 ent.network.Orientation = ort
                 if not self.dragging:
