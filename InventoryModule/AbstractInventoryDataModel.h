@@ -129,7 +129,7 @@ namespace Inventory
 
         /// Indicates that asset upload has failed.
         /// @param filename Filename.
-        void UploadFailed(const QString &filename);
+        void UploadFailed(const QString &filename, const QString &reason = "Unknown reason");
 
         /// Indicates that asset upload has completed.
         /// @param filename Filename.

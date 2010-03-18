@@ -39,6 +39,8 @@ namespace ProtocolUtilities
 namespace UiServices
 {
     class UiProxyWidget;
+    class ProgressController;
+    class ProgressNotification;
 }
 
 namespace CoreUi
@@ -129,9 +131,13 @@ namespace Inventory
         /// @param asset_id Asset id.
         void AbortDownload(const QString &asset_id);
 
-        /// Closes download progress dialog.
-        /// @param asset_id Asset id.
-        void CloseDownloadProgess(const QString &asset_id);
+        /// Finish download progress notification
+        /// @param item id
+        void FinishProgessNotification(const QString &id);
+
+        void UploadStarted(const QString &filename);
+
+        void UploadFailed(const QString &filename, const QString &reason);
 
         //! Sending notification from DL/UL thread, cant create widgets there
         //! because its not the main ui thread
@@ -217,6 +223,9 @@ namespace Inventory
 
         /// Last file path used when using open file dialog.
         QString lastUsedPath_;
+        
+        /// Used to follow and update ongoing downloads and uploads
+        QMap<QString, UiServices::ProgressController*> notification_progress_map_;
     };
 }
 

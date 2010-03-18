@@ -28,15 +28,31 @@ namespace UiServices
         QTimeLine *progress_timeline;
 
     public slots:
-        //! Set value from 0 to 100. If 100 will hide the notification immidiately.
+        //! Start the internal timer with value, quivalent to calling SetValue 0
+        void Start(int value = 0);
+
+        //! Set value from 0 to 100. If 100 will hide the notification immidiately
         void SetValue(int value);
 
         //! Finish the progress job, this will hide the notification immidiately
         void Finish();
 
+        void FailWithReason(QString reason);
+
+        bool IsFinished() { return finished_; }
+        qreal JobDurationInSeconds() { return job_duration_sec_; }
+
     signals:
-        void StepUpdate(int value);
+        void Started();
         void Finished();
+        void Failed(QString reason);
+
+        void StepUpdate(int value);
+
+    private:
+        bool finished_;
+        QTime job_timer_;
+        qreal job_duration_sec_;
 
     };
 
@@ -51,9 +67,14 @@ namespace UiServices
 
     private slots:
         void Finished();
+        void Failed(QString reason);
 
     private:
         ProgressController *controller_;
+
+    signals:
+        void Completed();
+
     };
 }
 

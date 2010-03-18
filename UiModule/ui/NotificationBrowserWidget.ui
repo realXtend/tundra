@@ -41,7 +41,7 @@ QWidget#tabContainerWidget {
 	border-bottom-left-radius: 7px;
 }
 
-QWidget#scrollContentActive, QWidget#scrollContentLog{
+QWidget#scrollContentActive, QWidget#scrollContentLog {
 	background-color: white;
 }
 

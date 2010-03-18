@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+a// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 #include "InputNotification.h"
@@ -10,7 +10,7 @@
 namespace UiServices
 {
     InputNotification::InputNotification(QString message, QString button_title, int hide_in_msec) :
-        CoreUi::NotificationBaseWidget(hide_in_msec),
+        CoreUi::NotificationBaseWidget(hide_in_msec, message),
         message_box_(new QPlainTextEdit(message)),
         answer_line_edit_(new QLineEdit()),
         answer_button_(new QPushButton(button_title))
@@ -22,8 +22,8 @@ namespace UiServices
         message_box_->setFrameShape(QFrame::NoFrame);
         QFontMetrics metric(message_box_->font());
         QRect text_rect = metric.boundingRect(QRect(0,0,200,400), Qt::AlignLeft|Qt::TextWordWrap, message);
-        message_box_->setMaximumHeight(text_rect.height() + 2*metric.height());
-        message_box_->setMinimumHeight(text_rect.height() + 2*metric.height());
+        message_box_->setMaximumHeight(text_rect.height() + metric.height());
+        message_box_->setMinimumHeight(text_rect.height() + metric.height());
 
         metric = answer_button_->font();
         answer_button_->setMinimumWidth(metric.width(button_title) + 10);
@@ -47,13 +47,17 @@ namespace UiServices
         // Connect signals
         connect(answer_line_edit_, SIGNAL(returnPressed()), SLOT(ParseAndEmitInput()));
         connect(answer_button_, SIGNAL(clicked()), SLOT(ParseAndEmitInput()));
+
+        // Hide interaction elements when finished
+        connect(this, SIGNAL(HideInteractionWidgets()), answer_line_edit_, SLOT(hide()));
+        connect(this, SIGNAL(HideInteractionWidgets()), answer_button_, SLOT(hide()));
     }
 
     void InputNotification::ParseAndEmitInput()
     {
         emit InputRecieved(answer_line_edit_->text());
-        SetActive(false);
-        SetResult(answer_line_edit_->text());
+        SetResult("Given input", answer_line_edit_->text());
         TimedOut();
+        SetActive(false);
     }
 }

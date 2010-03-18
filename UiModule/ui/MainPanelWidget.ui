@@ -224,7 +224,7 @@ QPushButton::pressed {
             <widget class="QPushButton" name="buttonNotifications">
              <property name="minimumSize">
               <size>
-               <width>80</width>
+               <width>55</width>
                <height>17</height>
               </size>
              </property>

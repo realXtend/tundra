@@ -8,7 +8,7 @@
 namespace UiServices
 {
     MessageNotification::MessageNotification(QString message, int hide_in_msec) :
-        CoreUi::NotificationBaseWidget(hide_in_msec)
+        CoreUi::NotificationBaseWidget(hide_in_msec, message)
     {
         // Init Ui
         QPlainTextEdit *message_box = new QPlainTextEdit(message);
@@ -17,8 +17,8 @@ namespace UiServices
 
         QFontMetrics metric(message_box->font());
         QRect text_rect = metric.boundingRect(QRect(0,0,200,400), Qt::AlignLeft|Qt::TextWordWrap, message);
-        message_box->setMaximumHeight(text_rect.height() + 2*metric.height());
-        message_box->setMinimumHeight(text_rect.height() + 2*metric.height());
+        message_box->setMaximumHeight(text_rect.height() + metric.height());
+        message_box->setMinimumHeight(text_rect.height() + metric.height());
 
         // Layout
         QWidget *content_widget = new QWidget();

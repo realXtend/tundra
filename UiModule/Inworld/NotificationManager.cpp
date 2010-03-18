@@ -82,12 +82,16 @@ namespace UiServices
     {
         if (!browser_widget_->isVisible())
         {
+            // Hide visible notification stack
             foreach (CoreUi::NotificationBaseWidget *notification, visible_notifications_)
                 notification->hide();
             visible_notifications_.clear();
+
+            // Pass history to browser and clear local list
             browser_widget_->resize(inworld_scene_controller_->GetMainPanel()->GetContentWidth(), browser_widget_->size().height());
             browser_widget_->setPos(scene_->sceneRect().right()-browser_widget_->size().width(), inworld_scene_controller_->GetMainPanel()->GetContentHeight());
             browser_widget_->ShowNotifications(notifications_history_);
+            notifications_history_.clear();
         }
         else
             browser_widget_->hide();
@@ -97,34 +101,41 @@ namespace UiServices
 
     void NotificationManager::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
     {
-        // Don't show same item twice before first is hidden
-        if (visible_notifications_.contains(notification_widget))
-            return;
-
-        UpdatePosition(scene_->sceneRect());
-        QPointF add_position = notice_start_pos_;
-
-        // Get stacks last notifications y position
-        if (!visible_notifications_.isEmpty())
+        if (browser_widget_->isVisible())
         {
-            CoreUi::NotificationBaseWidget *last_notification = visible_notifications_.last();
-            add_position.setY(notice_start_pos_.y() + last_notification->mapRectToScene(last_notification->rect()).bottom());
+            browser_widget_->InsertNotifications(notification_widget);
         }
+        else
+        {
+            // Don't show same item twice before first is hidden
+            if (visible_notifications_.contains(notification_widget))
+                return;
 
-        // Set position and add to scene
-        notification_widget->setPos(add_position);
-        scene_->addItem(notification_widget);
+            UpdatePosition(scene_->sceneRect());
+            QPointF add_position = notice_start_pos_;
 
-        // Connect completed (hide) signal to managers handler
-        connect(notification_widget, SIGNAL(Completed(CoreUi::NotificationBaseWidget *)),
-                SLOT(NotificationHideHandler(CoreUi::NotificationBaseWidget *)));
+            // Get stacks last notifications y position
+            if (!visible_notifications_.isEmpty())
+            {
+                CoreUi::NotificationBaseWidget *last_notification = visible_notifications_.last();
+                add_position.setY(last_notification->mapRectToScene(last_notification->rect()).bottom());
+            }
 
-        // Append to internal lists
-        notifications_history_.append(notification_widget);
-        visible_notifications_.append(notification_widget);
+            // Set position and add to scene
+            notification_widget->setPos(add_position);
+            scene_->addItem(notification_widget);
 
-        // Start notification
-        notification_widget->Start();
+            // Connect completed (hide) signal to managers handler
+            connect(notification_widget, SIGNAL(Completed(CoreUi::NotificationBaseWidget *)),
+                    SLOT(NotificationHideHandler(CoreUi::NotificationBaseWidget *)));
+
+            // Append to internal lists
+            notifications_history_.append(notification_widget);
+            visible_notifications_.append(notification_widget);
+
+            // Start notification
+            notification_widget->Start();
+        }
     }
 
     void NotificationManager::SetConnectionState(ConnectionState connection_state)
@@ -138,10 +149,10 @@ namespace UiServices
             {
                 foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
                     SAFE_DELETE(notification);
-                
                 notifications_history_.clear();
                 visible_notifications_.clear();
                 
+                browser_widget_->hide();
                 browser_widget_->ClearAllContent();
                 break;
             }
