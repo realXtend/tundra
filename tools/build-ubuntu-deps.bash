@@ -4,7 +4,7 @@ set -x
 
 # script to build naali and most deps. first manually add the
 # following ppa sources using add-apt-repository or the software
-# sources gui tool: ppa:mapopa/qt4.6 ppa:andrewfenn/ogredev
+# sources gui tool: ppa:mapopa/qt4.6
 
 deps=$HOME/src/rex-deps
 viewer=$deps/../rex-viewer
