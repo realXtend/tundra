@@ -13,6 +13,7 @@ struct LinkedMem;
  *  Implements Mumble Link plugin.
  *  @see http://mumble.sourceforge.net/Link
  *
+ *  @todo: free linked_mem when Stop method is called
  */
 class LinkPlugin : public QObject
 {
@@ -23,8 +24,20 @@ public:
 
 public slots:
 
+    //! Set state to on mode
+    virtual void Start();
+
+    //! Set state off mode
+    virtual void Stop();
+
+    //! @return true if Start method is called and connection to shared memory with mumble client is  established. Otherwise return false.
+    virtual bool IsRunning() const;
+
+    //! @return reason for current state.
+    virtual QString GetReason() const;
+
 	//! Send data to Mumble client application
-	void SendData();
+	virtual void SendData();
 
 	//! Set name for avatar
 	virtual void SetAvatarName(const QString& name);
@@ -59,6 +72,8 @@ public slots:
 	virtual void SetCameraPosition(Vector3df position, Vector3df front, Vector3df top);
 
 protected:
+    virtual void InitializeLinkedMem();
+
 	LinkedMem* linked_mem_;
     QString avatar_name_;
     QString avatar_id_;
@@ -70,6 +85,8 @@ protected:
     Vector3df camera_position_;
     Vector3df camera_top_;
     Vector3df camera_front_;
+    bool send_data_;
+    QString reason_;
 };
 
 } // end of namespace: MumbleVoip

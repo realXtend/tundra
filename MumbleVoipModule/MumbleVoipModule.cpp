@@ -10,7 +10,7 @@
 #include "Avatar/Avatar.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-
+#include "ConsoleCommandServiceInterface.h"
 
 namespace MumbleVoip
 {
@@ -36,16 +36,11 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Initialize() 
     {
-		InitializeLinkPlugin();
+        InitializeConsoleCommands();
     }
 
     void MumbleVoipModule::PostInitialize()
     {
-        // Testing...
-        link_plugin_->SetAvatarName("Test User");
-        link_plugin_->SetAvatarIdentity("test_user_1231412389483478");
-        link_plugin_->SetGroupId("naali-test-users");
-        link_plugin_->SetDescription("Naali viewer");
     }
 
     void MumbleVoipModule::Uninitialize()
@@ -86,10 +81,55 @@ namespace MumbleVoip
 		return false;
 	}
 
-	void MumbleVoipModule::InitializeLinkPlugin()
-	{
-		//! todo: IMPLEMENT
-	}
+    void MumbleVoipModule::InitializeConsoleCommands()
+    {
+        boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        if (console_service)
+        {
+            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble link plugin", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble stop", "Stop Mumble link plugin", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStop)));
+        }
+    }
+    
+    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
+    {
+        if (params.size() != 3)
+        {
+            return Console::ResultFailure("Wrong number of arguments: 'mumble start(name, id, group_id)'");
+        }
+
+        link_plugin_->SetAvatarName(QString(params[0].c_str()));
+        link_plugin_->SetAvatarIdentity(QString(params[1].c_str()));
+        link_plugin_->SetGroupId(QString(params[2].c_str()));
+        link_plugin_->SetDescription("Naali viewer");
+        link_plugin_->Start();
+
+        if (!link_plugin_->IsRunning())
+        {
+            QString error_message = "Link plugin connection cannot be established. ";
+            error_message.append(link_plugin_->GetReason());
+            return Console::ResultFailure(error_message.toStdString());
+        }
+
+        return Console::ResultSuccess("Mumbe link plugin started.");
+    }
+
+    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleStop(const StringVector &params)
+    {
+        if (params.size() != 0)
+        {
+            return Console::ResultFailure("Wrong number of arguments: 'mumble stop'");
+        }
+
+        if (!link_plugin_->IsRunning())
+        {
+            return Console::ResultFailure("Mumbe link plugin was not running.");
+        }
+
+        link_plugin_->Stop();
+        return Console::ResultSuccess("Mumbe link plugin stopped.");
+    }
+
 } // end of namespace: MumbleVoip
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

@@ -13,45 +13,46 @@ std::wstring QStringToStdWString(QString &s)
 
 namespace MumbleVoip
 {
-	LinkPlugin::LinkPlugin(): linked_mem_(0)
+	LinkPlugin::LinkPlugin(): linked_mem_(0), send_data_(false)
 	{
-#ifdef WIN32
-		HANDLE hMapObject = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
-		if (hMapObject == NULL)
-			return;
-
-		linked_mem_ = (LinkedMem *) MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem));
-		if (linked_mem_ == NULL) {
-			CloseHandle(hMapObject);
-			hMapObject = NULL;
-			return;
-		}
-#else
-		char memname[256];
-		snprintf(memname, 256, "/MumbleLink.%d", getuid());
-
-		int shmfd = shm_open(memname, O_RDWR, S_IRUSR | S_IWUSR);
-
-		if (shmfd < 0) {
-			return;
-		}
-
-		linked_mem_ = (LinkedMem *)(mmap(NULL, sizeof(struct LinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd,0));
-
-		if (linked_mem_ == (void *)(-1)) {
-			linked_mem_ = NULL;
-			return;
-		}
-#endif
 	}
+
+    void LinkPlugin::Start()
+    {
+        if (linked_mem_ == 0)
+            InitializeLinkedMem();
+        if (linked_mem_ == 0)
+            return;
+        send_data_ = true;
+    }
+
+    void LinkPlugin::Stop()
+    {
+        send_data_ = false;
+    }
+
+    bool LinkPlugin::IsRunning() const
+    {
+        if (linked_mem_ != 0 && send_data_)
+            return true;
+        else
+            return false;
+    }
+
+    QString LinkPlugin::GetReason() const
+    {
+        return reason_;
+    }
 
 	LinkPlugin::~LinkPlugin()
 	{
-
 	}
 
 	void LinkPlugin::SendData()
 	{
+        if (!send_data_)
+            return;
+
 		if (! linked_mem_)
 			return;
 
@@ -134,5 +135,45 @@ namespace MumbleVoip
         camera_top_ = top;
         camera_front_ = front;
 	}
+
+    void LinkPlugin::InitializeLinkedMem()
+    {
+#ifdef WIN32
+		HANDLE hMapObject = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
+		if (hMapObject == NULL)
+        {
+            reason_ = "Shared memory is not available, please ensure that mumble client is running.";
+			return;
+        }
+
+		linked_mem_ = (LinkedMem *) MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem));
+		if (linked_mem_ == NULL) {
+			CloseHandle(hMapObject);
+			hMapObject = NULL;
+            reason_ = "Shared memory is not available, cannot open the file.";
+			return;
+		}
+#else
+		char memname[256];
+		snprintf(memname, 256, "/MumbleLink.%d", getuid());
+
+		int shmfd = shm_open(memname, O_RDWR, S_IRUSR | S_IWUSR);
+
+		if (shmfd < 0)
+        {
+            reason_ = "Shared memory is not available, please ensure that mumble client is running.";
+			return;
+		}
+
+		linked_mem_ = (LinkedMem *)(mmap(NULL, sizeof(struct LinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd,0));
+
+		if (linked_mem_ == (void *)(-1))
+        {
+            reason_ = "Shared memory is not available, cannot open the file.";
+			linked_mem_ = NULL;
+			return;
+		}
+#endif
+    }
 
 } // end of namespace: MumbleVoip

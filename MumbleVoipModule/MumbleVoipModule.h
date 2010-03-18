@@ -45,10 +45,12 @@ namespace MumbleVoip
 	protected:
 		static std::string module_name_;
 
-		//! Initialize Mumble Link plugin
-		virtual void InitializeLinkPlugin();
+        virtual void InitializeConsoleCommands();
+        virtual Console::CommandResult  OnConsoleMumbleStart(const StringVector &params);
+        virtual Console::CommandResult  OnConsoleMumbleStop(const StringVector &params);
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
+    private:
 
         LinkPlugin* link_plugin_;
         
