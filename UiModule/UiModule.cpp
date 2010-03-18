@@ -172,21 +172,12 @@ namespace UiServices
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
                     PublishConnectionState(Connected);
-
                     QString welcome_message;
                     if (!current_avatar_.isEmpty())
                         welcome_message = current_avatar_ + " welcome to " + current_server_;
                     else
                         welcome_message = "Welcome to " + current_server_;
-
-                    inworld_notification_manager_->ShowNotification(new MessageNotification(welcome_message, 10000));
-                    inworld_notification_manager_->ShowNotification(new MessageNotification("I'm a non autohide message notification!"));
-                    inworld_notification_manager_->ShowNotification(new QuestionNotification("Do you like me?"));
-                    inworld_notification_manager_->ShowNotification(new InputNotification("What do you think of the ui?"));
-                    ProgressController *controller = new ProgressController(30000);
-                    inworld_notification_manager_->ShowNotification(new ProgressNotification("I'm making progress for 30 seconds!", controller));
-                    inworld_notification_manager_->ShowNotification(new QuestionNotification("Long text message on a question notification! Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea? Would you like a cup of tea?", "Sure", "Nope", "Hell No!"));
-                    
+                    GetNotificationManager()->ShowNotification(new MessageNotification(welcome_message, 10000));
                     break;
                 }
                 default:

@@ -12,6 +12,7 @@ namespace CoreUi
     NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec) :
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
+        content_widget_(0),
         fade_animation_(new QPropertyAnimation(this)),
         progress_animation_(new QPropertyAnimation(this)),
         move_animation_(new QPropertyAnimation(this)),
@@ -81,12 +82,9 @@ namespace CoreUi
 
     void NotificationBaseWidget::SetCentralWidget(QWidget *widget)
     {
-        mainLayout->insertWidget(0, widget);
-    }
-
-    void NotificationBaseWidget::SetCentralLayout(QLayout *layout)
-    {
-        mainLayout->insertLayout(0, layout);
+        content_widget_ = widget;
+        content_widget_->layout()->setMargin(0);
+        mainLayout->insertWidget(0, content_widget_);
     }
 
     void NotificationBaseWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *hover_enter_event)
@@ -123,5 +121,12 @@ namespace CoreUi
         move_animation_->setStartValue(scenePos());
         move_animation_->setEndValue(end_pos);
         move_animation_->start();
+    }
+
+    void NotificationBaseWidget::SetActive(bool active)
+    {
+        is_active_ = active; 
+        if (!is_active_) 
+            emit InteractionsDone(content_widget_); 
     }
 }

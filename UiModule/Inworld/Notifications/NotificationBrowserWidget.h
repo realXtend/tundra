@@ -20,6 +20,10 @@ namespace CoreUi
 
     public slots:
         void ShowNotifications(QList<NotificationBaseWidget *> all_notifications);
+        void ClearAllContent();
+
+    private slots:
+        void MoveActiveToLog(QWidget *active_widget);
 
     private:
         QWidget *internal_widget_;

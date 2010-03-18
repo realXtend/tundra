@@ -50,7 +50,7 @@ namespace UiServices
 
     void NotificationManager::UpdatePosition(const QRectF &scene_rect)
     {
-        notice_start_pos_.setY(inworld_scene_controller_->GetMainPanel()->size().height());
+        notice_start_pos_.setY(inworld_scene_controller_->GetMainPanel()->GetContentHeight());
         notice_start_pos_.setX(scene_rect.right()-notice_max_width_);
         UpdateStack();
     }
@@ -82,7 +82,11 @@ namespace UiServices
     {
         if (!browser_widget_->isVisible())
         {
-            browser_widget_->setPos(scene_->sceneRect().right()-browser_widget_->size().width(), inworld_scene_controller_->GetMainPanel()->size().height());
+            foreach (CoreUi::NotificationBaseWidget *notification, visible_notifications_)
+                notification->hide();
+            visible_notifications_.clear();
+            browser_widget_->resize(inworld_scene_controller_->GetMainPanel()->GetContentWidth(), browser_widget_->size().height());
+            browser_widget_->setPos(scene_->sceneRect().right()-browser_widget_->size().width(), inworld_scene_controller_->GetMainPanel()->GetContentHeight());
             browser_widget_->ShowNotifications(notifications_history_);
         }
         else
@@ -131,11 +135,16 @@ namespace UiServices
                 break;
 
             case Disconnected:
+            {
                 foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
                     SAFE_DELETE(notification);
+                
                 notifications_history_.clear();
                 visible_notifications_.clear();
+                
+                browser_widget_->ClearAllContent();
                 break;
+            }
         }
     }
 }

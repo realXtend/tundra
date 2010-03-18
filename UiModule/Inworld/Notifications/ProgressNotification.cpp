@@ -60,11 +60,13 @@ namespace UiServices
         progress_bar->setValue(0);
 
         // Layout
+        QWidget *content_widget = new QWidget();
         QVBoxLayout *v_layout = new QVBoxLayout();
         v_layout->addWidget(message_box);
         v_layout->addWidget(progress_bar);
 
-        SetCentralLayout(v_layout);
+        content_widget->setLayout(v_layout);
+        SetCentralWidget(content_widget);
         
         // Connect Signals
         connect(controller_, SIGNAL(StepUpdate(int)), progress_bar, SLOT(setValue(int)));
