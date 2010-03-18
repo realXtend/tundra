@@ -208,6 +208,16 @@ if 0: #for the box test ui created in code - works
         box.browser.append(box.edit.text)
     box.button1.connect('clicked()', appendLine)
     box.edit.connect('returnPressed()', appendLine)
+
+if 1: #sys.path PYTHONHOME etc fix attempts
+    import os
+    print os.getenv("PYTHONHOME")
+    
+    import sys
+    print sys.path
+    
+    import modulemanager
+    print modulemanager.__file__
     
 if 0: #python-ogre test - using the extension lib in the embedded context :o
     #import sys
