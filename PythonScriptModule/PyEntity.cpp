@@ -309,6 +309,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         return PyString_FromString(text.c_str());
     }
 
+    //XXX make the getter in EC_Mesh a qt slot and switch to using that
     else if (s_name.compare("boundingbox") == 0)
     {
         if (!placeable)

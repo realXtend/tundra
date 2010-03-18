@@ -1,7 +1,7 @@
 import rexviewer as r
 import PythonQt.QtGui
-from PythonQt.QtGui import QQuaternion as quat
-from PythonQt.QtGui import QVector3D as vec
+from PythonQt.QtGui import QQuaternion as Quat
+from PythonQt.QtGui import QVector3D as Vec
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 import math
@@ -11,8 +11,8 @@ class Manipulator:
     MANIPULATOR_MESH_NAME = "axes.mesh"
     USES_MANIPULATOR = True
     
-    MANIPULATORORIENTATION = quat(1, 0, 0, 0)
-    MANIPULATORSCALE = vec(0.2, 0.2, 0.2)
+    MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
+    MANIPULATORSCALE = Vec(0.2, 0.2, 0.2)
     
     MATERIALNAMES = None
     
@@ -68,23 +68,21 @@ class Manipulator:
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE#0.2, 0.2, 0.2
             self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
     
-    def getPivotPos(self, ents):
-        positions = []
-        
-        for ent in ents:
-            qpos = ent.placeable.Position
-            pos = list((qpos.x(), qpos.y(), qpos.z()))
-            positions.append(pos)
-        
-        minpos = Vector3(min(positions))
-        maxpos = Vector3(max(positions))
-        median = (minpos + maxpos) / 2
-        #print positions
+    def getPivotPos(self, ents):        
+        xs = [e.placeable.Position.x() for e in ents]
+        ys = [e.placeable.Position.y() for e in ents]
+        zs = [e.placeable.Position.z() for e in ents] 
+                
+        minpos = Vec(min(xs), min(ys), min(zs))
+        maxpos = Vec(max(xs), max(ys), max(zs))
+        #median = (minpos + maxpos) / 2
+        #there is some type prob with pythonqt and operator overloads, so this workaround is needed:
+        median = minpos.__add__(maxpos).__div__(2) 
         #print "Min:", minpos
         #print "Max:", minpos
         #print "Median:", median
         
-        return vec(median.x, median.y, median.z)
+        return median
         
     def hideManipulator(self):
         #r.logInfo("hiding manipulator")
@@ -92,8 +90,8 @@ class Manipulator:
             try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
                 #print "Hiding arrows!"
                 if self.manipulator is not None:
-                    self.manipulator.placeable.Scale = vec(0.0, 0.0, 0.0) #ugly hack
-                    self.manipulator.placeable.Position = vec(0.0, 0.0, 0.0)#another ugly hack
+                    self.manipulator.placeable.Scale = Vec(0.0, 0.0, 0.0) #ugly hack
+                    self.manipulator.placeable.Position = Vec(0.0, 0.0, 0.0)#another ugly hack
                 
                 self.grabbed_axis = None
                 self.grabbed = False
@@ -196,8 +194,8 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
-    MANIPULATORSCALE = vec(0.15, 0.15, 0.15)
-    MANIPULATORORIENTATION = quat(1, 1, 0, 0)
+    MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
+    MANIPULATORORIENTATION = Quat(1, 1, 0, 0)
     
     BLUEARROW = [1,2]
     REDARROW = [5,6]
@@ -217,7 +215,7 @@ class MoveManipulator(Manipulator):
         5: "axis_red", 
         6: None, #"axis_red"
     }
-    """ Using Qt's QVector3D. Using prim.Position has some annoying issues... """
+
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
         if self.grabbed:
             rightvec = Vector3(r.getCameraRight())
@@ -284,7 +282,7 @@ class ScaleManipulator(Manipulator):
                 mov *= rightvec[self.grabbed_axis]/div
                 scale[self.grabbed_axis] += mov
             
-            newscale = vec(scale[0], scale[1], scale[2])
+            newscale = Vec(scale[0], scale[1], scale[2])
             ent.placeable.Scale = newscale
             self.controller.updateSelectionBox(ent) 
             qprim = ent.prim
@@ -306,7 +304,7 @@ class FreeMoveManipulator(Manipulator):
         qpos = ent.placeable.Position
         entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
         newpos = entpos + changevec
-        newpos = vec(newpos.x, newpos.y, newpos.z)
+        newpos = Vec(newpos.x, newpos.y, newpos.z)
         ent.placeable.Position = newpos
         ent.network.Position = newpos
         
@@ -322,7 +320,7 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = quat(1, 1, 0, 0)
+    MANIPULATORORIENTATION = Quat(1, 1, 0, 0)
     
     MATERIALNAMES = {
         0: "asd",  #shodows?
@@ -359,7 +357,7 @@ class RotationManipulator(Manipulator):
                 
             rotationQuat = list(euler_to_quat(euler))
 
-            ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
+            ort.__imul__(Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
             
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
@@ -374,7 +372,7 @@ class RotationManipulator(Manipulator):
             #~ upvec = Vector3(r.getCameraUp())
             #~ x, y, z, w = ent.orientation
             
-            #~ ort = quat(w, x, y, z)
+            #~ ort = Quat(w, x, y, z)
             #~ euler = list((0, 0, 0))
             
             #~ if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
@@ -392,7 +390,7 @@ class RotationManipulator(Manipulator):
                 
             #~ rotationQuat = list(euler_to_quat(euler))
 
-            #~ ort.__imul__(quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
+            #~ ort.__imul__(Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
             
             #~ ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
 
