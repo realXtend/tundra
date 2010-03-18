@@ -36,6 +36,11 @@ namespace OgreRenderer
     class QOgreUIView;
 }
 
+namespace ProtocolUtilities
+{
+    class WorldStream;
+}
+
 namespace UiServices
 {
     class UiProxyWidget;
@@ -118,8 +123,9 @@ namespace UiServices
         //! Ether Logic
         Ether::Logic::EtherLogic *ether_logic_;
 
-        QString current_avatar_;
-        QString current_server_;
+        //! Current World Stream pointer
+        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
+
     };
 }
 

@@ -26,6 +26,7 @@
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
 #include "ConsoleEvents.h"
+#include "WorldStream.h"
 
 #include <QApplication>
 #include <QDir>
@@ -116,10 +117,19 @@ namespace UiServices
             switch (event_id)
             {
                 case Foundation::NETWORKING_REGISTERED:
+                {
                     if (!event_query_categories_.contains("NetworkState"))
                         event_query_categories_ << "NetworkState";
                     SubscribeToEventCategories();
                     break;
+                }
+                case Foundation::WORLD_STREAM_READY:
+                {
+                    ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                    if (event_data)
+                        current_world_stream_ = event_data->WorldStream;
+                    break;
+                }
                 default:
                     break;
             }
@@ -140,12 +150,8 @@ namespace UiServices
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
                 {
-                    ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
-                    if (auth_data)
-                    {
-                        current_avatar_ = QString::fromStdString(auth_data->identityUrl);
-                        current_server_ = QString::fromStdString(auth_data->hostUrl);
-                    }
+                    // Udp connection has been established, we are still loading object so lets not change UI layer yet
+                    // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
                     break;
                 }
                 default:
@@ -156,13 +162,19 @@ namespace UiServices
         {
             switch (event_id)
             {
-            case Console::Events::EVENT_CONSOLE_TOGGLE:
-                ui_console_manager_->ToggleConsole();
-                break;
-            case Console::Events::EVENT_CONSOLE_PRINT_LINE:
-                Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
-                ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
-                break;
+                case Console::Events::EVENT_CONSOLE_TOGGLE:
+                {
+                    ui_console_manager_->ToggleConsole();
+                    break;
+                }
+                case Console::Events::EVENT_CONSOLE_PRINT_LINE:
+                {
+                    Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
+                    ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
+                    break;
+                }
+                default:
+                    break;
             }
         }
         else if (category == "Scene")
@@ -172,12 +184,6 @@ namespace UiServices
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
                     PublishConnectionState(Connected);
-                    QString welcome_message;
-                    if (!current_avatar_.isEmpty())
-                        welcome_message = current_avatar_ + " welcome to " + current_server_;
-                    else
-                        welcome_message = "Welcome to " + current_server_;
-                    GetNotificationManager()->ShowNotification(new MessageNotification(welcome_message, 10000));
                     break;
                 }
                 default:
@@ -193,21 +199,33 @@ namespace UiServices
         switch (connection_state)
         {
             case Connected:
+            {
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
                 inworld_notification_manager_->SetConnectionState(connection_state);
-                break;
 
+                // Send welcome message to notification manager
+                if (current_world_stream_.get())
+                {
+                    QString sim = QString::fromStdString(current_world_stream_->GetSimName());
+                    QString username = QString::fromStdString(current_world_stream_->GetUsername());
+                    if (!sim.isEmpty() && !username.isEmpty())
+                        GetNotificationManager()->ShowNotification(new MessageNotification(username + " welcome to " + sim, 10000));
+                }
+                break;
+            }
             case Disconnected:
+            {
                 inworld_notification_manager_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;
-
+            }
             case Failed:
+            {
                 ether_logic_->SetConnectionState(connection_state);
                 break;
-
+            }
             default:
                 return;
         }
