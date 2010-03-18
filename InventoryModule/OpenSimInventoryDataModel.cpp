@@ -534,7 +534,6 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
         real_filename = real_filename.midRef(last_sep_index+1).toString();
     }
 
-    //emit Notification(new UiServices::MessageNotification(QString("%1 downloaded succesfully to %2").arg(real_filename, real_path), 9000));
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);
@@ -878,9 +877,6 @@ void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkele
 
 void OpenSimInventoryDataModel::ThreadedUploadFiles(QStringList &filenames, QStringList &item_names)
 {
-    // For notifications
-    QTime timer;
-
     // Iterate trought every asset.
     int asset_count = 0;
     QStringList::iterator name_it = item_names.begin();
@@ -895,8 +891,7 @@ void OpenSimInventoryDataModel::ThreadedUploadFiles(QStringList &filenames, QStr
         asset_type_t asset_type = RexTypes::GetAssetTypeFromFilename(filename.toStdString());
         if (asset_type == RexAT_None)
         {
-            emit Notification(QString("Could not upload %1 Invalid file type").arg(real_filename), 9000);
-            emit UploadFailed(real_filename);
+            emit UploadFailed(real_filename, "Invalid file extension");
             InventoryModule::LogError("Invalid file extension. File can't be uploaded: " + filename.toStdString());
             continue;
         }
@@ -925,24 +920,14 @@ void OpenSimInventoryDataModel::ThreadedUploadFiles(QStringList &filenames, QStr
             continue;
         }
 
-        // Start notification
-        emit Notification(QString("Uploading %1").arg(filename), 9000);
-        timer.start();
-
         if (UploadFile(asset_type, filename.toStdString(), name.toStdString(), description, folder_id))
         {
-            // Send succesfull notification
-            qreal elapsed(timer.elapsed());
-            emit Notification(QString("%1 uploaded succesfully to %2 in %3 seconds").arg(
-                real_filename, QString::fromStdString(cat_name), QString::number(elapsed/1000, 102, 2)), 9000);
             emit UploadCompleted(real_filename);
             ++asset_count;
         }
         else
         {
-            // Send fail notification
-            emit Notification(QString("Upload failed for %1").arg(real_filename), 9000);
-            emit UploadFailed(real_filename);
+            emit UploadFailed(real_filename, "Network error");
         }
     }
 

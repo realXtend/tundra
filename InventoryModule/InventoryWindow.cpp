@@ -24,8 +24,11 @@
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
+
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
+#include "Inworld/Notifications/ProgressNotification.h"
+
 #include <RenderServiceInterface.h>
 
 #include <QUiLoader>
@@ -129,7 +132,16 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
         this, SLOT(AbortDownload(const QString &)));
 
     connect(inventory_model.get(), SIGNAL(DownloadCompleted(const QString &)),
-        this, SLOT(CloseDownloadProgess(const QString &)));
+        this, SLOT(FinishProgessNotification(const QString &)));
+
+    connect(inventory_model.get(), SIGNAL(UploadStarted(const QString &)),
+        this, SLOT(UploadStarted(const QString &)));
+
+    connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &, const QString &)),
+        this, SLOT(UploadFailed(const QString &, const QString &)));
+
+    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
+        this, SLOT(FinishProgessNotification(const QString &)));
 
     // Connect selectionChanged
     connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
@@ -325,7 +337,12 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     msgBox->show();
 */
 
-    emit Notification(new UiServices::MessageNotification(QString("Downloading %1").arg(name), 9000));
+    // Ali find a way to update the download/upload process! just do controller->setValue(int)
+    // Now its just sitting there at artificial 11%
+    UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
+    emit Notification(new UiServices::ProgressNotification("Downloading " + name + " from inventory", progress_controller));
+    progress_controller->Start(11);
+    notification_progress_map_[asset_id] = progress_controller;
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -333,13 +350,37 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
     ///\todo
 }
 
-void InventoryWindow::CloseDownloadProgess(const QString &asset_id)
+void InventoryWindow::FinishProgessNotification(const QString &id)
 {
 /*
     QMessageBox *msgBox = downloadDialogs_.take(asset_id);
     if (msgBox)
         delete msgBox;
 */
+    if (notification_progress_map_.contains(id))
+    {
+        notification_progress_map_[id]->Finish();
+        notification_progress_map_.remove(id);
+    }
+}
+
+void InventoryWindow::UploadStarted(const QString &filename)
+{
+    // Ali find a way to update the download/upload process! just do controller->setValue(int)
+    // Now its just sitting there at artificial 13%
+    UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
+    emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
+    progress_controller->Start(13);
+    notification_progress_map_[filename] = progress_controller;
+}
+
+void InventoryWindow::UploadFailed(const QString &filename, const QString &reason)
+{
+    if (notification_progress_map_.contains(filename))
+    {
+        notification_progress_map_[filename]->FailWithReason(reason);
+        notification_progress_map_.remove(filename);
+    }
 }
 
 void InventoryWindow::InitInventoryWindow()

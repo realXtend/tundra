@@ -9,7 +9,7 @@
 
 namespace CoreUi
 {
-    NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec) :
+    NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec, QString message) :
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
         content_widget_(0),
@@ -19,6 +19,8 @@ namespace CoreUi
         timestamp_(QDateTime::currentDateTime()),
         hide_in_msec_(hide_in_msec),
         is_active_(false),
+        message_(message),
+        result_title_(QString()),
         result_(QString())
     {
         InitSelf();
@@ -126,7 +128,10 @@ namespace CoreUi
     void NotificationBaseWidget::SetActive(bool active)
     {
         is_active_ = active; 
-        if (!is_active_) 
-            emit InteractionsDone(content_widget_); 
+        if (!is_active_)
+        {
+            emit HideInteractionWidgets();
+            emit ResultsAreIn(content_widget_, result_title_, result_);
+        }
     }
 }

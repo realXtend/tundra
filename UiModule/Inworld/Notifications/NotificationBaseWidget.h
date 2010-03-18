@@ -22,7 +22,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        NotificationBaseWidget(int hide_in_msec);
+        NotificationBaseWidget(int hide_in_msec, QString message);
         
     public slots:
         //! Starts the notification timer, called by NotificationManager
@@ -36,13 +36,15 @@ namespace CoreUi
 
         //! Getters
         bool IsActive()                 { return is_active_; }
+        QString GetMessage()            { return message_; }
+        QString GetResultTitle()        { return result_title_; }
         QString GetResult()             { return result_; }
         QWidget *GetContentWidget()     { return content_widget_; }
         QDateTime GetTimeStamp()        { return timestamp_; }
 
         //! Setters
         void SetActive(bool active);
-        void SetResult(QString result)  { result_ = result; }
+        void SetResult(QString title, QString result)  { result_title_ = title; result_ = result; }
 
     protected:
         //! Sets the content widget, called by subclasses
@@ -72,11 +74,15 @@ namespace CoreUi
 
         int hide_in_msec_;
         bool is_active_;
+        
+        QString message_;
+        QString result_title_;
         QString result_;
 
     signals:
         void Completed(CoreUi::NotificationBaseWidget *self);
-        void InteractionsDone(QWidget *);
+        void ResultsAreIn(QWidget *, QString, QString);
+        void HideInteractionWidgets();
 
     };
 }

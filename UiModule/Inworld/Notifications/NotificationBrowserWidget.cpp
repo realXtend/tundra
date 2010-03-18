@@ -2,13 +2,16 @@
 
 #include "StableHeaders.h"
 #include "NotificationBrowserWidget.h"
+
 #include "NotificationBaseWidget.h"
+#include "NotificationLogWidget.h"
 
 namespace CoreUi
 {
     NotificationBrowserWidget::NotificationBrowserWidget() :
         QGraphicsProxyWidget(0, Qt::Widget),
-        internal_widget_(new QWidget())
+        internal_widget_(new QWidget()),
+        next_bg_color_("white")
     {
         setupUi(internal_widget_);
         setWidget(internal_widget_);
@@ -16,16 +19,30 @@ namespace CoreUi
 
     // Private
 
-    void NotificationBrowserWidget::MoveActiveToLog(QWidget *active_widget)
+    void NotificationBrowserWidget::MoveActiveToLog(QWidget *active_widget, QString result_title, QString result)
     {
-        logLayout->insertWidget(0, active_widget);
-        if (activeLayout->count() <= 1)
-            categoryTabWidget->setCurrentWidget(logTab);
+        NotificationLogWidget *found_log_widget_ = 0;
+        foreach(NotificationLogWidget *log_widget, notification_log_widgets_)
+        {
+            if (log_widget->GetContentWidget() == active_widget)
+            {
+                found_log_widget_ = log_widget;
+                break;
+            }
+        }
+
+        if (!found_log_widget_)
+            return;
+        if (activeLayout->indexOf(found_log_widget_) == -1)
+            return;
+
+        // TODO: iterate log layout, order by timestamp and insert widget into correct index
+        found_log_widget_->Deactivate(result_title, result);
+        logLayout->insertWidget(0, found_log_widget_);
+        TabCheck();
     }
 
-    // Public
-    
-    void NotificationBrowserWidget::ShowNotifications(QList<NotificationBaseWidget *> all_notifications)
+    void NotificationBrowserWidget::LayoutCheck()
     {
         // Init layouts if needed
         if (activeLayout->count() == 0)
@@ -40,12 +57,38 @@ namespace CoreUi
             logLayout->setContentsMargins(0,0,0,0);
             logLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
         }
+    }
+
+    void NotificationBrowserWidget::TabCheck()
+    {
+        // If there are no active items, set log tab to show
+        if (activeLayout->count() <= 1)
+            categoryTabWidget->setCurrentWidget(logTab);
+        else
+            categoryTabWidget->setCurrentWidget(activeTab);
+    }
+
+    // Public
+    
+    void NotificationBrowserWidget::InsertNotifications(NotificationBaseWidget *notification)
+    {
+        QList<NotificationBaseWidget *> notifications;
+        notifications.append(notification);
+        ShowNotifications(notifications);
+    }
+
+    void NotificationBrowserWidget::ShowNotifications(QList<NotificationBaseWidget *> notifications)
+    {
+        LayoutCheck();
+
+        // Add NotificationBaseWidgets to cleanup list
+        cleanup_list_ += notifications;
  
         // List active and log notifications
         QList<NotificationBaseWidget *> active_notifications;
         QList<NotificationBaseWidget *> logged_notifications;
 
-        foreach (NotificationBaseWidget *notification, all_notifications)
+        foreach (NotificationBaseWidget *notification, notifications)
         {
             if (notification->IsActive())
                 active_notifications.append(notification);
@@ -53,28 +96,34 @@ namespace CoreUi
                 logged_notifications.append(notification);
         }
 
-        // Add notifications to layouts
+        // Add active log widgets to layout
         foreach (NotificationBaseWidget *active_notification, active_notifications)
         {
-            activeLayout->insertWidget(0, active_notification->GetContentWidget());
-            connect(active_notification, SIGNAL(InteractionsDone(QWidget *)),
-                    SLOT(MoveActiveToLog(QWidget *)));
+            NotificationLogWidget *log_widget = new NotificationLogWidget(true, active_notification->GetContentWidget(), active_notification->GetTimeStamp(),
+                                                                          active_notification->GetResultTitle(), active_notification->GetResult());
+            activeLayout->insertWidget(0, log_widget);
+            notification_log_widgets_.append(log_widget);
+
+            connect(active_notification, SIGNAL(ResultsAreIn(QWidget *, QString, QString)), SLOT(MoveActiveToLog(QWidget *, QString, QString)));
         }
 
+        // Add inactive log widgets to layout
         foreach (NotificationBaseWidget *log_notification, logged_notifications)
-            logLayout->insertWidget(0, log_notification->GetContentWidget());
+        {
+            NotificationLogWidget *log_widget = new NotificationLogWidget(false, log_notification->GetContentWidget(), log_notification->GetTimeStamp(),
+                                                                          log_notification->GetResultTitle(), log_notification->GetResult());
+            logLayout->insertWidget(0, log_widget);
+            notification_log_widgets_.append(log_widget);
+        }
 
-        // If there are no active items, set log tab to show
-        if (activeLayout->count() <= 1)
-            categoryTabWidget->setCurrentWidget(logTab);
-        else
-            categoryTabWidget->setCurrentWidget(activeTab);
-
+        // Show with appropriate tab selected
+        TabCheck();
         show();
     }
 
     void NotificationBrowserWidget::ClearAllContent()
     {
+        // Clean up browser widget layouts
         QList<QLayout*> layouts;
         layouts << activeLayout << logLayout;
 
@@ -89,5 +138,10 @@ namespace CoreUi
                 delete item->widget();
             }
         }
+
+        // Clean notification objects
+        foreach(NotificationBaseWidget *notification, cleanup_list_)
+            SAFE_DELETE(notification);
+        cleanup_list_.clear();
     }
 }

@@ -701,11 +701,11 @@ void InventoryModule::ConnectSignals()
         return;
 
     // Connect upload progress signals.
-    QObject::connect(inventory_.get(), SIGNAL(MultiUploadStarted(size_t)),
-        uploadProgressWindow_, SLOT(OpenUploadProgress(size_t)));
+    //QObject::connect(inventory_.get(), SIGNAL(MultiUploadStarted(size_t)),
+    //    uploadProgressWindow_, SLOT(OpenUploadProgress(size_t)));
 
-    QObject::connect(inventory_.get(), SIGNAL(UploadStarted(const QString &)),
-        uploadProgressWindow_, SLOT(UploadStarted(const QString &)));
+    //QObject::connect(inventory_.get(), SIGNAL(UploadStarted(const QString &)),
+    //    uploadProgressWindow_, SLOT(UploadStarted(const QString &)));
 
 //    connect(inventory_.get(), SIGNAL(UploadFailed(const QString &)),
 //        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
@@ -713,8 +713,8 @@ void InventoryModule::ConnectSignals()
 //    connect(inventory_.get(), SIGNAL(UploadCompleted(const QString &)),
 //        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
 
-    QObject::connect(inventory_.get(), SIGNAL(MultiUploadCompleted()),
-        uploadProgressWindow_, SLOT(CloseUploadProgress()));
+    //QObject::connect(inventory_.get(), SIGNAL(MultiUploadCompleted()),
+    //    uploadProgressWindow_, SLOT(CloseUploadProgress()));
 }
 
 } // namespace Inventory

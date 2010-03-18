@@ -12,7 +12,7 @@ namespace UiServices
 
     QuestionNotification::QuestionNotification(QString question, QString first_button_title, QString second_button_title,
                                                QString third_button_title, int hide_in_msec) :
-        CoreUi::NotificationBaseWidget(hide_in_msec),
+        CoreUi::NotificationBaseWidget(hide_in_msec, question),
         question_box_(new QPlainTextEdit(question)),
         first_button_(new QPushButton(first_button_title)),
         second_button_(new QPushButton(second_button_title)),
@@ -25,8 +25,8 @@ namespace UiServices
         question_box_->setFrameShape(QFrame::NoFrame);
         QFontMetrics metric(question_box_->font());
         QRect text_rect = metric.boundingRect(QRect(0,0,200,400), Qt::AlignLeft|Qt::TextWordWrap, question);
-        question_box_->setMaximumHeight(text_rect.height() + 2*metric.height());
-        question_box_->setMinimumHeight(text_rect.height() + 2*metric.height());
+        question_box_->setMaximumHeight(text_rect.height() + metric.height());
+        question_box_->setMinimumHeight(text_rect.height() + metric.height());
 
         metric = first_button_->font();
         first_button_->setMinimumWidth(metric.width(first_button_title) + 20);
@@ -67,6 +67,12 @@ namespace UiServices
         connect(second_button_, SIGNAL(clicked()), SLOT(SecondButtonClicked()));
         if (third_button_)
             connect(third_button_, SIGNAL(clicked()), SLOT(ThirdButtonClicked()));
+
+        // Hide interaction elements when finished
+        connect(this, SIGNAL(HideInteractionWidgets()), first_button_, SLOT(hide()));
+        connect(this, SIGNAL(HideInteractionWidgets()), second_button_, SLOT(hide()));
+        if (third_button_)
+            connect(this, SIGNAL(HideInteractionWidgets()), third_button_, SLOT(hide()));
     }
 
     void QuestionNotification::FirstButtonClicked()
@@ -87,8 +93,8 @@ namespace UiServices
     void QuestionNotification::EmitAnswer(QString clicked_button_title)
     {
         emit QuestionAnswered(clicked_button_title);
-        SetActive(false);
-        SetResult(clicked_button_title);
+        SetResult("Answered", clicked_button_title);
         TimedOut();
+        SetActive(false);
     }
 }
