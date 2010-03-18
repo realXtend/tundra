@@ -64,29 +64,29 @@ namespace MumbleVoip
 		}
 		linked_mem_->uiTick++;
 
-		linked_mem_->fAvatarFront[0] = avatar_position_.x;
-		linked_mem_->fAvatarFront[1] = avatar_position_.y;
-		linked_mem_->fAvatarFront[2] = avatar_position_.z;
+		linked_mem_->fAvatarFront[0] = avatar_position_.y;
+		linked_mem_->fAvatarFront[1] = avatar_position_.z;
+		linked_mem_->fAvatarFront[2] = -avatar_position_.x;
 
-		linked_mem_->fAvatarTop[0] = avatar_top_.x;
-		linked_mem_->fAvatarTop[1] = avatar_top_.y;
-		linked_mem_->fAvatarTop[2] = avatar_top_.z;
+		linked_mem_->fAvatarTop[0] = avatar_top_.y;
+		linked_mem_->fAvatarTop[1] = avatar_top_.z;
+		linked_mem_->fAvatarTop[2] = -avatar_top_.x;
 
-		linked_mem_->fAvatarPosition[0] = avatar_front_.x;
-		linked_mem_->fAvatarPosition[1] = avatar_front_.y;
-		linked_mem_->fAvatarPosition[2] = avatar_front_.z;
+		linked_mem_->fAvatarPosition[0] = avatar_front_.y;
+		linked_mem_->fAvatarPosition[1] = avatar_front_.z;
+		linked_mem_->fAvatarPosition[2] = -avatar_front_.x;
 
-        linked_mem_->fCameraFront[0] = camera_front_.x;
-		linked_mem_->fCameraFront[1] = camera_front_.y;
-		linked_mem_->fCameraFront[2] = camera_front_.z;
+        linked_mem_->fCameraFront[0] = camera_front_.y;
+		linked_mem_->fCameraFront[1] = camera_front_.z;
+		linked_mem_->fCameraFront[2] = -camera_front_.x;
 
-		linked_mem_->fCameraTop[0] = camera_top_.x;
-		linked_mem_->fCameraTop[1] = camera_top_.y;
-		linked_mem_->fCameraTop[2] = camera_top_.z;
+		linked_mem_->fCameraTop[0] = camera_top_.y;
+		linked_mem_->fCameraTop[1] = camera_top_.z;
+		linked_mem_->fCameraTop[2] = -camera_top_.x;
 
-		linked_mem_->fCameraPosition[0] = camera_position_.x;
-		linked_mem_->fCameraPosition[1] = camera_position_.y;
-		linked_mem_->fCameraPosition[2] = camera_position_.z;
+		linked_mem_->fCameraPosition[0] = camera_position_.y;
+		linked_mem_->fCameraPosition[1] = camera_position_.z;
+		linked_mem_->fCameraPosition[2] = -camera_position_.x;
 
         // Identifier which uniquely identifies a certain player in a context (e.g. the ingame Name).
         wcsncpy(linked_mem_->identity, QStringToStdWString(avatar_id_).c_str(), 256);

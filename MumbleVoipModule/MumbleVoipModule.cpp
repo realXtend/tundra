@@ -17,7 +17,9 @@ namespace MumbleVoip
 	std::string MumbleVoipModule::module_name_ = "MumbleVoipModule";
 
 	MumbleVoipModule::MumbleVoipModule()
-        : ModuleInterfaceImpl(module_name_), link_plugin_(new LinkPlugin())
+        : ModuleInterfaceImpl(module_name_),
+          link_plugin_(new LinkPlugin()),
+          time_from_last_update_ms_(0)
     {
     }
 
@@ -49,6 +51,14 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Update(f64 frametime)
     {
+        if (!link_plugin_->IsRunning())
+            return; 
+
+        time_from_last_update_ms_ += 1000*frametime;
+        if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
+            return;
+        time_from_last_update_ms_ = 0;
+        
         RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
             return;
@@ -66,9 +76,10 @@ namespace MumbleVoip
         {
             OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
             Quaternion q = ogre_placeable->GetOrientation();
+
             Vector3df position_vector = ogre_placeable->GetPosition(); 
+            Vector3df front_vector = q*Vector3df(1,0,0);
             Vector3df top_vector(0,0,1);
-            Vector3df front_vector(q.x,q.y,q.y);
             link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
             link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector); //todo: use real values from camera
         }

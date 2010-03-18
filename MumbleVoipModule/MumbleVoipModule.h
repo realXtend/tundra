@@ -53,6 +53,8 @@ namespace MumbleVoip
     private:
 
         LinkPlugin* link_plugin_;
+        static const int UPDATE_TIME_MS_ = 1000;
+        int time_from_last_update_ms_;
         
     };
 
