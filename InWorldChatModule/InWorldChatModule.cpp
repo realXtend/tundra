@@ -22,9 +22,12 @@
 #include "CoreStringUtils.h"
 #include "GenericMessageUtils.h"
 #include "UiModule.h"
+#include "ConfigurationManager.h"
 
 #include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
+
+#include <QColor>
 
 namespace Naali
 {
@@ -33,7 +36,8 @@ InWorldChatModule::InWorldChatModule() :
     ModuleInterfaceImpl(NameStatic()),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
-    frameworkEventCategory_(0)
+    frameworkEventCategory_(0),
+    showChatBubbles_(true)
 {
 }
 
@@ -62,6 +66,8 @@ void InWorldChatModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("chat",
         "Sends a chat message. Usage: \"chat(message)\"",
         Console::Bind(this, &InWorldChatModule::ConsoleChat)));
+
+    showChatBubbles_ = framework_->GetDefaultConfig().DeclareSetting("InWorldChatModule", "ShowChatBubbles", true);
 }
 
 void InWorldChatModule::Update(f64 frametime)
@@ -122,14 +128,20 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkInEventCategory_)
     {
+        if (event_id != RexNetMsgGenericMessage && event_id != RexNetMsgChatFromSimulator && event_id != RexNetMsgObjectUpdate)
+            return false;
+
         using namespace ProtocolUtilities;
-        if (event_id == RexNetMsgGenericMessage)
+        NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
+        assert(netdata);
+        if (!netdata)
+            return false;
+        ProtocolUtilities::NetInMessage &msg = *netdata->message;
+
+        switch(event_id)
         {
-            NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
-            assert(netdata);
-            if (!netdata)
-                return false;
-            ProtocolUtilities::NetInMessage &msg = *netdata->message;
+        case RexNetMsgGenericMessage:
+        {
             std::string method = ParseGenericMessageMethod(msg);
             StringVector params = ParseGenericMessageParameters(msg);
 
@@ -138,15 +150,12 @@ bool InWorldChatModule::HandleEvent(
 
             return false;
         }
-        if (event_id == RexNetMsgChatFromSimulator)
+        case RexNetMsgChatFromSimulator:
         {
-            NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
-            assert(netdata);
-            if (!netdata)
-                return false;
-
-            NetInMessage &msg = *netdata->message;
-            HandleChatFromSimulatorMesage(msg);
+            HandleChatFromSimulatorMessage(msg);
+            return false;
+        }
+        default:
             return false;
         }
     }
@@ -204,7 +213,30 @@ Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params
     return Console::ResultSuccess();
 }
 
-Scene::Entity *InWorldChatModule::GetEntityWithID(const RexUUID &id)
+void InWorldChatModule::ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message)
+{
+    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::NameStatic());
+    assert(component.get());
+    EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
+    chatBubble.ShowMessage(message);
+}
+
+void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow)
+{
+    boost::shared_ptr<EC_Billboard> ec_bb = entity.GetComponent<EC_Billboard>();
+
+    // If we didn't have the billboard component yet, create one now.
+    if (!ec_bb)
+    {
+        entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
+        ec_bb = entity.GetComponent<EC_Billboard>();
+        assert(ec_bb.get());
+    }
+
+    ec_bb->Show(Vector3df(0.f, 0.f, 1.5f), timeToShow, texture.c_str());
+}
+
+Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
@@ -229,29 +261,6 @@ Scene::Entity *InWorldChatModule::GetEntityWithID(const RexUUID &id)
     return 0;
 }
 
-void InWorldChatModule::ApplyChatBubble(Scene::Entity &entity, const QString &message)
-{
-    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::NameStatic());
-    assert(component.get());
-    EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
-    chatBubble.ShowMessage(message);
-}
-
-void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow)
-{
-    boost::shared_ptr<EC_Billboard> ec_bb = entity.GetComponent<EC_Billboard>();
-
-    // If we didn't have the billboard component yet, create one now.
-    if (!ec_bb)
-    {
-        entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
-        ec_bb = entity.GetComponent<EC_Billboard>();
-        assert(ec_bb.get());
-    }
-
-    ec_bb->Show(Vector3df(0.f, 0.f, 1.5f), timeToShow, texture.c_str());
-}
-
 void InWorldChatModule::HandleRexEmotionIconMessage(StringVector &params)
 {
     // Param 0: avatar UUID
@@ -271,7 +280,7 @@ void InWorldChatModule::HandleRexEmotionIconMessage(StringVector &params)
     if (entityUUID.IsNull())
         throw Exception("Null Entity UUID passed in RexEmotionIcon message!");
 
-    Scene::Entity *entity = GetEntityWithID(entityUUID);
+    Scene::Entity *entity = GetEntityWithId(entityUUID);
     if (!entity)
         throw Exception("Received RexEmotionIcon message for a nonexisting entity!");
 
@@ -296,7 +305,7 @@ void InWorldChatModule::HandleRexEmotionIconMessage(StringVector &params)
     }
 }
 
-void InWorldChatModule::HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMessage &msg)
+void InWorldChatModule::HandleChatFromSimulatorMessage(ProtocolUtilities::NetInMessage &msg)
 {
     msg.ResetReading();
 
@@ -314,16 +323,18 @@ void InWorldChatModule::HandleChatFromSimulatorMesage(ProtocolUtilities::NetInMe
     LogDebug(ss.str());
 */
 
-    Scene::Entity *entity = GetEntityWithID(sourceId);
-    if (entity)
-        ApplyChatBubble(*entity, QString::fromUtf8(message.c_str()));
+    if (showChatBubbles_)
+    {
+        Scene::Entity *entity = GetEntityWithId(sourceId);
+        if (entity)
+            ApplyDefaultChatBubble(*entity, QString::fromUtf8(message.c_str()));
+    }
 
     // Connect chat ui to this modules ChatReceived
     // emit ChatReceived()
     //if (chatWindow_)
     //    chatWindow_->CharReceived(name, msg);
 }
-
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

@@ -3,7 +3,7 @@
  *
  *  @file   EC_Billboard.cpp
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
- *  @note   The entity must have both EC_OgrePlaceable and EC_OgreMesh components available in advance.
+ *  @note   The entity must have EC_OgrePlaceable component available in advance.
  */
 
 #include "StableHeaders.h"

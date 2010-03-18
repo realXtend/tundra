@@ -33,10 +33,13 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
+#include "EC_HoveringText.h"
 
 #include <OgreSceneNode.h>
+
 #include <QUuid>
 #include <QUrl>
+#include <QColor>
 
 namespace RexLogic
 {
@@ -56,7 +59,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
     Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
     if (!scene)
         return Scene::EntityPtr();
-      
+
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
     {
@@ -107,16 +110,16 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
 
     msg->ResetReading();
     uint64_t regionhandle = msg->ReadU64();
-    msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-    
+    msg->SkipToNextVariable(); // TimeDilation U16
+
     // Variable block: Object Data
     size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
-        uint32_t localid = msg->ReadU32(); 
-        msg->SkipToNextVariable();        // State U8 ///\todo Unhandled inbound variable 'State'.
+        uint32_t localid = msg->ReadU32();
+        msg->SkipToNextVariable();        // State U8
         RexUUID fullid = msg->ReadUUID();
-        msg->SkipToNextVariable();        // CRC U32 ///\todo Unhandled inbound variable 'CRC'.
+        msg->SkipToNextVariable();        // CRC U32
         uint8_t pcode = msg->ReadU8();
 
         Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
@@ -133,11 +136,11 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         prim->Scale = OpenSimToOgreCoordinateAxes(msg->ReadVector3());
         // Scale is not handled by interpolation system, so set directly
         HandlePrimScaleAndVisibility(localid);
-        
+
         size_t bytes_read = 0;
         const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
         if (bytes_read == 60)
-        {               
+        {
             // The data contents:
             // ofs  0 - pos xyz - 3 x float (3x4 bytes)
             // ofs 12 - vel xyz - 3 x float (3x4 bytes)
@@ -195,11 +198,23 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         const uint8_t *textureentrybytes = msg->ReadBuffer(&bytes_read);
         ParseTextureEntryData(*prim, textureentrybytes, bytes_read);
 
-        // Skip to prim text
+        // Hovering text
         msg->SkipToFirstVariableByName("Text");
-        prim->HoveringText = msg->ReadString(); 
-        msg->SkipToNextVariable();      // TextColor
-        
+        prim->HoveringText = msg->ReadString();
+
+        // Text color
+        const uint8_t *colorBytes = msg->ReadBuffer(&bytes_read);
+        // Convert from bytes to QColor
+        assert(sizeof(colorBytes) == 4);
+        int idx = 0;
+        int r = colorBytes[idx++];
+        int g = colorBytes[idx++];
+        int b = colorBytes[idx++];
+        int a = 255 - colorBytes[idx++];
+        QColor color(r, g, b, a);
+
+        AttachHoveringTextComponent(entity, prim->HoveringText, color);
+
         // read mediaurl, and send an event if it was changed
         std::string prevMediaUrl = prim->MediaUrl;
         prim->MediaUrl = msg->ReadString();
@@ -213,7 +228,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_MEDIAURL_SET, &event_data);
         }
 
-        msg->SkipToNextVariable();      // PSBlock
+        msg->SkipToNextVariable(); // PSBlock
 
         // If there are extra params, handle them.
         if (msg->ReadVariableSize() > 1)
@@ -222,11 +237,10 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             HandleExtraParams(localid, extra_params_data);
         }
 
-        msg->SkipToFirstVariableByName("JointAxisOrAnchor");
-        msg->SkipToNextVariable(); // To next instance
-        
+        msg->SkipToNextInstanceStart();
+
         HandleDrawType(localid);
-        
+
         // Handle setting the prim as child of another object, or possibly being parent itself
         rexlogicmodule_->HandleMissingParent(localid);
         rexlogicmodule_->HandleObjectParent(localid);
@@ -468,8 +482,8 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
         send_asset_urls = true;
         
     WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
-	WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
-	WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
+    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
+    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
 
     // Animation
     WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->AnimationPackageID), &buffer[0], idx);
@@ -505,7 +519,7 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     // Extension: url based asset id's
     if (send_asset_urls)
     {
-		WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
+        WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
         WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
         WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
         WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(prim->AnimationPackageID), &buffer[0], idx);
@@ -689,7 +703,7 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
         return false;
 
     RexUUID fullid;
-	RexUUID childfullid;
+    RexUUID childfullid;
     fullid.SetNull();
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(objectid);
     if(!entity)
@@ -701,23 +715,23 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
         fullid = prim->FullId;
     }
     
-	//need to remove children aswell... is there a better way of doing this?
-	for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    //need to remove children aswell... is there a better way of doing this?
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-		Scene::Entity &entity = **iter;
+        Scene::Entity &entity = **iter;
 
-		Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
         if (!primentity) continue;
 
         RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
-		if(prim.ParentId == objectid){
-			childfullid.SetNull();
-			childfullid = prim.FullId;
+        if(prim.ParentId == objectid){
+            childfullid.SetNull();
+            childfullid = prim.FullId;
 
-			scene->RemoveEntity(prim.LocalId);
-			rexlogicmodule_->UnregisterFullId(childfullid);
-		}
-	}
+            scene->RemoveEntity(prim.LocalId);
+            rexlogicmodule_->UnregisterFullId(childfullid);
+        }
+    }
 
     scene->RemoveEntity(objectid);
     rexlogicmodule_->UnregisterFullId(fullid);
@@ -1125,12 +1139,14 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
 }
 
 void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float radius, float falloff)
-{    
-    if (radius < 0.001) radius = 0.001;
+{
+    if (radius < 0.001)
+        radius = 0.001;
 
     // Attenuation calculation
     float x = 3.f * (1.f + falloff);
     float linear = x / radius; // % of brightness at radius
+
     // Add a constant quad term for diminishing the light more beyond radius
     float quad = 0.3f / (radius * radius); 
 
@@ -1150,13 +1166,33 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float
 
     ///\note Only point lights are supported at the moment.
     light->SetType(OgreRenderer::EC_OgreLight::LT_Point);
-    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());  
+    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
     if (placeable)
         light->SetPlaceable(placeable);
-    
+
     ///\note Test if the color values have to be in range [0, 1].
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
+}
+
+void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)
+{
+    if (text.empty())
+    {
+        boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>();
+        if (!hoveringText)
+            return;
+
+        entity->RemoveComponent(hoveringText);
+    }
+    else
+    {
+        Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(EC_HoveringText::NameStatic());
+        assert(component.get());
+        EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
+        hoveringText.SetTextColor(color);
+        hoveringText.ShowMessage(text.c_str());
+    }
 }
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -1637,10 +1673,10 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
     }
 }
 
-    
 void Primitive::HandleAmbientSound(entity_id_t entityid)
-{    
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+{
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return;
         
@@ -1655,10 +1691,8 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
     {
         // If sound ID is empty or null, stop any previous sound
         EC_AttachedSound* attachedsound = entity->GetComponent<EC_AttachedSound>().get();
-        if (attachedsound)    
-        {
+        if (attachedsound)
             attachedsound->RemoveSound(EC_AttachedSound::RexAmbientSound);
-        }
     }
     else
     {
@@ -1714,43 +1748,42 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
-    
-    std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
-    RexUUID entityid = msg.ReadUUID(); // ObjectID 
+
+    std::string asset_id = msg.ReadUUID().ToString();
+    RexUUID entityid = msg.ReadUUID();
     msg.ReadUUID(); // OwnerID
-    Real gain = msg.ReadF32(); // Gain
-    u8 flags = msg.ReadU8(); // Flags
-    
+    Real gain = msg.ReadF32();
+    u8 flags = msg.ReadU8();
+
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
-        return false;   
-    
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        return false;
+
+    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
-        
+
     Foundation::ComponentPtr attachedsoundptr = entity->GetOrCreateComponent(EC_AttachedSound::NameStatic());
     EC_AttachedSound* attachedsound = checked_static_cast<EC_AttachedSound*>(attachedsoundptr.get());
-    
+
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Vector3df position(0.0f, 0.0f, 0.0f);
     OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
     if (placeable)
-    {
         position = placeable->GetPosition();
-    }       
-                
+
     // Start new sound
     sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, Foundation::SoundServiceInterface::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
     if (flags & RexTypes::ATTACHED_SOUND_LOOP)
         soundsystem->SetLooped(new_sound, true);
-    
+
     // Attach sound that the position will be updated / sound will be stopped if entity destroyed
     // Note that because we use the OpenSimAttachedSound sound slot, any previous sound in that slot
     // will be stopped.
     attachedsound->AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
-    
+
     return false;
 }
 
@@ -1758,19 +1791,19 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
-   
-    RexUUID entityid = msg.ReadUUID(); // ObjectID 
-    Real gain = msg.ReadF32(); // Gain    
-    
+
+    RexUUID entityid = msg.ReadUUID();
+    Real gain = msg.ReadF32();
+
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
         return false;   
-    
+
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
-        
-    // Get attachedsound component        
+
+    // Get attachedsound component
     EC_AttachedSound* attachedsound = entity->GetComponent<EC_AttachedSound>().get(); 
     if (!attachedsound)
         return false; 
@@ -1778,7 +1811,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     const std::vector<sound_id_t>& sounds = attachedsound->GetSounds();
     for (uint i = 0; i < sounds.size(); ++i)
         soundsystem->SetGain(sounds[i], gain);
-    
+
     return false;
 }
 
@@ -1792,29 +1825,29 @@ void Primitive::HandleLogout()
 
 RexUUID Primitive::UuidForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 {
-	if (RexUUID::IsValid(id))
-		return RexUUID(id);
-	else
-		if (QUrl(id.c_str()).isValid())
-		{
-			// todo: more clever parse logic
-			QString uuid_candidate = QUrl(id.c_str()).path().right(36);
-			if (RexUUID::IsValid(uuid_candidate.toStdString()))
-				return RexUUID(uuid_candidate.toStdString());
-			else
-				return RexUUID(); // zero uuid
-		}
-		else
-			return RexUUID(); // zero uuid
+    if (RexUUID::IsValid(id))
+        return RexUUID(id);
+    else
+        if (QUrl(id.c_str()).isValid())
+        {
+            // todo: more clever parse logic
+            QString uuid_candidate = QUrl(id.c_str()).path().right(36);
+            if (RexUUID::IsValid(uuid_candidate.toStdString()))
+                return RexUUID(uuid_candidate.toStdString());
+            else
+                return RexUUID(); // zero uuid
+        }
+        else
+            return RexUUID(); // zero uuid
 }
 
 std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 {
-	QUrl url(QString(id.c_str()));
-	if (url.isValid())
-		return url.toString().toStdString();
-	else
-		return "";
+    QUrl url(QString(id.c_str()));
+    if (url.isValid())
+        return url.toString().toStdString();
+    else
+        return "";
 }
 
 } // namespace RexLogic

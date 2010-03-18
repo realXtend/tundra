@@ -3,13 +3,14 @@
 #ifndef incl_OgreRenderer_Renderer_h
 #define incl_OgreRenderer_Renderer_h
 
-#include <QWidget>
 #include "RenderServiceInterface.h"
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
 #include "OgreModuleApi.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
+
+class QWidget;
 
 namespace Foundation
 {
