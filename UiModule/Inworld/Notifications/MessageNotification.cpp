@@ -10,6 +10,7 @@ namespace UiServices
     MessageNotification::MessageNotification(QString message, int hide_in_msec) :
         CoreUi::NotificationBaseWidget(hide_in_msec)
     {
+        // Init Ui
         QPlainTextEdit *message_box = new QPlainTextEdit(message);
         message_box->setReadOnly(true);
         message_box->setFrameShape(QFrame::NoFrame);
@@ -19,6 +20,12 @@ namespace UiServices
         message_box->setMaximumHeight(text_rect.height() + 2*metric.height());
         message_box->setMinimumHeight(text_rect.height() + 2*metric.height());
 
-        SetCentralWidget(message_box);
+        // Layout
+        QWidget *content_widget = new QWidget();
+        QVBoxLayout *v_layout = new QVBoxLayout();
+        v_layout->addWidget(message_box);
+
+        content_widget->setLayout(v_layout);
+        SetCentralWidget(content_widget);
     }
 }

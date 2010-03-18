@@ -34,13 +34,15 @@ namespace CoreUi
         //! Animates the notification to a new position, called by NotificationManager
         void AnimateToPosition(QPointF end_pos);
 
-        //! Getters/setters
-        QDateTime GetTimeStamp()        { return timestamp_; }
-        void SetActive(bool active)     { is_active_ = active; }
+        //! Getters
         bool IsActive()                 { return is_active_; }
-        void SetResult(QString result)  { result_ = result; }
         QString GetResult()             { return result_; }
-        QWidget *GetContentWidget()     { return contentWidget; }
+        QWidget *GetContentWidget()     { return content_widget_; }
+        QDateTime GetTimeStamp()        { return timestamp_; }
+
+        //! Setters
+        void SetActive(bool active);
+        void SetResult(QString result)  { result_ = result; }
 
     protected:
         //! Sets the content widget, called by subclasses
@@ -62,6 +64,7 @@ namespace CoreUi
 
     private:
         QWidget *internal_widget_;
+        QWidget *content_widget_;
         QPropertyAnimation *fade_animation_;
         QPropertyAnimation *move_animation_;
         QPropertyAnimation *progress_animation_;
@@ -73,6 +76,7 @@ namespace CoreUi
 
     signals:
         void Completed(CoreUi::NotificationBaseWidget *self);
+        void InteractionsDone(QWidget *);
 
     };
 }

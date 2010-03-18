@@ -31,6 +31,7 @@ namespace UiServices
         answer_button_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
         
         // Layout
+        QWidget *content_widget = new QWidget();
         QVBoxLayout *v_layout = new QVBoxLayout();
         QHBoxLayout *h_layout = new QHBoxLayout();
 
@@ -40,7 +41,8 @@ namespace UiServices
         v_layout->addWidget(message_box_);
         v_layout->addLayout(h_layout);
 
-        SetCentralLayout(v_layout);
+        content_widget->setLayout(v_layout);
+        SetCentralWidget(content_widget);
 
         // Connect signals
         connect(answer_line_edit_, SIGNAL(returnPressed()), SLOT(ParseAndEmitInput()));
