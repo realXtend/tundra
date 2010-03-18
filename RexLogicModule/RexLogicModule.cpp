@@ -44,6 +44,7 @@
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgreCustomObject.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -658,22 +659,19 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        boost::shared_ptr<OgreRenderer::EC_OgreMesh> ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>();
-        if (!ec_mesh)
-            continue;
+        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        if (ec_mesh || ec_custom)
+        {
+            boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+            if (!highlight)
+            {
+                // If we didn't have the higihlight component yet, create one now.
+                entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
+                highlight = entity.GetComponent<EC_Highlight>();
+                assert(highlight.get());
+            }
 
-        boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-        if (!highlight)
-        {
-            // If we didn't have the higihlight component yet, create one now and show it.
-            entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
-            highlight = entity.GetComponent<EC_Highlight>();
-            assert(highlight.get());
-            highlight->Show();
-        }
-        else
-        {
-            // EC_Highlight exists, toggle its visibility.
             if (highlight->IsVisible())
                 highlight->Hide();
             else
@@ -790,8 +788,8 @@ Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid)
 {
     if (!activeScene_)
         return Scene::EntityPtr();
-        
-    return activeScene_->GetEntity(entityid);    
+
+    return activeScene_->GetEntity(entityid);
 }
 
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent)
@@ -970,14 +968,14 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable* child_placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get()); 
+    OgreRenderer::EC_OgrePlaceable *child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
     if (!child_placeable)
         return;
-        
+
     // If object is a prim, parent id is in the prim component, and in presence component for an avatar
-    EC_OpenSimPrim* prim = dynamic_cast<EC_OpenSimPrim*>(entity->GetComponent(EC_OpenSimPrim::NameStatic()).get());
-    EC_OpenSimPresence* presence = dynamic_cast<EC_OpenSimPresence*>(entity->GetComponent(EC_OpenSimPresence::NameStatic()).get());
-        
+    EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+
     entity_id_t parentid = 0;
     if (prim)
         parentid = prim->ParentId;

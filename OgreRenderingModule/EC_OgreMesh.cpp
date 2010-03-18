@@ -180,11 +180,11 @@ namespace OgreRenderer
             
             if (entity_->hasSkeleton())
             {
-                Ogre::SkeletonInstance* skel = entity_->getSkeleton();    
+                Ogre::SkeletonInstance* skel = entity_->getSkeleton();
                 // Enable cumulative mode on skeletal animations
-                if (skel)	
+                if (skel)
                     skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
-	        }                
+            }
         }
         catch (Ogre::Exception& e)
         {
@@ -205,8 +205,8 @@ namespace OgreRenderer
     {
         if (renderer_.expired())
             return false;
-        RendererPtr renderer = renderer_.lock();   
-            
+        RendererPtr renderer = renderer_.lock();
+
         Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeleton_name);
         if (skel.isNull())
         {
@@ -248,11 +248,11 @@ namespace OgreRenderer
             
             if (entity_->hasSkeleton())
             {
-                Ogre::SkeletonInstance* skel = entity_->getSkeleton();    
+                Ogre::SkeletonInstance* skel = entity_->getSkeleton();
                 // Enable cumulative mode on skeletal animations
-                if (skel)	
+                if (skel)
                     skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
-	        }                
+            }
         }
         catch (Ogre::Exception& e)
         {

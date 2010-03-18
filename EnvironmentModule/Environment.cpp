@@ -1,5 +1,5 @@
 /// @file Environment.cpp
-/// @brief Manages environment-related reX-logic, e.g. world time and lightning.
+/// @brief Manages environment-related reX-logic, e.g. world time and lighting.
 /// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"

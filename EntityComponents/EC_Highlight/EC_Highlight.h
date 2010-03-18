@@ -3,7 +3,8 @@
  *
  *  @file   EC_Highlight.h
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have both EC_OgrePlaceable and EC_OgreMesh components available in advance.
+ *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
 #ifndef incl_EC_Highlight_EC_Highlight_h

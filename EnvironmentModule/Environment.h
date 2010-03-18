@@ -1,5 +1,5 @@
 /// @file Environment.h
-/// @brief Manages environment-related reX-logic, e.g. world time and lightning.
+/// @brief Manages environment-related reX-logic, e.g. world time and lighting.
 /// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_RexLogicModule_Environment_h
@@ -30,7 +30,7 @@ namespace Environment
 {
     class EnvironmentModule;
 
-    //! Environment contain information about water, fog and lightning. Also Caelum implementation code is included in this class.
+    //! Environment contain information about water, fog and lighting. Also Caelum implementation code is included in this class.
     //! \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Environment : public QObject
     {
