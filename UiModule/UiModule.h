@@ -6,54 +6,23 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "UiModuleApi.h"
+#include "UiModuleFwd.h"
 
-#include <QPair>
-#include <QString>
-#include <QStringList>
 #include <QMap>
-#include <QGraphicsView>
+#include <QPair>
+#include <QStringList>
 
-namespace RexLogic
-{
-    class OpenSimLoginHandler;
-}
-
-namespace Ether
-{
-    namespace Logic
-    {
-        class EtherLogic;
-    }
-}
-
-namespace CoreUi
-{
-    class UiConsoleManager;
-}
-
-namespace OgreRenderer
-{
-    class QOgreUIView;
-}
-
-namespace ProtocolUtilities
-{
-    class WorldStream;
-}
+namespace OgreRenderer      { class QOgreUIView; }
+namespace ProtocolUtilities { class WorldStream; }
 
 namespace UiServices
 {
-    class UiProxyWidget;
-    class UiWidgetProperties;
-    class UiStateMachine;
-    class InworldSceneController;
-    class NotificationManager;
+    //! UiModule provides user interface services
+    /// For details about Inworld Widget Services read UiWidgetServices.h
+    /// For details about Notification Services read UiNotificationServices.h
+    /// Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
 
     enum ConnectionState { Connected, Disconnected, Failed };
-
-    /** UiModule hadles the shown ui scene, creates 
-      * core modules ui and provides ui services to modules 
-      */
 
     class UI_MODULE_API UiModule : public Foundation::ModuleInterfaceImpl
     {

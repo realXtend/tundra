@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_Fwd_h
 #define incl_UiModule_Fwd_h
 
+class QGraphicsView;
+
 namespace CoreUi
 {
     class ConsoleProxyWidget;
@@ -13,6 +15,10 @@ namespace UiServices
 {
     class InworldSceneController;
     class UiProxyWidget;
+    class UiWidgetProperties;
+    class UiStateMachine;
+    class InworldSceneController;
+    class NotificationManager;
 }
 
 namespace Ether
