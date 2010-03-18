@@ -4,6 +4,8 @@
 #include "DebugOperatorNew.h"
 #include "PythonScriptModule.h"
 #include "PythonEngine.h"
+//#include <stdlib.h> //_putenv for PYTHONHOME on windows
+#include <Poco/Environment.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -25,11 +27,18 @@ namespace PythonScript
     {
         if (!Py_IsInitialized())
         {
+#ifdef _WIN32
+            //for some reason these have no affect when running from inside visual studio,
+            //so for VS use, the PYTHONHOME env var has to be set in the project file 
+            //_putenv("PYTHONHOME = .\\pymodules");
+            Poco::Environment::set("PYTHONHOME", ".\\pymodules");
+            //loads pymodules/lib/site.py which is the windows 
+
+            //std::cout << "PYTHONHOME SET";
+#endif
             Py_Initialize();
             RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent
-            RunString("import sys; sys.path.append('pymodules/DLLs');"); // pyd dll directory
             RunString("import sys; sys.path.append('pymodules/lib');"); // libraries directory
-            RunString("import sys; sys.path.append('pymodules/python26_Lib.zip');"); // python modules from folder python26/Lib 
         }
         else
         {
