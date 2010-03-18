@@ -9,6 +9,7 @@
 #include <QVector2D>
 #include <QParallelAnimationGroup>
 #include <QGraphicsItem>
+#include <QSizeF>
 
 class QPropertyAnimation;
 
@@ -23,9 +24,6 @@ namespace CoreUi
         //! Constructor
         GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0);
 
-        //! Setters (QGraphicsProxyWidget overrides)
-        void setPos(const QPointF &pos);
-        void setPos(qreal x, qreal y);
 
     public slots:
         //! Parent overrides
@@ -39,10 +37,10 @@ namespace CoreUi
         QParallelAnimationGroup *GetMoveAnimations()    { return move_animations_; }
         QParallelAnimationGroup *GetResizeAnimations()  { return resize_animations_; }
         bool IsExpanded()                               { return is_expanded_; }
+        void CalculatePosVec();
 
     private slots:
         QPropertyAnimation* CalculateSizeAnimation(MenuNode *child_node);
-        void CalculatePosVec();
         void CalculateChildPositions();
         void MoveAnimationsFinished();
         void ResizeAnimationsFinished();
@@ -57,6 +55,8 @@ namespace CoreUi
 
         QVector2D pos_vector_;
         QList<MenuNode *> children_;
+
+        QSizeF child_size_;
 
         bool root_;
         bool is_expanded_;
