@@ -43,6 +43,18 @@ namespace CoreUi
 
         
     }
+    void GroupNode::AdjustNode(QAbstractAnimation::Direction dir)
+    {
+        resize_animations_->setDirection(dir);
+        adjust_position_animations_->setDirection(dir);
+        resize_animations_->start();
+        adjust_position_animations_->start();
+
+        foreach (MenuNode *child_node, children_)
+        {
+            child_node->setOpacity(1);
+        }
+    }
 
 
 
@@ -64,7 +76,7 @@ namespace CoreUi
         {
             if (!IsExpanded())
                 child_node->setPos(pos());
-
+            this->setOpacity(1);
             child_node->setOpacity(1);
             child_node->setZValue(zValue()-0.001f);
             child_node->DisableText();
