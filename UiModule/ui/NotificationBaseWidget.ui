@@ -57,17 +57,18 @@ QWidget#balloonBottom {
 	background-repeat: no-repeat;
 }
 
-QPushButton#closePushButton {
-	background-color: rgba(233,233,233,150);
+QPushButton {
+	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(233, 233, 233, 255), stop:1 rgba(247, 247, 247, 255));
 	border: 1px solid rgba(0,0,0,150);
+	border-radius: 3px;
 	color: black;
 }
 
-QPushButton#closePushButton::hover {
+QPushButton::hover {
 	background-color: rgb(225, 225, 225);
 }
 
-QPushButton#closePushButton::pressed {
+QPushButton::pressed {
 	background-color: rgb(181, 181, 181);
 	color: white;
 }
@@ -78,9 +79,7 @@ QProgressBar#timeoutProgressBar {
 }
 
 QProgressBar#timeoutProgressBar::chunk {
-	border-top-left-radius: 7px;
-	border-bottom-left-radius: 7px;
-	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(246, 246, 246, 255));
+	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:1, stop:0 rgba(46, 46, 46, 255), stop:0.960227 rgba(70, 70, 70, 255));
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -146,39 +145,62 @@ QProgressBar#timeoutProgressBar::chunk {
        <number>0</number>
       </property>
       <item>
-       <layout class="QVBoxLayout" name="mainLayout" stretch="1,0">
+       <layout class="QVBoxLayout" name="mainLayout" stretch="0,0">
         <item>
          <layout class="QHBoxLayout" name="controlsLayout">
           <property name="spacing">
            <number>5</number>
           </property>
           <item>
-           <widget class="QProgressBar" name="timeoutProgressBar">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>14</height>
-             </size>
+           <layout class="QVBoxLayout" name="progressLayout">
+            <property name="spacing">
+             <number>0</number>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>14</height>
-             </size>
-            </property>
-            <property name="value">
-             <number>100</number>
-            </property>
-            <property name="textVisible">
-             <bool>false</bool>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="invertedAppearance">
-             <bool>true</bool>
-            </property>
-           </widget>
+            <item>
+             <spacer name="progressSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>1</width>
+                <height>1</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QProgressBar" name="timeoutProgressBar">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>2</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>2</height>
+               </size>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              </property>
+              <property name="textVisible">
+               <bool>false</bool>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="invertedAppearance">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QPushButton" name="closePushButton">
@@ -211,7 +233,7 @@ QProgressBar#timeoutProgressBar::chunk {
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer">
+         <spacer name="mainSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>

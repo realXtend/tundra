@@ -1,5 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#ifndef incl_UiModule_MessageNotification_h
+#define incl_UiModule_MessageNotification_h
+
 #include "NotificationBaseWidget.h"
 #include "UiModuleApi.h"
 
@@ -11,7 +14,9 @@ namespace UiServices
     Q_OBJECT
 
     public:
-        MessageNotification(QString message, int hide_in_msec = 10000);
+        MessageNotification(QString message, int hide_in_msec = 5000);
 
     };
 }
+
+#endif
