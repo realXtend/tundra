@@ -17,7 +17,6 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
-#include "ModuleLoggingFunctions.h"
 
 #include <Poco/Logger.h>
 
@@ -119,7 +118,7 @@ void EC_Highlight::Create()
         assert(ec_custom);
         if (!ec_custom->IsCommitted())
         {
-            LogError("mesh not committed");
+            LogError("Mesh entity have not been created for the target primitive. Cannot create EC_Highlight.");
             return;
         }
 

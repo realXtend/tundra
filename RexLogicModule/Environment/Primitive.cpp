@@ -204,8 +204,11 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
 
         // Text color
         const uint8_t *colorBytes = msg->ReadBuffer(&bytes_read);
+        assert(bytes_read == 4 && "Invalid length for fixed-sized variable TextColor in ObjectUpdate packet! Should be 4 bytes always.");
+        if (bytes_read != 4)
+            throw Exception("Invalid length for fixed-sized variable TextColor in ObjectUpdate packet! Should be 4 bytes always.");
+
         // Convert from bytes to QColor
-        assert(sizeof(colorBytes) == 4);
         int idx = 0;
         int r = colorBytes[idx++];
         int g = colorBytes[idx++];

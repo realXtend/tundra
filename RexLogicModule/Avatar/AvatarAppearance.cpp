@@ -35,6 +35,7 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "WorldStream.h"
+#include "EC_HoveringText.h"
 
 #include "Poco/URI.h"
 
@@ -296,16 +297,19 @@ namespace RexLogic
                         Ogre::Vector3 initial_root_pos;
                         Ogre::Vector3 current_root_pos = root_bone->_getDerivedPosition();
                         GetInitialDerivedBonePosition(root_bone, initial_root_pos);
-                        
+
                         float c = abs(current_root_pos.y / initial_root_pos.y);
                         if (c > 1.0) c = 1.0;
                         offset = initial_base_pos * c;
 
+                        // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
                         // Set name overlay height according to base + root distance.
-                        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+                        //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+                        EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
                         if (overlay)
                         {
-                            overlay->SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
+                            overlay->SetPosition(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
+                            //overlay->SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
                         }
                     }
                 }

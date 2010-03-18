@@ -925,6 +925,9 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
 void RexLogicModule::UpdateAvatarOverlays()
 {
+    // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
+    return;
+
     for (uint i = 0; i < found_avatars_.size(); ++i)
     {
         Scene::Entity* entity = found_avatars_[i].lock().get();
