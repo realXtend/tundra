@@ -209,7 +209,7 @@ if 0: #for the box test ui created in code - works
     box.button1.connect('clicked()', appendLine)
     box.edit.connect('returnPressed()', appendLine)
 
-if 1: #sys.path PYTHONHOME etc fix attempts
+if 0: #sys.path PYTHONHOME etc fix attempts
     import os
     print os.getenv("PYTHONHOME")
     
