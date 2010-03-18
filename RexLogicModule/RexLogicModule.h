@@ -8,7 +8,6 @@
 #include "RexLogicModuleApi.h"
 #include "ForwardDefines.h"
 #include "NetworkEvents.h"
-//#include "WorldStream.h"
 #include "Quaternion.h"
 
 #include <boost/smart_ptr.hpp>

@@ -3,18 +3,20 @@
  *
  *  @file   EC_Highlight.cpp
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have both EC_OgrePlaceable and EC_OgreMesh components available in advance.
+ *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Highlight.h"
 #include "ModuleInterface.h"
+#include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
-#include "Entity.h"
+#include "EC_OgreCustomObject.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <Poco/Logger.h>
@@ -101,62 +103,81 @@ void EC_Highlight::Create()
     if (!placeable)
         return;
 
-    // Prims have no EC_OgreMesh necessarily so no assertion here.
-    OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-    //assert(mesh);
-    if (!ec_mesh)
+    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
+    Ogre::Entity *originalEntity  = 0;
+    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()))
+    {
+        OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        assert(ec_mesh);
+
+        originalEntity = ec_mesh->GetEntity();
+        sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
+    }
+    else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
+    {
+        OgreRenderer::EC_OgreCustomObject *ec_custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        assert(ec_custom);
+        if (!ec_custom->IsCommitted())
+        {
+            LogError("mesh not committed");
+            return;
+        }
+
+        originalEntity = ec_custom->GetEntity();
+        sceneNode_ = placeable->GetSceneNode();
+    }
+    else
+    {
+        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Highlight.");
         return;
+    }
 
-    Ogre::Entity *ogre_entity = ec_mesh->GetEntity();
-    assert(ogre_entity);
-    if (!ogre_entity)
+    assert(originalEntity);
+    if (!originalEntity)
         return;
-
-    sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
-
-/*
-    StringVector material_names;
-    int mat_count = ec_mesh->GetNumMaterials();
-    for(i = 0; i < mat_count; ++i)
-        material_names.push_back(ec_mesh->GetMaterialName(i));
-*/
-    //sceneNode_ = placeable->GetSceneNode();
 
     assert(sceneNode_);
     if (!sceneNode_)
         return;
 
+    // Clone the Ogre entity.
     cloneName_ = std::string("entity") + renderer_.lock()->GetUniqueObjectName();
-    entityClone_ = ogre_entity->clone(cloneName_);
+    entityClone_ = originalEntity->clone(cloneName_);
     assert(entityClone_);
-/*
-    const char *image_name = "rim.dds";
-    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(image_name).get());
-    if (!tex)
-    {
-        ///\bug OGRE doesn't seem to add all texture to the resource group although the texture
-        ///     exists in folder spesified in the resource.cfg
-        std::stringstream ss;
-        ss << "Ogre Texture \"" << image_name << "\" not found!";
-        std::cout << ss.str() << std::endl;
 
-        Ogre::ResourcePtr rp = manager.create(image_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        if (!rp.isNull())
+    // Disable casting of shadows for the clone.
+    entityClone_->setCastShadows(false);
+
+    ///\todo If original entity has skeleton, (try to) link it to the clone.
+/*
+    if (originalEntity->hasSkeleton())
+    {
+        Ogre::SkeletonInstance *skel = originalEntity->getSkeleton();
+        // If sharing a skeleton, force the attachment mesh to use the same skeleton
+        // This is theoretically quite a scary operation, for there is possibility for things to go wrong
+        Ogre::SkeletonPtr entity_skel = originalEntity->getMesh()->getSkeleton();
+        if (entity_skel.isNull())
         {
-            std::cout << "But should be now..." << std::endl;
+            LogError("Cannot share skeleton for attachment, not found");
+        }
+        else
+        {
+            try
+            {
+                entityClone_->getMesh()->_notifySkeleton(entity_skel);
+            }
+            catch (Ogre::Exception &e)
+            {
+                LogError("Could not set shared skeleton for attachment: " + std::string(e.what()));
+            }
         }
     }
 */
-//    std::string origMaterialName = ec_mesh->getmaterialGetMaterialName(0);
 
     std::string newMatName = std::string("HighlightMaterial") + renderer_.lock()->GetUniqueObjectName();
     try
     {
-//        StringVector texture_names;
-//        OgreRenderer::GetTextureNamesFromMaterial(oldMaterial, StringVector& texture_names);
         Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);
-//        OgreRenderer::SetTextureUnitOnMaterial(highlightMaterial, "Jack_body_yellow1.jpg");
         entityClone_->setMaterialName(newMatName);
     }
     catch (Ogre::Exception &e)
@@ -166,6 +187,5 @@ void EC_Highlight::Create()
     }
 
     sceneNode_->attachObject(entityClone_);
-//    entityClone_->getParentSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3(1, 0, 0)));
 }
 
