@@ -64,24 +64,40 @@ namespace MumbleVoip
             return;
 
         RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
-        if (!avatar)
-            return;
-
-        Scene::EntityPtr entity = avatar->GetUserAvatar();
-        if (!entity)
-            return;
-
-        const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
-        if (placeable_component)
+        if (avatar)
         {
-            OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-            Quaternion q = ogre_placeable->GetOrientation();
+        
+            Scene::EntityPtr entity = avatar->GetUserAvatar();
+            if (!entity)
+                return;
 
-            Vector3df position_vector = ogre_placeable->GetPosition(); 
-            Vector3df front_vector = q*Vector3df(1,0,0);
-            Vector3df top_vector(0,0,1);
-            link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
-            link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector); //todo: use real values from camera
+            const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
+            if (placeable_component)
+            {
+                OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+                Quaternion q = ogre_placeable->GetOrientation();
+
+                Vector3df position_vector = ogre_placeable->GetPosition(); 
+                Vector3df front_vector = q*Vector3df(1,0,0);
+                Vector3df top_vector(0,0,1);
+                link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
+            }
+        }
+
+        Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
+        if (camera)
+        {
+            const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
+            if (placeable_component)
+            {
+                OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+                Quaternion q = ogre_placeable->GetOrientation();
+
+                Vector3df position_vector = ogre_placeable->GetPosition(); 
+                Vector3df front_vector = q*Vector3df(1,0,0);
+                Vector3df top_vector(0,0,1);
+                link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
+            }
         }
 
         link_plugin_->SendData();
@@ -104,15 +120,15 @@ namespace MumbleVoip
     
     Console::CommandResult  MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
     {
-        if (params.size() != 3)
+        if (params.size() != 2)
         {
-            return Console::ResultFailure("Wrong number of arguments: 'mumble start(name, id, group_id)'");
+            return Console::ResultFailure("Wrong number of arguments: usage 'mumble start(id, context)'");
         }
-
-        link_plugin_->SetAvatarName(QString(params[0].c_str()));
-        link_plugin_->SetAvatarIdentity(QString(params[1].c_str()));
-        link_plugin_->SetGroupId(QString(params[2].c_str()));
-        link_plugin_->SetDescription("Naali viewer");
+        
+        link_plugin_->SetUserIdentity(QString(params[0].c_str()));
+        link_plugin_->SetContextId(QString(params[1].c_str()));
+        link_plugin_->SetApplicationName("Naali viewer");
+        link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
         link_plugin_->Start();
 
         if (!link_plugin_->IsRunning())
@@ -129,7 +145,7 @@ namespace MumbleVoip
     {
         if (params.size() != 0)
         {
-            return Console::ResultFailure("Wrong number of arguments: 'mumble stop'");
+            return Console::ResultFailure("Wrong number of arguments: usage 'mumble stop'");
         }
 
         if (!link_plugin_->IsRunning())
