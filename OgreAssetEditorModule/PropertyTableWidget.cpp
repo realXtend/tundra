@@ -14,7 +14,7 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 PropertyTableWidget::PropertyTableWidget(QWidget *parent) : QTableWidget(parent)

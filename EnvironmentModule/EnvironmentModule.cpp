@@ -25,6 +25,8 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 
+#include <boost/algorithm/string.hpp>
+
 namespace Environment
 {
     EnvironmentModule::EnvironmentModule() :
@@ -174,17 +176,17 @@ namespace Environment
             if (tex)
             {
                 // Pass the texture asset to the terrain manager - the texture might be in the terrain.
-                if(terrain_.get())
+                if (terrain_.get())
                     terrain_->OnTextureReadyEvent(res);
-                
+
                 // Pass the texture asset to the sky manager - the texture might be in the sky.
-                if(sky_.get())
+                if (sky_.get())
                     sky_->OnTextureReadyEvent(res);
             }
             Foundation::TextureInterface *decoded_tex = decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
             if (decoded_tex)
                 // Pass the texture asset to environment editor.
-                if(environment_editor_)
+                if (environment_editor_)
                     environment_editor_->HandleResourceReady(res);
         }
 
@@ -238,7 +240,8 @@ namespace Environment
 
                 if (methodname == "RexPostP")
                 {
-                    boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+                    boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module =
+                        framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
                     if (rendering_module.get())
                     {
                         OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
@@ -275,12 +278,11 @@ namespace Environment
                     if (water_.get() != 0)
                     {
                         std::string message = msg.ReadString();
-                        // Convert to float. 
+                        // Convert to float.
                         try
                         {
                             float height = boost::lexical_cast<float>(message);
                             water_->SetWaterHeight(height);
-
                         }
                         catch(boost::bad_lexical_cast&)
                         {
@@ -291,31 +293,27 @@ namespace Environment
                 {
                     msg.ResetReading();
                     msg.SkipToFirstVariableByName("Parameter");
-                    
+
                     // Variable block begins, should have currently (at least) 1 instances.
                     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
                     if ( instance_count < 1 )
                         return false;
 
                     std::string message = msg.ReadString();
-
+                    boost::to_lower(message);
                     // Convert to boolean
                     try
                     {
                         bool draw = boost::lexical_cast<bool>(message);
                         if (draw)
-                        {
                             if (water_.get())
                                 water_->CreateWaterGeometry();
                             else
                                 CreateWater();
-                        }
                         else
-                        {
                             water_->RemoveWaterGeometry();
-                        }
                     }
-                    catch(boost::bad_lexical_cast&)
+                    catch(boost::bad_lexical_cast &)
                     {
                     }
                 }
@@ -469,22 +467,22 @@ namespace Environment
         return false;
     }
 
-    TerrainPtr EnvironmentModule::GetTerrainHandler()
+    TerrainPtr EnvironmentModule::GetTerrainHandler() const
     {
         return terrain_;
     }
 
-    EnvironmentPtr EnvironmentModule::GetEnvironmentHandler()
+    EnvironmentPtr EnvironmentModule::GetEnvironmentHandler() const
     {
         return environment_;
     }
 
-    SkyPtr EnvironmentModule::GetSkyHandler()
+    SkyPtr EnvironmentModule::GetSkyHandler() const
     {
         return sky_;
     }
 
-    WaterPtr EnvironmentModule::GetWaterHandler()
+    WaterPtr EnvironmentModule::GetWaterHandler() const
     {
         return water_;
     }

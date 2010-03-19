@@ -34,7 +34,12 @@ namespace Foundation
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
-namespace OgreAssetEditor
+namespace Inventory
+{
+    class InventoryUploadBufferEventData;
+}
+
+namespace Naali
 {
     class OgreMaterialProperties;
     class PropertyTableWidget;
@@ -67,6 +72,13 @@ namespace OgreAssetEditor
         /// Closes the window.
         void Close();
 
+    signals:
+        /// This signal is emitted when the editor is closed.
+        void Closed(const QString &inventory_id, asset_type_t asset_type);
+
+        /// This signal is emitted user saves modifications to a script and uploads it as a new one.
+        void UploadNewScript(Inventory::InventoryUploadBufferEventData *data);
+
     private slots:
         /// Save As
         void SaveAs();
@@ -79,10 +91,6 @@ namespace OgreAssetEditor
         /// @param row Row of the cell.
         /// @param column Column of the cell.
         void PropertyChanged(int row, int column);
-
-    signals:
-        /// This signal is emitted when the editor is closed.
-        void Closed(const QString &inventory_id, asset_type_t asset_type);
 
     private:
         Q_DISABLE_COPY(OgreScriptEditor);

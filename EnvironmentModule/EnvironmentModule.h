@@ -86,16 +86,16 @@ namespace Environment
         bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
 
         //! @return The terrain handler object that manages reX terrain logic.
-        TerrainPtr GetTerrainHandler();
+        TerrainPtr GetTerrainHandler() const;
 
         //! @return The environment handler.
-        EnvironmentPtr GetEnvironmentHandler();
+        EnvironmentPtr GetEnvironmentHandler() const;
 
         //! @return The sky handler.
-        SkyPtr GetSkyHandler();
+        SkyPtr GetSkyHandler() const;
 
         //! @return The water handler.
-        WaterPtr GetWaterHandler();
+        WaterPtr GetWaterHandler() const;
 
         //! Sends new terrain texture into the server.
         //! @param new_texture_id texture asset id that we want to use.

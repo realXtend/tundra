@@ -16,7 +16,6 @@
 #include "ModuleManager.h"
 #include "Framework.h"
 
-#include "RexLogicModule.h"
 #include "Inventory/InventoryEvents.h"
 #include "QtUtils.h"
 
@@ -28,8 +27,6 @@
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
-
-#include <RenderServiceInterface.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -56,7 +53,7 @@ InventoryWindow::InventoryWindow(InventoryModule *owner, QWidget *parent) :
     mainWidget_(0),
     inventoryItemModel_(0),
     treeView_(0),
-//    lineEditSearch_(0),
+    lineEditSearch_(0),
     actionMenu_(0),
     actionDelete_(0),
     actionRename_(0),
@@ -82,7 +79,7 @@ InventoryWindow::~InventoryWindow()
 {
     SAFE_DELETE(inventoryItemModel_);
     SAFE_DELETE(treeView_);
-//    SAFE_DELETE(lineEditSearch_);
+    SAFE_DELETE(lineEditSearch_);
     SAFE_DELETE(mainWidget_);
     SAFE_DELETE(actionMenu_);
     SAFE_DELETE(actionDelete_);
@@ -149,6 +146,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 
     // Connect notification delayed sending to avoid ui thread problems when creating the notification widget
     connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(QString, int)), this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
+
+//    connect(inventoryItemModel_, SIGNAL(dataChanged), treeView_, SLOT(
 
     ///\todo Hack: connect this signal only for regular OS, causes problems with WebDAV.
     if (owner_->GetInventoryDataModelType() == InventoryModule::IDMT_OpenSim)
@@ -277,15 +276,14 @@ void InventoryWindow::CopyAssetReference()
     inventoryItemModel_->CopyAssetReferenceToClipboard(treeView_->selectionModel()->currentIndex());
 }
 
-/*
 void InventoryWindow::Search(const QString &text)
 {
+    treeView_->expandAll();
     treeView_->keyboardSearch(text);
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     if (index.isValid())
         treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
 }
-*/
 
 void InventoryWindow::UpdateActions()
 {
@@ -400,13 +398,13 @@ void InventoryWindow::InitInventoryWindow()
     layout_->addWidget(mainWidget_);
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
-//    QLineEdit *lineEditSearch_ = new QLineEdit(this);
+    QLineEdit *lineEditSearch_ = new QLineEdit(mainWidget_);
 
     // Create inventory tree view.
     treeView_ = new InventoryTreeView(mainWidget_);
 //    QHBoxLayout *hlayout = mainWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
 //    hlayout->addWidget(treeView_);
-//    layout_->addWidget(lineEditSearch_);
+    layout_->addWidget(lineEditSearch_);
     layout_->addWidget(treeView_);
 
     // Connect signals
@@ -414,7 +412,7 @@ void InventoryWindow::InitInventoryWindow()
 //    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
-//    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
+    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
 
     proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
         this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));

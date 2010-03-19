@@ -14,18 +14,19 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
-
 #include "Inventory/InventoryEvents.h"
-#include "UiModule.h"
 #include "NetworkEvents.h"
+
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiProxyWidget.h"
 
 #include <QStringList>
 #include <QVector>
 #include <QGraphicsProxyWidget>
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
@@ -70,6 +71,8 @@ void OgreAssetEditorModule::PostInitialize()
 
     materialWizard_ = new MaterialWizard(framework_);
     editorManager_ = new EditorManager();
+
+    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
 }
 
 void OgreAssetEditorModule::Uninitialize()
@@ -100,12 +103,20 @@ bool OgreAssetEditorModule::HandleEvent(
     }
     if (category_id == inventoryEventCategory_)
     {
+        if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_OPEN)
+        {
+            // Inventory item requested for opening. Check if we have editor for its type.
+            if (uiModule_.expired())
+                return false;
+        }
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
-            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-            if (!ui_module)
+            if (uiModule_.expired())
                 return false;
 
+            // Asset downloaded, pass asset data to the right editor and bring it to front.
+            // This event is sent also when asset is already in cache and doens't need to be
+            // downloaded. Hence, if there is no editor created yet, create it now.
             Inventory::InventoryItemDownloadedEventData *downloaded = checked_static_cast<Inventory::InventoryItemDownloadedEventData *>(data);
             assert(downloaded);
             asset_type_t at = downloaded->assetType;
@@ -114,29 +125,38 @@ bool OgreAssetEditorModule::HandleEvent(
             case RexTypes::RexAT_ParticleScript:
             case RexTypes::RexAT_MaterialScript:
             {
-                // Create new editor if it doesn't already exist.
-                QString id = downloaded->inventoryId.ToString().c_str();
+                const QString &id = downloaded->inventoryId.ToString().c_str();
+                const QString &name = downloaded->name.c_str();
                 if (!editorManager_->Exists(id, at))
                 {
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, downloaded->name.c_str());
-
-                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                    // Editor not created, create it now.
+                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, name);
+                    connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
-
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
+
+                    // Create proxy widgte
+                    UiServices::UiProxyWidget *proxy = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
+                        editor, UiServices::UiWidgetProperties("OGRE Script Editor: " + name, UiServices::SceneWidget));
+                    connect(proxy, SIGNAL(Closed()), editor, SLOT(Close()));
+                    proxy->BringToFront();
+                    //proxy->show();
+                    //uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(proxy);
                 }
                 else
                 {
-                    // Bring editor to front
-                    QWidget *editor = editorManager_->GetEditor(id, at);
-                    if (editor)
-                        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+                    // Editor already exists, bring it to front.
+                    if (!uiModule_.expired())
+                    {
+                        QWidget *editor = editorManager_->GetEditor(id, at);
+                        if (editor)
+                            uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                    }
                 }
 
-                downloaded->handled = true;
-
                 // Surpress this event.
+                downloaded->handled = true;
                 return true;
             }
             default:
@@ -161,7 +181,7 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-using namespace OgreAssetEditor;
+using namespace Naali;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
     POCO_EXPORT_CLASS(OgreAssetEditorModule)

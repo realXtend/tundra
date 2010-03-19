@@ -57,6 +57,7 @@ public:
 
     /// Sets the background color for the hovering text.
     /// @param color Color.
+    /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
     void SetBackgroundColor(const QColor &color);
 
 public slots:

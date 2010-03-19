@@ -20,10 +20,6 @@
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
 
-#include <UiModule.h>
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
-
 #include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
@@ -35,7 +31,7 @@
 #include <QColor>
 #include <QVBoxLayout>
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 OgreScriptEditor::OgreScriptEditor(
@@ -46,7 +42,6 @@ OgreScriptEditor::OgreScriptEditor(
     QWidget *parent) :
     framework_(framework),
     QWidget(parent),
-    proxyWidget_(0),
     mainWidget_(0),
     lineEditName_(0),
     buttonSaveAs_(0),
@@ -66,9 +61,6 @@ OgreScriptEditor::OgreScriptEditor(
 // virtual
 OgreScriptEditor::~OgreScriptEditor()
 {
-    if (proxyWidget_->isVisible())
-        proxyWidget_->hide();
-
     SAFE_DELETE(textEdit_);
     SAFE_DELETE(propertyTable_);
     SAFE_DELETE(materialProperties_);
@@ -112,14 +104,6 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 
 void OgreScriptEditor::Close()
 {
-    proxyWidget_->hide();
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
-    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
-
     emit Closed(inventoryId_, assetType_);
 }
 
@@ -170,6 +154,8 @@ void OgreScriptEditor::SaveAs()
     event_data.buffers.push_back(data_buffer);
 
     event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
+    ///\todo emit signal instead of using event manager
+    //emit UploadNewScript(&event_data);
 }
 
 void OgreScriptEditor::ValidateScriptName(const QString &name)
@@ -226,12 +212,6 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
 
 void OgreScriptEditor::InitEditorWindow()
 {
-    // Get QtModule and create canvas
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
     // Create widget from ui file
     QUiLoader loader;
     QFile file("./data/ui/ogrescripteditor.ui");
@@ -258,21 +238,12 @@ void OgreScriptEditor::InitEditorWindow()
     QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
     QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
     QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
-
-    // Add widget to UI via ui services module
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
-        this, UiServices::UiWidgetProperties("OGRE Script Editor: " + name_, UiServices::SceneWidget));
-
-    QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Close()));
-
-    proxyWidget_->show();
-    ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
 }
 
 void OgreScriptEditor::CreateTextEdit()
 {
     // Raw text edit for particle scripts or material scripts without properties.
-    textEdit_ = new QTextEdit();
+    textEdit_ = new QTextEdit;
     textEdit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -288,7 +259,7 @@ void OgreScriptEditor::CreatePropertyEditor()
     PropertyMap propMap = materialProperties_->GetPropertyMap();
     PropertyMapIter it(propMap);
 
-    propertyTable_ = new PropertyTableWidget(propMap.size(), 3, 0);
+    propertyTable_ = new PropertyTableWidget(propMap.size(), 3);
     QVBoxLayout *layout = mainWidget_->findChild<QVBoxLayout *>("verticalLayoutEditor");
     layout->addWidget(propertyTable_);
 

@@ -15,7 +15,7 @@
 #include <QPair>
 #include <QString>
 
-namespace OgreAssetEditor
+namespace Naali
 {
     typedef QPair<QString, asset_type_t> EditorMapKey;
     typedef QMap<EditorMapKey, QWidget *> EditorMap;

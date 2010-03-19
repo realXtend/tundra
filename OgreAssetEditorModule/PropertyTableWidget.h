@@ -10,7 +10,7 @@
 
 #include <QTableWidget>
 
-namespace OgreAssetEditor
+namespace Naali
 {
     class PropertyTableWidget : public QTableWidget
     {

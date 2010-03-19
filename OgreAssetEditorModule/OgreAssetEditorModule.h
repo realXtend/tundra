@@ -11,20 +11,28 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "RexUUID.h"
+
+#include <QObject>
 
 namespace Foundation
 {
     class EventDataInterface;
 }
 
-namespace OgreAssetEditor
+namespace UiServices
+{
+    class UiModule;
+}
+
+namespace Naali
 {
     class MaterialWizard;
     class EditorManager;
 
-    class OgreAssetEditorModule : public Foundation::ModuleInterfaceImpl
+    class OgreAssetEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
+
     public:
         /// Default constructor.
         OgreAssetEditorModule();
@@ -53,6 +61,9 @@ namespace OgreAssetEditor
     private:
         OgreAssetEditorModule(const OgreAssetEditorModule &);
         void operator=(const OgreAssetEditorModule &);
+
+        /// UiModule pointer.
+        boost::weak_ptr<UiServices::UiModule> uiModule_;
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Highlight_StableHeaders_h
-#define incl_EC_Highlight_StableHeaders_h
+#ifndef incl_EC_Clone_StableHeaders_h
+#define incl_EC_Clone_StableHeaders_h
 
 #include "CoreStdIncludes.h"
 /*

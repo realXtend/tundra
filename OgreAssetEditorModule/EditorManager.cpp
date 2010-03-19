@@ -8,7 +8,7 @@
 #include "StableHeaders.h"
 #include "EditorManager.h"
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 EditorManager::EditorManager()

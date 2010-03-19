@@ -33,6 +33,7 @@
 // External EC's
 #include "EC_Highlight.h"
 #include "EC_HoveringText.h"
+#include "EC_Clone.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -106,6 +107,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_AvatarAppearance);
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
+    DECLARE_MODULE_EC(EC_Clone);
 }
 
 // virtual
@@ -244,7 +246,8 @@ void RexLogicModule::PostInitialize()
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
     RegisterConsoleCommand(Console::CreateCommand("Highlight",
-        "Tests EC_Highlight. Adds EC_Highlight for every avatar.",
+        "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
+        "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 }
 
@@ -656,6 +659,9 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     if (!activeScene_)
         return Console::ResultFailure("No active scene found.");
 
+    if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
+        return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
+
     for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
@@ -663,19 +669,28 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
         OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
         {
-            boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-            if (!highlight)
+            if (params[0] == "add")
             {
-                // If we didn't have the higihlight component yet, create one now.
-                entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
-                highlight = entity.GetComponent<EC_Highlight>();
-                assert(highlight.get());
-            }
+                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+                if (!highlight)
+                {
+                    // If we didn't have the higihlight component yet, create one now.
+                    entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
+                    highlight = entity.GetComponent<EC_Highlight>();
+                    assert(highlight.get());
+                }
 
-            if (highlight->IsVisible())
-                highlight->Hide();
-            else
-                highlight->Show();
+                if (highlight->IsVisible())
+                    highlight->Hide();
+                else
+                    highlight->Show();
+            }
+            else if (params[0] == "remove")
+            {
+                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+                if (highlight)
+                    entity.RemoveComponent(highlight);
+            }
         }
     }
 
