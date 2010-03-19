@@ -16,6 +16,8 @@ namespace MumbleVoip
     /**
 	 *  Mumble support for Naali viewer.
 	 *
+     *  Offer 'mumble start(user_id, context_id)' and 'mumble stop' console commands.
+     *
      *  Offer user info with avatar and camera positions to Mumble client
 	 *  using Mumble Link Plugin.
      *

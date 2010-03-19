@@ -58,23 +58,23 @@ namespace MumbleVoip
 
 		if(linked_mem_->uiVersion != 2)
 		{
-            wcsncpy(linked_mem_->name, QStringToStdWString(avatar_name_).c_str(), 256);
-            wcsncpy(linked_mem_->description, QStringToStdWString(description_).c_str(), 2048);
+            wcsncpy(linked_mem_->name, QStringToStdWString(application_name_).c_str(), 256);
+            wcsncpy(linked_mem_->description, QStringToStdWString(application_description_).c_str(), 2048);
 			linked_mem_->uiVersion = 2;
 		}
 		linked_mem_->uiTick++;
 
-		linked_mem_->fAvatarFront[0] = avatar_position_.y;
-		linked_mem_->fAvatarFront[1] = avatar_position_.z;
-		linked_mem_->fAvatarFront[2] = -avatar_position_.x;
+		linked_mem_->fAvatarPosition[0] = avatar_position_.y;
+		linked_mem_->fAvatarPosition[1] = avatar_position_.z;
+		linked_mem_->fAvatarPosition[2] = -avatar_position_.x;
 
 		linked_mem_->fAvatarTop[0] = avatar_top_.y;
 		linked_mem_->fAvatarTop[1] = avatar_top_.z;
 		linked_mem_->fAvatarTop[2] = -avatar_top_.x;
 
-		linked_mem_->fAvatarPosition[0] = avatar_front_.y;
-		linked_mem_->fAvatarPosition[1] = avatar_front_.z;
-		linked_mem_->fAvatarPosition[2] = -avatar_front_.x;
+		linked_mem_->fAvatarFront[0] = avatar_front_.y;
+		linked_mem_->fAvatarFront[1] = avatar_front_.z;
+		linked_mem_->fAvatarFront[2] = -avatar_front_.x;
 
         linked_mem_->fCameraFront[0] = camera_front_.y;
 		linked_mem_->fCameraFront[1] = camera_front_.z;
@@ -89,37 +89,37 @@ namespace MumbleVoip
 		linked_mem_->fCameraPosition[2] = -camera_position_.x;
 
         // Identifier which uniquely identifies a certain player in a context (e.g. the ingame Name).
-        wcsncpy(linked_mem_->identity, QStringToStdWString(avatar_id_).c_str(), 256);
+        wcsncpy(linked_mem_->identity, QStringToStdWString(user_id_).c_str(), 256);
 
         // Context should be equal for players which should be able to hear each other positional and
 	    // differ for those who shouldn't (e.g. it could contain the server+port and team)
-        int len = strlen(avatar_group_id_.toStdString().c_str());
-        memcpy(linked_mem_->context, avatar_group_id_.toStdString().c_str(), len);
+        int len = strlen(context_id.toStdString().c_str());
+        memcpy(linked_mem_->context, context_id.toStdString().c_str(), len+1);
 	    linked_mem_->context_len = len;
 	}
 
-	void LinkPlugin::SetAvatarName(const QString& name)
+	void LinkPlugin::SetApplicationName(const QString& name)
 	{
-        avatar_name_ = name;
-        avatar_name_.truncate(255);
+        application_name_ = name;
+        application_name_.truncate(255);
 	}
 	
-	void LinkPlugin::SetAvatarIdentity(const QString& id)
+	void LinkPlugin::SetUserIdentity(const QString& id)
 	{
-        avatar_id_ = id;
-        avatar_id_.truncate(255);
+        user_id_ = id;
+        user_id_.truncate(255);
 	}
 
-    void LinkPlugin::SetGroupId(const QString& id)
+    void LinkPlugin::SetContextId(const QString& id)
     {
-        avatar_group_id_ = id;
-        avatar_group_id_.truncate(255);
+        context_id = id;
+        context_id.truncate(255);
     }
 
-    void LinkPlugin::SetDescription(const QString& description)
+    void LinkPlugin::SetApplicationDescription(const QString& description)
     {
-        description_ = description;
-        description_.truncate(2047);
+        application_description_ = description;
+        application_description_.truncate(2047);
     }
 	
     void LinkPlugin::SetAvatarPosition(Vector3df position, Vector3df front, Vector3df top)

@@ -39,17 +39,17 @@ public slots:
 	//! Send data to Mumble client application
 	virtual void SendData();
 
-	//! Set name for avatar
-	virtual void SetAvatarName(const QString& name);
+	////! Set name for avatar
+	virtual void SetApplicationName(const QString& name);
 
 	//! Set identity for avatar
-	virtual void SetAvatarIdentity(const QString& identity);
+	virtual void SetUserIdentity(const QString& identity);
 
     //! Set context aka 'group identifier'
-    virtual void SetGroupId(const QString& id);
+    virtual void SetContextId(const QString& id);
 
     //! Set application description
-    virtual void SetDescription(const QString& description);
+    virtual void SetApplicationDescription(const QString& description);
 
 	//! Set avatar position vectors
     //!
@@ -75,10 +75,10 @@ protected:
     virtual void InitializeLinkedMem();
 
 	LinkedMem* linked_mem_;
-    QString avatar_name_;
-    QString avatar_id_;
-    QString avatar_group_id_;
-    QString description_;
+    QString application_name_;
+    QString user_id_;
+    QString context_id;
+    QString application_description_;
     Vector3df avatar_position_;
     Vector3df avatar_top_;
     Vector3df avatar_front_;
