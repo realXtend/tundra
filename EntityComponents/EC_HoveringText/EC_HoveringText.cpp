@@ -192,6 +192,17 @@ QPixmap EC_HoveringText::GetTextPixmap()
     QPainter painter(&pixmap);
     painter.setFont(font_);
 
+    // Do some splitting for rex account names
+    // Remove the server tag for now
+    if (text_.indexOf("@") != -1)
+    {
+        QStringList words = text_.split(" ");
+        foreach (QString word, words)
+            if (word.indexOf("@") != -1)
+                words.removeOne(word);
+        text_ = words.join(" ");
+    }
+
     // Set padding for text.
     // Make the font size temporarily bigger when calculating bounding rect
     // so we get padding without need to modify the rect itself.
