@@ -266,11 +266,12 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         itemDownloaded.asset = assetPtr;
         itemDownloaded.requestTag = tag;
         itemDownloaded.assetType = asset_type;
-        itemDownloaded.name = asset->GetName().toStdString();
+        itemDownloaded.name = item->GetName().toStdString();
         event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
         ///\todo Show basic info dialog. Name, desc, file size etc.
-        //if (!itemDownloaded.handled)
+//        if (!itemDownloaded.handled)
+//            ...
     }
     else
     {
@@ -314,7 +315,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         {
             emit DownloadStarted(asset_id.c_str(), asset->GetName());
             QPair<request_tag_t, QString> key = qMakePair(tag, asset->GetAssetReference());
-            openRequests_[key] = asset->GetName();
+            openRequests_[key] = asset->GetID();
         }
     }
 
@@ -558,16 +559,22 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     if (event_category == 0)
         return;
 
+    AbstractInventoryItem *item = GetChildById(i.value());
+    assert(item);
+    if (!item)
+        return;
+
     InventoryItemDownloadedEventData itemDownloaded;
     itemDownloaded.inventoryId = QSTR_TO_UUID(i.value());
     itemDownloaded.asset = assetReady->asset_;
+    itemDownloaded.name = item->GetName().toStdString();
     itemDownloaded.requestTag = tag;
     itemDownloaded.assetType = asset_type;
-    itemDownloaded.name = i.value().toStdString();
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
     ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
-    //if (!itemDownloaded.handled)
+//    if (!itemDownloaded.handled)
+//        ...
 
     openRequests_.erase(i);
 }

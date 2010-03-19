@@ -83,11 +83,11 @@ namespace UiServices
         //! \param widget Widget.
         void RemoveProxyWidgetFromScene(QWidget *widget);
 
-        //! Brings the UiProxyWidget to front in the scene and set focus to it
+        //! Brings the UiProxyWidget to front in the scene, set focus to it and shows it.
         //! \param widget Proxy widget.
         void BringProxyToFront(UiProxyWidget *widget);
 
-        //! Brings the UiProxyWidget to front in the scene and set focus to it
+        //! Brings the UiProxyWidget to front in the scene, set focus to it and shows it.
         //! \param widget Widget.
         void BringProxyToFront(QWidget *widget);
 
@@ -100,7 +100,7 @@ namespace UiServices
         CoreUi::MainPanel *GetMainPanel() const { return main_panel_widget_; }
 
         //! Get the inworld ui scene
-        QGraphicsScene *GetInworldScene() { return inworld_scene_; }
+        QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
 
         //! Set the current chat controller object to world chat widget
         void SetWorldChatController(QObject *controller);

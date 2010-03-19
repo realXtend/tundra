@@ -33,7 +33,7 @@
 #define ENABLE(p) p->setEnabled(true);
 #define DISABLE(p) p->setEnabled(false);
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 MaterialWizard::MaterialWizard(Foundation::Framework *framework, QWidget *parent) :

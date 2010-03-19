@@ -29,7 +29,7 @@ namespace OgreRenderer
     class OgreMaterialResource;
 }
 
-namespace OgreAssetEditor
+namespace Naali
 {
     typedef QMap<QString, QVariant> PropertyMap;
     typedef QMap<QString, QVariant> TypeValuePair;

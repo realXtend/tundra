@@ -18,7 +18,7 @@
 #include <QVector>
 #include <QTextStream>
 
-namespace OgreAssetEditor
+namespace Naali
 {
 
 OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset) :

@@ -113,6 +113,7 @@ add_subdirectory (OgreAssetEditorModule)
 # comment out the declaration at the responsible module's Load() function.
 add_subdirectory (EntityComponents/EC_Highlight)    # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_HoveringText) # declared by RexLogicModule
+add_subdirectory (EntityComponents/EC_Clone)        # declared by RexLogicModule
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.

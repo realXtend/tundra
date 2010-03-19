@@ -92,6 +92,13 @@ namespace UiServices
         }
     }
 
+    void UiProxyWidget::BringToFront()
+    {
+        emit BringProxyToFrontRequest(this);
+        if (!isVisible())
+            show();
+    }
+
     void UiProxyWidget::showEvent(QShowEvent *show_event)
     {
         QGraphicsProxyWidget::showEvent(show_event);

@@ -36,7 +36,7 @@ namespace UiServices
 
         //! Get this proxys widget properties
         /// \return UiWidgetProperties.
-        UiWidgetProperties GetWidgetProperties() { return widget_properties_; }
+        UiWidgetProperties GetWidgetProperties() const { return widget_properties_; }
 
         //! Set control button for this proxy
         void SetControlButton(CoreUi::MainPanelButton *control_button);
@@ -49,6 +49,10 @@ namespace UiServices
 
         //! Set new show animation speed
         void SetShowAnimationSpeed(int new_speed);
+
+        //! Brings to front in the scene, sets focus and shows this proxy widget.
+        //! \todo Seems that isn't working properly.
+        void BringToFront();
 
     public slots:
         void AnimatedHide();

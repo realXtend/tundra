@@ -194,6 +194,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
 
     // Do some splitting for rex account names
     // Remove the server tag for now
+    ///\todo Should not be done here. Do this in EC_OpenSimPresence.
     if (text_.indexOf("@") != -1)
     {
         QStringList words = text_.split(" ");
@@ -214,7 +215,12 @@ QPixmap EC_HoveringText::GetTextPixmap()
     // QFontMetrics metric(any_qfont); int width = metric.width(mytext) + padding;
 
     rect.setHeight(rect.height() - 10);
-
+/*
+     QRadialGradient gradient(rect.center(), 300);
+     gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.9));
+     gradient.setColorAt(1, QColor::fromRgbF(0.75f, 0.75f, 0.75f, 0.9));
+     QBrush brush(gradient);
+*/
     // Draw rounded rect.
     QBrush brush(backgroundColor_, Qt::SolidPattern);
     painter.setBrush(brush);
