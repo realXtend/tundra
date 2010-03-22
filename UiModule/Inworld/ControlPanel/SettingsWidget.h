@@ -9,6 +9,7 @@
 #include <QShowEvent>
 
 class QPropertyAnimation;
+class QGraphicsScene;
 
 namespace CoreUi
 {
