@@ -4,7 +4,7 @@
 #define incl_UiModule_ControlPanelManager_h
 
 #include "UiModuleApi.h"
-#include "Uidefines.h"
+#include "UiDefines.h"
 
 #include <QObject>
 #include <QAction>
