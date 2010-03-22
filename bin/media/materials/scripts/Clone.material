@@ -1,0 +1,19 @@
+material Clone
+{
+   technique
+   {
+      pass
+      {
+         scene_blend alpha_blend
+         lighting on
+         depth_write on
+         receive_shadows on
+         ambient 1 1 1
+         texture_unit
+         {
+            alpha_op_ex source1 src_manual src_current 0.2
+         }
+      }
+     
+   }
+}

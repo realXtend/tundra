@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Clone.h
- *  @brief  
+ *  @brief  EC_Clone creates an OGRE clone entity from the the original entity.
+ *          This component can be used e.g. when visualizing object duplication in the world.
  *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
@@ -17,6 +18,7 @@
 #include <QStringList>
 #include <QFont>
 #include <QColor>
+#include <QtGui/qvector3d.h>
 
 namespace OgreRenderer
 {
@@ -44,30 +46,33 @@ public:
     ~EC_Clone();
 
 public slots:
-    /// Shows the highlighting effect.
+    /// Shows the clone.
     void Show();
 
-    /// Hides the highlighting effect.
+    /// Hides the clone.
     void Hide();
 
-    /// Returns if the highlight component is visible or not.
-    /// @true If the highlight component is visible, false if it's hidden or not initialized properly.
+    /// Returns if the clone visualization component is visible or not.
+    /// @true If the clone visualization component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
 
+    /// Returns the position of the clone component.
+    QVector3D GetPosition() const;
+
 private:
-    /// Creates the clone entity used for highlighting from the original.
+    /// Creates the clone.
     void Create();
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
-    /// Ogre entity clone created for highlighting.
+    /// Ogre entity clone created for visualization.
     Ogre::Entity *entityClone_;
 
     /// Ogre scene node where this EC is attached.
     Ogre::SceneNode *sceneNode_;
 
-    /// Name of the cloned entity used for highlighting
+    /// Name of the cloned entity.
     std::string cloneName_;
 };
 
