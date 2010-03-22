@@ -10,13 +10,13 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace UiServices
+namespace CoreUi
 {
     UiStateMachine::UiStateMachine(QGraphicsView *view, QObject *parent)
         : QStateMachine(parent),
           view_(view),
           current_scene_(view->scene()),
-          connection_state_(Disconnected)
+          connection_state_(UiDefines::Disconnected)
     {
         state_ether_ = new QState(this);
         state_inworld_ = new QState(this);
@@ -35,7 +35,6 @@ namespace UiServices
         state_ether_->addTransition(this, SIGNAL( EtherTogglePressed()), state_inworld_);
         state_inworld_->addTransition(this, SIGNAL( EtherTogglePressed()), state_ether_);
 
-
         connect(state_ether_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
         connect(state_inworld_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
         connect(view_, SIGNAL( ViewKeyPressed(QKeyEvent *) ), SLOT( ViewKeyEvent(QKeyEvent *) ));
@@ -46,26 +45,26 @@ namespace UiServices
         switch (key_event->key())
         {
             case Qt::Key_Escape:
-                if (connection_state_ == Connected)
+                if (connection_state_ == UiDefines::Connected)
                     emit EtherTogglePressed();
                 break;
         }
     }
 
-    void UiStateMachine::SetConnectionState(ConnectionState new_connection_state)
+    void UiStateMachine::SetConnectionState(UiDefines::ConnectionState new_connection_state)
     {
         connection_state_ = new_connection_state;
 
         switch (connection_state_)
         {
-            case Disconnected:
+            case UiDefines::Disconnected:
                 SwitchToEtherScene();
                 break;
-            case Connected:
+            case UiDefines::Connected:
                 SwitchToInworldScene();
                 break;
-            case Failed:
-                connection_state_ = Disconnected;
+            case UiDefines::Failed:
+                connection_state_ = UiDefines::Disconnected;
                 break;
             default:
                 return;

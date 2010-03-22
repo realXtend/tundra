@@ -138,20 +138,16 @@ namespace Communication
 
     void CommunicationModule::OnNewProtocol(QString &protocol)
     {
-        if (protocol.compare("jabber") == 0)
+        if (protocol == "jabber")
         {
-            if (!im_ui_)
-            {
-                im_ui_ = new CommunicationUI::MasterWidget(framework_);
-                AddWidgetToUi("IM");
-            }
-            return;
+            im_ui_ = new CommunicationUI::MasterWidget(framework_);
+            AddWidgetToUi("IM");
         }
     }
 
     void CommunicationModule::OnProtocolSupportEnded(QString &protocol)
     {
-        if (protocol.compare("jabber") == 0)
+        if (protocol == "jabber")
         {
             SAFE_DELETE(im_ui_);
             return;

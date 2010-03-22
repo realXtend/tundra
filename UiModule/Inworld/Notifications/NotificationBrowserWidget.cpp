@@ -6,6 +6,8 @@
 #include "NotificationBaseWidget.h"
 #include "NotificationLogWidget.h"
 
+#include <QPropertyAnimation>
+
 namespace CoreUi
 {
     NotificationBrowserWidget::NotificationBrowserWidget() :
@@ -15,6 +17,13 @@ namespace CoreUi
     {
         setupUi(internal_widget_);
         setWidget(internal_widget_);
+
+        visibility_animation_ = new QPropertyAnimation(this, "opacity", this);
+        visibility_animation_->setDuration(500);
+        visibility_animation_->setEasingCurve(QEasingCurve::InOutSine);
+        visibility_animation_->setStartValue(0);
+        visibility_animation_->setEndValue(1);
+        connect(visibility_animation_, SIGNAL(finished()), SLOT(AnimationsFinished()));
     }
 
     // Private
@@ -68,7 +77,34 @@ namespace CoreUi
             categoryTabWidget->setCurrentWidget(activeTab);
     }
 
+    void NotificationBrowserWidget::AnimationsFinished()
+    {
+        if (visibility_animation_->direction() == QAbstractAnimation::Backward)
+            hide();
+    }
+
+    // Protected
+
+    void NotificationBrowserWidget::showEvent(QShowEvent *show_event)
+    {
+        setOpacity(0);
+        QGraphicsProxyWidget::showEvent(show_event);
+        AnimatedShow();
+    }
+
     // Public
+
+    void NotificationBrowserWidget::AnimatedShow()
+    {
+        visibility_animation_->setDirection(QAbstractAnimation::Forward);
+        visibility_animation_->start();
+    }
+
+    void NotificationBrowserWidget::AnimatedHide()
+    {
+        visibility_animation_->setDirection(QAbstractAnimation::Backward);
+        visibility_animation_->start();
+    }
     
     void NotificationBrowserWidget::InsertNotifications(NotificationBaseWidget *notification)
     {

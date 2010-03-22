@@ -14,6 +14,7 @@ class QGraphicsScene;
 
 namespace CoreUi
 {
+    class ControlPanelManager;
     class NotificationBaseWidget;
     class NotificationBrowserWidget;
 }
@@ -33,7 +34,7 @@ namespace UiServices
 
     public slots:
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
-        void SetConnectionState(ConnectionState connection_state);
+        void SetConnectionState(UiDefines::ConnectionState connection_state);
 
     private slots:
         void InitSelf();
@@ -54,6 +55,7 @@ namespace UiServices
         QList<CoreUi::NotificationBaseWidget *> visible_notifications_;
 
         CoreUi::NotificationBrowserWidget *browser_widget_;
+        CoreUi::ControlPanelManager *panel_;
 
     };
 }

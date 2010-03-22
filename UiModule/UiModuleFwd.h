@@ -4,21 +4,32 @@
 #define incl_UiModule_Fwd_h
 
 class QGraphicsView;
+class QGraphicsScene;
+class QGraphicsWidget;
+class QGraphicsProxyWidget;
 
 namespace CoreUi
 {
-    class ConsoleProxyWidget;
+    class UiStateMachine;
+    
+    class AnchorLayoutManager;
+    class ControlPanelManager;
     class UiConsoleManager;
+    class MenuManager;
+
+    class MainPanel;
+    class SettingsWidget;
+    class CommunicationWidget;
+    class ConsoleProxyWidget;
 }
 
 namespace UiServices
 {
     class InworldSceneController;
-    class UiProxyWidget;
-    class UiWidgetProperties;
-    class UiStateMachine;
-    class InworldSceneController;
     class NotificationManager;
+    
+    class UiProxyWidget;
+    class UiWidgetProperties;    
 }
 
 namespace Ether

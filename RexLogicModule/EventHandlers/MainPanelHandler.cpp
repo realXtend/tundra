@@ -11,7 +11,8 @@
 
 #include <UiModule.h>
 #include <Inworld/InworldSceneController.h>
-#include <Inworld/View/MainPanel.h>
+#include <Inworld/ControlPanelManager.h>
+#include <Common/UiAction.h>
 
 namespace RexLogic
 {
@@ -26,9 +27,10 @@ namespace RexLogic
 
         if (ui_module.get())
         {
-            CoreUi::MainPanel *main_panel = ui_module->GetInworldSceneController()->GetMainPanel();
-            connect(main_panel->buttonLogout, SIGNAL( clicked() ), this, SLOT( LogoutRequested() ));
-            connect(main_panel->buttonQuit, SIGNAL( clicked() ), this, SLOT( QuitRequested() ));
+            UiServices::UiAction *quit_action = new UiServices::UiAction(this);
+            connect(quit_action, SIGNAL(triggered()), SLOT(QuitRequested()));
+
+            ui_module->GetInworldSceneController()->GetControlPanelManager()->SetHandler(UiDefines::Quit, quit_action);
         }
     }
 
@@ -45,7 +47,6 @@ namespace RexLogic
     {
         if (rex_logic_module_->GetServerConnection()->IsConnected())
             rex_logic_module_->LogoutAndDeleteWorld();
-
         framework_->Exit();
     }
 }

@@ -4,7 +4,7 @@
 #define incl_UiModule_UiStateMachine_h
 
 #include "UiModuleApi.h"
-#include "UiModule.h"
+#include "UiDefines.h"
 
 #include <QStateMachine>
 #include <QParallelAnimationGroup>
@@ -13,12 +13,7 @@
 #include <QKeyEvent>
 #include <QMap>
 
-namespace Foundation
-{
-    class Framework;
-}
-
-namespace UiServices
+namespace CoreUi
 {
     class UI_MODULE_API UiStateMachine : public QStateMachine
     {
@@ -34,7 +29,7 @@ namespace UiServices
         void RegisterScene(QString name, QGraphicsScene *scene);
         void SwitchToScene(QString name);
 
-        void SetConnectionState(ConnectionState new_connection_state);
+        void SetConnectionState(UiDefines::ConnectionState new_connection_state);
 
     private slots:
         void SetTransitions();
@@ -58,7 +53,7 @@ namespace UiServices
         QMap<QString, QGraphicsScene*> scene_map_;
         QMap<QGraphicsScene*, QParallelAnimationGroup*> animations_map_;
 
-        UiServices::ConnectionState connection_state_;
+        UiDefines::ConnectionState connection_state_;
 
     signals:
         void EtherTogglePressed();

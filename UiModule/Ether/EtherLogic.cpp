@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EtherLogic.h"
-#include "UiModule.h"
+#include "UiDefines.h"
 
 #include "EtherSceneController.h"
 #include "EtherLoginNotifier.h"
@@ -495,21 +495,21 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state)
+        void EtherLogic::SetConnectionState(UiDefines::ConnectionState connection_state)
         {
             switch (connection_state)
             {
-                case UiServices::Connected:
+                case UiDefines::Connected:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->ShowStatusInformation("Connected");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
-                case UiServices::Disconnected:
+                case UiDefines::Disconnected:
                     UpdateUiPixmaps();
                     scene_->SetConnectionStatus(false);
                     break;
-                case UiServices::Failed:
+                case UiDefines::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->ShowStatusInformation("Failed to connect");
                     scene_controller_->RevertLoginAnimation(false);

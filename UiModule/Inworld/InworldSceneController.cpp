@@ -2,16 +2,20 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "UiModule.h"
+#include "UiDefines.h"
 
 #include "InworldSceneController.h"
+#include "ControlPanelManager.h"
+
 #include "Common/AnchorLayoutManager.h"
+
 #include "Menus/MenuManager.h"
+
 #include "View/UiProxyWidget.h"
 #include "View/UiWidgetProperties.h"
 #include "View/CommunicationWidget.h"
-#include "View/MainPanel.h"
-#include "View/SettingsWidget.h"
+
+#include "Inworld/ControlPanel/SettingsWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>
@@ -27,48 +31,41 @@ namespace UiServices
     InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) 
         : QObject(),
           framework_(framework),
-          ui_view_(ui_view),
-          inworld_scene_(0),
-          main_panel_widget_(0),
-          communication_widget_(0),
-          layout_manager_(0),
-          menu_manager_(0)
+          ui_view_(ui_view)
     {
-        if (ui_view_)
-        {
-            inworld_scene_ = ui_view_->scene();
-            layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
-            menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
-            InitInternals();
-        }
-        else
-            UiModule::LogError("InworldSceneController: Could not acquire UIView, skipping scene creation");
+        if (!ui_view_)
+            return;
+
+        // Store scene pointer
+        inworld_scene_ = ui_view_->scene();
+
+        // Init layout manager with scene
+        layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
+
+        // Init UI managers with layout manager
+        control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
+        menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
+        
+        // Communication core UI
+        communication_widget_ = new CoreUi::CommunicationWidget();
+        layout_manager_->AddCornerAnchor(communication_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
+
+        // Connect settings widget
+        connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
     }
 
     InworldSceneController::~InworldSceneController()
     {
-        if (main_panel_widget_)
-            SAFE_DELETE(main_panel_widget_);
-
         if (communication_widget_)
             SAFE_DELETE(communication_widget_);
-
-        if (settings_widget_)
-            SAFE_DELETE(settings_widget_);
-        settings_proxy_widget_ = 0;
     }
 
     /*************** UI Scene Manager Public Services ***************/
 
     bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name)
     {
-        if (settings_widget_)
-        {
-            settings_widget_->AddWidget(settings_widget, tab_name);
-            return true;
-        }
-        else
-            return false;
+        control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
+        return true;
     }
 
     UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget)
@@ -158,8 +155,7 @@ namespace UiServices
         }
     }
 
-    /*************** Public Functions But Use With Caution ****************/
-    /** As in don't touch if you are not 100% sure on what you are doing **/
+    // Don't touch
 
     void InworldSceneController::SetWorldChatController(QObject *controller)
     {
@@ -173,40 +169,14 @@ namespace UiServices
             communication_widget_->UpdateImWidget(im_proxy);
     }
 
-    /*************** UI Scene Manager Private functions ***************/
-
-    void InworldSceneController::InitInternals()
-    {
-        // Communication core UI
-        communication_widget_ = new CoreUi::CommunicationWidget();
-        layout_manager_->AddCornerAnchor(communication_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
-
-        // Main Panel core UI
-        main_panel_widget_ = new CoreUi::MainPanel();
-        layout_manager_->AddCornerAnchor(main_panel_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
-
-        // Settings widget public service UI
-        settings_widget_ = new CoreUi::SettingsWidget();
-        settings_proxy_widget_ = new UiProxyWidget(settings_widget_, UiWidgetProperties("Settings", UiServices::SceneWidget));
-        connect(settings_proxy_widget_, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), SLOT( BringProxyToFront(UiProxyWidget*) ));
-        connect(settings_widget_, SIGNAL( NewUserInterfaceSettingsApplied(int, int) ), SLOT( ApplyNewProxySettings(int, int) ));
-
-        CoreUi::MainPanelButton *control_button = main_panel_widget_->SetSettingsWidget(settings_proxy_widget_, "Settings");
-        settings_proxy_widget_->SetControlButton(control_button);
-        AddProxyWidget(settings_proxy_widget_);
-    }
-
-    /*************** UI Scene Manager Private slots ***************/
+    // Private
 
     void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
     {
-        if (main_panel_widget_)
+        foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
         {
-            foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
-            {
-                widget->SetUnfocusedOpacity(new_opacity);
-                widget->SetShowAnimationSpeed(new_animation_speed);
-            }
+            widget->SetUnfocusedOpacity(new_opacity);
+            widget->SetShowAnimationSpeed(new_animation_speed);
         }
     }
 }
