@@ -11,6 +11,7 @@
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
+#include <QDesktopServices>
 
 namespace MumbleVoip
 {
@@ -113,20 +114,23 @@ namespace MumbleVoip
         boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
         if (console_service)
         {
-            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble link plugin", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble stop", "Stop Mumble link plugin", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStop)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
         }
     }
     
-    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
+    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
     {
         if (params.size() != 2)
         {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble start(id, context)'");
+            return Console::ResultFailure("Wrong number of arguments: usage 'mumble link(id, context)'");
         }
+        QString id = params[0].c_str();
+        QString context = params[1].c_str();
         
-        link_plugin_->SetUserIdentity(QString(params[0].c_str()));
-        link_plugin_->SetContextId(QString(params[1].c_str()));
+        link_plugin_->SetUserIdentity(id);
+        link_plugin_->SetContextId(context);
         link_plugin_->SetApplicationName("Naali viewer");
         link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
         link_plugin_->Start();
@@ -138,14 +142,15 @@ namespace MumbleVoip
             return Console::ResultFailure(error_message.toStdString());
         }
 
-        return Console::ResultSuccess("Mumbe link plugin started.");
+        QString message = QString("Mumbe link plugin started: id=%1 context=%2").arg(id).arg(context);
+        return Console::ResultSuccess(message.toStdString());
     }
 
-    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleStop(const StringVector &params)
+    Console::CommandResult MumbleVoipModule::OnConsoleMumbleUnlink(const StringVector &params)
     {
         if (params.size() != 0)
         {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble stop'");
+            return Console::ResultFailure("Wrong number of arguments: usage 'mumble unlink'");
         }
 
         if (!link_plugin_->IsRunning())
@@ -155,6 +160,42 @@ namespace MumbleVoip
 
         link_plugin_->Stop();
         return Console::ResultSuccess("Mumbe link plugin stopped.");
+    }
+
+    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
+    {
+        if (params.size() != 1)
+        {
+            return Console::ResultFailure("Wrong number of arguments: usage 'mumble start(server_url)'");
+        }
+        QString server_url = params[0].c_str();
+
+        try
+        {
+            StartMumbleClient(server_url);
+            return Console::ResultSuccess("Mumbe client started.");
+        }
+        catch(std::exception &e)
+        {
+            QString error_message = QString("Cannot start Mumble client: %1").arg(QString(e.what()));
+            return Console::ResultFailure(error_message.toStdString());        
+        }
+    }
+
+    void MumbleVoipModule::StartMumbleClient(const QString& server_url)
+    {
+        QUrl url(server_url);
+        if (!url.isValid())
+        {
+            QString error_message = QString("Url '%1' is invalid.").arg(server_url);
+            throw std::exception(error_message.toStdString().c_str());
+        }
+        
+        if (! QDesktopServices::openUrl(server_url))
+        {
+            QString error_message = QString("Cannot find handler application for url: %1").arg(server_url);
+            throw std::exception(error_message.toStdString().c_str());
+        }
     }
 
 } // end of namespace: MumbleVoip
