@@ -7,6 +7,7 @@
 #include "Inworld/ControlPanelManager.h"
 
 #include <QPropertyAnimation>
+#include <QGraphicsScene>
 
 #include "MemoryLeakCheck.h"
 
