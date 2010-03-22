@@ -7,6 +7,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "OgreAssetEditorModule.h"
 #include "OgreScriptEditor.h"
 #include "MaterialWizard.h"
@@ -25,6 +26,8 @@
 #include <QStringList>
 #include <QVector>
 #include <QGraphicsProxyWidget>
+
+#include "MemoryLeakCheck.h"
 
 namespace Naali
 {
@@ -147,12 +150,9 @@ bool OgreAssetEditorModule::HandleEvent(
                 else
                 {
                     // Editor already exists, bring it to front.
-                    if (!uiModule_.expired())
-                    {
-                        QWidget *editor = editorManager_->GetEditor(id, at);
-                        if (editor)
-                            uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
-                    }
+                    QWidget *editor = editorManager_->GetEditor(id, at);
+                    if (editor)
+                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }
 
                 // Surpress this event.
@@ -173,7 +173,7 @@ bool OgreAssetEditorModule::HandleEvent(
     return false;
 }
 
-} // namespace OgreAssetEditor
+}
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Clone.cpp
- *  @brief  
+ *  @brief  EC_Clone creates an OGRE clone entity from the the original entity.
+ *          This component can be used e.g. when visualizing object duplication in the world.
  *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
@@ -37,13 +38,21 @@ EC_Clone::EC_Clone(Foundation::ModuleInterface *module) :
 
 EC_Clone::~EC_Clone()
 {
-    // OgreRendering module might be already deleted. If so, the cloned entity is also already deleted.
-    // In this case, just set pointer to 0.
+    // OgreRendering module might be already deleted. If so, the cloned entity and scene node is 
+    // also already deleted. In this case, just set pointers to 0.
     if (!renderer_.expired())
     {
         Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
         if (entityClone_)
+        {
             sceneMgr->destroyEntity(entityClone_);
+            entityClone_ = 0;
+        }
+        if (sceneNode_)
+        {
+            sceneMgr->destroySceneNode(sceneNode_);
+            sceneNode_ = 0;
+        }
     }
     else
     {
@@ -57,10 +66,9 @@ void EC_Clone::Show()
     if (!entityClone_)
         Create();
 
-//    assert(entityClone_);
     if (!entityClone_)
     {
-        LogError("EC_Highlight not initialized properly.");
+        LogError("EC_Clone not initialized properly.");
         return;
     }
 
@@ -80,6 +88,14 @@ bool EC_Clone::IsVisible() const
         return sceneNode_->getAttachedObject(cloneName_)->isVisible();
 
     return false;
+}
+
+QVector3D EC_Clone::GetPosition() const
+{
+    if (entityClone_ && sceneNode_)
+        return QVector3D(sceneNode_->getPosition().x, sceneNode_->getPosition().y, sceneNode_->getPosition().z);
+
+    return QVector3D();
 }
 
 void EC_Clone::Create()
@@ -102,15 +118,27 @@ void EC_Clone::Create()
     if (!placeable)
         return;
 
-    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
+    Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
+    assert(sceneMgr);
+    if (!sceneMgr)
+        return;
+
     Ogre::Entity *originalEntity  = 0;
+    Ogre::SceneNode *originalNode = 0;
+
+    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
     if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()))
     {
         OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         assert(ec_mesh);
 
         originalEntity = ec_mesh->GetEntity();
-        sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
+        //originalNode = placeable->GetSceneNode();
+        originalNode = ec_mesh->GetAdjustmentSceneNode();
+
+        sceneNode_ = sceneMgr->createSceneNode();
+        sceneNode_->setPosition(originalNode->getPosition());
+        originalNode->addChild(sceneNode_);
     }
     else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
     {
@@ -118,16 +146,20 @@ void EC_Clone::Create()
         assert(ec_custom);
         if (!ec_custom->IsCommitted())
         {
-            LogError("Mesh entity have not been created for the target primitive. Cannot create EC_Highlight.");
+            LogError("Mesh entity have not been created for the target primitive. Cannot create EC_Clone.");
             return;
         }
 
         originalEntity = ec_custom->GetEntity();
-        sceneNode_ = placeable->GetSceneNode();
+        originalNode = placeable->GetSceneNode();
+
+        sceneNode_ = sceneMgr->createSceneNode();
+        sceneNode_->setPosition(originalNode->getPosition());
+        originalNode->addChild(sceneNode_);
     }
     else
     {
-        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Highlight.");
+        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Clone.");
         return;
     }
 
@@ -173,15 +205,14 @@ void EC_Clone::Create()
     }
 */
 
-    std::string newMatName = std::string("HighlightMaterial") + renderer_.lock()->GetUniqueObjectName();
+    const std::string &material_name = "Clone";
     try
     {
-        Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);
-        entityClone_->setMaterialName(newMatName);
+        entityClone_->setMaterialName(material_name);
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Could not set material \"" + newMatName + "\": " + std::string(e.what()));
+        LogError("Could not set material \"" + std::string(material_name) + "\": " + std::string(e.what()));
         return;
     }
 
