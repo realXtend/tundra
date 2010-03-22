@@ -4,8 +4,6 @@
 #include "DebugOperatorNew.h"
 #include "UiProxyWidget.h"
 
-#include "MainPanelButton.h"
-
 #include <QWidget>
 #include <QGraphicsEffect>
 #include <QGraphicsScene>
@@ -23,8 +21,7 @@ namespace UiServices
           show_animation_enabled_(true),
           unfocus_opacity_(1.0),
           animations_(0),
-          fade_animation_(0),
-          control_button_(0)
+          fade_animation_(0)
     {
         setObjectName(in_widget_properties.GetWidgetName());
         InitWidgetAndProxy(widget);
@@ -63,11 +60,6 @@ namespace UiServices
 
             animations_->addAnimation(fade_animation_);
         }
-    }
-
-    void UiProxyWidget::SetControlButton(CoreUi::MainPanelButton *control_button)
-    {
-        control_button_ = control_button;
     }
 
     void UiProxyWidget::SetUnfocusedOpacity(int new_opacity)
@@ -117,9 +109,6 @@ namespace UiServices
     {
         QGraphicsProxyWidget::hideEvent(hide_event);
         emit Visible(false);
-
-        if (control_button_)
-            control_button_->ControlledWidgetHidden();
     }
 
     void UiProxyWidget::AnimatedHide()
@@ -155,8 +144,6 @@ namespace UiServices
 
         if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
         {
-            if (control_button_)
-                control_button_->ControlledWidgetFocusIn();
             if (isVisible() && animations_->state() != QAbstractAnimation::Running)
                 setOpacity(1.0);
         }
@@ -167,11 +154,7 @@ namespace UiServices
         QGraphicsProxyWidget::focusOutEvent(focus_event);
 
         if (widget_properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
-        {
             setOpacity(unfocus_opacity_);
-            if (control_button_)
-                control_button_->ControlledWidgetFocusOut();
-        }
     }
 
     QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)

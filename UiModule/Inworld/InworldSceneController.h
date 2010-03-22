@@ -4,38 +4,23 @@
 #define incl_UiModule_InworldSceneController_h
 
 #include "UiModuleApi.h"
+#include "UiModuleFwd.h"
 
 #include <QObject>
 #include <QList>
 
 class QRectF;
 class QGraphicsLinearLayout;
-class QGraphicsWidget;
-class QGraphicsScene;
-class QGraphicsView;
 
-namespace Foundation
-{
-    class Framework;
-}
-
-namespace CoreUi
-{
-    class MainPanel;
-    class SettingsWidget;
-    class AnchorLayoutManager;
-    class CommunicationWidget;
-    class MenuManager;
-}
+namespace Foundation { class Framework; }
 
 namespace UiServices
 {
-    class UiProxyWidget;
-    class UiWidgetProperties;
 
     class UI_MODULE_API InworldSceneController : public QObject
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
         //! Constructor.
@@ -91,14 +76,6 @@ namespace UiServices
         //! \param widget Widget.
         void BringProxyToFront(QWidget *widget);
 
-        ///\note
-        /// THE FOLLOWING FUNCTIONS SHOULD BE USED BY THE CORE UI ONLY (INTERNALLY BY UI MODULE). DON'T USE THESE DIRECTLY IF
-        /// YOU ARE NOT 100% SURE WHAT YOU ARE DOING.
-
-        //! Get the inworld controls
-        //! \return The main panel pointer.
-        CoreUi::MainPanel *GetMainPanel() const { return main_panel_widget_; }
-
         //! Get the inworld ui scene
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
 
@@ -108,11 +85,10 @@ namespace UiServices
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy);
 
+        CoreUi::ControlPanelManager *GetControlPanelManager() { return control_panel_manager_; }
+
     private:
         Q_DISABLE_COPY(InworldSceneController);
-
-        //! Inits internals
-        void InitInternals();
 
         //! Pointer to main QGraphicsView
         QGraphicsView *ui_view_;
@@ -123,15 +99,15 @@ namespace UiServices
         //! Layout manager
         CoreUi::AnchorLayoutManager *layout_manager_;
 
-        //! CoreUi Widgets
-        CoreUi::MainPanel *main_panel_widget_;
-        CoreUi::SettingsWidget *settings_widget_;
-        CoreUi::CommunicationWidget *communication_widget_;
+        //! Menu manager
         CoreUi::MenuManager *menu_manager_;
 
-        //! Proxy widgets
-        UiProxyWidget *settings_proxy_widget_;
+        //! Control panel manager
+        CoreUi::ControlPanelManager *control_panel_manager_;
 
+        //! Core Widgets
+        CoreUi::CommunicationWidget *communication_widget_;
+        
         //! Internal list of UiProxyWidgets in scene
         QList<UiServices::UiProxyWidget *> all_proxy_widgets_in_scene_;
 

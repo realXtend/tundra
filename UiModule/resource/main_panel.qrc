@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="images" >
-    <file alias="arrow_down.png" >../../bin/data/ui/images/arrow_down.png</file>
-    <file alias="arrow_down_hover.png" >../../bin/data/ui/images/arrow_down_hover.png</file>
-    <file alias="arrow_up.png" >../../bin/data/ui/images/arrow_up.png</file>
-    <file alias="arrow_up_hover.png" >../../bin/data/ui/images/arrow_up_hover.png</file>
-  </qresource>
-</RCC>

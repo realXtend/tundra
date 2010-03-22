@@ -12,11 +12,6 @@ class QTimeLine;
 class QParallelAnimationGroup;
 class QPropertyAnimation;
 
-namespace CoreUi
-{
-    class MainPanelButton;
-}
-
 namespace UiServices
 {
     /*************** UiProxyWidget : QGraphicsProxyWidget -> QGraphicsWidget -> QGraphicsItem ***************/
@@ -37,12 +32,6 @@ namespace UiServices
         //! Get this proxys widget properties
         /// \return UiWidgetProperties.
         UiWidgetProperties GetWidgetProperties() const { return widget_properties_; }
-
-        //! Set control button for this proxy
-        void SetControlButton(CoreUi::MainPanelButton *control_button);
-
-        //! Get control button for this proxy
-        CoreUi::MainPanelButton *GetControlButton() const { return control_button_; }
 
         //! Set new opacity
         void SetUnfocusedOpacity(int new_opacity);
@@ -73,7 +62,6 @@ namespace UiServices
 
     private:
         UiWidgetProperties widget_properties_;
-        CoreUi::MainPanelButton *control_button_;
         QParallelAnimationGroup *animations_;
         QPropertyAnimation *fade_animation_;
         qreal unfocus_opacity_;

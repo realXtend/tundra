@@ -5,8 +5,10 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
+
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
+#include "UiDefines.h"
 
 #include <QMap>
 #include <QPair>
@@ -21,8 +23,6 @@ namespace UiServices
     /// For details about Inworld Widget Services read UiWidgetServices.h
     /// For details about Notification Services read UiNotificationServices.h
     /// Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
-
-    enum ConnectionState { Connected, Disconnected, Failed };
 
     class UI_MODULE_API UiModule : public Foundation::ModuleInterfaceImpl
     {
@@ -64,7 +64,7 @@ namespace UiServices
 
     private:
         //! Notify all ui module components of connected/disconnected state
-        void PublishConnectionState(ConnectionState connection_state);
+        void PublishConnectionState(UiDefines::ConnectionState connection_state);
 
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
@@ -81,13 +81,14 @@ namespace UiServices
         //! UiConsoleManager pointer
         CoreUi::UiConsoleManager* ui_console_manager_;
 
+        //! UiStateMachine pointer
+        CoreUi::UiStateMachine *ui_state_machine_;
+
         //! InworldSceneController pointer
         InworldSceneController *inworld_scene_controller_;
 
         //! NotificationManager pointer
         NotificationManager *inworld_notification_manager_;
-
-        UiStateMachine *ui_state_machine_;
 
         //! Ether Logic
         Ether::Logic::EtherLogic *ether_logic_;

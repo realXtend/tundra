@@ -14,6 +14,7 @@
 #include "Ether/View/EtherScene.h"
 
 #include "Inworld/InworldSceneController.h"
+#include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
@@ -22,6 +23,8 @@
 #include "Inworld/Notifications/InputNotification.h"
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
+
+#include "Common/UiAction.h"
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
@@ -69,13 +72,14 @@ namespace UiServices
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
         {
-            LogDebug("Acquired Ogre QGraphicsView shared pointer from framework");
-
-            ui_state_machine_ = new UiStateMachine(ui_view_);
+            ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_);
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
+            UiAction *ether_action = new UiAction(ui_state_machine_);
+            QObject::connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Ether, ether_action);
             LogDebug("Scene Manager service READY");
 
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
@@ -140,12 +144,12 @@ namespace UiServices
             {
                 case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
-                    PublishConnectionState(Failed);
+                    PublishConnectionState(UiDefines::Failed);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
-                    PublishConnectionState(Disconnected);
+                    PublishConnectionState(UiDefines::Disconnected);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
@@ -183,7 +187,7 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    PublishConnectionState(Connected);
+                    PublishConnectionState(UiDefines::Connected);
                     break;
                 }
                 default:
@@ -194,11 +198,11 @@ namespace UiServices
         return false;
     }
 
-    void UiModule::PublishConnectionState(ConnectionState connection_state)
+    void UiModule::PublishConnectionState(UiDefines::ConnectionState connection_state)
     {
         switch (connection_state)
         {
-            case Connected:
+            case UiDefines::Connected:
             {
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
@@ -214,14 +218,14 @@ namespace UiServices
                 }
                 break;
             }
-            case Disconnected:
+            case UiDefines::Disconnected:
             {
                 inworld_notification_manager_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;
             }
-            case Failed:
+            case UiDefines::Failed:
             {
                 ether_logic_->SetConnectionState(connection_state);
                 break;

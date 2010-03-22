@@ -48,7 +48,7 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void SetConnectionState(UiServices::ConnectionState connection_state);
+            void SetConnectionState(UiDefines::ConnectionState connection_state);
 
             View::EtherScene *GetScene() { return scene_; }
             EtherSceneController *GetSceneController() { return scene_controller_; }

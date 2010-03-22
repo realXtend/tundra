@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>187</width>
-    <height>138</height>
+    <width>158</width>
+    <height>190</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <property name="styleSheet">
    <string notr="true">/* Containers */
 QFrame#MainFrame {
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
-	padding: 5px;
+	background-color: white;
+	padding: 9px;
 }
 
 /* QPUSHBUTTON 

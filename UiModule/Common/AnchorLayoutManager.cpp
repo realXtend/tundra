@@ -63,6 +63,11 @@ namespace CoreUi
 
     // Public
 
+    QGraphicsScene *AnchorLayoutManager::GetScene()
+    {
+        return scene_;
+    }
+
     void AnchorLayoutManager::AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner)
     {
         anchor_layout_->addCornerAnchors(anchor_layout_, layout_anchor_corner, layout_item, widget_anchor_corner);
@@ -73,6 +78,11 @@ namespace CoreUi
     {
         anchor_layout_->addAnchors(anchor_layout_, layout_item, orientation);
         CheckVisibility(layout_item);
+    }
+
+    void AnchorLayoutManager::AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)
+    {
+        anchor_layout_->addAnchor(first_item, Qt::AnchorLeft, second_item, Qt::AnchorRight);
     }
 
     void AnchorLayoutManager::AddFullscreenWidget(QGraphicsWidget *graphics_widget)

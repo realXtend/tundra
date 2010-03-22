@@ -6,9 +6,13 @@
 #include "NotificationManager.h"
 #include "InworldSceneController.h"
 
-#include "Inworld/View/MainPanel.h"
+#include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/NotificationBaseWidget.h"
 #include "Inworld/Notifications/NotificationBrowserWidget.h"
+
+#include "Inworld/ControlPanel/ControlPanelButton.h"
+
+#include "Common/ControlButtonAction.h"
 
 #include <QGraphicsScene>
 #include <QDebug>
@@ -23,7 +27,8 @@ namespace UiServices
         scene_(inworld_scene_controller->GetInworldScene()),
         notice_max_width_(200),
         notice_start_pos_(QPointF()),
-        browser_widget_(new CoreUi::NotificationBrowserWidget())
+        browser_widget_(new CoreUi::NotificationBrowserWidget()),
+        panel_(inworld_scene_controller_->GetControlPanelManager())
     {
         InitSelf();
     }
@@ -42,17 +47,30 @@ namespace UiServices
         browser_widget_->hide();
         scene_->addItem(browser_widget_);
 
-        QPushButton *notification_toggle_button = inworld_scene_controller_->GetMainPanel()->GetNotificationsButton();
-        if (notification_toggle_button)
-            connect(notification_toggle_button, SIGNAL(clicked()), SLOT(ToggleNotificationBrowser()));
-        connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
+        CoreUi::ControlPanelButton *button = inworld_scene_controller_->GetControlPanelManager()->GetButtonForType(UiDefines::Notifications);
+        if (button)
+        {
+            CoreUi::ControlButtonAction *notification_action = new CoreUi::ControlButtonAction(button, browser_widget_, this);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Notifications, notification_action);
+            
+            connect(notification_action, SIGNAL(toggled(bool)), SLOT(ToggleNotificationBrowser()));
+            connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
+        }
     }
 
     void NotificationManager::UpdatePosition(const QRectF &scene_rect)
     {
-        notice_start_pos_.setY(inworld_scene_controller_->GetMainPanel()->GetContentHeight());
+        notice_start_pos_.setY(panel_->GetContentHeight());
         notice_start_pos_.setX(scene_rect.right()-notice_max_width_);
-        UpdateStack();
+        
+        if (browser_widget_->isVisible())
+        {
+            qreal padding = 10;
+            browser_widget_->setPos(scene_->sceneRect().right() - browser_widget_->size().width() - padding, 
+                                    panel_->GetContentHeight() + padding);
+        }
+        else
+            UpdateStack();
     }
 
     void NotificationManager::UpdateStack()
@@ -88,13 +106,14 @@ namespace UiServices
             visible_notifications_.clear();
 
             // Pass history to browser and clear local list
-            browser_widget_->resize(inworld_scene_controller_->GetMainPanel()->GetContentWidth(), browser_widget_->size().height());
-            browser_widget_->setPos(scene_->sceneRect().right()-browser_widget_->size().width(), inworld_scene_controller_->GetMainPanel()->GetContentHeight());
+            qreal padding = 10;
+            browser_widget_->resize(panel_->GetContentWidth(), browser_widget_->size().height());
+            browser_widget_->setPos(scene_->sceneRect().right() - browser_widget_->size().width() - padding, panel_->GetContentHeight() + padding);
             browser_widget_->ShowNotifications(notifications_history_);
             notifications_history_.clear();
         }
         else
-            browser_widget_->hide();
+            browser_widget_->AnimatedHide();
     }
 
     // Public
@@ -138,14 +157,14 @@ namespace UiServices
         }
     }
 
-    void NotificationManager::SetConnectionState(ConnectionState connection_state)
+    void NotificationManager::SetConnectionState(UiDefines::ConnectionState connection_state)
     {
         switch (connection_state)
         {
-            case Connected:
+            case UiDefines::Connected:
                 break;
 
-            case Disconnected:
+            case UiDefines::Disconnected:
             {
                 foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
                     SAFE_DELETE(notification);
