@@ -8,6 +8,7 @@
 #include "MumbleVoipModuleApi.h"
 
 #include <QObject>
+#include <QProcess>
 
 namespace MumbleVoip
 {
@@ -48,8 +49,10 @@ namespace MumbleVoip
 		static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
+        virtual Console::CommandResult  OnConsoleMumbleLink(const StringVector &params);
+        virtual Console::CommandResult  OnConsoleMumbleUnlink(const StringVector &params);
         virtual Console::CommandResult  OnConsoleMumbleStart(const StringVector &params);
-        virtual Console::CommandResult  OnConsoleMumbleStop(const StringVector &params);
+        virtual void StartMumbleClient(const QString& server_url);
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
     private:
@@ -57,7 +60,6 @@ namespace MumbleVoip
         LinkPlugin* link_plugin_;
         static const int UPDATE_TIME_MS_ = 100;
         int time_from_last_update_ms_;
-        
     };
 
 } // end of namespace: MumbleVoip
