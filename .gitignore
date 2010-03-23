@@ -28,6 +28,7 @@ CMakeOptionalModules.txt
 
 # Qt build objects
 moc_*.cxx
+moc_*.cxx_parameters
 qrc_*.cxx
 ui_*.h
 
