@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>230</width>
+    <width>250</width>
     <height>300</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>230</width>
+    <width>250</width>
     <height>300</height>
    </size>
   </property>
@@ -183,6 +183,9 @@ QWidget#scrollContentActive, QWidget#scrollContentLog {
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
@@ -191,7 +194,7 @@ QWidget#scrollContentActive, QWidget#scrollContentLog {
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>210</width>
+               <width>230</width>
                <height>229</height>
               </rect>
              </property>
@@ -231,12 +234,15 @@ QWidget#scrollContentActive, QWidget#scrollContentLog {
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
             <widget class="QWidget" name="scrollContentActive">
              <property name="geometry">
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>210</width>
+               <width>230</width>
                <height>268</height>
               </rect>
              </property>
