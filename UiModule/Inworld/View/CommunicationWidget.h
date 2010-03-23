@@ -10,6 +10,7 @@
 
 class QStackedLayout;
 class QPlainTextEdit;
+class QGraphicsSceneMouseEvent;
 
 namespace UiServices
 {
@@ -34,6 +35,13 @@ namespace CoreUi
         void UpdateController(QObject *controller);
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
         
+    protected:
+        void hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event);
+        void hoverLeaveEvent(QGraphicsSceneHoverEvent *mouse_hover_leave_event);
+        void mousePressEvent(QGraphicsSceneMouseEvent *mouse_press_event);
+        void mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event);
+        void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse_release_event);
+
     private slots:
         void Initialise();
         void ChangeViewPressed();
@@ -52,6 +60,11 @@ namespace CoreUi
         QPlainTextEdit *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
+
+        QPointF press_pos_;
+        QPointF release_pos_;
+        bool resizing_vertical_;
+        bool resizing_horizontal_;
 
     signals:
         void SendMessageToServer(const QString &message);

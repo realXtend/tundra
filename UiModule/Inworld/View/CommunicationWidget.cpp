@@ -8,6 +8,8 @@
 #include <QStackedLayout>
 #include <QPlainTextEdit>
 #include <QTimer>
+#include <QGraphicsSceneMouseEvent>
+#include <QApplication>
 
 namespace CoreUi
 {
@@ -16,7 +18,9 @@ namespace CoreUi
         internal_widget_(new QWidget()),
         current_controller_(0),
         im_proxy_(0),
-        viewmode_(Normal)
+        viewmode_(Normal),
+        resizing_horizontal_(false),
+        resizing_vertical_(false)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -127,6 +131,86 @@ namespace CoreUi
         QString message = chatLineEdit->text();
         chatLineEdit->clear();
         emit SendMessageToServer(message);
+    }
+
+    // Protected
+
+    void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
+    {
+        if (stacked_layout_->currentWidget() == history_view_text_edit_)
+        {
+            qreal widget_press_pos_x = chatContentWidget->width() - mouse_hover_move_event->scenePos().x();
+            qreal widget_press_pos_y = scene()->sceneRect().size().height() - mouse_hover_move_event->scenePos().y() - rect().height();
+            if (widget_press_pos_x >= 0 && widget_press_pos_x <= 6)
+            {
+                if (!QApplication::overrideCursor())
+                    QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+            }
+            else if (widget_press_pos_y <= 0 && widget_press_pos_y >= -6 && widget_press_pos_x >= 0)
+            {
+                if (!QApplication::overrideCursor())
+                    QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+            }
+            else if (QApplication::overrideCursor())
+                QApplication::restoreOverrideCursor();
+        }
+        else if (QApplication::overrideCursor())
+            QApplication::restoreOverrideCursor();
+
+        QGraphicsProxyWidget::hoverMoveEvent(mouse_hover_move_event);
+    }
+
+    void CommunicationWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *mouse_hover_leave_event)
+    {
+        if (QApplication::overrideCursor())
+            QApplication::restoreOverrideCursor();
+        QGraphicsProxyWidget::hoverLeaveEvent(mouse_hover_leave_event);
+    }
+
+    void CommunicationWidget::mousePressEvent(QGraphicsSceneMouseEvent *mouse_press_event)
+    {   
+        resizing_horizontal_ = false;
+        resizing_vertical_ = false;
+        if (stacked_layout_->currentWidget() == history_view_text_edit_)
+        {
+            qreal widget_press_pos_x = chatContentWidget->width() - mouse_press_event->scenePos().x();
+            qreal widget_press_pos_y = scene()->sceneRect().size().height() - mouse_press_event->scenePos().y() - rect().height();
+            if (widget_press_pos_x >= 0 && widget_press_pos_x <= 6)
+            {
+                mouse_press_event->accept();
+                QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+                resizing_horizontal_ = true;
+                return;
+            }
+            else if (widget_press_pos_y <= 0 && widget_press_pos_y >= -6 && widget_press_pos_x >= 0)
+            {
+                mouse_press_event->accept();
+                QApplication::setOverrideCursor(QCursor(Qt::SizeVerCursor));
+                resizing_vertical_ = true;
+                return;
+            }
+        }
+        QGraphicsProxyWidget::mousePressEvent(mouse_press_event);
+    }
+
+    void CommunicationWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event)
+    {
+        if (resizing_horizontal_)
+            chatContentWidget->setMinimumWidth(mouse_move_event->scenePos().x());
+        else if (resizing_vertical_)
+            chatContentWidget->setMinimumHeight(scene()->sceneRect().size().height() - mouse_move_event->scenePos().y() - chatControlsWidget->height());
+        QGraphicsProxyWidget::mouseMoveEvent(mouse_move_event);
+    }
+
+    void CommunicationWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse_release_event)
+    {
+        if (resizing_horizontal_ || resizing_vertical_)
+        {
+            resizing_horizontal_ = false;
+            resizing_vertical_ = false;
+            QApplication::restoreOverrideCursor();
+        }
+        QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
     }
 
     // Public
