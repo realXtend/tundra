@@ -14,6 +14,32 @@
 *.vcproj
 *.sln
 
+# Unix-specific build objects
+Makefile
+*.o
+*.a
+*.so
+
 # CMake -specific
 *.cmake
+CMakeFiles
 CMakeCache.txt
+CMakeOptionalModules.txt
+
+# Qt build objects
+moc_*.cxx
+qrc_*.cxx
+ui_*.h
+
+# Python files
+*.pyc
+
+# editor temporary files
+*.swp
+*~
+*#
+
+# viewer bin/ files
+bin/modules/core/*.xml
+bin/viewer
+bin/viewerd
