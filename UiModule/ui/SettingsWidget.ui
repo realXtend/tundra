@@ -22,7 +22,7 @@ QWidget#uiTab {
 	background-color: white;
 }
 
-QFrame#MainFrame {
+QFrame#ContentFrame {
 	background-color: rgba(34,34,34,191);
 	border-bottom-left-radius: 7px;
 	border-bottom-right-radius: 7px;
@@ -51,6 +51,7 @@ QLabel#titleLabel {
                                  stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
                                  stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
      border: 1px solid #9B9B9B;
+     border-bottom: 0px;
      border-top-left-radius: 4px;
      border-top-right-radius: 4px;
      min-width: 10ex;
@@ -150,7 +151,7 @@ QTabBar::tab:first {
           </widget>
          </item>
          <item>
-          <widget class="QFrame" name="MainFrame">
+          <widget class="QFrame" name="ContentFrame">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
              <number>0</number>
