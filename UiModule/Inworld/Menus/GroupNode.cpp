@@ -24,7 +24,8 @@ namespace CoreUi
         root_(root),
         hgap_(hgap),
         vgap_(vgap),
-        is_expanded_(false)
+        is_expanded_(false),
+        group_stylesheet(QString())
     {
         connect(GetMenuButton(), SIGNAL( clicked() ), SLOT( NodeClicked() ));
         connect(move_animations_, SIGNAL( finished() ), SLOT( MoveAnimationsFinished() ));
@@ -41,8 +42,13 @@ namespace CoreUi
         else
             SetTreeDepth(-1);
 
-        
+        group_stylesheet = "text-align: right;"
+                           "color: qlineargradient(spread:pad, x1:0, y1:0.00568182, x2:0, y2:1, stop:0 rgba(16, 16, 16, 255), stop:0.534091 rgba(59, 59, 59, 255), stop:0.943182 rgba(34, 34, 34, 255));"
+                           "border: 0px;"
+                           "border-radius: 17px;"
+                           "padding-right:5px;";
     }
+
     void GroupNode::AdjustNode(QAbstractAnimation::Direction dir)
     {
         resize_animations_->setDirection(dir);
@@ -55,8 +61,6 @@ namespace CoreUi
             child_node->setOpacity(1);
         }
     }
-
-
 
     //! Overrides
 
@@ -179,7 +183,6 @@ namespace CoreUi
             qreal expanded_y_pos = index*(cheight + vgap_);
             qreal expanded_x_pos = rad*cos(asin((index*(cheight))/rad));
 
-
             qreal shrunken_y_pos = rad*sin(phase_change*index);
             qreal shrunken_x_pos = rad*cos(phase_change*index);
 
@@ -187,7 +190,6 @@ namespace CoreUi
             expanded_end_position.setY(expanded_y_pos);
             shrunken_end_position.setX(shrunken_x_pos);
             shrunken_end_position.setY(shrunken_y_pos);
-
 
             child_node->SetExpandedPos(expanded_end_position);
             child_node->SetShrunkenPos(shrunken_end_position);
@@ -232,7 +234,9 @@ namespace CoreUi
         {
             is_expanded_ = true;
             foreach (MenuNode *child_node, children_)
-                child_node->GetMenuButton()->setStyleSheet(child_node->GetMenuButton()->styleSheet()+"background-color: rgba(255,255,255,50);");
+            {
+                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
+            }
         }
         else if (move_animations_->direction() == QAbstractAnimation::Backward)
         {
@@ -253,6 +257,7 @@ namespace CoreUi
             foreach (MenuNode* child_node, children_)
             {
                 child_node->EnableText();
+                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
             }
         }
         else if (resize_animations_->direction() == QAbstractAnimation::Backward)
@@ -260,7 +265,7 @@ namespace CoreUi
             foreach (MenuNode* child_node, children_)
             {
                 child_node->DisableText();
-                child_node->GetMenuButton()->setStyleSheet(child_node->GetMenuButton()->styleSheet()+"background-color: transparent;");
+                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: transparent;");
             }
             if (IsExpanded())
             {

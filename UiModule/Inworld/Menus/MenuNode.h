@@ -54,6 +54,8 @@ namespace CoreUi
 
     protected:
         QString node_name_;
+        QString base_stylesheet_;
+
         QUuid id_;
         QWidget *widget_;
 

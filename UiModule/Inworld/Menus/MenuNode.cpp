@@ -29,7 +29,9 @@ namespace CoreUi
         expanded_width_ = metrics.width(node_name_);
         actionPushButton->setMinimumSize(35,35);
         actionPushButton->setMaximumSize(50+expanded_width_,35);
-        actionPushButton->setStyleSheet("background-image: url('./data/ui/images/menus/node_bg.png'); background-position: top left; background-repeat: no-repeat;");
+        
+        base_stylesheet_ = "background-image: url('./data/ui/images/menus/node_bg.png'); background-position: top left; background-repeat: no-repeat;";
+        actionPushButton->setStyleSheet(base_stylesheet_);
 
         QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
         shadow_effect->setColor(Qt::white);

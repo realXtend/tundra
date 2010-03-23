@@ -64,6 +64,8 @@ namespace CoreUi
         qreal hgap_;
         qreal vgap_;
 
+        QString group_stylesheet;
+
     };
 }
 
