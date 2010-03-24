@@ -1167,3 +1167,14 @@ if 0: #log level visibility
     r.logDebug("Debug")
     #r.logWarning("Warning") #not implement now, should add i guess
     r.logInfo("Info")
+
+if 0: #local object creation, testing if local previews of .scenes would work
+    from PythonQt.QtGui import QVector3D as Vec3
+    from PythonQt.QtGui import QQuaternion as Quat
+
+    print "hep"
+    e = r.createEntity("Jack.mesh", 1515)
+    print e
+    e.placeable.Position = Vec3(239, 234, 38)
+    e.placeable.Scale = Vec3(5, 5, 5)
+    e.placeable.Orientation = Quat(0, 0, 0, 1)
