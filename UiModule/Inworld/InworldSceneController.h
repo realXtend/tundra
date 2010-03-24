@@ -87,6 +87,8 @@ namespace UiServices
 
         CoreUi::ControlPanelManager *GetControlPanelManager() { return control_panel_manager_; }
 
+        QObject *GetSettingsObject();
+
     private:
         Q_DISABLE_COPY(InworldSceneController);
 

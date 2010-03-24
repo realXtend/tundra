@@ -4,6 +4,16 @@
 #include "InputStateMachine.h"
 #include "EventManager.h"
 #include "Framework.h"
+#include "ModuleManager.h"
+
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+
+#include "KeyDataManager.h"
+#include "BindingWidget.h"
+
+#include <QTimer>
+#include <QDebug>
 
 namespace Input
 {
@@ -563,6 +573,61 @@ namespace Input
             parent-> active.erase (i);
     }
 
+    void KeyListener::check_and_change(QPair<std::pair<int,int>, QList<QKeySequence> > event_ids_to_seq_list)
+    {
+        std::pair<int,int> processing_pair = event_ids_to_seq_list.first;
+        qDebug() << "Renewing bindings for event pair " << processing_pair.first << "/" << processing_pair.second;
+
+        // Remove neccessary items from key states map
+        QList<KeyStateMap::const_iterator> state_cleanup_list;
+        KeyStateMap::const_iterator state_iter = key_states.begin();
+        KeyStateMap::const_iterator state_end = key_states.end();
+
+        while (state_iter != state_end)
+        {
+            KeyState *state = state_iter->second;
+            std::pair<int,int> ids = state->get_event_ids();
+            if (ids.first == processing_pair.first && ids.second == processing_pair.second)
+                state_cleanup_list.append(state_iter);
+            state_iter++;
+        }
+
+        foreach(KeyStateMap::const_iterator remove_iter, state_cleanup_list)
+        {
+            qDebug() << "-  Removing existing KeyState: " << remove_iter->first;
+            key_states.erase(remove_iter);
+        }
+
+        // Remove neccessary items from key states map
+        QList<KeyBindingMap::const_iterator> binding_cleanup_list;
+        KeyBindingMap::const_iterator binding_iter = (*bindings)->begin();
+        KeyBindingMap::const_iterator binding_end = (*bindings)->end();
+        
+        while (binding_iter != binding_end)
+        {
+            std::pair<int,int> ids = binding_iter->second;
+            if (ids.first == processing_pair.first && ids.second == processing_pair.second)
+                binding_cleanup_list.append(binding_iter);
+            binding_iter++;
+        }
+
+        foreach(KeyBindingMap::const_iterator remove_iter, binding_cleanup_list)
+        {
+            qDebug() << "-  Removing binding: " << remove_iter->first;
+            (*bindings)->erase(remove_iter);
+        }
+
+        // Add new bindings
+        foreach (QKeySequence new_seq, event_ids_to_seq_list.second)
+        {
+            (*bindings)->insert(std::make_pair(new_seq,   
+                                std::make_pair(processing_pair.first, processing_pair.second)));
+            qDebug() << "+  Added binding " << new_seq;
+        }
+
+        qDebug() << endl;
+    }
+
 
     //=========================================================================
     //
@@ -571,7 +636,9 @@ namespace Input
         view_ (framework_-> GetUIView()),
         eventmgr_ (framework_-> GetEventManager().get()),
         has_focus_ (false),
-        key_binding_ (0)
+        key_binding_ (0),
+        key_data_manger_(new KeyDataManager(this)),
+        binding_widget_(0)
     {
         init_statemachine_();
         
@@ -751,7 +818,7 @@ namespace Input
         (new EventTransition <QEvent::FocusOut> (focused))-> setTargetState (unfocused);
 
         // Keys
-        (new KeyListener (key_states_, &key_binding_, eventmgr_, keyboard_active));
+        key_listener_ = new KeyListener (key_states_, &key_binding_, eventmgr_, keyboard_active);
 
         // Movement
         (new EventTransition <QEvent::MouseMove> (move_waiting))-> setTargetState (move_active);
@@ -787,6 +854,8 @@ namespace Input
         (new EventTransition <ThirdPersonEventType> (free_camera))-> setTargetState (third_person);
         (new EventTransition <FreeCameraEventType> (first_person))-> setTargetState (free_camera);
         (new EventTransition <FreeCameraEventType> (third_person))-> setTargetState (free_camera);
+
+        QTimer::singleShot(7000, this, SLOT(InitialiseConfigsAndUI()));
     }
 
     QEvent *WorldInputLogic::clone_event_ (QEvent *event)
@@ -846,6 +915,56 @@ namespace Input
 
                 key_binding_cache_.erase (kb);
             }
+        }
+    }
+
+    void WorldInputLogic::InitialiseConfigsAndUI()
+    {
+        // Update default config with code bindings
+        if (key_binding_)
+            key_data_manger_->GenerateAndParseDefaultConfig(&key_binding_);
+
+        // Check if user has stored a custom bindings config
+        if (key_data_manger_->CustomConfigDefined())
+        {
+            key_data_manger_->ParseCustomConfig();
+            ChangeKeyBindings(key_data_manger_->GetInternalFormatList());
+        }
+
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (ui_module.get())
+        {
+            QObject *settings_widget = ui_module->GetInworldSceneController()->GetSettingsObject();
+            if (settings_widget)
+            {
+                binding_widget_ = new BindingWidget(key_data_manger_, settings_widget);
+                ui_module->GetInworldSceneController()->AddSettingsWidget(binding_widget_, "Key Bindings");
+            }
+        }
+
+        // Connect signal for updating bindings and key state maps
+        connect(key_data_manger_, SIGNAL(KeyBindingsChanged(QMultiMap<std::pair<int,int>, QKeySequence>)),
+                SLOT(ChangeKeyBindings(QMultiMap<std::pair<int,int>, QKeySequence>)));
+    }
+
+    void WorldInputLogic::ChangeKeyBindings(QMultiMap<std::pair<int,int>, QKeySequence> bindings_map)
+    {
+        QList<std::pair<int,int> > handled_id_pairs;
+        QList<std::pair<int,int> > list = bindings_map.keys();
+        QList<std::pair<int,int> >::const_iterator iter = list.begin();
+
+        while (iter != list.end())
+        {
+            std::pair<int,int> mypair = (*iter);
+            if (!handled_id_pairs.contains(mypair))
+            {
+                QPair<std::pair<int,int>, QList<QKeySequence> > event_ids_to_seq_list = 
+                    QPair<std::pair<int,int>, QList<QKeySequence> >(mypair, bindings_map.values(mypair));
+                key_listener_->check_and_change(event_ids_to_seq_list);
+
+                handled_id_pairs.append(mypair);
+            }
+            iter++;
         }
     }
 

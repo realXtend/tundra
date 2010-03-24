@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BindingWidget</class>
+ <widget class="QWidget" name="BindingWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>308</width>
+    <height>381</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>BindingWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>291</width>
+        <height>803</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QVBoxLayout" name="scrollAreaLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">padding-bottom: 6px;</string>
+           </property>
+           <property name="text">
+            <string>Actions</string>
+           </property>
+           <property name="indent">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="restoreDefaultsPushButton">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>Calibri</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+	margin-left: 20px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(162, 162, 162, 255), stop:0.488636 rgba(147, 147, 147, 255), stop:1 rgba(194, 194, 194, 255));
+	border: 1px solid rgba(0,0,0,100);
+	border-radius: 0px;
+	color: rgba(255,255,255,225);
+}
+
+QPushButton::hover {
+	color: rgba(255,255,255,255);
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(187, 187, 187, 255), stop:0.488636 rgba(147, 147, 147, 255), stop:1 rgba(216, 216, 216, 255));
+}
+
+QPushButton::pressed {
+	color: black;
+}</string>
+           </property>
+           <property name="text">
+            <string>Restore Naali Defaults</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelTitleMovement">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">padding-top: 10px;</string>
+           </property>
+           <property name="text">
+            <string>Movement</string>
+           </property>
+           <property name="indent">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_Movement">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="leftMargin">
+            <number>20</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="forwardLabel">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Forward</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="forwardLineEdit"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="backwardLabel">
+             <property name="text">
+              <string>Backward</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="backwardLineEdit"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="strafeLeftLabel">
+             <property name="text">
+              <string>Strafe Left</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="strafeLeftLineEdit"/>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="strafeRightLabel">
+             <property name="text">
+              <string>Strafe Right</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="strafeRightLineEdit"/>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="upJumpLabel">
+             <property name="text">
+              <string>Up / Jump</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="upJumpLineEdit"/>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="downLabel">
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="downLineEdit"/>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="toggleFlyLabel">
+             <property name="text">
+              <string>Toggle Flymode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QLineEdit" name="toggleFlyLineEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="turnLeftLabel">
+             <property name="text">
+              <string>Turn Left</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="turnLeftLineEdit"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="turnRightLabel">
+             <property name="text">
+              <string>Turn Right</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="turnRightLineEdit"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelTitleCamera">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Camera</string>
+           </property>
+           <property name="indent">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_Camera">
+           <property name="leftMargin">
+            <number>20</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="toggleCameraModeLabel">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Toggle Mode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="toggleCameraModeLineEdit"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="zoomInLabel">
+             <property name="text">
+              <string>Zoom in</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="zoomInLineEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="zoomOutLabel">
+             <property name="text">
+              <string>Zoom out</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="zoomOutLineEdit"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelTitlePython">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Python</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_Python">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="leftMargin">
+            <number>20</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="runLabel">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="runLineEdit"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="restartLabel">
+             <property name="text">
+              <string>Restart</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="restartLineEdit"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="toggleObjectMoveLabel">
+             <property name="text">
+              <string>Toggle Object Move</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="toggleObjectMoveLineEdit"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="toggleObjectScaleLabel">
+             <property name="text">
+              <string>Toggle Object Scale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="toggleObjectScaleLineEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="duplicateDragLabel">
+             <property name="text">
+              <string>Duplicate Drag</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="duplicateDragLineEdit"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>General</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_General">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="leftMargin">
+            <number>20</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item row="1" column="0">
+            <widget class="QLabel" name="deleteLabel">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Delete</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="deleteLineEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="undoLabel">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="undoLineEdit"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="objectLinkLabel">
+             <property name="text">
+              <string>Object Link</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="objectLinkLineEdit"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="objectUnlinkLabel">
+             <property name="text">
+              <string>Object Unlink</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="objectUnlinkLineEdit"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="toggleConsoleLabel">
+             <property name="text">
+              <string>Toggle Console</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="toggleConsoleLineEdit"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

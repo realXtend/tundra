@@ -31,7 +31,7 @@ namespace Input
 					make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_MOVE, 0)));
 
 		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_S), 
-				make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE, 0)));
+				    make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE, 0)));
 
 		//map.insert (make_pair (QKeySequence (Qt::ALT + Qt::Key_R), 
 					//make_pair (Input::Events::PY_OBJECTEDIT_TOGGLE_ROTATE, 0)));
