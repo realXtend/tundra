@@ -19,6 +19,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+#include <QMultiMap>
+
 #ifdef Q_WS_X11
 #include <QX11Info>
 
@@ -53,6 +55,9 @@ namespace Input
     struct MouseInfo;
     struct DragInfo;
     struct KeyState;
+
+    class KeyDataManager;
+    class BindingWidget;
 
     // list of state structure codes
     typedef std::vector <KeyState *> KeyStateList;
@@ -440,6 +445,8 @@ namespace Input
 
         KeyState *get_key_state (const QKeySequence &s);
 
+        void check_and_change(QPair<std::pair<int,int>, QList<QKeySequence> > event_ids_to_seq_list);
+
         void press_active (KeyState *e);
         void release_active (KeyState *e);
 
@@ -451,9 +458,10 @@ namespace Input
         Foundation::EventManager* eventmgr;
     };
 
-
     class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
+        Q_OBJECT
+
         public:
             explicit WorldInputLogic (Foundation::Framework *fw);
 
@@ -462,6 +470,10 @@ namespace Input
             Foundation::State *GetState (QString name);
 
             void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit);
+
+        public slots:
+            void InitialiseConfigsAndUI();
+            void ChangeKeyBindings(QMultiMap<std::pair<int,int>, QKeySequence> bindings_map);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
@@ -487,6 +499,11 @@ namespace Input
 
             KeyStateMap     key_states_;
             KeyBindingMap   *key_binding_;
+
+            KeyListener *key_listener_;
+
+            KeyDataManager *key_data_manger_;
+            BindingWidget *binding_widget_;
     };
 }
 

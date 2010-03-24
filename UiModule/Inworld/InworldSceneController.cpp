@@ -155,6 +155,15 @@ namespace UiServices
         }
     }
 
+    QObject *InworldSceneController::GetSettingsObject()
+    {
+        QObject *settings_widget = dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
+        if (settings_widget)
+            return settings_widget;
+        else
+            return 0;
+    }
+
     // Don't touch
 
     void InworldSceneController::SetWorldChatController(QObject *controller)

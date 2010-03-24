@@ -8,6 +8,8 @@
 #include "Framework.h"
 #include "EventManager.h"
 
+#include <QTimer>
+
 namespace Input
 {
     WorldInputModule::WorldInputModule () 
@@ -76,6 +78,12 @@ namespace Input
             RegisterService (Foundation::Service::ST_Input, state_machine_);
 
         state_machine_-> start();
+    }
+
+    // virtual 
+    void WorldInputModule::PostInitialize()
+    {
+        //state_machine_->UpdateDataState();
     }
 
     // virtual 

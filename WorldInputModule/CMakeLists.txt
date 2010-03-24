@@ -4,26 +4,28 @@ init_target (WorldInputModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-#file (GLOB MOC_H_FILES )
+file (GLOB MOC_H_FILES InputStateMachine.h KeyDataManager.h BindingWidget.h)
 file (GLOB XML_FILES *.xml)
+file (GLOB UI_FILES ui/*.ui)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_H_FILES})
+QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DWORLDINPUT_MODULE_EXPORTS)
 
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon)
+use_modules (Core Foundation Interfaces RexCommon UiModule)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces)
+link_modules (Core Foundation Interfaces UiModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
