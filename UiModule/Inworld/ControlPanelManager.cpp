@@ -11,6 +11,7 @@
 #include "Inworld/ControlPanel/BackdropWidget.h"
 #include "Inworld/ControlPanel/ControlPanelButton.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
+#include "Inworld/ControlPanel/BindingWidget.h"
 
 #include <QAction>
 
@@ -20,7 +21,8 @@ namespace CoreUi
         QObject(parent),
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
-        settings_widget_(0)
+        settings_widget_(0),
+        binding_widget_(0)
     {
         layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
         CreateBasicControls();
@@ -32,6 +34,10 @@ namespace CoreUi
         SetHandler(UiDefines::Settings, settings_action);
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
+
+        // BindingWidget
+        binding_widget_ = new BindingWidget(settings_widget_);
+        settings_widget_->AddWidget(binding_widget_, "Controls");
     }
 
     ControlPanelManager::~ControlPanelManager()
@@ -103,16 +109,6 @@ namespace CoreUi
             action_map_[type]->trigger();
     }
 
-    qreal ControlPanelManager::GetContentHeight()
-    { 
-        return backdrop_widget_->GetContentHeight();
-    }
-
-    qreal ControlPanelManager::GetContentWidth() 
-    { 
-        return backdrop_widget_->GetContentWidth();
-    }
-
     void ControlPanelManager::ToggleSettingsVisibility(bool visible)
     {
         if (visible)
@@ -141,5 +137,28 @@ namespace CoreUi
             return backdrop_area_buttons_map_[type];
         else
             return 0;
+    }
+
+    qreal ControlPanelManager::GetContentHeight()
+    { 
+        return backdrop_widget_->GetContentHeight();
+    }
+
+    qreal ControlPanelManager::GetContentWidth() 
+    { 
+        return backdrop_widget_->GetContentWidth();
+    }
+
+    void ControlPanelManager::SetServiceGetter(QObject *service_getter)
+    {
+        if (binding_widget_)
+        {
+            connect(service_getter, SIGNAL(KeyBindingsChanged(Foundation::KeyBindings*)),
+                    binding_widget_, SLOT(UpdateContent(Foundation::KeyBindings*)));
+            connect(binding_widget_, SIGNAL(KeyBindingsUpdated(Foundation::KeyBindings*)),
+                    service_getter, SLOT(SetKeyBindings(Foundation::KeyBindings*)));
+            connect(binding_widget_, SIGNAL(RestoreDefaultBindings()),
+                    service_getter, SLOT(RestoreKeyBindings()));
+        }
     }
 }

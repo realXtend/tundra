@@ -11,7 +11,8 @@ class QGraphicsProxyWidget;
 namespace CoreUi
 {
     class UiStateMachine;
-    
+    class ServiceGetter;
+
     class AnchorLayoutManager;
     class ControlPanelManager;
     class UiConsoleManager;

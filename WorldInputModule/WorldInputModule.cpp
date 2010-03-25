@@ -81,12 +81,6 @@ namespace Input
     }
 
     // virtual 
-    void WorldInputModule::PostInitialize()
-    {
-        //state_machine_->UpdateDataState();
-    }
-
-    // virtual 
     void WorldInputModule::Uninitialize()
     {
         GetFramework()-> GetServiceManager()-> 

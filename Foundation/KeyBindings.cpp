@@ -1,173 +1,121 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "KeyDataManager.h"
-#include "InputEvents.h"
+#include "KeyBindings.h"
+#include "../RexCommon/InputEvents.h"
 
-#include <QFile>
-#include <QSettings>
-
-#include <QDebug>
-
-namespace Input
+namespace Foundation
 {
-    KeyDataManager::KeyDataManager(QObject *parent) :
-        QObject(parent),
-        default_config_("bindings/default"),
-        custom_config_("bindings/current"),
-        config_keys_()
+    //=========================================================================
+    //
+
+    EventPair::EventPair(event_id_t enter_event_id, event_id_t leave_event_id) :
+        enter_id(enter_event_id),
+        leave_id(leave_event_id)
+    {
+    }
+
+    EventPair::EventPair(std::pair<int,int> event_ids) :
+        enter_id(event_ids.first),
+        leave_id(event_ids.second)
+    {
+    }
+
+    bool EventPair::operator ==(EventPair compare_pair)
+    {
+        if (compare_pair.enter_id == enter_id && compare_pair.leave_id == leave_id)
+            return true;
+        else
+            return false;
+    }
+
+    //=========================================================================
+    //
+
+    Binding::Binding(QKeySequence key_sequence, EventPair event_id_pair) :
+        sequence(key_sequence),
+        event_ids(event_id_pair)
+    {
+
+    }
+
+    bool Binding::operator==(Binding binding)
+    {
+        return binding.event_ids == event_ids;
+    }
+
+    //=========================================================================
+    //
+
+    KeyBindings::KeyBindings()
     {
         config_keys_ << "move.back" << "move.forward" << "move.up" << "move.down"  << "move.left" << "move.right"
-                     << "naali.delete" << "naali.undo" << "naali.object.link" << "naali.object.unlink"
-                     << "python.duplicate.drag" << "python.object.toggle.move" << "python.object.toggle.scale" << "python.restart" << "python.run"
-                     << "toggle.camera" << "toggle.console" << "toggle.fly" 
-                     << "rotate.left" << "rotate.right"
-                     << "zoom.in" << "zoom.out";
+             << "naali.delete" << "naali.undo" << "naali.object.link" << "naali.object.unlink"
+             << "python.duplicate.drag" << "python.object.toggle.move" << "python.object.toggle.scale" << "python.restart" << "python.run"
+             << "toggle.camera" << "toggle.console" << "toggle.fly" 
+             << "rotate.left" << "rotate.right"
+             << "zoom.in" << "zoom.out";
     }
 
-    void KeyDataManager::GenerateAndParseDefaultConfig(KeyBindingMap **default_bindings)
+    void KeyBindings::BindKey(Binding binding)
     {
-        // Do this only once on startup
-        if (naali_default_key_map_.count() > 0)
-            return;
-        
-        // Open up the default config
-        QSettings default_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", default_config_);
-        if (!default_settings.isWritable())
-            return;
-        default_settings.clear();
-        current_key_map_.clear();
+        bindings_.push_back(binding);
+    }
 
-        // Go trought the code set bindings
-        KeyBindingMap::iterator iter = (*default_bindings)->begin();
-        KeyBindingMap::iterator end = (*default_bindings)->end();
+    void KeyBindings::BindKey(QKeySequence sequence, std::pair<int,int> event_ids)
+    {
+        Binding binding(sequence, EventPair(event_ids.first, event_ids.second));
+        BindKey(binding);
+    }
+
+    KeyBindingList KeyBindings::GetBindings()
+    {
+        return bindings_;
+    }
+
+    std::list<Binding> KeyBindings::GetBindings(EventPair event_pair)
+    {
+        std::list<Binding> return_list;
+        
+        KeyBindingList::const_iterator iter = bindings_.begin();
+        KeyBindingList::const_iterator end = bindings_.end();
         while (iter != end)
         {
-            QKeySequence seq = iter->first;
-            std::pair<int,int> ids = iter->second;
+            Binding binding = (*iter);
+            if (binding.event_ids == event_pair)
+                return_list.push_back(binding);
             iter++;
+        }
+        return return_list;
+    }
 
-            QString identifier = NameForEvent(ids.first);
-            if (identifier.isEmpty())
-                continue;
+    std::pair<int,int> KeyBindings::GetEventPair(QKeySequence sequence)
+    {
+        std::pair<int,int> find_pair(0,0);
+        KeyBindingList::const_iterator iter = bindings_.begin();
+        KeyBindingList::const_iterator end = bindings_.end();
 
-            if (current_key_map_.contains(identifier))
-                current_key_map_[identifier].append(seq);
-            else
+        while (iter != end)
+        {
+            Binding binding = (*iter);
+            if (binding.sequence == sequence)
             {
-                QList<QVariant> sequence_list;
-                sequence_list.append(seq);
-                current_key_map_[identifier] = sequence_list;
-            } 
-        }
-
-        // Save the default mappings to config
-        default_settings.beginGroup("Bindings.Default");
-        foreach(QString identifier, current_key_map_.keys())
-        {
-            if (current_key_map_[identifier].count() > 1)
-                default_settings.setValue(identifier, current_key_map_[identifier]);
-            else
-                default_settings.setValue(identifier, QKeySequence(current_key_map_[identifier].at(0).toString()));
-        }
-        default_settings.endGroup();
-        default_settings.sync();
-
-        // Store the default locally for when user wants to revert bindings
-        naali_default_key_map_ = current_key_map_;
-    }
-
-    bool KeyDataManager::CustomConfigDefined()
-    {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
-        if (custom_settings.childGroups().count() == 0)
-            return false;
-        return true;
-    }
-
-    void KeyDataManager::WriteCustomConfig(QMap<QString, QList<QVariant> > key_map)
-    {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
-        if (!custom_settings.isWritable())
-            return;
-
-        current_key_map_ = key_map;
-
-        custom_settings.beginGroup("Bindings.Custom");
-        foreach(QString identifier, key_map.keys())
-        {
-            if (key_map[identifier].count() > 1)
-                custom_settings.setValue(identifier, key_map[identifier]);
-            else
-                custom_settings.setValue(identifier, QKeySequence(key_map[identifier].at(0).toString()));
-        }
-        custom_settings.endGroup();
-        custom_settings.sync();
-
-        emit KeyBindingsChanged(GetInternalFormatList());
-    }
-
-    void KeyDataManager::ParseCustomConfig()
-    {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
-        if (!custom_settings.isWritable())
-            return;
-        current_key_map_.clear();
-
-        QString group = "Bindings.Custom";
-        foreach (QString identifier, config_keys_)
-        {
-            QVariant current = custom_settings.value(group + "/" + identifier);
-            if (current.isNull())
-                continue;
-
-            QStringList keys_seq_list = current.toStringList();
-            foreach (QString seq, keys_seq_list)
-            {
-                if (current_key_map_.contains(identifier))
-                    current_key_map_[identifier].append(QVariant(seq));
-                else
-                {
-                    QList<QVariant> seq_list;
-                    seq_list.append(QVariant(seq));
-                    current_key_map_[identifier] = seq_list;
-                }
+                find_pair.first = binding.event_ids.enter_id;
+                find_pair.second = binding.event_ids.leave_id;
+                break;
             }
-        }
-    }
-
-    QMultiMap<std::pair<int,int>, QKeySequence> KeyDataManager::GetInternalFormatList()
-    {
-        QMultiMap<std::pair<int,int>, QKeySequence> internal_format_map;
-
-        foreach (QString identifier, current_key_map_.keys())
-        {
-            QList<QVariant> value_list = current_key_map_[identifier];
-            foreach(QVariant value, value_list)
-            {
-                QKeySequence seq(value.toString());
-                std::pair<int,int> id_pair = EventPairForName(identifier);
-                if (id_pair.first != 0)
-                    internal_format_map.insert(id_pair, seq);
-            }
+            iter++;
         }
 
-        return internal_format_map;
+        return find_pair;
     }
 
-    void KeyDataManager::RevertEverythingToDefault()
+    QStringList KeyBindings::GetConfigKeys()
     {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
-        if (custom_settings.isWritable())
-            custom_settings.clear();
-
-        current_key_map_ = naali_default_key_map_;
-        emit KeyBindingsChanged(GetInternalFormatList());
+        return config_keys_;
     }
 
-    // Private
-
-    QString KeyDataManager::NameForEvent(int event_id)
+    QString KeyBindings::NameForEvent(int event_id)
     {
         QString name;
         switch (event_id)
@@ -262,7 +210,7 @@ namespace Input
         return name;
     }
 
-    std::pair<int,int> KeyDataManager::EventPairForName(QString name)
+    std::pair<int,int> KeyBindings::EventPairForName(QString name)
     {
         std::pair<int,int> id_pair;
 

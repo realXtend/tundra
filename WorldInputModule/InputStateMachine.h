@@ -5,7 +5,7 @@
 
 #include "State.h"
 #include "InputEvents.h"
-#include "KeyBindings.h"
+#include "../Foundation/KeyBindings.h"
 #include "InputServiceInterface.h"
 
 #include <QGraphicsView>
@@ -56,7 +56,7 @@ namespace Input
     struct DragInfo;
     struct KeyState;
 
-    class KeyDataManager;
+    class ConfigManager;
     class BindingWidget;
 
     // list of state structure codes
@@ -120,7 +120,7 @@ namespace Input
     struct KeyState : public InputState
     {
         KeyState (const QKeySequence &s, QState *p = 0);
-        KeyState (const QKeySequence &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p = 0);
+        KeyState (const QKeySequence &s, Foundation::KeyBindings **b, Foundation::EventManager* m, QState *p = 0);
         ~KeyState ();
 
         void onEntry (QEvent *e);
@@ -131,7 +131,7 @@ namespace Input
         bool operator== (const KeyState &rhs);
 
         QKeySequence                sequence;
-        KeyBindingMap               **bindings;
+        Foundation::KeyBindings     **bindings;
 
         event_category_id_t         catid;
         Foundation::EventManager*   eventmgr;
@@ -276,35 +276,38 @@ namespace Input
 
     struct KeyBindingActiveState : public InputState
     {
-        KeyBindingActiveState (QString name, KeyBindingMap **m, QState *p = 0);
-        KeyBindingMap   **map;
+        KeyBindingActiveState (QString name, Foundation::KeyBindings **m, QState *p = 0);
+        Foundation::KeyBindings   **map;
     };
 
     struct FirstPersonActiveState : public KeyBindingActiveState
     {
-        FirstPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
+        FirstPersonActiveState (QString name, Foundation::KeyBindings **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        FirstPersonBindings bindings;
+        //FirstPersonBindings bindings;
+        Foundation::KeyBindings **bindings;
     };
 
     struct ThirdPersonActiveState : public KeyBindingActiveState
     {
-        ThirdPersonActiveState (QString name, KeyBindingMap **m, QState *p = 0);
+        ThirdPersonActiveState (QString name, Foundation::KeyBindings **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        ThirdPersonBindings bindings;
+        //ThirdPersonBindings bindings;
+        Foundation::KeyBindings **bindings;
     };
 
     struct FreeCameraActiveState : public KeyBindingActiveState
     {
-        FreeCameraActiveState (QString name, KeyBindingMap **m, QState *p = 0);
+        FreeCameraActiveState (QString name, Foundation::KeyBindings **m, QState *p = 0);
 
         void onEntry (QEvent *event);
 
-        FreeCameraBindings  bindings;
+        //FreeCameraBindings  bindings;
+        Foundation::KeyBindings **bindings;
     };
 
     enum InputEventType
@@ -438,42 +441,42 @@ namespace Input
 
     struct KeyListener : public QAbstractTransition 
     {
-        KeyListener (KeyStateMap &s, KeyBindingMap **b, Foundation::EventManager* m, QState *p = 0);
+        KeyListener (KeyStateMap &s, Foundation::KeyBindings **b, Foundation::EventManager* m, QState *p = 0);
 
         bool eventTest (QEvent *event);
         void onTransition (QEvent *event);
 
         KeyState *get_key_state (const QKeySequence &s);
 
-        void check_and_change(QPair<std::pair<int,int>, QList<QKeySequence> > event_ids_to_seq_list);
-
         void press_active (KeyState *e);
         void release_active (KeyState *e);
 
         KeyboardActiveState *parent;
 
-        KeyStateMap         &key_states;
-        KeyBindingMap       **bindings;
+        KeyStateMap                 &key_states;
+        Foundation::KeyBindings     **bindings;
 
         Foundation::EventManager* eventmgr;
     };
 
     class WorldInputLogic : public QStateMachine, public Foundation::InputServiceInterface
     {
-        Q_OBJECT
-
         public:
             explicit WorldInputLogic (Foundation::Framework *fw);
+            virtual ~WorldInputLogic();
 
             void Update (f64 frametime);
 
+            //! InputServiceInterface implementation
             Foundation::State *GetState (QString name);
 
-            void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit);
+            Foundation::KeyBindings *GetBindings();
 
-        public slots:
-            void InitialiseConfigsAndUI();
-            void ChangeKeyBindings(QMultiMap<std::pair<int,int>, QKeySequence> bindings_map);
+            void SetBindings(Foundation::KeyBindings *bindings);
+
+            void RestoreDefaultBindings();
+
+            void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
@@ -490,6 +493,7 @@ namespace Input
         private:
             Foundation::Framework       *framework_;
             Foundation::EventManager    *eventmgr_;
+            Foundation::KeyBindings     *key_bindings_;
 
             QGraphicsView   *view_;
             bool            has_focus_;
@@ -498,12 +502,9 @@ namespace Input
             GestureInfo     gesture_state_;
 
             KeyStateMap     key_states_;
-            KeyBindingMap   *key_binding_;
 
-            KeyListener *key_listener_;
+            ConfigManager *config_manager_;
 
-            KeyDataManager *key_data_manger_;
-            BindingWidget *binding_widget_;
     };
 }
 

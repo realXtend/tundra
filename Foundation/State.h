@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_InputStateMachine_h
-#define incl_Foundation_InputStateMachine_h
+#ifndef incl_Foundation_State_h
+#define incl_Foundation_State_h
 
 #include <map>
 #include <QState>
