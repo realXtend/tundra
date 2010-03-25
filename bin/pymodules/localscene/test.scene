@@ -1,10 +1,10 @@
 <scene formatVersion="">
     <nodes>
-        <node name="Robot" id="3">
-            <position x="10.0" y="5" z="10.5" />
+        <node name="Jack" id="3">
+            <position x="103" y="138" z="67" />
             <rotation qx="0" qy="0" qz="0" qw="1" />
             <scale x="1" y="1" z="1" />
-            <entity name="Robot" meshFile="robot.mesh" static="false" />
+            <entity name="Jack" meshFile="Jack.mesh" static="false" />
         </node>
     </nodes>
 </scene>

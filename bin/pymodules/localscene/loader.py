@@ -53,4 +53,3 @@ def load_dotscene(fname):
 
 if __name__ == '__main__':
     load_dotscene("test.scene")
-    
