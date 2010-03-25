@@ -10,10 +10,8 @@
 #include <QAction>
 #include <QMap>
 
-namespace UiServices 
-{ 
-    class UiAction;
-}
+namespace Foundation { class KeyBindings; }
+namespace UiServices { class UiAction; }
 
 namespace CoreUi
 {
@@ -22,6 +20,7 @@ namespace CoreUi
     class ControlPanelButton;
 
     class SettingsWidget;
+    class BindingWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -34,12 +33,12 @@ namespace CoreUi
 
     public slots:
         void SetHandler(UiDefines::ControlButtonType type, UiServices::UiAction *action);
-
         ControlPanelButton *GetButtonForType(UiDefines::ControlButtonType type);
 
         qreal GetContentHeight();
         qreal GetContentWidth();
 
+        void SetServiceGetter(QObject *service_getter);
         SettingsWidget *GetSettingsWidget() { return settings_widget_; }
 
     private slots:
@@ -63,6 +62,7 @@ namespace CoreUi
 
         // Contolled core widgets
         SettingsWidget *settings_widget_;
+        BindingWidget *binding_widget_;
     };
 }
 

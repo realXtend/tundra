@@ -84,6 +84,9 @@ namespace UiServices
         //! UiStateMachine pointer
         CoreUi::UiStateMachine *ui_state_machine_;
 
+        //! Service getter, provides functions to access Naali services
+        CoreUi::ServiceGetter *service_getter_;
+
         //! InworldSceneController pointer
         InworldSceneController *inworld_scene_controller_;
 
@@ -92,6 +95,8 @@ namespace UiServices
 
         //! Ether Logic
         Ether::Logic::EtherLogic *ether_logic_;
+
+
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;

@@ -35,7 +35,6 @@ namespace Input
             virtual void Load();
             virtual void Unload();
             virtual void Initialize();
-            virtual void PostInitialize();
             virtual void Uninitialize();
 
             virtual void Update(f64 frametime);

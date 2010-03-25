@@ -5,6 +5,7 @@
 #include "UiModule.h"
 #include "UiProxyStyle.h"
 #include "UiStateMachine.h"
+#include "ServiceGetter.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -41,14 +42,19 @@ namespace UiServices
     UiModule::UiModule() 
         : Foundation::ModuleInterfaceImpl(Foundation::Module::MT_UiServices),
           event_query_categories_(QStringList()),
+          ui_state_machine_(0),
+          service_getter_(0),
           inworld_scene_controller_(0),
-          inworld_notification_manager_(0)
+          inworld_notification_manager_(0),
+          ui_console_manager_(0),
+          ether_logic_(0)
     {
     }
 
     UiModule::~UiModule()
     {
         SAFE_DELETE(ui_state_machine_);
+        SAFE_DELETE(service_getter_);
         SAFE_DELETE(inworld_scene_controller_);
         SAFE_DELETE(inworld_notification_manager_);
         SAFE_DELETE(ui_console_manager_);
@@ -87,6 +93,11 @@ namespace UiServices
 
             ui_console_manager_ = new CoreUi::UiConsoleManager(GetFramework(), ui_view_);
             LogDebug("Console UI READY");
+
+            service_getter_ = new CoreUi::ServiceGetter(GetFramework());
+            inworld_scene_controller_->GetControlPanelManager()->SetServiceGetter(service_getter_);
+            LogDebug("Service getter READY");
+
         }
         else
             LogWarning("Could not accuire QGraphicsView shared pointer from framework, UiServices are disabled");
@@ -101,6 +112,8 @@ namespace UiServices
         ether_logic_->Start();
         ui_state_machine_->SwitchToEtherScene();
         LogDebug("Ether Logic STARTED");
+
+        service_getter_->GetKeyBindings();
     }
 
     void UiModule::Uninitialize()

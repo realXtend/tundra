@@ -63,7 +63,7 @@ use_package (QT4)
 use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon ProtocolUtilities SupportModules)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon ProtocolUtilities SupportModules WorldInputModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

@@ -3,7 +3,7 @@
 
 #include "StableHeaders.h"
 #include "InputEvents.h"
-#include "KeyBindings.h"
+#include "PerspectiveBindings.h"
 #include <Qt>
 
 namespace Input

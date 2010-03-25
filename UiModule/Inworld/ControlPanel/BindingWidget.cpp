@@ -2,33 +2,53 @@
 
 #include "StableHeaders.h"
 #include "BindingWidget.h"
-#include "KeyDataManager.h"
 
 #include <QMap>
 #include <QVariant>
-#include <QDebug>
 #include <QMessageBox>
 
-namespace Input
+namespace CoreUi
 {
-    BindingWidget::BindingWidget(KeyDataManager *key_data_manager, QObject *settings_object) :
-        QWidget(),
-        key_data_manager_(key_data_manager)
+    BindingWidget::BindingWidget(QObject *settings_object) :
+        QWidget()
     {
         setupUi(this);
-
-        UpdateContent(key_data_manager_->GetCurrentKeyMap());
         connect(settings_object, SIGNAL(SaveSettingsClicked()), SLOT(ExportSettings()));
-        connect(restoreDefaultsPushButton, SIGNAL(clicked()), SLOT(RestoreDefaultBindings()));
+        connect(restoreDefaultsPushButton, SIGNAL(clicked()), SLOT(RestoreBindingsToDefault()));
     }
 
     // Public
 
-    void BindingWidget::UpdateContent(QMap<QString, QList<QVariant> > key_map)
+    void BindingWidget::UpdateContent(Foundation::KeyBindings *bindings)
     {
-        foreach (QString identifier, key_map.keys())
+        Foundation::KeyBindingList bindings_list = bindings->GetBindings();
+        Foundation::KeyBindingList::const_iterator iter = bindings_list.begin();
+        Foundation::KeyBindingList::const_iterator end = bindings_list.end();
+
+        // Generate internal format QMap from KeyBindings data
+        QMap<QString, QList<QVariant> > name_to_seq_list_map;
+        while (iter != end)
         {
-            QList<QVariant> value_list = key_map[identifier];
+            Foundation::Binding binding = (*iter);
+            QString event_name = bindings->NameForEvent(binding.event_ids.enter_id);
+            if (!event_name.isEmpty())
+            {
+                if (name_to_seq_list_map.contains(event_name))
+                    name_to_seq_list_map[event_name].append(binding.sequence);
+                else
+                {
+                    QList<QVariant> seq_list;
+                    seq_list.append(binding.sequence);
+                    name_to_seq_list_map[event_name] = seq_list;
+                }
+            }
+            iter++;
+        }
+
+        // Update ui with internal format list
+        foreach (QString identifier, name_to_seq_list_map.keys())
+        {
+            QList<QVariant> value_list = name_to_seq_list_map[identifier];
             QLineEdit *line_edit = GetLineEditForName(identifier);
             if (!line_edit)
                 continue;
@@ -36,8 +56,7 @@ namespace Input
             QString text = "";
             foreach (QVariant value, value_list)
                 text += value.toString() + ", ";
-            text = text.left(text.lastIndexOf(","));
-            line_edit->setText(text);
+            line_edit->setText(text.left(text.lastIndexOf(",")));
         }
     }
 
@@ -45,8 +64,12 @@ namespace Input
 
     void BindingWidget::ExportSettings()
     {
-        QMap<QString, QList<QVariant> > new_key_map;
-        foreach(QString identifier, key_data_manager_->GetConfigKeys())
+        // Create KeyBindings from internal format map
+        Foundation::KeyBindings *bindings = new Foundation::KeyBindings();
+        
+        // Generate internal format map
+        QMap<QString, QList<QVariant> > name_to_seq_list_map;
+        foreach (QString identifier, bindings->GetConfigKeys())
         {
             QLineEdit *line_edit = GetLineEditForName(identifier);
             if (!line_edit)
@@ -54,23 +77,32 @@ namespace Input
 
             QList<QVariant> seq_value_list;
             QStringList line_edit_values = line_edit->text().split(", ");
-            foreach (QString key_sequence, line_edit_values)
-                seq_value_list.append(key_sequence);
-            new_key_map[identifier] = seq_value_list;
-
-            qDebug() << "Got keys for " << identifier << " = " << line_edit_values;
+            foreach (QString sequence_string, line_edit_values)
+                seq_value_list.append(QKeySequence(sequence_string));
+            name_to_seq_list_map[identifier] = seq_value_list;
         }
 
-        key_data_manager_->WriteCustomConfig(new_key_map);
+        foreach (QString identifier, name_to_seq_list_map.keys())
+        {
+            QList<QVariant> seq_list = name_to_seq_list_map[identifier];
+            std::pair<int,int> id_pair = bindings->EventPairForName(identifier);
+            if (id_pair.first == 0)
+                continue;
+
+            foreach (QVariant seq, seq_list)
+                bindings->BindKey(QKeySequence(seq.toString()), id_pair);
+        }
+
+        emit KeyBindingsUpdated(bindings);
     }
 
-    void BindingWidget::RestoreDefaultBindings()
+    void BindingWidget::RestoreBindingsToDefault()
     {
         int selection = QMessageBox::question(this, "Restoring default bindings", "Really want to restore? This will remove your\ncurrently stored bindings permanently.", QMessageBox::Yes, QMessageBox::No);
         if (selection == QMessageBox::Yes)
         {
-            UpdateContent(key_data_manager_->GetDefaultKeyMap());
-            key_data_manager_->RevertEverythingToDefault();
+            emit RestoreDefaultBindings();
+            // update ui, get new bindings from input module after this
         }
     }
 

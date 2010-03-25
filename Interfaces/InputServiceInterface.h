@@ -5,6 +5,8 @@
 
 #include "ServiceInterface.h"
 #include "State.h"
+#include "KeyBindings.h"
+
 #include <QString>
 #include <QKeySequence>
 
@@ -33,6 +35,9 @@ namespace Foundation
      * \ingroup Services_group 
      * \ingroup Input_group
      */
+
+    class KeyBindings;
+
     class InputServiceInterface : public Foundation::ServiceInterface
     {
     public:
@@ -41,6 +46,15 @@ namespace Foundation
 
         //! Returns the input state requested by name.
         virtual Foundation::State *GetState (QString name) = 0;
+
+        //! Return the currently used key bindings
+        virtual Foundation::KeyBindings *GetBindings() = 0;
+
+        //! Set in param bindings to be used
+        virtual void SetBindings(Foundation::KeyBindings *bindings) = 0;
+
+        //! Restore the default binginds
+        virtual void RestoreDefaultBindings() = 0;
 
         //! Fires events on entry or exit respectively.
         virtual void AddKeyEvent (QString group, QString key_sequence, event_id_t enter, event_id_t exit) = 0;
