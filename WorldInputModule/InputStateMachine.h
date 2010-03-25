@@ -5,7 +5,7 @@
 
 #include "State.h"
 #include "InputEvents.h"
-#include "../Foundation/KeyBindings.h"
+#include "KeyBindings.h"
 #include "InputServiceInterface.h"
 
 #include <QGraphicsView>

@@ -8,6 +8,7 @@
 
 #include <QGraphicsProxyWidget>
 #include <QStringList>
+#include <QValidator>
 
 namespace CoreUi
 {
@@ -25,12 +26,24 @@ namespace CoreUi
     private slots:
         void ExportSettings();
         void RestoreBindingsToDefault();
+        void ToggleHelp();
 
         QLineEdit *GetLineEditForName(QString name);
 
     signals:
         void KeyBindingsUpdated(Foundation::KeyBindings*);
         void RestoreDefaultBindings();
+
+    };
+
+    // =========================================================================
+
+    class KeySequenceValidator : public QValidator
+    {
+
+    public:
+        KeySequenceValidator(QObject *parent);
+        QValidator::State validate(QString &input, int &pos) const;
 
     };
 }
