@@ -4,7 +4,7 @@
 #define incl_Input_ConfigManager_h
 
 #include "Foundation.h"
-#include "../Foundation/KeyBindings.h"
+#include "KeyBindings.h"
 
 #include <QObject>
 #include <QMap>

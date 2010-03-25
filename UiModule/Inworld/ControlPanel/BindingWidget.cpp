@@ -7,14 +7,30 @@
 #include <QVariant>
 #include <QMessageBox>
 
+#include <QDebug>
+
 namespace CoreUi
 {
     BindingWidget::BindingWidget(QObject *settings_object) :
         QWidget()
     {
         setupUi(this);
+        helpWidget->hide();
+
         connect(settings_object, SIGNAL(SaveSettingsClicked()), SLOT(ExportSettings()));
         connect(restoreDefaultsPushButton, SIGNAL(clicked()), SLOT(RestoreBindingsToDefault()));
+        connect(helpPushButton, SIGNAL(clicked()), SLOT(ToggleHelp()));
+
+        // Loop trough all of our line edits and set a input validator
+        KeySequenceValidator *key_sequence_validator = new KeySequenceValidator(this);
+        Foundation::KeyBindings *bindings = new Foundation::KeyBindings();
+        foreach (QString line_edit_identifier, bindings->GetConfigKeys())
+        {
+            QLineEdit *line_edit = GetLineEditForName(line_edit_identifier);
+            if (line_edit)
+                line_edit->setValidator(key_sequence_validator);
+        }
+        SAFE_DELETE(bindings);
     }
 
     // Public
@@ -100,10 +116,15 @@ namespace CoreUi
     {
         int selection = QMessageBox::question(this, "Restoring default bindings", "Really want to restore? This will remove your\ncurrently stored bindings permanently.", QMessageBox::Yes, QMessageBox::No);
         if (selection == QMessageBox::Yes)
-        {
             emit RestoreDefaultBindings();
-            // update ui, get new bindings from input module after this
-        }
+    }
+
+    void BindingWidget::ToggleHelp()
+    {
+        if (helpWidget->isVisible())
+            helpWidget->hide();
+        else
+            helpWidget->show();
     }
 
     QLineEdit *BindingWidget::GetLineEditForName(QString name)
@@ -153,5 +174,31 @@ namespace CoreUi
         else if (name == "python.object.toggle.scale")
             return toggleObjectScaleLineEdit;
         return 0;
+    }
+
+    // =========================================================================
+    // KeySequenceValidator for line edits
+
+    KeySequenceValidator::KeySequenceValidator(QObject *parent) :
+        QValidator(parent)
+    {
+    }
+
+    QValidator::State KeySequenceValidator::validate(QString &input, int &pos) const
+    {
+        if (pos == 0)
+            return QValidator::Acceptable;
+
+        QString new_char, is_space = "", seq_string;
+        new_char = input.right(1);
+        if (pos >= 2)
+            is_space = QString(input.at(pos-2));
+        if (new_char == " ")
+            return QValidator::Acceptable;
+        seq_string = QKeySequence(new_char).toString();
+        if (pos != 1 && (is_space != " " && is_space != "+"))
+            seq_string = seq_string.toLower();
+        input = input.left(pos-1) + seq_string;
+        return QValidator::Acceptable;
     }
 }
