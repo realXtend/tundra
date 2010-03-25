@@ -4,14 +4,17 @@
 #include "DebugOperatorNew.h"
 #include "MumbleVoipModule.h"
 #include "MemoryLeakCheck.h"
-#include "LinkPlugin.h"
 #include "RexLogicModule.h"
 #include "ModuleManager.h"
 #include "Avatar/Avatar.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
-#include <QDesktopServices>
+#include "EventManager.h"
+
+#include "LinkPlugin.h"
+#include "ServerObserver.h"
+#include "ConnectionManager.h"
 
 namespace MumbleVoip
 {
@@ -19,22 +22,29 @@ namespace MumbleVoip
 
 	MumbleVoipModule::MumbleVoipModule()
         : ModuleInterfaceImpl(module_name_),
-          link_plugin_(new LinkPlugin()),
-          time_from_last_update_ms_(0)
+          link_plugin_(0),
+          time_from_last_update_ms_(0),
+          server_observer_(0),
+          connection_manager_(0)
     {
     }
 
     MumbleVoipModule::~MumbleVoipModule()
     {
-        SAFE_DELETE(link_plugin_);
     }
 
     void MumbleVoipModule::Load()
     {
+        connection_manager_ = new ConnectionManager();
+        link_plugin_ = new LinkPlugin();
+        server_observer_ = new ServerObserver(framework_);
+        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
     }
 
     void MumbleVoipModule::Unload()
     {
+        SAFE_DELETE(link_plugin_);
+        SAFE_DELETE(server_observer_);
     }
 
     void MumbleVoipModule::Initialize() 
@@ -52,8 +62,22 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Update(f64 frametime)
     {
-        if (!link_plugin_->IsRunning())
-            return; 
+        if (link_plugin_ && link_plugin_->IsRunning())
+            UpdateLinkPlugin(frametime);
+    }
+
+    bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    {
+        if (server_observer_)
+            server_observer_->HandleEvent(category_id, event_id, data);
+
+        return false;
+    }
+
+    void MumbleVoipModule::UpdateLinkPlugin(f64 frametime)
+    {
+        if (!link_plugin_)
+            return;
 
         time_from_last_update_ms_ += 1000*frametime;
         if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
@@ -67,7 +91,6 @@ namespace MumbleVoip
         RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
         if (avatar)
         {
-        
             Scene::EntityPtr entity = avatar->GetUserAvatar();
             if (!entity)
                 return;
@@ -83,31 +106,26 @@ namespace MumbleVoip
                 Vector3df top_vector(0,0,1);
                 link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
             }
-        }
 
-        Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
-        if (camera)
-        {
-            const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
-            if (placeable_component)
+            Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
+            if (camera)
             {
-                OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                Quaternion q = ogre_placeable->GetOrientation();
+                const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
+                if (placeable_component)
+                {
+                    OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+                    Quaternion q = ogre_placeable->GetOrientation();
 
-                Vector3df position_vector = ogre_placeable->GetPosition(); 
-                Vector3df front_vector = q*Vector3df(1,0,0);
-                Vector3df top_vector(0,0,1);
-                link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
+                    Vector3df position_vector = ogre_placeable->GetPosition(); 
+                    Vector3df front_vector = q*Vector3df(1,0,0);
+                    Vector3df top_vector(0,0,1);
+                    link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
+                }
             }
+
+            link_plugin_->SendData();
         }
-
-        link_plugin_->SendData();
     }
-
-	bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
-	{
-		return false;
-	}
 
     void MumbleVoipModule::InitializeConsoleCommands()
     {
@@ -120,7 +138,7 @@ namespace MumbleVoip
         }
     }
     
-    Console::CommandResult  MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
+    Console::CommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
     {
         if (params.size() != 2)
         {
@@ -172,7 +190,7 @@ namespace MumbleVoip
 
         try
         {
-            StartMumbleClient(server_url);
+            ConnectionManager::StartMumbleClient(server_url);
             return Console::ResultSuccess("Mumbe client started.");
         }
         catch(std::exception &e)
@@ -182,19 +200,49 @@ namespace MumbleVoip
         }
     }
 
-    void MumbleVoipModule::StartMumbleClient(const QString& server_url)
+    void MumbleVoipModule::OnMumbleServerInfoReceived(ServerInfo info)
     {
-        QUrl url(server_url);
-        if (!url.isValid())
+        QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
+        murmur_url.setUserName(info.user_name);
+        murmur_url.setPassword(info.password);
+        murmur_url.setQueryItems(QList<QPair<QString,QString>>() << QPair<QString,QString>("version", info.version));
+
+        LogInfo("Starting mumble client.");
+        try
         {
-            QString error_message = QString("Url '%1' is invalid.").arg(server_url);
-            throw std::exception(error_message.toStdString().c_str());
+            ConnectionManager::StartMumbleClient(murmur_url.toString());
+
+            // it takes some time for a mumble client to setup shared memory for link plugins
+            // so we have to wait some time before we can start our link plugin.
+            user_id_for_link_plugin_ = info.avatar_id;
+            context_id_for_link_plugin_ = info.context_id;
+            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
         }
-        
-        if (! QDesktopServices::openUrl(server_url))
+        catch(std::exception &e)
         {
-            QString error_message = QString("Cannot find handler application for url: %1").arg(server_url);
-            throw std::exception(error_message.toStdString().c_str());
+            QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
+            LogError(messge.toStdString());
+            return;
+        }
+    }
+
+    void MumbleVoipModule::StartLinkPlugin()
+    {
+        link_plugin_->SetUserIdentity(user_id_for_link_plugin_);
+        link_plugin_->SetContextId(context_id_for_link_plugin_);
+        link_plugin_->SetApplicationName("Naali viewer");
+        link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
+        link_plugin_->Start();
+
+        if (link_plugin_->IsRunning())
+        {
+            QString message = QString("Mumbe link plugin started: id '%1' context '%2'").arg(user_id_for_link_plugin_).arg(context_id_for_link_plugin_);
+            LogInfo(message.toStdString());
+        }
+        else
+        {
+            QString error_message = QString("Link plugin connection cannot be established. %1 ").arg(link_plugin_->GetReason());
+            LogError(error_message.toStdString());
         }
     }
 

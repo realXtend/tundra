@@ -13,5 +13,6 @@
     <subscriber module="EnvironmentModule" priority="100" />
     <subscriber module="DebugStatsModule" priority="105" />
     <subscriber module="InWorldChatModule" priority="105" />
+	<subscriber module="MumbleVoipModule" priority="100" />
 </subscribers>
 
