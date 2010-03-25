@@ -59,7 +59,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 0: #test avatar tracking, works :)
+if 0: #test avatartracking, works :)
     av_entid = 2628869553
     print "<:::",
     try:
@@ -1175,6 +1175,14 @@ if 0: #local object creation, testing if local previews of .scenes would work
     print "hep"
     e = r.createEntity("Jack.mesh", 1515)
     print e
-    e.placeable.Position = Vec3(239, 234, 38)
+    e.placeable.Position = Vec3(128, 128, 60)
     e.placeable.Scale = Vec3(5, 5, 5)
     e.placeable.Orientation = Quat(0, 0, 0, 1)
+
+if 1: #running localscene dotscene loader
+    import localscene.loader as l
+    filename = "pymodules/localscene/test.scene"
+    l.load_dotscene(filename)
+
+    #avatar = r.getEntity(r.getUserAvatarId())
+    #print avatar.placeable.Position.toString()
