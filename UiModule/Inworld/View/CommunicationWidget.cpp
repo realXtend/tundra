@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
+#include <QGraphicsScene>
 
 namespace CoreUi
 {
