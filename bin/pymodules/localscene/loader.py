@@ -1,4 +1,13 @@
 import dotscene
+try:
+    import rexviewer
+except ImportError:
+    print "NOTE: dotscene loader not able to access Naali API, is running outiside Naali?"
+    rexviewer = None
+else:
+    import PythonQt.QtGui
+    Vec = PythonQt.QtGui.QVector3D
+    Quat = PythonQt.QtGui.QQuaternion
 
 class OgreNode:
     """the equivalent of Ogre Node in Naali for this import now.
@@ -9,14 +18,34 @@ class OgreNode:
         self.position = None
         self.orientation = None
         self.scale = None
-        self.ob = None
+        self.object = None
+        self.naali_ent = None
 
     def createChildSceneNode(self):
         return OgreNode()
 
     def attachObject(self, ob):
-        self.ob = ob
+        self.object = ob
         print self, "attached object", ob
+        if rexviewer is not None: 
+            self.create_naali_meshentity()
+
+    def create_naali_meshentity(self):
+        self.naali_ent = rexviewer.createEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
+        e = self.naali_ent
+        print "Created naali entity:", e, e.id
+            
+        """apply pos, rot & scale. 
+        XXX this could skip all conversions, like quat now, 
+        by dotscene.py doing the qt types directly"""
+        p = e.placeable
+        #print p.Position.toString(), self.position
+        p.Position = Vec(*self.position)
+            
+        #print p.Orientation.toString(), self.orientation
+        p.Orientation = self.orientation
+
+        p.Scale = Vec(*self.scale)
 
 class OgreEntity:
     def __init__(self, name, mesh):

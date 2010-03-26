@@ -1,5 +1,13 @@
 #!/usr/bin/python
 """
+NOTE: 
+this has been copied from python-ogre demos and modified a little to work without direct access to ogre,
+by antont / Toni Alatalo for the realXtend Naali viewer project. original docstring is below.
+this is used by loader making fake ogre scenemanager, (mesh) entity and node classes which are used to
+create mesh entities in Naali (which also uses ogre underneath).
+"""
+
+"""
 this file parses .scene node (dotscene) files and
 creates them in OGRE with user data
 

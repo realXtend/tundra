@@ -1180,9 +1180,11 @@ if 0: #local object creation, testing if local previews of .scenes would work
     e.placeable.Orientation = Quat(0, 0, 0, 1)
 
 if 1: #running localscene dotscene loader
-    import localscene.loader as l
+    import localscene.loader
+    localscene.loader = reload(localscene.loader)
+
     filename = "pymodules/localscene/test.scene"
-    l.load_dotscene(filename)
+    localscene.loader.load_dotscene(filename)
 
     #avatar = r.getEntity(r.getUserAvatarId())
     #print avatar.placeable.Position.toString()
