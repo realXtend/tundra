@@ -18,7 +18,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        BindingWidget::BindingWidget(QObject *settings_object);
+        BindingWidget(QObject *settings_object);
 
     public slots:
         void UpdateContent(Foundation::KeyBindings *bindings);
