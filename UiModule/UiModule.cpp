@@ -10,6 +10,7 @@
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
+#include "WorldStream.h"
 
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
@@ -30,7 +31,7 @@
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
 #include "ConsoleEvents.h"
-#include "WorldStream.h"
+#include "InputEvents.h"
 
 #include <QApplication>
 #include <QDir>
@@ -66,7 +67,7 @@ namespace UiServices
     void UiModule::Load()
     {
         QApplication::setStyle(new UiProxyStyle());
-        event_query_categories_ << "Framework" << "Scene"  << "Console";
+        event_query_categories_ << "Framework" << "Scene"  << "Console" << "Input";
     }
 
     void UiModule::Unload()
@@ -96,6 +97,7 @@ namespace UiServices
 
             service_getter_ = new CoreUi::ServiceGetter(GetFramework());
             inworld_scene_controller_->GetControlPanelManager()->SetServiceGetter(service_getter_);
+            ui_state_machine_->SetServiceGetter(service_getter_);
             LogDebug("Service getter READY");
 
         }
@@ -112,8 +114,6 @@ namespace UiServices
         ether_logic_->Start();
         ui_state_machine_->SwitchToEtherScene();
         LogDebug("Ether Logic STARTED");
-
-        service_getter_->GetKeyBindings();
     }
 
     void UiModule::Uninitialize()
@@ -186,7 +186,7 @@ namespace UiServices
                 }
                 case Console::Events::EVENT_CONSOLE_PRINT_LINE:
                 {
-                    Console::ConsoleEventData* console_data=dynamic_cast<Console::ConsoleEventData*>(data);
+                    Console::ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
                     ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                     break;
                 }
@@ -205,6 +205,29 @@ namespace UiServices
                 }
                 default:
                     break;
+            }
+        }
+        else if (category == "Input")
+        {
+            switch (event_id)
+            {
+                case Input::Events::NAALI_BINDINGS_CHANGED:
+                {
+                    Input::Events::BindingsData *bindings_data = dynamic_cast<Input::Events::BindingsData*>(data);
+                    if (bindings_data)
+                        service_getter_->PublishChangedBindings(bindings_data->bindings);
+                    break;
+                }
+                case Input::Events::NAALI_TOGGLE_ETHER:
+                {
+                    ui_state_machine_->ToggleEther();
+                    break;
+                }
+                case Input::Events::NAALI_TOGGLE_WORLDCHAT:
+                {
+                    inworld_scene_controller_->SetFocusToChat();
+                    break;
+                }
             }
         }
 
@@ -227,7 +250,7 @@ namespace UiServices
                     QString sim = QString::fromStdString(current_world_stream_->GetSimName());
                     QString username = QString::fromStdString(current_world_stream_->GetUsername());
                     if (!sim.isEmpty() && !username.isEmpty())
-                        GetNotificationManager()->ShowNotification(new MessageNotification(username + " welcome to " + sim, 10000));
+                        GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
                 }
                 break;
             }

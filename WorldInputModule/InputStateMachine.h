@@ -467,6 +467,8 @@ namespace Input
 
             void Update (f64 frametime);
 
+            void SendBindingsChangedEvent();
+
             //! InputServiceInterface implementation
             Foundation::State *GetState (QString name);
 
@@ -504,7 +506,6 @@ namespace Input
             KeyStateMap     key_states_;
 
             ConfigManager *config_manager_;
-
     };
 }
 

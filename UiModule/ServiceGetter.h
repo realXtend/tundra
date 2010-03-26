@@ -22,6 +22,7 @@ namespace CoreUi
         void GetKeyBindings();
         void SetKeyBindings(Foundation::KeyBindings *bindings);
         void RestoreKeyBindings();
+        void PublishChangedBindings(Foundation::KeyBindings *bindings);
 
     signals:
         void KeyBindingsChanged(Foundation::KeyBindings*);

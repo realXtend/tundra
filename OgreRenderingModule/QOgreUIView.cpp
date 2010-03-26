@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "QOgreUIView.h"
 #include "CoreStringUtils.h"
+#include "KeyBindings.h"
 
 #ifdef Q_WS_X11
 #include <QX11Info>
@@ -157,12 +158,45 @@ namespace OgreRenderer
         return win_;
     }
 
+    void QOgreUIView::UpdateKeyBindings(Foundation::KeyBindings *bindings)
+    {
+        // Python restart QKeySequences
+        std::list<Foundation::Binding> bind_list = bindings->GetBindings("python.restart");
+        std::list<Foundation::Binding>::const_iterator iter = bind_list.begin();
+        std::list<Foundation::Binding>::const_iterator end = bind_list.end();
+
+        if (iter != end)
+        {
+            python_run_keys_.clear();
+            while (iter != end)
+            {
+                python_run_keys_.append((*iter).sequence);
+                iter++;
+            }
+        }
+
+        // Toggle console QKeySequences
+        bind_list = bindings->GetBindings("toggle.console");
+        iter = bind_list.begin();
+        end = bind_list.end();
+
+        if (iter != end)
+        {
+            console_toggle_keys_.clear();
+            while (iter != end)
+            {
+                console_toggle_keys_.append((*iter).sequence);
+                iter++;
+            }
+        }
+    }
+
     void QOgreUIView::keyPressEvent (QKeyEvent *e)
     {
-        if (e->key() == Qt::Key_F1 && scene()->focusItem())
+        QKeySequence seq(e->key() + e->modifiers());
+        if (console_toggle_keys_.contains(seq) && scene()->focusItem())
             emit ConsoleToggleRequest();
-
-        else if (e->key() == Qt::Key_F11 && scene()->focusItem())
+        if (python_run_keys_.contains(seq) && scene()->focusItem())
             emit PythonRestartRequest();
 
         emit ViewKeyPressed(e);

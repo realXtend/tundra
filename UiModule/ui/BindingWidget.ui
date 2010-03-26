@@ -38,9 +38,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-32</y>
         <width>240</width>
-        <height>1071</height>
+        <height>1114</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -217,13 +217,13 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    Space+Alt+D&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; color:#000000;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#00007f;&quot;&gt;Special keys&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Enter, Shift, Ctrl, Alt, PgUp, &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Enter, Shift, Ctrl, Alt, &lt;/span&gt;&lt;span style=&quot; font-family:'monospace'; font-size:8pt; color:#000000;&quot;&gt;AltGr, &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;PgUp, &lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    PgDown, Home, End, Backspace, &lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Up, Down, Left, Right, Tab, Plus, &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Minus, Del, Forward, Ins&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#00007f;&quot;&gt;Special keys Mac OS X&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#00007f;&quot;&gt;    &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;Meta&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Minus, Del, Forward, Ins, &lt;/span&gt;&lt;span style=&quot; font-family:'monospace'; font-size:8pt; color:#000000;&quot;&gt;Escape,&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'monospace'; font-size:8pt; color:#000000;&quot;&gt;    F1 to F12, CapsLock, NumLock,&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'monospace'; font-size:8pt; color:#000000;&quot;&gt;    ScrollLock, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;Meta = Windows Key &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    or Mac OS X Control/Command key&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -362,6 +362,111 @@ p, li { white-space: pre-wrap; }
           </layout>
          </item>
          <item>
+          <widget class="QLabel" name="label">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>General</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_General">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="leftMargin">
+            <number>20</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item row="3" column="0">
+            <widget class="QLabel" name="deleteLabel">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Delete</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="deleteLineEdit"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="undoLabel">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="undoLineEdit"/>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="objectLinkLabel">
+             <property name="text">
+              <string>Object Link</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="objectLinkLineEdit"/>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="objectUnlinkLabel">
+             <property name="text">
+              <string>Object Unlink</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="objectUnlinkLineEdit"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="toggleConsoleLabel">
+             <property name="text">
+              <string>Toggle Console</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="toggleConsoleLineEdit"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="toggleEtherLabel">
+             <property name="text">
+              <string>Toggle Ether</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="toggleEtherLineEdit"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="focusChatLabel">
+             <property name="text">
+              <string>Focus Chat</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="focusChatLineEdit"/>
+           </item>
+          </layout>
+         </item>
+         <item>
           <widget class="QLabel" name="labelTitleCamera">
            <property name="font">
             <font>
@@ -451,7 +556,7 @@ p, li { white-space: pre-wrap; }
             <number>10</number>
            </property>
            <property name="bottomMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <item row="0" column="0">
             <widget class="QLabel" name="runLabel">
@@ -508,91 +613,6 @@ p, li { white-space: pre-wrap; }
            </item>
            <item row="2" column="1">
             <widget class="QLineEdit" name="duplicateDragLineEdit"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>General</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QFormLayout" name="formLayout_General">
-           <property name="fieldGrowthPolicy">
-            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-           </property>
-           <property name="leftMargin">
-            <number>20</number>
-           </property>
-           <property name="topMargin">
-            <number>10</number>
-           </property>
-           <property name="bottomMargin">
-            <number>10</number>
-           </property>
-           <item row="1" column="0">
-            <widget class="QLabel" name="deleteLabel">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Delete</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="deleteLineEdit"/>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="undoLabel">
-             <property name="text">
-              <string>Undo</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="undoLineEdit"/>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="objectLinkLabel">
-             <property name="text">
-              <string>Object Link</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="objectLinkLineEdit"/>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="objectUnlinkLabel">
-             <property name="text">
-              <string>Object Unlink</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="objectUnlinkLineEdit"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="toggleConsoleLabel">
-             <property name="text">
-              <string>Toggle Console</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="toggleConsoleLineEdit"/>
            </item>
           </layout>
          </item>

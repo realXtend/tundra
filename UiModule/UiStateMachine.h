@@ -13,6 +13,8 @@
 #include <QKeyEvent>
 #include <QMap>
 
+namespace Foundation { class KeyBindings; }
+
 namespace CoreUi
 {
     class UI_MODULE_API UiStateMachine : public QStateMachine
@@ -28,12 +30,15 @@ namespace CoreUi
         void SwitchToEtherScene();
         void RegisterScene(QString name, QGraphicsScene *scene);
         void SwitchToScene(QString name);
+        void ToggleEther();
 
         void SetConnectionState(UiDefines::ConnectionState new_connection_state);
+        void SetServiceGetter(QObject *service_getter);
 
     private slots:
         void SetTransitions();
         void ViewKeyEvent(QKeyEvent *key_event);
+        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
         void AnimationsStart();
         void AnimationsFinished();
@@ -54,6 +59,8 @@ namespace CoreUi
         QMap<QGraphicsScene*, QParallelAnimationGroup*> animations_map_;
 
         UiDefines::ConnectionState connection_state_;
+
+        QList<QKeySequence> ether_toggle_seq_list_;
 
     signals:
         void EtherTogglePressed();

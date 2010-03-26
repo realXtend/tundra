@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "UiStateMachine.h"
+#include "KeyBindings.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsWidget>
@@ -42,45 +43,27 @@ namespace CoreUi
 
     void UiStateMachine::ViewKeyEvent(QKeyEvent *key_event)
     {
-        switch (key_event->key())
+        if (key_event->isAutoRepeat())
+            return;      
+        if (ether_toggle_seq_list_.contains(QKeySequence(key_event->key() + key_event->modifiers())))
+            ToggleEther();
+    }
+
+    void UiStateMachine::UpdateKeyBindings(Foundation::KeyBindings *bindings)
+    {
+        std::list<Foundation::Binding> bind_list = bindings->GetBindings("naali.toggle.ether");
+        std::list<Foundation::Binding>::const_iterator iter = bind_list.begin();
+        std::list<Foundation::Binding>::const_iterator end = bind_list.end();
+
+        if (iter == end)
+            return;
+
+        ether_toggle_seq_list_.clear();
+        while (iter != end)
         {
-            case Qt::Key_Escape:
-                if (connection_state_ == UiDefines::Connected)
-                    emit EtherTogglePressed();
-                break;
+            ether_toggle_seq_list_.append((*iter).sequence);
+            iter++;
         }
-    }
-
-    void UiStateMachine::SetConnectionState(UiDefines::ConnectionState new_connection_state)
-    {
-        connection_state_ = new_connection_state;
-
-        switch (connection_state_)
-        {
-            case UiDefines::Disconnected:
-                SwitchToEtherScene();
-                break;
-            case UiDefines::Connected:
-                SwitchToInworldScene();
-                break;
-            case UiDefines::Failed:
-                connection_state_ = UiDefines::Disconnected;
-                break;
-            default:
-                return;
-        }
-    }
-
-    void UiStateMachine::SwitchToInworldScene()
-    {
-        if (current_scene_ == scene_map_["Ether"])
-            AnimationsStart();
-    }
-
-    void UiStateMachine::SwitchToEtherScene()
-    {
-        if (current_scene_ == scene_map_["Inworld"])
-            AnimationsStart();
     }
 
     void UiStateMachine::AnimationsStart()
@@ -133,7 +116,31 @@ namespace CoreUi
         SwitchToScene(scene_name);
     }
 
+    void UiStateMachine::CheckAnimationTargets(QParallelAnimationGroup *animations)
+    {
+        for (int i=0; i<animations->animationCount(); i++)
+        {
+            QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(animations->animationAt(i));
+            if (!anim)
+                continue;
+            if (!anim->targetObject())
+                animations->removeAnimation(anim);
+        }
+    }
+
     // Public
+
+    void UiStateMachine::SwitchToInworldScene()
+    {
+        if (current_scene_ == scene_map_["Ether"])
+            AnimationsStart();
+    }
+
+    void UiStateMachine::SwitchToEtherScene()
+    {
+        if (current_scene_ == scene_map_["Inworld"])
+            AnimationsStart();
+    }
 
     void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
     {
@@ -168,15 +175,35 @@ namespace CoreUi
         }
     }
 
-    void UiStateMachine::CheckAnimationTargets(QParallelAnimationGroup *animations)
+    void UiStateMachine::ToggleEther()
     {
-        for (int i=0; i<animations->animationCount(); i++)
+        if (connection_state_ == UiDefines::Connected)
+            emit EtherTogglePressed();
+    }
+
+    void UiStateMachine::SetConnectionState(UiDefines::ConnectionState new_connection_state)
+    {
+        connection_state_ = new_connection_state;
+
+        switch (connection_state_)
         {
-            QPropertyAnimation *anim = dynamic_cast<QPropertyAnimation *>(animations->animationAt(i));
-            if (!anim)
-                continue;
-            if (!anim->targetObject())
-                animations->removeAnimation(anim);
+            case UiDefines::Disconnected:
+                SwitchToEtherScene();
+                break;
+            case UiDefines::Connected:
+                SwitchToInworldScene();
+                break;
+            case UiDefines::Failed:
+                connection_state_ = UiDefines::Disconnected;
+                break;
+            default:
+                return;
         }
+    }
+
+    void UiStateMachine::SetServiceGetter(QObject *service_getter)
+    {
+        connect(service_getter, SIGNAL(KeyBindingsChanged(Foundation::KeyBindings*)),
+                SLOT(UpdateKeyBindings(Foundation::KeyBindings*)));
     }
 }

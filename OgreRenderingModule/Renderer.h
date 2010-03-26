@@ -15,6 +15,7 @@ class QWidget;
 namespace Foundation
 {
     class Framework;
+    class KeyBindings;
 }
 
 namespace Ogre
@@ -194,6 +195,9 @@ namespace OgreRenderer
 
         //! returns the composition handler responsible of the post-processing effects
         CompositionHandler &GetCompositionHandler() { return c_handler_; }
+
+        //! Update key bindings to QGraphicsView
+        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
     private:
         //! Initialises Qt

@@ -242,6 +242,11 @@ namespace CoreUi
         imButton->setEnabled(true);
     }
 
+    void CommunicationWidget::SetFocusToChat()
+    {
+        chatLineEdit->setFocus(Qt::MouseFocusReason);
+    }
+
     // NormalChatViewWidget : QWidget
 
     NormalChatViewWidget::NormalChatViewWidget(QWidget *parent) :

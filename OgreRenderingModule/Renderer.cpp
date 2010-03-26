@@ -961,4 +961,10 @@ namespace OgreRenderer
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
     }
+
+    void Renderer::UpdateKeyBindings(Foundation::KeyBindings *bindings) 
+    { 
+        if (q_ogre_ui_view_) 
+            q_ogre_ui_view_->UpdateKeyBindings(bindings); 
+    }
 }
