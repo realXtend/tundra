@@ -169,6 +169,13 @@ namespace OgreRenderer
             }
         }
 
+        if (category_id == input_event_category_ && event_id == Input::Events::NAALI_BINDINGS_CHANGED)
+        {
+            Input::Events::BindingsData *bindings_data = dynamic_cast<Input::Events::BindingsData *>(data);
+            if (bindings_data)
+                renderer_->UpdateKeyBindings(bindings_data->bindings);
+        }
+
         return false;
     }
 

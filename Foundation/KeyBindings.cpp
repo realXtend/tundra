@@ -50,7 +50,7 @@ namespace Foundation
     KeyBindings::KeyBindings()
     {
         config_keys_ << "move.back" << "move.forward" << "move.up" << "move.down"  << "move.left" << "move.right"
-             << "naali.delete" << "naali.undo" << "naali.object.link" << "naali.object.unlink"
+             << "naali.delete" << "naali.undo" << "naali.object.link" << "naali.object.unlink" << "naali.toggle.ether" << "naali.toggle.worldchat"
              << "python.duplicate.drag" << "python.object.toggle.move" << "python.object.toggle.scale" << "python.restart" << "python.run"
              << "toggle.camera" << "toggle.console" << "toggle.fly" 
              << "rotate.left" << "rotate.right"
@@ -59,6 +59,7 @@ namespace Foundation
 
     void KeyBindings::BindKey(Binding binding)
     {
+        binding.config_key = NameForEvent(binding.event_ids.enter_id);
         bindings_.push_back(binding);
     }
 
@@ -83,6 +84,22 @@ namespace Foundation
         {
             Binding binding = (*iter);
             if (binding.event_ids == event_pair)
+                return_list.push_back(binding);
+            iter++;
+        }
+        return return_list;
+    }
+
+    std::list<Binding> KeyBindings::GetBindings(QString event_config_key)
+    {
+        std::list<Binding> return_list;
+        
+        KeyBindingList::const_iterator iter = bindings_.begin();
+        KeyBindingList::const_iterator end = bindings_.end();
+        while (iter != end)
+        {
+            Binding binding = (*iter);
+            if (binding.config_key == event_config_key)
                 return_list.push_back(binding);
             iter++;
         }
@@ -183,6 +200,12 @@ namespace Foundation
                 break;
             case Input::Events::NAALI_OBJECTUNLINK:
                 name = "naali.object.unlink";
+                break;
+            case Input::Events::NAALI_TOGGLE_ETHER:
+                name = "naali.toggle.ether";
+                break;
+            case Input::Events::NAALI_TOGGLE_WORLDCHAT:
+                name = "naali.toggle.worldchat";
                 break;
 
             // Python
@@ -297,6 +320,16 @@ namespace Foundation
         else if (name == "naali.object.unlink")
         {
             id_pair.first = Input::Events::NAALI_OBJECTUNLINK;
+            id_pair.second = 0;
+        }
+        else if (name == "naali.toggle.ether")
+        {
+            id_pair.first = Input::Events::NAALI_TOGGLE_ETHER;
+            id_pair.second = 0;
+        }
+        else if (name == "naali.toggle.worldchat")
+        {
+            id_pair.first = Input::Events::NAALI_TOGGLE_WORLDCHAT;
             id_pair.second = 0;
         }
         else if (name == "python.run")

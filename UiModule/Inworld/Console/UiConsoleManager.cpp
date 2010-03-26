@@ -116,6 +116,11 @@ namespace CoreUi
 
     void UiConsoleManager::ToggleConsole()
     {
+        if (!ui_view_)
+            return;
+        if (ui_view_->scene() != proxy_widget_->scene())
+            return;
+
         visible_ = !visible_;
         int current_height = ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight();
         if (visible_)

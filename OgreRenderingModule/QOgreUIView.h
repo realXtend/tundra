@@ -12,9 +12,10 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 
+namespace Foundation { class KeyBindings; }
+
 namespace OgreRenderer
 {
-
     class QOgreUIView : public QGraphicsView
     {
 
@@ -35,6 +36,8 @@ namespace OgreRenderer
         void setDirty(bool dirty) { dirty_ = dirty; }
         bool isDirty() { return dirty_; }
 
+        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
+
     protected:
         void keyPressEvent (QKeyEvent *e);
         void resizeEvent (QResizeEvent *e);
@@ -45,6 +48,9 @@ namespace OgreRenderer
         Ogre::RenderWindow  *win_;
         QOgreWorldView *view_;
         bool dirty_;
+
+        QList<QKeySequence> python_run_keys_;
+        QList<QKeySequence> console_toggle_keys_;
 
     private slots:
         void SceneChange();

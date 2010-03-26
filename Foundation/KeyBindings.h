@@ -27,6 +27,7 @@ namespace Foundation
 
         QKeySequence sequence;
         EventPair event_ids;
+        QString config_key;
     };
 
     typedef std::list<Binding> KeyBindingList;
@@ -41,6 +42,7 @@ namespace Foundation
 
         KeyBindingList GetBindings();
         std::list<Binding> GetBindings(EventPair event_pair);
+        std::list<Binding> GetBindings(QString event_config_key);
         std::pair<int,int> GetEventPair(QKeySequence sequence);
         QStringList GetConfigKeys();
 

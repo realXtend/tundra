@@ -84,50 +84,47 @@ namespace UiServices
 
     bool InworldSceneController::AddProxyWidget(UiServices::UiProxyWidget *proxy_widget)
     {
-        if (ui_view_)
-        {
-            // Add to scene
-            proxy_widget->hide();
-            inworld_scene_->addItem(proxy_widget);
-
-            // Add to internal control list
-            if (!all_proxy_widgets_in_scene_.contains(proxy_widget))
-                all_proxy_widgets_in_scene_.append(proxy_widget);
-
-            // Add to menu structure if its needed
-            UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
-            if (properties.IsShownInToolbar())
-            {
-                // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
-                if (properties.GetWidgetName() != "Inventory" && 
-                    properties.GetWidgetName() != "Avatar Editor")
-                    menu_manager_->AddMenuItem(CoreUi::MenuManager::Building, proxy_widget, properties.GetWidgetName());
-                else
-                    menu_manager_->AddMenuItem(CoreUi::MenuManager::Personal, proxy_widget, properties.GetWidgetName());
-                connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
-            }
-            return true;
-        }
-        else
+        if (!inworld_scene_)
         {
             SAFE_DELETE(proxy_widget);
             return false;
         }
+
+        // Add to scene
+        proxy_widget->hide();
+        inworld_scene_->addItem(proxy_widget);
+
+        // Add to internal control list
+        if (!all_proxy_widgets_in_scene_.contains(proxy_widget))
+            all_proxy_widgets_in_scene_.append(proxy_widget);
+
+        // Add to menu structure if its needed
+        UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
+        if (properties.IsShownInToolbar())
+        {
+            // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
+            if (properties.GetWidgetName() != "Inventory" && 
+                properties.GetWidgetName() != "Avatar Editor")
+                menu_manager_->AddMenuItem(CoreUi::MenuManager::Building, proxy_widget, properties.GetWidgetName());
+            else
+                menu_manager_->AddMenuItem(CoreUi::MenuManager::Personal, proxy_widget, properties.GetWidgetName());
+            connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
+        }
+        return true;
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(UiServices::UiProxyWidget *proxy_widget)
     {
-        if (ui_view_)
-        {
-            // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
-            if (proxy_widget->GetWidgetProperties().GetWidgetName() != "Inventory" && 
-                proxy_widget->GetWidgetProperties().GetWidgetName() != "Avatar Editor")
-                menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Building, proxy_widget);
-            else
-                menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Personal, proxy_widget);
-            inworld_scene_->removeItem(proxy_widget);
-            all_proxy_widgets_in_scene_.removeOne(proxy_widget);
-        }
+        if (!inworld_scene_)
+            return;
+        // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
+        if (proxy_widget->GetWidgetProperties().GetWidgetName() != "Inventory" && 
+            proxy_widget->GetWidgetProperties().GetWidgetName() != "Avatar Editor")
+            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Building, proxy_widget);
+        else
+            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Personal, proxy_widget);
+        inworld_scene_->removeItem(proxy_widget);
+        all_proxy_widgets_in_scene_.removeOne(proxy_widget);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QWidget *widget)
@@ -139,20 +136,20 @@ namespace UiServices
 
     void InworldSceneController::BringProxyToFront(UiProxyWidget *widget)
     {
-        if (ui_view_)
-        {
-            inworld_scene_->setActiveWindow(widget);
-            inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
-        }
+        if (!inworld_scene_)
+            return;
+        if (!inworld_scene_->isActive())
+            return;
+        inworld_scene_->setActiveWindow(widget);
+        inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
     }
 
     void InworldSceneController::BringProxyToFront(QWidget *widget)
     {
-        if (ui_view_)
-        {
-            inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
-            inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
-        }
+        if (!inworld_scene_)
+            return;
+        inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
+        inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
     }
 
     QObject *InworldSceneController::GetSettingsObject()
@@ -164,7 +161,13 @@ namespace UiServices
             return 0;
     }
 
-    // Don't touch
+    void InworldSceneController::SetFocusToChat()
+    {
+        if (communication_widget_)
+            communication_widget_->SetFocusToChat();
+    }
+
+    // Don't touch, please
 
     void InworldSceneController::SetWorldChatController(QObject *controller)
     {

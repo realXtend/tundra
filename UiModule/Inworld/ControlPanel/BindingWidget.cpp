@@ -163,6 +163,10 @@ namespace CoreUi
             return objectLinkLineEdit;
         else if (name == "naali.object.unlink")
             return objectUnlinkLineEdit;
+        else if (name == "naali.toggle.ether")
+            return toggleEtherLineEdit;
+        else if (name == "naali.toggle.worldchat")
+            return focusChatLineEdit;
         else if (name == "python.run")
             return runLineEdit;
         else if (name == "python.restart")

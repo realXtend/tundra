@@ -46,8 +46,10 @@ namespace CoreUi
             return;
 
         input_logic->RestoreDefaultBindings();
-        Foundation::KeyBindings *bindings = input_logic->GetBindings();
-        if (bindings)
-            emit KeyBindingsChanged(bindings);
+    }
+
+    void ServiceGetter::PublishChangedBindings(Foundation::KeyBindings *bindings)
+    {
+        emit KeyBindingsChanged(bindings);
     }
 }

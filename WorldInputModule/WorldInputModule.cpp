@@ -80,6 +80,12 @@ namespace Input
         state_machine_-> start();
     }
 
+    // virtual
+    void WorldInputModule::PostInitialize()
+    {
+        state_machine_->SendBindingsChangedEvent();
+    }
+
     // virtual 
     void WorldInputModule::Uninitialize()
     {

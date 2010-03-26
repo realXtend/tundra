@@ -649,6 +649,8 @@ namespace Input
         SAFE_DELETE(key_bindings_);
         key_bindings_ = bindings;
         config_manager_->WriteCustomConfig(key_bindings_);
+
+        SendBindingsChangedEvent();
     }
 
     void WorldInputLogic::RestoreDefaultBindings()
@@ -656,6 +658,19 @@ namespace Input
         SAFE_DELETE(key_bindings_);
         key_bindings_ = config_manager_->ParseConfig("Bindings.Default");
         config_manager_->ClearUserConfig();
+
+        SendBindingsChangedEvent();
+    }
+
+    void WorldInputLogic::SendBindingsChangedEvent()
+    {
+        if (!key_bindings_)
+            return;
+
+        event_category_id_t cat_id = eventmgr_->QueryEventCategory("Input");
+        Input::Events::BindingsData *data = new Input::Events::BindingsData(key_bindings_);
+        Foundation::EventDataPtr data_ptr(data);
+        eventmgr_->SendDelayedEvent(cat_id, Input::Events::NAALI_BINDINGS_CHANGED, data_ptr, 0);
     }
 
     void WorldInputLogic::Update (f64 frametime)

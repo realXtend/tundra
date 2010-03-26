@@ -6,6 +6,11 @@
 #include "EventDataInterface.h"
 #include "CoreTypes.h"
 
+namespace Foundation
+{
+    class KeyBindings;
+}
+
 namespace Input
 {
     //! Contains some fo the input events in generic fashion. Does not depend on any one input method
@@ -113,7 +118,7 @@ namespace Input
         static const event_id_t ZOOM_OUT_PRESSED = 53;
         static const event_id_t ZOOM_OUT_RELEASED = 54;
 
-	//! Mouse motion - uninterpreted, sent always when mouse moves
+	    //! Mouse motion - uninterpreted, sent always when mouse moves
         static const event_id_t MOUSEMOVE = 60; //stop has no meaning for this?
 
         static const event_id_t PY_RESTART = 71;
@@ -122,13 +127,18 @@ namespace Input
 
         static const event_id_t PY_OBJECTEDIT_TOGGLE_MOVE = 81;
         static const event_id_t PY_OBJECTEDIT_TOGGLE_SCALE = 83;
-	//static const event_id_t PY_OBJECTEDIT_TOGGLE_ROTATE = 85;
+	    //static const event_id_t PY_OBJECTEDIT_TOGGLE_ROTATE = 85;
 		
         static const event_id_t NAALI_OBJECTLINK = 91;
 		static const event_id_t NAALI_OBJECTUNLINK = 92;
 
         static const event_id_t NAALI_DELETE = 87;
         static const event_id_t NAALI_UNDO = 89;
+
+        static const event_id_t NAALI_TOGGLE_ETHER = 100;
+        static const event_id_t NAALI_TOGGLE_WORLDCHAT = 101;
+
+        static const event_id_t NAALI_BINDINGS_CHANGED = 102;
 
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
@@ -166,6 +176,18 @@ namespace Input
             
             //! OIS modifiers (OIS::Keyboard::Ctrl, OIS::Keyboard::Shift, OIS::Keyboard::Alt)
             const int modifiers_;
+        };
+
+        //! Holds the new bindings pointer for everyone to update their key sequences
+        //! Used in NAALI_BINDINGS_CHANGED event
+        class BindingsData : public Foundation::EventDataInterface
+        {
+            BindingsData();
+        public:
+            BindingsData(Foundation::KeyBindings *b) : bindings(b) {}
+            virtual ~BindingsData() {}
+
+            Foundation::KeyBindings *bindings;
         };
 
         //! Movement along axis. \ingroup Input_group

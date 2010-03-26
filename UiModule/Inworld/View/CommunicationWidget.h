@@ -34,6 +34,8 @@ namespace CoreUi
     public slots:
         void UpdateController(QObject *controller);
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
+
+        void SetFocusToChat();
         
     protected:
         void hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event);

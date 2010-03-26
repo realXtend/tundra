@@ -79,14 +79,21 @@ namespace UiServices
         //! Get the inworld ui scene
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
 
+        //! Please dont call this if you dont know what you are doing
         //! Set the current chat controller object to world chat widget
         void SetWorldChatController(QObject *controller);
 
+        //! Please dont call this if you dont know what you are doing
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy);
 
+        //! Set focus to chat line edit
+        void SetFocusToChat();
+
+        //! Get ControlPanelManager pointer
         CoreUi::ControlPanelManager *GetControlPanelManager() { return control_panel_manager_; }
 
+        //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
         QObject *GetSettingsObject();
 
     private:
