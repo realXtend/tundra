@@ -1144,7 +1144,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     while (iter != end)
     {
         Scene::EntityPtr entity = (*iter);
-        iter++;
+        ++iter;
         if (!entity.get() || entity.get() == users_avatar.get())
             continue;
         if (entity->GetComponent<EC_OpenSimPresence>().get())
