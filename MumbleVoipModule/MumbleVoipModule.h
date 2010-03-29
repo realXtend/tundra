@@ -68,6 +68,7 @@ namespace MumbleVoip
         int time_from_last_update_ms_;
         QString user_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
+        bool use_camera_position_; 
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
