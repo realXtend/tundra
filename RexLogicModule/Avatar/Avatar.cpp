@@ -12,7 +12,6 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "SceneEvents.h"
-#include <Ogre.h>
 #include "EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -25,9 +24,11 @@
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
-
+#include <UiModule.h>
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
+
+#include <Ogre.h>
 
 #include "Poco/DOM/DOMParser.h"
 #include "Poco/DOM/Element.h"
@@ -35,8 +36,6 @@
 #include "Poco/DOM/NamedNodeMap.h"
 #include "Poco/DOM/AutoPtr.h"
 #include "Poco/SAX/InputSource.h"
-
-#include <UiModule.h>
 
 namespace RexLogic
 {
@@ -159,14 +158,33 @@ namespace RexLogic
 
             msg->SkipToFirstVariableByName("ParentID");
             presence->ParentId = msg->ReadU32();
-            
-            // NameValue contains: FirstName STRING RW SV " + firstName + "\nLastName STRING RW SV " + lastName
+
+            // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
+            // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
             msg->SkipToFirstVariableByName("NameValue");
-            std::string namevalue = msg->ReadString();
-            NameValueMap map = ParseNameValueMap(namevalue);
-            presence->SetFirstName(map["FirstName"]);
-            presence->SetLastName(map["LastName"]);
-            
+            QString namevalue = QString::fromUtf8(msg->ReadString().c_str());
+            NameValueMap map = ParseNameValueMap(namevalue.toStdString());
+            if (rexlogicmodule_->GetServerConnection()->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
+            {
+                StringVector names = SplitString(map["FirstName"], ' ');
+                if (names.size() == 2)
+                {
+                    presence->SetFirstName(names[0]);
+                    presence->SetLastName(names[1]);
+                }
+                else
+                {
+                    // Fallback
+                    presence->SetFirstName(map["FirstName"]);
+                    presence->SetLastName(map["LastName"]);
+                }
+            }
+            else
+            {
+                presence->SetFirstName(map["FirstName"]);
+                presence->SetLastName(map["LastName"]);
+            }
+
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 

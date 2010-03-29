@@ -80,9 +80,10 @@ void EC_OgreMovableTextOverlay::Update()
     }
 
     Ogre::Camera* camera = renderer_.lock()->GetCurrentCamera();
-    if (!camera) return;
-    Ogre::Viewport* viewport = camera->getViewport();
+    if (!camera)
+        return;
 
+    Ogre::Viewport* viewport = camera->getViewport();
     Ogre::Vector3 point = node_->_getDerivedPosition();
 
     // Is the camera facing that point? If not, hide the overlay and return.
@@ -200,7 +201,24 @@ void EC_OgreMovableTextOverlay::SetText(const std::string& text)
         return;
 
     text_ = text;
-    text_element_->setCaption(text_);
+    boost::trim(text_);
+    // Replace few common scandic letters with a and o.
+    ReplaceCharInplace(text_, 'Ä', 'A');
+    ReplaceCharInplace(text_, 'ä', 'a');
+    ReplaceCharInplace(text_, 'Ö', 'O');
+    ReplaceCharInplace(text_, 'ö', 'o');
+    ReplaceCharInplace(text_, 'Å', 'A');
+    ReplaceCharInplace(text_, 'å', 'a');
+
+    try
+    {
+        text_element_->setCaption(text_);
+    }
+    catch(...)
+    {
+        text_ = "";
+    }
+
     textDim_ = GetTextDimensions(text_);
     container_->setDimensions(textDim_.x, textDim_.y);
 }
@@ -307,14 +325,11 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Vector3df& offset)
 }
 
 Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &text)
-{        
-    float charHeight = Ogre::StringConverter::parseReal(font_->getParameter("size"));
+{
     Ogre::Vector2 result(0, 0);
-    
     if (renderer_.expired())
         return result;
-    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();        
-    
+
     for(std::string::const_iterator it = text.begin(); it < text.end(); ++it)
     {
         if (*it == 0x0020)
@@ -322,7 +337,10 @@ Ogre::Vector2 EC_OgreMovableTextOverlay::GetTextDimensions(const std::string &te
         else
             result.x += font_->getGlyphAspectRatio(*it);
     }
-    
+
+    float charHeight = Ogre::StringConverter::parseReal(font_->getParameter("size"));
+    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
+
     result.x = (result.x * charHeight) / (float)viewport->getActualWidth();
     result.y = charHeight / (float)viewport->getActualHeight();
 

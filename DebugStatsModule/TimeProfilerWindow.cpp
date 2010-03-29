@@ -361,23 +361,21 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     label_time_per_frame_->setText(str);
 }
 
-/*
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
-    contents_widget_->resize(this->width()-10, this->height()-10);
-    tab_widget_->resize(this->width()-20, this->height()-20);
-    tree_profiling_data_->resize(this->width()-40, this->height()-80);
+//    contents_widget_->resize(this->width()-10, this->height()-10);
+//    tab_widget_->resize(this->width()-20, this->height()-20);
+//    tree_profiling_data_->resize(this->width()-40, this->height()-80);
 
     label_frame_time_history_->resize(this->width()-75, this->height()-75);
 
-    tree_sim_stats_->resize(this->width()-40, this->height()-80);
+//    tree_sim_stats_->resize(this->width()-40, this->height()-80);
 
     QImage frameTimeHistory(label_frame_time_history_->width(), label_frame_time_history_->height(), QImage::Format_RGB32);
     frameTimeHistory.fill(0);
     label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
 }
-*/
 
 int TimeProfilerWindow::ReadProfilingRefreshInterval()
 {
