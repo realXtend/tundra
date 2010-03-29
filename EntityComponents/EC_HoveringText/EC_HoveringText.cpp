@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
+#include <QLinearGradient>
 
 //#include "MemoryLeakCheck.h"
 
@@ -33,9 +34,18 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     textColor_(Qt::black),
     billboardSet_(0),
     billboard_(0),
-    text_("")
+    text_(""),
+    using_gradient_(false),
+    visibility_animation_timeline_(new QTimeLine(1000, this))
 {
     renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+
+    visibility_animation_timeline_->setFrameRange(0,100);
+    visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
+    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)),
+            SLOT(UpdateAnimationStep(int)));
+    connect(visibility_animation_timeline_, SIGNAL(finished()),
+            SLOT(AnimationFinished()));
 }
 
 EC_HoveringText::~EC_HoveringText()
@@ -66,10 +76,29 @@ void EC_HoveringText::SetBackgroundColor(const QColor &color)
     Redraw();
 }
 
+void EC_HoveringText::SetBackgroundGradient(const QColor &color1, const QColor &color2)
+{
+    bg_grad_.setColorAt(0.0, color1);
+    bg_grad_.setColorAt(1.0, color2);
+    using_gradient_ = true;
+}
+
 void EC_HoveringText::Show()
 {
     if (billboardSet_)
         billboardSet_->setVisible(true);
+}
+
+void EC_HoveringText::AnimatedShow()
+{
+    if (visibility_animation_timeline_->state() == QTimeLine::Running)
+        return;
+
+    UpdateAnimationStep(0);
+    Show();
+
+    visibility_animation_timeline_->setDirection(QTimeLine::Forward);
+    visibility_animation_timeline_->start();
 }
 
 void EC_HoveringText::Hide()
@@ -77,6 +106,33 @@ void EC_HoveringText::Hide()
     if (billboardSet_)
         billboardSet_->setVisible(false);
 }
+
+void EC_HoveringText::AnimatedHide()
+{
+    if (visibility_animation_timeline_->state() == QTimeLine::Running)
+        return;
+
+    UpdateAnimationStep(100);
+    visibility_animation_timeline_->setDirection(QTimeLine::Backward);
+    visibility_animation_timeline_->start();
+} 
+
+void EC_HoveringText::UpdateAnimationStep(int step)
+{
+    if (!material_.get())
+        return;
+    
+    float alpha = step;
+    alpha /= 100;
+    material_->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
+        Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
+}
+
+void EC_HoveringText::AnimationFinished()
+{
+    if (visibility_animation_timeline_->direction() == QTimeLine::Backward && IsVisible())
+        Hide();
+} 
 
 bool EC_HoveringText::IsVisible() const
 {
@@ -117,10 +173,11 @@ void EC_HoveringText::ShowMessage(const QString &text)
         assert(billboardSet_);
 
         std::string newName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
-        Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newName);
+        material_ = OgreRenderer::CloneMaterial("HoveringText", newName);
         billboardSet_->setMaterialName(newName);
+        billboardSet_->setCastShadows(false);
 
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.f));
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
         assert(billboard_);
         billboard_->setDimensions(2, 1);
 
@@ -131,13 +188,12 @@ void EC_HoveringText::ShowMessage(const QString &text)
         return;
 
     text_ = text;
-
     Redraw();
 }
 
 void EC_HoveringText::Redraw()
 {
-    if (renderer_.expired() ||!billboardSet_ || !billboard_)
+    if (renderer_.expired() || !billboardSet_ || !billboard_)
         return;
 
     // Get pixmap with text rendered to it.
@@ -157,63 +213,59 @@ void EC_HoveringText::Redraw()
 
     // Set new material with the new texture name in it.
     std::string newMatName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
-    Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newMatName);
-    OgreRenderer::SetTextureUnitOnMaterial(material, tex_name);
+    material_ = OgreRenderer::CloneMaterial("HoveringText", newMatName);
+    OgreRenderer::SetTextureUnitOnMaterial(material_, tex_name);
     billboardSet_->setMaterialName(newMatName);
 }
 
 QPixmap EC_HoveringText::GetTextPixmap()
 {
-    if (renderer_.expired())
-        return 0;
-
-///\todo    Resize the font size according to the render window size and distance
-///         avatar's distance from the camera.
+// TOODO
+// Resize the font size according to the render window size and distance
+// avatar's distance from the camera
+//
 //    const int minWidth =
 //    const int minHeight =
 //    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
 //    const int max_width = viewport->getActualWidth()/4;
 //    int max_height = viewport->getActualHeight()/10;
 
-    const int max_width = 1500;
-    int max_height = 800;
-    QRect max_rect(0, 0, max_width, max_height);
-
-    const QString &filename("./media/textures/Transparent.png");
-    assert(QFile::exists(filename));
-    if (!QFile::exists(filename))
+    if (renderer_.expired() || text_.isEmpty() || text_ == " ")
         return 0;
 
-    // Create pixmap
-    QPixmap pixmap;
-    pixmap.load(filename);
-    pixmap = pixmap.scaled(max_rect.size());
+    QRect max_rect(0, 0, 1500, 800);
 
+    // Create transparent pixmap
+    QPixmap pixmap(max_rect.size());
+    pixmap.fill(Qt::transparent);
+
+    // Init painter with pixmap as the paint device
     QPainter painter(&pixmap);
+
+    // Ask painter the rect for the text
     painter.setFont(font_);
-
-    // Set padding for text.
-    // Make the font size temporarily bigger when calculating bounding rect
-    // so we get padding without need to modify the rect itself.
-    QFont origFont = painter.font();
-    painter.setFont(QFont(origFont.family(), origFont.pointSize()+12));
     QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
-    painter.setFont(origFont);
-    // could also try this:
-    // QFontMetrics metric(any_qfont); int width = metric.width(mytext) + padding;
+    
+    // Add some padding to it
+    QFontMetrics metric(font_); 
+    int width = metric.width(text_) + metric.averageCharWidth();
+    int height = metric.height() + 20;
+    rect.setWidth(width);
+    rect.setHeight(height);
 
-    rect.setHeight(rect.height() - 10);
-/*
-     QRadialGradient gradient(rect.center(), 300);
-     gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.9));
-     gradient.setColorAt(1, QColor::fromRgbF(0.75f, 0.75f, 0.75f, 0.9));
-     QBrush brush(gradient);
-*/
-    // Draw rounded rect.
-    QBrush brush(backgroundColor_, Qt::SolidPattern);
-    painter.setBrush(brush);
-    if (backgroundColor_ != Qt::transparent)
-        painter.drawRoundedRect(rect, 20.0, 20.0);
+    // Set background brush
+    if (using_gradient_)
+    {
+        bg_grad_.setStart(QPointF(0,rect.top()));
+        bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
+        painter.setBrush(QBrush(bg_grad_));
+    }
+    else
+        painter.setBrush(backgroundColor_);
+
+    // Draw background rect
+    painter.setPen(QColor(255,255,255,150));
+    painter.drawRoundedRect(rect, 20.0, 20.0);
 
     // Draw text
     painter.setPen(textColor_);

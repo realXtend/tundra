@@ -14,6 +14,7 @@
 #include <boost/function.hpp>
 
 #include <QString>
+#include <QMap>
 #include <map>
 #include <set>
 
@@ -229,6 +230,10 @@ namespace RexLogic
         //! For example: Takes ui screenshots of world/avatar with rendering service.
         //!              Add functionality if you need something done before logout.
         void AboutToDeleteWorld();
+
+        //! Gets a map of all avatars in world and the distance from users avatar,
+        //! for updating the name tag fades after certain discanse
+        void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
 
         /// Return renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetRendererPtr();

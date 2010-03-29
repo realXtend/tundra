@@ -86,6 +86,7 @@ namespace RexLogic
     Scene::EntityPtr Avatar::CreateNewAvatarEntity(entity_id_t entityid)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        
         if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
             return Scene::EntityPtr();
         
@@ -215,7 +216,15 @@ namespace RexLogic
                 
                 // For some reason the avatar/connection ID might not be in sync before (when setting the appearance for first time),
                 // which causes the edit view to not be initially rebuilt. Force build now
-                rexlogicmodule_->GetAvatarEditor()->RebuildEditView();         
+                rexlogicmodule_->GetAvatarEditor()->RebuildEditView();
+
+                // Remove the name tag for own avatar
+                boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
+                if (name_tag.get())
+                {
+                    name_tag->Hide();
+                    entity->RemoveComponent(name_tag);
+                }
             } 
             else if (presence->FullId != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
             {
@@ -499,8 +508,8 @@ namespace RexLogic
 //            overlay->CreateOverlay(Vector3df(0.0f, 0.0f, 1.5f));
 //            overlay->SetText(presence->GetFullName());
 //            overlay->SetPlaceable(placeable);
-            overlay->SetTextColor(QColor(255,255,255,200));
-            overlay->SetBackgroundColor(QColor(0,0,0,200));
+            //overlay->SetTextColor(QColor(255,255,255,255));
+            //overlay->SetBackgroundColor(QColor(0,0,0,200));
             overlay->ShowMessage(presence->GetFullName().c_str());
         }
     }
@@ -529,9 +538,20 @@ namespace RexLogic
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
-            overlay->SetTextColor(QColor(255,255,255,200));
-            overlay->SetBackgroundColor(QColor(0,0,0,200));
-            overlay->ShowMessage(presence->GetFullName().c_str());
+            // Do some splitting for rex account names, remove the server tag for now
+            QString name = presence->GetFullName().c_str();
+            if (name.indexOf("@") != -1)
+            {
+                QStringList words = name.split(" ");
+                foreach (QString word, words)
+                    if (word.indexOf("@") != -1)
+                        words.removeOne(word);
+                name = words.join(" ");
+            }
+
+            overlay->SetTextColor(QColor(255,255,255,230));
+            overlay->SetBackgroundGradient(QColor(0,0,0,230), QColor(50,50,50,230));
+            overlay->ShowMessage(name);
         }
     }
     
