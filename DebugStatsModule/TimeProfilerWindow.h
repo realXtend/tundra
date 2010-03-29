@@ -79,7 +79,9 @@ class TimeProfilerWindow : public QWidget
     void RefreshProfilingDataTree();
     void RefreshProfilingDataList();
     void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
-//    void resizeEvent(QResizeEvent *event);
+
+protected:
+    void resizeEvent(QResizeEvent *event);
 
 public:
     /// The ctor adds this window to scene, but does not show it.
