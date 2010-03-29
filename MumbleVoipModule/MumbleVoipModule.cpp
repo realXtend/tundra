@@ -25,7 +25,8 @@ namespace MumbleVoip
           link_plugin_(0),
           time_from_last_update_ms_(0),
           server_observer_(0),
-          connection_manager_(0)
+          connection_manager_(0),
+          use_camera_position_(false)
     {
     }
 
@@ -98,13 +99,15 @@ namespace MumbleVoip
             const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
             if (placeable_component)
             {
+                Vector3df top_vector = Vector3df::UNIT_Z;
                 OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
                 Quaternion q = ogre_placeable->GetOrientation();
-
                 Vector3df position_vector = ogre_placeable->GetPosition(); 
-                Vector3df front_vector = q*Vector3df(1,0,0);
-                Vector3df top_vector(0,0,1);
+                Vector3df front_vector = q*Vector3df::UNIT_X;
+
                 link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
+                if (!use_camera_position_)
+                    link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
             }
 
             Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
@@ -113,13 +116,15 @@ namespace MumbleVoip
                 const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
                 if (placeable_component)
                 {
+                    Vector3df top_vector = Vector3df::UNIT_Z;
+
                     OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
                     Quaternion q = ogre_placeable->GetOrientation();
 
                     Vector3df position_vector = ogre_placeable->GetPosition(); 
-                    Vector3df front_vector = q*Vector3df(1,0,0);
-                    Vector3df top_vector(0,0,1);
-                    link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
+                    Vector3df front_vector = q*Vector3df::UNIT_X;
+                    if (use_camera_position_)
+                        link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
                 }
             }
 
