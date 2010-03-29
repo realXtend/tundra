@@ -192,8 +192,10 @@ boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryParser::Extract
     }
 
     if (inventoryLibOwnerId.IsNull())
+    {
         throw XmlRpcException("Failed to read inventory, inventory-lib-owner value agent_id was null or unparseable!");
         return inventory;
+    }
 
     inventory->worldLibraryOwnerId = inventoryLibOwnerId;
 
