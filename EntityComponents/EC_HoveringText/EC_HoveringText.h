@@ -13,8 +13,12 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
+#include <OgreMaterial.h>
+
 #include <QFont>
 #include <QColor>
+#include <QBrush>
+#include <QTimeLine>
 
 namespace OgreRenderer
 {
@@ -26,6 +30,7 @@ namespace Ogre
     class SceneNode;
     class BillboardSet;
     class Billboard;
+    class MaterialPtr;
 }
 
 class EC_HoveringText : public Foundation::ComponentInterface
@@ -60,12 +65,16 @@ public:
     /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
     void SetBackgroundColor(const QColor &color);
 
+    void SetBackgroundGradient(const QColor &color1, const QColor &color2);
+
 public slots:
     /// Shows the hovering text.
     void Show();
+    void AnimatedShow();
 
     /// Hides the hovering text
     void Hide();
+    void AnimatedHide();
 
     /// Returns if the hovering text is visible or not.
     /// @true If the hovering text is visible, false if it's hidden or not initialized properly.
@@ -76,6 +85,9 @@ public slots:
     void ShowMessage(const QString &text);
 
 private slots:
+    void UpdateAnimationStep(int step);
+    void AnimationFinished();
+
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
 
@@ -92,6 +104,9 @@ private:
     /// Ogre billboard.
     Ogre::Billboard *billboard_;
 
+    /// Ogre material for billboard set
+    Ogre::MaterialPtr material_;
+
     /// For used for the hovering text.
     QFont font_;
 
@@ -101,8 +116,16 @@ private:
     /// Color of the hovering text background.
     QColor backgroundColor_;
 
+    /// Gradien background
+    QLinearGradient bg_grad_;
+
     /// The hovering text.
     QString text_;
+
+    bool using_gradient_;
+
+    // Visibility animation timeline
+    QTimeLine *visibility_animation_timeline_;
 };
 
 #endif

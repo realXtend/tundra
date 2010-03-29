@@ -372,6 +372,7 @@ void RexLogicModule::Update(f64 frametime)
 
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
+        UpdateAvatarNameTags(avatar_->GetUserAvatar());
 
         // update sound listener position/orientation
         UpdateSoundListener();
@@ -1043,22 +1044,27 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 
 void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
-    QList<OgreRenderer::EC_OgreMovableTextOverlay *> overlays;
+    QList<EC_HoveringText *> overlays;
     Scene::ScenePtr word_scene = framework_->GetDefaultWorldScene();
     if (word_scene.get())
     {
         for (Scene::SceneManager::iterator iter = word_scene->begin(); iter != word_scene->end(); ++iter)
         {
             Scene::Entity &entity = **iter;
-            OgreRenderer::EC_OgreMovableTextOverlay *overlay = entity.GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+            EC_HoveringText *overlay = entity.GetComponent<EC_HoveringText>().get();
             if (overlay)
                 overlays.append(overlay);
         }
     }
 
     // Set visibility for all found text overlays
-    foreach(OgreRenderer::EC_OgreMovableTextOverlay* overlay, overlays)
-        overlay->SetVisible(visible);
+    foreach(EC_HoveringText* overlay, overlays)
+    {
+        if (visible)
+            overlay->Show();
+        else
+            overlay->Hide();
+    }
 }
 
 void RexLogicModule::AboutToDeleteWorld()
@@ -1121,6 +1127,53 @@ void RexLogicModule::AboutToDeleteWorld()
             GetRendererPtr()->CaptureWorldAndAvatarToFile(
                 avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
         }
+    }
+}
+
+void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
+{
+    QList<Scene::EntityPtr> all_avatars;
+
+    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+    if (!current_scene.get() || !users_avatar.get())
+        return;
+
+    // Iterate all avatars to a list
+    Scene::SceneManager::iterator iter = current_scene->begin();
+    Scene::SceneManager::iterator end = current_scene->end();
+    while (iter != end)
+    {
+        Scene::EntityPtr entity = (*iter);
+        iter++;
+        if (!entity.get() || entity.get() == users_avatar.get())
+            continue;
+        if (entity->GetComponent<EC_OpenSimPresence>().get())
+            all_avatars.append(entity);
+    }
+
+    // Get users position
+    boost::shared_ptr<EC_HoveringText> name_tag;
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if (!placable.get())
+        return;
+
+    Vector3Df users_position = placable->GetPosition();
+    foreach (Scene::EntityPtr avatar, all_avatars)
+    {
+        placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        name_tag = avatar->GetComponent<EC_HoveringText>();
+        if (!placable.get() || !name_tag.get())
+            continue;
+
+        // Check distance, update name tag visibility
+        f32 distance = users_position.getDistanceFrom(placable->GetPosition());
+        if (distance > 13.0)
+        {
+            if (name_tag->IsVisible())
+                name_tag->AnimatedHide();
+        }
+        else if (!name_tag->IsVisible())
+            name_tag->AnimatedShow();
     }
 }
 
