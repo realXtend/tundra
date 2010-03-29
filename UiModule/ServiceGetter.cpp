@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ServiceGetter.h"
-#include "InputStateMachine.h"
+#include "InputServiceInterface.h"
 
 namespace CoreUi
 {
@@ -15,8 +15,8 @@ namespace CoreUi
 
     void ServiceGetter::GetKeyBindings()
     {
-        boost::shared_ptr<Input::WorldInputLogic> input_logic = framework_->GetServiceManager()->
-            GetService<Input::WorldInputLogic>(Foundation::Service::ST_Input).lock();
+        boost::shared_ptr<Foundation::InputServiceInterface> input_logic = framework_->GetServiceManager()->
+            GetService<Foundation::InputServiceInterface>(Foundation::Service::ST_Input).lock();
 
         if (!input_logic.get())
             return;
@@ -28,8 +28,8 @@ namespace CoreUi
 
     void ServiceGetter::SetKeyBindings(Foundation::KeyBindings *bindings)
     {
-        boost::shared_ptr<Input::WorldInputLogic> input_logic = framework_->GetServiceManager()->
-            GetService<Input::WorldInputLogic>(Foundation::Service::ST_Input).lock();
+        boost::shared_ptr<Foundation::InputServiceInterface> input_logic = framework_->GetServiceManager()->
+            GetService<Foundation::InputServiceInterface>(Foundation::Service::ST_Input).lock();
 
         if (!input_logic.get())
             return;
@@ -39,8 +39,8 @@ namespace CoreUi
 
     void ServiceGetter::RestoreKeyBindings()
     {
-        boost::shared_ptr<Input::WorldInputLogic> input_logic = framework_->GetServiceManager()->
-            GetService<Input::WorldInputLogic>(Foundation::Service::ST_Input).lock();
+        boost::shared_ptr<Foundation::InputServiceInterface> input_logic = framework_->GetServiceManager()->
+            GetService<Foundation::InputServiceInterface>(Foundation::Service::ST_Input).lock();
 
         if (!input_logic.get())
             return;
