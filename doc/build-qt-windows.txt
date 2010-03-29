@@ -16,7 +16,7 @@ http://dcsoft.com/community_server/blogs/dcsoft/archive/2009/03/06/how-to-setup-
 
 5. Open VS2008 command prompt, go to C:\Qt\qt and run 
      
-    configure -platform win32-msvc2008 -opensource -prefix C:\Qt\build -no-qt3support -dbus -I "%NAALI_DEP_PATH%\dbus\include" -L "%NAALI_DEP_PATH%\dbus\lib" -openssl -I "%NAALI_DEP_PATH%\OpenSSL\include" -L "%NAALI_DEP_PATH%\OpenSSL\lib"
+    configure -platform win32-msvc2008 -opensource -prefix C:\Qt\build -no-qt3support -dbus -I "%NAALI_DEP_PATH%\dbus\include" -L "%NAALI_DEP_PATH%\dbus\lib" -openssl -I "%NAALI_DEP_PATH%\OpenSSL\include" -L "%NAALI_DEP_PATH%\OpenSSL\lib" -nomake demos -nomake examples
 
 	* NOTE: Building QDBus*.dll may give you "could not include file x" fatal errors. Open the file that had the include error,
 	        change the #include <something.h> to #include "something.h" and there errors should dissapear. After you have made correction run 'nmake' again,
