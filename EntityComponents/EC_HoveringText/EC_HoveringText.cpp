@@ -107,8 +107,13 @@ void EC_HoveringText::AnimatedShow()
 
 void EC_HoveringText::Clicked(int msec_to_show)
 {
-    AnimatedShow();
-    visibility_timer_->start(msec_to_show);
+    if (visibility_timer_->isActive())
+        visibility_timer_->stop();
+    else
+    {
+        AnimatedShow();
+        visibility_timer_->start(msec_to_show);
+    }
 }
 
 void EC_HoveringText::Hide()
