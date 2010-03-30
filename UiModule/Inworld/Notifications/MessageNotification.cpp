@@ -16,7 +16,7 @@ namespace UiServices
         message_box->setFrameShape(QFrame::NoFrame);
 
         QFontMetrics metric(message_box->font());
-        QRect text_rect = metric.boundingRect(QRect(0,0,200,400), Qt::AlignLeft|Qt::TextWordWrap, message);
+        QRect text_rect = metric.boundingRect(QRect(0,0,160,400), Qt::AlignLeft|Qt::TextWordWrap, message);
         message_box->setMaximumHeight(text_rect.height() + metric.height());
         message_box->setMinimumHeight(text_rect.height() + metric.height());
 

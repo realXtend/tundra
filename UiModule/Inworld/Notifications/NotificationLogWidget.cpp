@@ -23,9 +23,8 @@ namespace CoreUi
         // Set icon
         if (icon.isNull())
         {
-            QPixmap debug_pixmap(iconLabel->size());
-            debug_pixmap.fill(Qt::blue);
-            iconLabel->setPixmap(debug_pixmap);
+            QPixmap default_pixmap("./data/ui/images/notifications/default_icon.png");
+            iconLabel->setPixmap(default_pixmap);
         }
         else
             iconLabel->setPixmap(icon.pixmap(iconLabel->size()));

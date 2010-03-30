@@ -23,8 +23,9 @@ namespace UiServices
         // Ui init
         question_box_->setReadOnly(true);
         question_box_->setFrameShape(QFrame::NoFrame);
+        
         QFontMetrics metric(question_box_->font());
-        QRect text_rect = metric.boundingRect(QRect(0,0,200,400), Qt::AlignLeft|Qt::TextWordWrap, question);
+        QRect text_rect = metric.boundingRect(QRect(0,0,160,400), Qt::AlignLeft|Qt::TextWordWrap, question);
         question_box_->setMaximumHeight(text_rect.height() + metric.height());
         question_box_->setMinimumHeight(text_rect.height() + metric.height());
 

@@ -17,6 +17,7 @@
 */*/*.dir/
 */Debug/
 */Release/
+*/RelWithDebInfo/
 
 # Unix-specific build objects
 Makefile
