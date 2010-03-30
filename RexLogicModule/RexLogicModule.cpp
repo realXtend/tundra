@@ -1177,7 +1177,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 }
 
-void RexLogicModule::EntityClicked(Scene::EntityPtr entity)
+void RexLogicModule::EntityClicked(Scene::Entity* entity)
 {
     boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())

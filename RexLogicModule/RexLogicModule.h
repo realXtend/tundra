@@ -223,7 +223,7 @@ namespace RexLogic
         void SetAllTextOverlaysVisible(bool visible);
 
         //! Handles a click event for entity, namely showing the name tag
-        void EntityClicked(Scene::EntityPtr entity);
+        void EntityClicked(Scene::Entity* entity);
 
     private:
         RexLogicModule(const RexLogicModule &);
