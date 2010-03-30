@@ -86,6 +86,11 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
     {
         break;
     }
+    case Scene::Events::EVENT_ENTITY_CLICKED:
+    {
+        Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
+        rexlogicmodule_->EntityClicked(entity_clicked_data->entity);
+    }
     default:
         break;
     }

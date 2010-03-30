@@ -78,6 +78,7 @@ public slots:
 
     /// Shows the hovering.text with animation.
     void AnimatedShow();
+    void Clicked(int msec_to_show = 5000);
 
     /// Hides the hovering text
     void Hide();
@@ -140,6 +141,9 @@ private:
 
     // Visibility animation timeline.
     QTimeLine *visibility_animation_timeline_;
+
+    // Timed visibility timer
+    QTimer *visibility_timer_;
 };
 
 #endif

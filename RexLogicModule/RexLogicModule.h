@@ -222,6 +222,9 @@ namespace RexLogic
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         void SetAllTextOverlaysVisible(bool visible);
 
+        //! Handles a click event for entity, namely showing the name tag
+        void EntityClicked(Scene::EntityPtr entity)
+
     private:
         RexLogicModule(const RexLogicModule &);
         RexLogicModule &operator=(const RexLogicModule &);
