@@ -43,11 +43,12 @@ namespace Scene
         WaterEventData::WaterEventData(float h) : height(h) {}
         WaterEventData::~WaterEventData() {}
         
-        EntityClickedData::EntityClickedData(Scene::Entity *ent) : 
-            SceneEventData(ent->GetId()),
-            entity(ent)
+        EntityClickedData::EntityClickedData(Scene::Entity *ent)
+            : SceneEventData(ent->GetId()),
+            entity_(ent)
         {
         }
+        EntityClickedData::~EntityClickedData() {}
 
         EntityClickedData::~EntityClickedData() {}
 
