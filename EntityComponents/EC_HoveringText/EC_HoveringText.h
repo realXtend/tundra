@@ -76,7 +76,7 @@ public slots:
     /// Shows the hovering text.
     void Show();
 
-    /// Shows the hovering.text with animation.
+    /// Shows the hovering text with animation.
     void AnimatedShow();
     void Clicked(int msec_to_show = 5000);
 

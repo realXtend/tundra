@@ -80,6 +80,10 @@ QProgressBar#timeoutProgressBar {
 
 QProgressBar#timeoutProgressBar::chunk {
 	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:1, stop:0 rgba(46, 46, 46, 255), stop:0.960227 rgba(70, 70, 70, 255));
+}
+
+QPlainTextEdit { 
+	background-color: rgb(232,232,232); 
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -100,13 +104,13 @@ QProgressBar#timeoutProgressBar::chunk {
      <property name="minimumSize">
       <size>
        <width>200</width>
-       <height>25</height>
+       <height>23</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>200</width>
-       <height>25</height>
+       <height>23</height>
       </size>
      </property>
     </widget>

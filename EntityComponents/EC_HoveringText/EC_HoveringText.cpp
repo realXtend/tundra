@@ -45,10 +45,8 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
 
-    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)),
-            SLOT(UpdateAnimationStep(int)));
-    connect(visibility_animation_timeline_, SIGNAL(finished()),
-            SLOT(AnimationFinished()));
+    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
+    connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 }
 
 EC_HoveringText::~EC_HoveringText()
@@ -76,13 +74,14 @@ void EC_HoveringText::SetTextColor(const QColor &color)
 void EC_HoveringText::SetBackgroundColor(const QColor &color)
 {
     backgroundColor_ = color;
+    using_gradient_ = false;
     Redraw();
 }
 
-void EC_HoveringText::SetBackgroundGradient(const QColor &color1, const QColor &color2)
+void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QColor &end_color)
 {
-    bg_grad_.setColorAt(0.0, color1);
-    bg_grad_.setColorAt(1.0, color2);
+    bg_grad_.setColorAt(0.0, start_color);
+    bg_grad_.setColorAt(1.0, end_color);
     using_gradient_ = true;
 }
 
@@ -135,12 +134,17 @@ void EC_HoveringText::AnimatedHide()
 
 void EC_HoveringText::UpdateAnimationStep(int step)
 {
-    if (!material_.get())
+    if (materialName_.empty())
         return;
     
     float alpha = step;
     alpha /= 100;
-    material_->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
+
+    Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
+    Ogre::MaterialPtr material = mgr.getByName(materialName_);
+    assert(material.get());
+
+    material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
         Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
 }
 
@@ -188,9 +192,9 @@ void EC_HoveringText::ShowMessage(const QString &text)
         billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
         assert(billboardSet_);
 
-        std::string newName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
-        material_ = OgreRenderer::CloneMaterial("HoveringText", newName);
-        billboardSet_->setMaterialName(newName);
+        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName();
+        OgreRenderer::CloneMaterial("HoveringText", materialName_);
+        billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
@@ -222,24 +226,27 @@ void EC_HoveringText::Redraw()
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
     std::string tex_name("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
+    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(
+        tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
     assert(tex);
 
     tex->loadRawData(stream, img.width(), img.height(), Ogre::PF_A8R8G8B8);
 
-    // Set new material with the new texture name in it.
-    std::string newMatName = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
-    material_ = OgreRenderer::CloneMaterial("HoveringText", newMatName);
-    OgreRenderer::SetTextureUnitOnMaterial(material_, tex_name);
-    billboardSet_->setMaterialName(newMatName);
+    // Set new texture for the material
+    assert(!materialName_.empty());
+    if (!materialName_.empty())
+    {
+        Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mgr.getByName(materialName_);
+        assert(material.get());
+        OgreRenderer::SetTextureUnitOnMaterial(material, tex_name);
+    }
 }
 
 QPixmap EC_HoveringText::GetTextPixmap()
 {
-// TOODO
-// Resize the font size according to the render window size and distance
-// avatar's distance from the camera
-//
+///\todo Resize the font size according to the render window size and distance
+/// avatar's distance from the camera
 //    const int minWidth =
 //    const int minHeight =
 //    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
@@ -261,7 +268,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
     // Ask painter the rect for the text
     painter.setFont(font_);
     QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
-    
+
     // Add some padding to it
     QFontMetrics metric(font_); 
     int width = metric.width(text_) + metric.averageCharWidth();
