@@ -76,7 +76,7 @@ void EC_HoveringText::SetBackgroundColor(const QColor &color)
     Redraw();
 }
 
-void EC_HoveringText::SetBackgroundGradient(const QColor &color1, const QColor &color2)
+void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QColor &end_color)
 {
     bg_grad_.setColorAt(0.0, start_color);
     bg_grad_.setColorAt(1.0, end_color);
