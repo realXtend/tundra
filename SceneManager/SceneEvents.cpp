@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
+#include "Entity.h"
 
 namespace Scene
 {
@@ -41,6 +42,13 @@ namespace Scene
         WaterEventData::WaterEventData() : height(0.0) {}
         WaterEventData::WaterEventData(float h) : height(h) {}
         WaterEventData::~WaterEventData() {}
+        
+        EntityClickedData::EntityClickedData(Scene::Entity *ent)
+            : SceneEventData(ent->GetId()),
+            entity_(ent)
+        {
+        }
+        EntityClickedData::~EntityClickedData() {}
 
         ///\todo Refactor these.
         void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
@@ -55,6 +63,7 @@ namespace Scene
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECT, "Entity Select");
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_SELECTED, "Entity Selected");
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
+            event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_CLICKED, "Entity Clicked");
 
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");

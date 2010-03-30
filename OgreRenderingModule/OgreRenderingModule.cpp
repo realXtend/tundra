@@ -148,11 +148,15 @@ namespace OgreRenderer
             {
                 //std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
                 //          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
-
+                
                 Scene::Events::RaycastEventData event_data(entity->GetId());
          
                 event_data.pos = result.pos_, event_data.submesh = result.submesh_, event_data.u = result.u_, event_data.v = result.v_; 
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+            
+                //Semantically same as above but sends the entity pointer
+                Scene::Events::EntityClickedData clicked_event_data(entity);
+                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CLICKED, &clicked_event_data);
             }
         }
 
