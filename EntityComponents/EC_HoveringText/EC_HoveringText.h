@@ -63,17 +63,26 @@ public:
     /// Sets the background color for the hovering text.
     /// @param color Color.
     /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
+    /// @note Sets the using_gradient_ boolean to false.
     void SetBackgroundColor(const QColor &color);
 
-    void SetBackgroundGradient(const QColor &color1, const QColor &color2);
+    /// Sets the colors for the background gradient color.
+    /// @param start_color Start color.
+    /// @param end_color End color.
+    /// @note Sets the using_gradient_ boolean to true.
+    void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
 
 public slots:
     /// Shows the hovering text.
     void Show();
+
+    /// Shows the hovering.text with animation.
     void AnimatedShow();
 
     /// Hides the hovering text
     void Hide();
+
+    /// Hides the hovering text with animation.
     void AnimatedHide();
 
     /// Returns if the hovering text is visible or not.
@@ -85,7 +94,11 @@ public slots:
     void ShowMessage(const QString &text);
 
 private slots:
+    /// Updates the animation
+    /// @param step
     void UpdateAnimationStep(int step);
+
+    /// Finishes the animation.
     void AnimationFinished();
 
     /// Redraws the hovering text with the current text, font and color.
@@ -104,8 +117,8 @@ private:
     /// Ogre billboard.
     Ogre::Billboard *billboard_;
 
-    /// Ogre material for billboard set
-    Ogre::MaterialPtr material_;
+    /// Name of the material used for the billboard set.
+    std::string materialName_;
 
     /// For used for the hovering text.
     QFont font_;
@@ -122,9 +135,10 @@ private:
     /// The hovering text.
     QString text_;
 
+    /// Do we use gradient for the background.
     bool using_gradient_;
 
-    // Visibility animation timeline
+    // Visibility animation timeline.
     QTimeLine *visibility_animation_timeline_;
 };
 
