@@ -1031,6 +1031,14 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 }
 
+void RexLogicModule::EntityClicked(Scene::EntityPtr entity)
+{
+    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
+    if (name_tag.get())
+        name_tag->Clicked();
+}
+
+
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
 {
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();

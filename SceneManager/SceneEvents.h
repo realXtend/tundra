@@ -193,7 +193,7 @@ namespace Scene
             virtual ~EntityClickedData();
             
             //Entity that was clicked
-            Scene::Entity *entity_;
+            Scene::Entity *entity;
         };
 
         class CreateEntityEventData : public Foundation::EventDataInterface

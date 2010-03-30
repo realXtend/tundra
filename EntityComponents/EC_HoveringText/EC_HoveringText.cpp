@@ -45,8 +45,10 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
 
-    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
-    connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
+    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)),
+            SLOT(UpdateAnimationStep(int)));
+    connect(visibility_animation_timeline_, SIGNAL(finished()),
+            SLOT(AnimationFinished()));
 }
 
 EC_HoveringText::~EC_HoveringText()
