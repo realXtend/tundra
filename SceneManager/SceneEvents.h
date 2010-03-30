@@ -9,6 +9,7 @@
 
 namespace Scene
 {
+    class Entity;
     //! Events related to scene
     /*!
         \ingroup Scene_group
@@ -59,6 +60,9 @@ namespace Scene
         /// An action event that can be sent by anyone to cause an entity be grabbed (drag-selected).
         ///\todo Distinguish which clicks need to cause a select and which need to cause a grab.
         static const event_id_t EVENT_ENTITY_GRAB =       0x0a;
+
+        //Sent when object clicked. Same as EVENT_ENTITY_GRAB but sends a entity pointer, not just id
+        static const event_id_t EVENT_ENTITY_CLICKED =    0x0b;
 
         // Component-related event id's:
 
@@ -170,6 +174,16 @@ namespace Scene
             Real u;
             //! V coord in entity. 0 if no texture mapping
             Real v;
+        };
+
+        class EntityClickedData : public SceneEventData
+        {
+        public:
+            explicit EntityClickedData(Scene::Entity *ent);
+            virtual ~EntityClickedData();
+            
+            //Entity that was clicked
+            Scene::Entity *entity_;
         };
 
         class CreateEntityEventData : public Foundation::EventDataInterface

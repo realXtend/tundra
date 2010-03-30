@@ -282,6 +282,8 @@ namespace Input
             eventmgr-> SendEvent (catid, Input::Events::INWORLD_CLICK, &movement);
 
         eventmgr-> SendEvent (catid, Input::Events::LEFT_MOUSECLICK_PRESSED, &movement);
+
+        
     }
     
     void LeftButtonActiveState::onExit (QEvent *event)
