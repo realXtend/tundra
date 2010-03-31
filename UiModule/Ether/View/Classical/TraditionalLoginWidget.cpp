@@ -11,10 +11,10 @@ namespace CoreUi
     {
         TraditionalLoginWidget::TraditionalLoginWidget(QWidget *parent, QMap<QString,QString> stored_login_data) :
             QWidget(parent),
-            progress_timer_(new QTimer())
+            progress_timer_(new QTimer(this))
         {
             InitWidget(stored_login_data);
-            connect(progress_timer_, SIGNAL( timeout() ), SLOT( UpdateProgressBar() ));
+            connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
         }
 
         void TraditionalLoginWidget::InitWidget(QMap<QString,QString> stored_login_data)

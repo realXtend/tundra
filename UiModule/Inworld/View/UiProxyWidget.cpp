@@ -53,7 +53,7 @@ namespace UiServices
             animations_->setDirection(QAbstractAnimation::Forward);
             connect(animations_, SIGNAL( finished() ), this, SLOT( FinishHide() ));
 
-            fade_animation_ = new QPropertyAnimation(this, "opacity");
+            fade_animation_ = new QPropertyAnimation(this, "opacity", this);
             fade_animation_->setDuration(300);
             fade_animation_->setStartValue(0.0);
             fade_animation_->setEndValue(1.0);

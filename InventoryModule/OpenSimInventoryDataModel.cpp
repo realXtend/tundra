@@ -6,7 +6,7 @@
  */
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
+//#include "DebugOperatorNew.h"
 #include "OpenSimInventoryDataModel.h"
 #include "InventoryModule.h"
 #include "InventoryFolder.h"
@@ -23,7 +23,6 @@
 #include "AssetServiceInterface.h"
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
-
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
@@ -38,16 +37,17 @@
 #include <OgreImage.h>
 #include <OgreException.h>
 
-using namespace RexTypes;
 //#include "MemoryLeakCheck.h"
+
+using namespace RexTypes;
 
 namespace Inventory
 {
 
 OpenSimInventoryDataModel::OpenSimInventoryDataModel(
-    Foundation::Framework *framework,
+    InventoryModule *owner,
     ProtocolUtilities::InventorySkeleton *inventory_skeleton) :
-    framework_(framework),
+    owner_(owner),
     rootFolder_(0),
     worldLibraryOwnerId_("")
 {
@@ -163,7 +163,7 @@ bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
     ///\note    Due to some server-side mystery behaviour we must send the same packet twice: once
     ///         with fetch_folders = true & fetch_items = false and once with fetch_folders = false & fetch_items = true
     ///         in order to reveice the inventory item information correctly (asset&inventory types at least).
-    if (item->IsDescendentOf(GetOpenSimLibraryFolder()))
+    if (item == GetOpenSimLibraryFolder() || item->IsDescendentOf(GetOpenSimLibraryFolder()))
     {
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()),
             QSTR_TO_UUID(worldLibraryOwnerId_), 0, true, false);
@@ -236,18 +236,18 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         return false;
 
     // Get asset service interface.
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
-    if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
+    ServiceManagerPtr service_manager = owner_->GetFramework()->GetServiceManager();
+    if (!service_manager->IsRegistered(Service::ST_Asset))
     {
         InventoryModule::LogError("Asset service doesn't exist.");
         return false;
     }
 
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-        service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+    boost::shared_ptr<AssetServiceInterface> asset_service =
+        service_manager->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
 
     // Get event manager.
-    EventManagerPtr event_mgr = framework_->GetEventManager();
+    EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category == 0)
         return false;
@@ -269,9 +269,9 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         itemDownloaded.name = item->GetName().toStdString();
         event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-        ///\todo Show basic info dialog. Name, desc, file size etc.
-//        if (!itemDownloaded.handled)
-//            ...
+        // If no handlers for this asset exist, show the basic item properties window
+        if (!itemDownloaded.handled)
+            owner_->OpenItemPropertiesWindow(asset->GetID());
     }
     else
     {
@@ -289,16 +289,20 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         case RexAT_Skeleton:
         case RexAT_GenericAvatarXml:
         case RexAT_FlashAnimation:
-            InventoryModule::LogError("Non-supported asset type for opening: " + GetTypeNameFromAssetType(asset_type));
+            InventoryModule::LogInfo("No editor found for asset type: " + GetTypeNameFromAssetType(asset_type));
             break;
         case RexAT_None:
         default:
-            InventoryModule::LogError("Invalid asset type for opening.");
+            InventoryModule::LogInfo("Invalid asset type for opening.");
             break;
         }
 
         if (!tag)
+        {
+            // If no handlers for this asset exist, show the basic item properties window
+            owner_->OpenItemPropertiesWindow(asset->GetID());
             return false;
+        }
 
         // Send InventoryItemOpen event.
         InventoryItemOpenEventData itemOpen;
@@ -400,7 +404,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     fullFilename += asset->GetName();
     fullFilename += QString(RexTypes::GetFileExtensionFromAssetType(asset_type).c_str());
 
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = owner_->GetFramework()->GetServiceManager();
     switch(asset_type)
     {
     case RexAT_Texture:
@@ -554,7 +558,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     emit DownloadCompleted(assetReady->asset_id_.c_str());
 
     // Send InventoryItemDownloaded event.
-    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+    Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category == 0)
         return;
@@ -572,9 +576,9 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     itemDownloaded.assetType = asset_type;
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-    ///\todo If no asset editor module handled the above event, show the generic editor window for the asset.
-//    if (!itemDownloaded.handled)
-//        ...
+    // If no asset editor module handled the above event, show the generic editor window for the asset.
+    if (!itemDownloaded.handled)
+        owner_->OpenItemPropertiesWindow(item->GetID());
 
     openRequests_.erase(i);
 }
@@ -783,7 +787,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
 
     // Send event, if applicable.
     // Note: sent as delayed, to be thread-safe
-    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+    Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
     if (event_category != 0)
     {
@@ -1036,19 +1040,17 @@ std::string OpenSimInventoryDataModel::CreateNewFileAgentInventoryXML(
 
 void OpenSimInventoryDataModel::CreateRexInventoryFolders()
 {
-    using namespace RexTypes;
-
     const char *asset_types[] = { "Texture", "Mesh", "Skeleton", "MaterialScript", "ParticleScript", "FlashAnimation", "GenericAvatarXml" };
     asset_type_t asset_type;
     for(int i = 0; i < NUMELEMS(asset_types); ++i)
     {
         asset_type = GetAssetTypeFromTypeName(asset_types[i]);
-        std::string cat_name = GetCategoryNameForAssetType(asset_type);
+        QString cat_name = GetCategoryNameForAssetType(asset_type).c_str();
 
         // Check out if this inventory category exists. If not, create id.
-        if (!GetFirstChildFolderByName(STD_TO_QSTR(cat_name)))
+        if (!GetFirstChildFolderByName(cat_name))
             AbstractInventoryItem *newFolder = GetOrCreateNewFolder(
-                QString(RexUUID::CreateRandom().ToString().c_str()), *GetMyInventoryFolder(), STD_TO_QSTR(cat_name));
+                UUID_TO_QSTR(RexUUID::CreateRandom()), *GetMyInventoryFolder(), cat_name);
     }
 }
 

@@ -89,6 +89,9 @@ private:
     /// Ogre billboard.
     Ogre::Billboard *billboard_;
 
+    /// Name of the material used for the billboard set.
+    std::string materialName_;
+
     /// For used for the chat bubble text.
     QFont font_;
 

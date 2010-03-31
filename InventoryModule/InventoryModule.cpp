@@ -77,11 +77,11 @@ void InventoryModule::Initialize()
 
     // Register console commands.
     RegisterConsoleCommand(Console::CreateCommand("Upload",
-            "Upload an asset. Usage: Upload(AssetType, Name, Description)",
-            Console::Bind(this, &Inventory::InventoryModule::UploadAsset)));
+        "Upload an asset. Usage: Upload(AssetType, Name, Description)",
+        Console::Bind(this, &Inventory::InventoryModule::UploadAsset)));
 
     RegisterConsoleCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
-            Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
+        Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
 }
 
 void InventoryModule::PostInitialize()
@@ -136,7 +136,8 @@ bool InventoryModule::HandleEvent(
         // Connected to server. Initialize inventory_ tree model.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
-            ProtocolUtilities::AuthenticationEventData *auth = dynamic_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+            ProtocolUtilities::AuthenticationEventData *auth = checked_static_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+            assert(auth);
             if (!auth)
                 return false;
 
@@ -174,7 +175,7 @@ bool InventoryModule::HandleEvent(
                 RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
                     Foundation::Module::MT_WorldLogic).lock().get());
 
-                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(framework_, rexLogic->GetInventory().get()));
+                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, rexLogic->GetInventory().get()));
 
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
@@ -406,16 +407,16 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return;
+
     // Check that item properties window for this item doesn't already exists.
     // If it does, bring it to front and set focus to it.
     QMap<QString, ItemPropertiesWindow *>::iterator it = itemPropertiesWindows_.find(inventory_id);
     if (it != itemPropertiesWindows_.end())
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module =
-            GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-        if (!ui_module.get())
-            return;
-
         ui_module->GetInworldSceneController()->BringProxyToFront(it.value());
         return;
     }
@@ -425,6 +426,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
         return;
 
     ItemPropertiesWindow *wnd = new ItemPropertiesWindow(this);
+    connect(wnd, SIGNAL(Closed(const QString &, bool)), this, SLOT(CloseItemPropertiesWindow(const QString &, bool)));
     wnd->SetItem(asset);
 
     itemPropertiesWindows_[inventory_id] = wnd;
@@ -445,7 +447,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
             service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
 
         Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset->GetAssetReference().toStdString(), GetTypeNameFromAssetType(asset->GetAssetType()));
-        if(assetPtr && assetPtr->GetSize() > 0)
+        if (assetPtr && assetPtr->GetSize() > 0)
             wnd->SetFileSize(assetPtr->GetSize());
     }
 }
@@ -457,12 +459,17 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module)
+        ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
+
     // If inventory item is modified notify server.
     if (save_changes)
     {
         InventoryAsset *asset = dynamic_cast<InventoryAsset *>(inventory_->GetChildById(inventory_id));
         if (asset)
-            ///\todo WebDAV needs the old name. We don't have it here...
+            ///\todo WebDAV needs the old name and we don't have it here.
             inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
     }
 
@@ -471,7 +478,8 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
 {
-    ProtocolUtilities::NetworkEventInboundData *data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    ProtocolUtilities::NetworkEventInboundData *data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    assert(data);
     if (!data)
         return;
 
@@ -574,7 +582,8 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
 {
     ///\note It seems that this packet is only sent by 0.4 reX server.
     ///     Maybe drop support at some point?
-    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    ProtocolUtilities::NetworkEventInboundData* data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    assert(data);
     if (!data)
         return;
 
@@ -634,7 +643,8 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
 
 void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_data)
 {
-    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    ProtocolUtilities::NetworkEventInboundData *data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    assert(data);
     if (!data)
         return;
 
@@ -661,7 +671,8 @@ void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_
 
 void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
 {
-    ProtocolUtilities::NetworkEventInboundData* data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    ProtocolUtilities::NetworkEventInboundData* data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
+    assert(data);
     if (!data)
         return;
 

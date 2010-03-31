@@ -30,6 +30,7 @@ namespace ProtocolUtilities
 
 namespace Inventory
 {
+    class InventoryModule;
     class InventoryFolder;
     class InventoryAsset;
 
@@ -39,10 +40,10 @@ namespace Inventory
 
     public:
         /// Constructor.
-        /// @param framework Framework pointer.
+        /// @param owner Owner module
         /// @inventory_skeleton Inventory skeleton pointer.
         OpenSimInventoryDataModel(
-            Foundation::Framework *framework,
+            InventoryModule *owner,
             ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
         /// Destructor.
@@ -99,7 +100,7 @@ namespace Inventory
             AbstractInventoryItem *parent_folder);
 
         /// AbstractInventoryDataModel override.
-        /// In OpesimInventoryDataModel this function doesn't perform the actual download.
+        /// @note In OpesimInventoryDataModel this function doesn't perform the actual download.
         /// This just request the asset from server using texture and asset services.
         void DownloadFile(const QString &store_folder, AbstractInventoryItem *selected_item);
 
@@ -234,8 +235,8 @@ namespace Inventory
         /// Creates all the reX-spesific asset folders to the inventory.
         void CreateRexInventoryFolders();
 
-        /// Framework pointer
-        Foundation::Framework *framework_;
+        /// Owner module
+        InventoryModule *owner_;
 
         /// The root folder.
         InventoryFolder *rootFolder_;

@@ -66,6 +66,12 @@ namespace Inventory
         /// @param uuid_name_map Map of UUID-name pairs.
         void HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_map);
 
+    signals:
+        /// Emitted when the window is closed.
+        /// @param inventory_id Id of the inventory item.
+        /// @param save_changes Do we want to save changes.
+        void Closed(const QString &inventory_id, bool save_changes);
+
     private slots:
         /// Tells InventoryModule to destroy the window and save the changes made to the item.
         void Save();

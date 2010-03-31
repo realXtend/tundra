@@ -17,6 +17,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
+#include <QObject>
 #include <QMap>
 
 namespace Foundation
@@ -42,8 +43,10 @@ namespace Inventory
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
 
-    class InventoryModule : public Foundation::ModuleInterfaceImpl
+    class InventoryModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
+
     public:
         /// Enumeration of inventory data models.
         enum InventoryDataModelType
@@ -69,15 +72,16 @@ namespace Inventory
             event_id_t event_id,
             Foundation::EventDataInterface* data);
 
-        void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
-
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
-        /// Returns type of this module. Needed for logging.
+        /// Type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
+
+        /// Subscribes this module to listen network events.
+        void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
 
         /// Console command for uploading an asset, non-threaded.
         Console::CommandResult UploadAsset(const StringVector &params);
@@ -85,15 +89,14 @@ namespace Inventory
         /// Console command for uploading multiple assets, threaded.
         Console::CommandResult UploadMultipleAssets(const StringVector &params);
 
-        /// Get the current WorldStream
-        ProtocolUtilities::WorldStreamPtr GetCurrentWorldStream() const { return currentWorldStream_ ; }
-
         /// Returns the inventory pointer
+        /// @note Meant mostly for modules internal use.
         InventoryPtr GetInventoryPtr() const { return inventory_; }
 
         /// Return the type of the inventory data model (e.g. OpenSim or WebDAV).
         InventoryDataModelType GetInventoryDataModelType() const { return inventoryType_; }
 
+    public slots:
         /// Opens new item properties window.
         /// @param inventory_id Inventory ID of the item.
         void OpenItemPropertiesWindow(const QString &inventory_id);
