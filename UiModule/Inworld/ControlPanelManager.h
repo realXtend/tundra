@@ -21,6 +21,7 @@ namespace CoreUi
 
     class SettingsWidget;
     class BindingWidget;
+    class PersonalWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -40,6 +41,7 @@ namespace CoreUi
 
         void SetServiceGetter(QObject *service_getter);
         SettingsWidget *GetSettingsWidget() { return settings_widget_; }
+        PersonalWidget *GetPersonalWidget() { return personal_widget_; }
 
     private slots:
         void CreateBasicControls();
@@ -63,6 +65,7 @@ namespace CoreUi
         // Contolled core widgets
         SettingsWidget *settings_widget_;
         BindingWidget *binding_widget_;
+        PersonalWidget *personal_widget_;
     };
 }
 
