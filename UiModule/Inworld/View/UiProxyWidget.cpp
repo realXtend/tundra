@@ -15,7 +15,7 @@
 
 namespace UiServices
 {
-    UiProxyWidget::UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties) 
+    UiProxyWidget::UiProxyWidget(QWidget *widget, const UiWidgetProperties in_widget_properties) 
         : QGraphicsProxyWidget(0, in_widget_properties.GetWindowStyle()),
           widget_properties_(in_widget_properties),
           show_animation_enabled_(true),

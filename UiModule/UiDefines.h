@@ -3,6 +3,9 @@
 #ifndef incl_UiModule_UiDefines_h
 #define incl_UiModule_UiDefines_h
 
+#include <QString>
+#include <QMap>
+
 namespace UiDefines
 {
     enum ConnectionState 
@@ -20,6 +23,18 @@ namespace UiDefines
         Settings,
         Notifications
     };
+
+    enum MenuNodeStyle
+    {
+        TextNormal,
+        TextHover,
+        TextPressed,
+        IconNormal,
+        IconHover,
+        IconPressed
+    };
+
+    typedef QMap<UiDefines::MenuNodeStyle, QString> MenuNodeStyleMap;
 }
 
 #endif

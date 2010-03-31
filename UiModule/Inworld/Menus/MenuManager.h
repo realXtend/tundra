@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QPair>
 
+#include "Inworld/View/UiWidgetProperties.h"
 #include "ActionNode.h"
 #include "GroupNode.h"
 
@@ -29,7 +30,7 @@ namespace CoreUi
         enum Category { Root, Personal, Building };
 
     public slots:
-        void AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, QString button_title);
+        void AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties properties);
         void RemoveMenuItem(Category category, QGraphicsProxyWidget *controlled_widget);
 
     private slots:
@@ -58,6 +59,7 @@ namespace CoreUi
         QParallelAnimationGroup *last_resize_animations_;
         QUuid last_id_;
         bool ongoing_animations_;
+        bool root_collapsing_;
 
         //! Pointer to the main root menu
         GroupNode *root_menu_;

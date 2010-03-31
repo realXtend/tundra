@@ -5,10 +5,9 @@
 
 namespace CoreUi
 {
-    ActionNode::ActionNode(const QString& name) :
-            MenuNode(name)
+    ActionNode::ActionNode(const QString& name, QIcon icon, UiDefines::MenuNodeStyleMap map) :
+        MenuNode(name, icon, map)
     {
-        connect(GetMenuButton(), SIGNAL( clicked() ), SLOT( NodeClicked() ));
     }
 
     void ActionNode::NodeClicked()

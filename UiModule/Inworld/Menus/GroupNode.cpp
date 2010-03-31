@@ -15,7 +15,7 @@
 namespace CoreUi
 {
     GroupNode::GroupNode(bool root, const QString& name, qreal hgap, qreal vgap) :
-        MenuNode(name),
+        MenuNode(name, QIcon(), UiDefines::MenuNodeStyleMap()),
         move_animations_(new QParallelAnimationGroup(this)),
         resize_animations_(new QParallelAnimationGroup(this)),
         adjust_position_animations_(new QParallelAnimationGroup(this)),
@@ -25,28 +25,30 @@ namespace CoreUi
         hgap_(hgap),
         vgap_(vgap),
         is_expanded_(false),
-        group_stylesheet(QString())
+        group_stylesheet("")
     {
-        connect(GetMenuButton(), SIGNAL( clicked() ), SLOT( NodeClicked() ));
+        // RENEW THIS
+        //connect(GetMenuButton(), SIGNAL( clicked() ), SLOT( NodeClicked() )); 
         connect(move_animations_, SIGNAL( finished() ), SLOT( MoveAnimationsFinished() ));
         connect(resize_animations_, SIGNAL( finished() ), SLOT( ResizeAnimationsFinished() ));
 
         if (root_)
         {
             SetTreeDepth(0);
-            actionPushButton->setMinimumSize(75,75);
-            actionPushButton->setMaximumSize(75,75);
-            actionPushButton->setStyleSheet("background-image: url('./data/ui/images/menus/root_menu_bg.png'); background-position: top left; background-repeat: no-repeat;"
-                                            "background-color: transparent; border-radius:0px;");
+            leftContainer->hide();
+            rightContainer->hide();
+            widget_->setMinimumSize(101,103);
+            widget_->setMaximumSize(101,103);
+            centerContainer->setMinimumSize(101,103);
+            centerContainer->setMaximumSize(101,103);
+            centerContainer->setStyleSheet("QWidget#centerContainer { background-position: top left; background-repeat: no-repeat;"
+                                           "background-color: transparent; border-radius:0px; border: 0px;"
+                                           "background-image: url('./data/ui/images/menus/uibutton_EDIT_normal.png'); }"
+                                           "QWidget#centerContainer:hover { background-image: url('./data/ui/images/menus/uibutton_EDIT_hover.png'); }"
+                                           "QWidget#centerContainer:pressed { background-image: url('./data/ui/images/menus/uibutton_EDIT_click.png'); }");
         }
         else
             SetTreeDepth(-1);
-
-        group_stylesheet = "text-align: right;"
-                           "color: qlineargradient(spread:pad, x1:0, y1:0.00568182, x2:0, y2:1, stop:0 rgba(16, 16, 16, 255), stop:0.534091 rgba(59, 59, 59, 255), stop:0.943182 rgba(34, 34, 34, 255));"
-                           "border: 0px;"
-                           "border-radius: 17px;"
-                           "padding-right:5px;";
     }
 
     void GroupNode::AdjustNode(QAbstractAnimation::Direction dir)
@@ -71,6 +73,8 @@ namespace CoreUi
             resize_animations_->state() == QAbstractAnimation::Running)
             return;
 
+        setOpacity(1);
+
         // Set correct direction
         move_animations_->setDirection(QAbstractAnimation::Forward);
         resize_animations_->setDirection(QAbstractAnimation::Forward);
@@ -78,15 +82,16 @@ namespace CoreUi
         // Setup children for animations
         foreach (MenuNode *child_node, children_)
         {
-            if (!IsExpanded())
-                child_node->setPos(pos());
-            this->setOpacity(1);
             child_node->setOpacity(1);
             child_node->setZValue(zValue()-0.001f);
-            child_node->DisableText();
             child_node->show();
+            if (!IsExpanded())
+            {
+                child_node->setPos(pos());
+                child_node->ChangeMoveState(false);
+            }
         }
-
+        
         emit NodeGroupClicked(this, move_animations_, resize_animations_);
     }
 
@@ -131,17 +136,17 @@ namespace CoreUi
 
     QPropertyAnimation* GroupNode::CalculateSizeAnimation(MenuNode *child_node)
     {
-        QSizeF anim_size = child_size_;
-        QPropertyAnimation *size_anim = new QPropertyAnimation(child_node, "size");
-        // Set start size
-        size_anim->setStartValue(anim_size);
-        // Set end size
-        anim_size.setWidth(anim_size.width() + child_node->GetExpandedWidth());
-        size_anim->setEndValue(anim_size);
-        // Setup animation
-        size_anim->setDuration(RESIZE_ANIM_LENGTH);
-        size_anim->setEasingCurve(QEasingCurve::InOutSine);
-        return size_anim;
+        //QSizeF anim_size = child_size_;
+        //QPropertyAnimation *size_anim = child_node->resize_animation_;
+        //// Set start size
+        //size_anim->setStartValue(anim_size);
+        //// Set end size
+        //anim_size.setWidth(anim_size.width() + child_node->GetExpandedWidth());
+        //size_anim->setEndValue(anim_size);
+        //// Setup animation
+        //size_anim->setDuration(RESIZE_ANIM_LENGTH);
+        //size_anim->setEasingCurve(QEasingCurve::InOutSine);
+        return 0;
     }
 
     void GroupNode::CalculatePosVec()
@@ -158,9 +163,11 @@ namespace CoreUi
     {
         if(pos_vector_.isNull())
             CalculatePosVec();
+
         adjust_position_animations_->clear();
         resize_animations_->clear();
         move_animations_->clear();
+
         qreal rad = pos_vector_.length();
         qreal cheight = 0;
         qreal cwidth = 0;
@@ -222,8 +229,10 @@ namespace CoreUi
             adjust_position_animations_->addAnimation(anim);
 
             // Adjusting move animations that will just move object to its expanded/shrunken position
-            anim = CalculateSizeAnimation(child_node);
-            resize_animations_->addAnimation( anim );
+            anim = child_node->CreateResizeAnimation("minimumWidth");
+            resize_animations_->addAnimation(anim);
+            anim = child_node->CreateResizeAnimation("maximumWidth");
+            resize_animations_->addAnimation(anim);
             index++;
         }
     }
@@ -235,7 +244,7 @@ namespace CoreUi
             is_expanded_ = true;
             foreach (MenuNode *child_node, children_)
             {
-                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
+                child_node->ChangeMoveState(true);
             }
         }
         else if (move_animations_->direction() == QAbstractAnimation::Backward)
@@ -245,7 +254,7 @@ namespace CoreUi
             {
                 child_node->hide();
                 child_node->setZValue(zValue()+0.001f);
-                child_node->resize(35,35);
+                //child_node->resize(35,35);
             }
         }
     }
@@ -256,16 +265,15 @@ namespace CoreUi
         {
             foreach (MenuNode* child_node, children_)
             {
-                child_node->EnableText();
-                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
+                //child_node->EnableText();
+                //child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
             }
         }
         else if (resize_animations_->direction() == QAbstractAnimation::Backward)
         {
             foreach (MenuNode* child_node, children_)
             {
-                child_node->DisableText();
-                child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: transparent;");
+                //child_node->ChangeMoveState(false);
             }
             if (IsExpanded())
             {

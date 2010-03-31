@@ -6,15 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>46</width>
-    <height>35</height>
+    <width>94</width>
+    <height>31</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>31</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>31</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>MenuNode</string>
@@ -24,20 +36,30 @@
 	background-color: transparent;
 }
 
-QPushButton {
-	text-align: right;
-	color: qlineargradient(spread:pad, x1:0, y1:0.00568182, x2:0, y2:1, stop:0 rgba(16, 16, 16, 255), stop:0.534091 rgba(59, 59, 59, 255), stop:0.943182 rgba(34, 34, 34, 255));
-	border: 0px;
-	border-radius: 17px;
-	padding-right:5px;
+QWidget#leftContainer {
+	background-color: transparent;
 }
 
-QPushButton::hover {
-	color: qlineargradient(spread:pad, x1:0, y1:0.00568182, x2:0, y2:1, stop:0 rgba(16, 16, 16, 200), stop:0.534091 rgba(59, 59, 59, 200), stop:0.943182 rgba(34, 34, 34, 200));
+QWidget#centerContainer {
+	background-color: transparent;
+	background-image: url('./data/ui/images/menus/icon_bground_center.png');
+	background-position: top left;
+	background-repeat: repeat-x;
 }
 
-QPushButton::pressed {
-	color: qlineargradient(spread:pad, x1:0, y1:0.00568182, x2:0, y2:1, stop:0 rgba(16, 16, 16, 255), stop:0.534091 rgba(59, 59, 59, 255), stop:0.943182 rgba(34, 34, 34, 255));
+QWidget#textWidget {
+	background-color: transparent;
+}
+
+QWidget#iconWidget {
+	background-color: transparent;
+}
+
+QWidget#rightContainer {
+	background-color: transparent;
+	background-image: url('./data/ui/images/menus/editbtns_bground_end');
+	background-position: top left;
+	background-repeat: no-repeat;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -53,28 +75,81 @@ QPushButton::pressed {
       <number>0</number>
      </property>
      <item>
-      <widget class="QPushButton" name="actionPushButton">
+      <widget class="QWidget" name="leftContainer" native="true">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <family>Calibri</family>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
+       <property name="minimumSize">
+        <size>
+         <width>31</width>
+         <height>0</height>
+        </size>
        </property>
-       <property name="text">
-        <string/>
+       <property name="maximumSize">
+        <size>
+         <width>31</width>
+         <height>16777215</height>
+        </size>
        </property>
-       <property name="flat">
-        <bool>true</bool>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="iconWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="centerContainer" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="textWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="rightContainer" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>36</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>36</width>
+         <height>16777215</height>
+        </size>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
