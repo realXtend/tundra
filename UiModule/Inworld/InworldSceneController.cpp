@@ -16,6 +16,7 @@
 #include "View/CommunicationWidget.h"
 
 #include "Inworld/ControlPanel/SettingsWidget.h"
+#include "Inworld/ControlPanel/PersonalWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>
@@ -103,11 +104,13 @@ namespace UiServices
         if (properties.IsShownInToolbar())
         {
             // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
-            if (properties.GetWidgetName() != "Inventory" && 
-                properties.GetWidgetName() != "Avatar Editor")
-                menu_manager_->AddMenuItem(CoreUi::MenuManager::Building, proxy_widget, properties.GetWidgetName());
+            if (properties.GetWidgetName() == "Inventory")
+                control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(proxy_widget);
+            else if (properties.GetWidgetName() == "Avatar Editor")
+                control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(proxy_widget);
             else
-                menu_manager_->AddMenuItem(CoreUi::MenuManager::Personal, proxy_widget, properties.GetWidgetName());
+                menu_manager_->AddMenuItem(CoreUi::MenuManager::Building, proxy_widget, properties.GetWidgetName());
+
             connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
         }
         return true;
