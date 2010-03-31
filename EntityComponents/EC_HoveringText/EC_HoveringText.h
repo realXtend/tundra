@@ -13,12 +13,9 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
-#include <OgreMaterial.h>
-
 #include <QFont>
 #include <QColor>
-#include <QBrush>
-#include <QTimeLine>
+#include <QLinearGradient>
 
 namespace OgreRenderer
 {
@@ -32,6 +29,10 @@ namespace Ogre
     class Billboard;
     class MaterialPtr;
 }
+
+QT_BEGIN_NAMESPACE
+class QTimeLine;
+QT_END_NAMESPACE
 
 class EC_HoveringText : public Foundation::ComponentInterface
 {

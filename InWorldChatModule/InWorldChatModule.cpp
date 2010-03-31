@@ -184,7 +184,7 @@ const std::string &InWorldChatModule::NameStatic()
 void InWorldChatModule::SendChatFromViewer(const QString &msg)
 {
     if (currentWorldStream_)
-        currentWorldStream_->SendChatFromViewerPacket(msg.toStdString());
+        currentWorldStream_->SendChatFromViewerPacket(std::string(msg.toUtf8()));
 }
 
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)

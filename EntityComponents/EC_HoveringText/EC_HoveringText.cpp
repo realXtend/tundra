@@ -23,7 +23,7 @@
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
-#include <QLinearGradient>
+#include <QTimeLine>
 
 //#include "MemoryLeakCheck.h"
 
@@ -130,13 +130,13 @@ void EC_HoveringText::AnimatedHide()
     UpdateAnimationStep(100);
     visibility_animation_timeline_->setDirection(QTimeLine::Backward);
     visibility_animation_timeline_->start();
-} 
+}
 
 void EC_HoveringText::UpdateAnimationStep(int step)
 {
     if (materialName_.empty())
         return;
-    
+
     float alpha = step;
     alpha /= 100;
 
@@ -152,7 +152,7 @@ void EC_HoveringText::AnimationFinished()
 {
     if (visibility_animation_timeline_->direction() == QTimeLine::Backward && IsVisible())
         Hide();
-} 
+}
 
 bool EC_HoveringText::IsVisible() const
 {
@@ -226,7 +226,7 @@ void EC_HoveringText::Redraw()
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
     std::string tex_name("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.create(
+    Ogre::Texture *tex = checked_static_cast<Ogre::Texture *>(manager.create(
         tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
     assert(tex);
 

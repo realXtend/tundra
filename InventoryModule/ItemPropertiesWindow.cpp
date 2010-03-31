@@ -7,16 +7,16 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ItemPropertiesWindow.h"
 #include "InventoryModule.h"
 #include "InventoryAsset.h"
+#include "AbstractInventoryDataModel.h"
 #include "ModuleManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
-
-#include <AssetEvents.h>
-
-#include <UiModule.h>
+#include "AssetEvents.h"
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
 
@@ -26,6 +26,8 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+
+#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -122,37 +124,25 @@ void ItemPropertiesWindow::HandleUuidNameReply(QMap<RexUUID, QString> uuid_name_
         it.next();
         if (it.key() == creatorId_)
             labelCreatorData_->setText(it.value());
-        if (it.key() == ownerId_)
+        else if (it.key() == ownerId_)
             labelOwnerData_->setText(it.value());
-        if (it.key() == groupId_)
+        else if (it.key() == groupId_)
             labelGroupData_->setText(it.value());
     }
 }
 
 void ItemPropertiesWindow::Save()
 {
-    proxyWidget_->hide();
-
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
-    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
-    owner_->CloseItemPropertiesWindow(inventoryId_, true);
+    InventoryAsset *asset = static_cast<InventoryAsset *>(owner_->GetInventoryPtr()->GetChildById(inventoryId_));
+    assert(asset);
+    asset->SetName(lineEditName_->text());
+    asset->SetDescription(lineEditDescription_->text());
+    emit Closed(inventoryId_, true);
 }
 
 void ItemPropertiesWindow::Cancel()
 {
-    proxyWidget_->hide();
-
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
-    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxyWidget_);
-    owner_->CloseItemPropertiesWindow(inventoryId_, false);
+    emit Closed(inventoryId_, false);
 }
 
 bool ItemPropertiesWindow::EditingFinished()

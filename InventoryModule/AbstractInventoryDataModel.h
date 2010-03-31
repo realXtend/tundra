@@ -17,6 +17,7 @@
 // Few useful defines.
 #define STD_TO_QSTR(p) QString(p.c_str())
 #define QSTR_TO_UUID(p) RexUUID(p.toStdString())
+#define UUID_TO_QSTR(p) QString(p.ToString().c_str())
 
 namespace Inventory
 {
