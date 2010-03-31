@@ -103,13 +103,13 @@ namespace UiServices
         UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
         if (properties.IsShownInToolbar())
         {
-            // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
-            if (properties.GetWidgetName() == "Inventory")
+            QString widget_name = properties.GetWidgetName();
+            if (widget_name == "Inventory")
                 control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(proxy_widget);
-            else if (properties.GetWidgetName() == "Avatar Editor")
+            else if (widget_name == "Avatar Editor")
                 control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(proxy_widget);
             else
-                menu_manager_->AddMenuItem(CoreUi::MenuManager::Building, proxy_widget, properties.GetWidgetName());
+                menu_manager_->AddMenuItem(CoreUi::MenuManager::Root, proxy_widget, properties);
 
             connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
         }
@@ -120,12 +120,10 @@ namespace UiServices
     {
         if (!inworld_scene_)
             return;
-        // Small hack here with grouping by widget name, will go away when inv and avatar widgets will not be in this menu anymore
-        if (proxy_widget->GetWidgetProperties().GetWidgetName() != "Inventory" && 
-            proxy_widget->GetWidgetProperties().GetWidgetName() != "Avatar Editor")
-            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Building, proxy_widget);
-        else
-            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Personal, proxy_widget);
+        
+        QString widget_name = proxy_widget->GetWidgetProperties().GetWidgetName();
+        if (widget_name != "Inventory" && widget_name != "Avatar Editor")
+            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Root, proxy_widget);
         inworld_scene_->removeItem(proxy_widget);
         all_proxy_widgets_in_scene_.removeOne(proxy_widget);
     }

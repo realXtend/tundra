@@ -96,6 +96,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
+#include <UiDefines.h>
 #include <Inworld/InworldSceneController.h>
 #include <Inworld/View/UiProxyWidget.h>
 #include <Inworld/View/UiWidgetProperties.h>
@@ -1420,12 +1421,25 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     QObject* uiproperty_ptr = wrapped_uiproperty->_obj;
 
     QWidget* widget = (QWidget*)widget_ptr;
-    const UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
+    UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
     // If this occurs, we're most probably operating in headless mode.
     if (ui_module.get() == 0)
     {
         PyErr_SetString(PyExc_RuntimeError, "UiModule is missing."); //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
         return NULL;
+    }
+
+    UiDefines::MenuNodeStyleMap map;
+    if (uiproperty.GetWidgetName() == "Object Edit")
+    {
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::TextNormal] = base_url + "edbutton_OBJEDtxt_normal.png";
+        map[UiDefines::TextHover] = base_url + "edbutton_OBJEDtxt_hover.png";
+        map[UiDefines::TextPressed] = base_url + "edbutton_OBJEDtxt_click.png";
+        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
+        uiproperty.SetMenuNodeStyleMap(map);
     }
 
     UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);

@@ -4,6 +4,7 @@
 #define incl_UiModule_ActionNode_h
 
 #include "MenuNode.h"
+#include "UiDefines.h"
 
 namespace CoreUi
 {
@@ -13,7 +14,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        ActionNode(const QString& name);
+        ActionNode(const QString& name, QIcon icon, UiDefines::MenuNodeStyleMap map);
 
     public slots:
         void NodeClicked();

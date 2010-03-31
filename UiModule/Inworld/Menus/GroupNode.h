@@ -24,7 +24,6 @@ namespace CoreUi
         //! Constructor
         GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0);
 
-
     public slots:
         //! Parent overrides
         void NodeClicked();

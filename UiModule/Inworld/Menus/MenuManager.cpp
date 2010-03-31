@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "MenuManager.h"
 #include "Common/AnchorLayoutManager.h"
+#include "Inworld/View/UiProxyWidget.h"
 
 #include <QSequentialAnimationGroup>
 #include <QPropertyAnimation>
@@ -17,7 +18,8 @@ namespace CoreUi
             last_clicked_node_(0),
             next_move_animations_(0),
             last_resize_animations_(0),
-            ongoing_animations_(false)
+            ongoing_animations_(false),
+            root_collapsing_(false)
     {
         InitInternals();
     }
@@ -25,17 +27,11 @@ namespace CoreUi
     void MenuManager::InitInternals()
     {
         // Create the root menu
-        root_menu_ = new GroupNode(true, "", 30, 5);
+        root_menu_ = new GroupNode(true, "RootNode", -20, 5);
         category_map_["Root"] = root_menu_;
         layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
-
-        // Add submenus
-        QStringList group_list;
-        group_list << "Personal" << "Building";
-        foreach(QString group_name, group_list)
-            AddMenuGroup(group_name, 10, 5);
     }
 
     void MenuManager::AddMenuGroup(QString name, qreal hgap, qreal vgap)
@@ -49,22 +45,25 @@ namespace CoreUi
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
     }
 
-    void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, QString button_title)
+    void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties properties)
     {
-        ActionNode *child_node = new ActionNode(button_title);
+        qDebug() << properties.GetWidgetName();
+        ActionNode *child_node = new ActionNode(properties.GetWidgetName(), properties.GetWidgetIcon(), properties.GetMenuNodeStyleMap());
         switch (category)
         {
             case Root:
-               category_map_["Root"]->AddChildNode(child_node);
-               break;
+                category_map_["Root"]->AddChildNode(child_node);
+                break;
             case Personal:
-               category_map_["Personal"]->AddChildNode(child_node);
-               break;
+                // Personal no longer exists at this point in time, use Root
+                SAFE_DELETE(child_node); 
+                return;
             case Building:
-               category_map_["Building"]->AddChildNode(child_node);
-               break;
+                // Building no longer exists at this point in time, use Root
+                SAFE_DELETE(child_node);
+                return;
             default:
-               return;
+                return;
         }
         controller_map_[child_node->GetID()] = controlled_widget;
         connect(child_node, SIGNAL(ActionButtonClicked(QUuid)), SLOT(ActionNodeClicked(QUuid)));
@@ -84,11 +83,9 @@ namespace CoreUi
                recovered_node = category_map_["Root"]->RemoveChildNode(remove_id);
                break;
             case Personal:
-               recovered_node = category_map_["Personal"]->RemoveChildNode(remove_id);
-               break;
+               return;
             case Building:
-               recovered_node = category_map_["Building"]->RemoveChildNode(remove_id);
-               break;
+               return;
             default:
                return;
         }
@@ -110,10 +107,14 @@ namespace CoreUi
         if (!controlled_widget)
             return;
 
-        if (!controlled_widget->isVisible())
-            controlled_widget->show();
+        UiServices::UiProxyWidget *naali_proxy = dynamic_cast<UiServices::UiProxyWidget *>(controlled_widget);
+        if (!naali_proxy)
+            return;
+
+        if (!naali_proxy->isVisible())
+            naali_proxy->show();
         else
-            controlled_widget->hide();
+            naali_proxy->AnimatedHide();
     }
 
     void MenuManager::GroupNodeClicked(GroupNode *clicked_node, QParallelAnimationGroup *move_animations, QParallelAnimationGroup *size_animations)
@@ -121,7 +122,7 @@ namespace CoreUi
         if (ongoing_animations_)
             return;
 
-        QParallelAnimationGroup *revert_group = new QParallelAnimationGroup(this);
+        QSequentialAnimationGroup *revert_group = new QSequentialAnimationGroup(this);
         QSequentialAnimationGroup *sequential_move_animations_ = new QSequentialAnimationGroup(this);
         sequential_move_animations_->setDirection(QAbstractAnimation::Backward);
 
@@ -156,9 +157,10 @@ namespace CoreUi
         // Clicked item is root, and its collapsing
         else if (!clicked_node->parent())
         {
+            connect(revert_group, SIGNAL(finished()), SLOT(RevertAnimationsFinished()));
+            root_collapsing_ = true;
             expanded_nodes_.clear();
-            next_move_animations_ = 0;
-            last_resize_animations_ = 0;
+            expanded_nodes_.append(clicked_node);
         }
         // Else its a normal item collapsing, lets remove it from tracking map of expanded items
         else
@@ -181,6 +183,17 @@ namespace CoreUi
 
     void MenuManager::RevertAnimationsFinished()
     {
+        if (root_collapsing_)
+        {
+            next_move_animations_ = 0;
+            last_resize_animations_ = 0;
+            root_collapsing_ = false;
+            ongoing_animations_ = false;
+            expanded_nodes_.at(0)->GetMoveAnimations()->stop();
+            expanded_nodes_.at(0)->GetResizeAnimations()->stop();
+            expanded_nodes_.clear();
+        }
+
         if (next_move_animations_)
         {
             connect(next_move_animations_, SIGNAL( finished() ), SLOT( MoveAnimationsFinished() ));

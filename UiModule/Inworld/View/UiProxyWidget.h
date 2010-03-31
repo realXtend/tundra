@@ -24,7 +24,7 @@ namespace UiServices
         //! Constructor.
         //! \param widget
         //! \param in_widget_properties
-        UiProxyWidget(QWidget *widget, const UiWidgetProperties &in_widget_properties);
+        UiProxyWidget(QWidget *widget, const UiWidgetProperties in_widget_properties);
 
         //! Destructor.
         ~UiProxyWidget();

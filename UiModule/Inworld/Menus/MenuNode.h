@@ -5,14 +5,17 @@
 
 #include <QGraphicsProxyWidget>
 #include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 #include <QUuid>
 #include <QPushButton>
 #include <QString>
 #include <QPointF>
+#include <QMap>
 
+#include "UiDefines.h"
 #include "ui_MenuNode.h"
 
-#define MOVE_ANIM_LENGTH 400
+#define MOVE_ANIM_LENGTH 350
 #define RESIZE_ANIM_LENGTH 200
 #define ADJUST_ANIM_LENGTH 150
 
@@ -26,14 +29,11 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        MenuNode(const QString& node_name, QUuid id = QUuid());
+        MenuNode(const QString& node_name, QIcon icon, UiDefines::MenuNodeStyleMap map, QUuid id = QUuid());
 
     public slots:
-        QPushButton *GetMenuButton();
         QUuid GetID();
 
-        void EnableText();
-        void DisableText();
         void SetTreeDepth(int tree_depth)   { tree_depth_ = tree_depth; }
         int GetTreeDepth()                  { return tree_depth_; }
         int GetExpandedWidth()              { return expanded_width_; }
@@ -47,17 +47,35 @@ namespace CoreUi
         QPointF GetOriginalPos(){ return original_pos_; }
         void SetOriginalPos(QPointF original_pos){ original_pos_  = original_pos; }
 
-
+        QPropertyAnimation *CreateResizeAnimation(QString anim_property);
+        void ResizeFinished();
+        void ChangeMoveState(bool show_borders);
+        
         // Reimplement in subclass
         virtual void NodeClicked() = 0;
         virtual void AddChildNode(MenuNode *node) = 0;
 
     protected:
+        enum Style
+        {
+            Normal,
+            Hover,
+            Pressed
+        };
+
+        void hoverEnterEvent(QGraphicsSceneHoverEvent *enter_event);
+        void hoverLeaveEvent(QGraphicsSceneHoverEvent *leave_event);
+        void mousePressEvent(QGraphicsSceneMouseEvent *press_event);
+        void mouseReleaseEvent(QGraphicsSceneMouseEvent *release_event);
+        
+        void ChangeStyle(Style style);
+
         QString node_name_;
         QString base_stylesheet_;
 
         QUuid id_;
         QWidget *widget_;
+        QIcon icon_;
 
         QPointF original_pos_;
         QPointF expanded_pos_;
@@ -65,6 +83,10 @@ namespace CoreUi
 
         int tree_depth_;
         int expanded_width_;
+        int center_image_width_;
+
+        UiDefines::MenuNodeStyleMap style_to_path_map_;
+        QPropertyAnimation *resize_animation_;
 
     signals:
         void ActionButtonClicked(QUuid);

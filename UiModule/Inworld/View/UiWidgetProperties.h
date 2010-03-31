@@ -4,11 +4,14 @@
 #define incl_UiModule_UiWidgetProperties_h
 
 #include "UiModuleApi.h"
+#include "UiDefines.h"
 
 #include <QObject>
 #include <QSize>
+#include <QIcon>
 #include <QPointF>
 #include <QString>
+#include <QMap>
 
 namespace UiServices
 {
@@ -52,11 +55,12 @@ namespace UiServices
         //! Default type is ModuleWidget, will have window frames and a control button is added to the main panel for show/hide
         //! \param QString widget_name, name of the widget
         //! \param UiServices::WidgetType widget_type, type of the window
-        UiWidgetProperties(const QString &widget_name, WidgetType widget_type)
+        UiWidgetProperties(const QString &widget_name, WidgetType widget_type, QIcon icon = QIcon())
             : QObject(),
               widget_name_(widget_name),
               widget_type_(widget_type),
-              position_(QPointF(10.0, 200.0))
+              position_(QPointF(10.0, 200.0)),
+              widgets_icon_(icon)
         {
             switch (widget_type_)
             {
@@ -81,7 +85,8 @@ namespace UiServices
               widget_name_(in_widget_properties.GetWidgetName()),
               window_type_(in_widget_properties.GetWindowStyle()),
               show_in_toolbar_(in_widget_properties.IsShownInToolbar()),
-              position_(in_widget_properties.GetPosition()) 
+              position_(in_widget_properties.GetPosition()),
+              menu_image_map_(in_widget_properties.GetMenuNodeStyleMap())
         {
         }
 
@@ -94,10 +99,13 @@ namespace UiServices
         const Qt::WindowFlags GetWindowStyle() const { return window_type_; }
         const QPointF GetPosition() const { return position_; }
         bool IsShownInToolbar() const { return show_in_toolbar_; }
+        QIcon GetWidgetIcon() const { return widgets_icon_; }
+        UiDefines::MenuNodeStyleMap GetMenuNodeStyleMap() const { return menu_image_map_; }
 
         //! Setters for properties
         void SetPosition(const QPointF &position) {position_ = position; }
         void SetWidgetName(const QString &newname) { widget_name_ = newname; }
+        void SetMenuNodeStyleMap(UiDefines::MenuNodeStyleMap menu_style_to_image_path) { menu_image_map_ = menu_style_to_image_path; }
 
     private:
         WidgetType widget_type_;
@@ -105,6 +113,9 @@ namespace UiServices
         QString widget_name_;
         QPointF position_;
         bool show_in_toolbar_;
+        QIcon widgets_icon_;
+
+        UiDefines::MenuNodeStyleMap menu_image_map_;
     };
 }
 
