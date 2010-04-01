@@ -283,6 +283,12 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
             tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
             break;
         case RexAT_Texture:
+            {
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
+                service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+            tag = texture_service->RequestTexture(asset_id);
+            break;
+            }
         case RexAT_SoundVorbis:
         case RexAT_SoundWav:
         case RexAT_Mesh:

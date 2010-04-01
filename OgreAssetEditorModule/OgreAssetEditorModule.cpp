@@ -18,6 +18,10 @@
 #include "Framework.h"
 #include "Inventory/InventoryEvents.h"
 #include "NetworkEvents.h"
+#include "TexturePreviewEditor.h"
+#include "Inventory/InventoryEvents.h"
+#include "ResourceInterface.h"
+#include "AssetInterface.h"
 
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
@@ -111,6 +115,19 @@ bool OgreAssetEditorModule::HandleEvent(
             // Inventory item requested for opening. Check if we have editor for its type.
             if (uiModule_.expired())
                 return false;
+
+            Inventory::InventoryItemOpenEventData *open_item = dynamic_cast<Inventory::InventoryItemOpenEventData *>(data);
+            if(!open_item)
+                return false;
+
+            switch(open_item->assetType)
+            {
+                case RexTypes::RexAT_Texture:
+                {
+                    open_item->overrideDefaultHandler = true;
+                    break;
+                }
+            }
         }
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
@@ -138,14 +155,6 @@ bool OgreAssetEditorModule::HandleEvent(
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
-
-                    // Create proxy widgte
-                    UiServices::UiProxyWidget *proxy = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
-                        editor, UiServices::UiWidgetProperties("OGRE Script Editor: " + name, UiServices::SceneWidget));
-                    connect(proxy, SIGNAL(Closed()), editor, SLOT(Close()));
-                    proxy->BringToFront();
-                    //proxy->show();
-                    //uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(proxy);
                 }
                 else
                 {
@@ -159,6 +168,27 @@ bool OgreAssetEditorModule::HandleEvent(
                 downloaded->handled = true;
                 return true;
             }
+            case RexTypes::RexAT_Texture:
+            {
+                const QString &id = downloaded->inventoryId.ToString().c_str();
+                const QString &name = downloaded->name.c_str();
+                if(!editorManager_->Exists(id, at))
+                {
+                    TexturePreviewEditor *editor = new TexturePreviewEditor(framework_, id, at, name, downloaded->asset->GetId().c_str());
+                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                            editorManager_, SLOT(Delete(const QString &, asset_type_t)));
+                    editorManager_->Add(id, at, editor);
+                    //editor->RequestTextureAsset(downloaded->asset->GetId());
+                }
+                else
+                {
+                    // Editor already exists, bring it to front.
+                    QWidget *editor = editorManager_->GetEditor(id, at);
+                    if (editor)
+                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                }
+                break;
+            }
             default:
                 return false;
             }
@@ -168,6 +198,21 @@ bool OgreAssetEditorModule::HandleEvent(
     {
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             editorManager_->DeleteAll();
+    }
+    else if (category_id == resourceEventCategory_)
+    {
+        Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
+        assert(res);
+        if (!res)
+            return false;
+
+        QVector<QWidget*> editorList = editorManager_->GetEditorListByAssetType(RexTypes::RexAT_Texture);
+        for(uint i = 0; i < editorList.size(); i++)
+        {
+            TexturePreviewEditor *editorWidget = qobject_cast<TexturePreviewEditor*>(editorList[i]);
+            if(editorWidget)
+                editorWidget->HandleResouceReady(res);
+        }
     }
 
     return false;
