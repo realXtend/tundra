@@ -165,7 +165,7 @@ bool OgreAssetEditorModule::HandleEvent(
                 }
 
                 // Surpress this event.
-                downloaded->handled = true;
+                downloaded->handled = true; 
                 return true;
             }
             case RexTypes::RexAT_Texture:
@@ -187,7 +187,9 @@ bool OgreAssetEditorModule::HandleEvent(
                     if (editor)
                         uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }
-                break;
+
+                downloaded->handled = true;
+                return true;
             }
             default:
                 return false;
