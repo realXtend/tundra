@@ -22,6 +22,7 @@
 
 #include <QFile>
 #include <QPainter>
+#include <QLinearGradient>
 #include <QTimer>
 
 //#include "MemoryLeakCheck.h"
@@ -29,7 +30,7 @@
 EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 100)),
-    bubbleColor_(QColor(82, 134, 255, 210)),
+    bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
     billboardSet_(0),
     billboard_(0)
@@ -173,7 +174,7 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
 //    const int max_width = viewport->getActualWidth()/4;
 //    int max_height = viewport->getActualHeight()/10;
 
-    const int max_width = 1900;
+    const int max_width = 1600;
     int max_height = 800;
     QRect max_rect(0, 0, max_width, max_height);
 
@@ -223,8 +224,13 @@ QPixmap EC_ChatBubble::GetChatBubblePixmap()
     // could also try this:
     // QFontMetrics metric(any_qfont); int width = metric.width(mytext) + padding;
 
+    // Color setup
+    QLinearGradient grad(rect.topLeft(), rect.bottomLeft());
+    grad.setColorAt(0, QColor(39, 92, 206, 255));
+    grad.setColorAt(1, bubbleColor_);
+    QBrush brush(grad);
+
     // Draw rounded rect.
-    QBrush brush(bubbleColor_, Qt::SolidPattern);
     painter.setBrush(brush);
     painter.drawRoundedRect(rect, 20.0, 20.0);
 
