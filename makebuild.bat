@@ -32,7 +32,7 @@ del build\pymodules\circuits\net\*.pyc
 del build\pymodules\circuits\tools\*.pyc
 del build\pymodules\circuits\web\*.pyc
 del build\pymodules\core\*.pyc
-del build\pymodules\editgui\*.pyc
+del build\pymodules\objectedit\*.pyc
 del build\pymodules\lib\*.pyc
 del build\pymodules\lib\webdav\*.pyc
 del build\pymodules\lib\webdav\acp\*.pyc
