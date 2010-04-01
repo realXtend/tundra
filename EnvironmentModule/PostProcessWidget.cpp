@@ -9,7 +9,8 @@
 
 #include <CompositionHandler.h>
 
-#include <UiModule.h>
+#include "UiModule.h"
+#include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
@@ -43,7 +44,23 @@ namespace Environment
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
-        ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Post-processing", UiServices::ModuleWidget));
+        if (!ui_module.get())
+            return;
+
+        UiServices::UiWidgetProperties ui_properties("Post-processing", UiServices::ModuleWidget);
+        
+        // Menu graphics
+        UiDefines::MenuNodeStyleMap image_path_map;
+        QString base_url = "./data/ui/images/menus/"; 
+        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_POSTPRtxt_normal.png";
+        image_path_map[UiDefines::TextHover] = base_url + "edbutton_POSTPRtxt_hover.png";
+        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_POSTPRtxt_click.png";
+        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
+        image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
+        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
+        ui_properties.SetMenuNodeStyleMap(image_path_map);
+
+        ui_module->GetInworldSceneController()->AddWidgetToScene(this, ui_properties);
     }
 
     void PostProcessWidget::AddHandler(OgreRenderer::CompositionHandler *handler)

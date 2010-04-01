@@ -5,6 +5,7 @@
 
 #include <QPainter>
 #include <QGraphicsDropShadowEffect>
+#include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 
 namespace CoreUi
@@ -35,7 +36,10 @@ namespace CoreUi
             center_image_width_ = center_piece_image.width();
         }
         else
-            center_image_width_ = 10;
+        {
+            // fall back here for text rendering widgts name if no graphics were provded!
+            center_image_width_ = 20; 
+        }
 
         QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
         shadow_effect->setColor(Qt::white);
@@ -109,41 +113,67 @@ namespace CoreUi
     {
         ChangeStyle(Pressed);
         QGraphicsProxyWidget::mousePressEvent(press_event);
+        press_event->accept();
+        
         NodeClicked();
     }
 
     void MenuNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *release_event)
     {
-        ChangeStyle(Normal); // propably? what if releases outside button, could be normal + hoverMoveEvent impl
+        QRectF my_scene_rect = mapRectToScene(rect());
+        QPointF release_pos = release_event->scenePos();
+        if (my_scene_rect.contains(release_pos))       
+            ChangeStyle(Hover);
+        else
+            ChangeStyle(Normal);
         QGraphicsProxyWidget::mouseReleaseEvent(release_event);
     }
 
     void MenuNode::ChangeStyle(Style style)
     {
-        if (style_to_path_map_.count() == 0)
-            return;
-
-        QString text_image;
-        QString icon_image;
-
-        switch (style)
+        if (node_name_ != "RootNode")
         {
-            case Normal:
-                text_image = style_to_path_map_[UiDefines::TextNormal];
-                icon_image = style_to_path_map_[UiDefines::IconNormal];
-                break;
-            case Hover:
-                text_image = style_to_path_map_[UiDefines::TextHover];
-                icon_image = style_to_path_map_[UiDefines::IconHover];
-                break;
-            case Pressed:
-                text_image = style_to_path_map_[UiDefines::TextPressed];
-                icon_image = style_to_path_map_[UiDefines::IconPressed];
-                break;
-        }
+            if (style_to_path_map_.count() == 0)
+                return;
 
-        textWidget->setStyleSheet("QWidget#textWidget { background-image: url('" + text_image + "'); background-position: top left; background-repeat: no-repeat; }");
-        iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_image + "'); background-position: top left; background-repeat: no-repeat; }");
+            QString text_image;
+            QString icon_image;
+
+            switch (style)
+            {
+                case Normal:
+                    text_image = style_to_path_map_[UiDefines::TextNormal];
+                    icon_image = style_to_path_map_[UiDefines::IconNormal];
+                    break;
+                case Hover:
+                    text_image = style_to_path_map_[UiDefines::TextHover];
+                    icon_image = style_to_path_map_[UiDefines::IconHover];
+                    break;
+                case Pressed:
+                    text_image = style_to_path_map_[UiDefines::TextPressed];
+                    icon_image = style_to_path_map_[UiDefines::IconPressed];
+                    break;
+            }
+
+            textWidget->setStyleSheet("QWidget#textWidget { background-image: url('" + text_image + "'); background-position: top left; background-repeat: no-repeat; }");
+            iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_image + "'); background-position: top left; background-repeat: no-repeat; }");
+        }
+        else
+        {
+            QString root_base_style = "background-color: transparent; border-radius:0px; border: 0px; background-position: top left; background-repeat: no-repeat;";
+            switch (style)
+            {
+                case Normal:
+                    centerContainer->setStyleSheet("QWidget#centerContainer { " + root_base_style + "background-image: url('./data/ui/images/menus/uibutton_EDIT_normal.png'); }");
+                    break;
+                case Hover:
+                    centerContainer->setStyleSheet("QWidget#centerContainer { " + root_base_style + "background-image: url('./data/ui/images/menus/uibutton_EDIT_hover.png'); }");
+                    break;
+                case Pressed:
+                    centerContainer->setStyleSheet("QWidget#centerContainer { " + root_base_style + "background-image: url('./data/ui/images/menus/uibutton_EDIT_click.png'); }");
+                    break;
+            }
+        }
     }
  
 }

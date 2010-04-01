@@ -41,11 +41,6 @@ namespace CoreUi
             widget_->setMaximumSize(101,103);
             centerContainer->setMinimumSize(101,103);
             centerContainer->setMaximumSize(101,103);
-            centerContainer->setStyleSheet("QWidget#centerContainer { background-position: top left; background-repeat: no-repeat;"
-                                           "background-color: transparent; border-radius:0px; border: 0px;"
-                                           "background-image: url('./data/ui/images/menus/uibutton_EDIT_normal.png'); }"
-                                           "QWidget#centerContainer:hover { background-image: url('./data/ui/images/menus/uibutton_EDIT_hover.png'); }"
-                                           "QWidget#centerContainer:pressed { background-image: url('./data/ui/images/menus/uibutton_EDIT_click.png'); }");
         }
         else
             SetTreeDepth(-1);
