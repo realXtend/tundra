@@ -10,6 +10,7 @@
     <subscriber module="InventoryModule" priority="100" />
     <subscriber module="CommunicationModule" priority="100" />
     <subscriber module="OgreAssetEditorModule" priority="100" />
+    <subscriber module="ECEditorModule" priority="100" />
     <subscriber module="EnvironmentModule" priority="100" />
     <subscriber module="DebugStatsModule" priority="105" />
     <subscriber module="InWorldChatModule" priority="105" />
