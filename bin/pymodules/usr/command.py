@@ -1179,7 +1179,7 @@ if 0: #local object creation, testing if local previews of .scenes would work
     e.placeable.Scale = Vec3(5, 5, 5)
     e.placeable.Orientation = Quat(0, 0, 0, 1)
 
-if 1: #running localscene dotscene loader
+if 0: #running localscene dotscene loader
     import localscene.loader
     localscene.loader = reload(localscene.loader)
 
