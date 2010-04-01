@@ -23,10 +23,10 @@ add_subdirectory (OpenALAudioModule)
 #add_subdirectory (ECEditorModule)
 
 #add_subdirectory (RexQtScriptModule)
-#add_subdirectory (InWorldChatModule)
-#add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
-#add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
+add_subdirectory (InWorldChatModule)
+add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
+add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
 
 #add_subdirectory (LegacyAvatarModule)
 
-#add_subdirectory (MumbleVoipModule)
+add_subdirectory (MumbleVoipModule)
