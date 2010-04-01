@@ -120,14 +120,14 @@ bool OgreAssetEditorModule::HandleEvent(
             if(!open_item)
                 return false;
 
-            switch(open_item->assetType)
+            /*switch(open_item->assetType)
             {
                 case RexTypes::RexAT_Texture:
                 {
                     open_item->overrideDefaultHandler = true;
                     break;
                 }
-            }
+            }*/
         }
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
