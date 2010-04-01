@@ -582,10 +582,6 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     itemDownloaded.assetType = asset_type;
     event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-    // If no asset editor module handled the above event, show the generic editor window for the asset.
-    if (!itemDownloaded.handled)
-        owner_->OpenItemPropertiesWindow(item->GetID());
-
     openRequests_.erase(i);
 }
 
