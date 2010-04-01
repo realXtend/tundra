@@ -1,10 +1,12 @@
-Name "Naali"
+!define VERSION "0.2.0"
+
+Name "Naali ${VERSION}"
 
 Page directory
 Page instfiles
 
-InstallDir "$PROGRAMFILES\Naali0.1"
-VIProductVersion "0.1"
+InstallDir "$PROGRAMFILES\Naali${VERSION}"
+VIProductVersion "${VERSION}"
 
 OutFile "naali-viewer-installer.exe"
 
@@ -20,7 +22,7 @@ Section ""
                    "DisplayName" "Naali"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
-                   "DisplayVersion" "0.1"
+                   "DisplayVersion" "${VERSION}"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
@@ -36,10 +38,10 @@ SectionEnd
 
 Section "Start Menu Shortcuts"
   SetShellVarContext all
-  CreateDirectory "$SMPROGRAMS\Naali"
-  CreateShortCut "$SMPROGRAMS\Naali\Naali.lnk" "$INSTDIR\viewer.exe"
-  CreateShortCut "$SMPROGRAMS\Naali\Readme.lnk" "$INSTDIR\readme.txt"
-  CreateShortCut "$SMPROGRAMS\Naali\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
+  CreateDirectory "$SMPROGRAMS\Naali ${VERSION}"
+  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Naali ${VERSION}.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
+  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 SectionEnd
 
 Section "Uninstall"
