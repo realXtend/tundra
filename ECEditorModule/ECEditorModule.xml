@@ -1,0 +1,4 @@
+<config>
+    <entry>ECEditorModule</entry>
+    <dependency>UiModule</dependency>
+</config>

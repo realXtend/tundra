@@ -20,6 +20,7 @@
 add_subdirectory (PythonScriptModule)
 add_subdirectory (CommunicationModule)
 add_subdirectory (OpenALAudioModule)
+#add_subdirectory (ECEditorModule)
 
 #add_subdirectory (RexQtScriptModule)
 #add_subdirectory (InWorldChatModule)

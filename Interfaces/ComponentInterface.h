@@ -9,6 +9,7 @@
 #include "CoreModuleApi.h"
 
 #include <QObject>
+#include <QDomDocument>
 
 namespace Scene
 {
@@ -35,6 +36,9 @@ namespace Foundation
         
         void SetParentEntity(Scene::Entity* entity);
         Scene::Entity* GetParentEntity() const;
+        
+        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const {};
+        virtual void DeserializeFrom(QDomElement& element) {};
         
     private:
         ComponentInterface();
