@@ -230,8 +230,20 @@ namespace Environment
         if (!ui_module.get())
             return;
 
-        EnvironmentEditorProxyWidget_ = 
-            ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, UiServices::UiWidgetProperties("Environment Editor", UiServices::ModuleWidget));
+        UiServices::UiWidgetProperties env_editor_properties("Environment Editor", UiServices::ModuleWidget);
+
+        // Menu graphics
+        UiDefines::MenuNodeStyleMap image_path_map;
+        QString base_url = "./data/ui/images/menus/"; 
+        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_ENVEDtxt_normal.png";
+        image_path_map[UiDefines::TextHover] = base_url + "edbutton_ENVEDtxt_hover.png";
+        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_ENVEDtxt_click.png";
+        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_ENVED_normal.png";
+        image_path_map[UiDefines::IconHover] = base_url + "edbutton_ENVED_hover.png";
+        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
+        env_editor_properties.SetMenuNodeStyleMap(image_path_map);
+
+        EnvironmentEditorProxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
         //EnvironmentEditorProxyWidget_->updateGeometry();
 
         InitTerrainTabWindow();
