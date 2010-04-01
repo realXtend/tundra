@@ -256,7 +256,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
     if (renderer_.expired() || text_.isEmpty() || text_ == " ")
         return 0;
 
-    QRect max_rect(0, 0, 1500, 800);
+    QRect max_rect(0, 0, 1600, 800);
 
     // Create transparent pixmap
     QPixmap pixmap(max_rect.size());
