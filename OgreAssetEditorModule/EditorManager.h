@@ -22,7 +22,7 @@ namespace Naali
     typedef EditorMap::iterator EditorMapIter;
     typedef QMutableMapIterator<EditorMapKey, QWidget *> MutableEditorMapIter;
 
-    class EditorManager : public QWidget
+    class EditorManager : public QObject
     {
         Q_OBJECT
 
@@ -61,6 +61,11 @@ namespace Naali
         /// Deletes all editors.
         /// @param delete_later Sert true if you want to use QWidget::deleteLater instead of normal delete.
         void DeleteAll(bool delete_later = false);
+
+        /// Returns list of assets of spesific asset type.
+        /// @param asset_type Asset type.
+        /// @return List of assets of spesific asset type if any object of spesific asset type is not found return empty list.
+        QVector<QWidget*> GetEditorListByAssetType(asset_type_t asset_type);
 
     private:
         /// Returns editor object and removes it from the editor map.

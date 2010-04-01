@@ -71,6 +71,19 @@ void EditorManager::DeleteAll(bool delete_later)
     }
 }
 
+QVector<QWidget*> EditorManager::GetEditorListByAssetType(asset_type_t asset_type)
+{
+    QVector<QWidget*> EditorArray;
+    EditorMap::iterator iter = editors_.begin();
+    while(iter != editors_.end())
+    {
+        if(iter.key().second == asset_type)
+            EditorArray.push_back(iter.value());
+        iter++;
+    }
+    return EditorArray;
+}
+
 QWidget *EditorManager::TakeEditor(const QString &inventory_id, asset_type_t asset_type)
 {
     EditorMapKey key = qMakePair(inventory_id, asset_type);
