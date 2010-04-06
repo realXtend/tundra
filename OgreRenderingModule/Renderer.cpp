@@ -24,6 +24,7 @@
 #include "QOgreWorldView.h"
 
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
@@ -107,12 +108,28 @@ namespace OgreRenderer
 
         if (renderwindow_)
         {
+            QDesktopWidget *desktop = QApplication::desktop();
+            int desktop_max_width = 0;
+            int desktop_max_height = desktop->screenGeometry().height();
+            for (int index = 0; index < desktop->screenCount(); index++)
+                desktop_max_width += desktop->screenGeometry(index).width();
+
             int width, height, left, top;
-            bool maximized = main_window_->isMaximized();
             left = main_window_->geometry().x();
+            if (left < 0 || left > desktop_max_width)
+                left = 0;
             top = main_window_->geometry().y();
+            if (top < 0 || top > desktop_max_height)
+                top = 0;
             width = main_window_->geometry().width();
-            height = main_window_->geometry().height(); 
+            if (width < 0 || width > desktop_max_width)
+                width = 800;
+            height = main_window_->geometry().height();
+            if (height < 0 || height > desktop_max_height)
+                height = 600;
+
+            bool maximized = main_window_->isMaximized();
+
             // Do not store the maximized geometry
             if (!maximized)
             {
