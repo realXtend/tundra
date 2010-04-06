@@ -29,7 +29,8 @@ namespace Foundation
         typedef std::map< std::string, ComponentList > ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
-
+        typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
+        
         //! default constructor
         ComponentManager(Framework *framework) : framework_(framework) {}
         //! destructor
@@ -70,10 +71,10 @@ namespace Foundation
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
 
-
+        //! Get all component factories
+        const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
     private:
-        typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;        
 
         //! map of component factories
         ComponentFactoryMap factories_;
