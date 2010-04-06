@@ -33,7 +33,25 @@ namespace Input
         if (group == "Bindings.Custom")
             settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
         else if (group == "Bindings.Default")
-            settings = new QSettings(default_config_, QSettings::IniFormat);
+        {
+            settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "bindings/default_bindings");
+            if (settings->childGroups().count() == 0)
+            {
+                // Copy default_bindings.ini once to users scopes data folder
+                // QSettings assumes read/write even if we only reading so we cant use the install folder
+                // Windows UAC without admin mode will cause the file not to open from install folder, bindings pointer is null and
+                // user will crash when starting to use the keyboard
+                QFile default_bindings("./data/default_bindings.ini");
+                QFile userscope_defaults(settings->fileName());
+
+                if (default_bindings.open(QIODevice::ReadOnly) && userscope_defaults.open(QIODevice::ReadWrite))
+                    userscope_defaults.write(default_bindings.readAll());
+                default_bindings.close();
+                userscope_defaults.close();
+
+                settings->sync();
+            }
+        }
 
         if (!settings->isWritable())
             return 0;
