@@ -8,10 +8,11 @@
 #include <QWidget>
 
 class QHideEvent;
+class QShowEvent;
 class QPushButton;
 class QListWidget;
 class QTextEdit;
-class QLineEdit;
+class QComboBox;
 
 namespace ECEditor
 {
@@ -27,15 +28,20 @@ namespace ECEditor
         
         void AddEntity(entity_id_t entity_id);
         void ClearEntities();
-    
+        
     public slots:
-        void OnEntitySelected();
+        void SelectEntity();
+        void DeleteComponent();
+        void CreateComponent();
         
     protected:
         void hideEvent(QHideEvent *hide_event);
+        void showEvent(QShowEvent *show_event);
         
     private:
         void Initialize();
+        void RefreshAvailableComponents();
+        void RefreshEntityComponents();
         void SetEntity(entity_id_t entity_id);
         
         QWidget* contents_;
@@ -46,7 +52,7 @@ namespace ECEditor
         QListWidget* entity_list_;
         QListWidget* component_list_;
         QTextEdit* attr_edit_;
-        QLineEdit* name_edit_;
+        QComboBox* create_combo_;
         
         std::set<entity_id_t> selected_entities_;
     };
