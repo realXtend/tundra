@@ -707,7 +707,7 @@ namespace OgreRenderer
             box.transform(mat);
             if(ray.intersects(box).first)
             {
-                OgreRenderingModule::LogInfo("HIT!");
+
             }
 
         }
