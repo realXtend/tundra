@@ -124,6 +124,11 @@ namespace RexLogic
         //! @param entity_id Entity id of the avatar.
 //        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
 
+        //! Creates an info icon to avatar
+        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param entity_id Entity id of the avatar.
+        void CreateInfoIconOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+        
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.
         //! @param visible Do we want the overlay to be visible or not.
