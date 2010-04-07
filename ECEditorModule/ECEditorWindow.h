@@ -14,6 +14,12 @@ class QListWidget;
 class QTextEdit;
 class QComboBox;
 
+struct EntityComponentSelection
+{
+    Scene::EntityPtr entity_;
+    std::vector<Foundation::ComponentInterfacePtr> components_;
+};
+
 namespace ECEditor
 {
     class ECEditorWindow : public QWidget
@@ -30,9 +36,12 @@ namespace ECEditor
         void ClearEntities();
         
     public slots:
-        void SelectEntity();
         void DeleteComponent();
         void CreateComponent();
+        void RevertData();
+        void SaveData();
+        void RefreshEntityComponents();
+        void RefreshComponentData();
         
     protected:
         void hideEvent(QHideEvent *hide_event);
@@ -41,8 +50,8 @@ namespace ECEditor
     private:
         void Initialize();
         void RefreshAvailableComponents();
-        void RefreshEntityComponents();
-        void SetEntity(entity_id_t entity_id);
+        std::vector<Scene::EntityPtr> GetSelectedEntities();
+        std::vector<EntityComponentSelection> GetSelectedComponents();
         
         QWidget* contents_;
         QPushButton* save_button_;
@@ -51,10 +60,8 @@ namespace ECEditor
         QPushButton* delete_button_;
         QListWidget* entity_list_;
         QListWidget* component_list_;
-        QTextEdit* attr_edit_;
+        QTextEdit* data_edit_;
         QComboBox* create_combo_;
-        
-        std::set<entity_id_t> selected_entities_;
     };
 }
 

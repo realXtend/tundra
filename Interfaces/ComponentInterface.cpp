@@ -32,4 +32,45 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
+QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
+{
+    QDomElement comp_element = doc.createElement("component");
+    comp_element.setAttribute("name", QString::fromStdString(Name()));
+    if (!base_element.isNull())
+        base_element.appendChild(comp_element);
+    else
+        doc.appendChild(comp_element);
+    
+    return comp_element;
+}
+
+void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const
+{
+    QDomElement attribute_element = doc.createElement("attribute");
+    attribute_element.setAttribute("name", QString::fromStdString(name));
+    attribute_element.setAttribute("value", QString::fromStdString(value));
+    comp_element.appendChild(attribute_element);
+}
+
+bool ComponentInterface::VerifyComponentType(QDomElement& comp_element) const
+{
+    std::string name = comp_element.attribute("name").toStdString();
+    return name == Name();
+}
+
+std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const std::string& name) const
+{
+    QString name_str = QString::fromStdString(name);
+    
+    QDomElement attribute_element = comp_element.firstChildElement("attribute");
+    while (!attribute_element.isNull())
+    {
+        if (attribute_element.attribute("name") == name_str)
+            return attribute_element.attribute("value").toStdString();
+        attribute_element = attribute_element.nextSiblingElement("attribute");
+    }
+    
+    return std::string();
+}
+
 }
