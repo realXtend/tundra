@@ -6,6 +6,10 @@
 #include "EC_OgrePlaceable.h"
 #include <Ogre.h>
 
+#include "XmlUtilities.h"
+
+using namespace RexTypes;
+
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
@@ -63,6 +67,30 @@ namespace OgreRenderer
         DetachNode();
         parent_ = placeable;
         AttachNode();
+    }
+    
+    void EC_OgrePlaceable::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
+    {
+        QDomElement& comp_element = BeginSerialization(doc, base_element);
+        WriteAttribute(doc, comp_element, "position", WriteVector3(GetPosition()));
+        WriteAttribute(doc, comp_element, "orientation", WriteQuaternion(GetOrientation()));
+        WriteAttribute(doc, comp_element, "scale", WriteVector3(GetScale()));
+    }
+    
+    void EC_OgrePlaceable::DeserializeFrom(QDomElement& element)
+    {
+        if (!VerifyComponentType(element))
+            return;
+        
+        Vector3df pos = ParseVector3(ReadAttribute(element, "position"));
+        Quaternion orient = ParseQuaternion(ReadAttribute(element, "orientation"));
+        Vector3df scale = ParseVector3(ReadAttribute(element, "scale"));
+        
+        SetPosition(pos);
+        SetOrientation(orient);
+        SetScale(scale);
+        
+        OnChanged();
     }
     
     Vector3df EC_OgrePlaceable::GetPosition() const

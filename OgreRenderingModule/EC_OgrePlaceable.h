@@ -38,6 +38,11 @@ namespace OgreRenderer
     public:
         virtual ~EC_OgrePlaceable();
 
+        //! Test serialization code. To be removed, as is not suited to be actually editable (RexLogic handles placeable update)
+        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
+        //! Test deserialization code. To be removed, as is not suited to be actually editable (RexLogic handles placeable update)
+        virtual void DeserializeFrom(QDomElement& element);
+        
         //! sets parent placeable
         /*! set null placeable to attach to scene root (the default)
             \param placeable new parent

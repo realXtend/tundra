@@ -44,10 +44,24 @@ namespace Foundation
         ComponentInterface();
         
     protected:
+        //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
+        QDomElement BeginSerialization(QDomDocument& doc, QDomElement& base_element) const;
+        //! Helper function for adding an attribute to the component xml serialization
+        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const;
+        //! Helper function for verifying that an xml element contains the right kind of EC, before starting to deserialize
+        bool VerifyComponentType(QDomElement& comp_element) const;
+        //! Helper function for getting an attribute from serialized component
+        std::string ReadAttribute(QDomElement& comp_element, const std::string& name) const;
+        
         //! Pointer to framework
         Foundation::Framework* framework_;
         //! Pointer to parent entity (null if not attached to any entity)
         Scene::Entity* parent_entity_;
+        
+        //! Signal when component data has changed, probably as result of deserialization
+    signals:
+        void OnChanged();
+        
     };
 }
 
