@@ -26,7 +26,14 @@
 #include "EC_HoveringText.h"
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
-#include "NetworkEvents.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
+#include "EC_HoveringText.h"
+#include "EC_HoveringIcon.h"
+#include <UiModule.h>
+#include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/MessageNotification.h"
 
 #include "EC_OpenSimPresence.h"
 
@@ -114,6 +121,7 @@ namespace RexLogic
         {
             //CreateNameOverlay(placeable, entityid);
             ShowAvatarNameOverlay(entityid);
+            CreateInfoIconOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
         }
 
@@ -469,7 +477,7 @@ namespace RexLogic
         avatar_appearance_.Update(frametime);
     }
 
-/*
+
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
@@ -493,6 +501,8 @@ namespace RexLogic
             //overlay->SetBackgroundColor(QColor(0,0,0,200));
             overlay->ShowMessage(presence->GetFullName().c_str());
         }
+
+       
     }
 */
 
