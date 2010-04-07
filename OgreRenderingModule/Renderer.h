@@ -221,6 +221,13 @@ namespace OgreRenderer
         //! Initialises the events related info for this module
         void InitializeEvents();
 
+
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        /*! \param Ray ray ray to test intersection with
+            \return returns true if infoicon was hit, false otherwise
+        */
+        bool CheckInfoIconIntersection(const Ogre::Ray &ray);
+
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
          */

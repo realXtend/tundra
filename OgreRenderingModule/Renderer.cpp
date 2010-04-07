@@ -22,6 +22,8 @@
 #include "CoreException.h"
 #include "Entity.h"
 
+#include "EC_HoveringIcon.h"
+
 #include <Ogre.h>
 
 #include <QApplication>
@@ -666,6 +668,53 @@ namespace OgreRenderer
         return t;
     }
 
+    bool Renderer::CheckInfoIconIntersection(const Ogre::Ray &ray)
+    {
+        QList<EC_HoveringIcon*> visible_icons;
+
+        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        if (!current_scene.get())
+            return false;
+
+        Scene::SceneManager::iterator iter = current_scene->begin();
+        Scene::SceneManager::iterator end = current_scene->end();
+        while (iter != end)
+        {
+            Scene::EntityPtr entity = (*iter);
+            ++iter;
+            if (!entity.get())
+                continue;
+
+            EC_HoveringIcon* icon = entity->GetComponent<EC_HoveringIcon>().get();
+            if (icon && icon->IsVisible())
+            {
+                visible_icons.append(icon);
+            }
+        }
+        for(int i=0; i< visible_icons.size();i++)
+        {
+            EC_HoveringIcon* icon = visible_icons.at(i);
+            Ogre::Billboard board = icon->GetBillboard();
+            Ogre::Vector3 vec = board.getPosition();
+            Ogre::Real billboard_h = icon->GetBillBoardSet().getDefaultHeight();
+            Ogre::Real billboard_w = icon->GetBillBoardSet().getDefaultWidth();
+
+            Ogre::Matrix4 mat;
+            icon->GetBillBoardSet().getWorldTransforms(&mat);
+
+            Ogre::AxisAlignedBox box(vec.x, vec.y + billboard_w/2, vec.z + billboard_h/2, vec.x , vec.y - billboard_w/2, vec.z - billboard_h/2);
+            
+            box.transform(mat);
+            if(ray.intersects(box).first)
+            {
+                OgreRenderingModule::LogInfo("HIT!");
+            }
+
+        }
+
+        return true;
+    }
+
     Foundation::RaycastResult Renderer::Raycast(int x, int y)
     {
         Foundation::RaycastResult result;
@@ -677,6 +726,9 @@ namespace OgreRenderer
         Real screeny = y / (Real)renderwindow_->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
+        
+        CheckInfoIconIntersection(ray);
+
         ray_query_->setRay(ray);
         Ogre::RaySceneQueryResult &results = ray_query_->execute();
 
@@ -694,6 +746,8 @@ namespace OgreRenderer
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;
+
+
 
             Scene::Entity *entity = 0;
             try
