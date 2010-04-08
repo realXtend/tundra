@@ -68,23 +68,23 @@ namespace Foundation
     {                                                                                       \
         Foundation::ComponentFactoryInterfacePtr factory =                                  \
             Foundation::ComponentFactoryInterfacePtr(new component##Factory(module));       \
-        framework->GetComponentManager()->RegisterFactory(NameStatic(), factory);           \
+        framework->GetComponentManager()->RegisterFactory(TypeNameStatic(), factory);       \
     }                                                                                       \
                                                                                             \
     static void UnregisterComponent(const Foundation::Framework *framework)                 \
     {                                                                                       \
-        framework->GetComponentManager()->UnregisterFactory(NameStatic());                  \
+        framework->GetComponentManager()->UnregisterFactory(TypeNameStatic());              \
     }                                                                                       \
                                                                                             \
-    static const std::string &NameStatic()                                                  \
+    static const std::string &TypeNameStatic()                                              \
     {                                                                                       \
         static const std::string name(#component);                                          \
         return name;                                                                        \
     }                                                                                       \
                                                                                             \
-    virtual const std::string &Name() const                                                 \
+    virtual const std::string &TypeName() const                                             \
     {                                                                                       \
-        return component::NameStatic();                                                     \
+        return component::TypeNameStatic();                                                 \
     }                                                                                       \
   private:                                                                                  \
 

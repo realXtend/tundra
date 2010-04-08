@@ -164,7 +164,7 @@ void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
     EC_OgrePlaceable* placeableptr = dynamic_cast<EC_OgrePlaceable*>(placeable.get());
     if (!placeableptr)
     {
-        OgreRenderingModule::LogError("Placeable is not" + EC_OgrePlaceable::NameStatic());
+        OgreRenderingModule::LogError("Placeable is not" + EC_OgrePlaceable::TypeNameStatic());
         return;
     }
 

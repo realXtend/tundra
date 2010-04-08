@@ -75,27 +75,41 @@ namespace Scene
         */
         void RemoveComponent(const Foundation::ComponentInterfacePtr &component);
 
-        //! Returns a component with name 'name' or empty pointer if component was not found
-        /*! If there are several components with the specified name, returns the first component found (arbitrary).
+        //! Returns a component with type 'type_name' or empty pointer if component was not found
+        /*! If there are several components with the specified type, returns the first component found (arbitrary).
 
-            \param name name of the component
+            \param type_name type of the component
         */
-        Foundation::ComponentInterfacePtr GetComponent(const std::string &name) const;
+        Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name) const;
 
-        //! Returns a component with name 'name' or creates & adds it if not found. If could not create, returns empty pointer
+        //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
+            \param type_name type of the component
             \param name name of the component
         */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &name);
+        Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name, const std::string& name) const;
 
-        //! Returns a component with certain type or empty pointer if component was not found, already cast to correct type.
-        /*! If there are several components with the specified name, returns the first component found (arbitrary).
+        //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
+        /*! 
+            \param type_name type of the component
+        */
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name);
 
-            \param name name of the component
+        //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
+        /*! If there are several components with the specified type, returns the first component found (arbitrary).
         */
         template <class T> boost::shared_ptr<T> GetComponent() const
         {
-            return boost::dynamic_pointer_cast<T>(GetComponent(T::NameStatic()));
+            return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
+        }
+
+        //! Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
+        /*! 
+            \param name name of the component
+        */
+        template <class T> boost::shared_ptr<T> GetComponent(const std::string& name) const
+        {
+            return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
 
         //! Returns the unique id of this entity

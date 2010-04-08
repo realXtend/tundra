@@ -57,19 +57,19 @@ namespace Scene
                 ///\todo Ali: send event
             } else
             {
-                Foundation::RootLogWarning("Failed to remove component: " + component->Name() + " from entity: " + ToString(GetId()));
+                Foundation::RootLogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + ToString(GetId()));
             }
         }
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &name)
+    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->Name() == name)
+            if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
         // If component was not found, try to create
-        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(name);
+        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
             AddComponent(new_comp);
@@ -80,10 +80,19 @@ namespace Scene
         return Foundation::ComponentInterfacePtr();
     }
     
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &name) const
+    Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &type_name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->Name() == name)
+            if (components_[i]->TypeName() == type_name)
+                return components_[i];
+
+        return Foundation::ComponentInterfacePtr();
+    }
+
+    Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &type_name, const std::string& name) const
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return components_[i];
 
         return Foundation::ComponentInterfacePtr();

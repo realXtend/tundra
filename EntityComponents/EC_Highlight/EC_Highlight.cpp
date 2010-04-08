@@ -104,7 +104,7 @@ void EC_Highlight::Create()
 
     // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
     Ogre::Entity *originalEntity  = 0;
-    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()))
+    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic()))
     {
         OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         assert(ec_mesh);
@@ -112,7 +112,7 @@ void EC_Highlight::Create()
         originalEntity = ec_mesh->GetEntity();
         sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
     }
-    else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
+    else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic()))
     {
         OgreRenderer::EC_OgreCustomObject *ec_custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         assert(ec_custom);

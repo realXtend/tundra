@@ -202,7 +202,7 @@ QStringList EC_OpenSimPrim::GetChildren()
 		Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
         if (!primentity) continue;
 
-        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
 		if(prim.ParentId == LocalId){
 			QString id;
 			id.setNum(prim.LocalId);

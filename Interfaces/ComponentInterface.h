@@ -9,7 +9,9 @@
 #include "CoreModuleApi.h"
 
 #include <QObject>
-#include <QDomDocument>
+
+class QDomDocument;
+class QDomElement;
 
 namespace Scene
 {
@@ -31,8 +33,11 @@ namespace Foundation
         explicit ComponentInterface(Foundation::Framework *framework);
         ComponentInterface(const ComponentInterface &rhs);
         virtual ~ComponentInterface();
-        virtual const std::string &Name() const = 0;
+        virtual const std::string &TypeName() const = 0;
         Foundation::Framework* GetFramework() const { return framework_; }
+        
+        const std::string& Name() { return name_; }
+        void SetName(const std::string& name) { name_ = name; }
         
         void SetParentEntity(Scene::Entity* entity);
         Scene::Entity* GetParentEntity() const;
@@ -48,8 +53,11 @@ namespace Foundation
         QDomElement BeginSerialization(QDomDocument& doc, QDomElement& base_element) const;
         //! Helper function for adding an attribute to the component xml serialization
         void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const;
-        //! Helper function for verifying that an xml element contains the right kind of EC, before starting to deserialize
-        bool VerifyComponentType(QDomElement& comp_element) const;
+        //! Helper function for starting deserialization. 
+        /*! Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
+            Otherwise returns false and does nothing.
+         */
+        bool BeginDeserialization(QDomElement& comp_element);
         //! Helper function for getting an attribute from serialized component
         std::string ReadAttribute(QDomElement& comp_element, const std::string& name) const;
         
@@ -57,6 +65,8 @@ namespace Foundation
         Foundation::Framework* framework_;
         //! Pointer to parent entity (null if not attached to any entity)
         Scene::Entity* parent_entity_;
+        //! Name for further identification of EC. By default empty
+        std::string name_;
         
         //! Signal when component data has changed, probably as result of deserialization
     signals:

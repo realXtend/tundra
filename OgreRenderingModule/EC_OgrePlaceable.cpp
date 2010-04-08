@@ -8,6 +8,8 @@
 
 #include "XMLUtilities.h"
 
+#include <QDomDocument>
+
 using namespace RexTypes;
 
 namespace OgreRenderer
@@ -61,7 +63,7 @@ namespace OgreRenderer
     {
         if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
         {
-            OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + NameStatic());
+            OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + TypeNameStatic());
             return;
         }
         DetachNode();
@@ -79,7 +81,8 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::DeserializeFrom(QDomElement& element)
     {
-        if (!VerifyComponentType(element))
+        // Check that type is right, otherwise do nothing
+        if (!BeginDeserialization(element))
             return;
         
         Vector3df pos = ParseVector3(ReadAttribute(element, "position"));

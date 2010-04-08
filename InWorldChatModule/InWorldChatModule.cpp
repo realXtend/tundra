@@ -215,7 +215,7 @@ Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params
 
 void InWorldChatModule::ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message)
 {
-    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::NameStatic());
+    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
     assert(component.get());
     EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
     chatBubble.ShowMessage(message);

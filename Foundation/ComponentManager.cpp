@@ -27,7 +27,7 @@ namespace Foundation
 
     ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component)
     {
-        ComponentFactoryMap::const_iterator iter = factories_.find(component->Name());
+        ComponentFactoryMap::const_iterator iter = factories_.find(component->TypeName());
         if (iter == factories_.end())
             return ComponentInterfacePtr();
 

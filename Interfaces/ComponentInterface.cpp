@@ -7,6 +7,8 @@
 #include "ServiceInterface.h"
 #include "ServiceManager.h"
 
+#include <QDomDocument>
+
 namespace Foundation
 {
 
@@ -35,7 +37,10 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
 QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
 {
     QDomElement comp_element = doc.createElement("component");
-    comp_element.setAttribute("name", QString::fromStdString(Name()));
+    comp_element.setAttribute("type", QString::fromStdString(TypeName()));
+    if (!name_.empty())
+        comp_element.setAttribute("name", QString::fromStdString(name_));
+    
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
     else
@@ -52,10 +57,15 @@ void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_ele
     comp_element.appendChild(attribute_element);
 }
 
-bool ComponentInterface::VerifyComponentType(QDomElement& comp_element) const
+bool ComponentInterface::BeginDeserialization(QDomElement& comp_element)
 {
-    std::string name = comp_element.attribute("name").toStdString();
-    return name == Name();
+    std::string type = comp_element.attribute("type").toStdString();
+    if (type == TypeName())
+    {
+        SetName(comp_element.attribute("name").toStdString());
+        return true;
+    }
+    return false;
 }
 
 std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const std::string& name) const

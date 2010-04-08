@@ -201,12 +201,12 @@ namespace RexLogic
         if (renderer && target && camera)
         {
             OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
+                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
 
             // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::NameStatic()).get());
+            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
             OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()).get());
+                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
             if (netpos && placeable)
             {
                 Vector3df avatar_pos = placeable->GetPosition();
@@ -227,8 +227,8 @@ namespace RexLogic
                 {
                     bool fallback = true;
                     // Try to use head bone from target entity to get the first person camera position
-                    Foundation::ComponentPtr mesh_ptr = target->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-                    Foundation::ComponentPtr appearance_ptr = target->GetComponent(EC_AvatarAppearance::NameStatic());
+                    Foundation::ComponentPtr mesh_ptr = target->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+                    Foundation::ComponentPtr appearance_ptr = target->GetComponent(EC_AvatarAppearance::TypeNameStatic());
                     if (mesh_ptr && appearance_ptr)
                     {
                         OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());

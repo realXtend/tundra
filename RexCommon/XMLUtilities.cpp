@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "XMLUtilities.h"
 
+#include <QDomElement>
+
 namespace RexTypes
 {
     Real ParseReal(const std::string& text, Real default_value)

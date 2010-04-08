@@ -13,6 +13,7 @@ class QPushButton;
 class QListWidget;
 class QTextEdit;
 class QComboBox;
+class QKeyEvent;
 
 struct EntityComponentSelection
 {
@@ -46,7 +47,8 @@ namespace ECEditor
     protected:
         void hideEvent(QHideEvent *hide_event);
         void showEvent(QShowEvent *show_event);
-        
+        void keyPressEvent(QKeyEvent *e);
+
     private:
         void Initialize();
         void RefreshAvailableComponents();
