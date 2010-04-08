@@ -61,6 +61,13 @@ namespace OgreRenderer
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
 
     private:
+
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        /*! \param Ray ray ray to test intersection with
+            \return returns true if infoicon was hit, false otherwise
+        */
+        bool CheckInfoIconIntersection(int x, int y);
+
         //! renderer
         RendererPtr renderer_;
 

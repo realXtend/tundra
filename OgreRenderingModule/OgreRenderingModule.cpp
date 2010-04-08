@@ -30,6 +30,10 @@
 #include "EventManager.h"
 #include <Ogre.h>
 
+#include "EC_HoveringIconGroup.h"
+#include "HoveringIcon.h"
+#include "SceneManager.h"
+
 namespace OgreRenderer
 {
     OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
@@ -112,6 +116,67 @@ namespace OgreRenderer
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
 
+    bool OgreRenderingModule::CheckInfoIconIntersection(int x, int y)
+    {
+        bool ret_val = false;
+        QList<HoveringIcon*> visible_icons;
+        Real scr_x = x/(Real)renderer_->GetWindowWidth();
+        Real scr_y = y/(Real)renderer_->GetWindowHeight();
+
+        Ogre::Ray ray = renderer_->GetCurrentCamera()->getCameraToViewportRay(scr_x, scr_y);
+
+        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        if (!current_scene.get())
+            return ret_val;
+
+        Scene::SceneManager::iterator iter = current_scene->begin();
+        Scene::SceneManager::iterator end = current_scene->end();
+        while (iter != end)
+        {
+            Scene::EntityPtr entity = (*iter);
+            ++iter;
+            if (!entity.get())
+                continue;
+
+            EC_HoveringIconGroup* icon_grp = entity->GetComponent<EC_HoveringIconGroup>().get();
+            if(icon_grp && icon_grp->IsVisible())
+            {
+                QList<HoveringIcon*> icons = icon_grp->GetIcons();
+
+                for(int j=0;j<icons.size();j++)
+                {
+                    visible_icons.append(icons.at(j));
+                }
+            }
+        }
+        for(int i=0; i< visible_icons.size();i++)
+        {
+            HoveringIcon* icon = visible_icons.at(i);
+            Ogre::Billboard board = icon->GetBillboard();
+            Ogre::Vector3 vec = board.getPosition();
+            Ogre::Real billboard_h = icon->GetBillBoardSet().getDefaultHeight();
+            Ogre::Real billboard_w = icon->GetBillBoardSet().getDefaultWidth();
+
+            Ogre::Matrix4 mat;
+            icon->GetBillBoardSet().getWorldTransforms(&mat);
+
+            Ogre::AxisAlignedBox box(vec.x, vec.y - billboard_w/2, vec.z - billboard_h/2, vec.x , vec.y + billboard_w/2, vec.z + billboard_h/2);
+            
+            box.transform(mat);
+            if(ray.intersects(box).first)
+            {
+
+                Scene::Events::HoveringIconClickedData event_data(icon->GetParentEntity(), icon->GetName());
+                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_HOVERING_ICON_CLICKED, &event_data);
+                ret_val = true;
+            }
+
+        
+        }
+
+        return ret_val;
+    }
+
     // virtual
     bool OgreRenderingModule::HandleEvent(
         event_category_id_t category_id,
@@ -137,6 +202,7 @@ namespace OgreRenderer
         {
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 
             Scene::Entity *entity = result.entity_;
