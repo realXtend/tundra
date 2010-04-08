@@ -127,7 +127,7 @@ void EC_Clone::Create()
     Ogre::SceneNode *originalNode = 0;
 
     // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
-    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic()))
+    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic()))
     {
         OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         assert(ec_mesh);
@@ -140,7 +140,7 @@ void EC_Clone::Create()
         sceneNode_->setPosition(originalNode->getPosition());
         originalNode->addChild(sceneNode_);
     }
-    else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic()))
+    else if(entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic()))
     {
         OgreRenderer::EC_OgreCustomObject *ec_custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         assert(ec_custom);

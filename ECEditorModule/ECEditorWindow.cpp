@@ -12,6 +12,7 @@
 #include "Inworld/View/UiProxyWidget.h"
 #include "XmlUtilities.h"
 
+#include <QDomDocument>
 #include <QVBoxLayout>
 #include <QUiLoader>
 #include <QFile>
@@ -184,25 +185,28 @@ namespace ECEditor
         QString text = data_edit_->toPlainText();
         if (!text.length())
         {
-            ECEditorModule::LogWarning("Empty XML data, not setting EC attributes!");
+            ECEditorModule::LogWarning("Empty XML data");
             return;
         }
         
         if (edited_doc.setContent(text))
         {
-            QDomElement entities_elem = edited_doc.firstChildElement("entities");
-            if (entities_elem.isNull())
-            {
-                ECEditorModule::LogWarning("No entities element in XML data, not setting EC attributes!");
-                return;
-            }
-            
             Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            bool entity_found = false;
+            
+            // Check if multi-entity or single-entity
+            QDomElement entities_elem = edited_doc.firstChildElement("entities");
             
             // Deserialize all entities/components contained in the data, provided we still find them from the scene
-            QDomElement entity_elem = entities_elem.firstChildElement("entity");
+            QDomElement entity_elem;
+            if (!entities_elem.isNull())
+                entity_elem = entities_elem.firstChildElement("entity");
+            else
+                entity_elem = edited_doc.firstChildElement("entity");
+            
             while (!entity_elem.isNull())
             {
+                entity_found = true;
                 entity_id_t id = (entity_id_t)ParseInt(entity_elem.attribute("id").toStdString());
                 Scene::EntityPtr entity = scene->GetEntity(id);
                 if (entity)
@@ -225,10 +229,13 @@ namespace ECEditor
             }
             
             // Refresh immediately after, so that any extra stuff is stripped out, and illegal parameters are (hopefully) straightened
-            RefreshComponentData();
+            if (entity_found)
+                RefreshComponentData();
+            else
+                ECEditorModule::LogWarning("No entity elements in XML data");
         }
         else
-            ECEditorModule::LogWarning("Could not parse edited XML data, not setting EC attributes!");
+            ECEditorModule::LogWarning("Could not parse XML data");
     }
     
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
@@ -241,6 +248,24 @@ namespace ECEditor
     {
         RefreshAvailableComponents();
         QWidget::showEvent(show_event);
+    }
+    
+    void ECEditorWindow::keyPressEvent(QKeyEvent* key_event)
+    {
+        if (key_event->key() == Qt::Key_Delete)
+        {
+            if ((entity_list_) && (entity_list_->hasFocus()))
+            {
+                for (int i = entity_list_->count() - 1; i >= 0; --i)
+                {
+                    if (!entity_list_->item(i)->isSelected())
+                    {
+                        QListWidgetItem* item = entity_list_->takeItem(i);
+                        delete item;
+                    }
+                }
+            }
+        }
     }
     
     void ECEditorWindow::AddEntity(entity_id_t entity_id)
@@ -273,10 +298,10 @@ namespace ECEditor
 
             for (uint j = 0; j < components.size(); ++j)
             {
-                QString component_name = QString::fromStdString(components[j]->Name());
+                QString component_name = QString::fromStdString(components[j]->TypeName());
                 added_components.push_back(component_name);
                 // If multiple selected entities have the same component, add it only once to the EC selector list
-                AddUniqueItem(component_list_, QString::fromStdString(components[j]->Name()));
+                AddUniqueItem(component_list_, QString::fromStdString(components[j]->TypeName()));
             }
         }
         
@@ -319,20 +344,35 @@ namespace ECEditor
             return;
             
         QDomDocument temp_doc;
-        // Create entities element as the root element
-        // Note: this is only for multi-editing convenience. Network serialization will always happen per-entity,
-        // and in that case the "entity" element will be the root
-        QDomElement entities_elem = temp_doc.createElement("entities");
-        temp_doc.appendChild(entities_elem);
-        for (uint i = 0; i < selection.size(); ++i)
+        if (selection.size() > 1)
         {
+            // Multi-entity: create a root element to hold entities
+            QDomElement entities_elem = temp_doc.createElement("entities");
+            temp_doc.appendChild(entities_elem);
+            
+            for (uint i = 0; i < selection.size(); ++i)
+            {
+                QDomElement entity_elem = temp_doc.createElement("entity");
+                QString id_str;
+                id_str.setNum(selection[i].entity_->GetId());
+                entity_elem.setAttribute("id", id_str);
+                for (uint j = 0; j < selection[i].components_.size(); ++j)
+                    selection[i].components_[j]->SerializeTo(temp_doc, entity_elem);
+                entities_elem.appendChild(entity_elem);
+            }
+        }
+        else
+        {
+            // Single entity
             QDomElement entity_elem = temp_doc.createElement("entity");
+            temp_doc.appendChild(entity_elem);
+            
             QString id_str;
-            id_str.setNum(selection[i].entity_->GetId());
+            id_str.setNum(selection[0].entity_->GetId());
             entity_elem.setAttribute("id", id_str);
-            for (uint j = 0; j < selection[i].components_.size(); ++j)
-                selection[i].components_[j]->SerializeTo(temp_doc, entity_elem);
-            entities_elem.appendChild(entity_elem);
+            for (uint j = 0; j < selection[0].components_.size(); ++j)
+                selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
+            temp_doc.appendChild(entity_elem);
         }
         
         data_edit_->setText(temp_doc.toString());

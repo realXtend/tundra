@@ -100,7 +100,7 @@ namespace RexLogic
             Scene::EntityPtr entity = entity_.lock();
 
             assert (entity && "Received event EVENT_CONTROLLABLE_ENTITY with null entity.");
-            component_ = entity->GetComponent(EC_Controllable::NameStatic());
+            component_ = entity->GetComponent(EC_Controllable::TypeNameStatic());
             Foundation::ComponentPtr component = component_.lock();
 
             assert (component && "Received event EVENT_CONTROLLABLE_ENTITY with null controllable component.");
@@ -190,7 +190,7 @@ namespace RexLogic
         assert (entity_data->entity && "Action event received without valid entity!");
 
 
-        Foundation::ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::NameStatic());
+        Foundation::ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::TypeNameStatic());
         if (IsAvatar(component))
         {
             EC_OpenSimAvatar *avatar = entity_data->entity->GetComponent<EC_OpenSimAvatar>().get();
@@ -358,7 +358,7 @@ namespace RexLogic
         Foundation::ComponentPtr component;
         for ( ; it != scene->end() ; ++it)
         {
-            component = (*it)->GetComponent(EC_Controllable::NameStatic());
+            component = (*it)->GetComponent(EC_Controllable::TypeNameStatic());
             if (IsAvatar(component))
             {
                 EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
@@ -376,10 +376,10 @@ namespace RexLogic
         Foundation::ComponentPtr component;
         for ( ; it != scene->end() ; ++it)
         {
-            component = (*it)->GetComponent(EC_Controllable::NameStatic());
+            component = (*it)->GetComponent(EC_Controllable::TypeNameStatic());
             if (IsAvatar(component))
             {
-				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::NameStatic()).get());
+				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
 				netpos->orientation_ = newrot * netpos->orientation_;
 				netpos->Updated();
 			}

@@ -87,29 +87,29 @@ namespace RexLogic
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         
-        if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
+        if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
             return Scene::EntityPtr();
         
         StringVector defaultcomponents;
-        defaultcomponents.push_back(EC_OpenSimPresence::NameStatic());
-        defaultcomponents.push_back(EC_OpenSimAvatar::NameStatic());
-        defaultcomponents.push_back(EC_NetworkPosition::NameStatic());
-        defaultcomponents.push_back(EC_AvatarAppearance::NameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        defaultcomponents.push_back(EC_OpenSimPresence::TypeNameStatic());
+        defaultcomponents.push_back(EC_OpenSimAvatar::TypeNameStatic());
+        defaultcomponents.push_back(EC_NetworkPosition::TypeNameStatic());
+        defaultcomponents.push_back(EC_AvatarAppearance::TypeNameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-        defaultcomponents.push_back(EC_HoveringText::NameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+        defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
 
-        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
         {
             //OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
             //DebugCreateOgreBoundingBox(rexlogicmodule_,
-            //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
+            //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
             
             CreateNameOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
@@ -191,12 +191,12 @@ namespace RexLogic
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
             // controlled avatar entity. -jj.
             ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
-            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::NameStatic()))
+            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::TypeNameStatic()))
             {
                 Foundation::Framework *fw = rexlogicmodule_->GetFramework();
-                assert (fw->GetComponentManager()->CanCreate(EC_Controllable::NameStatic()));
+                assert (fw->GetComponentManager()->CanCreate(EC_Controllable::TypeNameStatic()));
 
-                entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::NameStatic()));
+                entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::TypeNameStatic()));
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
@@ -281,7 +281,7 @@ namespace RexLogic
         Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
      
         netpos->position_ = position;
-        if (!entity->GetComponent(EC_Controllable::NameStatic()))
+        if (!entity->GetComponent(EC_Controllable::TypeNameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos->orientation_ = rotation;
@@ -339,7 +339,7 @@ namespace RexLogic
         netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         
         netpos->position_ = position;
-        if (!entity->GetComponent(EC_Controllable::NameStatic()))
+        if (!entity->GetComponent(EC_Controllable::TypeNameStatic()))
         {
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos->orientation_ = rotation;
@@ -561,9 +561,9 @@ namespace RexLogic
         if (!entity)
             return;
             
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
-        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {

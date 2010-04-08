@@ -199,7 +199,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     if (ogre_component)
         placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
 
-    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
+    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
 
     if (s_name.compare("id") == 0)
     {
@@ -218,14 +218,14 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         return PyString_FromString(retstr.c_str());
         */
 
-        //RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+        //RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
 
         return PythonQt::self()->wrapQObject(prim);
     }
 
     else if (s_name.compare("mesh") == 0)
 	{
-        Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
         return PythonQt::self()->wrapQObject(ogremesh);
@@ -297,7 +297,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("text") == 0)
     {
-        const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
 
         if (!overlay)
         {
@@ -317,7 +317,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;  
         }
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::NameStatic());
+        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
         if (meshptr)
         {
             OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
@@ -329,7 +329,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         }
         else
         {
-            meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+            meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
             if (meshptr) 
             {
                 OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
@@ -411,7 +411,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     if (ogre_component)
 		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
     
-    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::NameStatic()).get());
+    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
 
     if (s_name.compare("pos") == 0)
     {
@@ -520,7 +520,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     {
         if (PyString_Check(value) || PyUnicode_Check(value)) 
         {
-            const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+            const Foundation::ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
             const char* c_text = PyString_AsString(value);
             std::string text = std::string(c_text);
             if (overlay)

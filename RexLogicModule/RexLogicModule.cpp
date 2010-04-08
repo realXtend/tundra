@@ -497,7 +497,7 @@ Vector3df RexLogicModule::GetCameraUp()
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
     if (!placeable_ptr)
         return Vector3df();
@@ -511,7 +511,7 @@ Vector3df RexLogicModule::GetCameraRight()
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
     if (!placeable_ptr)
         return Vector3df();
@@ -525,7 +525,7 @@ Real RexLogicModule::GetCameraFOV()
     if (camera_entity_.expired())
         return 0.0f;
 
-    Foundation::ComponentPtr camera = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgreCamera::NameStatic());
+    Foundation::ComponentPtr camera = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
     OgreRenderer::EC_OgreCamera* camera_ptr = dynamic_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
     if (!camera_ptr)
         return 0.0f;
@@ -558,7 +558,7 @@ Vector3df RexLogicModule::GetCameraPosition()
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
     if (!placeable_ptr)
         return Vector3df();
@@ -571,7 +571,7 @@ Quaternion RexLogicModule::GetCameraOrientation()
     if (camera_entity_.expired())
         return Quaternion::IDENTITY;
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
     if (!placeable_ptr)
         return Quaternion::IDENTITY;
@@ -763,8 +763,8 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     {
         Foundation::Framework* fw = GetFramework();
         
-        Foundation::ComponentPtr placeable = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        Foundation::ComponentPtr camera = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::NameStatic());
+        Foundation::ComponentPtr placeable = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        Foundation::ComponentPtr camera = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
 
         if ((placeable) && (camera))
         {    
@@ -868,8 +868,8 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         iter != activeScene_->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-        Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::NameStatic());
+        Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::TypeNameStatic());
         if (ogrepos_ptr && netpos_ptr)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
@@ -913,13 +913,13 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         }
 
         // If is an avatar, handle update for avatar animations
-        if (entity.GetComponent(EC_OpenSimAvatar::NameStatic()))
+        if (entity.GetComponent(EC_OpenSimAvatar::TypeNameStatic()))
         {
             found_avatars_.push_back(*iter);
             avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
            
-        Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::NameStatic());
+        Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         if (animctrl_ptr)
         {
             // General animation controller update
@@ -928,7 +928,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         }
         
         // Attached sound update
-        Foundation::ComponentPtr sound_ptr = entity.GetComponent(EC_AttachedSound::NameStatic());
+        Foundation::ComponentPtr sound_ptr = entity.GetComponent(EC_AttachedSound::TypeNameStatic());
         if (ogrepos_ptr && sound_ptr)
         {
             OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get());
@@ -1016,7 +1016,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }   
     
-    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
+    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     child_placeable->SetParent(parent_placeable);
 }
 

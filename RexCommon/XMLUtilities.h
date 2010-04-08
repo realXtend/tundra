@@ -4,7 +4,7 @@
 
 #include "Core.h"
 
-#include <QDomElement>
+class QDomElement;
 
 namespace RexTypes
 {

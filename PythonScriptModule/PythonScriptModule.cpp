@@ -908,7 +908,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 //    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 //
 //    Scene::ScenePtr scene = PythonScript::GetScene();        
-//    if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
+//    if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
 //        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
 //        return NULL;   
 //    }
@@ -924,11 +924,11 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 //
 //        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
 //        if (!primentity) continue;
-//        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+//        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
 //        
 //        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
 //        {
-//            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+//            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
 //            if (!mesh) continue;
 //            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
 //            // If don't have the actual mesh entity yet, no use trying to set texture
@@ -990,11 +990,11 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
     if (!primentity) Py_RETURN_NONE;
-    RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::NameStatic()).get());
+    RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
     
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+        Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         if (!mesh) Py_RETURN_NONE;
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
         // If don't have the actual mesh entity yet, no use trying to set texture
@@ -1184,7 +1184,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
     Scene::ScenePtr scene = owner->GetScene();
-    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::NameStatic()))
+    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
         return NULL;   
     }
@@ -1192,15 +1192,15 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
     
     StringVector defaultcomponents;
-    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
+    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+    defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
-    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::NameStatic());
-    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::NameStatic());
+    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
