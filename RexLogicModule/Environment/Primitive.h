@@ -49,6 +49,9 @@ namespace RexLogic
         // Send RexFreeData of a prim entity (if exists) to server
         void SendRexFreeData(entity_id_t entityid);
 
+        // Encode serializable EC's into XML format, put to RexFreeData, and send to server
+        void HandleECsModified(entity_id_t entityid);
+        
     private:
         //! The owning module.
         RexLogicModule *rexlogicmodule_;

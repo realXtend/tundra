@@ -89,6 +89,9 @@ namespace Scene
         /// An event that will let mediaurl handling to know for what entity a mediaurl was set
         static const event_id_t EVENT_ENTITY_MEDIAURL_SET = 0x11; //REMOTE == from server
 
+        /// An internal event telling that an entity's XML serializable EC data was modified, and should be encoded to RexFreeData & sent over network
+        static const event_id_t EVENT_ENTITY_ECS_MODIFIED = 0x12;
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {

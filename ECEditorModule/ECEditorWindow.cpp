@@ -11,6 +11,8 @@
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "XmlUtilities.h"
+#include "SceneEvents.h"
+#include "EventManager.h"
 
 #include <QDomDocument>
 #include <QVBoxLayout>
@@ -222,6 +224,10 @@ namespace ECEditor
                             comp->DeserializeFrom(comp_elem);
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
+                    
+                    Scene::Events::SceneEventData event_data(id);
+                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                    event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
                 }
                 else
                 {

@@ -7,8 +7,6 @@
 #include "RexLogicModuleApi.h"
 #include "Declare_EC.h"
 
-#include <QDomDocument>
-
 namespace RexLogic
 {
     /// An entity component that attaches to an entity a generic string of data, for quickly doing custom data extension/storage.
@@ -23,10 +21,7 @@ namespace RexLogic
     public:
         virtual ~EC_FreeData();
 
-        //! Free data as string
         std::string FreeData;
-        //! Free data as XML document (if could be parsed properly)
-        QDomDocument FreeDataXML;
         
     private:
         EC_FreeData(Foundation::ModuleInterface* module);

@@ -10,6 +10,7 @@
 #include "EC_OgrePlaceable.h"
 #include "SoundServiceInterface.h"
 #include "WorldStream.h"
+#include "Environment/Primitive.h"
 
 namespace RexLogic
 {
@@ -17,10 +18,10 @@ namespace RexLogic
 void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest, const std::vector<Scene::EntityPtr>& src)
 {
     for (uint i = 0; i < src.size(); ++i)
-    {        
+    {
         if (!src[i]) 
             continue;
-            
+        
         const Foundation::ComponentInterfacePtr &prim_component = src[i]->GetComponent("EC_OpenSimPrim");
         if (!prim_component) 
             continue;
@@ -90,7 +91,15 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
     {
         Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
         //Scene::EntityPtr ptr(entity_clicked_data->entity);
-        rexlogicmodule_->EntityClicked(entity_clicked_data->entity);
+        if (entity_clicked_data)
+            rexlogicmodule_->EntityClicked(entity_clicked_data->entity);
+        break;
+    }
+    case Scene::Events::EVENT_ENTITY_ECS_MODIFIED:
+    {
+        if (event_data)
+            rexlogicmodule_->GetPrimitiveHandler()->HandleECsModified(event_data->localID);
+        break;
     }
     default:
         break;
