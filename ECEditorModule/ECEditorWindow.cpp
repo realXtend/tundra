@@ -10,7 +10,7 @@
 #include "ComponentManager.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "XmlUtilities.h"
+#include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
 
