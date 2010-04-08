@@ -6,6 +6,7 @@
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
 #include "HttpAssetProvider.h"
+#include "QtHttpAssetProvider.h"
 #include "NetworkEvents.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -43,7 +44,7 @@ namespace Asset
 
         try
         {
-            http_asset_provider_ = Foundation::AssetProviderPtr(new HttpAssetProvider(framework_));
+            http_asset_provider_ = Foundation::AssetProviderPtr(new QtHttpAssetProvider(framework_));
             manager_->RegisterAssetProvider(http_asset_provider_);
         }
         catch (Exception &/*e*/)

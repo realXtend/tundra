@@ -4,8 +4,12 @@ init_target (AssetModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
+file (GLOB H_MOC_FILES QtHttpAssetProvider.h QtHttpAssetTransfer.h)
 file (GLOB XML_FILES *.xml)
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+QT4_WRAP_CPP(MOC_SRCS ${H_MOC_FILES})
 
 add_definitions (-DUSE_QT -DASSET_MODULE_EXPORTS)
 
@@ -16,7 +20,7 @@ use_package (XMLRPC)
 use_package (QT4)
 use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
