@@ -2,11 +2,20 @@
 #include "LinkPlugin.h"
 #include "LinkedMem.h"
 
+#ifndef WIN32
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#endif
+
 //! QString::ToStdWString() doesn't work with Visual Studio 2008
 std::wstring QStringToStdWString(QString &s)
 {
     std::string temp1 = s.toStdString();
-    std::wstring temp2(temp1.size(), L'');
+    std::wstring temp2(temp1.size(), L' ');
     std::copy(temp1.begin(), temp1.end(), temp2.begin());
     return temp2;
 }

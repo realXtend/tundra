@@ -210,7 +210,7 @@ namespace MumbleVoip
         QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
         murmur_url.setUserName(info.user_name);
         murmur_url.setPassword(info.password);
-        murmur_url.setQueryItems(QList<QPair<QString,QString>>() << QPair<QString,QString>("version", info.version));
+        murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
 
         LogInfo("Starting mumble client.");
         try
