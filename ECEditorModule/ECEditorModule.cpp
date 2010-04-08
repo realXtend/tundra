@@ -8,6 +8,8 @@
 #include "NetworkEvents.h"
 #include "SceneManager.h"
 
+#include "EC_SerializationTest.h"
+
 namespace ECEditor
 {
     std::string ECEditorModule::name_static_ = "ECEditorModule";
@@ -28,6 +30,7 @@ namespace ECEditor
     
     void ECEditorModule::Load()
     {
+        DECLARE_MODULE_EC(EC_SerializationTest);
     }
 
     void ECEditorModule::Initialize()

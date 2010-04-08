@@ -5,7 +5,7 @@ init_target (ECEditorModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorWindow.h)
+file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
