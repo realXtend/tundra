@@ -40,6 +40,7 @@
 #include <QUuid>
 #include <QUrl>
 #include <QColor>
+#include <QDomDocument>
 
 namespace RexLogic
 {
@@ -546,6 +547,35 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     
 }
 
+void Primitive::HandleECsModified(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    // Get/create freedata component
+    Foundation::ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
+    if (!freeptr)
+        return;
+    EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
+    
+    QDomDocument temp_doc;
+    
+    QDomElement entity_elem = temp_doc.createElement("entity");
+    
+    QString id_str;
+    id_str.setNum(entity->GetId());
+    entity_elem.setAttribute("id", id_str);
+    
+    const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
+    for (uint i = 0; i < components.size(); ++i)
+        components[i]->SerializeTo(temp_doc, entity_elem);
+    temp_doc.appendChild(entity_elem);
+    
+    free.FreeData = temp_doc.toString().toStdString();
+    SendRexFreeData(entityid);
+}
+
 void Primitive::SendRexFreeData(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -695,8 +725,26 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
     EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
     free.FreeData = freedata;
     // Parse into XML form (may or may not succeed)
-    free.FreeDataXML.clear();
-    free.FreeDataXML.setContent(QString::fromStdString(freedata));
+    QDomDocument temp_doc;
+    if (temp_doc.setContent(QString::fromStdString(freedata)))
+    {
+        // Create entity components from XML form as applicable
+        QDomElement entity_elem = temp_doc.firstChildElement("entity");
+        if (!entity_elem.isNull())
+        {
+            QDomElement comp_elem = entity_elem.firstChildElement("component");
+            while (!comp_elem.isNull())
+            {
+                std::string type_name = comp_elem.attribute("type").toStdString();
+                Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
+                if (new_comp)
+                    new_comp->DeserializeFrom(comp_elem);
+                else
+                    RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
+                comp_elem = comp_elem.nextSiblingElement("component");
+            }
+        }
+    }
 }
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
