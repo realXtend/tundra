@@ -6,7 +6,7 @@
 #include "EC_OgrePlaceable.h"
 #include <Ogre.h>
 
-#include "XmlUtilities.h"
+#include "XMLUtilities.h"
 
 using namespace RexTypes;
 
@@ -71,7 +71,7 @@ namespace OgreRenderer
     
     void EC_OgrePlaceable::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     {
-        QDomElement& comp_element = BeginSerialization(doc, base_element);
+        QDomElement comp_element = BeginSerialization(doc, base_element);
         WriteAttribute(doc, comp_element, "position", WriteVector3(GetPosition()));
         WriteAttribute(doc, comp_element, "orientation", WriteQuaternion(GetOrientation()));
         WriteAttribute(doc, comp_element, "scale", WriteVector3(GetScale()));
