@@ -12,7 +12,7 @@
 #include "OgreSkeletonResource.h"
 #include "RexNetworkUtils.h"
 #include "HttpUtilities.h"
-#include "XmlUtilities.h"
+#include "XMLUtilities.h"
 
 #include <QDomDocument>
 #include <QDomElement>
