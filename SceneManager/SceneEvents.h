@@ -6,10 +6,11 @@
 #include "EventDataInterface.h"
 #include "Vector3D.h"
 #include "ForwardDefines.h"
-
+#include <QString.h>
 namespace Scene
 {
     class Entity;
+    
     //! Events related to scene
     /*!
         \ingroup Scene_group
@@ -184,6 +185,20 @@ namespace Scene
             Real u;
             //! V coord in entity. 0 if no texture mapping
             Real v;
+        };
+
+
+        class HoveringIconClickedData : public SceneEventData
+        {
+        public:
+            explicit HoveringIconClickedData(Scene::Entity *ent,const QString b);
+            virtual ~HoveringIconClickedData(){};
+
+            //Entity associated with the clicked icon
+            Scene::Entity *entity;
+
+            //billboard that was clicked
+            QString icon_name;
         };
 
         class EntityClickedData : public SceneEventData

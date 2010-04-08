@@ -111,7 +111,7 @@ void RexLogicModule::Load()
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
-    DECLARE_MODULE_EC(EC_HoveringIcon);
+    DECLARE_MODULE_EC(EC_HoveringIconGroup);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
@@ -1038,7 +1038,7 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();
 
-    boost::shared_ptr<EC_HoveringIcon> info_icon = entity->GetComponent<EC_HoveringIcon>();
+    boost::shared_ptr<EC_HoveringIconGroup> info_icon = entity->GetComponent<EC_HoveringIconGroup>();
     if(info_icon.get())
         info_icon->Clicked();
 }

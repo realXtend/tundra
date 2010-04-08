@@ -30,7 +30,7 @@
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
-#include "EC_HoveringIcon.h"
+#include "EC_HoveringIconGroup.h"
 #include <UiModule.h>
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
