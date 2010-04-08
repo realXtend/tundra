@@ -85,13 +85,19 @@ public slots:
     //!Initializes the Icon internals. Has to be called before anything is actually shown. Also called in ShowPic -function
     void InitializeBillboards();
 
+    //! Get this icons billboard
     const Ogre::Billboard& GetBillboard(){return *billboard_;} 
 
+    //! Get this icons billboardset (contains only 1 billboard)
     const Ogre::BillboardSet& GetBillBoardSet(){return *billboardSet_;}
 
+    //! Set name for this Icon
     void SetName(const QString &name){name_ = name;}
+
+    //! Get the name of this Icon
     const QString& GetName(){return name_;}
 
+    //! Get the parent entity of this icon
     Scene::Entity* GetParentEntity();
 
 
@@ -125,8 +131,10 @@ private:
 
 
 
+    //! Name of this icon
     QString name_;
 
+    //! actual image of the icon shown
     QPixmap pixmap_;
 
 
@@ -138,6 +146,7 @@ private:
 
     Foundation::Framework* framework_;
 
+    //! Group that owns this icon
     EC_HoveringIconGroup* group_;
 };
 

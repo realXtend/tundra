@@ -16,6 +16,17 @@ icon_width_(0.25f)
         
     }
 
+EC_HoveringIconGroup::~EC_HoveringIconGroup()
+{
+
+    for(int i=0; i< icons_.size();i++)
+    {
+        HoveringIcon* icon = icons_.at(i);
+        SAFE_DELETE(icon);
+    }
+    icons_.clear();
+}
+
 void EC_HoveringIconGroup::AddIcon(QString &name, QString &image_path)
 {
     HoveringIcon* icon = new HoveringIcon(framework_, image_path, next_pos_,this);
@@ -23,6 +34,8 @@ void EC_HoveringIconGroup::AddIcon(QString &name, QString &image_path)
     icon->SetName(name);
     icons_.append(icon);
 }
+
+
 void EC_HoveringIconGroup::Clicked()
 {
     visible_ = !visible_;
