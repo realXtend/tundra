@@ -5,16 +5,32 @@
 
 
 #include <QObject>
+#include <QString>
+#include <QThread>
+#include <QMap>
 #include "CoreTypes.h"
 #include "ServerInfo.h"
+#include "Framework.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
 
+namespace MumbleClient
+{
+    class MumbleClientLib;
+}
+
 namespace MumbleVoip
 {
-
     class ServerInfo;
+    class Connection;
+
+    class LibThread : public QThread 
+    {
+    public:
+        virtual void run();
+    };
+
 
     /**
 	 *  Handles connections to mumble server.
@@ -29,8 +45,8 @@ namespace MumbleVoip
         Q_OBJECT
 
     public:
-        ConnectionManager();
-        virtual ~ConnectionManager() {};
+        ConnectionManager(Foundation::Framework* framework);
+        virtual ~ConnectionManager();
 
         //! NOT IMPLEMENTED
         //!
@@ -52,6 +68,20 @@ namespace MumbleVoip
         //!
         //! There is no way to stop mumle client from this module it has to be closed by user.
         static void StartMumbleClient(const QString& server_url);
+
+        //! Kill mumble client process
+        static void KillMumbleClient();
+    private:
+        void StartMumbleLibrary();
+        void StopMumbleLibrary();
+
+        QMap<QString, Connection*> connections_; // maps: server address - connection object
+        MumbleClient::MumbleClientLib* mumble_lib; // @todo: Do we need this pointer?
+        LibThread lib_thread_;
+        Foundation::Framework* framework_;
+        sound_id_t audio_playback_channel_;
+    public slots:
+        void OnAudioData(char* data, int size);
     };
 
 } // end of namespace: MumbleVoip

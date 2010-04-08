@@ -20,7 +20,6 @@ namespace ProtocolUtilities
         /// @return The ip:port to connect to with the UDP socket, or "" if there was an error.
         static std::string ExtractGridAddressFromXMLRPCReply(XmlRpcEpi &call);
     };
-
 }
 
 #endif // incl_Protocol_Grid_h
