@@ -6,6 +6,7 @@
 #include "Framework.h"
 
 #include <QWidget>
+#include <QShortcut>
 
 class QHideEvent;
 class QShowEvent;
@@ -37,6 +38,7 @@ namespace ECEditor
         void ClearEntities();
         
     public slots:
+        void DeleteEntitiesFromList();
         void DeleteComponent();
         void CreateComponent();
         void RevertData();
@@ -47,8 +49,7 @@ namespace ECEditor
     protected:
         void hideEvent(QHideEvent *hide_event);
         void showEvent(QShowEvent *show_event);
-        void keyPressEvent(QKeyEvent *e);
-
+        
     private:
         void Initialize();
         void RefreshAvailableComponents();
@@ -64,6 +65,7 @@ namespace ECEditor
         QListWidget* component_list_;
         QTextEdit* data_edit_;
         QComboBox* create_combo_;
+        QShortcut* delete_shortcut_;
     };
 }
 

@@ -47,7 +47,8 @@ namespace ECEditor
         entity_list_(0),
         component_list_(0),
         create_combo_(0),
-        data_edit_(0)
+        data_edit_(0),
+        delete_shortcut_(0)
     {
         Initialize();
     }
@@ -86,7 +87,9 @@ namespace ECEditor
         if (entity_list_)
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            delete_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
             QObject::connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
+            QObject::connect(delete_shortcut_, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
         }
         if (component_list_)
         {
@@ -214,7 +217,7 @@ namespace ECEditor
                     QDomElement comp_elem = entity_elem.firstChildElement("component");
                     while (!comp_elem.isNull())
                     {
-                        Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("name").toStdString());
+                        Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString());
                         if (comp)
                             comp->DeserializeFrom(comp_elem);
                         comp_elem = comp_elem.nextSiblingElement("component");
@@ -250,19 +253,16 @@ namespace ECEditor
         QWidget::showEvent(show_event);
     }
     
-    void ECEditorWindow::keyPressEvent(QKeyEvent* key_event)
+    void ECEditorWindow::DeleteEntitiesFromList()
     {
-        if (key_event->key() == Qt::Key_Delete)
+        if ((entity_list_) && (entity_list_->hasFocus()))
         {
-            if ((entity_list_) && (entity_list_->hasFocus()))
+            for (int i = entity_list_->count() - 1; i >= 0; --i)
             {
-                for (int i = entity_list_->count() - 1; i >= 0; --i)
+                if (entity_list_->item(i)->isSelected())
                 {
-                    if (!entity_list_->item(i)->isSelected())
-                    {
-                        QListWidgetItem* item = entity_list_->takeItem(i);
-                        delete item;
-                    }
+                    QListWidgetItem* item = entity_list_->takeItem(i);
+                    delete item;
                 }
             }
         }
