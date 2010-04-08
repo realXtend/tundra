@@ -10,6 +10,7 @@
 #include <QObject>
 #include "ServerInfo.h"
 
+
 namespace MumbleVoip
 {
     class LinkPlugin;
@@ -69,6 +70,7 @@ namespace MumbleVoip
         QString user_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
         bool use_camera_position_; 
+        bool mumble_client_started_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);

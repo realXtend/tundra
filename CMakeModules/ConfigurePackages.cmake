@@ -7,6 +7,7 @@
 
 macro (configure_boost)
     if (MSVC)
+	    set(Boost_USE_MULTITHREADED ON) # test by mattiku
         set (Boost_USE_STATIC_LIBS ON)
     else ()
         set (Boost_USE_STATIC_LIBS OFF)
@@ -359,3 +360,46 @@ macro (configure_vorbis)
         endif ()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
+
+macro (configure_mumbleclient)
+    sagase_configure_package(MUMBLECLIENT
+        NAMES mumbleclient
+        COMPONENTS mumbleclient client
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libmumbleclient)
+    sagase_configure_report (MUMBLECLIENT)
+endmacro (configure_mumbleclient)
+
+macro (configure_openssl)
+    sagase_configure_package(OPENSSL
+        NAMES openssl
+        COMPONENTS libeay32 ssleay32 ssl
+        PREFIXES ${ENV_NAALI_DEP_PATH}/OpenSSL)
+    # remove 'NOTFOUND' entry which makes to linking impossible		 
+    if (MSVC)
+        list(REMOVE_ITEM OPENSSL_LIBRARIES NOTFOUND)
+    endif ()		
+    sagase_configure_report (OPENSSL)
+endmacro (configure_openssl)
+
+macro (configure_protobuf)
+    # hint for sagase where to look protobuf files on Windows
+    if (MSVC)
+        set(PROTOBUF_INCLUDE_DIR ${ENV_NAALI_DEP_PATH}/protobuf/include) 
+		set(PROTOBUF_LIBRARY ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobuf.lib)
+#		set(PROTOBUF_DEBUG_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobufd.lib)
+    endif ()   
+	message(PROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR})
+	message(PROTOBUF_LIBRARY=${PROTOBUF_LIBRARY})
+    sagase_configure_package(PROTOBUF
+        NAMES google protobuf
+        COMPONENTS libprotobuf
+        PREFIXES ${ENV_NAALI_DEP_PATH}/protobuf)
+    # Force include dir and libraries on MSVC
+    if (MSVC)
+  	    set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
+		set(PROTOBUF_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobuf.lib)
+	    set(PROTOBUF_DEBUG_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobufd.lib)
+    endif ()
+    sagase_configure_report (PROTOBUF)
+	
+endmacro (configure_protobuf)

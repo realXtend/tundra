@@ -26,7 +26,8 @@ namespace MumbleVoip
           time_from_last_update_ms_(0),
           server_observer_(0),
           connection_manager_(0),
-          use_camera_position_(false)
+          use_camera_position_(false),
+          mumble_client_started_(false)
     {
     }
 
@@ -36,7 +37,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Load()
     {
-        connection_manager_ = new ConnectionManager();
+        connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
         server_observer_ = new ServerObserver(framework_);
         connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
@@ -59,6 +60,10 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Uninitialize()
     {
+        if (mumble_client_started_)
+        {
+
+        }
     }
 
     void MumbleVoipModule::Update(f64 frametime)
@@ -103,7 +108,7 @@ namespace MumbleVoip
                 OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
                 Quaternion q = ogre_placeable->GetOrientation();
                 Vector3df position_vector = ogre_placeable->GetPosition(); 
-                Vector3df front_vector = q*Vector3df::UNIT_X;
+                Vector3df front_vector = q*Vector3df::UNIT_Z;
 
                 link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
                 if (!use_camera_position_)
@@ -212,16 +217,20 @@ namespace MumbleVoip
         murmur_url.setPassword(info.password);
         murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
 
-        LogInfo("Starting mumble client.");
         try
         {
-            ConnectionManager::StartMumbleClient(murmur_url.toString());
+            connection_manager_->OpenConnection(info);
+            LogInfo("Mumble connection established.");
 
-            // it takes some time for a mumble client to setup shared memory for link plugins
-            // so we have to wait some time before we can start our link plugin.
-            user_id_for_link_plugin_ = info.avatar_id;
-            context_id_for_link_plugin_ = info.context_id;
-            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+            //LogInfo("Starting mumble client.");
+            //ConnectionManager::StartMumbleClient(murmur_url.toString());
+
+            //// it takes some time for a mumble client to setup shared memory for link plugins
+            //// so we have to wait some time before we can start our link plugin.
+            //user_id_for_link_plugin_ = info.avatar_id;
+            //context_id_for_link_plugin_ = info.context_id;
+            //QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+            //mumble_client_started_ = true;
         }
         catch(std::exception &e)
         {
