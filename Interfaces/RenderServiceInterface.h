@@ -58,6 +58,13 @@ namespace Foundation
         */
         virtual RaycastResult Raycast(int x, int y) = 0;
 
+        //! Do a frustrum query to the world from viewport coordinates.
+        //NOTE: to be changed to be a slot when Renderer(Interface?) is made a QObject
+        //the param passed is already a QRect on the py side.
+        //this is for a temp quick test now 'cause was easy to copy-paste from raycast,
+        //the moc stuff etc. to be done next, and then change the param to QRect.
+        virtual RaycastResult FrustrumQuery(int left, int top, int right, int bottom) = 0;
+
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
 

@@ -73,6 +73,9 @@ namespace OgreRenderer
             \return Raycast result structure
         */
         virtual Foundation::RaycastResult Raycast(int x, int y);
+        
+        //! Do a frustrum query to the world from viewport coordinates.
+        virtual Foundation::RaycastResult FrustrumQuery(int left, int top, int right, int bottom);
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
