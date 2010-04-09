@@ -811,12 +811,23 @@ namespace OgreRenderer
         return result;
     }
 
+    //this is in the ServiceInterface but not used anymore. can the qt slot be interface?
     Foundation::RaycastResult Renderer::FrustrumQuery(int left, int top, int right, int bottom)
     {
         Foundation::RaycastResult result;
         result.entity_ = 0; 
         if (!initialized_)
             return result;
+    }
+
+    //qt wrapper / upcoming replacement for the one above
+    QVariantList Renderer::QFrustrumQuery(QRect viewrect)
+    {
+        QVariantList l;
+        l << 1;
+        l << 2;
+        l << 3;
+        return l;
     }
 
     std::string Renderer::GetUniqueObjectName()
