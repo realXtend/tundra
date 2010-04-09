@@ -18,6 +18,54 @@ namespace MumbleClient
 
 namespace MumbleVoip
 {
+    class PCMAudioFrame
+    {
+    public:
+        PCMAudioFrame(int channels, int sample_rate, int sample_widh, char* data, int data_size);
+        virtual ~PCMAudioFrame();
+        virtual char* Data();
+        virtual int Channels();
+        virtual int SampleRate();
+        virtual int SampleWidth();
+        virtual int Samples();
+        virtual int GetLengthMs();
+        virtual int GetLengthBytes();
+
+    private:
+        int channels_;
+        int sample_rate_;
+        int sample_widh_;
+        char* data_;
+        int data_size_;
+    };
+
+    class AudioSourceInterface : QObject
+    {
+        Q_OBJECT
+    public:
+        QList<PCMAudioFrame*> GetPCMAudioFrames();
+    signals:
+        void PCMAudioFramesAvailable();
+    };
+
+    class AudioSinkInterface : QObject
+    {
+
+    };
+
+    class VideoSourceInterface : QObject
+    {
+        Q_OBJECT
+    public:
+        QList<PCMAudioFrame*> GetVideoFrames();
+    signals:
+        void VideoFramesAvailable();
+    };
+
+    //! Connection to a single mumble server.
+    //!
+    //!
+    //!
     class Connection : public QObject
     {
         Q_OBJECT
@@ -31,6 +79,8 @@ namespace MumbleVoip
         MumbleClient::MumbleClient* client_;
         bool authenticated_;
         QString join_request_;
+        QList<PCMAudioFrame> pcm_data_in_;
+        QList<PCMAudioFrame> pcm_data_out_;
 
     public slots:
         void OnAuthenticated();

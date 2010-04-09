@@ -20,9 +20,9 @@ namespace MumbleClient
     class MumbleClientLib;
 }
 
-class CELTMode;
-class CELTEncoder;
-class CELTDecoder;
+struct CELTMode;
+struct CELTEncoder;
+struct CELTDecoder;
 
 namespace MumbleVoip
 {
@@ -88,9 +88,9 @@ namespace MumbleVoip
         LibThread lib_thread_;
         Foundation::Framework* framework_;
         sound_id_t audio_playback_channel_;
-        CELTMode *celt_mode_;
-        CELTEncoder *celt_encoder_;
-        CELTDecoder *celt_decoder_;
+        CELTMode* celt_mode_;
+        CELTEncoder* celt_encoder_;
+        CELTDecoder* celt_decoder_;
         static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
 
     public slots:

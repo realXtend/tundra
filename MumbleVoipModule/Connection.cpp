@@ -100,8 +100,11 @@ void TextMessageCallback(const std::string& message, Connection* connection)
 //	cond.notify_all();
 //}
 
-void RelayTunnelCallback(int32_t length, void* buffer, Connection* connection)
+void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
 {
+    char* buffer = (char*)buffer_;
+    short type = buffer[0] << 8 + buffer[1];
+    int len = buffer[3] << 16 + buffer[4] << 8 + buffer[5];
 	std::string s(static_cast<char *>(buffer), length);
 	s.erase(1, pds_int_len(&static_cast<char *>(buffer)[1]));
     connection->OnRelayTunnel(s);
@@ -113,6 +116,16 @@ void AuthCallback(Connection* connection)
 	std::cout << "I'm authenticated" << std::endl;
 }
 
+void ChannelAddCallback(const MumbleClient::Channel& channel, Connection* connection)
+{
+	std::cout << "Channel added" << std::endl;
+}
+
+void ChannelRemoveCallback(const MumbleClient::Channel& channel, Connection* connection)
+{
+	std::cout << "Channel removed" << std::endl;
+}
+
 Connection::Connection(ServerInfo &info) : client_(0), authenticated_(false)
 {
     MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
@@ -120,7 +133,9 @@ Connection::Connection(ServerInfo &info) : client_(0), authenticated_(false)
 
     QString port = "64738"; // default port name
     client_->Connect(MumbleClient::Settings(info.server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
-	client_->SetRawUdpTunnelCallback( boost::bind(&RelayTunnelCallback, _1, _2, this) );
+	client_->SetRawUdpTunnelCallback( boost::bind(&RelayTunnelCallback, _1, _2, this));
+    client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
+    client_->SetChannelRemoveCallback(boost::bind(&ChannelRemoveCallback, _1, this));
     client_->SetTextMessageCallback(boost::bind(&TextMessageCallback, _1, this));
     client_->SetAuthCallback(boost::bind(&AuthCallback, this));
 }
@@ -165,6 +180,8 @@ void Connection::OnTextMessage(QString text)
 
 void Connection::OnRelayTunnel(std::string& s)
 {
+    // @todo decode CELT
+
     char* data = new char[s.size()];
     memcpy(data, s.c_str(), s.size());
     emit (RelayTunnelData(data,s.size()));
@@ -180,6 +197,7 @@ void Connection::OnPlayAudioData(char* data, int size)
 	buffer[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
 	memcpy(&buffer[1], &buffer[2], size - 1);
 
+    // @todo: encode CELT
 #define TCP 1
 #if TCP
 	client_->SendRawUdpTunnel(buffer, size - 1);
