@@ -58,6 +58,7 @@ namespace MumbleVoip
     {
         celt_decoder_destroy(celt_decoder_);
         celt_encoder_destroy(celt_encoder_);
+        celt_mode_destroy(celt_mode_);
         MumbleVoipModule::LogDebug("CELT uninitialized.");
     }
 
@@ -143,13 +144,13 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-        celt_int16_t *pcm_data;
+        celt_int16_t *pcm_data = new celt_int16_t[480];
         int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
 
         int sample_rate = SAMPLE_RATE_; // test
         int sample_width = 16; // test
         int channel_count = 1; // test
-        bool stereo = true; // test
+        bool stereo = false; // test
         int spatial_audio_playback_ = true; // test
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
@@ -160,7 +161,7 @@ namespace MumbleVoip
             sound_buffer.sixteenbit_ = true;
         else
             sound_buffer.sixteenbit_ = false;
-        sound_buffer.size_ = size;
+        sound_buffer.size_ = SAMPLE_RATE_ / 100 * 2;
         sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
