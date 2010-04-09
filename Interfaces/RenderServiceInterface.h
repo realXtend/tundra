@@ -10,6 +10,9 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 
+#include <qrect.h>
+#include <QVariant>
+
 namespace Scene
 {
     class Entity;
@@ -59,11 +62,11 @@ namespace Foundation
         virtual RaycastResult Raycast(int x, int y) = 0;
 
         //! Do a frustrum query to the world from viewport coordinates.
-        //NOTE: to be changed to be a slot when Renderer(Interface?) is made a QObject
-        //the param passed is already a QRect on the py side.
-        //this is for a temp quick test now 'cause was easy to copy-paste from raycast,
-        //the moc stuff etc. to be done next, and then change the param to QRect.
-        virtual RaycastResult FrustrumQuery(int left, int top, int right, int bottom) = 0;
+        /*! Returns the found entities as a QVariantList so that
+            Python and Javascript can get the result directly from here.
+            \param viewrect The query rectangle in 2d window coords.
+        */
+        virtual QVariantList FrustrumQuery(QRect viewrect) = 0;
 
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
