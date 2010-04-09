@@ -93,7 +93,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
 #include <QGraphicsView>
-#include <qrect.h>
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
