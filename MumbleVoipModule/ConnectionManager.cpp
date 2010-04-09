@@ -2,16 +2,14 @@
 #include "ConnectionManager.h"
 #include "MumbleVoipModule.h"
 #include "SoundServiceInterface.h"
-
-//#include "celt.h"
-//#include <mumbleclient/client.h>
+#include <QDesktopServices>
 
 #define BUILDING_DLL
+#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL
-
-#include <QDesktopServices>
 #include "Connection.h"
+#include <libcelt/celt.h>
 
 namespace MumbleVoip
 {
@@ -28,8 +26,15 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
 
-    ConnectionManager::ConnectionManager(Foundation::Framework* framework) : mumble_lib(0), framework_(framework)
+    ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
+        mumble_lib(0),
+        framework_(framework),
+        audio_playback_channel_(0),
+        celt_mode_(0),
+        celt_encoder_(0),
+        celt_decoder_(0)
     {
+        InitializeCELT();
         StartMumbleLibrary();
     }
 
@@ -37,6 +42,25 @@ namespace MumbleVoip
     {
         StopMumbleLibrary();
     }
+
+    void ConnectionManager::InitializeCELT()
+    {
+        int error = 0;
+        int channels = 1;
+        int framesize = SAMPLE_RATE_ / 100;
+        celt_mode_ = celt_mode_create(SAMPLE_RATE_, channels, framesize, &error );
+        celt_encoder_ = celt_encoder_create(celt_mode_);
+        celt_decoder_ = celt_decoder_create(celt_mode_);
+        MumbleVoipModule::LogDebug("CELT initialized.");
+    }
+
+    void ConnectionManager::UninitializeCELT()
+    {
+        celt_decoder_destroy(celt_decoder_);
+        celt_encoder_destroy(celt_encoder_);
+        MumbleVoipModule::LogDebug("CELT uninitialized.");
+    }
+
 
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
@@ -77,11 +101,10 @@ namespace MumbleVoip
     //static
     void ConnectionManager::KillMumbleClient()
     {
-        // todo: IMPLEMENT
-
+        // Evil hack to ensure that voip connection is not remaining open when using native mumble client
         QProcess kill_mumble;
         MumbleVoipModule::LogDebug("Try to kill mumble.exe process.");
-        kill_mumble.start("taskkill /F /FI \"IMAGENAME eq mumble.exe");
+        kill_mumble.start("taskkill /F /FI \"IMAGENAME eq mumble.exe"); // Works only for Windows
     }
 
     void ConnectionManager::StartMumbleLibrary()
@@ -93,7 +116,6 @@ namespace MumbleVoip
         }
                 
         lib_thread_.start();
-        //mumble_lib->Run();
     }
 
     void ConnectionManager::StopMumbleLibrary()
@@ -106,6 +128,7 @@ namespace MumbleVoip
 
         mumble_lib->Shutdown();
         lib_thread_.wait();
+        MumbleVoipModule::LogDebug("Mumble library uninitialized.");
     }
 
 
@@ -120,14 +143,18 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-        int sample_rate = 16000; // test
-        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = data;
-        sound_buffer.frequency_ = sample_rate;
+        celt_int16_t *pcm_data;
+        int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
+
+        int sample_rate = SAMPLE_RATE_; // test
         int sample_width = 16; // test
-        int channel_count = 2; // test
+        int channel_count = 1; // test
         bool stereo = true; // test
         int spatial_audio_playback_ = true; // test
+
+        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        sound_buffer.data_ = pcm_data;
+        sound_buffer.frequency_ = sample_rate;
 
         if (sample_width == 16)
             sound_buffer.sixteenbit_ = true;
@@ -137,6 +164,7 @@ namespace MumbleVoip
         sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
+
             //if (spatial_audio_playback_)
             //    audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_position_, audio_playback_channel_);
             //else

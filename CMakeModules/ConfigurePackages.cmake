@@ -353,7 +353,7 @@ macro (configure_vorbis)
         NAMES vorbisfile vorbis libvorbis
         COMPONENTS vorbis libvorbis libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
-        
+
         # Force include dir on MSVC
         if (MSVC)
   		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
@@ -382,12 +382,6 @@ macro (configure_openssl)
 endmacro (configure_openssl)
 
 macro (configure_protobuf)
-    # hint for sagase where to look protobuf files on Windows
-    if (MSVC)
-        set(PROTOBUF_INCLUDE_DIR ${ENV_NAALI_DEP_PATH}/protobuf/include) 
-		set(PROTOBUF_LIBRARY ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobuf.lib)
-#		set(PROTOBUF_DEBUG_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobufd.lib)
-    endif ()   
 	message(PROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR})
 	message(PROTOBUF_LIBRARY=${PROTOBUF_LIBRARY})
     sagase_configure_package(PROTOBUF
@@ -397,9 +391,15 @@ macro (configure_protobuf)
     # Force include dir and libraries on MSVC
     if (MSVC)
   	    set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
-		set(PROTOBUF_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobuf.lib)
-	    set(PROTOBUF_DEBUG_LIBRARIES ${ENV_NAALI_DEP_PATH}/protobuf/lib/libprotobufd.lib)
     endif ()
     sagase_configure_report (PROTOBUF)
 	
 endmacro (configure_protobuf)
+
+macro (configure_celt)
+    sagase_configure_package(CELT
+        NAMES libcelt
+        COMPONENTS libcelt celt # for celt.h
+        PREFIXES ${ENV_NAALI_DEP_PATH}/celt)
+    sagase_configure_report (CELT)
+endmacro (configure_celt)
