@@ -20,6 +20,10 @@ namespace MumbleClient
     class MumbleClientLib;
 }
 
+class CELTMode;
+class CELTEncoder;
+class CELTDecoder;
+
 namespace MumbleVoip
 {
     class ServerInfo;
@@ -74,12 +78,21 @@ namespace MumbleVoip
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
+        void InitializeCELT();
+        void UninitializeCELT();
+        void EncodeToCELT();
+        void DecodeFromCELT();
 
         QMap<QString, Connection*> connections_; // maps: server address - connection object
         MumbleClient::MumbleClientLib* mumble_lib; // @todo: Do we need this pointer?
         LibThread lib_thread_;
         Foundation::Framework* framework_;
         sound_id_t audio_playback_channel_;
+        CELTMode *celt_mode_;
+        CELTEncoder *celt_encoder_;
+        CELTDecoder *celt_decoder_;
+        static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
+
     public slots:
         void OnAudioData(char* data, int size);
     };
