@@ -487,9 +487,15 @@ class ObjectEdit(Component):
             if self.left_button_down:
                 if self.selection_rect_startpos is not None:# and self.active is None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
-                    #print rectwidth, rectheight
                     self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
                     self.selection_rect.show() #XXX change?
+                    
+                    #r.logInfo("The selection rect was at: (" +str(rectx) + ", " +str(recty) + ") and size was: (" +str(rectwidth) +", "+str(rectheight)+")")
+                    rect = self.selection_rect.rect #0,0 - x, y
+                    rect.translate(mouseinfo.x, mouseinfo.y)
+                    #print rect.left(), rect.top(), rect.right(), rect.bottom()
+                    hits = r.frustrumSceneQuery(rect)
+
                 else:
                     if self.duplicateDragStart:
                         for ent in self.sels:
