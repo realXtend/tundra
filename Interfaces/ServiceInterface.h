@@ -4,6 +4,7 @@
 #define incl_Interfaces_ServiceInterface_h
 
 #include "CoreModuleApi.h"
+#include "boost/shared_ptr.hpp"
 
 namespace Foundation
 {

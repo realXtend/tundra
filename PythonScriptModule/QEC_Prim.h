@@ -30,8 +30,16 @@ namespace PythonScript
 			QVariant getUUID() {return uuid;}
 			void setUUID(QVariant nuuuid) {   uuid = nuuuid; }
 
-        public slots:
+                public slots:
 			QString about() { return "swoot";}
+                        QVariantList list() 
+                        { 
+                            QVariantList l;
+                            l << 1;
+                            l << 2;
+                            l << 3;
+                            return l;
+                        }      
 
 		private:
 			std::string name;
