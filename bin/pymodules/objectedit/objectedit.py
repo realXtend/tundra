@@ -494,8 +494,9 @@ class ObjectEdit(Component):
                     rect = self.selection_rect.rect #0,0 - x, y
                     rect.translate(mouseinfo.x, mouseinfo.y)
                     #print rect.left(), rect.top(), rect.right(), rect.bottom()
-                    #hits = naali.frustrumQuery(rect) #the wish
-                    hits = r.frustrumQuery(rect.left(), rect.top(), rect.right(), rect.bottom()) #current workaround
+                    rend = r.getQRenderer()
+                    hits = rend.QFrustrumQuery(rect) #the wish
+                    #hits = r.frustrumQuery(rect.left(), rect.top(), rect.right(), rect.bottom()) #current workaround
                     print hits
 
                 else:
