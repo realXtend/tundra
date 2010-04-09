@@ -235,7 +235,7 @@ namespace ECEditor
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
                     
-                    Scene::Events::SceneEventData event_data(id);
+                    Scene::Events::SceneEventData event_data(entity->GetId());
                     Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
                     event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
                 }
@@ -369,7 +369,7 @@ namespace ECEditor
             {
                 QDomElement entity_elem = temp_doc.createElement("entity");
                 QString id_str;
-                id_str.setNum(selection[i].entity_->GetId());
+                id_str.setNum((int)selection[i].entity_->GetId());
                 entity_elem.setAttribute("id", id_str);
                 for (uint j = 0; j < selection[i].components_.size(); ++j)
                 {
@@ -386,7 +386,7 @@ namespace ECEditor
             temp_doc.appendChild(entity_elem);
             
             QString id_str;
-            id_str.setNum(selection[0].entity_->GetId());
+            id_str.setNum((int)selection[0].entity_->GetId());
             entity_elem.setAttribute("id", id_str);
             for (uint j = 0; j < selection[0].components_.size(); ++j)
             {

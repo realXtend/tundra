@@ -54,13 +54,13 @@ use_package (XMLRPC)
 
 use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule
     RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
-    EnvironmentModule EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone)
+    EnvironmentModule EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule
     RexCommon UiModule HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
-    EnvironmentModule EC_Highlight EC_HoveringText EC_Clone)
+    EnvironmentModule EC_Highlight EC_HoveringText EC_Clone EC_Light)
 
 link_package (OGRE)
 link_package (BOOST)

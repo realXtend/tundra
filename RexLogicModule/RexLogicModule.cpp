@@ -34,6 +34,7 @@
 #include "EC_Highlight.h"
 #include "EC_HoveringText.h"
 #include "EC_Clone.h"
+#include "EC_Light.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -108,6 +109,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
     DECLARE_MODULE_EC(EC_Clone);
+    DECLARE_MODULE_EC(EC_Light);
 }
 
 // virtual
