@@ -811,6 +811,14 @@ namespace OgreRenderer
         return result;
     }
 
+    Foundation::RaycastResult Renderer::FrustrumQuery(int left, int top, int right, int bottom)
+    {
+        Foundation::RaycastResult result;
+        result.entity_ = 0; 
+        if (!initialized_)
+            return result;
+    }
+
     std::string Renderer::GetUniqueObjectName()
     {
         return "obj" + ToString<uint>(object_id_++);

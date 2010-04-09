@@ -93,6 +93,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
 #include <QGraphicsView>
+#include <qrect.h>
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
@@ -672,12 +673,12 @@ static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-//returns the entity at the position (x, y), if nothing there, returns False    
+//returns the entity(id) at the position (x, y), if nothing there, returns None
 static PyObject* RayCast(PyObject *self, PyObject *args)
 {
-    float x, y;
+    uint x, y;
     
-    if(!PyArg_ParseTuple(args, "ff", &x, &y)){
+    if(!PyArg_ParseTuple(args, "II", &x, &y)){
         PyErr_SetString(PyExc_ValueError, "Raycasting failed due to ValueError, needs (x, y) values.");
         return NULL;   
     }
@@ -703,6 +704,43 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         Py_RETURN_NONE;
     */
 }
+
+//returns the entity(id) at the position (x, y), if nothing there, returns None
+//NOTE: to be changed to be a slot when Renderer is made a QObject
+//the param passed is already a QRect on the py side.
+//this is for a temp quick test now 'cause was easy to copy-paste from raycast,
+//the moc stuff etc. to be done next so should get to remove this.
+static PyObject* FrustrumQuery(PyObject *self, PyObject *args)
+{
+    uint left, top, bottom, right;
+    
+    if(!PyArg_ParseTuple(args, "IIII", &left, &top, &bottom, &right)) {
+        PyErr_SetString(PyExc_ValueError, "Frustrum query failed due to wrong paramaters, expects: left, top, right, bottom.");
+        return NULL;   
+    }
+
+    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
+    boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+    //Scene::Entity *entity = render->Raycast(x, y).entity_;
+    Foundation::RaycastResult result = render->FrustrumQuery(left, top, bottom, right);
+
+    if (result.entity_){
+        return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+    }
+    else
+        Py_RETURN_NONE;
+    /*
+    if (result)
+    {
+        //Scene::Events::SceneEventData event_data(entity->GetId());
+        //framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
+        return entity_create(entity->GetId());
+    }
+    else 
+        Py_RETURN_NONE;
+    */
+}
+
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
     const char* filePath;
@@ -1790,6 +1828,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"rayCast", (PyCFunction)RayCast, METH_VARARGS,
     "RayCasting from camera to point (x,y)."},
+
+    {"frustrumQuery", (PyCFunction)FrustrumQuery, METH_VARARGS,
+    "Frustrum query to the world from camera view using rect (left, top, right, bottom)."},
 
     {"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
     "Switching the camera mode from free to thirdperson and back again."},
