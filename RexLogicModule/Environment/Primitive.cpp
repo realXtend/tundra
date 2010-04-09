@@ -552,7 +552,9 @@ void Primitive::HandleECsModified(entity_id_t entityid)
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
         return;
-
+    
+    const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
+    
     // Get/create freedata component
     Foundation::ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
     if (!freeptr)
@@ -560,16 +562,17 @@ void Primitive::HandleECsModified(entity_id_t entityid)
     EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
     
     QDomDocument temp_doc;
-    
     QDomElement entity_elem = temp_doc.createElement("entity");
     
     QString id_str;
     id_str.setNum(entity->GetId());
     entity_elem.setAttribute("id", id_str);
     
-    const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
     for (uint i = 0; i < components.size(); ++i)
-        components[i]->SerializeTo(temp_doc, entity_elem);
+    {
+        if (components[i]->IsSerializable())
+            components[i]->SerializeTo(temp_doc, entity_elem);
+    }
     temp_doc.appendChild(entity_elem);
     
     free.FreeData = temp_doc.toString().toStdString();
@@ -724,25 +727,52 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
         return;
     EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
     free.FreeData = freedata;
-    // Parse into XML form (may or may not succeed)
+    
+    // Parse into XML form (may or may not succeed), and create/update EC's as result
+    // (primitive form of EC serialization/replication)
     QDomDocument temp_doc;
     if (temp_doc.setContent(QString::fromStdString(freedata)))
+        DeserializeECsFromFreeData(entity, temp_doc);
+}
+
+void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
+{
+    StringVector type_names;
+    QDomElement entity_elem = doc.firstChildElement("entity");
+    if (!entity_elem.isNull())
     {
-        // Create entity components from XML form as applicable
-        QDomElement entity_elem = temp_doc.firstChildElement("entity");
-        if (!entity_elem.isNull())
+        QDomElement comp_elem = entity_elem.firstChildElement("component");
+        while (!comp_elem.isNull())
         {
-            QDomElement comp_elem = entity_elem.firstChildElement("component");
-            while (!comp_elem.isNull())
+            std::string type_name = comp_elem.attribute("type").toStdString();
+            type_names.push_back(type_name);
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
+            if (new_comp)
+                new_comp->DeserializeFrom(comp_elem);
+            else
+                RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
+    }
+    
+    // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
+    // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
+    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    for (uint i = 0; i < all_components.size(); ++i)
+    {
+        if (all_components[i]->IsSerializable())
+        {
+            bool found = false;
+            for (uint j = 0; j < type_names.size(); ++j)
             {
-                std::string type_name = comp_elem.attribute("type").toStdString();
-                Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
-                if (new_comp)
-                    new_comp->DeserializeFrom(comp_elem);
-                else
-                    RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
-                comp_elem = comp_elem.nextSiblingElement("component");
+                if (type_names[j] == all_components[i]->TypeName())
+                {
+                    found = true;
+                    break;
+                }
             }
+            if (!found)
+                entity->RemoveComponent(all_components[i]);
         }
     }
 }

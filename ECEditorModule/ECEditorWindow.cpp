@@ -152,6 +152,10 @@ namespace ECEditor
         {
             for (uint j = 0; j < components.size(); ++j)
                 entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]));
+            
+            Scene::Events::SceneEventData event_data(entities[i]->GetId());
+            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
         }
         
         RefreshEntityComponents();
@@ -170,6 +174,10 @@ namespace ECEditor
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
             entities[i]->GetOrCreateComponent(name);
+            
+            Scene::Events::SceneEventData event_data(entities[i]->GetId());
+            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
         }
         
         RefreshEntityComponents();
@@ -197,6 +205,8 @@ namespace ECEditor
         if (edited_doc.setContent(text))
         {
             Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            if (!scene)
+                return;
             bool entity_found = false;
             
             // Check if multi-entity or single-entity
@@ -312,7 +322,6 @@ namespace ECEditor
         }
         
         // Now delete components that should not be in the component list
-        // This code is kind of ugly...
         // Note: the whole reason for going to this trouble (instead of just nuking and refilling the list)
         // is to retain the user's selection, if several entities share a set of components, as often is the case
         for (int i = component_list_->count() - 1; i >= 0; --i)
@@ -363,7 +372,10 @@ namespace ECEditor
                 id_str.setNum(selection[i].entity_->GetId());
                 entity_elem.setAttribute("id", id_str);
                 for (uint j = 0; j < selection[i].components_.size(); ++j)
-                    selection[i].components_[j]->SerializeTo(temp_doc, entity_elem);
+                {
+                    if (selection[i].components_[j]->IsSerializable())
+                        selection[i].components_[j]->SerializeTo(temp_doc, entity_elem);
+                }
                 entities_elem.appendChild(entity_elem);
             }
         }
@@ -377,7 +389,10 @@ namespace ECEditor
             id_str.setNum(selection[0].entity_->GetId());
             entity_elem.setAttribute("id", id_str);
             for (uint j = 0; j < selection[0].components_.size(); ++j)
-                selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
+            {
+                if (selection[0].components_[j]->IsSerializable())
+                    selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
+            }
             temp_doc.appendChild(entity_elem);
         }
         
@@ -392,6 +407,8 @@ namespace ECEditor
             return ret;
         
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+            return ret;
         
         for (uint i = 0; i < entity_list_->count(); ++i)
         {

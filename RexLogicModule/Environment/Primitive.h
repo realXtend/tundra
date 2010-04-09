@@ -9,6 +9,7 @@
 #include "Color.h"
 
 class QColor;
+class QDomDocument;
 
 namespace RexLogic
 {
@@ -51,6 +52,8 @@ namespace RexLogic
 
         // Encode serializable EC's into XML format, put to RexFreeData, and send to server
         void HandleECsModified(entity_id_t entityid);
+        // Deserialize EC's sent by server
+        void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc);
         
     private:
         //! The owning module.
