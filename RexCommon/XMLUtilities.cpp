@@ -51,6 +51,39 @@ namespace RexTypes
         return vec;
     }
     
+    Color ParseColor(const std::string& text)
+    {
+        Color color(0.0f, 0.0f, 0.0f);
+        
+        StringVector components = SplitString(text, ' ');
+        if (components.size() == 3)
+        {
+            try
+            {
+                color.r = ParseString<Real>(components[0]);
+                color.g = ParseString<Real>(components[1]);
+                color.b = ParseString<Real>(components[2]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        if (components.size() == 4)
+        {
+            try
+            {
+                color.r = ParseString<Real>(components[0]);
+                color.g = ParseString<Real>(components[1]);
+                color.b = ParseString<Real>(components[2]);
+                color.a = ParseString<Real>(components[3]);
+            }
+            catch (boost::bad_lexical_cast)
+            {
+            }
+        }
+        return color;
+    }
+    
     Quaternion ParseQuaternion(const std::string& text)
     {
         Quaternion quat;
@@ -120,6 +153,16 @@ namespace RexTypes
             return "false";
     }
     
+    std::string WriteReal(Real value)
+    {
+        return ToString<Real>(value);
+    }
+    
+    std::string WriteInt(int value)
+    {
+        return ToString<int>(value);
+    }
+    
     std::string WriteVector3(const Vector3df& vector)
     {
         return ToString<Real>(vector.x) + " " +
@@ -133,6 +176,14 @@ namespace RexTypes
             ToString<Real>(quat.x) + " " +
             ToString<Real>(quat.y) + " " +
             ToString<Real>(quat.z);
+    }
+    
+    std::string WriteColor(const Color& color)
+    {
+        return ToString<Real>(color.r) + " " +
+            ToString<Real>(color.g) + " " +
+            ToString<Real>(color.b) + " " +
+            ToString<Real>(color.a);
     }
     
     std::string WriteEulerAngles(const Quaternion& quat)

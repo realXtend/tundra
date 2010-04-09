@@ -894,7 +894,7 @@ namespace RexLogic
     
     bool AvatarAppearance::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (!event_id == Resource::Events::RESOURCE_READY)
+        if (event_id != Resource::Events::RESOURCE_READY)
             return false;
 
         Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);

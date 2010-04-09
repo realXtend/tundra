@@ -293,7 +293,7 @@ macro (sagase_configure_report PREFIX)
     endif ()
 	
     if (${PREFIX}_LIBRARY_DIRS)
-        message (STATUS "-- Libarary Directories:")
+        message (STATUS "-- Library Directories:")
         foreach (library_dir ${${PREFIX}_LIBRARY_DIRS})
             message (STATUS "       " ${library_dir})
         endforeach()

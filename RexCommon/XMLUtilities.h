@@ -10,12 +10,16 @@ namespace RexTypes
 {
     Real ParseReal(const std::string& text, Real default_value = 0.0f);
     int ParseInt(const std::string& text, int default_value = 0);
+    Color ParseColor(const std::string& text);
     Vector3df ParseVector3(const std::string& text);
     Quaternion ParseQuaternion(const std::string& text);
     Quaternion ParseEulerAngles(const std::string& text);
     
     std::string WriteBool(bool value);
+    std::string WriteReal(Real value);
+    std::string WriteInt(int value);
     std::string WriteVector3(const Vector3df& vector);
+    std::string WriteColor(const Color& color);
     std::string WriteQuaternion(const Quaternion& quat);
     std::string WriteEulerAngles(const Quaternion& quat);
 
