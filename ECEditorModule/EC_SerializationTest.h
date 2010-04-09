@@ -20,6 +20,7 @@ namespace ECEditor
     public:
         virtual ~EC_SerializationTest();
 
+        virtual bool IsSerializable() const { return true; }
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
         virtual void DeserializeFrom(QDomElement& element);
         

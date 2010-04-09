@@ -42,7 +42,11 @@ namespace Foundation
         void SetParentEntity(Scene::Entity* entity);
         Scene::Entity* GetParentEntity() const;
         
+        //! Return true for components that support XML serialization
+        virtual bool IsSerializable() const { return false; }
+        //! Serialize to XML
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const {};
+        //! Deserialize from XML
         virtual void DeserializeFrom(QDomElement& element) {};
         
     private:
