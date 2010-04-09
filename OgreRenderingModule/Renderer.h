@@ -3,6 +3,12 @@
 #ifndef incl_OgreRenderer_Renderer_h
 #define incl_OgreRenderer_Renderer_h
 
+//to make this a QObject
+#include <QObject>
+#include <boost/shared_ptr.hpp>
+#include "CoreTypes.h"
+
+//what was here before QObjectification
 #include "RenderServiceInterface.h"
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
@@ -44,8 +50,10 @@ namespace OgreRenderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
     */
-    class OGRE_MODULE_API Renderer : public Foundation::RenderServiceInterface
+    class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
     {
+        Q_OBJECT
+
     public:
         //! Constructor
         //! \param framework Framework pointer.

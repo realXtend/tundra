@@ -801,14 +801,25 @@ if 0:
     line = QLineEdit()
     box.addWidget(line)
 
-if 0:
-    r.randomTest()
+if 0: #a c++ side test func for api dev
+    ret = r.randomTest()
+    print ret
+    print ret.map, ret.about(), ret.uuid, ret.list()
+    l = ret.list()
+    print dir(l)
+    print l.count(2)
+    for i in l:
+        print i
     #print qm, dir(qm)
     #~ print r.c.widget, r.c.proxywidget
     #~ pe = r.getPropertyEditor()
     #~ #print pe, pe.setObject, pe.show
     #~ pe.setObject(r.c.proxywidget)
     #~ pe.show()
+
+if 1: #QRenderer
+    rend = r.getQRenderer()
+    print rend
 
 if 0:
     worldstream = r.getServerConnection()

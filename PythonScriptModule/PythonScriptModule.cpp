@@ -741,6 +741,20 @@ static PyObject* FrustrumQuery(PyObject *self, PyObject *args)
     */
 }
 
+static PyObject* GetQRenderer(PyObject *self)
+{
+    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (renderer){
+        //std::cout << "Screenshot in PYSM ... " << std::endl;
+        return PythonQt::self()->wrapQObject(renderer.get());
+    }
+    else
+        std::cout << "Failed ..." << std::endl;
+
+    return NULL;
+}
+
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
     const char* filePath;
@@ -1791,13 +1805,15 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
     //QString qstr(uuid.ToString());
     //QVariant(
     prim->setUUID(QString(uuid.ToString().c_str()));
-    QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
+    
+    /*QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
     PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
     pe->setObject(prim);
     pe->show();
+    */
     
-    //return PythonQt::self()->wrapQObject(*map);
-    Py_RETURN_NONE;
+    return PythonQt::self()->wrapQObject(prim);
+    //Py_RETURN_NONE;
 }
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
@@ -1807,6 +1823,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
     "Random test function."},
+
+    {"getQRenderer", (PyCFunction)GetQRenderer, METH_NOARGS,
+     "Gets the Renderer module as a QObject"},
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
