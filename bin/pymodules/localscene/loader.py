@@ -13,7 +13,8 @@ def rotquat(x, y, z):
     rot = Quat()
     rot.setVector(x, y, z)
         
-    xyzsum = 1 - rot.x()**2 - rot.y()**2 - rot.z**2float xyzsum = 1 - X * X - Y * Y - Z * Z;
+    xyzsum = 1 - rot.x()**2 - rot.y()**2 - rot.z()**2
+
     if xyzsum > 0:
         w = math.sqrt(xyzsum)
     else:
@@ -59,8 +60,9 @@ class OgreNode:
             
         #print p.Orientation.toString(), self.orientation
         o = self.orientation
-        o.__imul__(rotquat(1, 0, 0))
-        o.__imul__(rotquat(0, 1, 0))
+        #o.__imul__(rotquat(0, 0, 1))
+        #o.__imul__(rotquat(1, 0, 0))
+        #o.__imul__(rotquat(0, 1, 0))
         p.Orientation = o
 
         p.Scale = Vec(*self.scale)
