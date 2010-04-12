@@ -15,13 +15,16 @@ namespace MumbleClient
 {
     class MumbleClient;
 }
+struct CELTMode;
+struct CELTEncoder;
+struct CELTDecoder;
 
 namespace MumbleVoip
 {
     class PCMAudioFrame
     {
     public:
-        PCMAudioFrame(int channels, int sample_rate, int sample_widh, char* data, int data_size);
+        PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
         virtual ~PCMAudioFrame();
         virtual char* Data();
         virtual int Channels();
@@ -32,9 +35,10 @@ namespace MumbleVoip
         virtual int GetLengthBytes();
 
     private:
+
         int channels_;
         int sample_rate_;
-        int sample_widh_;
+        int sample_width_;
         char* data_;
         int data_size_;
     };
@@ -74,24 +78,36 @@ namespace MumbleVoip
         virtual ~Connection();
         virtual void Close();
         virtual void Join(QString channel);
+        //! return null if no frames in playback queue
+        virtual PCMAudioFrame* GetAudioFrame();
         //virtual QList<QString> ChannelList();
     private:
+        void InitializeCELT();
+        void UninitializeCELT();
+
         MumbleClient::MumbleClient* client_;
         bool authenticated_;
         QString join_request_;
-        QList<PCMAudioFrame> pcm_data_in_;
-        QList<PCMAudioFrame> pcm_data_out_;
+        QList<PCMAudioFrame*> playback_queue_;
+        QList<PCMAudioFrame*> sending_queue_;
+        CELTMode* celt_mode_;
+        CELTEncoder* celt_encoder_;
+        CELTDecoder* celt_decoder_;
+        static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
 
     public slots:
         void OnAuthenticated();
         void OnTextMessage(QString text);
-        void OnRelayTunnel(std::string &s);
+        void OnRawUdpTunnel(char* data, int size);
+//        void OnRelayTunnel(std::string &s);
         void OnPlayAudioData(char* data, int size);
 
     signals:
 //        void Closed();
         void TextMessage(QString &text);
+        void AudioDataAvailable(short* data, int size);
         void RelayTunnelData(char*, int);
+        void AudioFramesAvailable(Connection* connection);
 //        void UserLeft();
 //        void UsetJoined();
 //        void ChannelAdded(); 

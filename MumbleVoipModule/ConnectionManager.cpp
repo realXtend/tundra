@@ -9,12 +9,10 @@
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL
 #include "Connection.h"
-#include <libcelt/celt.h>
 
 namespace MumbleVoip
 {
-
-    void LibThread::run()
+    void LibMumbleMainloopThread::run()
     {
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
@@ -22,19 +20,22 @@ namespace MumbleVoip
             return;
         }
         MumbleVoipModule::LogDebug("Mumble library mainloop started");
-        mumble_lib->Run();
+        try
+        {
+            mumble_lib->Run();
+        }
+        catch(...)
+        {
+            MumbleVoipModule::LogError("Mumble library mainloop stopped by exception.");
+        }
         MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
 
     ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
         mumble_lib(0),
         framework_(framework),
-        audio_playback_channel_(0),
-        celt_mode_(0),
-        celt_encoder_(0),
-        celt_decoder_(0)
+        audio_playback_channel_(0)
     {
-        InitializeCELT();
         StartMumbleLibrary();
     }
 
@@ -43,32 +44,14 @@ namespace MumbleVoip
         StopMumbleLibrary();
     }
 
-    void ConnectionManager::InitializeCELT()
-    {
-        int error = 0;
-        int channels = 1;
-        int framesize = SAMPLE_RATE_ / 100;
-        celt_mode_ = celt_mode_create(SAMPLE_RATE_, channels, framesize, &error );
-        celt_encoder_ = celt_encoder_create(celt_mode_);
-        celt_decoder_ = celt_decoder_create(celt_mode_);
-        MumbleVoipModule::LogDebug("CELT initialized.");
-    }
-
-    void ConnectionManager::UninitializeCELT()
-    {
-        celt_decoder_destroy(celt_decoder_);
-        celt_encoder_destroy(celt_encoder_);
-        celt_mode_destroy(celt_mode_);
-        MumbleVoipModule::LogDebug("CELT uninitialized.");
-    }
-
 
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
         Connection* connection = new Connection(info);
         connections_[info.server] = connection;
         connection->Join(info.channel);
-        QObject::connect( connection, SIGNAL(RelayTunnelData(char*, int)), this, SLOT(OnAudioData(char*, int)) );
+        QObject::connect( connection, SIGNAL(AudioDataAvailable(short*, int)), this, SLOT(OnAudioDataFromConnection(short*, int)) );
+        QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
     }
 
@@ -133,7 +116,19 @@ namespace MumbleVoip
     }
 
 
-    void ConnectionManager::OnAudioData(char* data, int size)
+    void ConnectionManager::OnAudioFramesAvailable(Connection* connection)
+    {
+        for(;;)
+        {
+            PCMAudioFrame* frame = connection->GetAudioFrame();
+            if (!frame)
+                break;
+            PlaybackAudioFrame(frame);
+        }
+    }
+#include <QFile>
+
+    void ConnectionManager::PlaybackAudioFrame(PCMAudioFrame* frame)
     {
         if (!framework_)
             return;
@@ -144,24 +139,54 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-        celt_int16_t *pcm_data = new celt_int16_t[480];
-        int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
+        QFile f("audio_out.raw");
+        f.open(QIODevice::WriteOnly | QIODevice::Append);
+        f.write(frame->Data(), frame->GetLengthBytes());
+        f.close();
 
-        int sample_rate = SAMPLE_RATE_; // test
+        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        sound_buffer.data_ = frame->Data();
+        sound_buffer.frequency_ = frame->SampleRate();
+
+        if (frame->SampleWidth() == 16)
+            sound_buffer.sixteenbit_ = true;
+        else
+            sound_buffer.sixteenbit_ = false;
+        sound_buffer.size_ = frame->GetLengthBytes();
+        sound_buffer.stereo_ = false;
+
+        audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
+
+        delete frame;
+    }
+
+    void ConnectionManager::OnAudioDataFromConnection(short* data, int size)
+    {
+        if (!framework_)
+            return;
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        if (!service_manager.get())
+            return;
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            return;     
+
+
+        int sample_rate = 48000; // test
         int sample_width = 16; // test
         int channel_count = 1; // test
         bool stereo = false; // test
         int spatial_audio_playback_ = true; // test
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = pcm_data;
+        sound_buffer.data_ = data;
         sound_buffer.frequency_ = sample_rate;
 
         if (sample_width == 16)
             sound_buffer.sixteenbit_ = true;
         else
             sound_buffer.sixteenbit_ = false;
-        sound_buffer.size_ = SAMPLE_RATE_ / 100 * 2;
+        sound_buffer.size_ = 48000 / 100 * 2;
         sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
@@ -171,6 +196,7 @@ namespace MumbleVoip
             //else
                 audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
         }
+        delete [] data;
 
     }
 } // end of namespace: MumbleVoip
