@@ -192,6 +192,12 @@ namespace OpenALAudio
             \return Amount of bytes returned
          */
         virtual uint GetRecordedSoundData(void* buffer, uint size);
+
+        //! Request decoded sound resource. Note: this is strictly for inspecting the sound data, not needed for playback
+        /*! \param assetid sound asset id. Assumed to be ogg format
+            \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
+         */ 
+        virtual request_tag_t RequestSoundResource(const std::string& assetid);
         
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(f64 frametime);
@@ -249,6 +255,9 @@ namespace OpenALAudio
         f64 update_time_;
         //! Next channel id
         sound_id_t next_channel_id_;
+        
+        //! Request tag map for sound resource requests
+        std::map<request_tag_t, std::string> sound_resource_requests_;
         
         //! Listener position
         Vector3df listener_position_;
