@@ -66,7 +66,7 @@ namespace Foundation
             Python and Javascript can get the result directly from here.
             \param viewrect The query rectangle in 2d window coords.
         */
-        virtual QVariantList FrustrumQuery(QRect viewrect) = 0;
+        virtual QVariantList FrustumQuery(QRect viewrect) = 0;
 
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
