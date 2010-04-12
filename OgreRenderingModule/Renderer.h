@@ -7,7 +7,7 @@
 #include <QObject>
 #include <boost/shared_ptr.hpp>
 #include "CoreTypes.h"
-#include <qrect.h> //for frustrum scene query
+#include <qrect.h> //for frustum scene query
 #include <QVariant>
 
 //what was here before QObjectification
@@ -213,8 +213,8 @@ namespace OgreRenderer
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
     public slots:
-        //! Do a frustrum query to the world from viewport coordinates.
-        QVariantList QFrustumQuery(QRect viewrect);
+        //! Do a frustum query to the world from viewport coordinates.
+        QVariantList FrustumQuery(QRect viewrect);
 
     private:
         //! Initialises Qt

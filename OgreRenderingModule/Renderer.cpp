@@ -820,11 +820,6 @@ namespace OgreRenderer
             return result;
      } */
 
-    QVariantList Renderer::QFrustumQuery(QRect viewrect)
-    {
-        return FrustumQuery(viewrect);
-    }
-    
     //qt wrapper / upcoming replacement for the one above
     QVariantList Renderer::FrustumQuery(QRect viewrect)
     {
