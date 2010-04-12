@@ -235,7 +235,7 @@ namespace Foundation
         
         virtual ~SoundResource()
         {
-            delete[] buffer_.data_;
+            delete[] ((unsigned char*)buffer_.data_);
             buffer_.data_ = 0;
         }
         
