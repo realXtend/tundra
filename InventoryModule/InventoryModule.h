@@ -1,13 +1,10 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryModule.h
  *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
  *          Implement data model -spesific event handling etc. here, not in InventoryWindow
  *          or InventoryItemModel classes.
- *
- *          It's not recommended to get any pointers to InventoryModule from other modules
- *          because InventoryModule is designed to be an optional module.
  */
 
 #ifndef incl_InventoryModule_h
@@ -15,25 +12,19 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "WorldStream.h"
 
 #include <QObject>
 #include <QMap>
+
+namespace ProtocolUtilities
+{
+    class WorldStream;
+}
 
 namespace Foundation
 {
     class EventDataInterface;
 }
-
-namespace ProtocolUtilities
-{
-    class ProtocolModuleInterface;
-    typedef boost::weak_ptr<ProtocolModuleInterface> ProtocolWeakPtr;
-}
-
-QT_BEGIN_NAMESPACE
-class QWidget;
-QT_END_NAMESPACE
 
 namespace Inventory
 {
@@ -42,6 +33,7 @@ namespace Inventory
     class ItemPropertiesWindow;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
+    class InventoryService;
 
     class InventoryModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
@@ -67,11 +59,7 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(
-            event_category_id_t category_id,
-            event_id_t event_id,
-            Foundation::EventDataInterface* data);
-
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
@@ -81,7 +69,7 @@ namespace Inventory
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
 
         /// Subscribes this module to listen network events.
-        void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
+        void SubscribeToNetworkEvents();
 
         /// Console command for uploading an asset, non-threaded.
         Console::CommandResult UploadAsset(const StringVector &params);
@@ -89,12 +77,20 @@ namespace Inventory
         /// Console command for uploading multiple assets, threaded.
         Console::CommandResult UploadMultipleAssets(const StringVector &params);
 
+#ifdef _DEBUG
+        /// Console command for testing the inventory service.
+        Console::CommandResult InventoryServiceTest(const StringVector &params);
+#endif
+
         /// Returns the inventory pointer
-        /// @note Meant mostly for modules internal use.
+        /// @note Meant mostly for module's internal use.
         InventoryPtr GetInventoryPtr() const { return inventory_; }
 
         /// Return the type of the inventory data model (e.g. OpenSim or WebDAV).
         InventoryDataModelType GetInventoryDataModelType() const { return inventoryType_; }
+
+        /// Returns pointer to the inventory service.
+        InventoryService *GetInventoryService() const { return service_; }
 
     public slots:
         /// Opens new item properties window.
@@ -153,14 +149,14 @@ namespace Inventory
         /// Resource event category.
         event_category_id_t resourceEventCategory_;
 
-        /// Module GUI widget
+        /// Inventory window.
         InventoryWindow *inventoryWindow_;
 
         /// Upload progress window.
-        UploadProgressWindow *uploadProgressWindow_;
+//        UploadProgressWindow *uploadProgressWindow_;
 
         /// WorldStream pointer
-        ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;
+        boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream_ ;
 
         /// Inventory data model.
         InventoryPtr inventory_;
@@ -170,6 +166,9 @@ namespace Inventory
 
         /// List of item properties widgets.
         QMap<QString, ItemPropertiesWindow *> itemPropertiesWindows_;
+
+        /// Inventory service pointer.
+        InventoryService *service_;
     };
 }
 

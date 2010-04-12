@@ -102,7 +102,7 @@ AbstractInventoryItem *WebDavInventoryDataModel::GetOrCreateNewFolder(const QStr
             QString newPath = ValidateFolderPath(parent->GetID());
             QString folderName = name;
             QString deepCopy = "False";
-            if (currentFolder->GetChildList().count() > 0)
+            if (currentFolder->HasChildren())
                 deepCopy = "True";
             QStringList result = webdavclient_.call("moveResource", QVariantList() << currentPath << newPath << folderName).toStringList();
             if (result.count() >= 1)
@@ -143,7 +143,7 @@ bool WebDavInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem *
         return false;
 
     // Delete children
-    selected->GetChildList().clear();
+    selected->GetChildren().clear();
 
     QString itemPath = selected->GetID();
     QStringList children = webdavclient_.call("listResources", QVariantList() << itemPath).toStringList();

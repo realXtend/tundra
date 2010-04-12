@@ -1,44 +1,45 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryModule.cpp
  *  @brief  Inventory module. Inventory module is the owner of the inventory data model.
  *          Implement data model -specific event handling etc. here, not in InventoryWindow
  *          or InventoryItemModel classes.
- *
- *          It's not recommended to get any pointers to InventoryModule from other modules
- *          because InventoryModule is designed to be an optional module.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "InventoryModule.h"
 #include "InventoryWindow.h"
-#include "UploadProgressWindow.h"
+//#include "UploadProgressWindow.h"
 #include "OpenSimInventoryDataModel.h"
 #include "WebdavInventoryDataModel.h"
 #include "InventoryAsset.h"
 #include "ItemPropertiesWindow.h"
+#include "InventoryService.h"
+
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
+#include "ConsoleCommandServiceInterface.h"
+//#include "QtUtils.h"
 
-#include <NetworkEvents.h>
-#include <RexLogicModule.h>
-#include <Inventory/InventoryEvents.h>
-#include <QtUtils.h>
-#include <AssetEvents.h>
-#include <ConsoleCommandServiceInterface.h>
-#include <ResourceInterface.h>
-#include <RealXtend/RexProtocolMsgIDs.h>
+#include "NetworkEvents.h"
+#include "Inventory/InventoryEvents.h"
+
+#include "AssetServiceInterface.h"
+#include "AssetEvents.h"
+#include "ResourceInterface.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 
-#include <UiModule.h>
+#include "UiModule.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
-#include <AssetServiceInterface.h>
+#include "Inworld/NotificationManager.h"
 
-#include <QObject>
 #include <QStringList>
 #include <QVector>
 #include "MemoryLeakCheck.h"
@@ -55,8 +56,9 @@ InventoryModule::InventoryModule() :
     resourceEventCategory_(0),
     frameworkEventCategory_(0),
     inventoryWindow_(0),
-    uploadProgressWindow_(0),
-    inventoryType_(IDMT_Unknown)
+//    uploadProgressWindow_(0),
+    inventoryType_(IDMT_Unknown),
+    service_(0)
 {
 }
 
@@ -82,6 +84,11 @@ void InventoryModule::Initialize()
 
     RegisterConsoleCommand(Console::CreateCommand("MultiUpload", "Upload multiple assets.",
         Console::Bind(this, &Inventory::InventoryModule::UploadMultipleAssets)));
+
+#ifdef _DEBUG
+    RegisterConsoleCommand(Console::CreateCommand("InvTest", "Inventory service debug/testing command.",
+        Console::Bind(this, &Inventory::InventoryModule::InventoryServiceTest)));
+#endif
 }
 
 void InventoryModule::PostInitialize()
@@ -102,6 +109,7 @@ void InventoryModule::PostInitialize()
 void InventoryModule::Uninitialize()
 {
     SAFE_DELETE(inventoryWindow_);
+//    SAFE_DELETE(uploadProgressWindow_);
     DeleteAllItemPropertiesWindows();
 
     eventManager_.reset();
@@ -109,7 +117,7 @@ void InventoryModule::Uninitialize()
     inventory_.reset();
 }
 
-void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule)
+void InventoryModule::SubscribeToNetworkEvents()
 {
     networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
     if (networkStateEventCategory_ == 0)
@@ -118,17 +126,13 @@ void InventoryModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPt
     networkInEventCategory_ = eventManager_->QueryEventCategory("NetworkIn");
     if (networkInEventCategory_ == 0)
         LogError("Failed to query \"NetworkIn\" event category");
-
 }
 
 void InventoryModule::Update(f64 frametime)
 {
 }
 
-bool InventoryModule::HandleEvent(
-    event_category_id_t category_id,
-    event_id_t event_id,
-    Foundation::EventDataInterface* data)
+bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // NetworkState
     if (category_id == networkStateEventCategory_)
@@ -142,12 +146,26 @@ bool InventoryModule::HandleEvent(
                 return false;
 
             // Create inventory and upload progress windows
-            if (inventoryWindow_)
-                SAFE_DELETE(inventoryWindow_);
-            inventoryWindow_ = new InventoryWindow(this);
+            boost::shared_ptr<UiServices::UiModule> ui_module = 
+                framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            if (ui_module.get())
+            {
+                if (inventoryWindow_)
+                    SAFE_DELETE(inventoryWindow_);
+                inventoryWindow_ = new InventoryWindow(this);
+                connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
+
+                /*proxyWidget_ = */ui_module->GetInworldSceneController()->AddWidgetToScene(
+                    inventoryWindow_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
+
+                connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
+                    SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
+/*
             if (uploadProgressWindow_)
                 SAFE_DELETE(uploadProgressWindow_);
             uploadProgressWindow_ = new UploadProgressWindow(this);
+*/
+            }
 
             switch(auth->type)
             {
@@ -163,8 +181,9 @@ bool InventoryModule::HandleEvent(
                 {
                     // Create WebDAV inventory model.
                     inventoryType_ = IDMT_WebDav;
-                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(STD_TO_QSTR(auth->identityUrl), STD_TO_QSTR(auth->hostUrl)));
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->identityUrl.c_str(), auth->hostUrl.c_str()));
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
+                    service_ = new InventoryService(inventory_.get());
                 }
                 break;
             }
@@ -172,16 +191,14 @@ bool InventoryModule::HandleEvent(
             case ProtocolUtilities::AT_RealXtend:
             {
                 // Create OpenSim inventory model.
-                RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(
-                    Foundation::Module::MT_WorldLogic).lock().get());
-
-                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, rexLogic->GetInventory().get()));
+                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, auth->inventorySkeleton));
 
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
 
                 inventoryType_ = IDMT_OpenSim;
                 inventoryWindow_->InitInventoryTreeModel(inventory_);
+                service_ = new InventoryService(inventory_.get());
                 break;
             }
             case ProtocolUtilities::AT_Unknown:
@@ -190,7 +207,7 @@ bool InventoryModule::HandleEvent(
                 break;
             }
 
-            ConnectSignals();
+//            ConnectSignals();
 
             return false;
         }
@@ -199,7 +216,7 @@ bool InventoryModule::HandleEvent(
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
             boost::shared_ptr<UiServices::UiModule> ui_module =
-                GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
             {
                 if (inventoryWindow_)
@@ -208,13 +225,14 @@ bool InventoryModule::HandleEvent(
                     inventoryWindow_->deleteLater();
                     inventoryWindow_ = 0;
                 }
+/*
                 if (uploadProgressWindow_)
                 {
                     ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(uploadProgressWindow_);
                     uploadProgressWindow_->deleteLater();
                     uploadProgressWindow_ = 0;
                 }
-
+*/
                 DeleteAllItemPropertiesWindows();
             }
         }
@@ -255,7 +273,7 @@ bool InventoryModule::HandleEvent(
         // Upload request from other modules.
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE)
         {
-            InventoryUploadEventData *upload_data = dynamic_cast<InventoryUploadEventData *>(data);
+            InventoryUploadEventData *upload_data = checked_static_cast<InventoryUploadEventData *>(data);
             if (!upload_data)
                 return false;
 
@@ -265,7 +283,7 @@ bool InventoryModule::HandleEvent(
         // Upload request from other modules, using buffers.
         if (event_id == Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER)
         {
-            InventoryUploadBufferEventData *upload_data = dynamic_cast<InventoryUploadBufferEventData *>(data);
+            InventoryUploadBufferEventData *upload_data = checked_static_cast<InventoryUploadBufferEventData *>(data);
             if (!upload_data)
                 return false;
 
@@ -280,15 +298,15 @@ bool InventoryModule::HandleEvent(
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
         {
-            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
+            ProtocolUtilities::NetworkingRegisteredEvent *event_data = checked_static_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
-                SubscribeToNetworkEvents(event_data->currentProtocolModule);
+                SubscribeToNetworkEvents();
             return false;
         }
 
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
             if (event_data)
                 currentWorldStream_ = event_data->WorldStream;
 
@@ -350,7 +368,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
             "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
 
     asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
-    if (asset_type == -1)
+    if (asset_type == RexAT_None)
         return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
             "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
 
@@ -369,13 +387,13 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
     currentWorldStream_->SendAgentPausePacket();
 
-    std::string filename = Foundation::QtUtils::GetOpenFileName(filter, "Open", Foundation::QtUtils::GetCurrentPath());
-    if (filename == "")
+    QString filename = QFileDialog::getOpenFileName(0, filter.c_str(), "Open", QDir::currentPath());
+    if (filename.isEmpty())
         return Console::ResultFailure("No file chosen.");
 
     currentWorldStream_->SendAgentResumePacket();
 
-    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFile(asset_type, filename, name, description, folder_id);
+    static_cast<OpenSimInventoryDataModel *>(inventory_.get())->UploadFile(asset_type, filename.toStdString(), name, description, folder_id);
 
     return Console::ResultSuccess();
 }
@@ -386,14 +404,14 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
         return Console::ResultFailure("Not connected to server.");
 
     if (!inventory_.get())
-        return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
+        return Console::ResultFailure("Inventory doesn't exist. Can't upload!");
 
     if (inventoryType_ != IDMT_OpenSim)
         return Console::ResultFailure("Console upload supported only for classic OpenSim inventory.");
 
     currentWorldStream_->SendAgentPausePacket();
 
-    QStringList filenames = Foundation::QtUtils::GetOpenRexFilenames(Foundation::QtUtils::GetCurrentPath());
+    QStringList filenames = QFileDialog::getOpenFileNames(0, "Open", QDir::currentPath(), RexTypes::rexFileFilters);
     if (filenames.empty())
         return Console::ResultFailure("No files chosen.");
 
@@ -405,10 +423,37 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
     return Console::ResultSuccess();
 }
 
+#ifdef _DEBUG
+Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector &params)
+{
+    if (!currentWorldStream_.get())
+        return Console::ResultFailure("Not connected to server.");
+
+    if (!inventory_.get())
+        return Console::ResultFailure("Inventory doesn't exist.");
+
+    if (!service_)
+        return Console::ResultFailure("Inventory service doesn't exist.");
+
+    asset_type_t asset_type = GetAssetTypeFromTypeName(params[0]);
+    if (asset_type == RexTypes::RexAT_None)
+        return Console::ResultFailure("Invalid asset type. Supported parameters:\n"
+            "Texture\nMesh\nSkeleton\nMaterialScript\nParticleScript\nFlashAnimation");
+
+    ///\todo Proper test interface
+    QList<const InventoryAsset *> assets = service_->GetAssetsByAssetType(RexTypes::RexAT_Texture);
+    QListIterator<const InventoryAsset *> it(assets);
+    while(it.hasNext())
+        std::cout << it.next()->GetName().toStdString() << std::endl;
+
+    return Console::ResultSuccess();
+}
+#endif
+
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return;
 
@@ -438,7 +483,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
         // Get asset service interface and check if the asset is in cache.
         // If it is, show file size to item properties UI. SLUDP protocol doesn't support querying asset size
         // and we don't want download asset only just to know its size.
-        ///\todo If WebDAV supports this, utilize it.
+        ///\todo If WebDAV supports querying asset size without full download, utilize it.
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
         if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
             return;
@@ -460,7 +505,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
         return;
 
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
 
@@ -472,8 +517,6 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
             ///\todo WebDAV needs the old name and we don't have it here.
             inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
     }
-
-    wnd->deleteLater();
 }
 
 void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
@@ -523,7 +566,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
             // Send event.
             eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
         }
-        catch (NetMessageException &)
+        catch(NetMessageException &)
         {
             exceptionOccurred = true;
         }
@@ -569,7 +612,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
             // Send event.
             eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
-        catch (NetMessageException &e)
+        catch(NetMessageException &e)
         {
             LogError("Catched NetMessageException: " + e.What() + " while reading InventoryDescendents packet.");
         }
@@ -708,24 +751,26 @@ void InventoryModule::DeleteAllItemPropertiesWindows()
 
 void InventoryModule::ConnectSignals()
 {
+/*
     if (!uploadProgressWindow_)
         return;
 
     // Connect upload progress signals.
-    //QObject::connect(inventory_.get(), SIGNAL(MultiUploadStarted(size_t)),
-    //    uploadProgressWindow_, SLOT(OpenUploadProgress(size_t)));
+    QObject::connect(inventory_.get(), SIGNAL(MultiUploadStarted(size_t)),
+        uploadProgressWindow_, SLOT(OpenUploadProgress(size_t)));
 
-    //QObject::connect(inventory_.get(), SIGNAL(UploadStarted(const QString &)),
-    //    uploadProgressWindow_, SLOT(UploadStarted(const QString &)));
+    QObject::connect(inventory_.get(), SIGNAL(UploadStarted(const QString &)),
+        uploadProgressWindow_, SLOT(UploadStarted(const QString &)));
 
-//    connect(inventory_.get(), SIGNAL(UploadFailed(const QString &)),
-//        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
+    connect(inventory_.get(), SIGNAL(UploadFailed(const QString &)),
+        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
 
-//    connect(inventory_.get(), SIGNAL(UploadCompleted(const QString &)),
-//        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
+    connect(inventory_.get(), SIGNAL(UploadCompleted(const QString &)),
+        uploadProgressWindow_, SLOT(UploadProgress(const QString &)));
 
-    //QObject::connect(inventory_.get(), SIGNAL(MultiUploadCompleted()),
-    //    uploadProgressWindow_, SLOT(CloseUploadProgress()));
+    QObject::connect(inventory_.get(), SIGNAL(MultiUploadCompleted()),
+        uploadProgressWindow_, SLOT(CloseUploadProgress()));
+*/
 }
 
 } // namespace Inventory

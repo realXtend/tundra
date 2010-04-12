@@ -145,6 +145,7 @@ namespace ProtocolUtilities
         AuthenticationType type;
         std::string identityUrl;
         std::string hostUrl;
+        InventorySkeleton *inventorySkeleton;
     };
 
     /// Event data interface for inbound messages.

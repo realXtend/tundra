@@ -1,14 +1,12 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryWindow.h
  *  @brief  Inventory window. Should be totally unaware of the underlaying inventory data model.
  */
 
 #ifndef incl_InventoryModule_InventoryWindow_h
 #define incl_InventoryModule_InventoryWindow_h
-
-#include "RexTypes.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -55,7 +53,6 @@ namespace Inventory
     class InventoryItemEventData;
     class InventoryItemModel;
     class AbstractInventoryDataModel;
-
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
 
     class InventoryWindow : public QWidget
@@ -65,6 +62,7 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param owner InventoryModule pointer
+        /// @param parent Parent widget.
         InventoryWindow(InventoryModule *owner, QWidget *parent = 0);
 
         /// Destructor.
@@ -78,8 +76,14 @@ namespace Inventory
         /// Resets the inventory tree model.
         void ResetInventoryTreeModel();
 
-        /// Hides the inventory window.
-        void Hide();
+    signals:
+        /// Signal indicating that user has chosen to view item properties of inventory item.
+        /// @param inventory_id Inventory ID of the item.
+        void OpenItemProperties(const QString &inventory_id);
+
+        /// Sends notification to the UI.
+        /// @param widget Notification widget.
+        void Notification(CoreUi::NotificationBaseWidget *widget);
 
     private slots:
         /// Opens inventory item (folder or asset) when user double-clicks it.
@@ -135,19 +139,18 @@ namespace Inventory
         /// @param item id
         void FinishProgessNotification(const QString &id);
 
+        /// Creates new progress notification for file upload.
+        /// @param filename Filename.
         void UploadStarted(const QString &filename);
 
+        /// Shows failure notification.
+        /// @param filename Filename.
+        /// @param reason Reason of failure.
         void UploadFailed(const QString &filename, const QString &reason);
 
         //! Sending notification from DL/UL thread, cant create widgets there
         //! because its not the main ui thread
         void CreateNotification(QString message, int hide_time);
-
-    signals:
-        /// Use this signal to send notification to the UI.
-        /// @param message Message to be shown.
-        /// @param duration Duration for which the message is visible.
-        void Notification(CoreUi::NotificationBaseWidget *);
 
     private:
         Q_DISABLE_COPY(InventoryWindow);
@@ -223,7 +226,7 @@ namespace Inventory
 
         /// Last file path used when using open file dialog.
         QString lastUsedPath_;
-        
+
         /// Used to follow and update ongoing downloads and uploads
         QMap<QString, UiServices::ProgressController*> notification_progress_map_;
     };

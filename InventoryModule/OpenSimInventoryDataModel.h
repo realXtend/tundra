@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OpenSimInventoryDataModel.h
  *  @brief  Data model providing the OpenSim inventory model backend functionality.
  */
@@ -9,8 +9,6 @@
 #define incl_InventoryModule_OpenSimInventoryDataModel_h
 
 #include "AbstractInventoryDataModel.h"
-#include "RexTypes.h"
-#include "WorldStream.h"
 
 #include <QMap>
 #include <QPair>
@@ -26,6 +24,8 @@ namespace ProtocolUtilities
 {
     class InventorySkeleton;
     class InventoryFolderSkeleton;
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
 namespace Inventory

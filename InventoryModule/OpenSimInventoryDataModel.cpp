@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OpenSimInventoryDataModel.cpp
  *  @brief  Data model providing the OpenSim inventory model backend functionality.
  */
@@ -12,8 +12,11 @@
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 #include "J2kEncoder.h"
-#include "Framework.h"
 
+#include "Framework.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+#include "EventManager.h"
 #include "Inventory/InventorySkeleton.h"
 #include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
@@ -23,10 +26,6 @@
 #include "AssetServiceInterface.h"
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
-#include "ModuleManager.h"
-#include "ServiceManager.h"
-#include "EventManager.h"
-#include "RexTypes.h"
 
 #include <QDir>
 #include <QFile>
@@ -319,8 +318,6 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         itemOpen.inventoryType = asset->GetInventoryType();
         itemOpen.name = asset->GetName().toStdString();
         event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_OPEN, &itemOpen);
-
-        ///\todo Open a generic download progress dialog if no handler found.
         if (!itemOpen.overrideDefaultHandler)
         {
             emit DownloadStarted(asset_id.c_str(), asset->GetName());

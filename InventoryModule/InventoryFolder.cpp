@@ -1,21 +1,19 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ * For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file InventoryFolder.cpp
  *  @brief  A class representing folder in the inventory item tre model.
  */
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
 #include "RexUUID.h"
-#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
 
-InventoryFolder::InventoryFolder(const QString &id, const QString &name, InventoryFolder *parent, const bool &editable) :
+InventoryFolder::InventoryFolder(const QString &id, const QString &name, InventoryFolder *parent, const bool editable) :
     AbstractInventoryItem(id, name, parent, editable), itemType_(AbstractInventoryItem::Type_Folder), dirty_(false),
     libraryItem_(false)
 {
@@ -89,10 +87,10 @@ const bool InventoryFolder::IsChild(InventoryFolder *child)
 }
 */
 
-InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const QString &searchName)
+InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const QString &searchName) const
 {
     if (GetName() == searchName)
-        return this;
+        return const_cast<InventoryFolder *>(this);
 
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
@@ -116,7 +114,7 @@ InventoryFolder *InventoryFolder::GetFirstChildFolderByName(const QString &searc
     return 0;
 }
 
-InventoryFolder *InventoryFolder::GetChildFolderById(const QString &searchId)
+InventoryFolder *InventoryFolder::GetChildFolderById(const QString &searchId) const
 {
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
@@ -140,16 +138,13 @@ InventoryFolder *InventoryFolder::GetChildFolderById(const QString &searchId)
     return 0;
 }
 
-InventoryAsset *InventoryFolder::GetChildAssetById(const QString &searchId)
+InventoryAsset *InventoryFolder::GetChildAssetById(const QString &searchId) const
 {
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
     {
-        AbstractInventoryItem *item = it.next();
-        InventoryAsset *asset = 0;
-        if (item->GetItemType() == Type_Asset)
-            asset = static_cast<InventoryAsset *>(item);
-        else
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(it.next());
+        if (!asset)
             continue;
 
         if (asset->GetID() == searchId)
@@ -157,7 +152,7 @@ InventoryAsset *InventoryFolder::GetChildAssetById(const QString &searchId)
 
     ///\todo Recursion, if needed.
 /*
-        InventoryFolder *folder = folder->GetChildFolderById(searchId);
+        InventoryFolder *folder = folder->GetChildAssetById(searchId);
         if (folder)
             if (asset->GetID() == searchId)
                 return folder2;
@@ -167,7 +162,7 @@ InventoryAsset *InventoryFolder::GetChildAssetById(const QString &searchId)
     return 0;
 }
 
-AbstractInventoryItem *InventoryFolder::GetChildById(const QString &searchId)
+AbstractInventoryItem *InventoryFolder::GetChildById(const QString &searchId) const
 {
     QListIterator<AbstractInventoryItem *> it(children_);
     while(it.hasNext())
@@ -190,7 +185,78 @@ AbstractInventoryItem *InventoryFolder::GetChildById(const QString &searchId)
     return 0;
 }
 
-bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder)
+InventoryAsset *InventoryFolder::GetFirstAssetByAssetId(const QString &id) const
+{
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        AbstractInventoryItem *item = it.next();
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
+        if (asset && asset->GetAssetReference() == id)
+            return asset;
+
+        InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+        assert(folder);
+        if (!folder)
+            return 0;
+
+        asset = folder->GetFirstAssetByAssetId(id);
+        if (asset && asset->GetAssetReference() == id)
+            return asset;
+    }
+
+    return 0;
+}
+
+QList<const InventoryAsset *> InventoryFolder::GetChildAssetsByAssetType(const asset_type_t type) const
+{
+    QList<const InventoryAsset *> list;
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        AbstractInventoryItem *item = it.next();
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
+        if (asset && asset->GetAssetType() == type)
+        {
+            list.push_back(asset);
+            continue;
+        }
+
+        InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+        if (!folder)
+            continue;
+
+        list.append(folder->GetChildAssetsByAssetType(type));
+    }
+
+    return list;
+}
+
+QList<const InventoryAsset *> InventoryFolder::GetChildAssetsByInventoryType(const inventory_type_t type) const
+{
+    QList<const InventoryAsset *> list;
+    QListIterator<AbstractInventoryItem *> it(children_);
+    while(it.hasNext())
+    {
+        AbstractInventoryItem *item = it.next();
+        InventoryAsset *asset = dynamic_cast<InventoryAsset *>(item);
+        if (asset && asset->GetInventoryType() == type)
+        {
+            list.push_back(asset);
+            continue;
+        }
+
+        InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
+        if (!folder)
+            continue;
+
+        list.append(folder->GetChildAssetsByInventoryType(type));
+    }
+
+    return list;
+}
+
+bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder) const
 {
     forever
     {
@@ -207,7 +273,7 @@ bool InventoryFolder::IsDescendentOf(AbstractInventoryItem *searchFolder)
     }
 }
 
-AbstractInventoryItem *InventoryFolder::Child(int row)
+AbstractInventoryItem *InventoryFolder::Child(int row) const
 {
     if (row < 0 || row > children_.size() - 1)
         return 0;

@@ -167,6 +167,7 @@ namespace OpenSimProtocol
 
             // Send event indicating a succesfull connection
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_, "", loginWorker_.GetClientParameters().gridUrl);
+            auth_data.inventorySkeleton = loginWorker_.GetClientParameters().inventory.get();
             eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
 
             // Request capabilities from the server.
