@@ -85,7 +85,7 @@ namespace OgreRenderer
         virtual Foundation::RaycastResult Raycast(int x, int y);
         
         //! Do a frustrum query to the world from viewport coordinates.
-        virtual QVariantList  FrustrumQuery(QRect viewrect);
+        virtual QVariantList  FrustumQuery(QRect viewrect);
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -214,7 +214,7 @@ namespace OgreRenderer
 
     public slots:
         //! Do a frustrum query to the world from viewport coordinates.
-        QVariantList QFrustrumQuery(QRect viewrect);
+        QVariantList QFrustumQuery(QRect viewrect);
 
     private:
         //! Initialises Qt

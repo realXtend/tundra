@@ -495,8 +495,8 @@ class ObjectEdit(Component):
                     rect.translate(mouseinfo.x, mouseinfo.y)
                     #print rect.left(), rect.top(), rect.right(), rect.bottom()
                     rend = r.getQRenderer()
-                    hits = rend.FrustrumQuery(rect) #the wish
-                    #hits = r.frustrumQuery(rect.left(), rect.top(), rect.right(), rect.bottom()) #current workaround
+                    hits = rend.FrustumQuery(rect) #the wish
+                    #hits = r.frustumQuery(rect.left(), rect.top(), rect.right(), rect.bottom()) #current workaround
                     print hits
 
                 else:

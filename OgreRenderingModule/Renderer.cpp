@@ -812,7 +812,7 @@ namespace OgreRenderer
     }
 
   /* was the first non-qt version
-    Foundation::RaycastResult Renderer::FrustrumQuery(int left, int top, int right, int bottom)
+    Foundation::RaycastResult Renderer::FrustumQuery(int left, int top, int right, int bottom)
     {
         Foundation::RaycastResult result;
         result.entity_ = 0; 
@@ -820,8 +820,13 @@ namespace OgreRenderer
             return result;
      } */
 
+    QVariantList Renderer::QFrustumQuery(QRect viewrect)
+    {
+        return FrustumQuery(viewrect);
+    }
+    
     //qt wrapper / upcoming replacement for the one above
-    QVariantList Renderer::FrustrumQuery(QRect viewrect)
+    QVariantList Renderer::FrustumQuery(QRect viewrect)
     {
         QVariantList l;
         l << 1;
