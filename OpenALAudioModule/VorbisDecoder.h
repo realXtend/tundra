@@ -2,6 +2,7 @@
 #ifndef incl_OpenALAudio_VorbisDecoder_h
 #define incl_OpenALAudio_VorbisDecoder_h
 
+#include "SoundServiceInterface.h"
 #include "ThreadTask.h"
 
 namespace OpenALAudio
@@ -20,15 +21,11 @@ namespace OpenALAudio
     {
     public:
         //! Name/id of sound
-        std::string name_;    
+        std::string name_;
         //! Decoded audio data buffer. Will always be 16bit signed
         /*! If decode failed, will be zero size
-         */         
-        std::vector<u8> buffer_;
-        //! Frequency
-        uint frequency_;
-        //! Stereo flag
-        bool stereo_;        
+         */
+        Foundation::SoundServiceInterface::SoundBuffer buffer_;
     };
     
     typedef boost::shared_ptr<VorbisDecodeRequest> VorbisDecodeRequestPtr;
