@@ -155,6 +155,12 @@ bool OgreAssetEditorModule::HandleEvent(
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
+
+                    // Add widget to scene, show and bring to front
+                    UiServices::UiProxyWidget *proxy = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
+                        editor, UiServices::UiWidgetProperties("Ogre Script Editor", UiServices::SceneWidget));
+                    proxy->show();
+                    uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }
                 else
                 {

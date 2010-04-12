@@ -1,15 +1,13 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
- *  @file InventoryAsset.cpp
- *  @brief A class representing asset in inventory.
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   InventoryAsset.cpp
+ *  @brief  A class representing asset in inventory.
  */
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
 #include "InventoryAsset.h"
 #include "InventoryFolder.h"
-#include "MemoryLeakCheck.h"
 
 namespace Inventory
 {
@@ -35,7 +33,7 @@ InventoryAsset::~InventoryAsset()
 {
 }
 
-bool InventoryAsset::IsDescendentOf(AbstractInventoryItem *searchFolder)
+bool InventoryAsset::IsDescendentOf(AbstractInventoryItem *searchFolder) const
 {
     forever
     {

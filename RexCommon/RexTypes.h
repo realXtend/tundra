@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   RexTypes.h
  *  @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
  */
@@ -9,9 +9,10 @@
 #define incl_RexTypes_h
 
 //#include "CoreStableHeaders.h"
+#include "Vector3D.h"
 #include <map>
 #include <boost/cstdint.hpp>
-#include "Vector3D.h"
+#include <QString>
 
 ///\todo Move all these to core framework headers.
 using boost::uint8_t;
@@ -146,6 +147,17 @@ namespace RexTypes
         /// 
         AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
     };
+
+    /// File filters with reX file types
+    const QString rexFileFilters(
+        "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"
+        "Sounds (*.ogg; *.wav);;"
+        "Ogre 3D Models (*.mesh);;"
+        "Ogre Particle Scripts (*.particle);;"
+        "Ogre Skeleton (*.skeleton);;"
+        "Ogre Material (*.material);;"
+        "Flash Animation (*.swf);;"
+        "All Files (*.*)");
 
     ///\note When adding new asset/inventory types, remember also to add them to the functions.
     // UDP Asset types

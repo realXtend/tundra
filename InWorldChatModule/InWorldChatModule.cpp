@@ -128,7 +128,7 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkInEventCategory_)
     {
-        if (event_id != RexNetMsgGenericMessage && event_id != RexNetMsgChatFromSimulator && event_id != RexNetMsgObjectUpdate)
+        if (event_id != RexNetMsgGenericMessage && event_id != RexNetMsgChatFromSimulator)
             return false;
 
         using namespace ProtocolUtilities;

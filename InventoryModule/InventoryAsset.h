@@ -1,8 +1,8 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
- *  @file InventoryAsset.h
- *  @brief A class representing asset in inventory.
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   InventoryAsset.h
+ *  @brief  A class representing asset in inventory.
  */
 
 #ifndef incl_InventoryModule_InventoryAsset_h
@@ -57,22 +57,22 @@ namespace Inventory
         bool IsEditable() const { return editable_; }
 
         /// AbstractInventoryItem override
-        void SetEditable(const bool &editable) { editable_ = editable; }
+        void SetEditable(const bool editable) { editable_ = editable; }
 
         /// AbstractInventoryItem override
         bool IsLibraryItem() const { return libraryItem_; }
 
         /// AbstractInventoryItem override
-        void SetIsLibraryItem(const bool &value) { libraryItem_ = value; }
+        void SetIsLibraryItem(const bool value) { libraryItem_ = value; }
 
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
-        bool IsDescendentOf(AbstractInventoryItem *searchFolder);
+        bool IsDescendentOf(AbstractInventoryItem *searchFolder) const;
 
         /// AbstractInventoryItem override
         InventoryItemType GetItemType() const { return itemType_; }
 
-        /************ InventoryAsset API ************/
+        // InventoryAsset API
 
         /// @return asset reference.
         QString GetAssetReference() const { return assetReference_; }

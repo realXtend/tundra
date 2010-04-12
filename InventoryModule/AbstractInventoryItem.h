@@ -38,7 +38,7 @@ namespace Inventory
         /// @param type name Name.
         /// @param type parent Parent folder.
         AbstractInventoryItem(const QString &id, const QString &name, AbstractInventoryItem *parent = 0,
-            const bool &editable = true) : id_(id), name_(name), parent_(parent), editable_(editable) {}
+            const bool editable = true) : id_(id), name_(name), parent_(parent), editable_(editable) {}
 
         /// Destructor.
         virtual ~AbstractInventoryItem() {}
@@ -65,20 +65,20 @@ namespace Inventory
         virtual bool IsEditable() const = 0;
 
         /// @param editable Is this item editable.
-        virtual void SetEditable(const bool &editable) = 0;
+        virtual void SetEditable(const bool editable) = 0;
 
         /// @return Is this item library asset.
         virtual bool IsLibraryItem() const = 0;
 
         /// @param value Is this item library asset.
-        virtual void SetIsLibraryItem(const bool &value) = 0;
+        virtual void SetIsLibraryItem(const bool value) = 0;
 
         /// @return Type of the item.
         virtual InventoryItemType GetItemType() const = 0;
 
         /// Is this folder descendent of spesific folder.
         /// @param searchFolder Folder to be investigated.
-        virtual bool IsDescendentOf(AbstractInventoryItem *searchFolder) = 0;
+        virtual bool IsDescendentOf(AbstractInventoryItem *searchFolder) const = 0;
 
     protected:
         /// Unique ID for this item.

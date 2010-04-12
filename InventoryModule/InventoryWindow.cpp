@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryWindow.cpp
  *  @brief  Inventory window. Should be totally unaware of the underlaying inventory data model.
  */
@@ -13,16 +13,6 @@
 #include "AbstractInventoryDataModel.h"
 #include "InventoryTreeView.h"
 #include "InventoryAsset.h"
-#include "ModuleManager.h"
-#include "Framework.h"
-
-#include "Inventory/InventoryEvents.h"
-#include "QtUtils.h"
-
-#include <UiModule.h>
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
-#include "Inworld/InworldSceneController.h"
 
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
@@ -104,11 +94,6 @@ InventoryWindow::~InventoryWindow()
 */
 }
 
-void InventoryWindow::Hide()
-{
-    proxyWidget_->hide();
-}
-
 void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 {
     if (inventoryItemModel_)
@@ -186,7 +171,7 @@ void InventoryWindow::OpenItemProperties()
         return;
 
     // InventoryModule manages item properties windows.
-    owner_->OpenItemPropertiesWindow(item->GetID());
+    emit OpenItemProperties(item->GetID());
 }
 
 void InventoryWindow::AddFolder()
@@ -224,17 +209,14 @@ void InventoryWindow::DeleteItem()
 void InventoryWindow::RenameItem()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-
     if (treeView_->model()->flags(index) & Qt::ItemIsEditable)
         treeView_->edit(index);
 }
 
 void InventoryWindow::Upload()
 {
-//    QtUI::DirectoryView *dv = new QtUI::DirectoryView(this, SLOT(UploadFiles(QStringList &)), 0);
-
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    QStringList filenames = Foundation::QtUtils::GetOpenRexFilenames(lastUsedPath_.toStdString());
+    QStringList filenames = QFileDialog::getOpenFileNames(0, "Open", lastUsedPath_, RexTypes::rexFileFilters);
     if (filenames.empty())
         return;
 
@@ -364,8 +346,9 @@ void InventoryWindow::FinishProgessNotification(const QString &id)
 
 void InventoryWindow::UploadStarted(const QString &filename)
 {
-    // Ali find a way to update the download/upload process! just do controller->setValue(int)
-    // Now its just sitting there at artificial 13%
+    ///\todo Ali find a way to update the download/upload process! just do controller->setValue(int)
+    /// Now its just sitting there at artificial 13%
+    /// Pforce: Not possible to show progress for single asset with the current HTTP upload path -Ali.
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
     progress_controller->Start(13);
@@ -383,18 +366,13 @@ void InventoryWindow::UploadFailed(const QString &filename, const QString &reaso
 
 void InventoryWindow::InitInventoryWindow()
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
     QUiLoader loader;
     QFile uiFile("./data/ui/inventory.ui");
     mainWidget_ = loader.load(&uiFile, this);
     uiFile.close();
 
-    /// Layout 
-    layout_ = new QVBoxLayout;
+    // Layout 
+    layout_ = new QVBoxLayout(this);
     layout_->addWidget(mainWidget_);
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
@@ -413,12 +391,6 @@ void InventoryWindow::InitInventoryWindow()
     connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
 
     QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
-
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
-        this, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
-
-    connect(this, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
-        SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
 
     CreateActions();
 }
