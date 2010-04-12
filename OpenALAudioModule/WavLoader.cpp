@@ -147,8 +147,8 @@ namespace OpenALAudio
         OpenALAudioModule::LogDebug(msg.str());
         
         Foundation::SoundServiceInterface::SoundBuffer wav_buffer;
-        wav_buffer.data_ = &data[index];
-        wav_buffer.size_ = data_length;
+        wav_buffer.data_.resize(data_length);
+        memcpy(&wav_buffer.data_[0], &data[index], data_length);
         wav_buffer.frequency_ = frequency;
         wav_buffer.sixteenbit_  = (bits == 16);
         wav_buffer.stereo_ = (channels == 2);

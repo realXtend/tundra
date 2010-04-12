@@ -118,8 +118,9 @@ namespace OpenALAudio
         VorbisDecodeResultPtr result(new VorbisDecodeResult());
 
         result->name_ = request->name_;
-        result->frequency_ = 0;
-        result->stereo_ = false;
+        result->buffer_.frequency_ = 0;
+        result->buffer_.sixteenbit_ = true;
+        result->buffer_.stereo_ = false;
         
         OggVorbis_File vf;
         OggMemDataSource src(&request->buffer_[0], request->buffer_.size());
@@ -141,15 +142,15 @@ namespace OpenALAudio
         
         vorbis_info* vi = ov_info(&vf, -1);
         if (vi)
-        {    
+        {
             std::ostringstream msg;
             msg << "Decoding ogg vorbis stream with " << vi->channels << " channels, frequency " << vi->rate; 
             OpenALAudioModule::LogDebug(msg.str()); 
             
-            result->frequency_ = vi->rate;
-            result->stereo_ = (vi->channels == 2); 
+            result->buffer_.frequency_ = vi->rate;
+            result->buffer_.stereo_ = (vi->channels == 2); 
         }
-        else          
+        else
         {
             OpenALAudioModule::LogError("No ogg vorbis stream info");
             ov_clear(&vf);
@@ -157,24 +158,24 @@ namespace OpenALAudio
             return;
         }
  
-        uint decoded_bytes = 0;        
+        uint decoded_bytes = 0;
         for (;;)
         {
-            result->buffer_.resize(decoded_bytes + MAX_DECODE_SIZE);
+            result->buffer_.data_.resize(decoded_bytes + MAX_DECODE_SIZE);
             int bitstream;
-            long ret = ov_read(&vf, (char*)&result->buffer_[decoded_bytes], MAX_DECODE_SIZE, 0, 2, 1, &bitstream);
+            long ret = ov_read(&vf, (char*)&result->buffer_.data_[decoded_bytes], MAX_DECODE_SIZE, 0, 2, 1, &bitstream);
             if (ret <= 0)
                 break;
             decoded_bytes += ret;
         }
         
-        result->buffer_.resize(decoded_bytes);
+        result->buffer_.data_.resize(decoded_bytes);
         
         std::ostringstream msg;
         msg << "Decoded " << decoded_bytes << " bytes of ogg vorbis sound data";
-        OpenALAudioModule::LogDebug(msg.str());       
+        OpenALAudioModule::LogDebug(msg.str());
          
-        ov_clear(&vf);                                      
+        ov_clear(&vf);
         QueueResult<VorbisDecodeResult>(result);
     }
 }

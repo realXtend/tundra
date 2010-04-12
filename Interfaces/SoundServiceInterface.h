@@ -31,15 +31,13 @@ namespace Foundation
             Voice
         };
         
-        //! Buffer description for streamed sound playback.
+        //! Sound buffer description, used for streamed sound playback and in the sound resource class.
         /*! Note: the data is copied into internal structures, so it is not needed after a call returns.
          */
         struct SoundBuffer
         {
-            //! Pointer to sound data
-            void* data_;
-            //! Sound data size in bytes
-            uint size_;
+            //! Sound data
+            std::vector<u8> data_;
             //! Frequency
             uint frequency_;
             //! Sixteenbit flag
@@ -235,11 +233,9 @@ namespace Foundation
         
         virtual ~SoundResource()
         {
-            delete[] ((unsigned char*)buffer_.data_);
-            buffer_.data_ = 0;
         }
         
-        virtual bool IsValid() const { return buffer_.data_ != 0; }
+        virtual bool IsValid() const { return buffer_.data_.size() != 0; }
         
         virtual const std::string& GetType() const
         { 

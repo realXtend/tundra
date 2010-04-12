@@ -43,14 +43,14 @@ namespace OpenALAudio
             return false;
         
         alGetError();
-        alBufferData(handle_, openal_format, (u8*)buffer.data_, buffer.size_, buffer.frequency_);
+        alBufferData(handle_, openal_format, (u8*)&buffer.data_[0], buffer.data_.size(), buffer.frequency_);
         ALenum error = alGetError();
         if (error != AL_NONE)
         {
             OpenALAudioModule::LogError("Could not set OpenAL sound buffer data: " + ToString<int>(error));
             return false;
         }
-        size_ = buffer.size_;
+        size_ = buffer.data_.size();
         return true;
     }
     

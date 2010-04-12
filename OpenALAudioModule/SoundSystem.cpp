@@ -528,14 +528,7 @@ namespace OpenALAudio
             {
                 // Note: the decoded sound resource is not stored anywhere, just sent in the event wrapped to a smart pointer.
                 // It's up to the caller to do whatever wanted with it.
-                Foundation::SoundServiceInterface::SoundBuffer res_buffer;
-                res_buffer.data_ = new unsigned char[result->buffer_.size()];
-                res_buffer.size_ = result->buffer_.size();
-                memcpy(res_buffer.data_, &result->buffer_[0], res_buffer.size_);
-                res_buffer.frequency_ = result->frequency_;
-                res_buffer.sixteenbit_ = true;
-                res_buffer.stereo_ = result->stereo_;
-                Foundation::SoundResource* res = new Foundation::SoundResource(result->name_, res_buffer);
+                Foundation::SoundResource* res = new Foundation::SoundResource(result->name_, result->buffer_);
                 Foundation::ResourcePtr res_ptr(res);
                 
                 Resource::Events::ResourceReady event_data(result->name_, res_ptr, tag);
@@ -553,17 +546,10 @@ namespace OpenALAudio
         // If sound already has data, do not stuff again
         if (i->second->GetSize() != 0)
             return true;
-        if (!result->buffer_.size())
+        if (!result->buffer_.data_.size())
             return true;
         
-        Foundation::SoundServiceInterface::SoundBuffer vorbis_buffer;
-        vorbis_buffer.data_ = &result->buffer_[0];
-        vorbis_buffer.size_ = result->buffer_.size();
-        vorbis_buffer.frequency_ = result->frequency_;
-        vorbis_buffer.sixteenbit_ = true;
-        vorbis_buffer.stereo_ = result->stereo_;
-        
-        i->second->LoadFromBuffer(vorbis_buffer); 
+        i->second->LoadFromBuffer(result->buffer_);
         return true;
     }
     

@@ -719,13 +719,13 @@ namespace TelepathyIM
         int sample_rate = farsight_channel_->GetSampleRate();
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = audio_buffer;
+        sound_buffer.data_.resize(size);
+        memcpy(&sound_buffer.data_[0], audio_buffer, size);
         sound_buffer.frequency_ = sample_rate;
         if (sample_width == 16)
             sound_buffer.sixteenbit_ = true;
         else
             sound_buffer.sixteenbit_ = false;
-        sound_buffer.size_ = size;
         sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
