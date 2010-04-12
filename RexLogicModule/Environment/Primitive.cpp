@@ -1283,7 +1283,7 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataIn
         Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
         Foundation::ResourcePtr res = event_data->resource_;
         asset_type_t asset_type = -1;
-
+        
         ///\todo Perhaps the Resource should be able to tell us what from what type of Asset it was produced from, instead of having to do it here.
         // First we identify what kind of resource is ready:
         if (res->GetType() == OgreRenderer::OgreMeshResource::GetTypeStatic())

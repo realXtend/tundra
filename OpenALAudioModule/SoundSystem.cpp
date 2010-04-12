@@ -12,6 +12,7 @@
 #include "ConfigurationManager.h"
 #include "ThreadTaskManager.h"
 #include "ServiceManager.h"
+#include "EventManager.h"
 
 #include <boost/thread/mutex.hpp>
 
@@ -506,11 +507,52 @@ namespace OpenALAudio
         if (!result || result->task_description_ != "VorbisDecoder")
             return false;
 
+        // Check if this was for a resource request, if so, stuff the data
+        for (;;)
+        {
+            request_tag_t tag = 0;
+
+            std::map<request_tag_t, std::string>::iterator i = sound_resource_requests_.begin();
+            while (i != sound_resource_requests_.end())
+            {
+                if (i->second == result->name_)
+                {
+                    tag = i->first;
+                    sound_resource_requests_.erase(i);
+                    break;
+                }
+                ++i;
+            }
+            
+            if (tag)
+            {
+                // Note: the decoded sound resource is not stored anywhere, just sent in the event wrapped to a smart pointer.
+                // It's up to the caller to do whatever wanted with it.
+                Foundation::SoundServiceInterface::SoundBuffer res_buffer;
+                res_buffer.data_ = new unsigned char[result->buffer_.size()];
+                res_buffer.size_ = result->buffer_.size();
+                memcpy(res_buffer.data_, &result->buffer_[0], res_buffer.size_);
+                res_buffer.frequency_ = result->frequency_;
+                res_buffer.sixteenbit_ = true;
+                res_buffer.stereo_ = result->stereo_;
+                Foundation::SoundResource* res = new Foundation::SoundResource(result->name_, res_buffer);
+                Foundation::ResourcePtr res_ptr(res);
+                
+                Resource::Events::ResourceReady event_data(result->name_, res_ptr, tag);
+                Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+                event_mgr->SendEvent(event_mgr->QueryEventCategory("Resource"), Resource::Events::RESOURCE_READY, &event_data);
+            }
+            else
+                break;
+        }
+        
         // If we can find the sound from our cache, and the result contains data, stuff the data into the sound
         SoundMap::iterator i = sounds_.find(result->name_);
         if (i == sounds_.end())
             return false;
-        
+        // If sound already has data, do not stuff again
+        if (i->second->GetSize() != 0)
+            return true;
         if (!result->buffer_.size())
             return true;
         
@@ -533,15 +575,26 @@ namespace OpenALAudio
         Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
         if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_SOUNDVORBIS)
         {
+            bool resource_request = false;
+            
             if (!event_data->asset_)
                 return false;
-            // Find the sound from our cache
-            SoundMap::iterator i = sounds_.find(event_data->asset_id_);
-            if (i == sounds_.end())
-                return false;
-            // If sound already has data, do not queue another decode request
-            if (i->second->GetSize() != 0)
-                return false;
+            
+            // Check if this is for a sound resource request; in that case we allow redecode to get the raw sound data
+            if (sound_resource_requests_.find(event_data->tag_) != sound_resource_requests_.end())
+                resource_request = true;
+            
+            // Find the sound from our cache to see if it was already decoded
+            if (!resource_request)
+            {
+                SoundMap::iterator i = sounds_.find(event_data->asset_id_);
+                if (i == sounds_.end())
+                    return false;
+                // If sound already has data, do not queue another decode request
+                if (i->second->GetSize() != 0)
+                    return false;
+            }
+            
             VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
             new_request->name_ = event_data->asset_id_;
             new_request->buffer_.resize(event_data->asset_->GetSize());
@@ -682,5 +735,21 @@ namespace OpenALAudio
         
         alcCaptureSamples(capture_device_, buffer, samples);
         return samples * capture_sample_size_;
+    }
+    
+    request_tag_t SoundSystem::RequestSoundResource(const std::string& assetid)
+    {
+        // Loading of sound from assetdata, assumed to be vorbis compressed stream
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
+        {
+            request_tag_t tag = asset_service->RequestAsset(assetid, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
+            if (tag)
+                sound_resource_requests_[tag] = assetid;
+            
+            return tag;
+        }
+        
+        return 0;
     }
 }

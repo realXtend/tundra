@@ -7,6 +7,7 @@
 #include "CoreTypes.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
+#include "ResourceInterface.h"
 
 namespace Foundation
 {
@@ -215,6 +216,41 @@ namespace Foundation
          */
         virtual uint GetRecordedSoundData(void* buffer, uint size) = 0;
         
+        //! Request decoded sound resource. Note: this is strictly for inspecting the sound data, not needed for playback
+        /*! \param assetid sound asset id. Assumed to be ogg format
+            \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
+         */ 
+        virtual request_tag_t RequestSoundResource(const std::string& assetid) = 0;
+    };
+
+    //! A sound resource
+    class SoundResource : public ResourceInterface
+    {
+    public:
+        SoundResource(const std::string& id, const SoundServiceInterface::SoundBuffer& buffer) :
+            ResourceInterface(id),
+            buffer_(buffer)
+        {
+        }
+        
+        virtual ~SoundResource()
+        {
+            delete[] buffer_.data_;
+            buffer_.data_ = 0;
+        }
+        
+        virtual bool IsValid() const { return buffer_.data_ != 0; }
+        
+        virtual const std::string& GetType() const
+        { 
+            static const std::string type_name("Sound");
+            return type_name;
+        }
+        
+        const SoundServiceInterface::SoundBuffer& GetBuffer() { return buffer_; }
+        
+    private:
+        SoundServiceInterface::SoundBuffer buffer_;
     };
 }
 
