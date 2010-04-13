@@ -31,19 +31,15 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_package (CURL)
-use_package (XMLRPC)
 use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities AssetModule OgreRenderingModule UiModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule OgreRenderingModule)
+link_modules (Core Foundation Interfaces RexCommon UiModule OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)
 link_package (QT4)
-link_package (CURL)
-link_package (XMLRPC)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

@@ -141,8 +141,8 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
             */
 
             // Save settings.
-            framework_->GetDefaultConfig().DeclareSetting("InWorldChatModule", "ShowChatBubbles", showChatBubbles_);
-            framework_->GetDefaultConfig().SetSetting("InWorldChatModule", "Logging", logging_);
+            framework_->GetDefaultConfig().SetSetting<bool>("InWorldChatModule", "ShowChatBubbles", showChatBubbles_);
+            framework_->GetDefaultConfig().SetSetting<bool>("InWorldChatModule", "Logging", logging_);
         }
     }
 
