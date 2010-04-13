@@ -458,4 +458,23 @@ bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEven
     return false;
 }
 
+bool HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    std::string object_name = msg.ReadString(); // FirstName
+    std::string object_id = msg.ReadUUID().ToString(); // ObjectID
+    std::string owner_id = msg.ReadUUID().ToString(); // ObjectID
+    bool owner_is_group = msg.ReadBool(); // OwnerIsGroup
+    std::string message = msg.ReadString(); // Message
+    std::string url = msg.ReadString(); // URL
+
+    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = framework_->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+    if (pyservice)
+    {
+        pyservice->RunScript("import loadurlhandler; loadurlhandler.loadurl(url);");
+    }
+}
+
 } //namespace RexLogic
