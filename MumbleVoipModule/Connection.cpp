@@ -363,8 +363,8 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     //skip = pds_int_len(data_stream.charPtr());
     //data_stream.skip(skip);
 
-    int session;
-    int seq;
+    uint64_t session;
+    uint64_t seq;
     data_stream >> session;
     data_stream >> seq;
     //int session << data_stream.next();
@@ -378,7 +378,7 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         const char* frame_data = data_stream.charPtr();
         data_stream.skip(frame_size);
         HandleIncomingCELTFrame((char*)frame_data, frame_size);
-	} while (!last_frame);
+	} while (!last_frame && data_stream.isValid());
 
     ////int seg = data_stream.next8();
     ////seg = data_stream.next8();
