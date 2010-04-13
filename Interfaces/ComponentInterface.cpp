@@ -25,12 +25,12 @@ ComponentInterface::~ComponentInterface()
 }
 
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
-{ 
+{
     parent_entity_ = entity;
 }
 
 Scene::Entity* ComponentInterface::GetParentEntity() const
-{ 
+{
     return parent_entity_;
 }
 
@@ -77,6 +77,7 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     {
         if (attribute_element.attribute("name") == name_str)
             return attribute_element.attribute("value").toStdString();
+        
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }
     
