@@ -20,12 +20,12 @@
 #include "ServiceManager.h"
 #include "WorldStream.h"
 #include "Communications/ScriptDialogHandler.h"
-// Ogre renderer -specific.
+#include "Communications/ScriptDialogRequest.h"
+
 #include <OgreMaterialManager.h>
 
 namespace
 {
-
 /// Clones a new Ogre material that renders using the given ambient color. 
 /// This function will be removed or refactored later on, once proper material system is present. -jj.
 void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)

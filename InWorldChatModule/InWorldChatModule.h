@@ -3,7 +3,7 @@
  *
  *  @file   InWorldChatModule.h
  *  @brief  Simple OpenSim world chat module. Listens for ChatFromSimulator packets and shows the chat on the UI.
- *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles
+ *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles, EC_Billboards, chat logging etc.
  *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
@@ -12,7 +12,6 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "ConsoleCommandServiceInterface.h"
 
 #include <QObject>
 
@@ -43,6 +42,7 @@ namespace UiServices
 
 QT_BEGIN_NAMESPACE
 class QColor;
+class QFile;
 QT_END_NAMESPACE
 
 namespace Naali
@@ -62,12 +62,7 @@ namespace Naali
         void Load();
         void PostInitialize();
         void Update(f64 frametime);
-        bool HandleEvent(
-            event_category_id_t category_id,
-            event_id_t event_id,
-            Foundation::EventDataInterface* data);
-
-        void SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -117,6 +112,10 @@ namespace Naali
         /// @param msg Network message.
         void HandleChatFromSimulatorMessage(ProtocolUtilities::NetInMessage &msg);
 
+        /// Creates file for logging.
+        /// @return True if the creation was succesful, false otherwise.
+        bool CreateLogFile();
+
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;
 
@@ -134,6 +133,12 @@ namespace Naali
 
         /// Do we want to show the in-world chat bubbles
         bool showChatBubbles_;
+
+        /// Do we want to log the chat messages.
+        bool logging_;
+
+        /// Log file.
+        QFile *logFile_;
     };
 }
 

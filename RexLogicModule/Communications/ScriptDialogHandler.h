@@ -3,43 +3,46 @@
 #ifndef incl_ScriptDialogHandler_h
 #define incl_ScriptDialogHandler_h
 
-#include <Foundation.h>
 #include <QObject>
 #include <QList>
-#include "ModuleInterface.h"
-#include "ScriptDialogRequest.h"
-#include "ScriptDialogWidget.h"
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace RexLogic
 {
-	/**
-	 * Handles all ScriptDialog requests sent by server.  ScriptDialog request 
-	 * is sent when llDialog method is called from server side script.
-	 *
-	 */
-	class ScriptDialogHandler : QObject
-	{
-		Q_OBJECT
-	public:
-		ScriptDialogHandler(Foundation::Framework* framework);
-		~ScriptDialogHandler();
+    class ScriptDialogRequest;
+    class ScriptDialogWidget;
 
-		//! handle given script dialog request by creating 
-		//! ScriptDialogWidget object and showing it
-		virtual void Handle(ScriptDialogRequest &request);
+    /**
+     * Handles all ScriptDialog requests sent by server.  ScriptDialog request 
+     * is sent when llDialog method is called from server side script.
+     *
+     */
+    class ScriptDialogHandler : QObject
+    {
+        Q_OBJECT
 
-	protected:
-		Foundation::Framework* framework_;
-		QList<ScriptDialogWidget*> dialogs_;
+    public:
+        ScriptDialogHandler(Foundation::Framework* framework);
+        ~ScriptDialogHandler();
 
-		void ShowDialog(ScriptDialogRequest& request);
+        //! handle given script dialog request by creating 
+        //! ScriptDialogWidget object and showing it
+        virtual void Handle(ScriptDialogRequest &request);
 
-	private slots:
+    protected:
+        void ShowDialog(ScriptDialogRequest& request);
 
-		// called when a ScriptDialogWidget is closed
-		void OnDialogClosed(s32 channel, QString answer);
-	};
+        Foundation::Framework* framework_;
+        QList<ScriptDialogWidget*> dialogs_;
 
-} // end of namespace: RexLogic
+    private slots:
+        // called when a ScriptDialogWidget is closed
+        void OnDialogClosed(int channel, QString answer);
+    };
+}
 
 #endif // incl_ScriptDialogHandler_h

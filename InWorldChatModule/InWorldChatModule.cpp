@@ -3,16 +3,18 @@
  *
  *  @file   InWorldChatModule.cpp
  *  @brief  Simple OpenSim world chat module. Listens for ChatFromSimulator packets and shows the chat on the UI.
- *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles.
+ *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles, EC_Billboards, chat logging etc.
  *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "InWorldChatModule.h"
 
 #include "EC_ChatBubble.h"
 #include "EC_Billboard.h"
 
+#include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
 #include "SceneManager.h"
 #include "EventManager.h"
@@ -28,6 +30,7 @@
 #include "EntityComponent/EC_OpenSimPrim.h"
 
 #include <QColor>
+#include "MemoryLeakCheck.h"
 
 namespace Naali
 {
@@ -37,12 +40,15 @@ InWorldChatModule::InWorldChatModule() :
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),
-    showChatBubbles_(true)
+    showChatBubbles_(true),
+    logging_(false),
+    logFile_(0)
 {
 }
 
 InWorldChatModule::~InWorldChatModule()
 {
+    SAFE_DELETE(logFile_);
 }
 
 void InWorldChatModule::Load()
@@ -68,35 +74,39 @@ void InWorldChatModule::PostInitialize()
         Console::Bind(this, &InWorldChatModule::ConsoleChat)));
 
     showChatBubbles_ = framework_->GetDefaultConfig().DeclareSetting("InWorldChatModule", "ShowChatBubbles", true);
+    logging_ = framework_->GetDefaultConfig().DeclareSetting("InWorldChatModule", "Logging", false);
 }
 
 void InWorldChatModule::Update(f64 frametime)
 {
 }
 
-bool InWorldChatModule::HandleEvent(
-    event_category_id_t category_id,
-    event_id_t event_id,
-    Foundation::EventDataInterface *data)
+bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
 {
     if (category_id == frameworkEventCategory_)
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
         {
-            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
+            ProtocolUtilities::NetworkingRegisteredEvent *event_data = checked_static_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
-                SubscribeToNetworkEvents(event_data->currentProtocolModule);
-            return false;
+            {
+                networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+                if (networkStateEventCategory_ == 0)
+                    LogError("Failed to query \"NetworkState\" event category");
+
+                networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+                if (networkInEventCategory_ == 0)
+                    LogError("Failed to query \"NetworkIn\" event category");
+
+                return false;
+            }
         }
 
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
             if (event_data)
                 currentWorldStream_ = event_data->WorldStream;
-
-            //if (chatWindow_)
-            //    chatWindow_->SetWorldStreamPtr(current_world_stream_);
 
             networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
             if (networkInEventCategory_ == 0)
@@ -108,21 +118,31 @@ bool InWorldChatModule::HandleEvent(
 
     if (category_id == networkStateEventCategory_)
     {
-        // Connected to server. Create chat UI.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
+            /*
             if (!uiModule_.expired())
             {
                 //uiModule_.lock()->
             }
+            */
+
+            // Get settings.
+            showChatBubbles_ = framework_->GetDefaultConfig().GetSetting<bool>("InWorldChatModule", "ShowChatBubbles");
+            logging_ = framework_->GetDefaultConfig().GetSetting<bool>("InWorldChatModule", "Logging");
         }
-        // Disconnected from server. Delete chat UI.
-        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+        else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
+            /*
             if (!uiModule_.expired())
             {
                 //uiModule_.lock()->
             }
+            */
+
+            // Save settings.
+            framework_->GetDefaultConfig().DeclareSetting("InWorldChatModule", "ShowChatBubbles", showChatBubbles_);
+            framework_->GetDefaultConfig().SetSetting("InWorldChatModule", "Logging", logging_);
         }
     }
 
@@ -141,37 +161,18 @@ bool InWorldChatModule::HandleEvent(
         switch(event_id)
         {
         case RexNetMsgGenericMessage:
-        {
-            std::string method = ParseGenericMessageMethod(msg);
-            StringVector params = ParseGenericMessageParameters(msg);
-
-            if (method == "RexEmotionIcon")
-                HandleRexEmotionIconMessage(params);
-
+            if (ParseGenericMessageMethod(msg) == "RexEmotionIcon")
+                HandleRexEmotionIconMessage(ParseGenericMessageParameters(msg));
             return false;
-        }
         case RexNetMsgChatFromSimulator:
-        {
             HandleChatFromSimulatorMessage(msg);
             return false;
-        }
         default:
             return false;
         }
     }
 
     return false;
-}
-
-void InWorldChatModule::SubscribeToNetworkEvents(ProtocolUtilities::ProtocolWeakPtr currentProtocolModule)
-{
-    networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-    if (networkStateEventCategory_ == 0)
-        LogError("Failed to query \"NetworkState\" event category");
-
-    networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-    if (networkInEventCategory_ == 0)
-        LogError("Failed to query \"NetworkIn\" event category");
 }
 
 const std::string InWorldChatModule::moduleName = std::string("InWorldChatModule");
@@ -198,7 +199,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
         entity->AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
         EC_Billboard *billboard = entity->GetComponent<EC_Billboard>().get();
         assert(billboard);
-        billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "bubble.png");
+        billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "smoke.png");
     }
 
     return Console::ResultSuccess();
@@ -317,11 +318,20 @@ void InWorldChatModule::HandleChatFromSimulatorMessage(ProtocolUtilities::NetInM
     if (message.size() < 1)
         return;
 
-/*
-    std::stringstream ss;
-    ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message;
-    LogDebug(ss.str());
-*/
+    if (logging_)
+    {
+        if (!logFile_)
+            CreateLogFile();
+
+        if (logFile_)
+        {
+            std::stringstream ss;
+            ss << "[" << GetLocalTimeString() << "] " << fromName << ": " << message;
+
+            QTextStream out(logFile_);
+            out << ss.str().c_str() << "\n";
+        }
+    }
 
     if (showChatBubbles_)
     {
@@ -333,7 +343,66 @@ void InWorldChatModule::HandleChatFromSimulatorMessage(ProtocolUtilities::NetInM
     // Connect chat ui to this modules ChatReceived
     // emit ChatReceived()
     //if (chatWindow_)
-    //    chatWindow_->CharReceived(name, msg);
+    //    chatWindow_->ChatReceived(name, msg);
+}
+
+bool InWorldChatModule::CreateLogFile()
+{
+    // Create filename. Format: "<server_name>_yyyy_dd_MM_<counter>.log"
+    // Use QSettings for getting the application settings home dir
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "chatlogs/");
+    QString path = settings.fileName();
+    path.replace(".ini", "");
+    QDir dir(path);
+    if (!dir.exists())
+        dir.mkpath(path);
+
+    QString filename = path;
+    QString server = currentWorldStream_->GetSimName().c_str();
+
+    // Protection against invalid characters and possible evil filename injections
+    server.replace('.', '_');
+    server.replace(' ', '_');
+    server.replace('\\', '_');
+    server.replace('/', '_');
+    server.replace(':', '_');
+    server.replace('*', '_');
+    server.replace('?', '_');
+    server.replace('\"', '_');
+    server.replace('<', '_');
+    server.replace('>', '_');
+    server.replace('|', '_');
+
+    filename.append(server);
+    filename.append('_');
+    filename.append(QDate::currentDate().toString("yyyy-MM-dd"));
+
+    // Create file
+    int fileSuffixCounter = 1;
+    logFile_ = new QFile;
+    while(!logFile_->isOpen() && fileSuffixCounter < 100)
+    {
+        QString file = filename + "_" + QString("%1.log").arg(fileSuffixCounter++);
+        if (!QFile::exists(file))
+        {
+            SAFE_DELETE(logFile_);
+            logFile_ = new QFile(file);
+            logFile_->open(QIODevice::WriteOnly | QIODevice::Text);
+        }
+    }
+
+    if (!logFile_->isOpen())
+    {
+        LogError("Could not create log file for chat logging.");
+        SAFE_DELETE(logFile_);
+        return false;
+    }
+
+    QTextStream log(logFile_);
+    QString entry = tr("Chat log created ") + QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    log << entry << "\n";
+    LogDebug(entry.toStdString());
+    return true;
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
