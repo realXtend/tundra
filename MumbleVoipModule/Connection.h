@@ -23,31 +23,7 @@ struct CELTDecoder;
 namespace MumbleVoip
 {
     class Channel;
-
-    /**
-     * Makes copy of given data when constructed. Data will be freed in deconstructor.
-     *
-     */
-    class PCMAudioFrame
-    {
-    public:
-        PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
-        virtual ~PCMAudioFrame();
-        virtual char* Data();
-        virtual int Channels();
-        virtual int SampleRate();
-        virtual int SampleWidth();
-        virtual int Samples();
-        virtual int GetLengthMs();
-        virtual int GetLengthBytes();
-
-    private:
-        int channels_;
-        int sample_rate_;
-        int sample_width_;
-        char* data_;
-        int data_size_;
-    };
+    class PCMAudioFrame;
 
     //class AudioSourceInterface : QObject
     //{
@@ -83,11 +59,19 @@ namespace MumbleVoip
     public:
         Connection(ServerInfo &info);
         virtual ~Connection();
+
+        //! Closes connection to Mumble server
         virtual void Close();
+
+        //! Joins to given channel if channels exist
+        //! \todo create channels if it doesn't exist
         virtual void Join(QString channel);
-        //! return null if no frames in playback queue
+
+        //! \return first audio frame from playback queue
+        //! \return null if playback queue is empty
         virtual PCMAudioFrame* GetAudioFrame();
-        //virtual QList<QString> ChannelList();
+
+        //! \return list of channels available
         virtual QList<QString> Channels();
     private:
         void InitializeCELT();

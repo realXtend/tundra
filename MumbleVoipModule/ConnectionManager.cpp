@@ -9,6 +9,7 @@
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL
 #include "Connection.h"
+#include "PCMAudioFrame.h"
 
 namespace MumbleVoip
 {
