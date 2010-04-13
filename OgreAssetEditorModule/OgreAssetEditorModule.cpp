@@ -93,10 +93,7 @@ void OgreAssetEditorModule::Update(f64 frametime)
 {
 }
 
-bool OgreAssetEditorModule::HandleEvent(
-    event_category_id_t category_id,
-    event_id_t event_id,
-    Foundation::EventDataInterface* data)
+bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     if (category_id == frameworkEventCategory_)
     {
