@@ -7,6 +7,7 @@
 #define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client.h>
 #include <mumbleclient/client_lib.h>
+#include <mumbleclient/channel.h>
 #undef BUILDING_DLL // for dll import/export declarations
 #include <mumbleclient/settings.h>
 //#include <boost/make_shared.hpp>
@@ -250,7 +251,7 @@ void ChannelAddCallback(const MumbleClient::Channel& channel, Connection* connec
 
 void ChannelRemoveCallback(const MumbleClient::Channel& channel, Connection* connection)
 {
-	std::cout << "Channel removed" << std::endl;
+    connection->OnChannelRemoveCallback(channel);
 }
 
 Connection::Connection(ServerInfo &info) :
@@ -416,14 +417,33 @@ void Connection::OnPlayAudioData(char* data, int size)
 
 void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
 {
+    // \todo THREAD SAFETY
+
     Channel* c = new Channel(channel);
     channels_.append(c);
     QString message = QString("Channel '%1' added").arg(c->Name());
     MumbleVoipModule::LogDebug(message.toStdString());
 }
 
+void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
+{
+    // \todo THREAD SAFETY
+
+    int i = 0;
+    for (int i = 0; i < channels_.size(); ++i)
+    {
+        if (channels_.at(i)->Id() == channel.id)
+        {
+            channels_.removeAt(i);
+            return;
+        }
+    }
+}
+
 QList<QString> Connection::Channels()
 {
+    // \todo THREAD SAFETY
+
     QList<QString> channels;
     foreach(Channel* c, channels_)
     {

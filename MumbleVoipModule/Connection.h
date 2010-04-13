@@ -111,6 +111,7 @@ namespace MumbleVoip
 //        void OnRelayTunnel(std::string &s);
         void OnPlayAudioData(char* data, int size);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
+        void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
 
     signals:
 //        void Closed();
