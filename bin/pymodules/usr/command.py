@@ -817,7 +817,7 @@ if 0: #a c++ side test func for api dev
     #~ pe.setObject(r.c.proxywidget)
     #~ pe.show()
 
-if 1: #QRenderer
+if 0: #QRenderer
     rend = r.getQRenderer()
     print rend
 
@@ -1199,3 +1199,9 @@ if 0: #running localscene dotscene loader
 
     #avatar = r.getEntity(r.getUserAvatarId())
     #print avatar.placeable.Position.toString()
+
+if 0: #loadurl handler import test
+    import loadurlhandler
+    loadurlhandler = reload(loadurlhandler)
+    l = loadurlhandler.LoadURLHandler()
+    print l
