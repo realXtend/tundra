@@ -14,6 +14,7 @@ class QNetworkAccessManager;
 namespace MumbleClient
 {
     class MumbleClient;
+    class Channel;
 }
 struct CELTMode;
 struct CELTEncoder;
@@ -21,6 +22,12 @@ struct CELTDecoder;
 
 namespace MumbleVoip
 {
+    class Channel;
+
+    /**
+     * Makes copy of given data when constructed. Data will be freed in deconstructor.
+     *
+     */
     class PCMAudioFrame
     {
     public:
@@ -35,7 +42,6 @@ namespace MumbleVoip
         virtual int GetLengthBytes();
 
     private:
-
         int channels_;
         int sample_rate_;
         int sample_width_;
@@ -43,32 +49,33 @@ namespace MumbleVoip
         int data_size_;
     };
 
-    class AudioSourceInterface : QObject
-    {
-        Q_OBJECT
-    public:
-        QList<PCMAudioFrame*> GetPCMAudioFrames();
-    signals:
-        void PCMAudioFramesAvailable();
-    };
+    //class AudioSourceInterface : QObject
+    //{
+    //    Q_OBJECT
+    //public:
+    //    QList<PCMAudioFrame*> GetPCMAudioFrames();
+    //signals:
+    //    void PCMAudioFramesAvailable();
+    //};
 
-    class AudioSinkInterface : QObject
-    {
+    //class AudioSinkInterface : QObject
+    //{
 
-    };
+    //};
 
-    class VideoSourceInterface : QObject
-    {
-        Q_OBJECT
-    public:
-        QList<PCMAudioFrame*> GetVideoFrames();
-    signals:
-        void VideoFramesAvailable();
-    };
+    //class VideoSourceInterface : QObject
+    //{
+    //    Q_OBJECT
+    //public:
+    //    QList<PCMAudioFrame*> GetVideoFrames();
+    //signals:
+    //    void VideoFramesAvailable();
+    //};
+
 
     //! Connection to a single mumble server.
     //!
-    //!
+    //! \todo Thread safety !!!
     //!
     class Connection : public QObject
     {
@@ -81,6 +88,7 @@ namespace MumbleVoip
         //! return null if no frames in playback queue
         virtual PCMAudioFrame* GetAudioFrame();
         //virtual QList<QString> ChannelList();
+        virtual QList<QString> Channels();
     private:
         void InitializeCELT();
         void UninitializeCELT();
@@ -94,6 +102,7 @@ namespace MumbleVoip
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
         static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
+        QList<Channel*> channels_;
 
     public slots:
         void OnAuthenticated();
@@ -101,6 +110,7 @@ namespace MumbleVoip
         void OnRawUdpTunnel(char* data, int size);
 //        void OnRelayTunnel(std::string &s);
         void OnPlayAudioData(char* data, int size);
+        void OnChannelAddCallback(const MumbleClient::Channel& channel);
 
     signals:
 //        void Closed();

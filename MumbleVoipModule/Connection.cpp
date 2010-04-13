@@ -9,10 +9,10 @@
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL // for dll import/export declarations
 #include <mumbleclient/settings.h>
-#include <boost/make_shared.hpp>
+//#include <boost/make_shared.hpp>
 
 #include "SoundServiceInterface.h"
-
+#include "Channel.h"
 #include <mumbleclient/PacketDataStream.h>
 #include <libcelt/celt.h> 
 
@@ -163,6 +163,9 @@ void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
     bool valid = data_stream.isValid();
 
+
+
+
     MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( (data_stream.next() >> 5) & 0x07 );
     switch (type)
     {
@@ -242,7 +245,7 @@ void AuthCallback(Connection* connection)
 
 void ChannelAddCallback(const MumbleClient::Channel& channel, Connection* connection)
 {
-	std::cout << "Channel added" << std::endl;
+    connection->OnChannelAddCallback(channel);
 }
 
 void ChannelRemoveCallback(const MumbleClient::Channel& channel, Connection* connection)
@@ -288,6 +291,10 @@ void Connection::InitializeCELT()
     int channels = 1;
     int framesize = SAMPLE_RATE_ / 100;
     celt_mode_ = celt_mode_create(SAMPLE_RATE_, channels, framesize, &error );
+    if (error != 0)
+    {
+        MumbleVoipModule::LogDebug("CELT initialized.");
+    }
     celt_encoder_ = celt_encoder_create(celt_mode_);
     celt_decoder_ = celt_decoder_create(celt_mode_);
     MumbleVoipModule::LogDebug("CELT initialized.");
@@ -303,16 +310,21 @@ void Connection::UninitializeCELT()
 
 
 
-void Connection::Join(QString channel)
+void Connection::Join(QString channel_name)
 {
     if (!authenticated_)
     {
-        join_request_ = channel;
+        join_request_ = channel_name;
         return; // @todo: Throw exception
     }
 
-    int channel_id = 0;
-    client_->JoinChannel(channel_id);
+    foreach(Channel* c, channels_)
+    {
+        if (c->Name() == channel_name)
+        {
+            client_->JoinChannel(c->Id());
+        }
+    }
 }
 
 void Connection::OnAuthenticated()
@@ -400,6 +412,24 @@ void Connection::OnPlayAudioData(char* data, int size)
 	client_->SendUdpMessage(buffer, size - 1);
 #endif
 	delete []buffer;
+}
+
+void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
+{
+    Channel* c = new Channel(channel);
+    channels_.append(c);
+    QString message = QString("Channel '%1' added").arg(c->Name());
+    MumbleVoipModule::LogDebug(message.toStdString());
+}
+
+QList<QString> Connection::Channels()
+{
+    QList<QString> channels;
+    foreach(Channel* c, channels_)
+    {
+        channels.append(c->Name());
+    }
+    return channels;
 }
 
 } // namespace MumbleVoip 
