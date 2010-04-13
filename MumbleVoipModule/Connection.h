@@ -90,12 +90,14 @@ namespace MumbleVoip
 
     public slots:
         void OnAuthenticated();
-        void OnTextMessage(QString text);
-        void OnRawUdpTunnel(char* data, int size);
+        void OnTextMessageCallback(QString text);
+        void OnRawUdpTunnelCallback(int32_t length, void* buffer);
 //        void OnRelayTunnel(std::string &s);
         void OnPlayAudioData(char* data, int size);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
+
+        void HandleIncomingCELTFrame(char* data, int size);
 
     signals:
 //        void Closed();

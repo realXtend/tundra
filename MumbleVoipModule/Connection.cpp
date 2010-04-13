@@ -91,7 +91,7 @@ int scanPacket(char* data, int len) {
 
 void TextMessageCallback(const std::string& message, Connection* connection)
 {
-    connection->OnTextMessage(QString(message.c_str()));
+    connection->OnTextMessageCallback(QString(message.c_str()));
 }
 
 //void RelayTunnelCallback(int32_t length, void* buffer, MumbleClient::MumbleClient* mc)
@@ -108,70 +108,7 @@ void TextMessageCallback(const std::string& message, Connection* connection)
 
 void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
 {
-    int frames = scanPacket((char*)buffer, length);
-    
-    PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
-    bool valid = data_stream.isValid();
-
-
-
-
-    MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( (data_stream.next() >> 5) & 0x07 );
-    switch (type)
-    {
-    case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
-        break;
-    case MumbleClient::UdpMessageType::UDPPing:
-        MumbleVoipModule::LogDebug("MUMBLE-UDP: PING");
-        return;
-        break;
-    case MumbleClient::UdpMessageType::UDPVoiceSpeex:
-        MumbleVoipModule::LogDebug("MUMBLE-UDP: Speex");
-        return;
-        break;
-    case MumbleClient::UdpMessageType::UDPVoiceCELTBeta:
-        MumbleVoipModule::LogDebug("MUMBLE-UDP: CELT B");
-        return;
-        break;
-    }
-
-    //int skip = pds_int_len(data_stream.charPtr());
-    //data_stream.skip(skip);
-
-    //skip = pds_int_len(data_stream.charPtr());
-    //data_stream.skip(skip);
-
-    int session;
-    int seq;
-    data_stream >> session;
-    data_stream >> seq;
-    //int session << data_stream.next();
-    //int seq >> data_stream.next();
-
-    bool last_frame = true;
-    do {
-		int header = static_cast<unsigned char>(data_stream.next());
-        int frame_size = header & 0x7f;
-        last_frame = !(header & 0x80);
-        const char* frame_data = data_stream.charPtr();
-        data_stream.skip(frame_size);
-        connection->OnRawUdpTunnel((char*)frame_data, frame_size);
-
-	} while (!last_frame);
-
-
-    ////int seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    //int seg = 1;
-    //for (int i = 0; i < frames; ++i)
-    //{
-    //    uint8_t data_size = data_stream.next8();
-    //    const char* data = data_stream.charPtr();
-
-    //    connection->OnRawUdpTunnel((char*)data, data_size);
-    //}
+    connection->OnRawUdpTunnelCallback(length, buffer);
 }
 
 void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
@@ -288,12 +225,12 @@ void Connection::OnAuthenticated()
     }
 }
 
-void Connection::OnTextMessage(QString text)
+void Connection::OnTextMessageCallback(QString text)
 {
     emit (TextMessage(text));
 }
 
-void Connection::OnRawUdpTunnel(char* data, int size)
+void Connection::HandleIncomingCELTFrame(char* data, int size)
 {
     // @todo: lock 
 
@@ -387,6 +324,69 @@ void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
             return;
         }
     }
+}
+
+void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
+{
+    int frames = scanPacket((char*)buffer, length);
+    
+    PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
+    bool valid = data_stream.isValid();
+
+    MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( (data_stream.next() >> 5) & 0x07 );
+    switch (type)
+    {
+    case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
+        break;
+    case MumbleClient::UdpMessageType::UDPPing:
+        MumbleVoipModule::LogDebug("MUMBLE-UDP: PING");
+        return;
+        break;
+    case MumbleClient::UdpMessageType::UDPVoiceSpeex:
+        MumbleVoipModule::LogDebug("MUMBLE-UDP: Speex");
+        return;
+        break;
+    case MumbleClient::UdpMessageType::UDPVoiceCELTBeta:
+        MumbleVoipModule::LogDebug("MUMBLE-UDP: CELT B");
+        return;
+        break;
+    }
+
+    //int skip = pds_int_len(data_stream.charPtr());
+    //data_stream.skip(skip);
+
+    //skip = pds_int_len(data_stream.charPtr());
+    //data_stream.skip(skip);
+
+    int session;
+    int seq;
+    data_stream >> session;
+    data_stream >> seq;
+    //int session << data_stream.next();
+    //int seq >> data_stream.next();
+
+    bool last_frame = true;
+    do {
+		int header = static_cast<unsigned char>(data_stream.next());
+        int frame_size = header & 0x7f;
+        last_frame = !(header & 0x80);
+        const char* frame_data = data_stream.charPtr();
+        data_stream.skip(frame_size);
+        HandleIncomingCELTFrame((char*)frame_data, frame_size);
+	} while (!last_frame);
+
+    ////int seg = data_stream.next8();
+    ////seg = data_stream.next8();
+    ////seg = data_stream.next8();
+    ////seg = data_stream.next8();
+    //int seg = 1;
+    //for (int i = 0; i < frames; ++i)
+    //{
+    //    uint8_t data_size = data_stream.next8();
+    //    const char* data = data_stream.charPtr();
+
+    //    connection->OnRawUdpTunnel((char*)data, data_size);
+    //}
 }
 
 QList<QString> Connection::Channels()
