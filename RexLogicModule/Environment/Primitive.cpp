@@ -573,9 +573,10 @@ void Primitive::HandleECsModified(entity_id_t entityid)
         if (components[i]->IsSerializable())
             components[i]->SerializeTo(temp_doc, entity_elem);
     }
-    temp_doc.appendChild(entity_elem);
     
-    free.FreeData = temp_doc.toString().toStdString();
+    temp_doc.appendChild(entity_elem);
+    QByteArray bytes = temp_doc.toByteArray();
+    free.FreeData = std::string(bytes.data(), bytes.size());
     SendRexFreeData(entityid);
 }
 
@@ -731,7 +732,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
     // Parse into XML form (may or may not succeed), and create/update EC's as result
     // (primitive form of EC serialization/replication)
     QDomDocument temp_doc;
-    if (temp_doc.setContent(QString::fromStdString(freedata)))
+    if (temp_doc.setContent(QByteArray::fromRawData(freedata.c_str(), freedata.size())))
         DeserializeECsFromFreeData(entity, temp_doc);
 }
 
