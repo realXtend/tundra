@@ -138,3 +138,33 @@ macro (find_debug_libraries PREFIX DEBUG_POSTFIX)
             ${lib_}${DEBUG_POSTFIX})
     endforeach ()
 endmacro ()
+
+# Update current translation files. 
+macro (update_translation_files TRANSLATION_FILES)
+	
+	foreach(file ${FILES_TO_TRANSLATE})
+		if(CREATED_PRO_FILE)
+			FILE(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro "SOURCES += ${file} \n")
+		else()
+			FILE(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro "SOURCES = ${file} \n")
+			SET(CREATED_PRO_FILE "true")
+		endif()
+	endforeach()
+	
+	file (GLOB PRO_FILE bin/data/translations/*.pro)
+	
+	foreach(ts_file ${${TRANSLATION_FILES}})
+		execute_process(COMMAND ${QT_LUPDATE_EXECUTABLE} -silent ${PRO_FILE} -ts ${ts_file} )
+	endforeach()
+	
+	FILE(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro)
+	
+endmacro()
+
+# Update current qm files.
+macro (update_qm_files TRANSLATION_FILES)
+	foreach(file ${${TRANSLATION_FILES}})
+		get_filename_component(name ${file} NAME_WE)
+		execute_process(COMMAND ${QT_LRELEASE_EXECUTABLE} -silent ${file} -qm ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/${name}.qm)
+	endforeach()
+endmacro()

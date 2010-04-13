@@ -32,6 +32,8 @@ namespace UiServices
         //! Get this proxys widget properties
         /// \return UiWidgetProperties.
         UiWidgetProperties GetWidgetProperties() const { return widget_properties_; }
+        
+        UiWidgetProperties* GetProperties() { return &widget_properties_;}
 
         //! Set new opacity
         void SetUnfocusedOpacity(int new_opacity);

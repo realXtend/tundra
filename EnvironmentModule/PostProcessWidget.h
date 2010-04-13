@@ -6,6 +6,9 @@
 
 #include <QWidget>
 #include <QCheckBox>
+#include "Inworld/View/UiProxyWidget.h"
+#include <QVector>
+#include <QString>
 
 namespace OgreRenderer
 {
@@ -15,6 +18,7 @@ namespace OgreRenderer
 namespace Environment
 {
     class EnvironmentModule;
+    class UiProxyWidget;
 
     //! Dialog for postprocessing effects
     //! \ingroup EnvironmentModuleClient.
@@ -25,7 +29,7 @@ namespace Environment
     public:
         //! Constructor.
         //! \param effect 
-        PostProcessWidget(std::vector<std::string> &effects);
+        PostProcessWidget(QVector<QString> &effects);
 
         //! Destructor.
         virtual ~PostProcessWidget();
@@ -37,10 +41,10 @@ namespace Environment
         void AddHandler(OgreRenderer::CompositionHandler *handler);
 
         //! Add effect names that will be shown in dialog with radiobuttons
-        void AddEffects(std::vector<std::string> &effects);
+        void AddEffects(QVector<QString> &effects);
 
         //! Set effectbutton checked/unchecked. Used if effects are turned on/off from somewhere else
-        void EnableEffect(const std::string &effect_name, bool enable);
+        void EnableEffect(const QString &effect_name, bool enable);
 
         //! Disables all effects
         void DisableAllEffects();
@@ -48,12 +52,17 @@ namespace Environment
     public slots:
         void HandleSelection(bool checked, const QString &name);
 
+    protected:
+        void changeEvent(QEvent* e);
+
     private:
         //! Widget that this QWidget contains
         Ui::SelectionWidget widget_;
 
         //! CompositionHandler that is notified when radiobutton is clicked
         OgreRenderer::CompositionHandler *handler_;
+        UiServices::UiProxyWidget* proxy_;
+
     };
 
     //! inherited to get name of the checkbox with toggle signal
@@ -64,6 +73,9 @@ namespace Environment
     public:
         NamedCheckBox(const QString &text, QWidget *parent = 0);
         virtual ~NamedCheckBox();
+
+    protected:
+        void changeEvent(QEvent* e);
 
     public slots:
         void ButtonToggled(bool checked);

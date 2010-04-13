@@ -1,0 +1,1 @@
+This folder contains a template for language translation file. Copy it to upper level with other files and change it name correspond your language translation. CMake does rest automatically

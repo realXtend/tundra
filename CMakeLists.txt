@@ -128,3 +128,14 @@ endif ()
 # To configure the set of optional modules to add to the build,
 # edit CMakeOptionalModules.txt and rerun cmake.
 include (CMakeOptionalModules.txt)
+
+# Collect translation files.
+file (GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
+
+# Collect ui-files which are stored into data/
+file (GLOB ui_src bin/data/ui/*.ui)
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
+update_translation_files(TRANSLATIONS_FILES)
+update_qm_files(TRANSLATIONS_FILES)
+MESSAGE("Language translations generated")

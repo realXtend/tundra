@@ -22,6 +22,7 @@ namespace CoreUi
     class SettingsWidget;
     class BindingWidget;
     class PersonalWidget;
+    class LanguageWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -66,6 +67,7 @@ namespace CoreUi
         SettingsWidget *settings_widget_;
         BindingWidget *binding_widget_;
         PersonalWidget *personal_widget_;
+        LanguageWidget* language_widget_;
     };
 }
 

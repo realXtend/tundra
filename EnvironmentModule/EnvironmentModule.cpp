@@ -252,7 +252,7 @@ namespace Environment
                     //button is checked
                     if (postprocess_dialog_)
                     {
-                        std::string effect_name = c_handler.MapNumberToEffectName(vec.at(0));
+                        QString effect_name = c_handler.MapNumberToEffectName(vec.at(0)).c_str();
                         bool enabled = true;
                         if (vec.at(1) == "False")
                             enabled = false;

@@ -97,8 +97,7 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp();
-        
+        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {

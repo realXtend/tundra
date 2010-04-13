@@ -9,17 +9,17 @@
 
 #include <CompositionHandler.h>
 
+#include <UiModule.h>
 #include "UiModule.h"
 #include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
+#include <QApplication>
 
-#include <QString>
 
 namespace Environment
 {
-    PostProcessWidget::PostProcessWidget(std::vector<std::string> &effects) :
+    PostProcessWidget::PostProcessWidget(QVector<QString> &effects) :
         QWidget(), handler_(0)
     {
         widget_.setupUi(this);
@@ -40,6 +40,22 @@ namespace Environment
         }
     }
 
+    void PostProcessWidget::changeEvent(QEvent *e)
+    {
+        if (e->type() == QEvent::LanguageChange) 
+        {
+       
+            QString title = qApp->translate("PostProcessWidget", proxy_->windowTitle().toStdString().c_str());
+            proxy_->setWindowTitle(title);
+            // Then set this widget to right state. 
+            widget_.retranslateUi(this);
+
+        }
+        else
+           QWidget::changeEvent(e);
+
+    }
+
     void PostProcessWidget::AddSelfToScene(EnvironmentModule *env_module)
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
@@ -47,7 +63,7 @@ namespace Environment
         if (!ui_module.get())
             return;
 
-        UiServices::UiWidgetProperties ui_properties("Post-processing", UiServices::ModuleWidget);
+        UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
         
         // Menu graphics
         UiDefines::MenuNodeStyleMap image_path_map;
@@ -60,7 +76,7 @@ namespace Environment
         image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
         ui_properties.SetMenuNodeStyleMap(image_path_map);
 
-        ui_module->GetInworldSceneController()->AddWidgetToScene(this, ui_properties);
+        proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, ui_properties);
     }
 
     void PostProcessWidget::AddHandler(OgreRenderer::CompositionHandler *handler)
@@ -68,14 +84,14 @@ namespace Environment
         handler_ = handler;
     }
 
-    void PostProcessWidget::EnableEffect(const std::string &effect_name, bool enable)
+    void PostProcessWidget::EnableEffect(const QString &effect_name, bool enable)
     {
         for(int i=0; i<widget_.checkboxlayout->count(); i++)
         {
             try
             {
                 NamedCheckBox* c_box = dynamic_cast<NamedCheckBox*> (widget_.checkboxlayout->itemAt(i)->widget());
-                if(c_box && c_box->objectName().toStdString() == effect_name)
+                if(c_box && c_box->objectName()== effect_name)
                 {
                     c_box->setChecked(enable);
                     break;
@@ -95,13 +111,13 @@ namespace Environment
             handler_->RemoveCompositorFromViewport(name.toStdString());
     }
 
-    void PostProcessWidget::AddEffects(std::vector<std::string> &effects)
+    void PostProcessWidget::AddEffects(QVector<QString> &effects)
     {
         for(int i=0; i< effects.size();i++)
         {
-            std::string effect_name = effects.at(i);
-            NamedCheckBox* c_box = new NamedCheckBox(effect_name.c_str(), this);
-            c_box->setObjectName(effect_name.c_str());
+            QString effect_name = effects.at(i);
+            NamedCheckBox* c_box = new NamedCheckBox(effect_name, this);
+            c_box->setObjectName(effect_name);
 
             QObject::connect(c_box, SIGNAL(Toggled(bool, const QString &)), this, SLOT(HandleSelection(bool, const QString &)));
             widget_.checkboxlayout->addWidget(c_box);
@@ -121,4 +137,17 @@ namespace Environment
     {
         emit Toggled(checked, objectName());
     }
+
+    void NamedCheckBox::changeEvent(QEvent *e)
+    {
+        if (e->type() == QEvent::LanguageChange) 
+        {
+            QString text = qApp->translate("CompositionHandler", objectName().toStdString().c_str());
+            this->setText(text);
+        }
+        else
+           QCheckBox::changeEvent(e);
+
+    }
+
 }

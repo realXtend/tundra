@@ -13,6 +13,7 @@
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/BindingWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
+#include "Inworld/ControlPanel/LanguageWidget.h"
 
 #include <QAction>
 
@@ -23,7 +24,8 @@ namespace CoreUi
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
-        binding_widget_(0)
+        binding_widget_(0),
+        language_widget_(0)
     {
         // Controls panel
         layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
@@ -37,9 +39,14 @@ namespace CoreUi
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
 
+   
         // Binding widget as settings tab
         binding_widget_ = new BindingWidget(settings_widget_);
         settings_widget_->AddWidget(binding_widget_, "Controls");
+
+        // Adding a language tab.
+        language_widget_ = new LanguageWidget(settings_widget_);
+        settings_widget_->AddWidget(language_widget_, "Language");
 
         // Personal widget
         personal_widget_ = new PersonalWidget();

@@ -11,10 +11,10 @@ file (GLOB MOC_FILES EC_Clone.h)
 MocFolder ()
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
-
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
