@@ -7,6 +7,9 @@
 #include <OgreMaterial.h>
 #include <OgreCompositorInstance.h>
 #include "CoreTypes.h"
+#include <QVector>
+#include <QString>
+#include <QObject>
 
 namespace Foundation
 {
@@ -58,7 +61,7 @@ namespace OgreRenderer
     };
 
     ///\note This class handles the post-processing effects
-    class OGRE_MODULE_API CompositionHandler
+    class OGRE_MODULE_API CompositionHandler 
     {
     public:
         //! Default constructor.
@@ -83,7 +86,7 @@ namespace OgreRenderer
         void ExecuteServersShaderRequest(const StringVector &parameters);
 
         //! Returns list of available post-processing effects
-        std::vector<std::string> &GetAvailableCompositors() { return postprocess_effects_; }
+        QVector<QString>  &GetAvailableCompositors() { return postprocess_effects_; }
 
         //! Convenience function that will add specified compositor for the default viewport given in initialization
         bool AddCompositorForViewport(const std::string &compositor, int position = -1);
@@ -93,7 +96,8 @@ namespace OgreRenderer
 
     private:
         //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
-        std::vector<std::string> postprocess_effects_;
+        //std::vector<std::string> postprocess_effects_;
+        QVector<QString> postprocess_effects_;
 
         //! Compositor manager
         Ogre::CompositorManager* c_manager_;

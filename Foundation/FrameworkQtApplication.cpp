@@ -4,12 +4,13 @@
 
 #include "Framework.h"
 #include "FrameworkQtApplication.h"
+#include <QTranslator>
 
 namespace Foundation
 {
 
     FrameworkQtApplication::FrameworkQtApplication (Framework *framework, int &argc, char** argv) : 
-        QApplication (argc, argv), framework_ (framework), app_activated_(true)
+        QApplication (argc, argv), framework_ (framework), app_activated_(true), translator_(0)
     {
         #ifdef Q_WS_WIN
         // If under windows, add run_dir/plugins as library path
@@ -18,10 +19,17 @@ namespace Foundation
         run_directory += "/qtplugins";
         addLibraryPath(run_directory);
         #endif
+    
+        //translator_ = new QTranslator();
+        //translator_->load("data/translations/viewer_fi");
+        //this->installTranslator(translator_);
+
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
     {
+        //delete translator_;
+        //translator_ = 0;
     }
 
     QGraphicsView *FrameworkQtApplication::GetUIView() const
@@ -32,6 +40,11 @@ namespace Foundation
     void FrameworkQtApplication::SetUIView(std::auto_ptr <QGraphicsView> view)
     {
         view_ = view;
+    }
+
+    QTranslator* FrameworkQtApplication::GetTranslator()
+    {
+        return translator_;
     }
 
     void FrameworkQtApplication::Go()

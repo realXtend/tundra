@@ -230,7 +230,7 @@ namespace Environment
         if (!ui_module.get())
             return;
 
-        UiServices::UiWidgetProperties env_editor_properties("Environment Editor", UiServices::ModuleWidget);
+        UiServices::UiWidgetProperties env_editor_properties(tr("Environment Editor"), UiServices::ModuleWidget);
 
         // Menu graphics
         UiDefines::MenuNodeStyleMap image_path_map;

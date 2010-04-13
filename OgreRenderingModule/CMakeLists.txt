@@ -13,7 +13,7 @@ init_target (OgreRenderingModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Renderer.h QOgreUIView.h RendererSettings.h EC_*.h)
+file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h Renderer.h)
 #file (GLOB UI_FILES ui/*.ui)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -24,6 +24,8 @@ MocFolder ()
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 #QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 #QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
+
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 if (HYDRAX)
     INCLUDE_HYDRAX()

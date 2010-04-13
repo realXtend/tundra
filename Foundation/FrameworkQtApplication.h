@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QApplication>
 #include <QGraphicsView>
+#include <QTranslator>
 
 namespace Foundation
 {
@@ -28,7 +29,7 @@ namespace Foundation
 
             QGraphicsView *GetUIView() const;
             void SetUIView (std::auto_ptr <QGraphicsView> view);
-
+            QTranslator* GetTranslator();
             void Go();
 
         public slots:
@@ -43,6 +44,7 @@ namespace Foundation
             bool        app_activated_;
 
             std::auto_ptr <QGraphicsView> view_;
+            QTranslator* translator_;
     };
 
 }

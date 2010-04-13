@@ -6,6 +6,8 @@
 #include <OgreCompositorManager.h>
 #include <OgreTechnique.h>
 #include <OgreCompositionTechnique.h>
+#include <QApplication>
+
 
 namespace OgreRenderer
 {
@@ -22,22 +24,23 @@ namespace OgreRenderer
 
     bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
     {
-        postprocess_effects_.push_back("Bloom");
-        postprocess_effects_.push_back("UnderWater");
-        postprocess_effects_.push_back("Glass");
-        postprocess_effects_.push_back("B&W");
-        postprocess_effects_.push_back("Embossed");
-        postprocess_effects_.push_back("Sharpen Edges");
-        postprocess_effects_.push_back("Invert");
-        postprocess_effects_.push_back("Posterize");
-        postprocess_effects_.push_back("Laplace");
-        postprocess_effects_.push_back("Tiling");
-        postprocess_effects_.push_back("HDR");
-        postprocess_effects_.push_back("Strong HDR");
-        postprocess_effects_.push_back("Gaussian Blur");
-        postprocess_effects_.push_back("Motion Blur");
-        postprocess_effects_.push_back("Radial Blur");
-        postprocess_effects_.push_back("WetLens");
+        postprocess_effects_.reserve(16);
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Bloom"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "UnderWater"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Glass"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "B&W"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Embossed"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Sharpen Edges"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Invert"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Posterize"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Laplace"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Tiling"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "HDR"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Strong HDR"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Gaussian Blur"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Motion Blur"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Radial Blur"));
+        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "WetLens"));
 
         framework_ = framework;
         viewport_ = vp;
