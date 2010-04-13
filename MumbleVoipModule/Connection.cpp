@@ -33,6 +33,9 @@ namespace MumbleVoip {
 
 //
 //
+
+    // \todo Move these static callback functions to separeate file...
+
 static inline int32_t pds_int_len(char* x)
 {
 	if ((x[0] & 0x80) == 0x00) {
@@ -126,8 +129,7 @@ void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
 
 void AuthCallback(Connection* connection)
 {
-    connection->OnAuthenticated();
-	std::cout << "I'm authenticated" << std::endl;
+    connection->OnAuthCallback();
 }
 
 void ChannelAddCallback(const MumbleClient::Channel& channel, Connection* connection)
@@ -139,6 +141,8 @@ void ChannelRemoveCallback(const MumbleClient::Channel& channel, Connection* con
 {
     connection->OnChannelRemoveCallback(channel);
 }
+
+
 
 Connection::Connection(ServerInfo &info) :
         client_(0),
@@ -165,11 +169,14 @@ Connection::~Connection()
 {
     UninitializeCELT();
     SAFE_DELETE(client_);
+    // \todo clean playback queue
+    // \todo clean send queue
+    // \todo clean channel list
 }
 
 void Connection::Close()
 {
-
+    client_->Disconnect();
 }
 
 void Connection::InitializeCELT()
@@ -180,7 +187,8 @@ void Connection::InitializeCELT()
     celt_mode_ = celt_mode_create(SAMPLE_RATE_, channels, framesize, &error );
     if (error != 0)
     {
-        MumbleVoipModule::LogDebug("CELT initialized.");
+        QString message = QString("CELT initialization failed, error code = %1").arg(error);
+        MumbleVoipModule::LogDebug(message.toStdString());
     }
     celt_encoder_ = celt_encoder_create(celt_mode_);
     celt_decoder_ = celt_decoder_create(celt_mode_);
@@ -194,8 +202,6 @@ void Connection::UninitializeCELT()
     celt_mode_destroy(celt_mode_);
     MumbleVoipModule::LogDebug("CELT uninitialized.");
 }
-
-
 
 void Connection::Join(QString channel_name)
 {
@@ -214,7 +220,7 @@ void Connection::Join(QString channel_name)
     }
 }
 
-void Connection::OnAuthenticated()
+void Connection::OnAuthCallback()
 {
     authenticated_ = true;
     if (join_request_.length() > 0)
@@ -238,7 +244,7 @@ void Connection::HandleIncomingCELTFrame(char* data, int size)
 
     //celt_mode_info(celt_mode_, ???, sample_rate);
     int sample_count = 480;
-    celt_int16_t *pcm_data = new celt_int16_t[sample_count];
+    celt_int16_t pcm_data[480];
     int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
     switch (ret)
     {
@@ -263,14 +269,13 @@ void Connection::HandleIncomingCELTFrame(char* data, int size)
     case CELT_UNIMPLEMENTED:
         break;
     }
-    SAFE_DELETE_ARRAY(pcm_data);
-   
 }
 
 PCMAudioFrame* Connection::GetAudioFrame()
 {
     if (playback_queue_.size() == 0)
         return 0;
+
     PCMAudioFrame* frame = playback_queue_.takeFirst();
     return frame;
 }

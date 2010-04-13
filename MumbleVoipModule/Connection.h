@@ -55,6 +55,7 @@ namespace MumbleVoip
     //!
     class Connection : public QObject
     {
+        enum State { INITIALIZING, OPEN, CLOSED };
         Q_OBJECT
     public:
         Connection(ServerInfo &info);
@@ -89,7 +90,7 @@ namespace MumbleVoip
         QList<Channel*> channels_;
 
     public slots:
-        void OnAuthenticated();
+        void OnAuthCallback();
         void OnTextMessageCallback(QString text);
         void OnRawUdpTunnelCallback(int32_t length, void* buffer);
 //        void OnRelayTunnel(std::string &s);
