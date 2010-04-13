@@ -14,63 +14,12 @@
 
 #include "SoundServiceInterface.h"
 #include "Channel.h"
+#include "PCMAudioFrame.h"
 #include <mumbleclient/PacketDataStream.h>
 #include <libcelt/celt.h> 
 
 namespace MumbleVoip {
 
-
-
-PCMAudioFrame::PCMAudioFrame(int sample_rate, int sample_width, int channels, char* data, int data_size):
-        channels_(channels),
-        sample_rate_(sample_rate),
-        sample_width_(sample_width),
-        data_(data),
-        data_size_(data_size)
-{
-    data_ = new char[data_size];
-    memcpy(data_, data, data_size);
-}
-
-PCMAudioFrame::~PCMAudioFrame()
-{
-    SAFE_DELETE_ARRAY(data_);
-}
-    
-char* PCMAudioFrame::Data()
-{
-    return data_;
-}
-
-int PCMAudioFrame::Channels()
-{
-    return channels_;
-}
-    
-int PCMAudioFrame::SampleRate()
-{
-    return sample_rate_;
-}
-
-int PCMAudioFrame::SampleWidth()
-{
-    return sample_width_;
-}
-    
-int PCMAudioFrame::Samples()
-{
-    return data_size_ / sample_width_;
-}
-
-int PCMAudioFrame::GetLengthMs()
-{
-    return 1000 * Samples() / sample_rate_;
-}
-
-int PCMAudioFrame::GetLengthBytes()
-{
-    return data_size_;
-}
 
 //struct RelayMessage {
 //	MumbleClient::MumbleClient* mc;
@@ -391,28 +340,28 @@ PCMAudioFrame* Connection::GetAudioFrame()
 
 void Connection::OnPlayAudioData(char* data, int size)
 {
-	char *buffer = new char[size];
-    memcpy(buffer, data, size);
-
-
-	int frames = scanPacket(buffer, size);
-    if (frames == -1)
-    {
-        // invalid packet
-        return;
-    }
-
-	buffer[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
-	memcpy(&buffer[1], &buffer[2], size - 1);
-
-    // @todo: encode CELT
-#define TCP 1
-#if TCP
-	client_->SendRawUdpTunnel(buffer, size - 1);
-#else
-	client_->SendUdpMessage(buffer, size - 1);
-#endif
-	delete []buffer;
+//	char *buffer = new char[size];
+//    memcpy(buffer, data, size);
+//
+//
+//	int frames = scanPacket(buffer, size);
+//    if (frames == -1)
+//    {
+//        // invalid packet
+//        return;
+//    }
+//
+//	buffer[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
+//	memcpy(&buffer[1], &buffer[2], size - 1);
+//
+//    // @todo: encode CELT
+//#define TCP 1
+//#if TCP
+//	client_->SendRawUdpTunnel(buffer, size - 1);
+//#else
+//	client_->SendUdpMessage(buffer, size - 1);
+//#endif
+//	delete []buffer;
 }
 
 void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
