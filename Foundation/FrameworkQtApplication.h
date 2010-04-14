@@ -10,6 +10,8 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QTranslator>
+#include <QDir>
+#include <QStringList>
 
 namespace Foundation
 {
@@ -29,22 +31,27 @@ namespace Foundation
 
             QGraphicsView *GetUIView() const;
             void SetUIView (std::auto_ptr <QGraphicsView> view);
-            QTranslator* GetTranslator();
+              
             void Go();
 
         public slots:
             void UpdateFrame();
+            void ChangeLanguage(const QString& file);
 
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
             
         private:
+            
+            QStringList GetQmFiles(const QDir& dir);
+        
             Framework   *framework_;
             QTimer      frame_update_timer_;
             bool        app_activated_;
 
             std::auto_ptr <QGraphicsView> view_;
-            QTranslator* translator_;
+            QTranslator* native_translator_;
+            QTranslator* app_translator_;
     };
 
 }

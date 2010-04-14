@@ -32,14 +32,15 @@ namespace CoreUi
         
         for (int i = 0; i < qmFiles.size(); ++i) 
         {
-         QString name = LanguageName(qmFiles[i]);
-         QListWidgetItem* item = new QListWidgetItem(name, lstWidget);
-         qmFileForCheckBoxMap.insert(item, qmFiles[i]);
+         
+            QString name = LanguageName(qmFiles[i]);
+            QListWidgetItem* item = new QListWidgetItem(name, lstWidget);
+            qmFileForCheckBoxMap.insert(item, qmFiles[i]);
         
         }
        connect(lstWidget, SIGNAL(itemPressed(QListWidgetItem*)), this, SLOT(ItemPressed(QListWidgetItem*)));
-       translator_ = new QTranslator();
-
+       connect(this, SIGNAL(LanguageSelected(const QString&)), qApp, SLOT(ChangeLanguage(const QString&)));
+       
     }
 
     void LanguageWidget::ExportSettings()
@@ -73,12 +74,10 @@ namespace CoreUi
 
     void LanguageWidget::ItemPressed(QListWidgetItem* item)
     {
-        // Remove old
-        QApplication::removeTranslator(translator_);
-
+    
         QString file = qmFileForCheckBoxMap[item];
-        if ( translator_->load(qmFileForCheckBoxMap[item]))
-            QApplication::installTranslator(translator_); 
+        emit LanguageSelected(file);
+
     }
 
   

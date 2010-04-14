@@ -28,6 +28,9 @@ namespace CoreUi
             void ItemPressed(QListWidgetItem* item);
             void CancelClicked();
 
+        signals:
+            void LanguageSelected(const QString& file);
+
         private:
         
             QString LanguageName(QString qmFile);
