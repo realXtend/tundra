@@ -294,11 +294,11 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
     int audio_quality = 60000;
 //    sending_queue_.push_back(frame);
 
-//    celt_encoder_ctl(celt_encode, CELT_SET_PREDICTION(0));
+    celt_encoder_ctl(celt_encoder_, CELT_SET_LTP(0));
 	//celt_encoder_ctl(celt_encode, CELT_SET_VBR_RATE(audio_quality));
 
-    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&send_buffer_, std::min(audio_quality / (100 * 8), 127));
-    packet_list.push_back(std::string(reinterpret_cast<char *>(send_buffer_), len));
+    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&encode_buffer_, std::min(audio_quality / (100 * 8), 127));
+    packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
 
     int32_t seq = 0;
 	int frames = 1;
@@ -395,12 +395,10 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     //skip = pds_int_len(data_stream.charPtr());
     //data_stream.skip(skip);
 
-    uint64_t session;
-    uint64_t seq;
+    int session;
+    int seq;
     data_stream >> session;
     data_stream >> seq;
-    //int session << data_stream.next();
-    //int seq >> data_stream.next();
 
     bool last_frame = true;
     do {
@@ -420,18 +418,6 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         data_stream >> position[1];
         data_stream >> position[2];
     }
-    ////int seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    ////seg = data_stream.next8();
-    //int seg = 1;
-    //for (int i = 0; i < frames; ++i)
-    //{
-    //    uint8_t data_size = data_stream.next8();
-    //    const char* data = data_stream.charPtr();
-
-    //    connection->OnRawUdpTunnel((char*)data, data_size);
-    //}
 }
 
 QList<QString> Connection::Channels()
