@@ -3,17 +3,26 @@
 #ifndef incl_DebugStats_TimeProfilerWindow_h
 #define incl_DebugStats_TimeProfilerWindow_h
 
-#include "WorldStream.h"
-
-#include <QTreeWidget>
-#include <QTimer>
-#include <QComboBox>
-#include <QTabWidget>
-#include <QLabel>
-#include <QTreeWidget>
-#include <QPushButton>
+#include "CoreTypes.h"
 
 #include <boost/cstdint.hpp>
+
+#include <QWidget>
+#include <QTimer>
+
+class QTreeWidget;
+class QComboBox;
+class QTabWidget;
+class QLabel;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QPushButton;
+
+namespace ProtocolUtilities
+{
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+}
 
 namespace ProtocolUtilities
 {
@@ -37,73 +46,74 @@ namespace Foundation
     class ProfilerNode;
 }
 
-class TimeProfilerWindow : public QWidget
+namespace DebugStats
 {
-    Q_OBJECT
+    class TimeProfilerWindow : public QWidget
+    {
+        Q_OBJECT
 
-    Foundation::Framework *framework_;
-    DebugStats::DebugStatsModule *owner_;
+    public:
+        /// The ctor adds this window to scene, but does not show it.
+        explicit TimeProfilerWindow(Foundation::Framework *fw);
+        void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
+        void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
+        void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
+        void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
 
-    QTreeWidget *tree_profiling_data_;
-    QComboBox *combo_timing_refresh_interval_;
-    QTabWidget *tab_widget_;
-    QWidget *contents_widget_;
-    QLabel *label_frame_time_history_;
-    QLabel *label_top_frame_time_;
-    QLabel *label_time_per_frame_;
-    QLabel *label_region_map_coords_;
-    QLabel *label_region_object_capacity_;
-    QLabel *label_pid_stat_;
-    QTreeWidget *tree_sim_stats_;
-    QPushButton *push_button_toggle_tree_;
-    QPushButton *push_button_collapse_all_;
-    QPushButton *push_button_expand_all_;
-    QPushButton *push_button_show_unused_;
-    QTreeWidget *tree_asset_cache_;
-    QTreeWidget *tree_asset_transfers_;
-        
-    int frame_time_update_x_pos_;
+    public slots:
+        void RefreshProfilingData();
+        void OnProfilerWindowTabChanged(int newPage);
+        void RefreshOgreProfilingWindow();
+        void RefreshNetworkProfilingData();
+        void ToggleTreeButtonPressed();
+        void CollapseAllButtonPressed();
+        void ExpandAllButtonPressed();
+        void ShowUnusedButtonPressed();
+        void RefreshAssetProfilingData();
 
-    // If true, profiling data is shown in a tree, otherwise using a flat list.
-    bool show_profiler_tree_;
+    protected:
+        void resizeEvent(QResizeEvent *event);
 
-    bool show_unused_;
+    private:
+        Foundation::Framework *framework_;
+        DebugStats::DebugStatsModule *owner_;
 
-    QTimer profiler_update_timer_;
+        QTreeWidget *tree_profiling_data_;
+        QComboBox *combo_timing_refresh_interval_;
+        QTabWidget *tab_widget_;
+        QWidget *contents_widget_;
+        QLabel *label_frame_time_history_;
+        QLabel *label_top_frame_time_;
+        QLabel *label_time_per_frame_;
+        QLabel *label_region_map_coords_;
+        QLabel *label_region_object_capacity_;
+        QLabel *label_pid_stat_;
+        QTreeWidget *tree_sim_stats_;
+        QPushButton *push_button_toggle_tree_;
+        QPushButton *push_button_collapse_all_;
+        QPushButton *push_button_expand_all_;
+        QPushButton *push_button_show_unused_;
+        QTreeWidget *tree_asset_cache_;
+        QTreeWidget *tree_asset_transfers_;
 
-    ProtocolUtilities::WorldStreamPtr current_world_stream_;
+        int frame_time_update_x_pos_;
 
-    void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
+        // If true, profiling data is shown in a tree, otherwise using a flat list.
+        bool show_profiler_tree_;
 
-    int ReadProfilingRefreshInterval();
-    void RefreshProfilingDataTree();
-    void RefreshProfilingDataList();
-    void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+        bool show_unused_;
 
-protected:
-    void resizeEvent(QResizeEvent *event);
+        QTimer profiler_update_timer_;
 
-public:
-    /// The ctor adds this window to scene, but does not show it.
-    explicit TimeProfilerWindow(UiServices::UiModule *uiModule, DebugStats::DebugStatsModule *owner);
-    void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
-    void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
-    void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
-    void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
+        ProtocolUtilities::WorldStreamPtr current_world_stream_;
 
-public slots:
-    void RefreshProfilingData();
-    void OnProfilerWindowTabChanged(int newPage);
-    void RefreshOgreProfilingWindow();
-    void RefreshNetworkProfilingData();
-    void ToggleTreeButtonPressed();
-    void CollapseAllButtonPressed();
-    void ExpandAllButtonPressed();
-    void ShowUnusedButtonPressed();
-    void RefreshAssetProfilingData();
-    
-public slots:
-    void Closed();
-};
+        void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
+
+        int ReadProfilingRefreshInterval();
+        void RefreshProfilingDataTree();
+        void RefreshProfilingDataList();
+        void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+    };
+}
 
 #endif

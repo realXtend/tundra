@@ -1,14 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "MenuManager.h"
 #include "Common/AnchorLayoutManager.h"
 #include "Inworld/View/UiProxyWidget.h"
+#include "ActionNode.h"
+#include "GroupNode.h"
 
 #include <QSequentialAnimationGroup>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include <QUuid>
 #include <QDebug>
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
@@ -22,6 +27,12 @@ namespace CoreUi
             root_collapsing_(false)
     {
         InitInternals();
+    }
+
+    MenuManager::~MenuManager()
+    {
+        SAFE_DELETE(root_menu_);
+        //qDeleteAll(category_map_);
     }
 
     void MenuManager::InitInternals()
@@ -45,9 +56,8 @@ namespace CoreUi
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
     }
 
-    void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties properties)
+    void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties)
     {
-        qDebug() << properties.GetWidgetName();
         ActionNode *child_node = new ActionNode(properties.GetWidgetName(), properties.GetWidgetIcon(), properties.GetMenuNodeStyleMap());
         switch (category)
         {
@@ -169,7 +179,7 @@ namespace CoreUi
             last_resize_animations_ = 0;
             GroupNode* node = dynamic_cast<GroupNode*>(clicked_node->parent());
 
-			if (node)
+            if (node)
             {
                 node->AdjustNode(QAbstractAnimation::Forward);
                 last_resize_animations_ = node->GetResizeAnimations();

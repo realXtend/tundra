@@ -11,6 +11,7 @@
 #include "RexNetworkUtils.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
+#include <QStringList>
 
 namespace RexTypes
 {    
@@ -228,6 +229,9 @@ namespace RexTypes
     
     NameValueMap ParseNameValueMap(const std::string& namevalue)
     {
+        // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
+        // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
+
         // Split into lines
         NameValueMap map;
         StringVector lines = SplitString(namevalue, '\n');
@@ -250,6 +254,29 @@ namespace RexTypes
                 map[name] = value;
             }
         }
+
+        // Parse auth server address out from the NameValue if it exists
+        QString fullname = QString(map["FirstName"].c_str()) + " " + QString(map["LastName"].c_str());
+        if (fullname.contains('@'))
+        {
+            QStringList names;
+            if (fullname.contains('@'))
+            {
+                names = fullname.split(" ");
+                foreach(QString name, names)
+                {
+                    if (name.contains('@'))
+                    {
+                        map["RexAuth"] = name.toStdString();
+                        names.removeOne(name);
+                    }
+                }
+            }
+            assert(names[0].size() >= 2);
+            map["FirstName"] = names[0].toStdString();
+            map["LastName"] = names[1].toStdString();
+        }
+
         return map;
     }
     

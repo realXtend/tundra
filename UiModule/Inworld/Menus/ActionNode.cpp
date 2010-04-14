@@ -10,6 +10,10 @@ namespace CoreUi
     {
     }
 
+    ActionNode::~ActionNode()
+    {
+    }
+
     void ActionNode::NodeClicked()
     {
         emit ActionButtonClicked(id_);

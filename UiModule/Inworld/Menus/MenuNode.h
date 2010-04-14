@@ -4,10 +4,7 @@
 #define incl_UiModule_MenuNode_h
 
 #include <QGraphicsProxyWidget>
-#include <QParallelAnimationGroup>
-#include <QPropertyAnimation>
 #include <QUuid>
-#include <QPushButton>
 #include <QString>
 #include <QPointF>
 #include <QMap>
@@ -19,32 +16,35 @@
 #define RESIZE_ANIM_LENGTH 200
 #define ADJUST_ANIM_LENGTH 150
 
+class QParallelAnimationGroup;
+class QPropertyAnimation;
+
 namespace CoreUi
 {
     class GroupNode;
 
     class MenuNode : public QGraphicsProxyWidget, protected Ui::MenuNode
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-        MenuNode(const QString& node_name, QIcon icon, UiDefines::MenuNodeStyleMap map, QUuid id = QUuid());
+        MenuNode(const QString& node_name, const QIcon &icon, UiDefines::MenuNodeStyleMap map, QUuid id = QUuid());
+        ~MenuNode();
 
     public slots:
-        QUuid GetID();
+        QUuid GetID() const;
 
         void SetTreeDepth(int tree_depth)   { tree_depth_ = tree_depth; }
-        int GetTreeDepth()                  { return tree_depth_; }
-        int GetExpandedWidth()              { return expanded_width_; }
+        int GetTreeDepth() const { return tree_depth_; }
+        int GetExpandedWidth() const { return expanded_width_; }
 
-        QPointF GetShrunkenPos(){ return shrunken_pos_; }
+        QPointF GetShrunkenPos() const { return shrunken_pos_; }
         void SetShrunkenPos(QPointF shrunken_pos){ shrunken_pos_ = shrunken_pos; }
 
-        QPointF GetExpandedPos(){ return expanded_pos_; }
+        QPointF GetExpandedPos() const { return expanded_pos_; }
         void SetExpandedPos(QPointF expanded_pos){ expanded_pos_ = expanded_pos; }
 
-        QPointF GetOriginalPos(){ return original_pos_; }
+        QPointF GetOriginalPos() const { return original_pos_; }
         void SetOriginalPos(QPointF original_pos){ original_pos_  = original_pos; }
 
         QPropertyAnimation *CreateResizeAnimation(QString anim_property);
@@ -91,7 +91,6 @@ namespace CoreUi
     signals:
         void ActionButtonClicked(QUuid);
         void NodeGroupClicked(GroupNode *clicked_node, QParallelAnimationGroup *move_animations, QParallelAnimationGroup *size_animations);
-
     };
 }
 

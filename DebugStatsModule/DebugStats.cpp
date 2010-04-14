@@ -1,20 +1,29 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   DebugStats.cpp
+ *  @brief  DebugStatsModule shows information about internal core data structures in separate windows.
+ *          Useful for verifying and understanding the internal state of the application.
+ *  @note   Depends on RexLogicModule so don't create dependency to this module.
+ */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "DebugStats.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
+#include "TimeProfilerWindow.h"
+#include "ParticipantWindow.h"
+
+#include "Framework.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-
-#include "ConsoleCommand.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "Framework.h"
+#include "WorldStream.h"
+#include "NetworkEvents.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
-
-#include <UiModule.h>
+#include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 
@@ -27,8 +36,12 @@ using namespace std;
 namespace DebugStats
 {
 
-DebugStatsModule::DebugStatsModule()
-:ModuleInterfaceImpl(NameStatic()), profilerWindow_(0), networkEventCategory_(0)
+DebugStatsModule::DebugStatsModule() :
+    ModuleInterfaceImpl(NameStatic()),
+    frameworkEventCategory_(0),
+    networkEventCategory_(0),
+    profilerWindow_(0),
+    participantWindow_(0)
 {
 }
 
@@ -56,6 +69,10 @@ void DebugStatsModule::PostInitialize()
         Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
 
+    RegisterConsoleCommand(Console::CreateCommand("Participant", 
+        "Shows the participant window.",
+        Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
+
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     if (frameworkEventCategory_ == 0)
         LogError("Failed to query \"Framework\" event category");
@@ -68,26 +85,19 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
-    // If the window is already visible, no need to create another one.
+    // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-        ///\todo The ideal path would only return here. We would like to hook the close button of the window
-        /// to clear the profilerWindow_ member. Here we check if the profilerWindow_ member is 0, and only
-        /// create the window if it does not exist.
-        //return;
-
-        // Now we need play 'singleton' with the UI subsystem.
-        //profilerWindow_->show();
+        ui_module->GetInworldSceneController()->BringProxyToFront(profilerWindow_);
         return Console::ResultSuccess();
-//        delete profilerWindow_;
     }
 
-    profilerWindow_ = new TimeProfilerWindow(ui_module.get(), this);
+    profilerWindow_ = new TimeProfilerWindow(framework_);
     UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_,
         UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
     //Desired: profilerWindow_->show();
     // Instead of:
-    proxy->show();
+    ui_module->GetInworldSceneController()->ShowProxyForWidget(profilerWindow_);//proxy->show();
     // The following should not be needed if the size was properly set in Designer.
     proxy->resize(650, 530);
     // Assuming size needs to be se in a custom way:
@@ -95,12 +105,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     
 //    proxy->setWindowTitle("Profiler");
 
-    QObject::connect(proxy, SIGNAL(Closed()), profilerWindow_, SLOT(Closed()));
-//  Desired:    QObject::connect(profilerWindow_, SIGNAL(Closed()), profilerWindow_, SLOT(Closed()));
-//  This should be in profilerWindow_.
+    QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(CloseProfilingWindow()));
 
-// profilerWindow_->setAttribute(Qt::WA_DeleteOnClose);
-//connect(profilerWindow_, SIGNAL(Destroyed(QObject *)), this, CloseProfilingWindow());
     if (current_world_stream_)
         profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
@@ -113,6 +119,40 @@ void DebugStatsModule::CloseProfilingWindow()
 {
     profilerWindow_->deleteLater();
     profilerWindow_ = 0;
+}
+
+Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
+{
+    boost::shared_ptr<UiServices::UiModule> ui_module = 
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module.get())
+        return Console::ResultFailure("Failed to acquire UiModule pointer!");
+
+    if (participantWindow_)
+    {
+        ui_module->GetInworldSceneController()->BringProxyToFront(participantWindow_);
+        return Console::ResultSuccess();
+    }
+
+    participantWindow_ = new ParticipantWindow(framework_);
+    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(participantWindow_,
+        UiServices::UiWidgetProperties(QApplication::translate("ParticipantWindow", "Participants"), UiServices::SceneWidget));
+
+    proxy->show();
+//    proxy->resize(650, 530);
+
+    QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(CloseParticipantWindow()));
+
+//    if (current_world_stream_)
+//        participantWindow_->SetWorldStreamPtr(current_world_stream_);
+
+    return Console::ResultSuccess();
+}
+
+void DebugStatsModule::CloseParticipantWindow()
+{
+    participantWindow_->deleteLater();
+    participantWindow_ = 0;
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -134,16 +174,16 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id,
-    event_id_t event_id, Foundation::EventDataInterface *data)
+bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
 {
     PROFILE(DebugStatsModule_HandleEvent);
-  
+
     if (category_id == frameworkEventCategory_)
     {
-        if(event_id == Foundation::WORLD_STREAM_READY)
+        if (event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            assert(event_data);
             if (event_data)
                 current_world_stream_ = event_data->WorldStream;
             if (profilerWindow_)
@@ -159,7 +199,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id,
 
     if (category_id == networkEventCategory_)
     {
-        if(event_id == RexNetMsgSimStats)
+        if (event_id == RexNetMsgSimStats)
         {
             ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
             assert(netdata);
@@ -182,7 +222,6 @@ const std::string &DebugStatsModule::NameStatic()
     return ModuleName;
 }
 
-//void DebugStatsModule::SendRandomNetworkInPacket()
 Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
 {
     if (params.size() == 0)

@@ -6,13 +6,13 @@
 
 namespace RexLogic
 {
-    EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) : 
+    EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         RegionHandle(0),
         LocalId(0),
-        ParentId(0)
+        ParentId(0),
+        FullId(RexUUID())
     {
-        FullId.SetNull();    
     }
 
     EC_OpenSimPresence::~EC_OpenSimPresence()
@@ -22,9 +22,9 @@ namespace RexLogic
     void EC_OpenSimPresence::SetFirstName(const std::string &name)
     {
         first_name_ = name;
-    } 
+    }
 
-    std::string EC_OpenSimPresence::GetFirstName()
+    std::string EC_OpenSimPresence::GetFirstName() const
     {
         return first_name_;
     }
@@ -34,12 +34,12 @@ namespace RexLogic
         last_name_ = name;
     }
 
-    std::string EC_OpenSimPresence::GetLastName()
+    std::string EC_OpenSimPresence::GetLastName() const
     {
         return last_name_;
     }
 
-    std::string EC_OpenSimPresence::GetFullName()
+    std::string EC_OpenSimPresence::GetFullName() const
     {
         return first_name_ + " " + last_name_;
     }

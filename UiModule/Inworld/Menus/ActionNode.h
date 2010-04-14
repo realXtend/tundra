@@ -15,6 +15,7 @@ namespace CoreUi
 
     public:
         ActionNode(const QString& name, QIcon icon, UiDefines::MenuNodeStyleMap map);
+        ~ActionNode();
 
     public slots:
         void NodeClicked();

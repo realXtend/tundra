@@ -11,6 +11,7 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
+#include "WorldStream.h"
 
 #include <utility>
 
@@ -28,9 +29,10 @@
 
 using namespace std;
 
-TimeProfilerWindow::TimeProfilerWindow(UiServices::UiModule *uiModule,
-                                       DebugStats::DebugStatsModule *owner)
-:framework_(owner->GetFramework()), owner_(owner)
+namespace DebugStats
+{
+
+TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
 {
     QUiLoader loader;
     QFile file("./data/ui/profiler.ui");
@@ -853,10 +855,10 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 {
     if (!tab_widget_ || tab_widget_->currentIndex() != 5)
         return;
-        
+
     tree_asset_cache_->clear();
     tree_asset_transfers_->clear();
-        
+
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
         framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
     if (!asset_service)
@@ -875,7 +877,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         
         ++i;
     }
-    
+
     Foundation::AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
     Foundation::AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
     while (j != transfer_vector.end())
@@ -890,12 +892,8 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         item->setText(4, QString(FormatBytes((int)(*j).received_).c_str()));
         ++j;
     }
-        
+
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
 
-void TimeProfilerWindow::Closed()
-{
-    owner_->CloseProfilingWindow();
 }
-

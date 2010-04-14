@@ -110,6 +110,7 @@ void InventoryModule::Uninitialize()
 {
     SAFE_DELETE(inventoryWindow_);
 //    SAFE_DELETE(uploadProgressWindow_);
+    SAFE_DELETE(service_);
     DeleteAllItemPropertiesWindows();
 
     eventManager_.reset();

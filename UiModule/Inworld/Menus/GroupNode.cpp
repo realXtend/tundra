@@ -1,16 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "GroupNode.h"
 
-#include "math.h"
+#include <math.h>
 
 #include <QDebug>
 #include <QSizeF>
 #include <QPropertyAnimation>
 #include <QGraphicsItem>
+#include "MemoryLeakCheck.h"
 
-#define M_PI_2		1.57079632679489661923
+#define M_PI_2 1.57079632679489661923
 
 namespace CoreUi
 {
@@ -44,6 +47,11 @@ namespace CoreUi
         }
         else
             SetTreeDepth(-1);
+    }
+
+    GroupNode::~GroupNode()
+    {
+        qDeleteAll(children_);
     }
 
     void GroupNode::AdjustNode(QAbstractAnimation::Direction dir)

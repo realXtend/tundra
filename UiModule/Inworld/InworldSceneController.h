@@ -12,15 +12,16 @@
 class QRectF;
 class QGraphicsLinearLayout;
 
-namespace Foundation { class Framework; }
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace UiServices
 {
-
     class UI_MODULE_API InworldSceneController : public QObject
     {
-        
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         //! Constructor.
@@ -36,7 +37,7 @@ namespace UiServices
         //! \param widget QWidget to be added to the settings widget
         //! \param tab_name QString name of the tab shown in widget
         //! \return trued if add succesfull, false otherwise
-        bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name);
+        bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
 
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! Conviniance function if you dont want to bother and define your UiWidgetProperties.
@@ -70,31 +71,39 @@ namespace UiServices
 
         //! Brings the UiProxyWidget to front in the scene, set focus to it and shows it.
         //! \param widget Proxy widget.
-        void BringProxyToFront(UiProxyWidget *widget);
+        void BringProxyToFront(UiProxyWidget *widget) const;
 
         //! Brings the UiProxyWidget to front in the scene, set focus to it and shows it.
         //! \param widget Widget.
-        void BringProxyToFront(QWidget *widget);
+        void BringProxyToFront(QWidget *widget) const;
+
+        //! Shows the UiProxyWidget of QWidget in the scene.
+        //! \param widget Widget.
+        void ShowProxyForWidget(QWidget *widget) const;
+
+        //! Hides the UiProxyWidget of QWidget in the scene.
+        //! \param widget Widget.
+        void HideProxyForWidget(QWidget *widget) const;
 
         //! Get the inworld ui scene
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
 
         //! Please dont call this if you dont know what you are doing
         //! Set the current chat controller object to world chat widget
-        void SetWorldChatController(QObject *controller);
+        void SetWorldChatController(QObject *controller) const;
 
         //! Please dont call this if you dont know what you are doing
         //! Set the im proxy to world chat widget for show/hide toggling
-        void SetImWidget(UiProxyWidget *im_proxy);
+        void SetImWidget(UiProxyWidget *im_proxy) const;
 
         //! Set focus to chat line edit
-        void SetFocusToChat();
+        void SetFocusToChat() const;
 
         //! Get ControlPanelManager pointer
-        CoreUi::ControlPanelManager *GetControlPanelManager() { return control_panel_manager_; }
+        CoreUi::ControlPanelManager *GetControlPanelManager()  const { return control_panel_manager_; }
 
         //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
-        QObject *GetSettingsObject();
+        QObject *GetSettingsObject() const;
 
     private:
         Q_DISABLE_COPY(InworldSceneController);
@@ -116,7 +125,7 @@ namespace UiServices
 
         //! Core Widgets
         CoreUi::CommunicationWidget *communication_widget_;
-        
+
         //! Internal list of UiProxyWidgets in scene
         QList<UiServices::UiProxyWidget *> all_proxy_widgets_in_scene_;
 
@@ -125,8 +134,7 @@ namespace UiServices
 
     private slots:
         //! Slot for applying new ui settings to all proxy widgets
-        void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
-
+        void ApplyNewProxySettings(int new_opacity, int new_animation_speed) const;
     };
 }
 

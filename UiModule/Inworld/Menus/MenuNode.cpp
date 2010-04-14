@@ -1,16 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "MenuNode.h"
 
 #include <QPainter>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
-    MenuNode::MenuNode(const QString& node_name, QIcon icon, UiDefines::MenuNodeStyleMap map, QUuid id):
+    MenuNode::MenuNode(const QString& node_name, const QIcon &icon, UiDefines::MenuNodeStyleMap map, QUuid id):
             QGraphicsProxyWidget(0),
             node_name_(node_name),
             widget_(new QWidget),
@@ -50,8 +52,13 @@ namespace CoreUi
         ChangeStyle(Normal);
         ChangeMoveState(false);
     }
+    
+    MenuNode::~MenuNode()
+    {
+        //SAFE_DELETE(widget_);
+    }
 
-    QUuid MenuNode::GetID()
+    QUuid MenuNode::GetID() const
     {
         return id_;
     }

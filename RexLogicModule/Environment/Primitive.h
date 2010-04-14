@@ -1,15 +1,24 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Primitive.h
+ *  @brief  Primitive logic handler.
+*/
 
-#ifndef incl_Primitive_h
-#define incl_Primitive_h
+#ifndef incl_RexLogicModule_Primitive_h
+#define incl_RexLogicModule_Primitive_h
 
-#include "NetworkEvents.h"
 #include "ResourceInterface.h"
-#include "Entity.h"
-#include "Color.h"
+#include "RexTypes.h"
+#include "RexUUID.h"
 
 class QColor;
 class QDomDocument;
+
+namespace ProtocolUtilities
+{
+    class NetworkEventInboundData;
+}
 
 namespace RexLogic
 {
@@ -26,7 +35,7 @@ namespace RexLogic
         bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid); 
         bool HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInboundData* data);
-                
+
         bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
@@ -38,7 +47,6 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
 
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
 
         void HandleLogout();
 
@@ -52,13 +60,14 @@ namespace RexLogic
 
         // Encode serializable EC's into XML format, put to RexFreeData, and send to server
         void HandleECsModified(entity_id_t entityid);
+
         // Deserialize EC's sent by server
         void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc);
-        
+
     private:
         //! The owning module.
         RexLogicModule *rexlogicmodule_;
-    
+
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
         Scene::EntityPtr GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid);
@@ -111,7 +120,7 @@ namespace RexLogic
         //! @param entity_id Entity id.
         //! @param extra_params_data Binary data blob.
         void HandleExtraParams(const entity_id_t &entity_id, const uint8_t *extra_params_data);
-                
+
         //! handles mesh resource being ready
         void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
 
@@ -127,11 +136,11 @@ namespace RexLogic
          * @param radius Radius of the light.
          * @param falloff Falloff factor of the light.
          */ 
-        void AttachLightComponent(Scene::EntityPtr entity, Color color, float radius, float falloff);
+        void AttachLightComponent(Scene::EntityPtr entity, const Color &color, float radius, float falloff);
 
-        /// Creates hovering text above entity. Uses EC_ChatBubble.
+        /// Creates hovering text above entity. Uses EC_HoveringText
         /// @param entity Entity.
-        /// @param text Text to be shown. If null ("") the EC_ChatBubble will be removed from the entity.
+        /// @param text Text to be shown. If null ("") the EC_HoveringText compoenent will be removed from the entity.
         /// @param text_color Color of the text.
         void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
 
