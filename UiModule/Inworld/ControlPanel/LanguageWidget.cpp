@@ -19,7 +19,7 @@
 namespace CoreUi
 {
     LanguageWidget::LanguageWidget(QObject* settings_widget) : 
-        QWidget(), translator_(0)
+        QWidget()
     {
         setupUi(this);
         connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ExportSettings()));
@@ -49,10 +49,7 @@ namespace CoreUi
     }
 
     LanguageWidget::~LanguageWidget()
-    {
-        delete translator_;
-        translator_ = 0;
-    }
+    {}
 
     void LanguageWidget::CancelClicked()
     {
