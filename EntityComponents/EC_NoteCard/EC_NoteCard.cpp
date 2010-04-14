@@ -27,6 +27,14 @@ using namespace OgreRenderer;
 #define LogError(msg) Poco::Logger::get("EC_NoteCard").error(std::string("Error: ") + msg);
 #define LogInfo(msg) Poco::Logger::get("EC_NoteCard").information(msg);
 
+static int notecard_min_pos = 100;
+static int notecard_max_pos = 400;
+static int notecard_next_pos = 100;
+static int notecard_pos_increment = 50;
+
+// Text maximum allowed size, considering our current limits of EC replication
+static int text_safe_size = 500;
+
 EC_NoteCard::EC_NoteCard(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
@@ -112,6 +120,15 @@ void EC_NoteCard::OnTitleChanged(const QString& title)
 
 void EC_NoteCard::OnTextChanged()
 {
+    // Check if text is unsafely long, and cut in that case
+    QString text = text_edit_->toPlainText();
+    if (text.size() > text_safe_size)
+    {
+        text.truncate(text_safe_size);
+        text_edit_->setText(text);
+        // Set position to end, to not confuse too greatly
+        text_edit_->moveCursor(QTextCursor::End);
+    }
     text_dirty_ = true;
 }
 
@@ -159,8 +176,14 @@ void EC_NoteCard::UpdateWidget()
             UiServices::UiWidgetProperties("Notecard", UiServices::SceneWidget));
         proxy->show();
         
+        // Notecard initial position
+        //! \todo Something less hardcoded
+        widget_->setGeometry(notecard_next_pos, notecard_next_pos, widget_->width(), widget_->height());
+        notecard_next_pos += notecard_pos_increment;
+        if (notecard_next_pos > notecard_max_pos)
+            notecard_next_pos = notecard_min_pos;
+        
         // Todo: add to notecard manager dialog
-        // Todo: manage initial positions sensibly
         
         title_edit_ = widget_->findChild<QLineEdit*>("line_edit");
         if (title_edit_)

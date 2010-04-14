@@ -33,7 +33,11 @@ QLabel {
     <widget class="QLineEdit" name="line_edit"/>
    </item>
    <item>
-    <widget class="QTextEdit" name="text_edit"/>
+    <widget class="QTextEdit" name="text_edit">
+     <property name="acceptRichText">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

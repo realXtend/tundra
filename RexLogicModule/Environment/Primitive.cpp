@@ -576,6 +576,13 @@ void Primitive::HandleECsModified(entity_id_t entityid)
     
     temp_doc.appendChild(entity_elem);
     QByteArray bytes = temp_doc.toByteArray();
+    
+    if (bytes.size() > 1000)
+    {
+        RexLogicModule::LogError("Entity component serialized data is too large (>1000 bytes), not sending update");
+        return;
+    }
+    
     free.FreeData = std::string(bytes.data(), bytes.size());
     SendRexFreeData(entityid);
 }
