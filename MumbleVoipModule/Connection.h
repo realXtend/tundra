@@ -96,7 +96,7 @@ namespace MumbleVoip
         static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
         QList<Channel*> channels_;
         bool sending_audio_;
-        char send_buffer_[4000];
+        char encode_buffer_[4000];
         int frame_sequence_;
 
     public slots:
