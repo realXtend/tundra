@@ -1,7 +1,11 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Avatar.h
+ *  @brief  Avatar logic handler.
+ */
 
 #include "StableHeaders.h"
-#include "RexNetworkUtils.h"
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarAppearance.h"
 #include "Avatar/AvatarEditor.h"
@@ -11,39 +15,29 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_Controllable.h"
+#include "SceneManager.h"
 #include "SceneEvents.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "WorldStream.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
-#include "Renderer.h"
-#include "ConversionUtils.h"
-#include "SceneManager.h"
-#include "GenericMessageUtils.h"
-#include "EventManager.h"
-#include "ModuleManager.h"
-#include "WorldStream.h"
 #include "EC_HoveringText.h"
-#include <UiModule.h>
+#include "ConversionUtils.h"
+#include "RexNetworkUtils.h"
+#include "GenericMessageUtils.h"
+#include "UiModule.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
-
-#include <Ogre.h>
-
-#include "Poco/DOM/DOMParser.h"
-#include "Poco/DOM/Element.h"
-#include "Poco/DOM/Attr.h"
-#include "Poco/DOM/NamedNodeMap.h"
-#include "Poco/DOM/AutoPtr.h"
-#include "Poco/SAX/InputSource.h"
 
 namespace RexLogic
 {
     Avatar::Avatar(RexLogicModule *rexlogicmodule) :
-        avatar_appearance_(rexlogicmodule)
-    { 
-        rexlogicmodule_ = rexlogicmodule;
-
+        avatar_appearance_(rexlogicmodule),
+        rexlogicmodule_(rexlogicmodule)
+    {
         avatar_states_[RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
         avatar_states_[RexUUID("47f5f6fb-22e5-ae44-f871-73aaaf4a6022")] = EC_OpenSimAvatar::Walk;
         avatar_states_[RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = EC_OpenSimAvatar::Stand;
@@ -58,7 +52,7 @@ namespace RexLogic
     Avatar::~Avatar()
     {
     }
-    
+
     Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid)
     {
         // Make sure scene exists
@@ -70,26 +64,23 @@ namespace RexLogic
         if (!entity)
         {
             entity = CreateNewAvatarEntity(entityid);
-            
             if (entity)
             {
                 rexlogicmodule_->RegisterFullId(fullid,entityid);
-            
                 EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
                 presence->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
                 presence->FullId = fullid;
             }
         }
         return entity;
-    }    
+    }
 
     Scene::EntityPtr Avatar::CreateNewAvatarEntity(entity_id_t entityid)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-        
         if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
             return Scene::EntityPtr();
-        
+
         StringVector defaultcomponents;
         defaultcomponents.push_back(EC_OpenSimPresence::TypeNameStatic());
         defaultcomponents.push_back(EC_OpenSimAvatar::TypeNameStatic());
@@ -107,48 +98,45 @@ namespace RexLogic
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
         {
-            //OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-            //DebugCreateOgreBoundingBox(rexlogicmodule_,
-            //    entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()), "AmbientGreen", Vector3(0.5,0.5,1.5));
-            
-            CreateNameOverlay(placeable, entityid);
+            //CreateNameOverlay(placeable, entityid);
+            ShowAvatarNameOverlay(entityid);
             CreateAvatarMesh(entityid);
         }
-        
+
         return entity;
-    } 
+    }
 
     bool Avatar::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
     {
-        ProtocolUtilities::NetInMessage *msg = data->message;
- 
-        msg->ResetReading();
-        uint64_t regionhandle = msg->ReadU64();
-        msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
-        
+        ProtocolUtilities::NetInMessage &msg = *data->message;
+        msg.ResetReading();
+
+        uint64_t regionhandle = msg.ReadU64();
+        msg.SkipToNextVariable(); ///\todo Unhandled inbound variable 'TimeDilation'.U16
+
         // Variable block: Object Data
-        size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
+        size_t instance_count = msg.ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < instance_count; ++i)
         {
-            uint32_t localid = msg->ReadU32(); 
-            msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
-            RexUUID fullid = msg->ReadUUID();
-            msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
-            uint8_t pcode = msg->ReadU8();
+            uint32_t localid = msg.ReadU32(); 
+            msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'State' U8
+            RexUUID fullid = msg.ReadUUID();
+            msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'CRC' U#"
+            uint8_t pcode = msg.ReadU8();
 
             Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid);
             if (!entity)
                 return false;
-                
+
             EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
             EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
             presence->RegionHandle = regionhandle;
-            
+
             // Get position from objectdata
-            msg->SkipToFirstVariableByName("ObjectData");
+            msg.SkipToFirstVariableByName("ObjectData");
             size_t bytes_read = 0;
-            const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
+            const uint8_t *objectdatabytes = msg.ReadBuffer(&bytes_read);
             if (bytes_read >= 28)
             {
                 // The data contents:
@@ -157,45 +145,35 @@ namespace RexLogic
                 netpos->Updated();
             }
 
-            msg->SkipToFirstVariableByName("ParentID");
-            presence->ParentId = msg->ReadU32();
+            msg.SkipToFirstVariableByName("ParentID");
+            presence->ParentId = msg.ReadU32();
 
-            // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
-            // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
-            msg->SkipToFirstVariableByName("NameValue");
-            QString namevalue = QString::fromUtf8(msg->ReadString().c_str());
+            msg.SkipToFirstVariableByName("NameValue");
+            QString namevalue = QString::fromUtf8(msg.ReadString().c_str());
             NameValueMap map = ParseNameValueMap(namevalue.toStdString());
-            if (rexlogicmodule_->GetServerConnection()->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
+            presence->SetFirstName(map["FirstName"]);
+            presence->SetLastName(map["LastName"]);
+
+            // Hide own name overlay
+            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
             {
-                StringVector names = SplitString(map["FirstName"], ' ');
-                if (names.size() == 2)
-                {
-                    presence->SetFirstName(names[0]);
-                    presence->SetLastName(names[1]);
-                }
-                else
-                {
-                    // Fallback
-                    presence->SetFirstName(map["FirstName"]);
-                    presence->SetLastName(map["LastName"]);
-                }
+                EC_HoveringText *overlay= entity->GetComponent<EC_HoveringText>().get();
+                if (overlay)
+                    overlay->Hide();
             }
             else
-            {
-                presence->SetFirstName(map["FirstName"]);
-                presence->SetLastName(map["LastName"]);
-            }
+                ShowAvatarNameOverlay(presence->LocalId);
 
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
             // controlled avatar entity. -jj.
             ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
-            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID && !entity->GetComponent(EC_Controllable::TypeNameStatic()))
+            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
+                !entity->GetComponent(EC_Controllable::TypeNameStatic()))
             {
                 Foundation::Framework *fw = rexlogicmodule_->GetFramework();
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::TypeNameStatic()));
-
                 entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::TypeNameStatic()));
 
                 Scene::Events::EntityEventData event_data;
@@ -205,10 +183,10 @@ namespace RexLogic
                 // If avatar does not have appearance address yet, and the connection info has, then use it
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 if (avatar->GetAppearanceAddress().empty())
-                {                     
+                {
                     std::string avataraddress = rexlogicmodule_->GetServerConnection()->GetInfo().avatarStorageUrl;
                     if (!avataraddress.empty())
-                    {                    
+                    {
                         avatar->SetAppearanceAddress(avataraddress,false);
                         avatar_appearance_.DownloadAppearance(entity);
                     }
@@ -216,35 +194,27 @@ namespace RexLogic
                 
                 // For some reason the avatar/connection ID might not be in sync before (when setting the appearance for first time),
                 // which causes the edit view to not be initially rebuilt. Force build now
-                rexlogicmodule_->GetAvatarEditor()->RebuildEditView();
-
-                // Remove the name tag for own avatar
-                boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-                if (name_tag.get())
-                {
-                    name_tag->Hide();
-                    entity->RemoveComponent(name_tag);
-                }
-            } 
+               rexlogicmodule_->GetAvatarEditor()->RebuildEditView();
+            }
             else if (presence->FullId != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
             {
-                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
-                boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                if (ui_module.get() && !sent_avatar_notifications_.contains(QString::fromStdString(presence->GetFullName()), Qt::CaseInsensitive))
+                boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule
+                    <UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                if (ui_module.get() && !sent_avatar_notifications_.contains(presence->GetFullName().c_str(), Qt::CaseInsensitive))
                 {
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("%1 joined the world").arg(QString::fromStdString(presence->GetFullName()))));
-                    sent_avatar_notifications_.append(QString::fromStdString(presence->GetFullName()));
+                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
+                        QString("%1 joined the world").arg(presence->GetFullName().c_str())));
+                    sent_avatar_notifications_.append(presence->GetFullName().c_str());
                 }
             }
-
-            ShowAvatarNameOverlay(presence->LocalId);
 
             // Handle setting the avatar as child of another object, or possibly being parent itself
             rexlogicmodule_->HandleMissingParent(localid);
             rexlogicmodule_->HandleObjectParent(localid);
 
-            msg->SkipToFirstVariableByName("JointAxisOrAnchor");
-            msg->SkipToNextVariable(); // To next instance            
+            msg.SkipToNextInstanceStart();
+            
+            ///\todo
         }
         
         return false;
@@ -263,14 +233,14 @@ namespace RexLogic
         
         //! \todo handle endians
         int i = 0;
-        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
         i += 4;
 
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
         if(!entity) return;
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
-        Vector3df position = GetProcessedVector(&bytes[i]);    
+        Vector3df position = GetProcessedVector(&bytes[i]);
         i += sizeof(Vector3df);
         if (!IsValidPositionVector(position))
             return;
@@ -286,7 +256,7 @@ namespace RexLogic
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos->orientation_ = rotation;
         }
-                  
+
         //! \todo what to do with acceleration & rotation velocity? zero them currently
         netpos->accel_ = Vector3df::ZERO;
         netpos->rotvel_ = Vector3df::ZERO;
@@ -306,19 +276,20 @@ namespace RexLogic
         // ofs 20 - 128
         // ofs 21 - 63
         // ofs 22 - position xyz - 3 x float (3x4 bytes)
-        // ofs 34 - velocity xyz - packed to 6 bytes        
-        // ofs 40 - acceleration xyz - packed to 6 bytes           
+        // ofs 34 - velocity xyz - packed to 6 bytes
+        // ofs 40 - acceleration xyz - packed to 6 bytes
         // ofs 46 - rotation - packed to 8 bytes 
         // ofs 54 - rotational vel - packed to 6 bytes
         
         //! \todo handle endians
         int i = 0;
-        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);                
+        uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
         i += 22;
         
         // set values
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
-        if(!entity) return;        
+        if(!entity)
+            return;
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
         Vector3df position = GetProcessedVector(&bytes[i]);
@@ -334,7 +305,7 @@ namespace RexLogic
         i += 6;
 
         Quaternion rotation = GetProcessedQuaternion(&bytes[i]);
-        i += 8;        
+        i += 8;
 
         netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
         
@@ -344,14 +315,13 @@ namespace RexLogic
             // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
             netpos->orientation_ = rotation;
         }
-        
-        netpos->Updated();
 
-        assert(i <= 60);                            
+        netpos->Updated();
+        assert(i <= 60);
     }
-    
+
     bool Avatar::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
-    {        
+    {
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
         bool overrideappearance = false;
 
@@ -359,50 +329,50 @@ namespace RexLogic
         {
             std::string avataraddress = params[0];
             RexUUID avatarid(params[1]);
-            
+
             if (params.size() >= 3)
                 overrideappearance = ParseBool(params[2]);
-            
+
             Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
             if (entity)
             {
-                EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();        
+                EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->SetAppearanceAddress(avataraddress,overrideappearance);
                 avatar_appearance_.DownloadAppearance(entity);
             }
         }
-        
+
         return false;
     }
-    
+
     bool Avatar::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
-    {        
+    {
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
-        
+
         if (params.size() < 7)
             return false;
-            
-        // Convert any , to .
+
+        // Convert any ',' to '.'
         for (uint i = 0; i < params.size(); ++i)
-            ReplaceCharInplace(params[i], ',', '.');  
-        
+            ReplaceCharInplace(params[i], ',', '.');
+
         RexUUID avatarid(params[0]);
         Real rate = ParseString<Real>(params[2], 1.0f);
         Real fadein = ParseString<Real>(params[3], 0.0f);
         Real fadeout = ParseString<Real>(params[4], 0.0f);
         int repeats = ParseString<int>(params[5], 1);
         bool stopflag = ParseBool(params[6]);
-        
-        if (repeats < 0) 
-            repeats = 0;                       
-        
+
+        if (repeats < 0)
+            repeats = 0;
+
         Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
         if (!entity)
-            return false;       
+            return false;
         OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get(); 
         if (!anim)
             return false;
-            
+
         if (!stopflag)
         {
             anim->EnableAnimation(params[1], false, fadein, true);
@@ -414,54 +384,55 @@ namespace RexLogic
         {
             anim->DisableAnimation(params[1], fadeout);
         }
-        
+
         return false;
-    }    
-    
+    }
+
     bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
         if (!scene)
             return false;
 
-        RexUUID fullid;
-        fullid.SetNull();
         Scene::EntityPtr entity = scene->GetEntity(objectid);
         if(!entity)
             return false;
 
+        RexUUID fullid;
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (presence)
         {
             fullid = presence->FullId;
             if (fullid != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
             {
-                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
-                boost::shared_ptr<UiServices::UiModule> ui_module = fw->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule
+                    <UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                 if (ui_module.get())
                 {
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("%1 logged out").arg(QString::fromStdString(presence->GetFullName()))));
-                    sent_avatar_notifications_.removeOne(QString::fromStdString(presence->GetFullName()));
+                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
+                        QString("%1 logged out").arg(presence->GetFullName().c_str())));
+                    sent_avatar_notifications_.removeOne(presence->GetFullName().c_str());
                 }
             }
         }
-        
+
         scene->RemoveEntity(objectid);
         rexlogicmodule_->UnregisterFullId(fullid);
         return false;
     }
    
     bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)   
-    {        
-        data->message->ResetReading();
-        RexUUID avatarid = data->message->ReadUUID();
+    {
+        ProtocolUtilities::NetInMessage &msg = *data->message;
+        msg.ResetReading();
+        RexUUID avatarid = msg.ReadUUID();
      
         std::vector<RexUUID> animations_to_start;
-        size_t animlistcount = data->message->ReadCurrentBlockInstanceCount();
+        size_t animlistcount = msg.ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animlistcount; i++)
         {
-            RexUUID animid = data->message->ReadUUID();
-            s32 animsequence = data->message->ReadS32();
+            RexUUID animid = msg.ReadUUID();
+            s32 animsequence = msg.ReadS32();
 
             animations_to_start.push_back(animid);
             
@@ -472,23 +443,23 @@ namespace RexLogic
             }
         }
         
-        size_t animsourcelistcount = data->message->ReadCurrentBlockInstanceCount();
+        size_t animsourcelistcount = msg.ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animsourcelistcount; i++)
-        {
-            RexUUID objectid = data->message->ReadUUID();  
-        }
+            RexUUID objectid = msg.ReadUUID();  
+
         // PhysicalAvatarEventList not used
-                
+
         StartAvatarAnimations(avatarid, animations_to_start);
-                
+
         return false;
-    }     
-    
+    }
+
     void Avatar::Update(f64 frametime)
     {
         avatar_appearance_.Update(frametime);
     }
 
+/*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
@@ -513,6 +484,7 @@ namespace RexLogic
             overlay->ShowMessage(presence->GetFullName().c_str());
         }
     }
+*/
 
     void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id)
     {
@@ -538,20 +510,9 @@ namespace RexLogic
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
-            // Do some splitting for rex account names, remove the server tag for now
-            QString name = presence->GetFullName().c_str();
-            if (name.indexOf("@") != -1)
-            {
-                QStringList words = name.split(" ");
-                foreach (QString word, words)
-                    if (word.indexOf("@") != -1)
-                        words.removeOne(word);
-                name = words.join(" ");
-            }
-
             overlay->SetTextColor(QColor(255,255,255,230));
             overlay->SetBackgroundGradient(QColor(0,0,0,230), QColor(50,50,50,230));
-            overlay->ShowMessage(name);
+            overlay->ShowMessage(presence->GetFullName().c_str());
         }
     }
     
@@ -568,7 +529,6 @@ namespace RexLogic
         if (placeableptr && meshptr)
         {
             OgreRenderer::EC_OgreMesh* mesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
-            
             mesh->SetPlaceable(placeableptr);
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
@@ -576,7 +536,6 @@ namespace RexLogic
         if (animctrlptr && meshptr)
         {
             OgreRenderer::EC_OgreAnimationController* animctrl = checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
-            
             animctrl->SetMeshEntity(meshptr);
         }
     }
@@ -617,28 +576,19 @@ namespace RexLogic
         for (unsigned i = 0; i < anims_to_start.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_start[i]);
-            
-            animctrl->EnableAnimation(
-                def.animation_name_,
-                def.looped_,
-                def.fadein_
-            );
-            
+
+            animctrl->EnableAnimation(def.animation_name_, def.looped_, def.fadein_);
             animctrl->SetAnimationSpeed(def.animation_name_, def.speedfactor_);
             animctrl->SetAnimationWeight(def.animation_name_, def.weightfactor_);
-            
+
             if (def.always_restart_)
                 animctrl->SetAnimationTimePosition(def.animation_name_, 0.0);
         }
-        
+
         for (unsigned i = 0; i < anims_to_stop.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_stop[i]);
-            
-            animctrl->DisableAnimation(
-                def.animation_name_,
-                def.fadeout_
-            );
+            animctrl->DisableAnimation(def.animation_name_, def.fadeout_);
         }
     }
 
@@ -665,7 +615,6 @@ namespace RexLogic
             if (def.use_velocity_)
             {
                 Real speed = Vector3df(netpos->velocity_.x, netpos->velocity_.y, 0).getLength() * 0.5;
-                
                 animctrl->SetAnimationSpeed(anim->first, def.speedfactor_ * speed);
             }
             
@@ -716,9 +665,9 @@ namespace RexLogic
         if (!conn)
             return false;
         
-        // For now, support only legacy storage export        
+        // For now, support only legacy storage export
         return (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection);
-    }                            
+    }
 
     void Avatar::ExportUserAvatar()
     {
@@ -744,13 +693,9 @@ namespace RexLogic
         }
         
         if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
-        {
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
-        }
         else
-        {
             avatar_appearance_.InventoryExportAvatar(entity);
-        }       
     }
 
     void Avatar::ReloadUserAvatar()
@@ -770,5 +715,4 @@ namespace RexLogic
     {
         avatar_appearance_.InventoryExportReset();
     }
-    
 }

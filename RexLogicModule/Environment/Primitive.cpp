@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Primitive.cpp
+ *  @brief  Primitive logic handler.
+ */
 
 #include "StableHeaders.h"
 #include "Environment/Primitive.h"
@@ -37,7 +42,6 @@
 
 #include <OgreSceneNode.h>
 
-#include <QUuid>
 #include <QUrl>
 #include <QColor>
 #include <QDomDocument>
@@ -45,9 +49,8 @@
 namespace RexLogic
 {
 
-Primitive::Primitive(RexLogicModule *rexlogicmodule)
+Primitive::Primitive(RexLogicModule *rexlogicmodule) : rexlogicmodule_(rexlogicmodule)
 {
-    rexlogicmodule_ = rexlogicmodule;
 }
 
 Primitive::~Primitive()
@@ -1227,7 +1230,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
     }
 }
 
-void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float radius, float falloff)
+void Primitive::AttachLightComponent(Scene::EntityPtr entity, const Color &color, float radius, float falloff)
 {
     if (radius < 0.001)
         radius = 0.001;
@@ -1259,7 +1262,7 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color color, float
     if (placeable)
         light->SetPlaceable(placeable);
 
-    ///\note Test if the color values have to be in range [0, 1].
+    ///\todo Test if the color values have to be in range [0, 1].
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
 }

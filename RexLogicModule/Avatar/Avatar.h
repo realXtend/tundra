@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Avatar.h
+ *  @brief  Avatar logic handler.
+ */
 
 #ifndef incl_RexLogic_Avatar_h
 #define incl_RexLogic_Avatar_h
@@ -80,19 +85,20 @@ namespace RexLogic
         
         //! Creates mesh for the avatar / sets up appearance, animations
         void CreateAvatarMesh(entity_id_t entity_id);
-        
+
+        // /\todo Deprecated. use ShowAvatarNameOverlay. Remove completely when sure that this is not needed anymore.
         //! Creates the name overlay above the avatar.
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
-        
+//        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.
         void ShowAvatarNameOverlay(entity_id_t entity_id);
-        
+
         //! Starts requested avatar animations, stops others
         void StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids);
-        
+
         //! Sets avatar state
         void SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state);
 

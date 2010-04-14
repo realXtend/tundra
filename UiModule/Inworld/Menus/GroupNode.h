@@ -15,14 +15,18 @@ class QPropertyAnimation;
 
 namespace CoreUi
 {
-    class GroupNode : public MenuNode
-    { 
+    class MenuNode;
 
-    Q_OBJECT
+    class GroupNode : public MenuNode
+    {
+        Q_OBJECT
 
     public:
         //! Constructor
         GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0);
+
+        //! Destructor.
+        ~GroupNode();
 
     public slots:
         //! Parent overrides
@@ -31,11 +35,11 @@ namespace CoreUi
         MenuNode *RemoveChildNode(QUuid child_id);
 
         //! Getters
-        QVector2D GetPosVec()                           { return pos_vector_; }
-        QList<MenuNode *> GetChildNodeList()            { return children_; }
-        QParallelAnimationGroup *GetMoveAnimations()    { return move_animations_; }
-        QParallelAnimationGroup *GetResizeAnimations()  { return resize_animations_; }
-        bool IsExpanded()                               { return is_expanded_; }
+        QVector2D GetPosVec() const { return pos_vector_; }
+        QList<MenuNode *> GetChildNodeList() const { return children_; }
+        QParallelAnimationGroup *GetMoveAnimations() const { return move_animations_; }
+        QParallelAnimationGroup *GetResizeAnimations() const { return resize_animations_; }
+        bool IsExpanded() const { return is_expanded_; }
         void CalculatePosVec();
         void AdjustNode(QAbstractAnimation::Direction dir);
 

@@ -4,19 +4,22 @@
 #define incl_UiModule_MenuManager_h
 
 #include <QObject>
-#include <QGraphicsScene>
-#include <QGraphicsAnchorLayout>
-#include <QGraphicsProxyWidget>
 #include <QMap>
 #include <QPair>
+#include <QUuid>
 
-#include "Inworld/View/UiWidgetProperties.h"
-#include "ActionNode.h"
-#include "GroupNode.h"
+class QGraphicsProxyWidget;
+class QParallelAnimationGroup;
+
+namespace UiServices
+{
+    class UiWidgetProperties;
+}
 
 namespace CoreUi
 {
     class AnchorLayoutManager;
+    class GroupNode;
 
     class MenuManager : public QObject
     {
@@ -26,11 +29,12 @@ namespace CoreUi
 
     public:
         MenuManager(QObject *parent, CoreUi::AnchorLayoutManager *layout_manager);
+        ~MenuManager();
 
         enum Category { Root, Personal, Building };
 
     public slots:
-        void AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties properties);
+        void AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties);
         void RemoveMenuItem(Category category, QGraphicsProxyWidget *controlled_widget);
 
     private slots:

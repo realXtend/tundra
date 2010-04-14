@@ -63,7 +63,7 @@ namespace UiServices
 
     /*************** UI Scene Manager Public Services ***************/
 
-    bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name)
+    bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const
     {
         control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
         return true;
@@ -135,17 +135,15 @@ namespace UiServices
             RemoveProxyWidgetFromScene(proxy_widget);
     }
 
-    void InworldSceneController::BringProxyToFront(UiProxyWidget *widget)
+    void InworldSceneController::BringProxyToFront(UiProxyWidget *widget) const
     {
-        if (!inworld_scene_)
-            return;
-        if (!inworld_scene_->isActive())
+        if (!inworld_scene_ || !inworld_scene_->isActive())
             return;
         inworld_scene_->setActiveWindow(widget);
         inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
     }
 
-    void InworldSceneController::BringProxyToFront(QWidget *widget)
+    void InworldSceneController::BringProxyToFront(QWidget *widget) const
     {
         if (!inworld_scene_)
             return;
@@ -153,16 +151,24 @@ namespace UiServices
         inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
     }
 
-    QObject *InworldSceneController::GetSettingsObject()
+    void InworldSceneController::ShowProxyForWidget(QWidget *widget) const
     {
-        QObject *settings_widget = dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
-        if (settings_widget)
-            return settings_widget;
-        else
-            return 0;
+        if (inworld_scene_)
+            widget->graphicsProxyWidget()->show();
     }
 
-    void InworldSceneController::SetFocusToChat()
+    void InworldSceneController::HideProxyForWidget(QWidget *widget) const
+    {
+        if (inworld_scene_)
+            widget->graphicsProxyWidget()->hide();
+    }
+
+    QObject *InworldSceneController::GetSettingsObject() const
+    {
+        return dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
+    }
+
+    void InworldSceneController::SetFocusToChat() const
     {
         if (communication_widget_)
             communication_widget_->SetFocusToChat();
@@ -170,13 +176,13 @@ namespace UiServices
 
     // Don't touch, please
 
-    void InworldSceneController::SetWorldChatController(QObject *controller)
+    void InworldSceneController::SetWorldChatController(QObject *controller) const
     {
         if (communication_widget_)
             communication_widget_->UpdateController(controller);
     }
 
-    void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy)
+    void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy) const
     {
         if (communication_widget_)
             communication_widget_->UpdateImWidget(im_proxy);
@@ -184,7 +190,7 @@ namespace UiServices
 
     // Private
 
-    void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
+    void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed) const
     {
         foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
         {
