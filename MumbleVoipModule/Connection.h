@@ -72,8 +72,14 @@ namespace MumbleVoip
         //! \return null if playback queue is empty
         virtual PCMAudioFrame* GetAudioFrame();
 
+        //! Encode and send given frame to Mumble server
+        virtual void SendAudioFrame(PCMAudioFrame* frame);
+
         //! \return list of channels available
         virtual QList<QString> Channels();
+
+        virtual void SendAudio(bool send);
+        virtual bool SendingAudio();
     private:
         void InitializeCELT();
         void UninitializeCELT();
@@ -88,6 +94,8 @@ namespace MumbleVoip
         CELTDecoder* celt_decoder_;
         static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
         QList<Channel*> channels_;
+        bool sending_audio_;
+        char send_buffer_[4000];
 
     public slots:
         void OnAuthCallback();
@@ -97,7 +105,7 @@ namespace MumbleVoip
         void OnPlayAudioData(char* data, int size);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-
+        void SendAudioFrame();
         void HandleIncomingCELTFrame(char* data, int size);
 
     signals:

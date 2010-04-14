@@ -70,6 +70,9 @@ namespace MumbleVoip
     {
         if (link_plugin_ && link_plugin_->IsRunning())
             UpdateLinkPlugin(frametime);
+        
+        if (connection_manager_)
+            connection_manager_->Update(frametime);
     }
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
@@ -220,6 +223,7 @@ namespace MumbleVoip
         try
         {
             connection_manager_->OpenConnection(info);
+            connection_manager_->SendAudio(true);
             LogInfo("Mumble connection established.");
 
             //LogInfo("Starting mumble client.");

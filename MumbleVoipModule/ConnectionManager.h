@@ -11,6 +11,7 @@
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "Framework.h"
+#include "SoundServiceInterface.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -37,8 +38,9 @@ namespace MumbleVoip
     };
 
     /**
-	 *  Handles connections to mumble server.
+	 *  Handles connections to mumble servers.
      * 
+     *  Fetch recorted audio from AudioModule.
 	 *  Current implementation launches mumble client. 
      *
      *  Future implementation uses integrated mumble client and allow multiple
@@ -67,6 +69,12 @@ namespace MumbleVoip
         //! Stops link plugin
         virtual void CloseConnection(ServerInfo info);
 
+        //! \throw std::exception if audio recording cannot be started
+        virtual void SendAudio(bool value);
+
+        //! \return true if sending audio false if not
+        virtual bool SendingAudio();
+
         //! Start mumble client application with given server url
         //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
         //!
@@ -75,16 +83,26 @@ namespace MumbleVoip
 
         //! Kill mumble client process
         static void KillMumbleClient();
+
+        virtual void Update(f64 frametime);
+
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
         void PlaybackAudioFrame(PCMAudioFrame* frame);
+        boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
 
         QMap<QString, Connection*> connections_; // maps: server address - connection object
         MumbleClient::MumbleClientLib* mumble_lib; // @todo: Do we need this pointer?
         LibMumbleMainloopThread lib_thread_;
         Foundation::Framework* framework_;
         sound_id_t audio_playback_channel_;
+        bool sending_audio_;
+        std::string recording_device_;
+        static const int AUDIO_SAMPLE_RATE_ = 48000;
+        static const int AUDIO_FRAME_SIZE_IN_SAMPLES = 480;
+        static const int AUDIO_RECORDING_BUFFER_MS = 200;
+        char playback_buffer_[AUDIO_FRAME_SIZE_IN_SAMPLES*2];
 
     public slots:
         void OnAudioFramesAvailable(Connection* connection);
