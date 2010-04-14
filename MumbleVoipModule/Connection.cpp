@@ -111,7 +111,7 @@ void TextMessageCallback(const std::string& message, Connection* connection)
 
 void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
 {
-    connection->OnRawUdpTunnelCallback(length, buffer);
+//    connection->OnRawUdpTunnelCallback(length, buffer);
 }
 
 void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
@@ -149,7 +149,8 @@ Connection::Connection(ServerInfo &info) :
         authenticated_(false),
         celt_mode_(0),
         celt_encoder_(0),
-        celt_decoder_(0)
+        celt_decoder_(0),
+        sending_audio_(false)
 {
     InitializeCELT();
 
@@ -280,6 +281,22 @@ PCMAudioFrame* Connection::GetAudioFrame()
     return frame;
 }
 
+void Connection::SendAudioFrame(PCMAudioFrame* frame)
+{
+    int audio_quality = 60000;
+
+    sending_queue_.push_back(frame);
+
+ //   celt_encoder_ctl(celt_encode, CELT_SET_PREDICTION(0));
+	//celt_encoder_ctl(celt_encode, CELT_SET_VBR_RATE(audio_quality));
+
+    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&send_buffer_[1], std::min(audio_quality / (100 * 8), 127));
+
+	send_buffer_[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
+
+    client_->SendRawUdpTunnel(send_buffer_, len -1 );
+}
+
 void Connection::OnPlayAudioData(char* data, int size)
 {
 //	char *buffer = new char[size];
@@ -338,7 +355,9 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
     bool valid = data_stream.isValid();
 
-    MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( (data_stream.next() >> 5) & 0x07 );
+    uint8_t first_byte = data_stream.next();
+    MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( ( first_byte >> 5) & 0x07 );
+    uint8_t flags = first_byte & 0x1f;
     switch (type)
     {
     case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
@@ -380,6 +399,14 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         HandleIncomingCELTFrame((char*)frame_data, frame_size);
 	} while (!last_frame && data_stream.isValid());
 
+    int bytes_left = data_stream.left();
+    if (bytes_left)
+    {
+        float position[3];
+        data_stream >> position[0];
+        data_stream >> position[1];
+        data_stream >> position[2];
+    }
     ////int seg = data_stream.next8();
     ////seg = data_stream.next8();
     ////seg = data_stream.next8();
@@ -404,6 +431,26 @@ QList<QString> Connection::Channels()
         channels.append(c->Name());
     }
     return channels;
+}
+
+void Connection::SendAudioFrame()
+{
+    // \todo Thread safety
+
+    if (sending_queue_.isEmpty())
+        return;
+
+    PCMAudioFrame*& frame = sending_queue_.first();
+}
+
+void Connection::SendAudio(bool send)
+{
+    sending_audio_ = send;
+}
+
+bool Connection::SendingAudio()
+{
+    return sending_audio_;
 }
 
 } // namespace MumbleVoip 

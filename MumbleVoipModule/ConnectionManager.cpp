@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "ConnectionManager.h"
 #include "MumbleVoipModule.h"
-#include "SoundServiceInterface.h"
+//#include "SoundServiceInterface.h"
 #include <QDesktopServices>
 
 #define BUILDING_DLL
@@ -35,7 +35,9 @@ namespace MumbleVoip
     ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
         mumble_lib(0),
         framework_(framework),
-        audio_playback_channel_(0)
+        audio_playback_channel_(0),
+        sending_audio_(false),
+        recording_device_("")
     {
         StartMumbleLibrary();
     }
@@ -51,6 +53,7 @@ namespace MumbleVoip
         Connection* connection = new Connection(info);
         connections_[info.server] = connection;
         connection->Join(info.channel);
+        connection->SendAudio(true); // test here
         QObject::connect( connection, SIGNAL(AudioDataAvailable(short*, int)), this, SLOT(OnAudioDataFromConnection(short*, int)) );
         QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
@@ -200,5 +203,85 @@ namespace MumbleVoip
         delete [] data;
 
     }
+
+    void ConnectionManager::SendAudio(bool send)
+    {
+        if (!framework_)
+            throw std::exception("Framework cannot be found.");
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        if (!service_manager.get())
+            throw std::exception("service_manager cannot be found.");
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            throw std::exception("SoundServiceInterface cannot be found.");
+
+        //StringVector devices = soundsystem->GetRecordingDevices();
+        //if (devices.size() == 0)
+        //    throw std::exception("No recording devices.");
+
+        if (!sending_audio_ && send)
+        {
+            sending_audio_ = true;
+            int frequency = AUDIO_SAMPLE_RATE_;
+            bool sixteenbit = true;
+            bool stereo = true;
+            int buffer_size_ms = AUDIO_RECORDING_BUFFER_MS;
+            int buffer_size = buffer_size_ms*2*frequency/1000;
+            soundsystem->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
+        }
+
+        if (sending_audio_ && !send)
+        {
+            sending_audio_ = false;
+            soundsystem->StopRecording();
+        }
+    }
+
+    bool ConnectionManager::SendingAudio()
+    {
+        return sending_audio_;
+    }
+
+    void ConnectionManager::Update(f64 frametime)
+    {
+        if (sending_audio_)
+        {
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = ConnectionManager::SoundService();
+            if (!sound_service)
+            {
+                MumbleVoipModule::LogDebug("Soundservice cannot be found.");
+                return;
+            }
+
+            while (sound_service->GetRecordedSoundSize() > AUDIO_FRAME_SIZE_IN_SAMPLES*2)
+            {
+                int bytes = sound_service->GetRecordedSoundData(playback_buffer_, AUDIO_FRAME_SIZE_IN_SAMPLES*2);
+                PCMAudioFrame* frame = new PCMAudioFrame(AUDIO_SAMPLE_RATE_, 16, 2, playback_buffer_, bytes);
+                for (QMap<QString, Connection*>::iterator i = connections_.begin(); i != connections_.end(); ++i)
+                {
+                    Connection* connection = *i;
+                    if (connection->SendingAudio())
+                        connection->SendAudioFrame(frame);
+                }
+            }
+        }
+    }
+
+    boost::shared_ptr<Foundation::SoundServiceInterface> ConnectionManager::SoundService()
+    {
+        if (!framework_)
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        if (!service_manager.get())
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem.get())
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+        return soundsystem;
+    }
+
+    // GetRecordedSoundData(void* buffer, uint size)
+
 } // end of namespace: MumbleVoip
 
