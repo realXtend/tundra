@@ -44,10 +44,18 @@ namespace Environment
     {
         if (e->type() == QEvent::LanguageChange) 
         {
-       
-            QString title = qApp->translate("PostProcessWidget", proxy_->windowTitle().toStdString().c_str());
+            
+            // Because of widget propertie contains orginal strings we will use them for base of translations.
+            // if we would use directly proxy widget info (example title) translations to english to finnish would produce that finnish to german would left it as finnish 
+            // so we use as a base language english.
+
+            UiServices::UiWidgetProperties properties = proxy_->GetWidgetProperties();
+            QString orginal_title = properties.GetWidgetName();
+            QString title = qApp->translate("PostProcessWidget", orginal_title.toStdString().c_str());
             proxy_->setWindowTitle(title);
-            // Then set this widget to right state. 
+            
+            // Then set this widget to right state for each widget which is created from ui - file this must be called! 
+            
             widget_.retranslateUi(this);
 
         }
