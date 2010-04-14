@@ -73,6 +73,7 @@ namespace MumbleVoip
         virtual PCMAudioFrame* GetAudioFrame();
 
         //! Encode and send given frame to Mumble server
+        //! Frame object is deleted by this method
         virtual void SendAudioFrame(PCMAudioFrame* frame);
 
         //! \return list of channels available
@@ -96,6 +97,7 @@ namespace MumbleVoip
         QList<Channel*> channels_;
         bool sending_audio_;
         char send_buffer_[4000];
+        int frame_sequence_;
 
     public slots:
         void OnAuthCallback();

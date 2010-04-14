@@ -224,7 +224,7 @@ namespace MumbleVoip
             sending_audio_ = true;
             int frequency = AUDIO_SAMPLE_RATE_;
             bool sixteenbit = true;
-            bool stereo = true;
+            bool stereo = false;
             int buffer_size_ms = AUDIO_RECORDING_BUFFER_MS;
             int buffer_size = buffer_size_ms*2*frequency/1000;
             soundsystem->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);

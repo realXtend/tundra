@@ -150,7 +150,8 @@ Connection::Connection(ServerInfo &info) :
         celt_mode_(0),
         celt_encoder_(0),
         celt_decoder_(0),
-        sending_audio_(false)
+        sending_audio_(false),
+        frame_sequence_(0)
 {
     InitializeCELT();
 
@@ -283,18 +284,56 @@ PCMAudioFrame* Connection::GetAudioFrame()
 
 void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
+    QFile file("sending.raw");
+    file.open(QIODevice::OpenModeFlag::Append);
+    file.write(frame->Data(), frame->GetLengthBytes());
+    file.close();
+
+    std::deque<std::string> packet_list;
+
     int audio_quality = 60000;
+//    sending_queue_.push_back(frame);
 
-    sending_queue_.push_back(frame);
-
- //   celt_encoder_ctl(celt_encode, CELT_SET_PREDICTION(0));
+//    celt_encoder_ctl(celt_encode, CELT_SET_PREDICTION(0));
 	//celt_encoder_ctl(celt_encode, CELT_SET_VBR_RATE(audio_quality));
 
-    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&send_buffer_[1], std::min(audio_quality / (100 * 8), 127));
+    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&send_buffer_, std::min(audio_quality / (100 * 8), 127));
+    packet_list.push_back(std::string(reinterpret_cast<char *>(send_buffer_), len));
 
-	send_buffer_[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
+    int32_t seq = 0;
+	int frames = 1;
+    int session = 0;
+    while (!packet_list.empty()) 
+    {
+		char data[1024];
+		int flags = 0; // target = 0
+		flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
+		data[0] = static_cast<unsigned char>(flags);
+        PacketDataStream data_stream(data + 1, 1023);
+        frame_sequence_++;
+        data_stream << session;
+        data_stream << frame_sequence_;
 
-    client_->SendRawUdpTunnel(send_buffer_, len -1 );
+		for (int i = 0; i < frames; ++i)
+        {
+			if (packet_list.empty())
+                break;
+
+			const std::string& s = packet_list.front();
+
+			unsigned char head = s.size();
+			// Add 0x80 to all but the last frame
+			if (i < frames - 1)
+				head |= 0x80;
+
+			data_stream.append(head);
+			data_stream.append(s);
+
+			packet_list.pop_front();
+		}
+        client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
+    }
+    delete frame;
 }
 
 void Connection::OnPlayAudioData(char* data, int size)
