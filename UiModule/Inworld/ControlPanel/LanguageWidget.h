@@ -8,7 +8,6 @@
 #include <QString>
 #include <QMap>
 #include <QListWidgetItem>
-#include <QTranslator>
 
 #include "Inworld/View/UiProxyWidget.h"
 #include "ui_LanguageWidget.h"
@@ -37,7 +36,7 @@ namespace CoreUi
             QStringList findQmFiles();
             
             QMap<QListWidgetItem*, QString> qmFileForCheckBoxMap;
-            QTranslator* translator_;
+         
 
     };
 
