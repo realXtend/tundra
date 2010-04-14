@@ -336,32 +336,6 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
     delete frame;
 }
 
-void Connection::OnPlayAudioData(char* data, int size)
-{
-//	char *buffer = new char[size];
-//    memcpy(buffer, data, size);
-//
-//
-//	int frames = scanPacket(buffer, size);
-//    if (frames == -1)
-//    {
-//        // invalid packet
-//        return;
-//    }
-//
-//	buffer[0] = MumbleClient::UdpMessageType::UDPVoiceCELTAlpha | 0;
-//	memcpy(&buffer[1], &buffer[2], size - 1);
-//
-//    // @todo: encode CELT
-//#define TCP 1
-//#if TCP
-//	client_->SendRawUdpTunnel(buffer, size - 1);
-//#else
-//	client_->SendUdpMessage(buffer, size - 1);
-//#endif
-//	delete []buffer;
-}
-
 void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
 {
     // \todo THREAD SAFETY

@@ -104,7 +104,6 @@ namespace MumbleVoip
         void OnTextMessageCallback(QString text);
         void OnRawUdpTunnelCallback(int32_t length, void* buffer);
 //        void OnRelayTunnel(std::string &s);
-        void OnPlayAudioData(char* data, int size);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
         void SendAudioFrame();
