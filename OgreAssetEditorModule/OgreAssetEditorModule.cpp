@@ -19,6 +19,8 @@
 #include "Inventory/InventoryEvents.h"
 #include "NetworkEvents.h"
 #include "TexturePreviewEditor.h"
+#include "AudioPreviewEditor.h"
+#include "MeshPreviewEditor.h"
 #include "Inventory/InventoryEvents.h"
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
@@ -166,9 +168,65 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     if (editor)
                         uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }
-
                 // Surpress this event.
                 downloaded->handled = true; 
+                return true;
+            }
+            case RexTypes::RexAT_SoundVorbis:
+            case RexTypes::RexAT_SoundWav:
+            {
+                const QString &id = downloaded->inventoryId.ToString().c_str();
+                const QString &name = downloaded->name.c_str();
+                if(!editorManager_->Exists(id, at))
+                {
+                    AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
+                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                            editorManager_, SLOT(Delete(const QString &, asset_type_t)));
+                    editorManager_->Add(id, at, editor);
+                    editor->HandleAssetReady(downloaded->asset);
+                }
+                else
+                {
+                    // Editor already exists, bring it to front.
+                    QWidget *editor = editorManager_->GetEditor(id, at);
+                    if (editor)
+                    {
+                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
+                        if(audioWidget)
+                            audioWidget->HandleAssetReady(downloaded->asset);
+                    }
+                }
+
+                downloaded->handled = true;
+                return true;
+            }
+            case RexTypes::RexAT_Mesh:
+            {
+                const QString &id = downloaded->inventoryId.ToString().c_str();
+                const QString &name = downloaded->name.c_str();
+                if(!editorManager_->Exists(id, at))
+                {
+                    MeshPreviewEditor *editor = new MeshPreviewEditor(framework_, id, at, name);
+                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                            editorManager_, SLOT(Delete(const QString &, asset_type_t)));
+                    editorManager_->Add(id, at, editor);
+                    editor->HandleAssetReady(downloaded->asset);
+                }
+                else
+                {
+                    // Editor already exists, bring it to front.
+                    QWidget *editor = editorManager_->GetEditor(id, at);
+                    if (editor)
+                    {
+                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
+                        if(audioWidget)
+                            audioWidget->HandleAssetReady(downloaded->asset);
+                    }
+                }
+
+                downloaded->handled = true;
                 return true;
             }
             case RexTypes::RexAT_Texture:
@@ -211,12 +269,25 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
         if (!res)
             return false;
 
-        QVector<QWidget*> editorList = editorManager_->GetEditorListByAssetType(RexTypes::RexAT_Texture);
-        for(uint i = 0; i < editorList.size(); i++)
+        if(res->resource_->GetType() == "Texture")
         {
-            TexturePreviewEditor *editorWidget = qobject_cast<TexturePreviewEditor*>(editorList[i]);
-            if(editorWidget)
-                editorWidget->HandleResouceReady(res);
+            QVector<QWidget*> editorList = editorManager_->GetEditorListByAssetType(RexTypes::RexAT_Texture);
+            for(uint i = 0; i < editorList.size(); i++)
+            {
+                TexturePreviewEditor *editorWidget = qobject_cast<TexturePreviewEditor*>(editorList[i]);
+                if(editorWidget)
+                    editorWidget->HandleResouceReady(res);
+            }
+        }
+        else if(res->resource_->GetType() == "Sound")
+        {
+            QVector<QWidget*> editorList = editorManager_->GetEditorListByAssetType(RexTypes::RexAT_SoundVorbis);
+            for(uint i = 0; i < editorList.size(); i++)
+            {
+                AudioPreviewEditor *editorWidget = qobject_cast<AudioPreviewEditor*>(editorList[i]);
+                if(editorWidget)
+                    editorWidget->HandleResouceReady(res);
+            }
         }
     }
 

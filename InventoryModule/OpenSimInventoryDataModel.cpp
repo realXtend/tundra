@@ -290,7 +290,11 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
             }
         case RexAT_SoundVorbis:
         case RexAT_SoundWav:
+            tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
+            break;
         case RexAT_Mesh:
+            tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
+            break;
         case RexAT_Skeleton:
         case RexAT_GenericAvatarXml:
         case RexAT_FlashAnimation:
