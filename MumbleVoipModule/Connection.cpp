@@ -111,7 +111,7 @@ void TextMessageCallback(const std::string& message, Connection* connection)
 
 void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
 {
-//    connection->OnRawUdpTunnelCallback(length, buffer);
+    connection->OnRawUdpTunnelCallback(length, buffer);
 }
 
 void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
@@ -252,7 +252,7 @@ void Connection::HandleIncomingCELTFrame(char* data, int size)
     {
     case CELT_OK:
         {
-            if (playback_queue_.size() < 100)
+            if (playback_queue_.size() < 100000)
             {
                 PCMAudioFrame* audio_frame = new PCMAudioFrame(48000, 16, 1, (char*)pcm_data, 2*480);
                 playback_queue_.push_back(audio_frame);
@@ -284,10 +284,11 @@ PCMAudioFrame* Connection::GetAudioFrame()
 
 void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
-    QFile file("sending.raw");
-    file.open(QIODevice::OpenModeFlag::Append);
-    file.write(frame->Data(), frame->GetLengthBytes());
-    file.close();
+    //// TESTING
+    //QFile file("sending.raw");
+    //file.open(QIODevice::OpenModeFlag::Append);
+    //file.write(frame->Data(), frame->GetLengthBytes());
+    //file.close();
 
     std::deque<std::string> packet_list;
 
@@ -299,6 +300,13 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 
     int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&encode_buffer_, std::min(audio_quality / (100 * 8), 127));
     packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
+
+    // TESTING
+    //QFile file2("sending-celt.raw");
+    //file2.open(QIODevice::OpenModeFlag::Append);
+    //file2.write((char*)&len,4);
+    //file2.write(encode_buffer_, len);
+    //file2.close();
 
     int32_t seq = 0;
 	int frames = 1;
@@ -407,6 +415,23 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         last_frame = !(header & 0x80);
         const char* frame_data = data_stream.charPtr();
         data_stream.skip(frame_size);
+
+        // TESTING
+        //if (playback_queue_.size() == 0)
+        //{
+        //    char buffer[1024];
+        //    QFile file2("sending-celt_.raw");
+        //    file2.open(QIODevice::OpenModeFlag::ReadOnly);
+        //    while (file2.bytesAvailable() > 0)
+        //    {
+        //        int len = 0;
+        //        file2.read((char*)&len, 4);
+        //        file2.read(buffer, len);
+        //        HandleIncomingCELTFrame((char*)buffer, len);
+        //    }
+        //    file2.close();
+        //}
+
         HandleIncomingCELTFrame((char*)frame_data, frame_size);
 	} while (!last_frame && data_stream.isValid());
 

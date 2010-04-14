@@ -143,10 +143,10 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-        QFile f("audio_out.raw");
+        /*QFile f("audio_out.raw");
         f.open(QIODevice::WriteOnly | QIODevice::Append);
         f.write(frame->Data(), frame->GetLengthBytes());
-        f.close();
+        f.close();*/
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
         sound_buffer.data_ = frame->Data();
