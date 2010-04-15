@@ -2,9 +2,8 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "EtherLogic.h"
-#include "UiDefines.h"
 
+#include "EtherLogic.h"
 #include "EtherSceneController.h"
 #include "EtherLoginNotifier.h"
 
@@ -326,7 +325,7 @@ namespace Ether
             }
         }
 
-        QObject *EtherLogic::GetLoginNotifier()
+        QObject *EtherLogic::GetLoginNotifier() const
         {
             return login_notifier_;
         }

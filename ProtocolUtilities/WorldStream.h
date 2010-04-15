@@ -486,7 +486,7 @@ namespace ProtocolUtilities
         const std::string& GetAuthAddress() const { return auth_server_address_; }
 
         /// @return True if the client connected to a server.
-        const bool &IsConnected() const { return connected_; }
+        const bool IsConnected() const { return connected_; }
 
         /// @return The state of the connection.
         volatile Connection::State GetConnectionState();

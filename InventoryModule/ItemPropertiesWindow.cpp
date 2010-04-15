@@ -15,10 +15,6 @@
 #include "ModuleManager.h"
 #include "Framework.h"
 #include "AssetEvents.h"
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -38,56 +34,41 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     QUiLoader loader;
     QFile file("./data/ui/itemproperties.ui");
     file.open(QFile::ReadOnly);
-    mainWidget_ = loader.load(&file);
+    QWidget *mainWidget = loader.load(&file, this);
     file.close();
 
-    layout_ = new QVBoxLayout;
-    layout_->addWidget(mainWidget_);
-    layout_->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout_);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(mainWidget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
 
     // Get widgets and connect signals
-    lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
-    lineEditDescription_ = mainWidget_->findChild<QLineEdit *>("lineEditDescription");
-    labelAssetIdData_ = mainWidget_->findChild<QLabel *>("labelAssetIdData");
-    labelTypeData_ = mainWidget_->findChild<QLabel *>("labelTypeData");
-    labelFileSizeData_ = mainWidget_->findChild<QLabel *>("labelFileSizeData");
-    labelCreationTimeData_ = mainWidget_->findChild<QLabel *>("labelCreationTimeData");
-    labelCreatorData_ = mainWidget_->findChild<QLabel *>("labelCreatorData");
-    labelOwnerData_ = mainWidget_->findChild<QLabel *>("labelOwnerData");
-    labelGroupData_ = mainWidget_->findChild<QLabel *>("labelGroupData");
+    lineEditName_ = mainWidget->findChild<QLineEdit *>("lineEditName");
+    lineEditDescription_ = mainWidget->findChild<QLineEdit *>("lineEditDescription");
+    labelAssetIdData_ = mainWidget->findChild<QLabel *>("labelAssetIdData");
+    labelTypeData_ = mainWidget->findChild<QLabel *>("labelTypeData");
+    labelFileSizeData_ = mainWidget->findChild<QLabel *>("labelFileSizeData");
+    labelCreationTimeData_ = mainWidget->findChild<QLabel *>("labelCreationTimeData");
+    labelCreatorData_ = mainWidget->findChild<QLabel *>("labelCreatorData");
+    labelOwnerData_ = mainWidget->findChild<QLabel *>("labelOwnerData");
+    labelGroupData_ = mainWidget->findChild<QLabel *>("labelGroupData");
 
-    pushButtonSave_ = mainWidget_->findChild<QPushButton *>("pushButtonSave");
-    pushButtonCancel_ = mainWidget_->findChild<QPushButton *>("pushButtonCancel");
+    pushButtonSave_ = mainWidget->findChild<QPushButton *>("pushButtonSave");
+    pushButtonCancel_ = mainWidget->findChild<QPushButton *>("pushButtonCancel");
 
     connect(lineEditName_, SIGNAL(editingFinished()), this, SLOT(EditingFinished()));
     connect(lineEditDescription_, SIGNAL(editingFinished()), this, SLOT(EditingFinished()));
+    connect(lineEditName_, SIGNAL(textChanged()), this, SLOT(EditingFinished()));
+    connect(lineEditDescription_, SIGNAL(textChanged()), this, SLOT(EditingFinished()));
+
     connect(pushButtonSave_, SIGNAL(clicked()), this, SLOT(Save()));
     connect(pushButtonCancel_, SIGNAL(clicked()), this, SLOT(Cancel()));
 
     pushButtonSave_->setEnabled(false);
-
-    // Add widget to UI via ui services module
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
-        this, UiServices::UiWidgetProperties("Item Properties", UiServices::SceneWidget));
-
-    QObject::connect(proxyWidget_, SIGNAL(Closed()), this, SLOT(Cancel()));
-
-    proxyWidget_->show();
-    ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
 }
 
 ItemPropertiesWindow::~ItemPropertiesWindow()
 {
-    proxyWidget_->hide();
-    mainWidget_->close();
-    SAFE_DELETE(layout_);
-    SAFE_DELETE(mainWidget_);
 }
 
 void ItemPropertiesWindow::SetItem(InventoryAsset *item)

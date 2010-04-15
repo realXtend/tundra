@@ -32,7 +32,8 @@ namespace UiServices
     InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) 
         : QObject(),
           framework_(framework),
-          ui_view_(ui_view)
+          ui_view_(ui_view),
+          communication_widget_(0)
     {
         if (!ui_view_)
             return;
@@ -57,8 +58,7 @@ namespace UiServices
 
     InworldSceneController::~InworldSceneController()
     {
-        if (communication_widget_)
-            SAFE_DELETE(communication_widget_);
+        SAFE_DELETE(communication_widget_);
     }
 
     /*************** UI Scene Manager Public Services ***************/
@@ -92,7 +92,8 @@ namespace UiServices
         }
 
         // Add to scene
-        proxy_widget->hide();
+        if (proxy_widget->isVisible())
+            proxy_widget->hide();
         inworld_scene_->addItem(proxy_widget);
 
         // Add to internal control list

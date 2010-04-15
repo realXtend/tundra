@@ -56,8 +56,7 @@ namespace Naali
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
 
     private:
-        OgreAssetEditorModule(const OgreAssetEditorModule &);
-        void operator=(const OgreAssetEditorModule &);
+        Q_DISABLE_COPY(OgreAssetEditorModule);
 
         /// UiModule pointer.
         boost::weak_ptr<UiServices::UiModule> uiModule_;

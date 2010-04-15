@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Avatar.h
+ *  @file   Avatar.cpp
  *  @brief  Avatar logic handler.
  */
 
@@ -28,15 +28,11 @@
 #include "ConversionUtils.h"
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
-#include "UiModule.h"
-#include "Inworld/NotificationManager.h"
-#include "Inworld/Notifications/MessageNotification.h"
+#include "NetworkEvents.h"
 
 namespace RexLogic
 {
-    Avatar::Avatar(RexLogicModule *rexlogicmodule) :
-        avatar_appearance_(rexlogicmodule),
-        rexlogicmodule_(rexlogicmodule)
+    Avatar::Avatar(RexLogicModule *owner) : avatar_appearance_(owner), owner_(owner)
     {
         avatar_states_[RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
         avatar_states_[RexUUID("47f5f6fb-22e5-ae44-f871-73aaaf4a6022")] = EC_OpenSimAvatar::Walk;
@@ -56,20 +52,20 @@ namespace RexLogic
     Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid)
     {
         // Make sure scene exists
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
             return Scene::EntityPtr();
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entityid);
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(entityid);
         if (!entity)
         {
             entity = CreateNewAvatarEntity(entityid);
             if (entity)
             {
-                rexlogicmodule_->RegisterFullId(fullid,entityid);
+                owner_->RegisterFullId(fullid,entityid);
                 EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
-                presence->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-                presence->FullId = fullid;
+                presence->localId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+                presence->agentId = fullid;
             }
         }
         return entity;
@@ -77,8 +73,8 @@ namespace RexLogic
 
     Scene::EntityPtr Avatar::CreateNewAvatarEntity(entity_id_t entityid)
     {
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-        if (!scene || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        if (!scene || !owner_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
             return Scene::EntityPtr();
 
         StringVector defaultcomponents;
@@ -131,7 +127,7 @@ namespace RexLogic
             EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
             EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
-            presence->RegionHandle = regionhandle;
+            presence->regionHandle = regionhandle;
 
             // Get position from objectdata
             msg.SkipToFirstVariableByName("ObjectData");
@@ -146,33 +142,34 @@ namespace RexLogic
             }
 
             msg.SkipToFirstVariableByName("ParentID");
-            presence->ParentId = msg.ReadU32();
+            presence->parentId = msg.ReadU32();
 
             msg.SkipToFirstVariableByName("NameValue");
             QString namevalue = QString::fromUtf8(msg.ReadString().c_str());
             NameValueMap map = ParseNameValueMap(namevalue.toStdString());
             presence->SetFirstName(map["FirstName"]);
             presence->SetLastName(map["LastName"]);
+            ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
             // Hide own name overlay
-            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
             {
                 EC_HoveringText *overlay= entity->GetComponent<EC_HoveringText>().get();
                 if (overlay)
                     overlay->Hide();
             }
             else
-                ShowAvatarNameOverlay(presence->LocalId);
+                ShowAvatarNameOverlay(presence->localId);
 
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
             // controlled avatar entity. -jj.
             ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
-            if (presence->FullId == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
+            if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID &&
                 !entity->GetComponent(EC_Controllable::TypeNameStatic()))
             {
-                Foundation::Framework *fw = rexlogicmodule_->GetFramework();
+                Foundation::Framework *fw = owner_->GetFramework();
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::TypeNameStatic()));
                 entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::TypeNameStatic()));
 
@@ -184,7 +181,7 @@ namespace RexLogic
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 if (avatar->GetAppearanceAddress().empty())
                 {
-                    std::string avataraddress = rexlogicmodule_->GetServerConnection()->GetInfo().avatarStorageUrl;
+                    std::string avataraddress = owner_->GetServerConnection()->GetInfo().avatarStorageUrl;
                     if (!avataraddress.empty())
                     {
                         avatar->SetAppearanceAddress(avataraddress,false);
@@ -194,27 +191,24 @@ namespace RexLogic
                 
                 // For some reason the avatar/connection ID might not be in sync before (when setting the appearance for first time),
                 // which causes the edit view to not be initially rebuilt. Force build now
-               rexlogicmodule_->GetAvatarEditor()->RebuildEditView();
+               owner_->GetAvatarEditor()->RebuildEditView();
             }
-            else if (presence->FullId != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+
+            // Send event notifying about new user in the world
+            if (presence->agentId != owner_->GetServerConnection()->GetInfo().agentID)
             {
-                boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule
-                    <UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                if (ui_module.get() && !sent_avatar_notifications_.contains(presence->GetFullName().c_str(), Qt::CaseInsensitive))
-                {
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
-                        QString("%1 joined the world").arg(presence->GetFullName().c_str())));
-                    sent_avatar_notifications_.append(presence->GetFullName().c_str());
-                }
+                Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
+                ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
+                event_data.fullName = presence->GetFullName();
+                event_data.localId = presence->localId;
+                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_CONNECTED, &event_data);
             }
 
             // Handle setting the avatar as child of another object, or possibly being parent itself
-            rexlogicmodule_->HandleMissingParent(localid);
-            rexlogicmodule_->HandleObjectParent(localid);
+            owner_->HandleMissingParent(localid);
+            owner_->HandleObjectParent(localid);
 
             msg.SkipToNextInstanceStart();
-            
-            ///\todo
         }
         
         return false;
@@ -222,7 +216,7 @@ namespace RexLogic
     
     void Avatar::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
     {
-        if (!rexlogicmodule_ || !rexlogicmodule_->GetCurrentActiveScene().get())
+        if (!owner_ || !owner_->GetCurrentActiveScene().get())
             return;
 
         // The data contents:
@@ -236,7 +230,7 @@ namespace RexLogic
         uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
         i += 4;
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(localid);
         if(!entity) return;
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
@@ -253,19 +247,18 @@ namespace RexLogic
         netpos->position_ = position;
         if (!entity->GetComponent(EC_Controllable::TypeNameStatic()))
         {
-            // Do not update rotation for entities controlled by this client, client handles the rotation for itself (jitters during turning may result otherwise).
+            // Do not update rotation for entities controlled by this client,
+            // client handles the rotation for itself (jitters during turning may result otherwise).
             netpos->orientation_ = rotation;
         }
 
         //! \todo what to do with acceleration & rotation velocity? zero them currently
         netpos->accel_ = Vector3df::ZERO;
         netpos->rotvel_ = Vector3df::ZERO;
-        
         netpos->Updated();
-
         assert(i <= 30);
-    }    
-    
+    }
+
     void Avatar::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
     {
         // The data contents:
@@ -287,7 +280,7 @@ namespace RexLogic
         i += 22;
         
         // set values
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(localid);
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(localid);
         if(!entity)
             return;
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
@@ -333,7 +326,7 @@ namespace RexLogic
             if (params.size() >= 3)
                 overrideappearance = ParseBool(params[2]);
 
-            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+            Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
             if (entity)
             {
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
@@ -366,7 +359,7 @@ namespace RexLogic
         if (repeats < 0)
             repeats = 0;
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
         if (!entity)
             return false;
         OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get(); 
@@ -390,7 +383,7 @@ namespace RexLogic
 
     bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
     {
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
             return false;
 
@@ -402,26 +395,24 @@ namespace RexLogic
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (presence)
         {
-            fullid = presence->FullId;
-            if (fullid != rexlogicmodule_->GetServerConnection()->GetInfo().agentID)
+            fullid = presence->agentId;
+            if (fullid != owner_->GetServerConnection()->GetInfo().agentID)
             {
-                boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule
-                    <UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                if (ui_module.get())
-                {
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
-                        QString("%1 logged out").arg(presence->GetFullName().c_str())));
-                    sent_avatar_notifications_.removeOne(presence->GetFullName().c_str());
-                }
+                // Send event notifying about user leaving the world
+                Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
+                ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
+                event_data.fullName = presence->GetFullName();
+                event_data.localId = presence->localId;
+                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_DISCONNECTED, &event_data);
             }
         }
 
         scene->RemoveEntity(objectid);
-        rexlogicmodule_->UnregisterFullId(fullid);
+        owner_->UnregisterFullId(fullid);
         return false;
     }
    
-    bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)   
+    bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)
     {
         ProtocolUtilities::NetInMessage &msg = *data->message;
         msg.ResetReading();
@@ -462,7 +453,7 @@ namespace RexLogic
 /*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
             return;
 
@@ -488,7 +479,7 @@ namespace RexLogic
 
     void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id)
     {
-        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
             return;
 
@@ -518,35 +509,39 @@ namespace RexLogic
     
     void Avatar::CreateAvatarMesh(entity_id_t entity_id)
     {
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(entity_id);
+        using namespace OgreRenderer;
+
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(entity_id);
         if (!entity)
             return;
-            
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-        Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        Foundation::ComponentPtr animctrlptr = entity->GetComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+
+        Foundation::ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        Foundation::ComponentPtr meshptr = entity->GetComponent(EC_OgreMesh::TypeNameStatic());
+        Foundation::ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {
-            OgreRenderer::EC_OgreMesh* mesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+            EC_OgreMesh* mesh = checked_static_cast<EC_OgreMesh*>(meshptr.get());
             mesh->SetPlaceable(placeableptr);
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
         
         if (animctrlptr && meshptr)
         {
-            OgreRenderer::EC_OgreAnimationController* animctrl = checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrlptr.get());
+            EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
             animctrl->SetMeshEntity(meshptr);
         }
     }
     
     void Avatar::StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids)
     {
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        using namespace OgreRenderer;
+
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
         
-        OgreRenderer::EC_OgreAnimationController* animctrl = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!animctrl || !appearance)
             return;
@@ -564,8 +559,8 @@ namespace RexLogic
         
         // Other animations that are going on have to be stopped
         std::vector<std::string> anims_to_stop;
-        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             if (std::find(anims_to_start.begin(), anims_to_start.end(), anim->first) == anims_to_start.end())
@@ -594,11 +589,12 @@ namespace RexLogic
 
     void Avatar::UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime)
     {
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        using namespace OgreRenderer;
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
-        
-        OgreRenderer::EC_OgreAnimationController* animctrl = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+
+        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
         if (!animctrl || !netpos || !appearance)
@@ -606,8 +602,8 @@ namespace RexLogic
         
         const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
-        const OgreRenderer::EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anim->first);
@@ -624,7 +620,7 @@ namespace RexLogic
     
     void Avatar::SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state)
     {
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(avatarid);
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
         EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
@@ -651,8 +647,8 @@ namespace RexLogic
     
     Scene::EntityPtr Avatar::GetUserAvatar()
     {
-        RexUUID agent_id = rexlogicmodule_->GetServerConnection()->GetInfo().agentID;
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(agent_id);
+        RexUUID agent_id = owner_->GetServerConnection()->GetInfo().agentID;
+        Scene::EntityPtr entity = owner_->GetAvatarEntity(agent_id);
         return entity;
     }
     
@@ -661,7 +657,7 @@ namespace RexLogic
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
             return false;
-        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
         if (!conn)
             return false;
         
@@ -679,7 +675,7 @@ namespace RexLogic
         }
         
         // See whether to use legacy storage or inventory
-        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
         if (!conn)
         {
             RexLogicModule::LogError("Not connected to server, cannot export avatar");

@@ -278,7 +278,7 @@ namespace UiServices
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
     }
 
-    QObject *UiModule::GetEtherLoginNotifier() 
+    QObject *UiModule::GetEtherLoginNotifier() const
     { 
         return ether_logic_->GetLoginNotifier();
     }

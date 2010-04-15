@@ -3,16 +3,13 @@
 #ifndef incl_UiModule_EtherLogic_h
 #define incl_UiModule_EtherLogic_h
 
-#include "UiModule.h"
+#include "UiDefines.h"
+#include "UiModuleFwd.h"
 
 #include <QObject>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QGraphicsProxyWidget>
 #include <QUuid>
 #include <QPair>
-
-#include "UiModuleFwd.h"
+#include <QRectF>
 
 namespace Foundation
 {
@@ -50,10 +47,10 @@ namespace Ether
 
             void SetConnectionState(UiDefines::ConnectionState connection_state);
 
-            View::EtherScene *GetScene() { return scene_; }
-            EtherSceneController *GetSceneController() { return scene_controller_; }
+            View::EtherScene *GetScene()  const { return scene_; }
+            EtherSceneController *GetSceneController()  const { return scene_controller_; }
 
-            QObject *GetLoginNotifier();
+            QObject *GetLoginNotifier() const;
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
 

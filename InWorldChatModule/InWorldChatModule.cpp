@@ -249,7 +249,7 @@ Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)
 
         if (ec_presence)
         {
-            if (ec_presence->FullId == id)
+            if (ec_presence->agentId == id)
                 return &entity;
         }
         else if (ec_prim)

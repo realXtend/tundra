@@ -8,30 +8,25 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "OgreAssetEditorModule.h"
-#include "OgreScriptEditor.h"
-#include "MaterialWizard.h"
 #include "EditorManager.h"
-#include "EventManager.h"
-#include "ModuleManager.h"
-#include "ServiceManager.h"
-#include "Framework.h"
-#include "Inventory/InventoryEvents.h"
-#include "NetworkEvents.h"
+#include "OgreScriptEditor.h"
 #include "TexturePreviewEditor.h"
 #include "AudioPreviewEditor.h"
 #include "MeshPreviewEditor.h"
+#include "MaterialWizard.h"
+
+#include "Framework.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
+#include "NetworkEvents.h"
 #include "Inventory/InventoryEvents.h"
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
-
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
-
-#include <QStringList>
-#include <QVector>
-#include <QGraphicsProxyWidget>
 
 #include "MemoryLeakCheck.h"
 
@@ -156,9 +151,9 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     editor->HandleAssetReady(downloaded->asset);
 
                     // Add widget to scene, show and bring to front
-                    UiServices::UiProxyWidget *proxy = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
+                    uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
                         editor, UiServices::UiWidgetProperties("Ogre Script Editor", UiServices::SceneWidget));
-                    proxy->show();
+                    uiModule_.lock()->GetInworldSceneController()->ShowProxyForWidget(editor);
                     uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }
                 else

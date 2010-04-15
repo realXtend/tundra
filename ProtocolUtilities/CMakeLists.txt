@@ -46,7 +46,8 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (XMLRPC)
-use_modules (Core Foundation ProtocolUtilities Interfaces RexCommon RpcUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
+use_modules (Core Foundation ProtocolUtilities Interfaces RexCommon RpcUtilities
+    ProtocolModuleOpenSim ProtocolModuleTaiga SceneManager)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
@@ -59,12 +60,12 @@ link_modules (Core Foundation Interfaces RexCommon RpcUtilities SceneManager)
 if (MSVC)
     # Force linking to Winsock.
     target_link_libraries (${TARGET_NAME} ws2_32.lib iphlpapi.lib)
-    
+
     # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
             if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")        
+                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
             else()
                 get_filename_component(basename ${src_file} NAME)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")

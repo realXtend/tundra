@@ -49,7 +49,7 @@ namespace UiServices
 
         NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
 
-        QObject *GetEtherLoginNotifier();
+        QObject *GetEtherLoginNotifier() const;
 
         QPair<QString, QString> GetScreenshotPaths();
 
@@ -95,8 +95,6 @@ namespace UiServices
 
         //! Ether Logic
         Ether::Logic::EtherLogic *ether_logic_;
-
-
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;

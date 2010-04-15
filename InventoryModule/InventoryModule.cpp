@@ -147,12 +147,10 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 return false;
 
             // Create inventory and upload progress windows
-            boost::shared_ptr<UiServices::UiModule> ui_module = 
-                framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module.get())
             {
-                if (inventoryWindow_)
-                    SAFE_DELETE(inventoryWindow_);
+                SAFE_DELETE(inventoryWindow_);
                 inventoryWindow_ = new InventoryWindow(this);
                 connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
@@ -184,6 +182,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                     inventoryType_ = IDMT_WebDav;
                     inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->identityUrl.c_str(), auth->hostUrl.c_str()));
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
+                    SAFE_DELETE(service_);
                     service_ = new InventoryService(inventory_.get());
                 }
                 break;
@@ -199,6 +198,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
                 inventoryType_ = IDMT_OpenSim;
                 inventoryWindow_->InitInventoryTreeModel(inventory_);
+                SAFE_DELETE(service_);
                 service_ = new InventoryService(inventory_.get());
                 break;
             }
@@ -216,8 +216,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            boost::shared_ptr<UiServices::UiModule> ui_module =
-                framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
             {
                 if (inventoryWindow_)
@@ -236,6 +235,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 */
                 DeleteAllItemPropertiesWindows();
             }
+
+            SAFE_DELETE(service_);
         }
 
         return false;
@@ -453,8 +454,7 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return;
 
@@ -474,8 +474,14 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     ItemPropertiesWindow *wnd = new ItemPropertiesWindow(this);
     connect(wnd, SIGNAL(Closed(const QString &, bool)), this, SLOT(CloseItemPropertiesWindow(const QString &, bool)));
     wnd->SetItem(asset);
-
     itemPropertiesWindows_[inventory_id] = wnd;
+
+    // Add widget to UI scene
+    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(
+        wnd, UiServices::UiWidgetProperties("Item Properties", UiServices::SceneWidget));
+    QObject::connect(proxy, SIGNAL(Closed()), wnd, SLOT(Cancel()));
+    proxy->show();
+    ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
 
     if (inventoryType_ == IDMT_OpenSim)
     {
@@ -505,8 +511,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
 

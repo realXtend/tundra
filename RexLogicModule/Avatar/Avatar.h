@@ -8,11 +8,6 @@
 #ifndef incl_RexLogic_Avatar_h
 #define incl_RexLogic_Avatar_h
 
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
-
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
@@ -21,6 +16,11 @@ namespace OgreRenderer
 
 #include <QStringList>
 
+namespace OgreRenderer
+{
+    class EC_OgrePlaceable;
+}
+
 namespace RexLogic
 {
     class RexLogicModule;
@@ -28,7 +28,7 @@ namespace RexLogic
     class REXLOGIC_MODULE_API Avatar
     {
      public:
-        Avatar(RexLogicModule *rexlogicmodule);
+        Avatar(RexLogicModule *owner);
         ~Avatar();
 
         bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
@@ -73,10 +73,10 @@ namespace RexLogic
 
         //! Returns the avatar appearance handler
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
-        
+
     private:
-        RexLogicModule *rexlogicmodule_;
-        
+        RexLogicModule *owner_;
+
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component,
         //!         and EC_OpenSimPresence component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
@@ -105,13 +105,10 @@ namespace RexLogic
         //! Avatar state map
         typedef std::map<RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;
         AvatarStateMap avatar_states_;
-        
+
         //! Avatar appearance controller
         AvatarAppearance avatar_appearance_;
-
-        //! Trying to avoid double notifications, somehow for every avatar we go twice to 
-        /// HandleOSNE_ObjectUpdate() when there are already avatars inworld
-        QStringList sent_avatar_notifications_;
     };
 }
+
 #endif

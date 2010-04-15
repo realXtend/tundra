@@ -6,7 +6,6 @@
 
 #include <QWidget>
 #include <QCheckBox>
-#include "Inworld/View/UiProxyWidget.h"
 #include <QVector>
 #include <QString>
 
@@ -18,7 +17,6 @@ namespace OgreRenderer
 namespace Environment
 {
     class EnvironmentModule;
-    class UiProxyWidget;
 
     //! Dialog for postprocessing effects
     //! \ingroup EnvironmentModuleClient.
@@ -28,7 +26,7 @@ namespace Environment
 
     public:
         //! Constructor.
-        //! \param effect 
+        //! \param effects List of effect names
         PostProcessWidget(QVector<QString> &effects);
 
         //! Destructor.
@@ -37,8 +35,8 @@ namespace Environment
         //! Widget adds itself to the scene
         void AddSelfToScene(EnvironmentModule *env_module);
 
-        //! Adds handler to handle the postprocess requests. Note that this class doesn't own the handler and is not responsible for deleting it
-        void AddHandler(OgreRenderer::CompositionHandler *handler);
+        //! Sets handler to handle the postprocess requests. Note that this class doesn't own the handler and is not responsible for deleting it
+        void SetHandler(OgreRenderer::CompositionHandler *handler);
 
         //! Add effect names that will be shown in dialog with radiobuttons
         void AddEffects(QVector<QString> &effects);
@@ -61,8 +59,6 @@ namespace Environment
 
         //! CompositionHandler that is notified when radiobutton is clicked
         OgreRenderer::CompositionHandler *handler_;
-        UiServices::UiProxyWidget* proxy_;
-
     };
 
     //! inherited to get name of the checkbox with toggle signal

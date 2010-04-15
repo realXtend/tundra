@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_Fwd_h
 #define incl_UiModule_Fwd_h
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 class QGraphicsView;
 class QGraphicsScene;
 class QGraphicsWidget;
@@ -30,8 +32,12 @@ namespace UiServices
     class NotificationManager;
     
     class UiProxyWidget;
-    class UiWidgetProperties;    
+    class UiWidgetProperties;
+    class UiModule;
 }
+
+typedef boost::shared_ptr<UiServices::UiModule> UiModulePtr;
+typedef boost::weak_ptr<UiServices::UiModule> UiModuleWeakPtr;
 
 namespace Ether
 {
