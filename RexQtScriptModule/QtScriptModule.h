@@ -4,6 +4,7 @@
 #include "Foundation.h"
 #include "StableHeaders.h"
 #include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "ComponentRegistrarInterface.h"
 #include <QtScript>
 
@@ -24,9 +25,9 @@ namespace RexQtScript
 		virtual void Initialize();
 		virtual void PostInitialize();
 		virtual void Uninitialize();
-		virtual void Update(Core::f64 frametime);
+		virtual void Update(f64 frametime);
 
-		MODULE_LOGGING_FUNCTIONS;
+		MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
@@ -39,7 +40,7 @@ namespace RexQtScript
 	};
 
 	//api stuff
-	QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
+	//QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
 	QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
 }
 
