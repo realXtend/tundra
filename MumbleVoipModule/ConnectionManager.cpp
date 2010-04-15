@@ -48,7 +48,6 @@ namespace MumbleVoip
         StopMumbleLibrary();
     }
 
-
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
         Connection* connection = new Connection(info);
@@ -163,44 +162,6 @@ namespace MumbleVoip
         audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
 
         delete frame;
-    }
-
-    void ConnectionManager::OnAudioDataFromConnection(short* data, int size)
-    {
-        if (!framework_)
-            return;
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        if (!service_manager.get())
-            return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;     
-
-        int sample_rate = 48000; // test
-        int sample_width = 16; // test
-        int channel_count = 1; // test
-        bool stereo = false; // test
-        int spatial_audio_playback_ = true; // test
-
-        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = data;
-        sound_buffer.frequency_ = sample_rate;
-
-        if (sample_width == 16)
-            sound_buffer.sixteenbit_ = true;
-        else
-            sound_buffer.sixteenbit_ = false;
-        sound_buffer.size_ = 48000 / 100 * 2;
-        sound_buffer.stereo_ = stereo;
-        if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
-        {
-            //if (spatial_audio_playback_)
-            //    audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_position_, audio_playback_channel_);
-            //else
-                audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
-        }
-        delete [] data;
-
     }
 
     void ConnectionManager::SendAudio(bool send)
