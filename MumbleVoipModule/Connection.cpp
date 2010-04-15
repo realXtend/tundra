@@ -159,6 +159,7 @@ Connection::Connection(ServerInfo &info) :
     client_ = mumble_lib->NewClient();
 
     QString port = "64738"; // default port name
+    // \todo Handle connection error
     client_->Connect(MumbleClient::Settings(info.server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
 	client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
     client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
@@ -207,6 +208,9 @@ void Connection::UninitializeCELT()
 
 void Connection::Join(QString channel_name)
 {
+    QMutexLocker locker1(&mutex_authentication_);
+    QMutexLocker locker2(&mutex_channels_);
+
     if (!authenticated_)
     {
         join_request_ = channel_name;
@@ -224,7 +228,10 @@ void Connection::Join(QString channel_name)
 
 void Connection::OnAuthCallback()
 {
+    mutex_authentication_.lock();
     authenticated_ = true;
+    mutex_authentication_.unlock();
+
     if (join_request_.length() > 0)
     {
         QString channel = join_request_;
@@ -240,9 +247,7 @@ void Connection::OnTextMessageCallback(QString text)
 
 void Connection::HandleIncomingCELTFrame(char* data, int size)
 {
-    // @todo: lock 
-
-    // CELT decode
+    QMutexLocker locker(&mutex_playback_queue_);
 
     //celt_mode_info(celt_mode_, ???, sample_rate);
     int sample_count = 480;
@@ -275,6 +280,8 @@ void Connection::HandleIncomingCELTFrame(char* data, int size)
 
 PCMAudioFrame* Connection::GetAudioFrame()
 {
+    QMutexLocker locker(&mutex_playback_queue_);
+
     if (playback_queue_.size() == 0)
         return 0;
 
@@ -284,6 +291,8 @@ PCMAudioFrame* Connection::GetAudioFrame()
 
 void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
+    QMutexLocker locker(&mutex_send_audio_);
+
     //// TESTING
     //QFile file("sending.raw");
     //file.open(QIODevice::OpenModeFlag::Append);
@@ -346,7 +355,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 
 void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
 {
-    // \todo THREAD SAFETY
+    QMutexLocker locker(&mutex_channels_);
 
     Channel* c = new Channel(channel);
     channels_.append(c);
@@ -356,7 +365,7 @@ void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
 
 void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
 {
-    // \todo THREAD SAFETY
+    QMutexLocker locker(&mutex_channels_);
 
     int i = 0;
     for (int i = 0; i < channels_.size(); ++i)
@@ -447,7 +456,7 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
 
 QList<QString> Connection::Channels()
 {
-    // \todo THREAD SAFETY
+    QMutexLocker locker(&mutex_channels_);
 
     QList<QString> channels;
     foreach(Channel* c, channels_)
@@ -455,16 +464,6 @@ QList<QString> Connection::Channels()
         channels.append(c->Name());
     }
     return channels;
-}
-
-void Connection::SendAudioFrame()
-{
-    // \todo Thread safety
-
-    if (sending_queue_.isEmpty())
-        return;
-
-    PCMAudioFrame*& frame = sending_queue_.first();
 }
 
 void Connection::SendAudio(bool send)

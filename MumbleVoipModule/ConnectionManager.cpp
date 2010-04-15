@@ -25,9 +25,10 @@ namespace MumbleVoip
         {
             mumble_lib->Run();
         }
-        catch(...)
+        catch(std::exception &e)
         {
-            MumbleVoipModule::LogError("Mumble library mainloop stopped by exception.");
+            QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
+            MumbleVoipModule::LogError(message.toStdString());
         }
         MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
@@ -175,7 +176,6 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-
         int sample_rate = 48000; // test
         int sample_width = 16; // test
         int channel_count = 1; // test
@@ -194,7 +194,6 @@ namespace MumbleVoip
         sound_buffer.stereo_ = stereo;
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
-
             //if (spatial_audio_playback_)
             //    audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_position_, audio_playback_channel_);
             //else
