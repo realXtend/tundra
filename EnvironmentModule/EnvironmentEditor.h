@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QSlider>
 #include <QVector>
+#include <QUiLoader>
 
 class QImage;
 class QColor;
@@ -241,6 +242,8 @@ namespace Environment
         void TimeOfDayOverrideChanged(int state);
         void TimeValueChanged(int new_value);
 
+        void ChangeLanguage();
+
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 
@@ -314,7 +317,7 @@ namespace Environment
         ModifyLandAction action_;
 
         //! Proxy Widget for ui
-        UiServices::UiProxyWidget *EnvironmentEditorProxyWidget_;
+        UiServices::UiProxyWidget *editorProxy_;
 
         QSlider *timeof_day_slider_;
 
@@ -345,6 +348,7 @@ namespace Environment
 
         //! Scene node that will hold spesific paint area mesh object.
         Ogre::SceneNode *manual_paint_node_;
+
     };
 }
 

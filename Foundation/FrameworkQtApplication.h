@@ -38,6 +38,10 @@ namespace Foundation
             void UpdateFrame();
             void ChangeLanguage(const QString& file);
 
+        signals:
+            /// Signal is sent when QApplication language is changed, provided for convience.
+            void LanguageChanged();
+
         protected:
             bool eventFilter (QObject *obj, QEvent *event);
             

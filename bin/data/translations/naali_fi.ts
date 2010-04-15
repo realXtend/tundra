@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Textures</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tekstuurit</translation>
     </message>
     <message>
         <source>Attachments</source>
@@ -25,7 +25,7 @@
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kääntää</translation>
     </message>
     <message>
         <source>Save</source>
@@ -197,6 +197,76 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>ChatSessionWidget</name>
+    <message>
+        <source>ChatSessionWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QLineEdit {
+	min-height: 20px;
+	border: 0px;
+	border-top: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+}
+
+QPlainTextEdit {
+	border: 0px;
+}
+
+QPushButton {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(255, 255, 255);
+}
+
+QPushButton:hover {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QPushButton::pressed {
+	color: rgb(0,0,0);
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(207, 207, 207);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ClassicalLoginWidget</name>
     <message>
         <source>ClassicalLoginWidget</source>
@@ -319,7 +389,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kääntää</translation>
     </message>
     <message>
         <source>Save</source>
@@ -330,238 +400,238 @@ p, li { white-space: pre-wrap; }
     <name>Environment::EnvironmentEditor</name>
     <message>
         <source>Environment Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Ympäristön muokkaus</translation>
     </message>
 </context>
 <context>
     <name>EnvironmentEditor</name>
     <message>
         <source>Environment Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Ympäristön muokkaus</translation>
     </message>
     <message>
         <source> Terrain</source>
-        <translation type="unfinished"></translation>
+        <translation>Maa</translation>
     </message>
     <message>
         <source>Brush Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Tussinkoko</translation>
     </message>
     <message>
         <source>Small</source>
-        <translation type="unfinished"></translation>
+        <translation>Pieni</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>Keskikokoinen</translation>
     </message>
     <message>
         <source>Large</source>
-        <translation type="unfinished"></translation>
+        <translation>Iso</translation>
     </message>
     <message>
         <source>Edit Action</source>
-        <translation type="unfinished"></translation>
+        <translation>Muokkaa</translation>
     </message>
     <message>
         <source>Flatten</source>
-        <translation type="unfinished"></translation>
+        <translation>Tasoita</translation>
     </message>
     <message>
         <source>Raise</source>
-        <translation type="unfinished"></translation>
+        <translation>Nosta</translation>
     </message>
     <message>
         <source>Lower</source>
-        <translation type="unfinished"></translation>
+        <translation>Laske</translation>
     </message>
     <message>
         <source>Smooth</source>
-        <translation type="unfinished"></translation>
+        <translation>Silettää</translation>
     </message>
     <message>
         <source>Roughen</source>
-        <translation type="unfinished"></translation>
+        <translation>Rosoittaa</translation>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation>Kääntää</translation>
     </message>
     <message>
         <source>Inactive</source>
-        <translation type="unfinished"></translation>
+        <translation>Ei aktiivinen</translation>
     </message>
     <message>
         <source>3D Paint</source>
-        <translation type="unfinished"></translation>
+        <translation>3D Piirto</translation>
     </message>
     <message>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Päivittää</translation>
     </message>
     <message>
         <source> Terrain texture </source>
-        <translation type="unfinished"></translation>
+        <translation>Maan tekstuuri</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Aseta</translation>
     </message>
     <message>
         <source>Start / End height</source>
-        <translation type="unfinished"></translation>
+        <translation>Aloitus/lopetus korkeus</translation>
     </message>
     <message>
         <source>Texture 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstuuri 1</translation>
     </message>
     <message>
         <source>Texture 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstuuri 2</translation>
     </message>
     <message>
         <source>Texture 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstuuri 3</translation>
     </message>
     <message>
         <source>Texture 4</source>
-        <translation type="unfinished"></translation>
+        <translation>Tektuuri 4</translation>
     </message>
     <message>
         <source> Water </source>
-        <translation type="unfinished"></translation>
+        <translation>Vesi</translation>
     </message>
     <message>
         <source>Enable Water</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä vesi</translation>
     </message>
     <message>
         <source>Water Height (meters)</source>
-        <translation type="unfinished"></translation>
+        <translation>Veden korkeus (metreissä)</translation>
     </message>
     <message>
         <source>Sky</source>
-        <translation type="unfinished"></translation>
+        <translation>Taivas</translation>
     </message>
     <message>
         <source>Enable Caelum</source>
-        <translation type="unfinished"></translation>
+        <translation>Käytä Caelumia</translation>
     </message>
     <message>
         <source>Enable Sky</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä taivas</translation>
     </message>
     <message>
         <source>Sky type</source>
-        <translation type="unfinished"></translation>
+        <translation>Taivaan tyyppi</translation>
     </message>
     <message>
         <source>Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstuurit</translation>
     </message>
     <message>
         <source>Note: You can only edit Ogre sky properties if Caelum is disabled. It&apos;s not yet possible to disable it when Naali is running.</source>
-        <translation type="unfinished"></translation>
+        <translation>Voit ainoastaan muokata Ogre taivaan ominaisuuksia jos Caelumi ei ole päällä. Tällä hetkellä ei ole vielä mahdollista ajonaikaisesti asettaa Caelumia pois päältä. </translation>
     </message>
     <message>
         <source>Fog</source>
-        <translation type="unfinished"></translation>
+        <translation>Sumu</translation>
     </message>
     <message>
         <source>Enable Fog Color Override</source>
-        <translation type="unfinished"></translation>
+        <translation>Aseta sumun värin ylikirjoitus</translation>
     </message>
     <message>
         <source>Fog ground controls</source>
-        <translation type="unfinished"></translation>
+        <translation>Maassa olevan sumun asetukset</translation>
     </message>
     <message>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Punainen</translation>
     </message>
     <message>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Vihreä</translation>
     </message>
     <message>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Sininen</translation>
     </message>
     <message>
         <source> Fog start distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Sumun alkamisetäisyys</translation>
     </message>
     <message>
         <source>Fog end distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Sumun päättymisetäisyys</translation>
     </message>
     <message>
         <source>Apply Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Aseta väri</translation>
     </message>
     <message>
         <source>Apply Distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Aseta etäisyys</translation>
     </message>
     <message>
         <source>Fog water controls</source>
-        <translation type="unfinished"></translation>
+        <translation>Vedessä olevan sumun asetukset</translation>
     </message>
     <message>
         <source>Fog start distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Sumun alkamisen etäisyys</translation>
     </message>
     <message>
         <source>Sun and Light</source>
-        <translation type="unfinished"></translation>
+        <translation>Aurinko ja valo</translation>
     </message>
     <message>
         <source>Time of day</source>
-        <translation type="unfinished"></translation>
+        <translation>Vuorokauden aika</translation>
     </message>
     <message>
         <source>Night</source>
-        <translation type="unfinished"></translation>
+        <translation>Yö</translation>
     </message>
     <message>
         <source>Midday</source>
-        <translation type="unfinished"></translation>
+        <translation>Keskipäivä</translation>
     </message>
     <message>
         <source>Evening</source>
-        <translation type="unfinished"></translation>
+        <translation>Ilta</translation>
     </message>
     <message>
         <source>Override server time</source>
-        <translation type="unfinished"></translation>
+        <translation>Syrjäytä palvelimelta tuleva aika </translation>
     </message>
     <message>
         <source>Sun light direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Auringonvalon suuntavektori</translation>
     </message>
     <message>
         <source> X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <source> Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
     <message>
         <source> Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Z</translation>
     </message>
     <message>
         <source>Sun light color</source>
-        <translation type="unfinished"></translation>
+        <translation>Auringon väri</translation>
     </message>
     <message>
         <source>Change</source>
-        <translation type="unfinished"></translation>
+        <translation>Muuta</translation>
     </message>
     <message>
         <source>Ambient light color</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambient valon väri</translation>
     </message>
 </context>
 <context>
@@ -926,6 +996,43 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>FrienListWidget</name>
+    <message>
+        <source>Friends List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QPushButton {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+}
+
+QPushButton:hover {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+	color: rgb(51, 98, 255);
+}
+
+QPushButton::pressed {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+	color: rgb(74, 122, 255);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>x new friend request</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QListView::item {
+     min-height: 30px;
+ }
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Inventory::InventoryWindow</name>
     <message>
         <source>&amp;Upload</source>
@@ -1051,6 +1158,17 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>LoadingWidget</name>
+    <message>
+        <source>Connecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginControllerWidget</name>
     <message>
         <source>Login Controller</source>
@@ -1103,6 +1221,49 @@ QPushButton:hover {
     </message>
     <message>
         <source>temp</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoginWidget</name>
+    <message>
+        <source>IM Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Provide your IM credentials</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last stored credentials</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Google account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Facebook account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1253,7 +1414,7 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source> X</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">X</translation>
     </message>
 </context>
 <context>
@@ -1317,6 +1478,13 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
+    <name>OpenSimChatWidget</name>
+    <message>
+        <source>OpenSimChatWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PersonalWidget</name>
     <message>
         <source>PersonalWidget</source>
@@ -1338,6 +1506,13 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>View Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RequestManagerWidget</name>
+    <message>
+        <source>Pending Friend Requests</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1369,6 +1544,63 @@ alpha layer of the diffuse map</source>
     <message>
         <source>Toggle postprocessing effects</source>
         <translation>Aseta jälkikäsittely</translation>
+    </message>
+</context>
+<context>
+    <name>SessionManagerWidget</name>
+    <message>
+        <source>IM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Question label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>username@server.com</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>status message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QWidget {
+	background-color: #f4f4f4;
+}
+
+QLabel {
+	color: rgb(0, 0, 0);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>color: rgb(69, 159, 255);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hello and Welcome to Naali Communications Widget!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can find all important functionality from the menu that is located at the top of this window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To start click the Show Friend List button. There you can start chat,  video or audio sessions with your friends.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  Connected</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1438,6 +1670,29 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>Voice Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SpatialVoiceConfigureWidget</name>
+    <message>
+        <source>3D Voice Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select avatar and start tracking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Avatar List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Tracking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop Tracking</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1570,6 +1825,132 @@ QPushButton:hover {
     </message>
     <message>
         <source>Uploading file </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VideoSessionControlsWidget</name>
+    <message>
+        <source>VideoSessionControlsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QWidget#VideoSessionControls {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0,0,0);
+}
+
+QCheckBox {
+	spacing: 3px;
+}
+
+QCheckBox::indicator {
+	width: 16px;
+	height: 16px;
+}
+
+QCheckBox::indicator:checked {
+	image: url(:images/iconGreen.png);
+}
+
+QCheckBox::indicator:unchecked {
+	image: url(:images/iconRed.png);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VideoSessionWidget</name>
+    <message>
+        <source>VideoSessionWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+QWidget#MainFrame {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0,0,0);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>color: rgb(0,0,0);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QPushButton {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(255, 255, 255);
+}
+
+QPushButton:hover {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QPushButton::pressed {
+	color: rgb(0,0,0);
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(207, 207, 207);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
