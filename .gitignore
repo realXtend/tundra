@@ -56,3 +56,6 @@ bin/fullmemoryleaklog.txt
 bin/pymodules/DLLs/
 bin/pymodules/python26_Lib.zip
 build/
+
+# Binary compiled translation files
+bin/data/translations/*.qm
