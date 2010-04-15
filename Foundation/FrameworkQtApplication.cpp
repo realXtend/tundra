@@ -148,6 +148,8 @@ namespace Foundation
         removeTranslator(app_translator_);
         if ( app_translator_->load(file))
             installTranslator(app_translator_); 
+
+        emit LanguageChanged();
     }
 
     void FrameworkQtApplication::UpdateFrame()

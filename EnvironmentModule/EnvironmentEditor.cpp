@@ -34,7 +34,7 @@
 #include <OgreEntity.h>
 #include "OgreMaterialUtils.h"
 
-#include <QUiLoader>
+//#include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
 #include <QImage>
@@ -50,6 +50,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QScrollArea>
+#include <QApplication>
 
 namespace Environment
 {
@@ -66,7 +67,6 @@ namespace Environment
     ambient_color_picker_(0),
     manual_paint_object_(0),
     manual_paint_node_(0)
-    //mouse_press_flag_(no_button)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
@@ -77,11 +77,14 @@ namespace Environment
         InitEditorWindow();
         mouse_position_[0] = 0;
         mouse_position_[1] = 0;
+    
+        QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
+      
     }
 
     EnvironmentEditor::~EnvironmentEditor()
     {
-        EnvironmentEditorProxyWidget_ = 0;
+        editorProxy_ = 0;
         delete sun_color_picker_;
         delete ambient_color_picker_;
         sun_color_picker_ = 0;
@@ -182,6 +185,15 @@ namespace Environment
         }
     }
 
+    void EnvironmentEditor::ChangeLanguage()
+    {
+        UiServices::UiWidgetProperties properties = editorProxy_->GetWidgetProperties();
+        QString orginal = properties.GetWidgetName();
+        QString translation = QApplication::translate("Environment::EnvironmentEditor", orginal.toStdString().c_str());
+        editorProxy_->setWindowTitle(translation);
+    
+    }
+
     MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(const EC_Terrain &terrain) const
     {
         float min, max;
@@ -217,6 +229,7 @@ namespace Environment
     {
         assert(environment_module_);
         QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/environment_editor.ui");
         if(!file.exists())
         {
@@ -224,7 +237,9 @@ namespace Environment
             return;
         }
         editor_widget_ = loader.load(&file);
-        file.close();
+        //editor_widget_ = loader_->load(&file);
+        //file.close();
+        //editor_widget_->show();
 
         boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (!ui_module.get())
@@ -243,7 +258,7 @@ namespace Environment
         image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
         env_editor_properties.SetMenuNodeStyleMap(image_path_map);
 
-        EnvironmentEditorProxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
+        editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
         //EnvironmentEditorProxyWidget_->updateGeometry();
 
         InitTerrainTabWindow();
