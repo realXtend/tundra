@@ -245,39 +245,6 @@ void Connection::OnTextMessageCallback(QString text)
     emit (TextMessage(text));
 }
 
-void Connection::HandleIncomingCELTFrame(char* data, int size)
-{
-    QMutexLocker locker(&mutex_playback_queue_);
-
-    //celt_mode_info(celt_mode_, ???, sample_rate);
-    int sample_count = 480;
-    celt_int16_t pcm_data[480];
-    int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
-    switch (ret)
-    {
-    case CELT_OK:
-        {
-            if (playback_queue_.size() < 100000)
-            {
-                PCMAudioFrame* audio_frame = new PCMAudioFrame(48000, 16, 1, (char*)pcm_data, 2*480);
-                playback_queue_.push_back(audio_frame);
-                emit AudioFramesAvailable(this);
-            }
-        }
-        break;
-    case CELT_BAD_ARG:
-        break;
-    case CELT_INVALID_MODE:
-        break;
-    case CELT_INTERNAL_ERROR:
-        break;
-    case CELT_CORRUPTED_DATA:
-        break;
-    case CELT_UNIMPLEMENTED:
-        break;
-    }
-}
-
 PCMAudioFrame* Connection::GetAudioFrame()
 {
     QMutexLocker locker(&mutex_playback_queue_);
@@ -293,12 +260,6 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
     QMutexLocker locker(&mutex_send_audio_);
 
-    //// TESTING
-    //QFile file("sending.raw");
-    //file.open(QIODevice::OpenModeFlag::Append);
-    //file.write(frame->Data(), frame->GetLengthBytes());
-    //file.close();
-
     std::deque<std::string> packet_list;
 
     int audio_quality = 60000;
@@ -309,13 +270,6 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 
     int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&encode_buffer_, std::min(audio_quality / (100 * 8), 127));
     packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
-
-    // TESTING
-    //QFile file2("sending-celt.raw");
-    //file2.open(QIODevice::OpenModeFlag::Append);
-    //file2.write((char*)&len,4);
-    //file2.write(encode_buffer_, len);
-    //file2.close();
 
     int32_t seq = 0;
 	int frames = 1;
@@ -418,28 +372,13 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     data_stream >> seq;
 
     bool last_frame = true;
-    do {
+    do
+    {
 		int header = static_cast<unsigned char>(data_stream.next());
         int frame_size = header & 0x7f;
         last_frame = !(header & 0x80);
         const char* frame_data = data_stream.charPtr();
         data_stream.skip(frame_size);
-
-        // TESTING
-        //if (playback_queue_.size() == 0)
-        //{
-        //    char buffer[1024];
-        //    QFile file2("sending-celt_.raw");
-        //    file2.open(QIODevice::OpenModeFlag::ReadOnly);
-        //    while (file2.bytesAvailable() > 0)
-        //    {
-        //        int len = 0;
-        //        file2.read((char*)&len, 4);
-        //        file2.read(buffer, len);
-        //        HandleIncomingCELTFrame((char*)buffer, len);
-        //    }
-        //    file2.close();
-        //}
 
         HandleIncomingCELTFrame((char*)frame_data, frame_size);
 	} while (!last_frame && data_stream.isValid());
@@ -474,6 +413,39 @@ void Connection::SendAudio(bool send)
 bool Connection::SendingAudio()
 {
     return sending_audio_;
+}
+
+void Connection::HandleIncomingCELTFrame(char* data, int size)
+{
+    QMutexLocker locker(&mutex_playback_queue_);
+
+    //celt_mode_info(celt_mode_, ???, sample_rate);
+    int sample_count = 480;
+    celt_int16_t pcm_data[480];
+    int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
+    switch (ret)
+    {
+    case CELT_OK:
+        {
+            if (playback_queue_.size() < 100000)
+            {
+                PCMAudioFrame* audio_frame = new PCMAudioFrame(48000, 16, 1, (char*)pcm_data, 2*480);
+                playback_queue_.push_back(audio_frame);
+                emit AudioFramesAvailable(this);
+            }
+        }
+        break;
+    case CELT_BAD_ARG:
+        break;
+    case CELT_INVALID_MODE:
+        break;
+    case CELT_INTERNAL_ERROR:
+        break;
+    case CELT_CORRUPTED_DATA:
+        break;
+    case CELT_UNIMPLEMENTED:
+        break;
+    }
 }
 
 } // namespace MumbleVoip 
