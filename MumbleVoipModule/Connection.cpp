@@ -258,53 +258,59 @@ PCMAudioFrame* Connection::GetAudioFrame()
 
 void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
-    QMutexLocker locker(&mutex_send_audio_);
+    int audio_quality = 60000;
+    int frames_per_packet = 6;
+
+    QMutexLocker locker(&mutex_encode_audio_);
+    
+    if (encode_queue_.size < 100)
+        encode_queue_.push_back(frame);
+    if (encode_queue_.size() < frames_per_packet)
+        return;
 
     std::deque<std::string> packet_list;
-
-    int audio_quality = 60000;
-//    sending_queue_.push_back(frame);
-
     celt_encoder_ctl(celt_encoder_, CELT_SET_LTP(0));
 	//celt_encoder_ctl(celt_encode, CELT_SET_VBR_RATE(audio_quality));
 
-    int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(frame->Data()), NULL, (unsigned char*)&encode_buffer_, std::min(audio_quality / (100 * 8), 127));
-    packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
-
-    int32_t seq = 0;
-	int frames = 1;
-    int session = 0;
-    while (!packet_list.empty()) 
+    for (int i = 0; i < frames_per_packet; ++i)
     {
-		char data[1024];
-		int flags = 0; // target = 0
-		flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
-		data[0] = static_cast<unsigned char>(flags);
-        PacketDataStream data_stream(data + 1, 1023);
-        frame_sequence_++;
-        data_stream << session;
-        data_stream << frame_sequence_;
+        PCMAudioFrame* audio_frame = encode_queue_.first();
+        encode_queue_.pop_front();
 
-		for (int i = 0; i < frames; ++i)
-        {
-			if (packet_list.empty())
-                break;
+        int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->Data()), NULL, encode_buffer_, std::min(audio_quality / (100 * 8), 127));
+        packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
 
-			const std::string& s = packet_list.front();
-
-			unsigned char head = s.size();
-			// Add 0x80 to all but the last frame
-			if (i < frames - 1)
-				head |= 0x80;
-
-			data_stream.append(head);
-			data_stream.append(s);
-
-			packet_list.pop_front();
-		}
-        client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
+        delete audio_frame;
     }
-    delete frame;
+//    int32_t seq = 0;
+    int session = 0;
+	char data[1024];
+	int flags = 0; // target = 0
+	flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
+	data[0] = static_cast<unsigned char>(flags);
+    PacketDataStream data_stream(data + 1, 1023);
+    data_stream << session;
+    data_stream << frame_sequence_;
+
+	for (int i = 0; i < frames_per_packet; ++i)
+    {
+		if (packet_list.empty())
+            break;
+
+		const std::string& s = packet_list.front();
+
+		unsigned char head = s.size();
+		// Add 0x80 to all but the last frame
+		if (i < frames_per_packet - 1)
+			head |= 0x80;
+
+		data_stream.append(head);
+		data_stream.append(s);
+
+		packet_list.pop_front();
+	}
+    client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
+    frame_sequence_ += frames_per_packet;
 }
 
 void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
@@ -334,6 +340,8 @@ void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
 
 void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
 {
+    return; // test
+
     int frames = scanPacket((char*)buffer, length);
     
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
@@ -380,7 +388,7 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         const char* frame_data = data_stream.charPtr();
         data_stream.skip(frame_size);
 
-        HandleIncomingCELTFrame((char*)frame_data, frame_size);
+        HandleIncomingCELTFrame((unsigned char*)frame_data, frame_size);
 	} while (!last_frame && data_stream.isValid());
 
     int bytes_left = data_stream.left();
@@ -415,23 +423,28 @@ bool Connection::SendingAudio()
     return sending_audio_;
 }
 
-void Connection::HandleIncomingCELTFrame(char* data, int size)
+void Connection::HandleIncomingCELTFrame(unsigned char* data, int size)
 {
     QMutexLocker locker(&mutex_playback_queue_);
 
     //celt_mode_info(celt_mode_, ???, sample_rate);
     int sample_count = 480;
     celt_int16_t pcm_data[480];
-    int ret = celt_decode(celt_decoder_, (unsigned char*)data, size, pcm_data);
+    int ret = celt_decode(celt_decoder_, data, size, pcm_data);
     switch (ret)
     {
     case CELT_OK:
         {
-            if (playback_queue_.size() < 100000)
+            if (playback_queue_.size() < 100)
             {
                 PCMAudioFrame* audio_frame = new PCMAudioFrame(48000, 16, 1, (char*)pcm_data, 2*480);
                 playback_queue_.push_back(audio_frame);
                 emit AudioFramesAvailable(this);
+            }
+            else
+            {
+                MumbleVoipModule::LogWarning("Drop Mumble audio packet");
+                return;
             }
         }
         break;

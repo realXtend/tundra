@@ -93,19 +93,19 @@ namespace MumbleVoip
         bool authenticated_;
         QString join_request_;
         QList<PCMAudioFrame*> playback_queue_;
-        QList<PCMAudioFrame*> sending_queue_;
+        QList<PCMAudioFrame*> encode_queue_;
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
         static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
         QList<Channel*> channels_;
         bool sending_audio_;
-        char encode_buffer_[4000];
+        unsigned char encode_buffer_[4000];
         int frame_sequence_;
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
         QMutex mutex_playback_queue_;
-        QMutex mutex_send_audio_;
+        QMutex mutex_encode_audio_;
 
     public slots:
         void OnAuthCallback();
@@ -114,7 +114,7 @@ namespace MumbleVoip
 //        void OnRelayTunnel(std::string &s);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-        void HandleIncomingCELTFrame(char* data, int size);
+        void HandleIncomingCELTFrame(unsigned char* data, int size);
 
     signals:
 //        void Closed();
