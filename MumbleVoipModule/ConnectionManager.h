@@ -106,7 +106,6 @@ namespace MumbleVoip
 
     public slots:
         void OnAudioFramesAvailable(Connection* connection);
-        void OnAudioDataFromConnection(short* data, int size);
     };
 
 } // end of namespace: MumbleVoip
