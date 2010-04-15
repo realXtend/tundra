@@ -49,6 +49,12 @@ namespace MumbleVoip
                     }
                     break;
                 }
+
+//                case EVENT_SERVER_DISCONNECTED:
+                    // \todo Close mumble connections
+                    // \todo Stop recording audio
+//                    break;
+
                 default:
                     break;
             }

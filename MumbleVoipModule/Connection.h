@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QMutex>
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "stdint.h"
@@ -48,16 +49,16 @@ namespace MumbleVoip
     //    void VideoFramesAvailable();
     //};
 
-
     //! Connection to a single mumble server.
     //!
     //! \todo Thread safety !!!
     //!
     class Connection : public QObject
     {
-        enum State { INITIALIZING, OPEN, CLOSED };
         Q_OBJECT
     public:
+        enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
+
         Connection(ServerInfo &info);
         virtual ~Connection();
 
@@ -81,6 +82,9 @@ namespace MumbleVoip
 
         virtual void SendAudio(bool send);
         virtual bool SendingAudio();
+
+        // virtual State State();
+        // virtual QString Reason();
     private:
         void InitializeCELT();
         void UninitializeCELT();
@@ -98,6 +102,10 @@ namespace MumbleVoip
         bool sending_audio_;
         char encode_buffer_[4000];
         int frame_sequence_;
+        QMutex mutex_channels_;
+        QMutex mutex_authentication_;
+        QMutex mutex_playback_queue_;
+        QMutex mutex_send_audio_;
 
     public slots:
         void OnAuthCallback();
@@ -106,7 +114,6 @@ namespace MumbleVoip
 //        void OnRelayTunnel(std::string &s);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-        void SendAudioFrame();
         void HandleIncomingCELTFrame(char* data, int size);
 
     signals:
