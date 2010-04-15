@@ -6,10 +6,6 @@
 #include "EventDataInterface.h"
 #include "RexUUID.h"
 #include "NetworkMessages/NetMessage.h"
-//#include "NetworkMessages/NetInMessage.h"
-//#include "NetworkMessages/NetOutMessage.h"
-//#include "Inventory/InventorySkeleton.h"
-//#include "OpenSim/BuddyList.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -58,28 +54,38 @@ namespace ProtocolUtilities
     namespace Events
     {
         /**
-         * Notify event which is sent when OpenSimProtocol module has disconnect connection between server and client. 
-         * @note this event should never send from outside module. Use DisconnectFromServer() or similar method.
+         *  Notify event which is sent when OpenSimProtocol module has disconnect connection between server and client. 
+         *  @note this event should never send from outside module. Use DisconnectFromServer() or similar method.
          */
         static const event_id_t EVENT_SERVER_DISCONNECTED = 0x01;
 
         /** 
-         * Notify event which is send when connection is made to the server. 
-         * @note this event should never send from outside module. Use ConnectToServer() or similar method.
+         *  Notify event which is send when connection is made to the server. 
+         *  @note this event should never send from outside module. Use ConnectToServer() or similar method.
          */
         static const event_id_t EVENT_SERVER_CONNECTED = 0x02;
 
         /**
-         * Notify event which can be send when connection has failed. 
-         * @note this event should never send from outside module. 
+         *  Notify event which can be send when connection has failed. 
+         *  @note this event should never send from outside module. 
          */
         static const event_id_t EVENT_CONNECTION_FAILED = 0x03;
 
         /**
-         * Notifies when a ProtocolModule has registered networking category
-         * so other modules can query the event category
+         *  Notifies when a ProtocolModule has registered networking category
+         *  so other modules can query the event category
          */
         static const event_id_t EVENT_NETWORKING_REGISTERED = 0x04;
+
+        /**
+         *  Notifies that new user (not us) has connected to the world.
+         */
+        static const event_id_t EVENT_USER_CONNECTED = 0x05;
+
+        /**
+         *  Notifies that user (not us) has disconnected to the world.
+         */
+        static const event_id_t EVENT_USER_DISCONNECTED = 0x06;
     }
 
     /// Enumeration of the network connection states.
@@ -191,6 +197,21 @@ namespace ProtocolUtilities
         virtual ~WorldStreamReadyEvent();
         // Pointer to the current WorldStream
         boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStream;
+    };
+
+    /// Event data interface for EVENT_USER_CONNECTED and EVENT_USER_DISCONNECTED
+    class UserConnectivityEvent : public Foundation::EventDataInterface
+    {
+    public:
+        /// Constructor
+        /// @param agent_id Agent ID of the user.
+        explicit UserConnectivityEvent(const RexUUID &agent_id) : agentId(agent_id) {}
+        /// Agent ID.
+        RexUUID agentId;
+        /// Local ID.
+        int32_t localId;
+        /// Name.
+        std::string fullName;
     };
 }
 

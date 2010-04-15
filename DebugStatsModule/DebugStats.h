@@ -16,6 +16,7 @@
 #include "RexTypes.h"
 
 #include <QObject>
+#include <QPointer>
 
 namespace RexLogic
 {
@@ -64,20 +65,20 @@ namespace DebugStats
         static const std::string ModuleName;
 
 public slots:
-        /// Shows the profiling window
+        /// Creates and shows the profiling window.
         Console::CommandResult ShowProfilingWindow(const StringVector &params);
 
-        /// Closes the profiling window
-        void CloseProfilingWindow();
-
-        /// Shows the participant window
+        /// Creates and shows the participant window.
         Console::CommandResult ShowParticipantWindow(const StringVector &params);
-
-        /// Closes the participant window
-        void CloseParticipantWindow();
 
     private:
          Q_DISABLE_COPY(DebugStatsModule);
+
+        /// Sends random NetInMessage packet
+        Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
+
+        /// Sends random NetOutMessage packet
+        Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
@@ -86,25 +87,23 @@ public slots:
         /// Last call time of Update() function
         LARGE_INTEGER lastCallTime;
 #endif
-        /// Sends random NetInMessage packet
-        Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
-
-        /// Sends random NetOutMessage packet
-        Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
 
         /// Framework event category
         event_category_id_t frameworkEventCategory_;
 
-        /// Network event category
+        /// NetworkIn event category
         event_category_id_t networkEventCategory_;
 
+        /// NetworkState event category
+        event_category_id_t networkStateEventCategory_;
+
         /// Profiler window
-        TimeProfilerWindow *profilerWindow_;
+        QPointer<TimeProfilerWindow> profilerWindow_;
 
         /// Participant window
-        ParticipantWindow *participantWindow_;
+        QPointer<ParticipantWindow> participantWindow_;
 
-        ///
+        /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr current_world_stream_;
     };
 }

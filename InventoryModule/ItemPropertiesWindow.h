@@ -22,11 +22,6 @@ namespace Foundation
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
-
 QT_BEGIN_NAMESPACE
 class QVBoxLayout;
 class QLineEdit;
@@ -42,6 +37,8 @@ namespace Inventory
     class ItemPropertiesWindow : public QWidget
     {
         Q_OBJECT
+
+        friend class InventoryModule;
 
     public:
         /// Constructor.
@@ -85,17 +82,8 @@ namespace Inventory
         bool EditingFinished();
 
     private:
-        /// Main widget loaded from .ui file.
-        QWidget *mainWidget_;
-
-        /// Layout 
-        QVBoxLayout *layout_;
-
         /// InventoryModule pointer.
         InventoryModule *owner_;
-
-        /// Proxy widget for ui
-        UiServices::UiProxyWidget *proxyWidget_;
 
         /// Inventory item ID
         QString inventoryId_;

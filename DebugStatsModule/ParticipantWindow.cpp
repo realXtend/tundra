@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ParticipantWindow.cpp
- *  @brief  ParticipantWindow Shows list of users in the world.
+ *  @brief  ParticipantWindow shows list of users in the world.
  */
 
 #include "StableHeaders.h"
@@ -56,6 +56,25 @@ void ParticipantWindow::PopulateUsernameList()
             QLabel *label = new QLabel(ec_presence->GetFullName().c_str(), this);
             usernameLayout_->addWidget(label);
         }
+    }
+}
+
+void ParticipantWindow::AddUser(RexLogic::EC_OpenSimPresence *presence)
+{
+    if (!users_.contains(presence->agentId))
+    {
+        QLabel *label = new QLabel(presence->GetFullName().c_str(), this);
+        usernameLayout_->addWidget(label);
+        users_[presence->agentId] = label;
+    }
+}
+
+void ParticipantWindow::RemoveUser(RexLogic::EC_OpenSimPresence *presence)
+{
+    if (users_.contains(presence->agentId))
+    {
+        QLabel *label = users_.take(presence->agentId);
+        SAFE_DELETE(label);
     }
 }
 

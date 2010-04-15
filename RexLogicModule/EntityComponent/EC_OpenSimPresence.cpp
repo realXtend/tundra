@@ -1,17 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ModuleInterface.h"
 #include "EntityComponent/EC_OpenSimPresence.h"
+#include "ModuleInterface.h"
 
 namespace RexLogic
 {
     EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) :
         Foundation::ComponentInterface(module->GetFramework()),
-        RegionHandle(0),
-        LocalId(0),
-        ParentId(0),
-        FullId(RexUUID())
+        regionHandle(0),
+        localId(0),
+        parentId(0),
+        agentId(RexUUID())
     {
     }
 

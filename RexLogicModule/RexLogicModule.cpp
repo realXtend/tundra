@@ -226,7 +226,7 @@ void RexLogicModule::PostInitialize()
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
 
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
@@ -1002,9 +1002,9 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     entity_id_t parentid = 0;
     if (prim)
         parentid = prim->ParentId;
-    if (presence)    
-        parentid = presence->ParentId;
-        
+    if (presence)
+        parentid = presence->parentId;
+
     if (parentid == 0)
     {
         // No parent, attach to scene root
@@ -1074,7 +1074,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
-    boost::shared_ptr<UiServices::UiModule> ui_module =
+    UiModulePtr ui_module =
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
 
     if (!avatar_ && !ui_module)

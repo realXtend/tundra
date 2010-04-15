@@ -36,10 +36,10 @@ namespace RexLogic
         std::string GetFullName() const;
 
         // !ID related
-        uint64_t RegionHandle;
-        uint32_t LocalId;
-        RexUUID FullId;
-        uint32_t ParentId;
+        uint64_t regionHandle;
+        int32_t localId;
+        RexUUID agentId;
+        uint32_t parentId;
 
     private:
         /// Constructor.

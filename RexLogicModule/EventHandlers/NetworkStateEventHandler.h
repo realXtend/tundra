@@ -3,8 +3,10 @@
 #ifndef incl_NetworkStateEventHandler_h
 #define incl_NetworkStateEventHandler_h
 
-#include "ComponentInterface.h"
 #include "CoreTypes.h"
+#include "RexUUID.h"
+
+#include <QList>
 
 namespace Foundation
 {
@@ -19,15 +21,29 @@ namespace RexLogic
     class NetworkStateEventHandler
     {
     public:
-        NetworkStateEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
+        /// Constructor
+        /// @param fw Framework.
+        /// @param owner Owner module.
+        NetworkStateEventHandler(Foundation::Framework *fw, RexLogicModule *owner);
+
+        /// Destructor.
         virtual ~NetworkStateEventHandler();
 
+        /// Handles
+        /// @param event_id
+        /// @param data
         bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
+        /// Framework.
         Foundation::Framework *framework_;
 
-        RexLogicModule *rexlogicmodule_;
+        /// Owner module.
+        RexLogicModule *owner_;
+
+        /// Trying to avoid double notifications, somehow for every avatar we go twice to 
+        /// HandleOSNE_ObjectUpdate() when there are already avatars inworld
+        QList<RexUUID> sent_avatar_notifications_;
     };
 }
 

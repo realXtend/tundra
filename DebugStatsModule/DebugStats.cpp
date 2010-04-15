@@ -19,7 +19,10 @@
 #include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
+#include "SceneEvents.h"
+#include "SceneManager.h"
 #include "NetworkEvents.h"
+#include "EntityComponent/EC_OpenSimPresence.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
@@ -40,6 +43,7 @@ DebugStatsModule::DebugStatsModule() :
     ModuleInterfaceImpl(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
+    networkStateEventCategory_(0),
     profilerWindow_(0),
     participantWindow_(0)
 {
@@ -80,8 +84,7 @@ void DebugStatsModule::PostInitialize()
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -95,17 +98,10 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     profilerWindow_ = new TimeProfilerWindow(framework_);
     UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_,
         UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
-    //Desired: profilerWindow_->show();
-    // Instead of:
-    ui_module->GetInworldSceneController()->ShowProxyForWidget(profilerWindow_);//proxy->show();
-    // The following should not be needed if the size was properly set in Designer.
+    ui_module->GetInworldSceneController()->ShowProxyForWidget(profilerWindow_);
     proxy->resize(650, 530);
-    // Assuming size needs to be se in a custom way:
-    // profilerWindow_->resize();
-    
-//    proxy->setWindowTitle("Profiler");
 
-    QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(CloseProfilingWindow()));
+    QObject::connect(proxy, SIGNAL(Closed()), profilerWindow_, SLOT(deleteLater()));
 
     if (current_world_stream_)
         profilerWindow_->SetWorldStreamPtr(current_world_stream_);
@@ -115,16 +111,9 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     return Console::ResultSuccess();
 }
 
-void DebugStatsModule::CloseProfilingWindow()
-{
-    profilerWindow_->deleteLater();
-    profilerWindow_ = 0;
-}
-
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -141,18 +130,12 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     proxy->show();
 //    proxy->resize(650, 530);
 
-    QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(CloseParticipantWindow()));
+    QObject::connect(proxy, SIGNAL(Closed()), participantWindow_, SLOT(deleteLater()));
 
 //    if (current_world_stream_)
 //        participantWindow_->SetWorldStreamPtr(current_world_stream_);
 
     return Console::ResultSuccess();
-}
-
-void DebugStatsModule::CloseParticipantWindow()
-{
-    participantWindow_->deleteLater();
-    participantWindow_ = 0;
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -193,6 +176,51 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (networkEventCategory_ == 0)
                 LogError("Failed to query \"NetworkIn\" event category");
 
+            networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+            if (networkStateEventCategory_ == 0)
+                LogError("Failed to query \"NetworkState\" event category");
+
+            return false;
+        }
+    }
+
+    if (category_id == networkStateEventCategory_)
+    {
+        switch(event_id)
+        {
+        case ProtocolUtilities::Events::EVENT_USER_CONNECTED:
+        {
+            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            assert(event_data);
+            if (!event_data)
+                return false;
+
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(event_data->localId);
+            if (!entity)
+                return false;
+
+            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            if (ec_presence && participantWindow_)
+                participantWindow_->AddUser(ec_presence);
+            return false;
+        }
+        case ProtocolUtilities::Events::EVENT_USER_DISCONNECTED:
+        {
+            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            assert(event_data);
+            if (!event_data)
+                return false;
+
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(event_data->localId);
+            if (!entity)
+                return false;
+
+            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            if (ec_presence && participantWindow_)
+                participantWindow_->RemoveUser(ec_presence);
+            return false;
+        }
+        default:
             return false;
         }
     }

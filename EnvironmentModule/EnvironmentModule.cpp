@@ -61,7 +61,7 @@ namespace Environment
         OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
 
         postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
-        postprocess_dialog_->AddHandler(&renderer->GetCompositionHandler());
+        postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
         postprocess_dialog_->AddSelfToScene(this);
     }
 
