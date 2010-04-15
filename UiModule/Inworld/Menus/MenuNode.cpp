@@ -7,7 +7,8 @@
 #include <QPainter>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>
-#include <QDebug>
+#include <QPropertyAnimation>
+#include <QDebug> 
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
