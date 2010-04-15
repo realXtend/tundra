@@ -263,7 +263,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 
     QMutexLocker locker(&mutex_encode_audio_);
     
-    if (encode_queue_.size < 100)
+    if (encode_queue_.size() < 100)
         encode_queue_.push_back(frame);
     if (encode_queue_.size() < frames_per_packet)
         return;
@@ -340,8 +340,6 @@ void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
 
 void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
 {
-    return; // test
-
     int frames = scanPacket((char*)buffer, length);
     
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
