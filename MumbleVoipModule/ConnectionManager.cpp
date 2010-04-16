@@ -30,6 +30,11 @@ namespace MumbleVoip
             QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
             MumbleVoipModule::LogError(message.toStdString());
         }
+        catch(...)
+        {
+            QString message = QString("Mumble library mainloop stopped by unknown exception.");
+            MumbleVoipModule::LogError(message.toStdString());
+        }
         MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
 
@@ -216,13 +221,14 @@ namespace MumbleVoip
             while (sound_service->GetRecordedSoundSize() > AUDIO_FRAME_SIZE_IN_SAMPLES*2)
             {
                 int bytes = sound_service->GetRecordedSoundData(playback_buffer_, AUDIO_FRAME_SIZE_IN_SAMPLES*2);
-                PCMAudioFrame* frame = new PCMAudioFrame(AUDIO_SAMPLE_RATE_, 16, 2, playback_buffer_, bytes);
+                PCMAudioFrame* frame = new PCMAudioFrame(AUDIO_SAMPLE_RATE_, 16, 1, playback_buffer_, bytes);
                 for (QMap<QString, Connection*>::iterator i = connections_.begin(); i != connections_.end(); ++i)
                 {
                     Connection* connection = *i;
                     if (connection->SendingAudio())
                         connection->SendAudioFrame(frame);
                 }
+                // delete frame;
             }
         }
     }
