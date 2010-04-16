@@ -44,7 +44,7 @@ namespace CommunicationUI
                 if (presence_component)
                 {
                     RexLogic::EC_OpenSimPresence *avatar_precence = checked_static_cast<RexLogic::EC_OpenSimPresence *>(presence_component.get());
-                    id_to_name.insert( QString(avatar_precence->FullId.ToString().c_str()), QString(avatar_precence->GetFullName().c_str()) );
+                    id_to_name.insert( QString(avatar_precence->agentId.ToString().c_str()), QString(avatar_precence->GetFullName().c_str()) );
                 }
             }
             return id_to_name;
@@ -79,7 +79,7 @@ namespace CommunicationUI
                 if (presence_component)
                 {
                     RexLogic::EC_OpenSimPresence *avatar_precence = checked_static_cast<RexLogic::EC_OpenSimPresence *>(presence_component.get());
-                    if ( avatar_id_ == QString(avatar_precence->FullId.ToString().c_str()) )
+                    if ( avatar_id_ == QString(avatar_precence->agentId.ToString().c_str()) )
                     {
                         const Foundation::ComponentInterfacePtr &placeable_component = entity.GetComponent("EC_OgrePlaceable");
                         if (placeable_component)
