@@ -76,12 +76,14 @@ namespace ECEditor
         {
             //! \todo support multiple entity selection
             Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-            editor_window_->AddEntity(entity_clicked_data->entity->GetId());
+            if (editor_window_)
+                editor_window_->AddEntity(entity_clicked_data->entity->GetId());
         }
         
         if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            editor_window_->ClearEntities();
+            if (editor_window_)
+                editor_window_->ClearEntities();
         }
         return false;
     }
