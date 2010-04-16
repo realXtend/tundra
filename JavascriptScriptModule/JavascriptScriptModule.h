@@ -1,5 +1,5 @@
-#ifndef incl_RexQtScriptModule_h
-#define incl_RexQtScriptModule_h
+#ifndef incl_JavascriptScriptModule_h
+#define incl_JavascriptScriptModule_h
 
 #include "Foundation.h"
 #include "StableHeaders.h"
@@ -8,16 +8,16 @@
 #include "ComponentRegistrarInterface.h"
 #include <QtScript>
 
-namespace RexQtScript
+namespace JavascriptScript
 {
      //hack to have a ref to framework so can get the module in api funcs
     static Foundation::Framework *staticframework;
 
-    class MODULE_API RexQtScriptModule : public Foundation::ModuleInterfaceImpl
+    class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterfaceImpl
 	{
     public:
-		RexQtScriptModule();
-		virtual ~RexQtScriptModule();
+		JavascriptScriptModule();
+		virtual ~JavascriptScriptModule();
 
 		//the module interface	        
 		virtual void Load();
