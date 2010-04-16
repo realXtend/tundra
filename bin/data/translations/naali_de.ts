@@ -1094,6 +1094,10 @@ QPushButton::pressed {
         <source>&amp;Copy asset reference</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Inventory</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ItemProperties</name>

@@ -467,7 +467,7 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Update</source>
-        <translation>Päivittää</translation>
+        <translation>Päivitä</translation>
     </message>
     <message>
         <source> Terrain texture </source>
@@ -1036,63 +1036,67 @@ QPushButton::pressed {
     <name>Inventory::InventoryWindow</name>
     <message>
         <source>&amp;Upload</source>
-        <translation type="unfinished"></translation>
+        <translation>Lähetä</translation>
     </message>
     <message>
         <source>Upload file to your inventory</source>
-        <translation type="unfinished"></translation>
+        <translation>Lähetä tiedosto inventaarioon</translation>
     </message>
     <message>
         <source>&amp;Download</source>
-        <translation type="unfinished"></translation>
+        <translation>Lataa</translation>
     </message>
     <message>
         <source>Download assets to your hard drive</source>
-        <translation type="unfinished"></translation>
+        <translation>Lataa tiedosto kiintolevylle</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista</translation>
     </message>
     <message>
         <source>Delete this item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista </translation>
     </message>
     <message>
         <source>&amp;Rename</source>
-        <translation type="unfinished"></translation>
+        <translation>Uudelleen nimeä</translation>
     </message>
     <message>
         <source>Rename this item</source>
-        <translation type="unfinished"></translation>
+        <translation>Uudelleen nimeä </translation>
     </message>
     <message>
         <source>&amp;New folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Uusi kansio</translation>
     </message>
     <message>
         <source>Create new folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Luo uusi kansio</translation>
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Avaa</translation>
     </message>
     <message>
         <source>Open this item</source>
-        <translation type="unfinished"></translation>
+        <translation>Avaa</translation>
     </message>
     <message>
         <source>&amp;Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Ominaisuudet</translation>
     </message>
     <message>
         <source>View item properties</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä ominaisuudet</translation>
     </message>
     <message>
         <source>&amp;Copy asset reference</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopioi tiedoston referenssi</translation>
+    </message>
+    <message>
+        <source>Inventory</source>
+        <translation>Inventaario</translation>
     </message>
 </context>
 <context>
@@ -1993,7 +1997,7 @@ QPushButton::pressed {
     <name>inventorymain</name>
     <message>
         <source>Inventory</source>
-        <translation type="unfinished"></translation>
+        <translation>Inventaario</translation>
     </message>
 </context>
 <context>

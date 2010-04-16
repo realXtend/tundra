@@ -9,13 +9,30 @@
 #define incl_InventoryModule_InventoryTreeView_h
 
 #include <QTreeView>
+#include <QAction>
 
 class QWidget;
-class QAction;
 
 namespace Inventory
 {
     class InventoryWindow;
+
+    // This is helper class for translations. 
+
+    class InventoryAction : public QAction 
+    {
+        Q_OBJECT 
+
+     public:
+        InventoryAction(QWidget *parent = 0) : QAction(parent) {}
+        InventoryAction(const QString& text, QWidget *parent = 0) : QAction(text, parent), orginal_text(text) {}
+
+        QString GetText() const { return orginal_text; }
+
+     private:
+        QString orginal_text;       
+
+    };
 
     class InventoryTreeView : public QTreeView
     {

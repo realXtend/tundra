@@ -155,7 +155,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
                 /*proxyWidget_ = */ui_module->GetInworldSceneController()->AddWidgetToScene(
-                    inventoryWindow_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
+                    inventoryWindow_, UiServices::UiWidgetProperties(QApplication::translate("Inventory::InventoryWindow", "Inventory"), UiServices::ModuleWidget));
 
                 connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
                     SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
