@@ -54,6 +54,7 @@ namespace Inventory
     class InventoryItemModel;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
+    class InventoryAction;
 
     class InventoryWindow : public QWidget
     {
@@ -84,6 +85,9 @@ namespace Inventory
         /// Sends notification to the UI.
         /// @param widget Notification widget.
         void Notification(CoreUi::NotificationBaseWidget *widget);
+
+    protected:
+        void changeEvent(QEvent* e);
 
     private slots:
         /// Opens inventory item (folder or asset) when user double-clicks it.
@@ -186,37 +190,37 @@ namespace Inventory
         QMenu *actionMenu_;
 
         /// Delete action.
-        QAction *actionDelete_;
+        InventoryAction *actionDelete_;
 
         /// Rename action.
-        QAction *actionRename_;
+        InventoryAction *actionRename_;
 
         /// Cut action.
-        QAction *actionCut_;
+        InventoryAction *actionCut_;
 
         /// Paste action.
-        QAction *actionPaste_;
+        InventoryAction *actionPaste_;
 
         /// New Folder action.
-        QAction *actionNewFolder_;
+        InventoryAction *actionNewFolder_;
 
         /// Open action.
-        QAction *actionOpen_;
+        InventoryAction *actionOpen_;
 
         /// Properties action.
-        QAction *actionProperties_;
+        InventoryAction *actionProperties_;
 
         /// Copy asset reference action.
-        QAction *actionCopyAssetReference_;
+        InventoryAction *actionCopyAssetReference_;
 
         /// Upload action.
-        QAction *actionUpload_;
+        InventoryAction *actionUpload_;
 
         /// Download action.
-        QAction *actionDownload_;
+        InventoryAction *actionDownload_;
 
         /// Separator (action) for the context menu.
-        QAction *actionSeparator_;
+        InventoryAction *actionSeparator_;
 
         /// Map of active download progress dialogs.
 //        QMap<QString, QMessageBox *> downloadDialogs_;
@@ -230,6 +234,9 @@ namespace Inventory
         /// Used to follow and update ongoing downloads and uploads
         QMap<QString, UiServices::ProgressController*> notification_progress_map_;
     };
+
+
+
 }
 
 #endif

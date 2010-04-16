@@ -83,8 +83,15 @@ void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
     {
         QAction *action = it.next();
         if (action->isEnabled())
+        {
+            // This is kind of hack, but we might have case that base language is not english. 
+            InventoryAction* act = qobject_cast<InventoryAction* >(action);
+            QString text = QApplication::translate("Inventory::InventoryWindow", act->GetText().toStdString().c_str());
+            action->setText(text);
+
             menu->addAction(action);
-    }
+        } 
+   }
 
     if (menu->actions().size() > 1) // separator "action" is always enabled, hence the 1
         menu->popup(event->globalPos());
