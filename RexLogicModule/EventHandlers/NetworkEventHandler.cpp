@@ -314,6 +314,12 @@ bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities
         case 30:
             rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdate_30bytes(bytes); 
             break;
+        case 44:
+            //this size is only for prims
+            localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]);
+            if (rexlogicmodule_->GetPrimEntity(localid))
+                rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_44bytes(bytes);
+            break;
         case 60:
             localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
             if (rexlogicmodule_->GetPrimEntity(localid)) 

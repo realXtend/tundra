@@ -256,6 +256,48 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
     return false;
 }
 
+void Primitive::HandleTerseObjectUpdateForPrim_44bytes(const uint8_t* bytes)
+{
+    // The data contents:
+    // ofs  0 - localid - packed to 4 bytes
+    // ofs  4 - state (attachment point)
+    // ofs  5 - 0
+    // ofs  6 - position xyz - 3 x float (3x4 bytes)
+    // ofs 18 - velocity xyz - packed to 6 bytes
+    // ofs 24 - acceleration xyz - packed to 6 bytes
+    // ofs 30 - rotation - packed to 8 bytes
+    // ofs 38 - rotational vel - packed to 6 bytes
+    
+    //! \todo handle endians
+    int i = 0;
+    uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
+    i += 6;
+    
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(localid);
+    if(!entity) return;
+    EC_NetworkPosition *netpos = entity->GetComponent<EC_NetworkPosition>().get();
+
+    Vector3df vec = GetProcessedVector(&bytes[i]);
+    if (IsValidPositionVector(vec))
+        netpos->position_ = vec;
+    i += sizeof(Vector3df);
+
+    netpos->velocity_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+    i += 6;
+
+    netpos->accel_ = GetProcessedVectorFromUint16(&bytes[i]); 
+    i += 6;
+
+    netpos->orientation_ = GetProcessedQuaternion(&bytes[i]);
+    i += 8;
+
+    netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
+    i += 16;
+
+    netpos->Updated();
+    assert(i <= 60);
+}
+
 void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
 {
     // The data contents:
