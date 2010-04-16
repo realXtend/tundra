@@ -115,7 +115,6 @@ add_subdirectory (EntityComponents/EC_Highlight)    # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_HoveringText) # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_Clone)        # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_Light)        # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_NoteCard)     # declared by RexLogicModule
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.

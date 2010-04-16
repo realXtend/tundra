@@ -86,10 +86,11 @@ namespace OgreRenderer
     void QOgreWorldView::RenderOneFrame()
     {
         PROFILE(QOgreWorldView_RenderOneFrame);
-        root_->_fireFrameStarted();
-        win_-> update();
-        root_->_fireFrameRenderingQueued();
-        root_->_fireFrameEnded();
+        //root_->_fireFrameStarted();
+        //win_-> update();
+        //root_->_fireFrameRenderingQueued();
+        //root_->_fireFrameEnded();
+        root_->renderOneFrame();
     }
 
     void QOgreWorldView::OverlayUI(Ogre::PixelBox &ui)

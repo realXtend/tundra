@@ -1,0 +1,4 @@
+<config>
+    <entry>NoteCardModule</entry>
+    <dependency>UiModule</dependency>
+</config>
