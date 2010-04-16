@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (RexQtScriptModule OUTPUT modules/core)
+init_target (JavascriptScriptModule OUTPUT modules/core)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
