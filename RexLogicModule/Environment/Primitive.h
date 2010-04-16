@@ -44,6 +44,7 @@ namespace RexLogic
         bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
 
+        void HandleTerseObjectUpdateForPrim_44bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
 
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
