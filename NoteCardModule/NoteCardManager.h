@@ -4,11 +4,37 @@
 #define incl_NoteCardModule_NoteCardManager_h
 
 #include "Framework.h"
+#include "Vector3D.h"
 
 #include <QWidget>
+#include <QTreeWidgetItem>
+
+class QTreeWidget;
+class QPushButton;
+
+namespace ProtocolUtilities
+{
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+}
 
 namespace NoteCard
 {
+    class NoteCardTreeWidgetItem : public QTreeWidgetItem
+    {
+    public:
+        NoteCardTreeWidgetItem(entity_id_t id) :
+            QTreeWidgetItem(),
+            id_(id)
+        {
+        }
+        
+        entity_id_t GetId() const { return id_; }
+        
+    private:
+        entity_id_t id_;
+    };
+    
     class NoteCardManager : public QWidget
     {
         Q_OBJECT
@@ -17,11 +43,33 @@ namespace NoteCard
         NoteCardManager(Foundation::Framework* framework);
         ~NoteCardManager();
 
+        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream);
+        void OnEntityModified(entity_id_t id);
+        void OnEntityRemoved(entity_id_t id);
+        void OnEntityAdded(entity_id_t id);
+        void Update(f64 frametime);
+        void ClearList();
+        
+    public slots:
+        void SelectNoteCard();
+        void CreateNoteCard();
+        void DeleteNoteCard();
+        
     private:
         void Initialize();
 
+        ProtocolUtilities::WorldStreamPtr world_stream_;
         Foundation::Framework *framework_;
         QWidget* contents_;
+        QTreeWidget* tree_;
+        QPushButton* delete_button_;
+        QPushButton* create_button_;
+        
+        Vector3df new_entity_pos_;
+        bool entity_create_pending_;
+        entity_id_t new_entity_id_;
+        Real entity_wait_time_;
+        Real entity_max_wait_time_;
     };
 }
 

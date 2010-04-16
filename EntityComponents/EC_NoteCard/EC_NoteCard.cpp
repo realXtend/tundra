@@ -148,6 +148,20 @@ void EC_NoteCard::SyncToNetwork()
     }
 }
 
+void EC_NoteCard::Show()
+{
+    if (!widget_)
+        UpdateWidget();
+    if (widget_)
+        widget_->show();
+}
+
+void EC_NoteCard::Hide()
+{
+    if (widget_)
+        widget_->hide();
+}
+
 void EC_NoteCard::UpdateWidget()
 {
     if (!widget_)
