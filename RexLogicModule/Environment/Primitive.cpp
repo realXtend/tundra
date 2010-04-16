@@ -292,10 +292,10 @@ void Primitive::HandleTerseObjectUpdateForPrim_44bytes(const uint8_t* bytes)
     i += 8;
 
     netpos->rotvel_ = GetProcessedScaledVectorFromUint16(&bytes[i],128);
-    i += 16;
+    i += 6;
 
     netpos->Updated();
-    assert(i <= 60);
+    assert(i <= 44);
 }
 
 void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
