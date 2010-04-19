@@ -131,7 +131,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
         const QItemSelection &)), this, SLOT(UpdateActions()));
 
     // Connect notification delayed sending to avoid ui thread problems when creating the notification widget
-    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(QString, int)), this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
+    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(const QString &, int)),
+        this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
 
 //    connect(inventoryItemModel_, SIGNAL(dataChanged), treeView_, SLOT(
 

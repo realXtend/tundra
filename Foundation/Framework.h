@@ -228,8 +228,8 @@ namespace Foundation
         EventManagerPtr event_manager_;
         PlatformPtr platform_;
         ThreadTaskManagerPtr thread_task_manager_;
-		 
-		//! default configuration
+
+        //! default configuration
         ConfigurationManagerPtr config_manager_;
 
         //! application data

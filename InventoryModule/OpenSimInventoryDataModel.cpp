@@ -26,6 +26,7 @@
 #include "AssetServiceInterface.h"
 #include "HttpRequest.h"
 #include "LLSDUtilities.h"
+#include "WorldStream.h"
 
 #include <QDir>
 #include <QFile>
@@ -590,30 +591,30 @@ void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventData
 {
     InventoryItemEventData *item_data = checked_static_cast<InventoryItemEventData *>(data);
 
-    AbstractInventoryItem *parentFolder = GetChildFolderById(STD_TO_QSTR(item_data->parentId.ToString()));
+    AbstractInventoryItem *parentFolder = GetChildFolderById(item_data->parentId.ToQString());
     if (!parentFolder)
         return;
 
-    AbstractInventoryItem *existing = GetChildById(STD_TO_QSTR(item_data->id.ToString()));
+    AbstractInventoryItem *existing = GetChildById(item_data->id.ToQString());
     if (existing)
         return;
 
     if (item_data->item_type == IIT_Folder)
     {
         InventoryFolder *newFolder = static_cast<InventoryFolder *>(GetOrCreateNewFolder(
-            STD_TO_QSTR(item_data->id.ToString()), *parentFolder, false));
+            item_data->id.ToQString(), *parentFolder, false));
 
-        newFolder->SetName(STD_TO_QSTR(item_data->name));
+        newFolder->SetName(item_data->name.c_str());
         ///\todo newFolder->SetType(item_data->type);
         newFolder->SetDirty(true);
     }
     if (item_data->item_type == IIT_Asset)
     {
         InventoryAsset *newAsset = static_cast<InventoryAsset *>(GetOrCreateNewAsset(
-            STD_TO_QSTR(item_data->id.ToString()), STD_TO_QSTR(item_data->assetId.ToString()),
-            *parentFolder, STD_TO_QSTR(item_data->name)));
+            item_data->id.ToQString(), item_data->assetId.ToQString(),
+            *parentFolder, item_data->name.c_str()));
 
-        newAsset->SetDescription(STD_TO_QSTR(item_data->description));
+        newAsset->SetDescription(item_data->description.c_str());
         newAsset->SetInventoryType(item_data->inventoryType);
         newAsset->SetAssetType(item_data->assetType);
         newAsset->SetCreatorId(item_data->creatorId);
@@ -627,7 +628,7 @@ void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventData
 }
 
 bool OpenSimInventoryDataModel::UploadFile(
-    const asset_type_t &asset_type,
+    const asset_type_t asset_type,
     std::string filename,
     const std::string &name,
     const std::string &description,
@@ -671,7 +672,7 @@ bool OpenSimInventoryDataModel::UploadFile(
 }
 
 bool OpenSimInventoryDataModel::UploadBuffer(
-    const asset_type_t &asset_type,
+    const asset_type_t asset_type,
     const std::string& filename,
     const std::string& name,
     const std::string& description,
@@ -843,8 +844,8 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
 {
     using namespace ProtocolUtilities;
 
-    InventoryFolder *newFolder = new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
-        STD_TO_QSTR(folder_skeleton->name), parent_folder, folder_skeleton->editable);
+    InventoryFolder *newFolder = new InventoryFolder(folder_skeleton->id.ToQString(),
+        folder_skeleton->name.c_str(), parent_folder, folder_skeleton->editable);
     //if (!folder_skeleton->HasChildren())
     newFolder->SetDirty(true);
 
@@ -884,7 +885,7 @@ void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkele
         return;
     }
 
-    worldLibraryOwnerId_ = STD_TO_QSTR(inventory_skeleton->worldLibraryOwnerId.ToString());
+    worldLibraryOwnerId_ = inventory_skeleton->worldLibraryOwnerId.ToQString();
 
     CreateNewFolderFromFolderSkeleton(0, inventory_skeleton->GetRoot());
 }
@@ -1053,7 +1054,7 @@ void OpenSimInventoryDataModel::CreateRexInventoryFolders()
         // Check out if this inventory category exists. If not, create id.
         if (!GetFirstChildFolderByName(cat_name))
             AbstractInventoryItem *newFolder = GetOrCreateNewFolder(
-                UUID_TO_QSTR(RexUUID::CreateRandom()), *GetMyInventoryFolder(), cat_name);
+                RexUUID::CreateRandom().ToQString(), *GetMyInventoryFolder(), cat_name);
     }
 }
 

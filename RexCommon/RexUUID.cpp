@@ -12,10 +12,10 @@
 
 using namespace std;
 
-/// Converts a single char to a value of 0-15. (4 bits)
+
 namespace
 {
-
+/// Converts a single char to a value of 0-15. (4 bits)
 static uint8_t CharToNibble(char c)
 {
     if (isdigit(c))
@@ -148,19 +148,24 @@ std::string RexUUID::ToString() const
     stringstream str;
     int i = 0;
 
-    for(int j = 0; j < 4; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    for(int j = 0; j < 4; ++j)
+        str << hex << setw(2) << setfill('0') << (int)data[i++];
     str << "-";
 
-    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    for(int j = 0; j < 2; ++j)
+        str << hex << setw(2) << setfill('0') << (int)data[i++];
     str << "-";
 
-    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    for(int j = 0; j < 2; ++j)
+        str << hex << setw(2) << setfill('0') << (int)data[i++];
     str << "-";
 
-    for(int j = 0; j < 2; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    for(int j = 0; j < 2; ++j)
+        str << hex << setw(2) << setfill('0') << (int)data[i++];
     str << "-";
 
-    for(int j = 0; j < 6; ++j) str << hex << setw(2) << setfill('0') << (int)data[i++];
+    for(int j = 0; j < 6; ++j)
+        str << hex << setw(2) << setfill('0') << (int)data[i++];
 
     return str.str();
 }
@@ -170,7 +175,7 @@ RexUUID &RexUUID::operator =(const RexUUID &rhs)
     if (this != &rhs)
         for(int i = 0; i < cSizeBytes; ++i)
             data[i] = rhs.data[i];
-     return *this;
+    return *this;
 }
 
 bool RexUUID::operator ==(const RexUUID &rhs) const

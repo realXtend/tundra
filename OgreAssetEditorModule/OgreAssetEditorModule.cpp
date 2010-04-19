@@ -1,5 +1,5 @@
 /**
- * For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   OgreAssetEditorModule.cpp
  *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
@@ -73,10 +73,31 @@ void OgreAssetEditorModule::PostInitialize()
     if (resourceEventCategory_ == 0)
         LogError("Failed to query \"Resource\" event category");
 
-    materialWizard_ = new MaterialWizard(framework_);
-    editorManager_ = new EditorManager();
-
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
+
+    materialWizard_ = new MaterialWizard;
+    connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
+        this, SLOT(Upload(Inventory::InventoryUploadEventData *)));
+
+    assert(!uiModule_.expired());
+
+    UiServices::UiWidgetProperties wizard_properties("Material Wizard", UiServices::ModuleWidget);
+
+    // Menu graphics
+    UiDefines::MenuNodeStyleMap image_path_map;
+    QString base_url = "./data/ui/images/menus/"; 
+    image_path_map[UiDefines::TextNormal] = base_url + "edbutton_MATWIZtxt_normal.png";
+    image_path_map[UiDefines::TextHover] = base_url + "edbutton_MATWIZtxt_hover.png";
+    image_path_map[UiDefines::TextPressed] = base_url + "edbutton_MATWIZtxt_click.png";
+    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
+    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
+    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
+    wizard_properties.SetMenuNodeStyleMap(image_path_map);
+
+    UiServices::UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, wizard_properties);
+    connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
+
+    editorManager_ = new EditorManager;
 }
 
 void OgreAssetEditorModule::Uninitialize()
@@ -287,6 +308,17 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
     }
 
     return false;
+}
+
+void OgreAssetEditorModule::Upload(Inventory::InventoryUploadEventData *data)
+{
+    if (inventoryEventCategory_ == 0)
+    {
+        LogError("Inventory event category unknown. Can't upload new asset.");
+        return;
+    }
+
+    framework_->GetEventManager()->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE, data);
 }
 
 }

@@ -9,9 +9,6 @@
 #ifndef incl_InventoryModule_AbstractInventoryDataModel_h
 #define incl_InventoryModule_AbstractInventoryDataModel_h
 
-#include "AbstractInventoryItem.h"
-#include "WorldStream.h"
-
 #include <QObject>
 
 // Few useful defines.
@@ -21,6 +18,8 @@
 
 namespace Inventory
 {
+    class AbstractInventoryItem;
+
     /// Pure virtual class.
     class AbstractInventoryDataModel : public QObject
     {
@@ -152,10 +151,11 @@ namespace Inventory
         /// @param asset_id
         void DownloadCompleted(const QString &asset_id);
 
+        ///\todo Should not be here.
         /// This signal is emitted to show notification on the window.
         /// @param message Message to be shown.
         /// @param int how long until notification is autohidden
-        void Notification(QString message, int hide_time);
+        void Notification(const QString &message, int hide_time);
 
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);
