@@ -14,36 +14,43 @@ namespace JavascriptScript
     static Foundation::Framework *staticframework;
 
     class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterfaceImpl
-	{
+    {
     public:
-		JavascriptScriptModule();
-		virtual ~JavascriptScriptModule();
+        JavascriptScriptModule();
+        virtual ~JavascriptScriptModule();
 
-		//the module interface	        
-		virtual void Load();
-		virtual void Unload();
-		virtual void Initialize();
-		virtual void PostInitialize();
-		virtual void Uninitialize();
-		virtual void Update(f64 frametime);
+        //the module interface	        
+        virtual void Load();
+        virtual void Unload();
+        virtual void Initialize();
+        virtual void PostInitialize();
+        virtual void Uninitialize();
+        virtual void Update(f64 frametime);
 
-		MODULE_LOGGING_FUNCTIONS
+        MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_QtScript;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_QtScript;
 
-		//QScriptValue test(QScriptContext *context, QScriptEngine *engine);
+        /// Returns the currently initialized JavascriptScriptModule.
+        static JavascriptScriptModule *GetInstance();
 
-                Console::CommandResult ConsoleRunString(const StringVector &params);
+        //QScriptValue test(QScriptContext *context, QScriptEngine *engine);
 
-	private:
-		QScriptEngine engine;
+        Console::CommandResult ConsoleRunString(const StringVector &params);
+        Console::CommandResult ConsoleRunFile(const StringVector &params);
+        void RunFile(QString scriptFileName);
+
+    private:
+        QScriptEngine engine;
 	};
 
 	//api stuff
 	//QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
 	QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
+        QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
+
 }
 
 #endif
