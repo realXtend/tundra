@@ -10,6 +10,16 @@
 
 namespace JavascriptScript
 {
+    class JavascriptScriptModule;
+}
+
+namespace
+{
+    JavascriptScript::JavascriptScriptModule *javascriptScriptModuleInstance_ = 0;
+}
+
+namespace JavascriptScript
+{
     JavascriptScriptModule::JavascriptScriptModule() : ModuleInterfaceImpl(type_static_)
     {
     }
@@ -32,14 +42,16 @@ namespace JavascriptScript
     {
         LogInfo("Module " + Name() + " initializing...");
 		
-        //XXX hack to have a ref to framework for api funcs
-        JavascriptScript::staticframework = framework_;
+        assert(!javascriptScriptModuleInstance_);
+        javascriptScriptModuleInstance_ = this;
 
         QScriptValue res = engine.evaluate("1 + 1;");
         LogInfo("Javascript thinks 1 + 1 = " + res.toString().toStdString());
 
         engine.globalObject().setProperty("print", engine.newFunction(JavascriptScript::Print));
         //engine.globalObject().setProperty("loadUI", engine.newFunction(JavascriptScript::LoadUI));
+
+        engine.globalObject().setProperty("load", engine.newFunction(JavascriptScript::ScriptRunFile));
 
         engine.evaluate("print('Hello from qtscript');");
 
@@ -66,41 +78,60 @@ namespace JavascriptScript
 
     void JavascriptScriptModule::PostInitialize()
     {
-      RegisterConsoleCommand(Console::CreateCommand(
-            "JsExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-            Console::Bind(this, &JavascriptScriptModule::ConsoleRunString))); 
-      /*
         RegisterConsoleCommand(Console::CreateCommand(
-            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+            "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
+            Console::Bind(this, &JavascriptScriptModule::ConsoleRunString))); 
 
         RegisterConsoleCommand(Console::CreateCommand(
+            "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)", 
+            Console::Bind(this, &JavascriptScriptModule::ConsoleRunFile))); 
+
+      /* RegisterConsoleCommand(Console::CreateCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
             Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
       */
     }
-
-    /*QScriptValue JavascriptScriptModule::test(QScriptContext *context, QScriptEngine *engine)
-    {
-	}*/
 
     Console::CommandResult JavascriptScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)
         {            
             return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
-            //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
-            //probably better have separate js shell.
         }
 
         else
         {
-            //engine_->RunString(params[0]);
             engine.evaluate(QString::fromStdString(params[0]));
             return Console::ResultSuccess();
         }
     }
 
+    Console::CommandResult JavascriptScriptModule::ConsoleRunFile(const StringVector &params)
+    {        
+        if (params.size() != 1)
+        {            
+            return Console::ResultFailure("Usage: JsLoad(myfile.js)");
+        }
+
+        QString scriptFileName = QString::fromStdString(params[0]);
+        JavascriptScriptModule::RunFile(scriptFileName);
+
+        return Console::ResultSuccess();
+    }
+
+    void JavascriptScriptModule::RunFile(QString scriptFileName)
+    {
+        QFile scriptFile("jsmodules/intensity_js/intensity/" + scriptFileName);
+        scriptFile.open(QIODevice::ReadOnly);
+        engine.evaluate(scriptFile.readAll(), scriptFileName);
+        scriptFile.close();
+    }
+
+    JavascriptScriptModule *JavascriptScriptModule::GetInstance()
+    {
+        assert(javascriptScriptModuleInstance_);
+        return javascriptScriptModuleInstance_;
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
@@ -145,10 +176,21 @@ QScriptValue JavascriptScript::LoadUI(QScriptContext *context, QScriptEngine *en
 	qswidget = engine->newQObject(widget);
 
 	return qswidget;
-        }*/
+        }
+*/
 
 QScriptValue JavascriptScript::Print(QScriptContext *context, QScriptEngine *engine)
 {
-	std::cout << "{QtScript} " << context->argument(0).toString().toStdString() << "\n";
-	return QScriptValue();
+    std::cout << "{QtScript} " << context->argument(0).toString().toStdString() << "\n";
+    return QScriptValue();
+}
+
+QScriptValue JavascriptScript::ScriptRunFile(QScriptContext *context, QScriptEngine *engine)
+{
+    QString scriptFileName = context->argument(0).toString();
+
+    JavascriptScriptModule *owner = JavascriptScriptModule::GetInstance();
+    owner->RunFile(scriptFileName);
+
+    return QScriptValue();
 }
