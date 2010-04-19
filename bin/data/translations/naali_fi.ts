@@ -29,7 +29,7 @@
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tallenna</translation>
     </message>
 </context>
 <context>
@@ -129,7 +129,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Poista</translation>
     </message>
     <message>
         <source>Undo</source>
@@ -365,35 +365,35 @@ QPushButton::pressed {
     <name>ECEditor</name>
     <message>
         <source>Entity-component Editor</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Entiteetti-komponenttieditori</translation>
     </message>
     <message>
         <source>Entities</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Entiteetit</translation>
     </message>
     <message>
         <source>Components</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Komponentit</translation>
     </message>
     <message>
         <source>Create</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Luo</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Poista</translation>
     </message>
     <message>
         <source>Component attribute raw edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Komponentin arvojen muokkaus</translation>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished">Kääntää</translation>
+        <translation type="unfinished">Peru</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tallenna</translation>
     </message>
 </context>
 <context>
@@ -1147,7 +1147,7 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tallenna</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -1360,7 +1360,7 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>Create</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Luo</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -1407,7 +1407,34 @@ alpha layer of the diffuse map</source>
     <name>NoteCard</name>
     <message>
         <source>Notecard</source>
-        <translation type="unfinished"></translation>
+        <translation>Muistio</translation>
+    </message>
+</context>
+<context>
+    <name>NoteCardManager</name>
+    <message>
+        <source>Notecard Manager</source>
+        <translation>Muistioidenhallinta</translation>
+    </message>
+    <message>
+        <source>Notecards</source>
+        <translation>Muistiot</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>Otsikko</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Poista</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation>Uusi</translation>
+    </message>
+    <message>
+        <source>New notecard</source>
+        <translation>Uusi muistio</translation>
     </message>
 </context>
 <context>
@@ -1551,7 +1578,7 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Otsikko</translation>
     </message>
     <message>
         <source>TextLabel</source>
@@ -1670,7 +1697,7 @@ QLabel {
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tallenna</translation>
     </message>
     <message>
         <source>Cancel</source>

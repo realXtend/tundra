@@ -8,6 +8,7 @@
 #include "NetworkEvents.h"
 #include "SceneManager.h"
 #include "EC_NoteCard.h"
+#include "ConsoleCommandServiceInterface.h"
 
 namespace NoteCard
 {
@@ -40,6 +41,10 @@ namespace NoteCard
 
     void NoteCardModule::PostInitialize()
     {
+        RegisterConsoleCommand(Console::CreateCommand("NoteCardManager", 
+            "Shows the notecard manager.",
+            Console::Bind(this, &NoteCardModule::ShowWindow)));
+        
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
@@ -67,6 +72,14 @@ namespace NoteCard
             manager_->Update(frametime);
     }
 
+    Console::CommandResult NoteCardModule::ShowWindow(const StringVector &params)
+    {
+        if (manager_)
+            manager_->BringToFront();
+        
+        return Console::ResultSuccess();
+    }
+    
     bool NoteCardModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (category_id == framework_event_category_)

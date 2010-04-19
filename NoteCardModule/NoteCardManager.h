@@ -18,6 +18,11 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
+namespace UiServices
+{
+    class UiProxyWidget;
+}
+
 namespace NoteCard
 {
     class NoteCardTreeWidgetItem : public QTreeWidgetItem
@@ -51,9 +56,13 @@ namespace NoteCard
         void ClearList();
         
     public slots:
+        void BringToFront();
         void SelectNoteCard();
         void CreateNoteCard();
         void DeleteNoteCard();
+        
+    protected:
+        void changeEvent(QEvent *change_event);
         
     private:
         void Initialize();
@@ -64,6 +73,8 @@ namespace NoteCard
         QTreeWidget* tree_;
         QPushButton* delete_button_;
         QPushButton* create_button_;
+        UiServices::UiProxyWidget* proxy_;
+        QString original_title_;
         
         Vector3df new_entity_pos_;
         bool entity_create_pending_;

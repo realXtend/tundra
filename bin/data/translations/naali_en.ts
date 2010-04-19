@@ -1432,6 +1432,10 @@ alpha layer of the diffuse map</source>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>New notecard</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotificationBaseWidget</name>

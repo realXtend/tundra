@@ -5,11 +5,13 @@
 #include "NoteCardModule.h"
 #include "ModuleManager.h"
 #include "UiModule.h"
+#include "UiDefines.h"
 #include "SceneManager.h"
 #include "ComponentInterface.h"
 #include "ComponentManager.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
@@ -18,6 +20,7 @@
 #include "WorldStream.h"
 #include "RexTypes.h"
 
+#include <QApplication>
 #include <QDomDocument>
 #include <QVBoxLayout>
 #include <QUiLoader>
@@ -36,7 +39,8 @@ namespace NoteCard
         new_entity_id_(0),
         entity_create_pending_(false),
         entity_wait_time_(0.0f),
-        entity_max_wait_time_(3.0f)
+        entity_max_wait_time_(3.0f),
+        proxy_(0)
     {
         Initialize();
     }
@@ -48,6 +52,7 @@ namespace NoteCard
     void NoteCardManager::Initialize()
     {
         QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/notecardmanager.ui");
         file.open(QFile::ReadOnly);
         contents_ = loader.load(&file, this);
@@ -66,7 +71,11 @@ namespace NoteCard
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
         if (ui_module)
-            ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(contents_->windowTitle(), UiServices::ModuleWidget));
+        {
+            UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
+            proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, widget_properties);
+            original_title_ = contents_->windowTitle();
+        }
         else
             NoteCardModule::LogError("Could not add widget to scene");
 
@@ -90,6 +99,28 @@ namespace NoteCard
     void NoteCardManager::SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream)
     {
         world_stream_ = world_stream;
+    }
+    
+    void NoteCardManager::BringToFront()
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
+            Foundation::Module::MT_UiServices).lock();
+        if (ui_module)
+        {
+            ui_module->GetInworldSceneController()->BringProxyToFront(this);
+            ui_module->GetInworldSceneController()->ShowProxyForWidget(this);
+        }
+    }
+    
+    void NoteCardManager::changeEvent(QEvent *e)
+    {
+        if (e->type() == QEvent::LanguageChange)
+        {
+            QString title = QApplication::translate("NoteCardManager", original_title_.toStdString().c_str());
+            graphicsProxyWidget()->setWindowTitle(title);
+        }
+        else
+           QWidget::changeEvent(e);
     }
     
     void NoteCardManager::SelectNoteCard()
@@ -177,7 +208,7 @@ namespace NoteCard
                 if (netpos)
                 {
                     // See if error in position is small enough to be a match
-                    // Note: for some reason we can't trust the sim to give the Z position even remotely exactly the same
+                    // Note: for some reason we can't trust the sim to give the Z position even remotely the same
                     if ((fabs(netpos->position_.x - new_entity_pos_.x) < 0.001f) &&
                         (fabs(netpos->position_.y - new_entity_pos_.y) < 0.001f) &&
                         (fabs(netpos->position_.z - new_entity_pos_.z) < 1.0f))
@@ -188,7 +219,7 @@ namespace NoteCard
                         entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_NoteCard::TypeNameStatic()));
                         boost::shared_ptr<EC_NoteCard> notecard = entity->GetComponent<EC_NoteCard>();
                         if (notecard)
-                            notecard->SetTitle("New notecard");
+                            notecard->SetTitle(QApplication::translate("NoteCardManager", "New notecard").toStdString());
                         else
                             NoteCardModule::LogError("Could not create notecard component to entity");
                     }
