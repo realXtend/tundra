@@ -1411,6 +1411,29 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
+    <name>NoteCardManager</name>
+    <message>
+        <source>Notecard Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notecards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NotificationBaseWidget</name>
     <message>
         <source>NotificationBaseWidget</source>

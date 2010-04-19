@@ -58,6 +58,21 @@ namespace Foundation
         view_ = view;
     }
 
+    /*
+    QStringList FrameworkQtApplication::GetQmFiles(const QDir& dir)
+    {
+        return translator_;
+        
+         QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files,
+                                               QDir::Name);
+         QMutableStringListIterator i(fileNames);
+         while (i.hasNext()) {
+             i.next();
+             i.setValue(dir.filePath(i.value()));
+         }
+         return fileNames;
+    }
+    */
 
     QStringList FrameworkQtApplication::GetQmFiles(const QDir& dir)
     {
@@ -71,8 +86,6 @@ namespace Foundation
          }
          return fileNames;
     }
-
-  
     void FrameworkQtApplication::Go()
     {
         installEventFilter(this);
