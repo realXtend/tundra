@@ -17,6 +17,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QSpacerItem>
 
 #include "MemoryLeakCheck.h"
 
@@ -27,24 +28,71 @@ ParticipantWindow::ParticipantWindow(Foundation::Framework *fw, QWidget *parent)
     QWidget(parent), framework_(fw)
 {
     // Base layout for this widget
-    QGridLayout *layout = new QGridLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    // Vertical layout for username labels
-    usernameLayout_ = new QVBoxLayout(this);
-    layout->addLayout(usernameLayout_, 0, 0);
+    resize(250, 300);
 
-    resize(300,400);
-
-    PopulateUsernameList();
+    PopulateUserList();
 }
 
 ParticipantWindow::~ParticipantWindow()
 {
+//    qDeleteAll(entries_);
 }
 
-void ParticipantWindow::PopulateUsernameList()
+void ParticipantWindow::AddUserEntry(RexLogic::EC_OpenSimPresence *presence)
+{
+    if (!entries_.contains(presence->agentId))
+    {
+        // Create widget with horizontal layout for each user
+        QWidget *entryWidget= new QWidget(this);
+        entryWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        entryWidget->setLayout(new QHBoxLayout(entryWidget));
+
+        // Add name label by default for each entry
+        QLabel *label = new QLabel(presence->GetFullName().c_str(), entryWidget);
+        entryWidget->layout()->addWidget(label);
+
+        QVBoxLayout *l = static_cast<QVBoxLayout *>(layout());
+        l->insertWidget(l->children().size() + 1, entryWidget);
+
+        entries_[presence->agentId] = entryWidget;
+    }
+}
+
+void ParticipantWindow::RemoveUserEntry(RexLogic::EC_OpenSimPresence *presence)
+{
+    if (entries_.contains(presence->agentId))
+    {
+        QWidget *entryWidget = entries_.take(presence->agentId);
+        entryWidget->deleteLater();
+        entryWidget = 0;
+        /*
+        QListIterator<QObject *> it(entryLayout->children());
+        while(it.hasNext())
+        {
+            QWidget *w = dynamic_cast<QWidget *>(it.next());
+            if (w)
+                entryLayout->removeWidget(w);
+        }
+        layout()->removeItem(entryLayout);
+        entryLayout->deleteLater();
+        entryLayout = 0;
+        */
+        entries_.remove(presence->agentId);
+    }
+}
+
+void ParticipantWindow::AddInfoField(const RexUUID &user_id, QWidget *widget)
+{
+    QMap<RexUUID, QWidget *>::iterator it = entries_.find(user_id);
+    if (it != entries_.end())
+        (*it)->layout()->addWidget(widget);
+}
+
+void ParticipantWindow::PopulateUserList()
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
@@ -52,30 +100,11 @@ void ParticipantWindow::PopulateUsernameList()
         Scene::Entity &entity = **iter;
         boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
         if (ec_presence)
-        {
-            QLabel *label = new QLabel(ec_presence->GetFullName().c_str(), this);
-            usernameLayout_->addWidget(label);
-        }
+            AddUserEntry(ec_presence.get());
     }
-}
 
-void ParticipantWindow::AddUser(RexLogic::EC_OpenSimPresence *presence)
-{
-    if (!users_.contains(presence->agentId))
-    {
-        QLabel *label = new QLabel(presence->GetFullName().c_str(), this);
-        usernameLayout_->addWidget(label);
-        users_[presence->agentId] = label;
-    }
-}
-
-void ParticipantWindow::RemoveUser(RexLogic::EC_OpenSimPresence *presence)
-{
-    if (users_.contains(presence->agentId))
-    {
-        QLabel *label = users_.take(presence->agentId);
-        SAFE_DELETE(label);
-    }
+    QSpacerItem *spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    static_cast<QVBoxLayout*>(layout())->addSpacerItem(spacer);
 }
 
 }

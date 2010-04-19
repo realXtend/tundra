@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   MaterialWizard.h
  *  @brief  Utitility tool for choosing right material script for your purpose from
  *          the Naali material script template library.
@@ -17,9 +17,9 @@ namespace Foundation
     class Framework;
 }
 
-namespace UiServices
+namespace Inventory
 {
-    class UiProxyWidget;
+    class InventoryUploadEventData;
 }
 
 QT_BEGIN_NAMESPACE
@@ -94,18 +94,24 @@ namespace Naali
         Q_DECLARE_FLAGS(MaterialWizardOptions, MaterialWizardOption)
 
         /// Consturctor.
-        /// @param framework Framework pointer.
-        MaterialWizard(Foundation::Framework *framework, QWidget *parent = 0);
+        /// @param parent Parent widget.
+        explicit MaterialWizard(QWidget *parent = 0);
 
         /// Destructor.
         ~MaterialWizard();
 
+    public slots:
+        /// Closes the material wizard.
+        void Close();
+
+    signals:
+        /// Emitted when new material is succesfully chosen and ready for upload.
+        /// @param event_data Inventory upload event data. If null v
+        void NewMaterial(Inventory::InventoryUploadEventData *event_data);
+
     private slots:
         /// Chooses the right material script file and uploads it.
         void Create();
-
-        /// Closes the material wizard.
-        void Cancel();
 
         /// Activates and deactivates widgets according to the current selection.
         void RefreshWidgets();
@@ -122,19 +128,13 @@ namespace Naali
 
         /// @return Name of the material script template according to the current parameters,
         /// or null string if no matches for current parameters.
-        QString GetCurrentMaterialFilename();
+        QString GetCurrentMaterialFilename() const;
 
         /// Framework pointer.
         Foundation::Framework *framework_;
 
         /// Main widget loaded from .ui file.
         QWidget *mainWidget_;
-
-        /// Layout 
-        QVBoxLayout *layout_;
-
-        /// Proxy widget for the UI.
-        UiServices::UiProxyWidget *proxyWidget_;
 
         /// Bit mask of current material configuration options.
         MaterialWizardOptions currentOptions_;

@@ -7,20 +7,18 @@
 #include <QMap>
 #include <QString>
 #include <QUrl>
+#include <QVariant>
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
+class QNetworkReply;
 
 namespace ProtocolUtilities
 {
     class GridInfoHelper : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-        GridInfoHelper(QObject *parent, QUrl url);
+        GridInfoHelper(QObject *parent, const QUrl &url);
 
     public slots:
         void GetGridInfo();
@@ -33,9 +31,7 @@ namespace ProtocolUtilities
 
     signals:
         void GridInfoDataRecieved(QMap<QString, QVariant>);
-
     };
-
 }
 
 #endif // incl_Protocol_GridInfoHelper_h
