@@ -1,6 +1,7 @@
 #include "StableHeaders.h"
 #include "JavascriptScriptModule.h"
 #include <QtScript>
+#include "ConsoleCommandServiceInterface.h"
 
 //#include <QtUiTools>
 
@@ -19,7 +20,7 @@ namespace JavascriptScript
 
     void JavascriptScriptModule::Load()
     {
-        LogInfo("Module " + Name() + " loaded.");
+      LogInfo("Module " + Name() + " loaded.");
     }
 
     void JavascriptScriptModule::Unload()
@@ -65,11 +66,40 @@ namespace JavascriptScript
 
     void JavascriptScriptModule::PostInitialize()
     {
+      RegisterConsoleCommand(Console::CreateCommand(
+            "JsExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
+            Console::Bind(this, &JavascriptScriptModule::ConsoleRunString))); 
+      /*
+        RegisterConsoleCommand(Console::CreateCommand(
+            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
+            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+
+        RegisterConsoleCommand(Console::CreateCommand(
+            "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
+            Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
+      */
     }
 
     /*QScriptValue JavascriptScriptModule::test(QScriptContext *context, QScriptEngine *engine)
     {
 	}*/
+
+    Console::CommandResult JavascriptScriptModule::ConsoleRunString(const StringVector &params)
+    {
+        if (params.size() != 1)
+        {            
+            return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
+            //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
+            //probably better have separate js shell.
+        }
+
+        else
+        {
+            //engine_->RunString(params[0]);
+            engine.evaluate(QString::fromStdString(params[0]));
+            return Console::ResultSuccess();
+        }
+    }
 
 }
 
