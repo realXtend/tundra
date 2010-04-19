@@ -223,8 +223,9 @@ namespace MumbleVoip
         try
         {
             connection_manager_->OpenConnection(info);
-            //connection_manager_->SendAudio(true);
             LogInfo("Mumble connection established.");
+            connection_manager_->SendAudio(true);
+            LogDebug("Start sending audio.");
 
             //LogInfo("Starting mumble client.");
             //ConnectionManager::StartMumbleClient(murmur_url.toString());
