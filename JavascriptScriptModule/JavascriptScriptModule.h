@@ -35,6 +35,8 @@ namespace JavascriptScript
 
 		//QScriptValue test(QScriptContext *context, QScriptEngine *engine);
 
+                Console::CommandResult ConsoleRunString(const StringVector &params);
+
 	private:
 		QScriptEngine engine;
 	};
