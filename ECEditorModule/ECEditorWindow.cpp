@@ -5,15 +5,18 @@
 #include "ECEditorModule.h"
 #include "ModuleManager.h"
 #include "UiModule.h"
+#include "UiDefines.h"
 #include "SceneManager.h"
 #include "ComponentInterface.h"
 #include "ComponentManager.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
 
+#include <QApplication>
 #include <QDomDocument>
 #include <QVBoxLayout>
 #include <QUiLoader>
@@ -50,7 +53,8 @@ namespace ECEditor
         component_list_(0),
         create_combo_(0),
         data_edit_(0),
-        delete_shortcut_(0)
+        delete_shortcut_(0),
+        proxy_(0)
     {
         Initialize();
     }
@@ -62,6 +66,7 @@ namespace ECEditor
     void ECEditorWindow::Initialize()
     {
         QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/eceditor.ui");
         file.open(QFile::ReadOnly);
         contents_ = loader.load(&file, this);
@@ -110,11 +115,26 @@ namespace ECEditor
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
         if (ui_module)
-            ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(contents_->windowTitle(), UiServices::ModuleWidget));
+        {
+            UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
+            proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, widget_properties);
+            original_title_ = contents_->windowTitle();
+        }
         else
             ECEditorModule::LogError("Could not add widget to scene");
         
         RefreshAvailableComponents();
+    }
+    
+    void ECEditorWindow::BringToFront()
+    {
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
+            Foundation::Module::MT_UiServices).lock();
+        if (ui_module)
+        {
+            ui_module->GetInworldSceneController()->BringProxyToFront(this);
+            ui_module->GetInworldSceneController()->ShowProxyForWidget(this);
+        }
     }
     
     void ECEditorWindow::RefreshAvailableComponents()
@@ -267,6 +287,17 @@ namespace ECEditor
     {
         RefreshAvailableComponents();
         QWidget::showEvent(show_event);
+    }
+    
+    void ECEditorWindow::changeEvent(QEvent *e)
+    {
+        if (e->type() == QEvent::LanguageChange)
+        {
+            QString title = QApplication::translate("ECEditor", original_title_.toStdString().c_str());
+            graphicsProxyWidget()->setWindowTitle(title);
+        }
+        else
+           QWidget::changeEvent(e);
     }
     
     void ECEditorWindow::DeleteEntitiesFromList()

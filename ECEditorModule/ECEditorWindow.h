@@ -16,6 +16,11 @@ class QTextEdit;
 class QComboBox;
 class QKeyEvent;
 
+namespace UiServices
+{
+    class UiProxyWidget;
+}
+
 struct EntityComponentSelection
 {
     Scene::EntityPtr entity_;
@@ -38,6 +43,7 @@ namespace ECEditor
         void ClearEntities();
         
     public slots:
+        void BringToFront();
         void DeleteEntitiesFromList();
         void DeleteComponent();
         void CreateComponent();
@@ -49,6 +55,7 @@ namespace ECEditor
     protected:
         void hideEvent(QHideEvent *hide_event);
         void showEvent(QShowEvent *show_event);
+        void changeEvent(QEvent *change_event);
         
     private:
         void Initialize();
@@ -66,6 +73,8 @@ namespace ECEditor
         QTextEdit* data_edit_;
         QComboBox* create_combo_;
         QShortcut* delete_shortcut_;
+        UiServices::UiProxyWidget* proxy_;
+        QString original_title_;
     };
 }
 

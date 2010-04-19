@@ -7,6 +7,7 @@
 #include "SceneEvents.h"
 #include "NetworkEvents.h"
 #include "SceneManager.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include "EC_SerializationTest.h"
 
@@ -41,6 +42,10 @@ namespace ECEditor
 
     void ECEditorModule::PostInitialize()
     {
+        RegisterConsoleCommand(Console::CreateCommand("ECEditor", 
+            "Shows the EC editor.",
+            Console::Bind(this, &ECEditorModule::ShowWindow)));
+            
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
@@ -65,6 +70,14 @@ namespace ECEditor
         RESETPROFILER;
     }
 
+    Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
+    {
+        if (editor_window_)
+            editor_window_->BringToFront();
+        
+        return Console::ResultSuccess();
+    }
+    
     bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (category_id == framework_event_category_ && event_id == Foundation::NETWORKING_REGISTERED)
