@@ -12,6 +12,7 @@
 #include "ServerInfo.h"
 #include "Framework.h"
 #include "SoundServiceInterface.h"
+#include "MumbleDefines.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -99,10 +100,8 @@ namespace MumbleVoip
         sound_id_t audio_playback_channel_;
         bool sending_audio_;
         std::string recording_device_;
-        static const int AUDIO_SAMPLE_RATE_ = 48000;
-        static const int AUDIO_FRAME_SIZE_IN_SAMPLES = 480;
+
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
-        char playback_buffer_[AUDIO_FRAME_SIZE_IN_SAMPLES*2];
 
     public slots:
         void OnAudioFramesAvailable(Connection* connection);

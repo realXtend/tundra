@@ -187,16 +187,14 @@ void Connection::Close()
 void Connection::InitializeCELT()
 {
     int error = 0;
-    
-    int framesize = SAMPLE_RATE_ / 100;
-    celt_mode_ = celt_mode_create(SAMPLE_RATE_, framesize, &error );
+    celt_mode_ = celt_mode_create(SAMPLE_RATE, SAMPLES_IN_FRAME, &error );
     if (error != 0)
     {
         QString message = QString("CELT initialization failed, error code = %1").arg(error);
         MumbleVoipModule::LogDebug(message.toStdString());
     }
 
-    celt_encoder_ = celt_encoder_create(celt_mode_,CHANNELS, NULL );
+    celt_encoder_ = celt_encoder_create(celt_mode_,NUMBER_OF_CHANNELS, NULL );
     celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
 	celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AUDIO_QUALITY_));
 
@@ -213,7 +211,7 @@ void Connection::UninitializeCELT()
 
 CELTDecoder* Connection::CreateCELTDecoder()
 {
-    CELTDecoder* decoder = celt_decoder_create(celt_mode_,CHANNELS, NULL);
+    CELTDecoder* decoder = celt_decoder_create(celt_mode_,NUMBER_OF_CHANNELS, NULL);
     return decoder;
 }
 
@@ -271,12 +269,12 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
     QMutexLocker locker(&mutex_encode_audio_);
     
-    if (encode_queue_.size() < FRAMES_PER_PACKET_)
+    if (encode_queue_.size() < FRAMES_PER_PACKET)
         return;
 
     std::deque<std::string> packet_list;
 
-    for (int i = 0; i < FRAMES_PER_PACKET_; ++i)
+    for (int i = 0; i < FRAMES_PER_PACKET; ++i)
     {
         PCMAudioFrame* audio_frame = encode_queue_.first();
         encode_queue_.pop_front();
@@ -295,7 +293,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
     PacketDataStream data_stream(data + 1, 1023);
     data_stream << frame_sequence_;
 
-	for (int i = 0; i < FRAMES_PER_PACKET_; ++i)
+	for (int i = 0; i < FRAMES_PER_PACKET; ++i)
     {
 		if (packet_list.empty())
             break;
@@ -304,7 +302,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 
 		unsigned char head = s.size();
 		// Add 0x80 to all but the last frame
-		if (i < FRAMES_PER_PACKET_ - 1)
+		if (i < FRAMES_PER_PACKET - 1)
 			head |= 0x80;
 
 		data_stream.append(head);
@@ -435,7 +433,7 @@ void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int s
         celt_decoders_[session] = decoder;
     }
 
-    PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE_, SAMPLE_WIDTH, CHANNELS, 2*SAMPLES_IN_FRAME);
+    PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
 
     int ret = celt_decode(decoder, data, size, (short*)audio_frame->DataPtr());
 
@@ -443,7 +441,7 @@ void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int s
     {
     case CELT_OK:
         {
-            int buffer_frames_max = SAMPLE_RATE_/SAMPLES_IN_FRAME*PLAYBACK_BUFFER_MS/1000;
+            int buffer_frames_max = SAMPLE_RATE/SAMPLES_IN_FRAME*PLAYBACK_BUFFER_MS_/1000;
             if (playback_queue_.size() < buffer_frames_max)
             {
                 playback_queue_.push_back(audio_frame);
