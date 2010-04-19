@@ -22,13 +22,15 @@
 #include "SceneEvents.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
+//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
+
+#include "EC_OpenSimPresence.h"
 
 #include <utility>
 
@@ -198,7 +200,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (!entity)
                 return false;
 
-            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            EC_OpenSimPresence *ec_presence = entity->GetComponent<EC_OpenSimPresence>().get();
             if (ec_presence && participantWindow_)
                 participantWindow_->AddUserEntry(ec_presence);
             break;
@@ -214,7 +216,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (!entity)
                 return false;
 
-            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            EC_OpenSimPresence *ec_presence = entity->GetComponent<EC_OpenSimPresence>().get();
             if (ec_presence && participantWindow_)
                 participantWindow_->RemoveUserEntry(ec_presence);
             break;

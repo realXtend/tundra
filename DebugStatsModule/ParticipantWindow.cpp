@@ -12,7 +12,8 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
+//#include "EntityComponent/EC_OpenSimPresence.h"
+#include "EC_OpenSimPresence.h"
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -42,7 +43,7 @@ ParticipantWindow::~ParticipantWindow()
 //    qDeleteAll(entries_);
 }
 
-void ParticipantWindow::AddUserEntry(RexLogic::EC_OpenSimPresence *presence)
+void ParticipantWindow::AddUserEntry(EC_OpenSimPresence *presence)
 {
     if (!entries_.contains(presence->agentId))
     {
@@ -62,7 +63,7 @@ void ParticipantWindow::AddUserEntry(RexLogic::EC_OpenSimPresence *presence)
     }
 }
 
-void ParticipantWindow::RemoveUserEntry(RexLogic::EC_OpenSimPresence *presence)
+void ParticipantWindow::RemoveUserEntry(EC_OpenSimPresence *presence)
 {
     if (entries_.contains(presence->agentId))
     {
@@ -98,7 +99,7 @@ void ParticipantWindow::PopulateUserList()
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
+        boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity.GetComponent<EC_OpenSimPresence>();
         if (ec_presence)
             AddUserEntry(ec_presence.get());
     }

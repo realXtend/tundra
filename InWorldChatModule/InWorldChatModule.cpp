@@ -14,6 +14,7 @@
 
 #include "EC_ChatBubble.h"
 #include "EC_Billboard.h"
+#include "EC_OpenSimPresence.h"
 
 #include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
@@ -27,7 +28,7 @@
 #include "UiModule.h"
 #include "ConfigurationManager.h"
 
-#include "EntityComponent/EC_OpenSimPresence.h"
+//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 
 #include <QColor>
@@ -246,7 +247,7 @@ Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)
     {
         Scene::Entity &entity = **iter;
 
-        boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
+        boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity.GetComponent<EC_OpenSimPresence>();
         boost::shared_ptr<RexLogic::EC_OpenSimPrim> ec_prim = entity.GetComponent<RexLogic::EC_OpenSimPrim>();
 
         if (ec_presence)

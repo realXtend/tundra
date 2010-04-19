@@ -7,11 +7,10 @@
 #include "Avatar/AvatarExporter.h"
 #include "LegacyAvatarSerializer.h"
 #include "RexLogicModule.h"
+#include "EntityComponent/EC_OpenSimAvatar.h"
+
 #include "SceneManager.h"
 #include "SceneEvents.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
-#include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
@@ -36,8 +35,6 @@
 #include "EventManager.h"
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
-
-#include "Poco/URI.h"
 
 #include <QDomDocument>
 #include <QFile>

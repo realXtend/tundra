@@ -10,11 +10,11 @@
 #include "Avatar/AvatarAppearance.h"
 #include "Avatar/AvatarEditor.h"
 #include "RexLogicModule.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_Controllable.h"
+
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
@@ -29,6 +29,8 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
+
+#include "EC_OpenSimPresence.h"
 
 namespace RexLogic
 {
@@ -540,7 +542,7 @@ namespace RexLogic
         Scene::EntityPtr entity = owner_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
-        
+
         EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!animctrl || !appearance)
