@@ -181,11 +181,10 @@ namespace MumbleVoip
         if (!sending_audio_ && send)
         {
             sending_audio_ = true;
-            int frequency = AUDIO_SAMPLE_RATE_;
+            int frequency = SAMPLE_RATE;
             bool sixteenbit = true;
             bool stereo = false;
-            int buffer_size_ms = AUDIO_RECORDING_BUFFER_MS;
-            int buffer_size = buffer_size_ms*2*frequency/1000;
+            int buffer_size = SAMPLE_WIDTH/2*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
             soundsystem->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
         }
 
@@ -212,17 +211,18 @@ namespace MumbleVoip
                 return;
             }
 
-            while (sound_service->GetRecordedSoundSize() > AUDIO_FRAME_SIZE_IN_SAMPLES*2)
+            while (sound_service->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
             {
-                int bytes = sound_service->GetRecordedSoundData(playback_buffer_, AUDIO_FRAME_SIZE_IN_SAMPLES*2);
-                PCMAudioFrame* frame = new PCMAudioFrame(AUDIO_SAMPLE_RATE_, 16, 1, playback_buffer_, bytes);
+                PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
+                int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
+
                 for (QMap<QString, Connection*>::iterator i = connections_.begin(); i != connections_.end(); ++i)
                 {
                     Connection* connection = *i;
                     if (connection->SendingAudio())
                         connection->SendAudioFrame(frame);
                 }
-                // delete frame;
+                delete frame;
             }
         }
     }

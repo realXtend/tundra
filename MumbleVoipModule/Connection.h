@@ -10,6 +10,7 @@
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "stdint.h"
+#include "MumbleDefines.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -100,15 +101,10 @@ namespace MumbleVoip
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
-        static const int SAMPLE_RATE_ = 48000; // always 48000 in mumble
         static const int AUDIO_QUALITY_ = 60000; // 32000 - 90000
         static const int ENCODE_BUFFER_SIZE_ = 4000;
-        static const int FRAMES_PER_PACKET_ = 6;
-        static const int CHANNELS = 1;
-        static const int SAMPLES_IN_FRAME = 480;
-        static const int SAMPLE_WIDTH = 16;
-        static const int SENDING_BUFFER_MS = 500;
-        static const int PLAYBACK_BUFFER_MS = 500;
+//        static const int SENDING_BUFFER_MS_ = 500;
+        static const int PLAYBACK_BUFFER_MS_ = 500;
 
         QList<Channel*> channels_;
         bool sending_audio_;
