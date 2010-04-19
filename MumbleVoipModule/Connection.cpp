@@ -186,7 +186,7 @@ void Connection::Close()
 void Connection::InitializeCELT()
 {
     int error = 0;
-    int channels = 1;
+    
     int framesize = SAMPLE_RATE_ / 100;
     celt_mode_ = celt_mode_create(SAMPLE_RATE_, framesize, &error );
     if (error != 0)
@@ -194,9 +194,8 @@ void Connection::InitializeCELT()
         QString message = QString("CELT initialization failed, error code = %1").arg(error);
         MumbleVoipModule::LogDebug(message.toStdString());
     }
-    celt_encoder_ = celt_encoder_create(celt_mode_,channels, NULL );
-    celt_decoder_ = celt_decoder_create(celt_mode_,channels, NULL);
 
+    celt_encoder_ = celt_encoder_create(celt_mode_,CHANNELS, NULL );
     celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
 	celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AUDIO_QUALITY_));
 
@@ -209,6 +208,12 @@ void Connection::UninitializeCELT()
     celt_encoder_destroy(celt_encoder_);
     celt_mode_destroy(celt_mode_);
     MumbleVoipModule::LogDebug("CELT uninitialized.");
+}
+
+CELTDecoder* Connection::CreateCELTDecoder()
+{
+    CELTDecoder* decoder = celt_decoder_create(celt_mode_,CHANNELS, NULL);
+    return decoder;
 }
 
 void Connection::Join(QString channel_name)
@@ -289,7 +294,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
 	flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
 	data[0] = static_cast<unsigned char>(flags);
     PacketDataStream data_stream(data + 1, 1023);
-    data_stream << session;
+//    data_stream << session;
     data_stream << frame_sequence_;
 
 	for (int i = 0; i < FRAMES_PER_PACKET_; ++i)
@@ -340,13 +345,13 @@ void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
 
 void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
 {
-    return; // test
+//    return; // test
 //    int frames = scanPacket((char*)buffer, length);
     
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
     bool valid = data_stream.isValid();
 
-    uint8_t first_byte = data_stream.next();
+    uint8_t first_byte = static_cast<unsigned char>(data_stream.next());
     MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( ( first_byte >> 5) & 0x07 );
     uint8_t flags = first_byte & 0x1f;
     switch (type)
@@ -383,7 +388,7 @@ void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
         const char* frame_data = data_stream.charPtr();
         data_stream.skip(frame_size);
 
-        HandleIncomingCELTFrame((unsigned char*)frame_data, frame_size);
+        HandleIncomingCELTFrame(session, (unsigned char*)frame_data, frame_size);
 	} while (!last_frame && data_stream.isValid());
 
     int bytes_left = data_stream.left();
@@ -419,14 +424,21 @@ bool Connection::SendingAudio()
     return sending_audio_;
 }
 
-void Connection::HandleIncomingCELTFrame(unsigned char* data, int size)
+void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
 {
     QMutexLocker locker(&mutex_playback_queue_);
+
+    CELTDecoder* decoder = celt_decoders_[session];
+    if (!decoder)
+    {
+        decoder = CreateCELTDecoder();
+        celt_decoders_[session] = decoder;
+    }
 
 //    celt_mode_info(celt_mode_, ???, sample_rate);
     const int sample_count = 480;
     short pcm_data[sample_count];
-    int ret = celt_decode(celt_decoder_, data, size, pcm_data);
+    int ret = celt_decode(decoder, data, size, pcm_data);
     switch (ret)
     {
     case CELT_OK:

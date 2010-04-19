@@ -23,6 +23,7 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble library mainloop started");
         try
         {
+            
             mumble_lib->Run();
         }
         catch(std::exception &e)

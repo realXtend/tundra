@@ -223,7 +223,7 @@ namespace MumbleVoip
         try
         {
             connection_manager_->OpenConnection(info);
-            connection_manager_->SendAudio(true);
+            //connection_manager_->SendAudio(true);
             LogInfo("Mumble connection established.");
 
             //LogInfo("Starting mumble client.");

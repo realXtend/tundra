@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QList>
 #include <QMutex>
+#include <QMap>
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "stdint.h"
@@ -88,12 +89,14 @@ namespace MumbleVoip
     private:
         void InitializeCELT();
         void UninitializeCELT();
+        CELTDecoder* CreateCELTDecoder();
 
         MumbleClient::MumbleClient* client_;
         bool authenticated_;
         QString join_request_;
         QList<PCMAudioFrame*> playback_queue_;
         QList<PCMAudioFrame*> encode_queue_;
+        QMap<int, CELTDecoder*> celt_decoders_; // maps session <-> decoder
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
@@ -101,6 +104,7 @@ namespace MumbleVoip
         static const int AUDIO_QUALITY_ = 60000; // 32000 - 90000
         static const int ENCODE_BUFFER_SIZE_ = 4000;
         static const int FRAMES_PER_PACKET_ = 6;
+        static const int CHANNELS = 1;
         QList<Channel*> channels_;
         bool sending_audio_;
         unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
@@ -117,7 +121,7 @@ namespace MumbleVoip
 //        void OnRelayTunnel(std::string &s);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-        void HandleIncomingCELTFrame(unsigned char* data, int size);
+        void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
 
     signals:
 //        void Closed();
