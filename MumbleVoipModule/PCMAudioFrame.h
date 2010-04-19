@@ -15,11 +15,12 @@ namespace MumbleVoip
         //! Copies data from given source
         PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
 
+        PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size);
         ////! Creates
         //PCMAudioFrame(int sample_rate, int sample_widh, int channels, int data_size);
 
         virtual ~PCMAudioFrame();
-        virtual char* Data();
+        virtual char* DataPtr();
         virtual int Channels();
         virtual int SampleRate();
         virtual int SampleWidth();

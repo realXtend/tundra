@@ -23,7 +23,6 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble library mainloop started");
         try
         {
-            
             mumble_lib->Run();
         }
         catch(std::exception &e)
@@ -46,7 +45,6 @@ namespace MumbleVoip
         sending_audio_(false),
         recording_device_("")
     {
-        StartMumbleLibrary();
     }
 
     ConnectionManager::~ConnectionManager()
@@ -60,7 +58,6 @@ namespace MumbleVoip
         connections_[info.server] = connection;
         connection->Join(info.channel);
         connection->SendAudio(true); // test here
-        QObject::connect( connection, SIGNAL(AudioDataAvailable(short*, int)), this, SLOT(OnAudioDataFromConnection(short*, int)) );
         QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
     }
@@ -103,12 +100,15 @@ namespace MumbleVoip
 
     void ConnectionManager::StartMumbleLibrary()
     {
-        mumble_lib = MumbleClient::MumbleClientLib::instance();
-        if (!mumble_lib)
-        {
+        //mumble_lib = MumbleClient::MumbleClientLib::instance();
+        //if (!mumble_lib)
+        //{
+        //    return;
+        //}
+        if (lib_thread_.isRunning())
             return;
-        }
                 
+        lib_thread_.setPriority(QThread::LowPriority);
         lib_thread_.start();
     }
 
@@ -125,7 +125,6 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble library uninitialized.");
     }
 
-
     void ConnectionManager::OnAudioFramesAvailable(Connection* connection)
     {
         for(;;)
@@ -136,7 +135,6 @@ namespace MumbleVoip
             PlaybackAudioFrame(frame);
         }
     }
-#include <QFile>
 
     void ConnectionManager::PlaybackAudioFrame(PCMAudioFrame* frame)
     {
@@ -149,13 +147,8 @@ namespace MumbleVoip
         if (!soundsystem.get())
             return;     
 
-        /*QFile f("audio_out.raw");
-        f.open(QIODevice::WriteOnly | QIODevice::Append);
-        f.write(frame->Data(), frame->GetLengthBytes());
-        f.close();*/
-
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = frame->Data();
+        sound_buffer.data_ = frame->DataPtr();
         sound_buffer.frequency_ = frame->SampleRate();
 
         if (frame->SampleWidth() == 16)

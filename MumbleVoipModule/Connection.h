@@ -105,6 +105,11 @@ namespace MumbleVoip
         static const int ENCODE_BUFFER_SIZE_ = 4000;
         static const int FRAMES_PER_PACKET_ = 6;
         static const int CHANNELS = 1;
+        static const int SAMPLES_IN_FRAME = 480;
+        static const int SAMPLE_WIDTH = 16;
+        static const int SENDING_BUFFER_MS = 500;
+        static const int PLAYBACK_BUFFER_MS = 500;
+
         QList<Channel*> channels_;
         bool sending_audio_;
         unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
