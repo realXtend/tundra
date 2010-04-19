@@ -15,14 +15,11 @@
 
 class QLabel;
 
+class EC_OpenSimPresence;
+
 namespace Foundation
 {
     class Framework;
-}
-
-namespace RexLogic
-{
-    class EC_OpenSimPresence;
 }
 
 namespace DebugStats
@@ -42,11 +39,11 @@ namespace DebugStats
 
         /// Adds user entry to the list.
         /// @param presence EC_OpenSimPresence component
-        void AddUserEntry(RexLogic::EC_OpenSimPresence *presence);
+        void AddUserEntry(EC_OpenSimPresence *presence);
 
         /// Removes user entry from the list.
         /// @param presence EC_OpenSimPresence component
-        void RemoveUserEntry(RexLogic::EC_OpenSimPresence *presence);
+        void RemoveUserEntry(EC_OpenSimPresence *presence);
 
         /// Adds new custom info field to the list.
         /// @param user_id User ID of the user the info field

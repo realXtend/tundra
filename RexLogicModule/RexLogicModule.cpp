@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "RexLogicModule.h"
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
@@ -13,16 +14,14 @@
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-#include "RexLogicModule.h"
 #include "Avatar/Avatar.h"
-#include "Environment/Primitive.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "Environment/Primitive.h"
 #include "CameraControllable.h"
 
 #include "EventManager.h"
@@ -57,6 +56,7 @@
 #include "EC_HoveringText.h"
 #include "EC_Clone.h"
 #include "EC_Light.h"
+#include "EC_OpenSimPresence.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -95,15 +95,17 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_FreeData);
     DECLARE_MODULE_EC(EC_AttachedSound);
     DECLARE_MODULE_EC(EC_OpenSimPrim);
-    DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimAvatar);
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
+
+    // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
+    DECLARE_MODULE_EC(EC_OpenSimPresence);
 }
 
 // virtual
