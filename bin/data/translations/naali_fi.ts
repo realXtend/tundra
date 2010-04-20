@@ -1378,7 +1378,7 @@ alpha layer of the diffuse map</source>
     <name>Naali::AudioPreviewEditor</name>
     <message>
         <source>Audio: </source>
-        <translation>Ääni:</translation>
+        <translation type="unfinished">Ääni: </translation>
     </message>
     <message>
         <source>Stop</source>
