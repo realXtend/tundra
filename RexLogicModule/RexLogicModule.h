@@ -130,20 +130,23 @@ namespace RexLogic
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
-        
+
         //! @return The entity corresponding to given scene entityid, or null if not found. 
-        Scene::EntityPtr GetEntity(entity_id_t entityid);
+        Scene::EntityPtr GetEntity(entity_id_t entityid) const;
+
+        //! Get a component with certain entitycomponent in it
+        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent) const;
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
-        __inline Scene::EntityPtr GetPrimEntity(entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimPrim"); }
-        Scene::EntityPtr GetPrimEntity(const RexUUID &fullid);
+        __inline Scene::EntityPtr GetPrimEntity(entity_id_t entityid) const{ return GetEntityWithComponent(entityid, "EC_OpenSimPrim"); }
+        Scene::EntityPtr GetPrimEntity(const RexUUID &fullid) const;
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component,
         //!         and EC_OpenSimPresence component.
-        __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) { return GetEntityWithComponent(entityid,"EC_OpenSimAvatar"); }
-        Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid); 
+        __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) const { return GetEntityWithComponent(entityid, "EC_OpenSimAvatar"); }
+        Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid) const;
 
         //! Register uuid - localid pair
         void RegisterFullId(const RexUUID &fullid, entity_id_t entityid);
@@ -206,16 +209,16 @@ namespace RexLogic
         void SetAvatarRotation(Quaternion newrot);
         void SetCameraYawPitch(Real newyaw, Real newpitch);
 
-        entity_id_t GetUserAvatarId();
+        entity_id_t GetUserAvatarId() const;
 
-        Vector3df GetCameraUp();
-        Vector3df GetCameraRight();
-        Vector3df GetCameraPosition();
-        Quaternion GetCameraOrientation();
-        Real GetCameraViewportWidth();
-        Real GetCameraViewportHeight();
+        Vector3df GetCameraUp() const;
+        Vector3df GetCameraRight() const;
+        Vector3df GetCameraPosition() const;
+        Quaternion GetCameraOrientation() const;
+        Real GetCameraViewportWidth() const;
+        Real GetCameraViewportHeight() const;
 
-        Real GetCameraFOV();
+        Real GetCameraFOV() const;
 
         void SendRexPrimData(entity_id_t entityid);
 
@@ -231,15 +234,15 @@ namespace RexLogic
 
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
-        //!              Add functionality if you need something done before logout.
+        //! Add functionality if you need something done before logout.
         void AboutToDeleteWorld();
 
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain discanse
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
 
-        /// Return renderer pointer. Convenience function for making code cleaner.
-        OgreRenderer::RendererPtr GetRendererPtr();
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -296,9 +299,6 @@ namespace RexLogic
         //! workaround for not being able to send events during initialization
         bool send_input_state_;
 
-        //! Get a component with certain entitycomponent in it
-        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent);
-
         //! Mapping for full uuids - localids
         typedef std::map<RexUUID, entity_id_t> IDMap;
         IDMap UUIDs_;
@@ -308,7 +308,7 @@ namespace RexLogic
         //! once the parent prim appears, the children will be assigned the parent and the key will be removed from here.
         typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
         ObjectParentMap pending_parents_;
-        
+
         //! The connection state which is shown in the login window.
         ProtocolUtilities::Connection::State connectionState_;
 
@@ -320,7 +320,7 @@ namespace RexLogic
 
         //! Avatar entities found this frame. Needed so that we can update name overlays last, after all other updates
         std::vector<Scene::EntityWeakPtr> found_avatars_;
-        
+
         //! current camera state
         CameraState camera_state_;
 

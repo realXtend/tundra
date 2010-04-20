@@ -38,9 +38,11 @@ public:
     void FromString(const char *str);
     void FromString(const std::string &str) { FromString(str.c_str()); }
 
-    /// Converts the RexUUID to a string.
-    /// @return RexUUID as a string.
+    /// Converts the RexUUID to a QString.
     std::string ToString() const;
+
+    /// Converts the RexUUID to a QString.
+    QString ToQString() const { return ToString().c_str(); }
 
     /// Tests whether a string contains a valid UUID
     /// @param str String.
@@ -55,9 +57,9 @@ public:
 
     bool operator <(const RexUUID &rhs) const;
 
-    friend std::ostream& operator << ( std::ostream &out, const RexUUID &r )
+    friend std::ostream& operator << (std::ostream &out, const RexUUID &rhs)
     {
-        out << "RexUUID(" << r.ToString() << ")";
+        out << "RexUUID(" << rhs.ToString() << ")";
         return out;
     }
 

@@ -1,5 +1,5 @@
 /**
- * For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   OgreAssetEditorModule.h
  *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
@@ -22,6 +22,11 @@ namespace Foundation
 namespace UiServices
 {
     class UiModule;
+}
+
+namespace Inventory
+{
+    class InventoryUploadEventData;
 }
 
 namespace Naali
@@ -54,6 +59,11 @@ namespace Naali
 
         /// Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
+
+    public slots:
+        /// Uploads new asset.
+        /// @param data Inventory upload event data.
+        void Upload(Inventory::InventoryUploadEventData *data);
 
     private:
         Q_DISABLE_COPY(OgreAssetEditorModule);

@@ -1,19 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
-#include <Poco/Logger.h>
-#include <Poco/LoggingFactory.h>
-#include <Poco/FormattingChannel.h>
-#include <Poco/SplitterChannel.h>
-#include <Poco/LocalDateTime.h>
-#include <Poco/Path.h>
-#include <Poco/UnicodeConverter.h>
-
-#include <QApplication>
+#include "DebugOperatorNew.h"
 
 #include "Framework.h"
-
 #include "Application.h"
 #include "Platform.h"
 #include "Foundation.h"
@@ -29,8 +19,18 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-
 #include "FrameworkQtApplication.h"
+
+#include <Poco/Logger.h>
+#include <Poco/LoggingFactory.h>
+#include <Poco/FormattingChannel.h>
+#include <Poco/SplitterChannel.h>
+#include <Poco/Path.h>
+#include <Poco/UnicodeConverter.h>
+
+#include <QApplication>
+#include <QGraphicsView>
+#include "MemoryLeakCheck.h"
 
 namespace Resource
 {
@@ -74,7 +74,8 @@ namespace Foundation
         {
             std::cout << "Supported command line arguments: " << std::endl;
             std::cout << cm_descriptions_ << std::endl;
-        } else
+        }
+        else
         {
             ProfilerSection::SetProfiler(&profiler_);
 
@@ -99,9 +100,8 @@ namespace Foundation
                 // Create config directory
                 std::string config_path = GetPlatform()->GetApplicationDataDirectory() + CONFIG_PATH;
                 if (boost::filesystem::exists(config_path) == false)
-                {
                     boost::filesystem::create_directory(config_path);
-                }            
+
                 config_manager_->SetPath(config_path);
             }
             config_manager_->Load();
@@ -109,7 +109,7 @@ namespace Foundation
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("2.0"));
-                        
+
             CreateLoggingSystem(); // depends on config and platform
 
             // create managers
@@ -142,8 +142,6 @@ namespace Foundation
         log_channels_.clear();
         if (log_formatter_)
             log_formatter_->release();
-            
-        
     }
 
     void Framework::CreateLoggingSystem()
@@ -180,29 +178,23 @@ namespace Foundation
 
         try
         {
-            Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);    
+            Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);
             Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
-        } catch (Poco::ExistsException)
+        }
+        catch (Poco::ExistsException)
         {
             assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
         }
 
-        Poco::LocalDateTime *currenttime = new Poco::LocalDateTime(); 
-        std::string timestring = boost::lexical_cast<std::string>(currenttime->day()) + "/";
-        timestring.append(boost::lexical_cast<std::string>(currenttime->month()) + "/");
-        timestring.append(boost::lexical_cast<std::string>(currenttime->year()) + " ");
-        timestring.append(boost::lexical_cast<std::string>(currenttime->hour()) + ":");
-        timestring.append(boost::lexical_cast<std::string>(currenttime->minute()) + ":");
-        timestring.append(boost::lexical_cast<std::string>(currenttime->second()));
-
         try
         {
-            Foundation::RootLogInfo("Log file opened on " + timestring);
-        } catch(Poco::OpenFileException)
+            RootLogInfo("Log file opened on " + GetLocalDateTimeString());
+        }
+        catch(Poco::OpenFileException)
         {
             // Do not create the log file.
             splitterchannel->removeChannel(filechannel);
-            Foundation::RootLogInfo("Poco::OpenFileException. Log file not created.");
+            RootLogInfo("Poco::OpenFileException. Log file not created.");
         }
 
 #ifndef _DEBUG
@@ -217,8 +209,7 @@ namespace Foundation
         log_channels_.push_back(splitterchannel);
         log_channels_.push_back(formatchannel);
 
-        delete currenttime;
-        delete loggingfactory;
+        SAFE_DELETE(loggingfactory);
     }
 
     void Framework::AddLogChannel(Poco::Channel *channel)
@@ -251,10 +242,10 @@ namespace Foundation
         try
         {
             po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
-        } 
+        }
         catch (std::exception &e)
         {
-            Foundation::RootLogWarning(e.what());
+            RootLogWarning(e.what());
         }
         po::notify (cm_options_);
     }
@@ -346,12 +337,12 @@ namespace Foundation
     {
         {
             PROFILE(FW_LoadModules);
-            Foundation::RootLogDebug("\n\nLOADING MODULES\n================================================================\n");
+            RootLogDebug("\n\nLOADING MODULES\n================================================================\n");
             module_manager_->LoadAvailableModules();
         }
         {
             PROFILE(FW_InitializeModules);
-            Foundation::RootLogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
+            RootLogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
             module_manager_->InitializeModules();
         }
     }
@@ -529,13 +520,10 @@ namespace Foundation
         if (recurseToChildren)
         {
             const ProfilerNodeTree::NodeList &children = node->GetChildren();
-            for (ProfilerNodeTree::NodeList::const_iterator it = children.begin() ;
-                 it != children.end() ;
-                 ++it)
-            {
+            for(ProfilerNodeTree::NodeList::const_iterator it = children.begin(); it != children.end() ; ++it)
                 PrintTimingsToConsole(console, (*it).get(), showUnused);
-            }
         }
+
         if (timings_node)
             level -= 2;
     }
@@ -584,7 +572,6 @@ namespace Foundation
                 "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
                 Console::Bind(this, &Framework::ConsoleProfile)));
 #endif
-
         }
     }
 
@@ -599,7 +586,7 @@ namespace Foundation
     }
 
     Profiler &Framework::GetProfiler()
-    { 
+    {
         return profiler_;
     }
 
@@ -608,31 +595,76 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
-    ComponentManagerPtr Framework::GetComponentManager() const { return component_manager_; }
-    ModuleManagerPtr Framework::GetModuleManager() const { return module_manager_; }
-    ServiceManagerPtr Framework::GetServiceManager() const { return service_manager_; }
-    EventManagerPtr Framework::GetEventManager() const { return event_manager_; }
-    PlatformPtr Framework::GetPlatform() const { return platform_; }
-    ConfigurationManagerPtr Framework::GetConfigManager() { return config_manager_;}
-    ThreadTaskManagerPtr Framework::GetThreadTaskManager() { return thread_task_manager_;}
+    ComponentManagerPtr Framework::GetComponentManager() const
+    {
+        return component_manager_;
+    }
 
-    ConfigurationManager &Framework::GetDefaultConfig() { return *(config_manager_.get()); }
+    ModuleManagerPtr Framework::GetModuleManager() const
+    {
+        return module_manager_;
+    }
 
-    ConfigurationManager *Framework::GetDefaultConfigPtr() { return config_manager_.get(); }
+    ServiceManagerPtr Framework::GetServiceManager() const
+    {
+        return service_manager_;
+    }
 
-    bool Framework::HasScene(const std::string &name) const { return scenes_.find(name) != scenes_.end(); }
+    EventManagerPtr Framework::GetEventManager() const
+    {
+        return event_manager_;
+    }
+
+    PlatformPtr Framework::GetPlatform() const
+    {
+        return platform_;
+    }
+
+    ConfigurationManagerPtr Framework::GetConfigManager()
+    {
+        return config_manager_;
+    }
+
+    ThreadTaskManagerPtr Framework::GetThreadTaskManager()
+    {
+        return thread_task_manager_;
+    }
+
+    ConfigurationManager &Framework::GetDefaultConfig()
+    {
+        return *(config_manager_.get());
+    }
+
+    ConfigurationManager *Framework::GetDefaultConfigPtr()
+    {
+        return config_manager_.get();
+    }
+
+    bool Framework::HasScene(const std::string &name) const
+    {
+        return scenes_.find(name) != scenes_.end();
+    }
 
     //! Returns the currently set default world scene, for convinience
-    const Scene::ScenePtr &Framework::GetDefaultWorldScene() const { return default_scene_; }
+    const Scene::ScenePtr &Framework::GetDefaultWorldScene() const
+    {
+        return default_scene_;
+    }
 
     //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-    void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene) { default_scene_ = scene; }
+    void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
+    {
+        default_scene_ = scene;
+    }
 
     //! Returns the scene map for self reflection / introspection.
-    const Framework::SceneMap &Framework::GetSceneMap() const { return scenes_; }
+    const Framework::SceneMap &Framework::GetSceneMap() const
+    {
+        return scenes_;
+    }
 
-    ProgramOptionsEvent::ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av)
-    :options(vars), argc(ac), argv(av)
+    ProgramOptionsEvent::ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) :
+        options(vars), argc(ac), argv(av)
     {
     }
 }

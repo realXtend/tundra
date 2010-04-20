@@ -22,13 +22,15 @@
 #include "SceneEvents.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
+//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
+
+#include "EC_OpenSimPresence.h"
 
 #include <utility>
 
@@ -124,13 +126,12 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     }
 
     participantWindow_ = new ParticipantWindow(framework_);
+
     UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(participantWindow_,
         UiServices::UiWidgetProperties(QApplication::translate("ParticipantWindow", "Participants"), UiServices::SceneWidget));
+    QObject::connect(proxy, SIGNAL(Closed()), participantWindow_, SLOT(deleteLater()));
 
     proxy->show();
-//    proxy->resize(650, 530);
-
-    QObject::connect(proxy, SIGNAL(Closed()), participantWindow_, SLOT(deleteLater()));
 
 //    if (current_world_stream_)
 //        participantWindow_->SetWorldStreamPtr(current_world_stream_);
@@ -199,10 +200,10 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (!entity)
                 return false;
 
-            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            EC_OpenSimPresence *ec_presence = entity->GetComponent<EC_OpenSimPresence>().get();
             if (ec_presence && participantWindow_)
-                participantWindow_->AddUser(ec_presence);
-            return false;
+                participantWindow_->AddUserEntry(ec_presence);
+            break;
         }
         case ProtocolUtilities::Events::EVENT_USER_DISCONNECTED:
         {
@@ -215,14 +216,16 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (!entity)
                 return false;
 
-            RexLogic::EC_OpenSimPresence *ec_presence = entity->GetComponent<RexLogic::EC_OpenSimPresence>().get();
+            EC_OpenSimPresence *ec_presence = entity->GetComponent<EC_OpenSimPresence>().get();
             if (ec_presence && participantWindow_)
-                participantWindow_->RemoveUser(ec_presence);
-            return false;
+                participantWindow_->RemoveUserEntry(ec_presence);
+            break;
         }
         default:
-            return false;
+            break;
         }
+
+        return false;
     }
 
     if (category_id == networkEventCategory_)
@@ -235,8 +238,6 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 return false;
             if (profilerWindow_)
                 profilerWindow_->RefreshSimStatsData(netdata->message);
-
-            return false;
         }
     }
 

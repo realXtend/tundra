@@ -31,6 +31,8 @@ namespace NoteCard
         
         void SubscribeToNetworkEvents();
         
+        Console::CommandResult ShowWindow(const StringVector &params);
+        
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return name_static_; }
         

@@ -1,33 +1,19 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   MaterialWizard.cpp
  *  @brief  Utitility tool for choosing right material script for your purpose from
  *          the Naali material script template library.
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
-
-#include "Framework.h"
-#include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
-#include "EventManager.h"
-#include "ModuleManager.h"
-#include "Inworld/InworldSceneController.h"
 
 #include "Inventory/InventoryEvents.h"
 
 #include <QUiLoader>
-#include <QFile>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QLineEdit>
-#include <QLabel>
-#include <QVBoxLayout>
 
 // Useful defines
 #define ENABLE(p) p->setEnabled(true);
@@ -36,10 +22,8 @@
 namespace Naali
 {
 
-MaterialWizard::MaterialWizard(Foundation::Framework *framework, QWidget *parent) :
-    framework_(framework),
+MaterialWizard::MaterialWizard(QWidget *parent) :
     QWidget(parent),
-    proxyWidget_(0),
     mainWidget_(0),
     currentOptions_(Material_None),
     scriptName_("")
@@ -49,21 +33,10 @@ MaterialWizard::MaterialWizard(Foundation::Framework *framework, QWidget *parent
 
 MaterialWizard::~MaterialWizard()
 {
-    proxyWidget_->hide();
-    SAFE_DELETE(layout_);
-    SAFE_DELETE(mainWidget_);
 }
 
 void MaterialWizard::Create()
 {
-    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
-    if (event_cat == 0)
-    {
-        OgreAssetEditorModule::LogError("Could not query event category \"Inventory\".");
-        return;
-    }
-
     QString filename("./media/materials/templates/");
     filename.append(GetCurrentMaterialFilename());
     filename.append(".material");
@@ -75,20 +48,19 @@ void MaterialWizard::Create()
         return;
     }
 
-    // Create event data.
     Inventory::InventoryUploadEventData event_data;
     event_data.filenames.push_back(file.fileName());
     event_data.names.push_back(scriptName_);
 
-    event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE, &event_data);
+    emit NewMaterial(&event_data);
 
-    proxyWidget_->hide();
+    graphicsProxyWidget()->hide();
     ClearSelections();
 }
 
-void MaterialWizard::Cancel()
+void MaterialWizard::Close()
 {
-    proxyWidget_->hide();
+    graphicsProxyWidget()->hide();
     ClearSelections();
 }
 
@@ -440,11 +412,6 @@ void MaterialWizard::ClearSelections()
 
 void MaterialWizard::InitWindow()
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (!ui_module.get())
-        return;
-
     QUiLoader loader;
     QFile file("./data/ui/materialwizard.ui");
     if (!file.exists())
@@ -454,13 +421,13 @@ void MaterialWizard::InitWindow()
     }
 
     // Get pointers to widgets.
-    mainWidget_ = loader.load(&file, 0);
+    mainWidget_ = loader.load(&file, this);
     file.close();
 
-    layout_ = new QVBoxLayout;
-    layout_->addWidget(mainWidget_);
-    layout_->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout_);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(mainWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
 
     // Connect parameter widgets' clicked signal to RefreshWidgets slot.
     QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
@@ -477,29 +444,15 @@ void MaterialWizard::InitWindow()
     QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
 
     QObject::connect(buttonCreate, SIGNAL(clicked(bool)), this, SLOT(Create()));
-    QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Cancel()));
+    QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Close()));
     QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
-    UiServices::UiWidgetProperties wizard_properties("Material Wizard", UiServices::ModuleWidget);
-
-    // Menu graphics
-    UiDefines::MenuNodeStyleMap image_path_map;
-    QString base_url = "./data/ui/images/menus/"; 
-    image_path_map[UiDefines::TextNormal] = base_url + "edbutton_MATWIZtxt_normal.png";
-    image_path_map[UiDefines::TextHover] = base_url + "edbutton_MATWIZtxt_hover.png";
-    image_path_map[UiDefines::TextPressed] = base_url + "edbutton_MATWIZtxt_click.png";
-    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
-    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
-    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
-    wizard_properties.SetMenuNodeStyleMap(image_path_map);
-
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, wizard_properties);
-
     buttonCreate->setEnabled(false);
+
     RefreshWidgets();
 }
 
-QString MaterialWizard::GetCurrentMaterialFilename()
+QString MaterialWizard::GetCurrentMaterialFilename() const
 {
     QString filename;
 

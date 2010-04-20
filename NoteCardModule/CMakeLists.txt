@@ -13,13 +13,15 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
+set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
+
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_NoteCard)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities RexLogicModule EntityComponents/EC_NoteCard)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -30,7 +32,7 @@ link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)
 
-link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities EC_NoteCard)
+link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities RexLogicModule EC_NoteCard)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

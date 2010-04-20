@@ -29,7 +29,8 @@ namespace RexLogic
     class AvatarExporterRequest;
     typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
     typedef boost::shared_ptr<AvatarExporterRequest> AvatarExporterRequestPtr;
-    
+    class EC_AvatarAppearance;
+
     //! Handles setting up and updating avatars' appearance. Owned by RexLogicModule::Avatar.
     class AvatarAppearance
     {

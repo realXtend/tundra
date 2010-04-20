@@ -92,6 +92,9 @@ namespace Scene
         /// An internal event telling that an entity's XML serializable EC data was modified, and should be encoded to RexFreeData & sent over network
         static const event_id_t EVENT_ENTITY_ECS_MODIFIED = 0x12;
 
+        /// An internal event telling that an entity's XML serializable EC data was received from network
+        static const event_id_t EVENT_ENTITY_ECS_RECEIVED = 0x13;
+        
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public Foundation::EventDataInterface
         {

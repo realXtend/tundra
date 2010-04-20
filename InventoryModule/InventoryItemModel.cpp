@@ -372,16 +372,16 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
     while(!unique)
     {
         id.Random();
-        AbstractInventoryItem *existing = dataModel_->GetChildFolderById(STD_TO_QSTR(id.ToString()));
+        AbstractInventoryItem *existing = dataModel_->GetChildFolderById(id.ToQString());
         if (!existing)
             unique = true;
         else
             InventoryModule::LogWarning("Generated an UUID that already exists! Generating a new one...");
     }
 
-    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(id.ToString()), *parentFolder, name);
+    dataModel_->GetOrCreateNewFolder(id.ToQString(), *parentFolder, name);
 #else
-    dataModel_->GetOrCreateNewFolder(STD_TO_QSTR(RexUUID::CreateRandom().ToString()), *parentFolder, name);
+    dataModel_->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *parentFolder, name);
 #endif
 
     endInsertRows();

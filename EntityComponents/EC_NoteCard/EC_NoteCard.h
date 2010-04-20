@@ -25,6 +25,9 @@ public:
     virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
     virtual void DeserializeFrom(QDomElement& element);
     
+    void Show();
+    void Hide();
+    
     void SetTitle(const std::string& title);
     void SetText(const std::string& text);
     
@@ -40,6 +43,7 @@ private slots:
     void OnTextChanged();
     void UpdateWidget();
     void SyncToNetwork();
+    void ChangeLanguage();
     
 private:
     //! Constuctor.

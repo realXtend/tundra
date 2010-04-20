@@ -3,14 +3,14 @@
 
 #include "GridInfoHelper.h"
 
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QXmlStreamReader>
-#include <QDebug>
 
 namespace ProtocolUtilities
 {
-    GridInfoHelper::GridInfoHelper(QObject *parent, QUrl url)
-        : QObject(parent),
-          url_(url)
+    GridInfoHelper::GridInfoHelper(QObject *parent, const QUrl &url) : QObject(parent), url_(url)
     {
         url_.setPath("get_grid_info");
     }
@@ -44,5 +44,4 @@ namespace ProtocolUtilities
         else
             emit GridInfoDataRecieved(QMap <QString, QVariant>());
     }
-
 }
