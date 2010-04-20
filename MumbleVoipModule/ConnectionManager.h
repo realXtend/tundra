@@ -27,6 +27,7 @@ namespace MumbleVoip
     class ServerInfo;
     class Connection;
     class PCMAudioFrame;
+    class LibMumbleThread;
 
     /**
      * Thread for running the lib mumble mainloop
@@ -88,8 +89,7 @@ namespace MumbleVoip
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
 
         QMap<QString, Connection*> connections_; // maps: server address - connection object
-        MumbleClient::MumbleClientLib* mumble_lib; // @todo: Do we need this pointer?
-        LibMumbleMainloopThread lib_thread_;
+        LibMumbleThread* lib_mumble_thread_;
         Foundation::Framework* framework_;
         sound_id_t audio_playback_channel_;
         bool sending_audio_;

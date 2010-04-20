@@ -97,7 +97,7 @@ namespace MumbleVoip
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
-        static const int PLAYBACK_BUFFER_MS_ = 200;
+        static const int PLAYBACK_BUFFER_MS_ = 100;
 
         void InitializeCELT();
         void UninitializeCELT();
