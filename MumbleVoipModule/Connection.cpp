@@ -171,8 +171,31 @@ namespace MumbleVoip
 
     CELTDecoder* Connection::CreateCELTDecoder()
     {
-        CELTDecoder* decoder = celt_decoder_create(celt_mode_,NUMBER_OF_CHANNELS, NULL);
-        return decoder;
+        int error = 0;
+        CELTDecoder* decoder = celt_decoder_create(celt_mode_,NUMBER_OF_CHANNELS, &error);
+        switch (error)
+        {
+        case CELT_OK:
+           return decoder;
+        case CELT_BAD_ARG:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BAD_ARG");
+            return 0;
+        case CELT_INVALID_MODE:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INVALID_MODE");
+            return 0;
+        case CELT_INTERNAL_ERROR:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INTERNAL_ERROR");
+            return 0;
+        case CELT_UNIMPLEMENTED:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_UNIMPLEMENTED");
+            return 0;
+        case CELT_ALLOC_FAIL:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_ALLOC_FAIL");
+            return 0;
+        default:
+            MumbleVoipModule::LogError("Cannot create CELT decoder: unknow reason");
+            return 0;
+        }
     }
 
     void Connection::Join(QString channel_name)
@@ -278,6 +301,16 @@ namespace MumbleVoip
         }
     }
 
+    void Connection::SendAudio(bool send)
+    {
+        sending_audio_ = send;
+    }
+
+    bool Connection::SendingAudio()
+    {
+        return sending_audio_;
+    }
+
     void Connection::OnTextMessageCallback(QString text)
     {
         if (state_ != STATE_OPEN)
@@ -285,7 +318,6 @@ namespace MumbleVoip
 
         emit (TextMessage(text));
     }
-
 
     void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
     {
@@ -314,10 +346,13 @@ namespace MumbleVoip
 
     void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     {
-        QMutexLocker locker(&mutex_raw_udp_tunnel_);
-
+        mutex_raw_udp_tunnel_.lock();
         if (state_ != STATE_OPEN)
+        {
+            mutex_raw_udp_tunnel_.unlock();
             return;
+        }
+        mutex_raw_udp_tunnel_.unlock();
 
         //return; // test
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
@@ -419,16 +454,6 @@ namespace MumbleVoip
         return channels;
     }
 
-    void Connection::SendAudio(bool send)
-    {
-        sending_audio_ = send;
-    }
-
-    bool Connection::SendingAudio()
-    {
-        return sending_audio_;
-    }
-
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
         QMutexLocker locker(&mutex_playback_queue_);
@@ -438,6 +463,8 @@ namespace MumbleVoip
         {
             decoder = CreateCELTDecoder();
             celt_decoders_[session] = decoder;
+            QString message = QString("Created CELT decoder for session %1.").arg(session);
+            MumbleVoipModule::LogDebug(message.toStdString());
         }
 
         PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
@@ -463,18 +490,23 @@ namespace MumbleVoip
             }
             break;
         case CELT_BAD_ARG:
+            MumbleVoipModule::LogError("CELT decoding error: CELT_BAD_ARG");
             break;
         case CELT_INVALID_MODE:
+            MumbleVoipModule::LogError("CELT decoding error: CELT_INVALID_MODE");
             break;
         case CELT_INTERNAL_ERROR:
+            MumbleVoipModule::LogError("CELT decoding error: CELT_INTERNAL_ERROR");
             break;
         case CELT_CORRUPTED_DATA:
+            MumbleVoipModule::LogError("CELT decoding error: CELT_CORRUPTED_DATA");
             break;
         case CELT_UNIMPLEMENTED:
+            MumbleVoipModule::LogError("CELT decoding error: CELT_UNIMPLEMENTED");
             break;
         }
-
     }
+
     void Connection::SetEncodingQuality(double quality)
     {
         QMutexLocker locker(&mutex_encoding_quality_);
@@ -491,4 +523,14 @@ namespace MumbleVoip
         return static_cast<int>(encoding_quality_*(AUDIO_QUALITY_MAX_ - AUDIO_QUALITY_MIN_) + AUDIO_QUALITY_MIN_);
     }
 
+    bool Connection::CheckState(QList<State> allowed_states)
+    {
+        QMutexLocker locker(&mutex_state_);
+        foreach(State state, allowed_states)
+        {
+            if (state == state_)
+                return true;
+        }
+        return false;
+    }
 } // namespace MumbleVoip 

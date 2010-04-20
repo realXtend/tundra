@@ -104,6 +104,7 @@ namespace MumbleVoip
         CELTDecoder* CreateCELTDecoder();
         int AudioQuality();
         void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
+        bool CheckState(QList<State> allowed_states); // testing
 
         State state_;
         MumbleClient::MumbleClient* client_;
@@ -131,6 +132,7 @@ namespace MumbleVoip
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
+        QMutex mutex_state_;
 
     public slots:
         void OnAuthCallback();
