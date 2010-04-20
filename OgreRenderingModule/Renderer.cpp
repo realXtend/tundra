@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "Renderer.h"
 #include "RendererEvents.h"
 #include "ResourceHandler.h"
@@ -10,6 +11,9 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
+#include "QOgreUIView.h"
+#include "QOgreWorldView.h"
+
 #include "SceneEvents.h"
 #include "SceneManager.h"
 #include "ConfigurationManager.h"
@@ -20,15 +24,12 @@
 
 #include <Ogre.h>
 
-#include "QOgreUIView.h"
-#include "QOgreWorldView.h"
-
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
-#include <QDebug>
+
 //#include "MemoryLeakCheck.h"
 
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
@@ -144,6 +145,8 @@ namespace OgreRenderer
 
         resource_handler_.reset();
         root_.reset();
+        //main_window_->deleteLater();
+        //main_window_ = 0;
     }
 
     void Renderer::RemoveLogListener()
@@ -157,7 +160,7 @@ namespace OgreRenderer
 
     void Renderer::InitializeQt()
     {
-        main_window_ = new QWidget();
+        main_window_ = new QWidget;
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
@@ -169,7 +172,7 @@ namespace OgreRenderer
         main_window_->layout()->addWidget(q_ogre_ui_view_);
 
         // Ownership of uiview passed to framework
-        framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
+        framework_->SetUIView(std::auto_ptr<QGraphicsView>(q_ogre_ui_view_));
     }
 
     void Renderer::InitializeEvents()
