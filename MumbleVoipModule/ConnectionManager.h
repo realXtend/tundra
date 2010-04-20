@@ -82,6 +82,8 @@ namespace MumbleVoip
 
         virtual void Update(f64 frametime);
 
+        virtual void SetAudioSourcePosition(double x, double y, double z);
+
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
@@ -94,6 +96,9 @@ namespace MumbleVoip
         sound_id_t audio_playback_channel_;
         bool sending_audio_;
         std::string recording_device_;
+        double position_x_;
+        double position_y_;
+        double position_z_;
 
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
 

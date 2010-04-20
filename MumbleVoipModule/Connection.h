@@ -79,7 +79,7 @@ namespace MumbleVoip
 
         //! Encode and send given frame to Mumble server
         //! Frame object is NOT deleted by this method 
-        virtual void SendAudioFrame(PCMAudioFrame* frame);
+        virtual void SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z);
 
         //! \return list of channels available
         virtual QList<QString> Channels();
@@ -90,6 +90,9 @@ namespace MumbleVoip
         //! \param quality 0.0 .. 1.0 where 0.0 means lowest bitrate and worst quality
         //!        and 1.0 meas highest bitrate and best quality.
         virtual void SetEncodingQuality(double quality);
+
+        virtual void SendPosition(bool value) { send_position_ = value; }
+        virtual bool IsSendingPosition() { return send_position_; }
 
         // virtual State State();
         // virtual QString Reason();
@@ -122,6 +125,7 @@ namespace MumbleVoip
         bool sending_audio_;
         double encoding_quality_;
         int frame_sequence_;
+        bool send_position_;
         unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
         
         QMutex mutex_channels_;

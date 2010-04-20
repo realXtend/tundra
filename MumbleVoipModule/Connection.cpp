@@ -80,7 +80,8 @@ namespace MumbleVoip
             sending_audio_(false),
             frame_sequence_(0),
             encoding_quality_(0),
-            state_(STATE_INITIALIZING)
+            state_(STATE_INITIALIZING),
+            send_position_(false)
     {
         InitializeCELT();
 
@@ -227,7 +228,7 @@ namespace MumbleVoip
         return frame;
     }
 
-    void Connection::SendAudioFrame(PCMAudioFrame* frame)
+    void Connection::SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z)
     {
         QMutexLocker locker(&mutex_encode_audio_);
 
@@ -278,6 +279,13 @@ namespace MumbleVoip
 		    packet_list.pop_front();
             frame_sequence_++;
 	    }
+        if (send_position_)
+        {
+            data_stream << static_cast<float>(x);
+            data_stream << static_cast<float>(y);
+            data_stream << static_cast<float>(z);
+        }
+
         client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
     }
 

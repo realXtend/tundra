@@ -6,7 +6,7 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "MumbleVoipModuleApi.h"
-
+#include "Core.h"
 #include <QObject>
 #include "ServerInfo.h"
 
@@ -57,6 +57,8 @@ namespace MumbleVoip
         virtual Console::CommandResult  OnConsoleMumbleStart(const StringVector &params);
 
         virtual void UpdateLinkPlugin(f64 frametime);
+        virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
+        virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
     private:
