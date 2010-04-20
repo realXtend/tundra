@@ -49,6 +49,11 @@ namespace MumbleVoip
 
     ConnectionManager::~ConnectionManager()
     {
+        foreach(Connection* c, connections_)
+        {
+            delete c;
+        }
+        connections_.clear();
         StopMumbleLibrary();
     }
 
