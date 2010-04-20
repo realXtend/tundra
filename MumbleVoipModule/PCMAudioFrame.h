@@ -16,6 +16,8 @@ namespace MumbleVoip
         PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
 
         PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size);
+
+        PCMAudioFrame(PCMAudioFrame*);
         ////! Creates
         //PCMAudioFrame(int sample_rate, int sample_widh, int channels, int data_size);
 

@@ -152,7 +152,8 @@ Connection::Connection(ServerInfo &info) :
         celt_encoder_(0),
         celt_decoder_(0),
         sending_audio_(false),
-        frame_sequence_(0)
+        frame_sequence_(0),
+        encoding_quality_(0)
 {
     InitializeCELT();
 
@@ -174,7 +175,14 @@ Connection::~Connection()
 {
     UninitializeCELT();
     SAFE_DELETE(client_);
-    // \todo clean playback queue
+    
+    mutex_playback_queue_.lock();
+    while (playback_queue_.size() > 0)
+    {
+        PCMAudioFrame* frame = playback_queue_.takeFirst();
+        delete frame;
+    }
+    mutex_playback_queue_.unlock();
     // \todo clean send queue
     // \todo clean channel list
 }
@@ -196,15 +204,20 @@ void Connection::InitializeCELT()
 
     celt_encoder_ = celt_encoder_create(celt_mode_,NUMBER_OF_CHANNELS, NULL );
     celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
-	celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AUDIO_QUALITY_));
+	celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AudioQuality()));
 
     MumbleVoipModule::LogDebug("CELT initialized.");
 }
 
 void Connection::UninitializeCELT()
 {
-    celt_decoder_destroy(celt_decoder_);
     celt_encoder_destroy(celt_encoder_);
+    celt_encoder_ = 0;
+    foreach(CELTDecoder* decoder, celt_decoders_)
+    {
+        celt_decoder_destroy(decoder);
+    }
+    celt_decoders_.clear();
     celt_mode_destroy(celt_mode_);
     MumbleVoipModule::LogDebug("CELT uninitialized.");
 }
@@ -268,9 +281,14 @@ PCMAudioFrame* Connection::GetAudioFrame()
 void Connection::SendAudioFrame(PCMAudioFrame* frame)
 {
     QMutexLocker locker(&mutex_encode_audio_);
+
+    PCMAudioFrame* f = new PCMAudioFrame(frame);
+    encode_queue_.push_back(f);
     
     if (encode_queue_.size() < FRAMES_PER_PACKET)
+    {
         return;
+    }
 
     std::deque<std::string> packet_list;
 
@@ -279,7 +297,7 @@ void Connection::SendAudioFrame(PCMAudioFrame* frame)
         PCMAudioFrame* audio_frame = encode_queue_.first();
         encode_queue_.pop_front();
 
-        int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(AUDIO_QUALITY_ / (100 * 8), 127));
+        int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(AudioQuality() / (100 * 8), 127));
         packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
         assert(len < ENCODE_BUFFER_SIZE_);
 
@@ -466,6 +484,22 @@ void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int s
     case CELT_UNIMPLEMENTED:
         break;
     }
+
 }
+    void Connection::SetEncodingQuality(double quality)
+    {
+        QMutexLocker locker(&mutex_encoding_quality_);
+        if (quality < 0)
+            quality = 0;
+        if (quality > 1.0)
+            quality = 1.0;
+        encoding_quality_ = quality;
+    }
+    
+    int Connection::AudioQuality()
+    {
+        QMutexLocker locker(&mutex_encoding_quality_);
+        return static_cast<int>(encoding_quality_*(AUDIO_QUALITY_MAX_ - AUDIO_QUALITY_MIN_) + AUDIO_QUALITY_MIN_);
+    }
 
 } // namespace MumbleVoip 

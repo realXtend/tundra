@@ -76,7 +76,7 @@ namespace MumbleVoip
         virtual PCMAudioFrame* GetAudioFrame();
 
         //! Encode and send given frame to Mumble server
-        //! Frame object is deleted by this method
+        //! Frame object is NOT deleted by this method 
         virtual void SendAudioFrame(PCMAudioFrame* frame);
 
         //! \return list of channels available
@@ -85,12 +85,17 @@ namespace MumbleVoip
         virtual void SendAudio(bool send);
         virtual bool SendingAudio();
 
+        //! \param quality 0.0 .. 1.0 where 0.0 means lowest bitrate and worst quality
+        //!        and 1.0 meas highest bitrate and best quality.
+        virtual void SetEncodingQuality(double quality);
+
         // virtual State State();
         // virtual QString Reason();
     private:
         void InitializeCELT();
         void UninitializeCELT();
         CELTDecoder* CreateCELTDecoder();
+        int AudioQuality();
 
         MumbleClient::MumbleClient* client_;
         bool authenticated_;
@@ -101,9 +106,10 @@ namespace MumbleVoip
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
-        static const int AUDIO_QUALITY_ = 60000; // 32000 - 90000
+//        static const int AUDIO_QUALITY_ = 60000; // 32000 - 90000
+        static const int AUDIO_QUALITY_MAX_ = 90000; 
+        static const int AUDIO_QUALITY_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
-//        static const int SENDING_BUFFER_MS_ = 500;
         static const int PLAYBACK_BUFFER_MS_ = 500;
 
         QList<Channel*> channels_;
@@ -114,6 +120,8 @@ namespace MumbleVoip
         QMutex mutex_authentication_;
         QMutex mutex_playback_queue_;
         QMutex mutex_encode_audio_;
+        QMutex mutex_encoding_quality_;
+        double encoding_quality_;
 
     public slots:
         void OnAuthCallback();

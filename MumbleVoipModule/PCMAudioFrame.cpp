@@ -14,10 +14,22 @@ namespace MumbleVoip
         memcpy(data_, data, data_size);
     }
 
+     PCMAudioFrame::PCMAudioFrame(PCMAudioFrame* frame):
+            channels_(frame->Channels()),
+            sample_rate_(frame->SampleRate()),
+            sample_width_(frame->SampleWidth()),
+            data_(0),
+            data_size_(frame->GetLengthBytes())
+    {
+        data_ = new char[frame->GetLengthBytes()];
+        memcpy(data_, frame->DataPtr(), frame->GetLengthBytes());
+    }
+
     PCMAudioFrame::PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size):
             channels_(channels),
             sample_rate_(sample_rate),
             sample_width_(sample_width),
+            data_(0),
             data_size_(data_size)
     {
         data_ = new char[data_size];
