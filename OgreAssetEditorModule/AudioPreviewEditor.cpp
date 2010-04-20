@@ -65,7 +65,7 @@ namespace Naali
         }
     }
 
-    void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
+    void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
     {
         if(request_tag_ == res->tag_)
         {
@@ -74,36 +74,35 @@ namespace Naali
             {
                 QLabel *audioInfoLabel = findChild<QLabel*>("descriptionLabel");
                 Foundation::SoundServiceInterface::SoundBuffer buffer = sound->GetBuffer();
-                audioInfoLabel->setText(QString("Frequency: %1Hz").arg(buffer.frequency_));
+                audioInfoLabel->setText(QString(tr("Frequency: %1Hz")).arg(buffer.frequency_));
                 
                 int bits = 16;
                 if(!buffer.sixteenbit_)
                     bits = 8;
-                audioInfoLabel->setText(audioInfoLabel->text() + QString(" Bits: %1 bit").arg(bits));
+                audioInfoLabel->setText(audioInfoLabel->text() + QString(tr(" Bits: %1 bit")).arg(bits));
 
                 QString stereo = "Stereo";
                 if(!buffer.stereo_)
                     stereo = "Mono";
-                audioInfoLabel->setText(audioInfoLabel->text() + " Format: " + stereo);
+                audioInfoLabel->setText(audioInfoLabel->text() + tr(" Format: ") + stereo);
 
                 float duration;
                 if(!buffer.stereo_)
                     duration = float(buffer.data_.size() / ((bits / 8))) / float(buffer.frequency_);
                 else
                     duration = float(buffer.data_.size() / ((bits / 8) * 2)) / float(buffer.frequency_);
-                audioInfoLabel->setText(audioInfoLabel->text() + QString("\nTime: %1 sec").arg(duration));
+                audioInfoLabel->setText(audioInfoLabel->text() + QString(tr("\nDuration: %1 sec")).arg(duration));
 
-                QVBoxLayout *layout = qobject_cast<QVBoxLayout*>(mainWidget_->layout());
+                QVBoxLayout *layout = mainWidget_->findChild<QVBoxLayout*>("verticalLayout_2");
                 if(layout)
                 {
                     AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
                     if(!audioSignalLabel)
                     {
-                        audioSignalLabel = new AudioSignalLabel();
+                        audioSignalLabel = new AudioSignalLabel(this);
                         audioSignalLabel->setObjectName("audioSignalLabel");
-                        layout->insertWidget(2, audioSignalLabel);
+                        layout->addWidget(audioSignalLabel);
                     }
-                    audioSignalLabel->setMaximumSize(QSize(mainWidget_->width(), mainWidget_->height() * 0.66f));
                     audioSignalLabel->SetAudioData(buffer.data_, buffer.frequency_, bits, buffer.stereo_);
                     QObject::connect(this, SIGNAL(WidgetResized(QSize)), audioSignalLabel, SLOT(ResizeImage(QSize)));
                 }
@@ -143,7 +142,7 @@ namespace Naali
                 if(soundId_ == 0)
                 {
                     soundId_ = sound_service->PlaySound(assetId_.toStdString(), Foundation::SoundServiceInterface::Ambient);
-                    playButton_->setText("Stop");
+                    playButton_->setText(tr("Stop"));
                     
                     AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
                     if(audioSignalLabel)
@@ -163,7 +162,7 @@ namespace Naali
                     //User pressed stop audio before audio clip was finnished.
                     sound_service->StopSound(soundId_);
                     soundId_ = 0;
-                    playButton_->setText("Play");
+                    playButton_->setText(tr("Play"));
                     if(playTimer_)
                     {
                         if(playTimer_->isActive())
@@ -192,7 +191,7 @@ namespace Naali
 
                 sound_service->StopSound(soundId_);
                 soundId_ = 0;
-                playButton_->setText("Play");
+                playButton_->setText(tr("Play"));
             }
         }
     }

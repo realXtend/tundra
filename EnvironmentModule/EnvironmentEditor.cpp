@@ -1,25 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
 #include "EnvironmentEditor.h"
+#include "DebugOperatorNew.h"
 #include "EnvironmentModule.h"
 #include "Entity.h"
-#include "TerrainDecoder.h"
 #include "Terrain.h"
 #include "TerrainLabel.h"
 #include "Water.h"
 #include "Sky.h"
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
-#include "math.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Inworld/InworldSceneController.h"
 
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
-#include "SceneEvents.h"
 #include "InputEvents.h"
 #include "OgreRenderingModule.h"
 
@@ -34,7 +31,7 @@
 #include <OgreEntity.h>
 #include "OgreMaterialUtils.h"
 
-//#include <QUiLoader>
+#include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
 #include <QImage>
@@ -51,8 +48,9 @@
 #include <QCheckBox>
 #include <QScrollArea>
 #include <QApplication>
+#include "MemoryLeakCheck.h"
 
-namespace Environment
+namespace Environment 
 {
     EnvironmentEditor::EnvironmentEditor(EnvironmentModule* environment_module):
     environment_module_(environment_module),
@@ -237,9 +235,6 @@ namespace Environment
             return;
         }
         editor_widget_ = loader.load(&file);
-        //editor_widget_ = loader_->load(&file);
-        //file.close();
-        //editor_widget_->show();
 
         boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (!ui_module.get())
@@ -259,7 +254,6 @@ namespace Environment
         env_editor_properties.SetMenuNodeStyleMap(image_path_map);
 
         editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
-        //EnvironmentEditorProxyWidget_->updateGeometry();
 
         InitTerrainTabWindow();
         InitTerrainTextureTabWindow();
@@ -1704,10 +1698,12 @@ namespace Environment
                 {
                     terrain_texture_id_list_[line_edit_number] = sender->text().toStdString();
                     RexTypes::RexAssetID texture_id[cNumberOfTerrainTextures];
+                    //Update terrain texture array to hold any new changes and send it throught to terrain.
                     for(uint i = 0; i < cNumberOfTerrainTextures; i++)
                         texture_id[i] = terrain_texture_id_list_[i];
                     terrain->SetTerrainTextures(texture_id);
 
+                    //Request a new texture asser even if it's already loaded to cache.
                     terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
                 }
             }
@@ -2045,7 +2041,6 @@ namespace Environment
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
                 if(texture_label && !img.isNull())
                     texture_label->setPixmap(QPixmap::fromImage(img));
-                //texture_label->show();
             }
         }
     }
@@ -2061,9 +2056,9 @@ namespace Environment
 
         if(img_width > 0 && img_height > 0 && img_components > 0)
         {
-            if(img_components == 3)// For RGB32
+            if(img_components == 3)// For RGB888
             {
-                image = QImage(QSize(img_width, img_height), QImage::Format_RGB32);
+                image = QImage(QSize(img_width, img_height), QImage::Format_RGB888);
                 for(uint height = 0; height < img_height; height++)
                 {
                     for(uint width = 0; width < img_width; width++)
@@ -2147,7 +2142,7 @@ namespace Environment
         int stride = paint_area_size;
         //Calculate UV map spep size.
         //float uv_map_step_size = 1.0f / (paint_area_size - 1);
-        //Calculate farest vectex distance from the middle point of the area.
+        //Calculate farest vectex distance from the middle point of draw area.
         float paint_area_radius = sqrt(float(nub_of_neighbour_vertices * nub_of_neighbour_vertices) + float(nub_of_neighbour_vertices * nub_of_neighbour_vertices));
         //Change gradient size.
         paint_area_radius *= gradient_size;
