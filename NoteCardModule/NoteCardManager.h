@@ -74,7 +74,6 @@ namespace NoteCard
         QPushButton* delete_button_;
         QPushButton* create_button_;
         UiServices::UiProxyWidget* proxy_;
-        QString original_title_;
         
         Vector3df new_entity_pos_;
         bool entity_create_pending_;

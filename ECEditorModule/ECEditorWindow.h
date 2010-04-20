@@ -74,7 +74,6 @@ namespace ECEditor
         QComboBox* create_combo_;
         QShortcut* delete_shortcut_;
         UiServices::UiProxyWidget* proxy_;
-        QString original_title_;
     };
 }
 
