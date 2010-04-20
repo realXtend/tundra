@@ -18,6 +18,7 @@ namespace MumbleClient
 {
     class MumbleClient;
     class Channel;
+    class User;
 }
 struct CELTMode;
 struct CELTEncoder;
@@ -26,6 +27,7 @@ struct CELTDecoder;
 namespace MumbleVoip
 {
     class Channel;
+    class User;
     class PCMAudioFrame;
 
     //class AudioSourceInterface : QObject
@@ -101,6 +103,7 @@ namespace MumbleVoip
         void UninitializeCELT();
         CELTDecoder* CreateCELTDecoder();
         int AudioQuality();
+        void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
 
         State state_;
         MumbleClient::MumbleClient* client_;
@@ -109,6 +112,7 @@ namespace MumbleVoip
         QList<PCMAudioFrame*> encode_queue_;
         QMap<int, CELTDecoder*> celt_decoders_; // maps session <-> decoder
         QList<Channel*> channels_;
+        QList<User*> users_;
 
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
@@ -126,6 +130,7 @@ namespace MumbleVoip
         QMutex mutex_encode_audio_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
+        QMutex mutex_users_;
 
     public slots:
         void OnAuthCallback();
@@ -134,7 +139,9 @@ namespace MumbleVoip
 //        void OnRelayTunnel(std::string &s);
         void OnChannelAddCallback(const MumbleClient::Channel& channel);
         void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-        void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
+        void OnUserJoinedCallback(const MumbleClient::User& user);
+        void OnUserLeftCallback(const MumbleClient::User& user);
+        
 
     signals:
 //        void Closed();
@@ -142,10 +149,10 @@ namespace MumbleVoip
         void AudioDataAvailable(short* data, int size);
         void RelayTunnelData(char*, int);
         void AudioFramesAvailable(Connection* connection);
-//        void UserLeft();
-//        void UsetJoined();
-//        void ChannelAdded(); 
-//        void ChannelRemoved();
+        void UserLeft(User* user);
+        void UserJoined(User* user);
+        void ChannelAdded(Channel* channel); 
+        void ChannelRemoved(Channel* channel);
     };
 
 } // namespace MumbleVoip
