@@ -153,7 +153,8 @@ Connection::Connection(ServerInfo &info) :
         celt_decoder_(0),
         sending_audio_(false),
         frame_sequence_(0),
-        encoding_quality_(0)
+        encoding_quality_(0),
+        state_(STATE_INITIALIZING)
 {
     InitializeCELT();
 
@@ -173,6 +174,9 @@ Connection::Connection(ServerInfo &info) :
 
 Connection::~Connection()
 {
+    QMutexLocker locker(&mutex_raw_udp_tunnel_);
+
+    Close();
     UninitializeCELT();
     SAFE_DELETE(client_);
     
@@ -180,15 +184,25 @@ Connection::~Connection()
     while (playback_queue_.size() > 0)
     {
         PCMAudioFrame* frame = playback_queue_.takeFirst();
-        delete frame;
+        SAFE_DELETE(frame);
     }
     mutex_playback_queue_.unlock();
-    // \todo clean send queue
-    // \todo clean channel list
+
+    while (encode_queue_.size() > 0)
+    {
+        PCMAudioFrame* frame = encode_queue_.takeFirst();
+        SAFE_DELETE(frame);
+    }
+    while (channels_.size() > 0)
+    {
+        Channel* c = channels_.takeFirst();
+        SAFE_DELETE(c);
+    }
 }
 
 void Connection::Close()
 {
+    state_ = STATE_CLOSED;
     client_->Disconnect();
 }
 
@@ -250,9 +264,13 @@ void Connection::Join(QString channel_name)
 
 void Connection::OnAuthCallback()
 {
+    if (state_ != STATE_INITIALIZING)
+        return;
+
     mutex_authentication_.lock();
     authenticated_ = true;
     mutex_authentication_.unlock();
+    state_ = STATE_OPEN;
 
     if (join_request_.length() > 0)
     {
@@ -264,6 +282,9 @@ void Connection::OnAuthCallback()
 
 void Connection::OnTextMessageCallback(QString text)
 {
+    if (state_ != STATE_OPEN)
+        return;
+
     emit (TextMessage(text));
 }
 
@@ -359,6 +380,11 @@ void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
 
 void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
 {
+    QMutexLocker locker(&mutex_raw_udp_tunnel_);
+
+    if (state_ != STATE_OPEN)
+        return;
+
     //return; // test
     PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
     bool valid = data_stream.isValid();

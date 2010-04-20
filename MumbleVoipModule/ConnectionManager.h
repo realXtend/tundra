@@ -55,8 +55,6 @@ namespace MumbleVoip
         ConnectionManager(Foundation::Framework* framework);
         virtual ~ConnectionManager();
 
-        //! NOT IMPLEMENTED
-        //!
         //! opens mumble client with auto connect to given server and
         //! starts link plugin
         //!
@@ -64,10 +62,6 @@ namespace MumbleVoip
         //! and open a new connection to given server.
         virtual void OpenConnection(ServerInfo info);
 
-        //! NOT IMPLEMENTED
-        //!
-        //! @note Cannot stop mumble client
-        //! Stops link plugin
         virtual void CloseConnection(ServerInfo info);
 
         //! \throw std::exception if audio recording cannot be started

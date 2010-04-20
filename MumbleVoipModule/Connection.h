@@ -92,36 +92,40 @@ namespace MumbleVoip
         // virtual State State();
         // virtual QString Reason();
     private:
+        static const int AUDIO_QUALITY_MAX_ = 90000; 
+        static const int AUDIO_QUALITY_MIN_ = 32000; 
+        static const int ENCODE_BUFFER_SIZE_ = 4000;
+        static const int PLAYBACK_BUFFER_MS_ = 200;
+
         void InitializeCELT();
         void UninitializeCELT();
         CELTDecoder* CreateCELTDecoder();
         int AudioQuality();
 
+        State state_;
         MumbleClient::MumbleClient* client_;
-        bool authenticated_;
-        QString join_request_;
+        QString join_request_; // queued request to join a channel
         QList<PCMAudioFrame*> playback_queue_;
         QList<PCMAudioFrame*> encode_queue_;
         QMap<int, CELTDecoder*> celt_decoders_; // maps session <-> decoder
+        QList<Channel*> channels_;
+
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
-//        static const int AUDIO_QUALITY_ = 60000; // 32000 - 90000
-        static const int AUDIO_QUALITY_MAX_ = 90000; 
-        static const int AUDIO_QUALITY_MIN_ = 32000; 
-        static const int ENCODE_BUFFER_SIZE_ = 4000;
-        static const int PLAYBACK_BUFFER_MS_ = 500;
 
-        QList<Channel*> channels_;
+        bool authenticated_;
         bool sending_audio_;
-        unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
+        double encoding_quality_;
         int frame_sequence_;
+        unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
+        
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
         QMutex mutex_playback_queue_;
         QMutex mutex_encode_audio_;
         QMutex mutex_encoding_quality_;
-        double encoding_quality_;
+        QMutex mutex_raw_udp_tunnel_;
 
     public slots:
         void OnAuthCallback();

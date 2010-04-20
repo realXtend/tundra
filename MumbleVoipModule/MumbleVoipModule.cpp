@@ -33,6 +33,19 @@ namespace MumbleVoip
 
     MumbleVoipModule::~MumbleVoipModule()
     {
+        if (mumble_client_started_ && connection_manager_)
+        {
+            connection_manager_->KillMumbleClient();
+        }
+
+        if (link_plugin_)
+            SAFE_DELETE(link_plugin_);
+
+        if (server_observer_)
+            SAFE_DELETE(server_observer_);
+
+        if (connection_manager_)
+            SAFE_DELETE(connection_manager_);
     }
 
     void MumbleVoipModule::Load()
@@ -60,10 +73,6 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Uninitialize()
     {
-        if (mumble_client_started_)
-        {
-
-        }
     }
 
     void MumbleVoipModule::Update(f64 frametime)
