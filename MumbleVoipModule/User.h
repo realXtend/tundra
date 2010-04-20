@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QString>
+#include <Core.h>
 
 namespace MumbleClient
 {
@@ -28,13 +29,20 @@ namespace MumbleVoip
         int Id();
         Channel* Channel();
         bool Speaking();
+        bool PositionKnown() {return position_known_;}
+        bool Position(float &x, float &y, float &z);
+        Vector3df Position();
+
     public slots:
         void OnAudioFrameReceived();
         void SpeakingTimeout();
+        void UpdatePosition(Vector3df pos);
 
     private:
         const MumbleClient::User& user_;
         bool speaking_;
+        Vector3df position_;
+        bool position_known_;
         static const int SPEAKING_TIMEOUT_MS = 1000;
 
     signals:

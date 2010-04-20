@@ -28,6 +28,7 @@ namespace MumbleVoip
     class Connection;
     class PCMAudioFrame;
     class LibMumbleThread;
+    class User;
 
     /**
      * Thread for running the lib mumble mainloop
@@ -87,7 +88,7 @@ namespace MumbleVoip
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
-        void PlaybackAudioFrame(int session, PCMAudioFrame* frame);
+        void PlaybackAudioPacket(User* user, PCMAudioFrame* frame);
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
 
         QMap<QString, Connection*> connections_; // maps: server address - connection object

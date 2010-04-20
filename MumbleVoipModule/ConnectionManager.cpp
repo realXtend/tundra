@@ -12,6 +12,7 @@
 #include "LibMumbleThread.h"
 #include "Connection.h"
 #include "PCMAudioFrame.h"
+#include "User.h"
 
 namespace MumbleVoip
 {
@@ -120,14 +121,14 @@ namespace MumbleVoip
     {
         for(;;)
         {
-            QPair<int, PCMAudioFrame*> frame = connection->GetAudioFrame();
-            if (frame.second == 0)
+            AudioPacket packet = connection->GetAudioPacket();
+            if (packet.second == 0)
                 break;
-            PlaybackAudioFrame(frame.first, frame.second);
+            PlaybackAudioPacket(packet.first, packet.second);
         }
     }
 
-    void ConnectionManager::PlaybackAudioFrame(int session, PCMAudioFrame* frame)
+    void ConnectionManager::PlaybackAudioPacket(User* user, PCMAudioFrame* frame)
     {
         if (!framework_)
             return;
@@ -149,10 +150,16 @@ namespace MumbleVoip
         sound_buffer.size_ = frame->GetLengthBytes();
         sound_buffer.stereo_ = false;
 
-        if (audio_playback_channels_.contains(session))
-            soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[session]);
+        if (audio_playback_channels_.contains(user->Session()))
+            if (user->PositionKnown())
+                soundsystem->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+            else
+                soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
         else
-            audio_playback_channels_[session] = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+            if (user->PositionKnown())
+                audio_playback_channels_[user->Session()] = soundsystem->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+            else
+                audio_playback_channels_[user->Session()] = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
 
         delete frame;
     }
