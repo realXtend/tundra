@@ -27,6 +27,15 @@
 
 namespace Naali
 {
+    TextureLabel::TextureLabel(QWidget *parent, Qt::WindowFlags flags):
+        QLabel(parent, flags)
+    {
+    }
+
+    TextureLabel::~TextureLabel()
+    {
+    }
+
     void TextureLabel::mousePressEvent(QMouseEvent *ev)
     {
         emit MouseClicked(ev);
@@ -50,7 +59,8 @@ namespace Naali
     scaleLabel_(0),
     layout_(0),
     request_tag_(0),
-    imageSize_(QSize(0,0))
+    imageSize_(QSize(0,0)),
+    useOriginalImageSize_(true)
     {
         setObjectName(name);
         Initialize();
@@ -99,21 +109,16 @@ namespace Naali
             Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
             if(tex)
             {
-                QImage img;
-                if(tex->GetComponents() == 3)
-                    img = QImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_RGB888);
-                else if(tex->GetComponents() == 4) 
+                QImage img = ConvertToQImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), tex->GetComponents());
+                // Only show chessboard patern if image has an alfa channel.
+                if(tex->GetComponents() == 4 || tex->GetComponents() == 2) 
                 {
-                    img = QImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_ARGB32);
-                    // No point to show chestboard elsewhere if image dont have alfa channel.
                     imageLabel_->setStyleSheet("QLabel#previewImageLabel"
                                                "{"
                                                     "background-image: url(\"./data/ui/images/image_background.png\");"
                                                     "background-repeat: repeat-xy;"
                                                "}");
                 }
-                else if(tex->GetComponents() == 1)
-                    img = QImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_Indexed8);
 
                 if(!img.isNull())
                 {
@@ -139,12 +144,9 @@ namespace Naali
         {
             if(imageLabel_)
             {
-                if(!scrollAreaWidget_->widgetResizable())
+                if(useOriginalImageSize_)
                 {
                     UseTextureOriginalSize(false);
-                    float scale = CalculateImageScale();
-                    if(scale > 0)
-                        scaleLabel_->setText(QString("Image scale: %1%").arg(scale));
                 }
                 else
                 {
@@ -159,9 +161,34 @@ namespace Naali
     void TexturePreviewEditor::resizeEvent(QResizeEvent *ev)
     {
         QWidget::resizeEvent(ev);
-        float scale = CalculateImageScale();
-        if(scale > 0)
-            scaleLabel_->setText(QString("Image scale: %1%").arg(scale));
+        if(!useOriginalImageSize_ && scrollAreaWidget_)
+        {
+            if(scrollAreaWidget_->widget())
+            {
+                // Scale image but keep it's aspect ratio same.
+                float pixmapAspectRatio[2];
+                pixmapAspectRatio[0] = float(imageSize_.width()) / float(imageSize_.height());
+                pixmapAspectRatio[1] = float(imageSize_.height()) / float(imageSize_.width());
+                QSize newImageSize;
+                // TODO Brutal force approach might be too heavy.
+                for(uint i = 0; i < 2; i++)
+                {
+                    if(i == 0)
+                        newImageSize = QSize((scrollAreaWidget_->size().height() - 4) * pixmapAspectRatio[i], (scrollAreaWidget_->size().height() - 4));
+                    else
+                        newImageSize = QSize((scrollAreaWidget_->size().width() - 4), (scrollAreaWidget_->size().width() - 4) * pixmapAspectRatio[i]);
+                    //Check if image fits into scroll area and if it does no need to continue.
+                    if(newImageSize.width() <= scrollAreaWidget_->size().width() && newImageSize.height() <= scrollAreaWidget_->size().height())
+                    {
+                        scrollAreaWidget_->widget()->resize(newImageSize);
+                        break;
+                    }
+                }
+            }
+            float scale = CalculateImageScale();
+            if(scale > 0)
+                scaleLabel_->setText(QString("Image scale: %1%").arg(scale));
+        }
     }
 
     void TexturePreviewEditor::Initialize()
@@ -193,8 +220,11 @@ namespace Naali
 
         // Get controls
         okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
+        QObject::connect(okButtonName_, SIGNAL(clicked()), this, SLOT(Closed()));
+
         headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
         scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
+        
         QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
         if(assetIdLabel)
             assetIdLabel->setText(assetId_);
@@ -207,7 +237,6 @@ namespace Naali
 
         scrollAreaWidget_ = mainWidget_->findChild<QScrollArea *>("imageScrollArea");
         scrollAreaWidget_->widget()->layout()->addWidget(imageLabel_);
-        //scrollAreaWidget_->setMinimumSize(QSize(cWindowMinimumWidth, cWindowMinimumHeight));
 
         // Set black background image that will be replaced once the real image has been received.
         QImage emptyImage = QImage(QSize(256, 256), QImage::Format_ARGB32);
@@ -215,11 +244,8 @@ namespace Naali
         imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
         headerLabel_->setText(objectName());
 
-        // Connect signals
-        QObject::connect(okButtonName_, SIGNAL(clicked()), this, SLOT(Closed()));
-
         // Add widget to UI via ui services module
-        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties("Texture: " + objectName(), UiServices::SceneWidget));
+        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Texture: ") + objectName(), UiServices::SceneWidget));
         QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
         proxy->show();
         ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
@@ -227,11 +253,14 @@ namespace Naali
 
     void TexturePreviewEditor::UseTextureOriginalSize(bool use)
     {
-        if(use)
+        if(use) //Set texture to it's real size.
         {
             scrollAreaWidget_->setWidgetResizable(false);
             scrollAreaWidget_->widget()->resize(imageSize_);
-            //Do we want to display the texture in it's real size or not.
+            scrollAreaWidget_->widget()->setMinimumSize(imageSize_);
+            scrollAreaWidget_->widget()->setMaximumSize(imageSize_);
+            //Do we want to display the texture in it's real size or not. if texture's size is over 512 x 512 we will stay 
+            //at smaller window size cause that texture would take too much screenspace.
             if(imageSize_.width() <= 512 && imageSize_.height() <= 512)
             {
                 QSize mainWidgetSize = QSize(imageSize_.width() + 12, imageSize_.height() + 80);
@@ -239,23 +268,28 @@ namespace Naali
                     mainWidgetSize.setWidth(mainWidgetSize.width());
                 else
                     mainWidgetSize.setWidth(cWindowMinimumWidth);
+
                 if(mainWidgetSize.height() > cWindowMinimumHeight)
                     mainWidgetSize.setHeight(mainWidgetSize.height());
                 else
                     mainWidgetSize.setHeight(cWindowMinimumHeight);
 
                 resize(mainWidgetSize);
-                setMinimumSize(mainWidgetSize);
-                setMaximumSize(mainWidgetSize);
             }
+            useOriginalImageSize_ = true;
         }
-        else
+        else //scale texture based on it's parent widget size.
         {
-            scrollAreaWidget_->setWidgetResizable(true);
-            setMaximumSize(16777215, 16777215);
-            setMinimumSize(0, 0);
+            scrollAreaWidget_->setWidgetResizable(false);
+            scrollAreaWidget_->widget()->setMaximumSize(16777215, 16777215);
+            scrollAreaWidget_->widget()->setMinimumSize(0, 0);
+            scrollAreaWidget_->widget()->resize(imageSize_);
+            useOriginalImageSize_ = false;
         }
-        updateGeometry();
+
+        float scale = CalculateImageScale();
+        if(scale > 0)
+            scaleLabel_->setText(QString("Image scale: %1%").arg(scale));
     }
 
     float TexturePreviewEditor::CalculateImageScale()
@@ -264,8 +298,90 @@ namespace Naali
         {
             long newImageSize = imageLabel_->size().width() * imageLabel_->size().height();
             long originalImageSize = imageSize_.width() * imageSize_.height();
-            return (float(newImageSize) / float(originalImageSize)) * 100;
+            if(newImageSize > 0 && originalImageSize > 0)
+                return (float(newImageSize) / float(originalImageSize)) * 100;
         }
         return -1.0f;
+    }
+
+    QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels)
+    {
+        uint img_width_step = width * channels; 
+        QImage image;
+        if(width <= 0 && height <= 0 && channels <= 0)
+            return image;
+
+        if(channels == 3)// For RGB32
+        {
+            image = QImage(QSize(width, height), QImage::Format_RGB888);
+            for(uint h = 0; h < height; h++)
+            {
+                for(uint w = 0; w < width; w++)
+                {
+                    u8 color[3];
+                    for(uint comp = 0; comp < 3; comp++)
+                    {
+                        uint index = (h % height) * (img_width_step) + ((w * channels) % (img_width_step)) + comp;
+                        color[comp] = raw_image_data[index];
+                    }
+                    image.setPixel(w, h, qRgb(color[0], color[1], color[2]));
+                }
+            }
+        }
+        else if(channels == 4)// For ARGB32
+        {
+            image = QImage(QSize(width, height), QImage::Format_ARGB32);
+            for(uint h = 0; h < height; h++)
+            {
+                for(uint w = 0; w < width; w++)
+                {
+                    u8 color[4];
+                    for(uint comp = 0; comp < 4; comp++)
+                    {
+                        uint index = (h % height) * (img_width_step) + ((w * channels) % (img_width_step)) + comp;
+                        color[comp] = raw_image_data[index];
+                    }
+                    image.setPixel(w, h, qRgba(color[0], color[1], color[2], color[3]));
+                }
+            }
+        }
+        else if(channels == 1)// For GrayScale
+        {
+            image = QImage(QSize(width, height), QImage::Format_RGB888);
+            for(uint h = 0; h < height; h++)
+            {
+                for(uint w = 0; w < width; w++)
+                {
+                    u8 color[1];
+                    for(uint comp = 0; comp < 1; comp++)
+                    {
+                        uint index = (h % height) * (img_width_step) + ((w * channels) % (img_width_step)) + comp;
+                        color[comp] = raw_image_data[index];
+                    }
+                    image.setPixel(w, h, qRgb(color[0], color[0], color[0]));
+                }
+            }
+        }
+        else if(channels == 2) // contains Grayscale and Alfa channels.
+        {
+            // TODO! 2 channel image contain grayscale and alfa channels this code wasn't tested and might not work as planned.
+            // This image format is not so much used so it might be a good idea to remove this if necessary.
+            image = QImage(QSize(width, height), QImage::Format_ARGB32);
+            for(uint h = 0; h < height; h++)
+            {
+                for(uint w = 0; w < width; w++)
+                {
+                    u8 color[2];
+                    for(uint comp = 0; comp < 2; comp++)
+                    {
+                        uint index = (h % height) * (img_width_step) + ((w * channels) % (img_width_step)) + comp;
+                        color[comp] = raw_image_data[index];
+                    }
+                    image.setPixel(w, h, qRgba(color[0], color[0], color[0], color[1]));
+                }
+            }
+        }
+
+        return image;
     }
 }
