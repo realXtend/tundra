@@ -20,7 +20,10 @@ namespace MumbleVoip
         audio_playback_channel_(0),
         sending_audio_(false),
         recording_device_(""),
-        lib_mumble_thread_(0)
+        lib_mumble_thread_(0),
+        position_x_(0.0),
+        position_y_(0.0),
+        position_z_(0.0)
     {
     }
 
@@ -41,6 +44,7 @@ namespace MumbleVoip
         connection->Join(info.channel);
         connection->SendAudio(true); // test here
         connection->SetEncodingQuality(0.1);
+        connection->SendPosition(false); // test here
         QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
     }
@@ -150,6 +154,13 @@ namespace MumbleVoip
         delete frame;
     }
 
+    void ConnectionManager::SetAudioSourcePosition(double x, double y, double z)
+    {
+        position_x_ = x;
+        position_y_ = y;
+        position_z_ = z;
+    }
+
     void ConnectionManager::SendAudio(bool send)
     {
         boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
@@ -198,7 +209,7 @@ namespace MumbleVoip
                 {
                     Connection* connection = *i;
                     if (connection->SendingAudio())
-                        connection->SendAudioFrame(frame);
+                        connection->SendAudioFrame(frame, position_x_, position_y_, position_z_);
                 }
                 delete frame;
             }

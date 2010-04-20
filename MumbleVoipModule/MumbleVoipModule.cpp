@@ -81,7 +81,13 @@ namespace MumbleVoip
             UpdateLinkPlugin(frametime);
         
         if (connection_manager_)
+        {
+            Vector3df position;
+            Vector3df direction;
+            if (GetAvatarPosition(position, direction))
+                connection_manager_->SetAudioSourcePosition(position.x, position.y, position.z);
             connection_manager_->Update(frametime);
+        }
     }
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
@@ -101,52 +107,75 @@ namespace MumbleVoip
         if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
             return;
         time_from_last_update_ms_ = 0;
-        
+
+        Vector3df top_vector = Vector3df::UNIT_Z;
+        Vector3df position;
+        Vector3df direction;
+        if (GetAvatarPosition(position, direction))
+        {
+            link_plugin_->SetAvatarPosition(position, direction, top_vector);
+        }
+
+        if (use_camera_position_)
+        {
+            if (GetCameraPosition(position, direction))
+                link_plugin_->SetCameraPosition(position, direction, top_vector);
+        }
+        else
+        {
+            if (GetAvatarPosition(position, direction))
+                link_plugin_->SetCameraPosition(position, direction, top_vector);
+        }
+
+        link_plugin_->SendData();
+    }
+
+    bool MumbleVoipModule::GetAvatarPosition(Vector3df& position, Vector3df& direction)
+    {
         RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
-            return;
+            return false;
 
         RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
-        if (avatar)
-        {
-            Scene::EntityPtr entity = avatar->GetUserAvatar();
-            if (!entity)
-                return;
+        if (!avatar)
+            return false;
 
-            const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
-            if (placeable_component)
-            {
-                Vector3df top_vector = Vector3df::UNIT_Z;
-                OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                Quaternion q = ogre_placeable->GetOrientation();
-                Vector3df position_vector = ogre_placeable->GetPosition(); 
-                Vector3df front_vector = q*Vector3df::UNIT_Z;
+        Scene::EntityPtr entity = avatar->GetUserAvatar();
+        if (!entity)
+            return false;
 
-                link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
-                if (!use_camera_position_)
-                    link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
-            }
+        const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
+        if (!placeable_component)
+            return false;
 
-            Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
-            if (camera)
-            {
-                const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
-                if (placeable_component)
-                {
-                    Vector3df top_vector = Vector3df::UNIT_Z;
+        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+        Quaternion q = ogre_placeable->GetOrientation();
+        position = ogre_placeable->GetPosition(); 
+        direction = q*Vector3df::UNIT_Z;
 
-                    OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                    Quaternion q = ogre_placeable->GetOrientation();
+        return true;
+    }
 
-                    Vector3df position_vector = ogre_placeable->GetPosition(); 
-                    Vector3df front_vector = q*Vector3df::UNIT_X;
-                    if (use_camera_position_)
-                        link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
-                }
-            }
+    bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
+    {
+        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        if (!rex_logic_module)
+            return false;
 
-            link_plugin_->SendData();
-        }
+        Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
+        if (!camera)
+            return false;
+
+        const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
+        if (!placeable_component)
+            return false;
+
+        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+        Quaternion q = ogre_placeable->GetOrientation();
+
+        position = ogre_placeable->GetPosition(); 
+        direction = q*Vector3df::UNIT_X;
+        return true;
     }
 
     void MumbleVoipModule::InitializeConsoleCommands()
