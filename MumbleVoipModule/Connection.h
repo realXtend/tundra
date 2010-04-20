@@ -7,6 +7,8 @@
 #include <QList>
 #include <QMutex>
 #include <QMap>
+#include <QPair>
+
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "stdint.h"
@@ -75,7 +77,7 @@ namespace MumbleVoip
 
         //! \return first audio frame from playback queue
         //! \return null if playback queue is empty
-        virtual PCMAudioFrame* GetAudioFrame();
+        virtual QPair<int,PCMAudioFrame*> GetAudioFrame();
 
         //! Encode and send given frame to Mumble server
         //! Frame object is NOT deleted by this method 
@@ -112,7 +114,7 @@ namespace MumbleVoip
         State state_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel
-        QList<PCMAudioFrame*> playback_queue_;
+        QList< QPair<int,PCMAudioFrame*> > playback_queue_;
         QList<PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_;
         QList<User*> users_;

@@ -87,18 +87,19 @@ namespace MumbleVoip
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
-        void PlaybackAudioFrame(PCMAudioFrame* frame);
+        void PlaybackAudioFrame(int session, PCMAudioFrame* frame);
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
 
         QMap<QString, Connection*> connections_; // maps: server address - connection object
         LibMumbleThread* lib_mumble_thread_;
         Foundation::Framework* framework_;
-        sound_id_t audio_playback_channel_;
+//        sound_id_t audio_playback_channel_;
         bool sending_audio_;
         std::string recording_device_;
         double position_x_;
         double position_y_;
         double position_z_;
+        QMap<int, sound_id_t> audio_playback_channels_;
 
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
 

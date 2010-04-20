@@ -112,8 +112,8 @@ namespace MumbleVoip
         mutex_playback_queue_.lock();
         while (playback_queue_.size() > 0)
         {
-            PCMAudioFrame* frame = playback_queue_.takeFirst();
-            SAFE_DELETE(frame);
+            QPair<int, PCMAudioFrame*> frame = playback_queue_.takeFirst();
+            SAFE_DELETE(frame.second);
         }
         mutex_playback_queue_.unlock();
 
@@ -217,15 +217,14 @@ namespace MumbleVoip
         }
     }
 
-    PCMAudioFrame* Connection::GetAudioFrame()
+    QPair<int,PCMAudioFrame*> Connection::GetAudioFrame()
     {
         QMutexLocker locker(&mutex_playback_queue_);
 
         if (playback_queue_.size() == 0)
-            return 0;
+            return QPair<int,PCMAudioFrame*>(0,0);
 
-        PCMAudioFrame* frame = playback_queue_.takeFirst();
-        return frame;
+        return playback_queue_.takeFirst();
     }
 
     void Connection::SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z)
@@ -481,7 +480,7 @@ namespace MumbleVoip
 
                 if (playback_queue_.size() < buffer_frames_max)
                 {
-                    playback_queue_.push_back(audio_frame);
+                    playback_queue_.push_back(QPair<int,PCMAudioFrame*>(session, audio_frame));
                     emit AudioFramesAvailable(this);
                 }
                 else

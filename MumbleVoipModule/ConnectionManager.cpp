@@ -3,6 +3,7 @@
 #include "MumbleVoipModule.h"
 //#include "SoundServiceInterface.h"
 #include <QDesktopServices>
+#include <QPair>
 
 #define BUILDING_DLL
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
@@ -17,7 +18,6 @@ namespace MumbleVoip
 
     ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
         framework_(framework),
-        audio_playback_channel_(0),
         sending_audio_(false),
         recording_device_(""),
         lib_mumble_thread_(0),
@@ -120,14 +120,14 @@ namespace MumbleVoip
     {
         for(;;)
         {
-            PCMAudioFrame* frame = connection->GetAudioFrame();
-            if (!frame)
+            QPair<int, PCMAudioFrame*> frame = connection->GetAudioFrame();
+            if (frame.second == 0)
                 break;
-            PlaybackAudioFrame(frame);
+            PlaybackAudioFrame(frame.first, frame.second);
         }
     }
 
-    void ConnectionManager::PlaybackAudioFrame(PCMAudioFrame* frame)
+    void ConnectionManager::PlaybackAudioFrame(int session, PCMAudioFrame* frame)
     {
         if (!framework_)
             return;
@@ -149,7 +149,10 @@ namespace MumbleVoip
         sound_buffer.size_ = frame->GetLengthBytes();
         sound_buffer.stereo_ = false;
 
-        audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
+        if (audio_playback_channels_.contains(session))
+            soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[session]);
+        else
+            audio_playback_channels_[session] = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
 
         delete frame;
     }
