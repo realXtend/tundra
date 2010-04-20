@@ -227,6 +227,16 @@ namespace MumbleVoip
         return playback_queue_.takeFirst();
     }
 
+    void Connection::SendAudio(bool send)
+    {
+        sending_audio_ = send;
+    }
+
+    bool Connection::SendingAudio()
+    {
+        return sending_audio_;
+    }
+
     void Connection::SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z)
     {
         QMutexLocker locker(&mutex_encode_audio_);
@@ -307,17 +317,7 @@ namespace MumbleVoip
         }
     }
 
-    void Connection::SendAudio(bool send)
-    {
-        sending_audio_ = send;
-    }
-
-    bool Connection::SendingAudio()
-    {
-        return sending_audio_;
-    }
-
-    void Connection::OnTextMessageCallback(QString text)
+     void Connection::OnTextMessageCallback(QString text)
     {
         if (state_ != STATE_OPEN)
             return;
@@ -430,7 +430,7 @@ namespace MumbleVoip
         QMutexLocker locker(&mutex_users_);
 
         User* u = new User(user);
-        users_[u->Id()] = u;
+        users_[u->Session()] = u;
         QString message = QString("User '%1' joined.").arg(u->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         emit UserJoined(u);
@@ -467,11 +467,9 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
-        foreach(User* user, users_)
-        {
-            if (user->Session() == session)
-                user->OnAudioFrameReceived(); // \todo Thread safe
-        }
+        User* user = users_[session];
+        if (user)
+            user->OnAudioFrameReceived(); // \todo Thread safe
 
         PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
 
