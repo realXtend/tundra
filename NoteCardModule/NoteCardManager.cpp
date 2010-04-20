@@ -74,7 +74,6 @@ namespace NoteCard
         {
             UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
             proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, widget_properties);
-            original_title_ = contents_->windowTitle();
         }
         else
             NoteCardModule::LogError("Could not add widget to scene");
@@ -116,11 +115,11 @@ namespace NoteCard
     {
         if (e->type() == QEvent::LanguageChange)
         {
-            QString title = QApplication::translate("NoteCardManager", original_title_.toStdString().c_str());
+            QString title = QApplication::translate("NoteCardManager", "Notecard Manager");
             graphicsProxyWidget()->setWindowTitle(title);
         }
         else
-           QWidget::changeEvent(e);
+            QWidget::changeEvent(e);
     }
     
     void NoteCardManager::SelectNoteCard()

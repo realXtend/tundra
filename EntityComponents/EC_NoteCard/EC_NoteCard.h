@@ -57,7 +57,6 @@ private:
     QWidget* widget_;
     QLineEdit* title_edit_;
     QTextEdit* text_edit_;
-    QString original_title_;
     
     bool title_dirty_;
     bool text_dirty_;

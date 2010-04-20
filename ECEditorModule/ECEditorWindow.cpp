@@ -118,7 +118,6 @@ namespace ECEditor
         {
             UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
             proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, widget_properties);
-            original_title_ = contents_->windowTitle();
         }
         else
             ECEditorModule::LogError("Could not add widget to scene");
@@ -293,7 +292,7 @@ namespace ECEditor
     {
         if (e->type() == QEvent::LanguageChange)
         {
-            QString title = QApplication::translate("ECEditor", original_title_.toStdString().c_str());
+            QString title = QApplication::translate("ECEditor", "Entity-component Editor");
             graphicsProxyWidget()->setWindowTitle(title);
         }
         else

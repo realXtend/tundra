@@ -167,7 +167,7 @@ void EC_NoteCard::ChangeLanguage()
 {
     if (widget_)
     {
-        QString translation = QApplication::translate("NoteCard", original_title_.toStdString().c_str());
+        QString translation = QApplication::translate("NoteCard", "Notecard");
         widget_->graphicsProxyWidget()->setWindowTitle(translation);
     }
 }
@@ -200,7 +200,6 @@ void EC_NoteCard::UpdateWidget()
         UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(widget_,
             UiServices::UiWidgetProperties(widget_->windowTitle(), UiServices::SceneWidget));
         proxy->show();
-        original_title_ = widget_->windowTitle();
         
         QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
         
