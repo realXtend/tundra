@@ -112,8 +112,7 @@ void RexLogicModule::Load()
 void RexLogicModule::Initialize()
 {
     PROFILE(RexLogicModule_Initialize);
-    Foundation::EventManagerPtr eventmgr = framework_->GetEventManager();
-    eventmgr->RegisterEventCategory("Action");
+    framework_->GetEventManager()->RegisterEventCategory("Action");
 
     /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
     // WorldLogic::registerSystem(framework);
@@ -121,7 +120,7 @@ void RexLogicModule::Initialize()
     avatar_ = AvatarPtr(new Avatar(this));
     avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
-    world_stream_ = WorldStreamConnectionPtr(new ProtocolUtilities::WorldStream(framework_));
+    world_stream_ = WorldStreamPtr(new ProtocolUtilities::WorldStream(framework_));
     network_handler_ = new NetworkEventHandler(framework_, this);
     network_state_handler_ = new NetworkStateEventHandler(framework_, this);
     input_handler_ = new InputEventHandler(framework_, this);
@@ -469,7 +468,7 @@ void RexLogicModule::SetAvatarYaw(Real newyaw)
     avatar_controllable_->SetYaw(newyaw);
 }
 
-void RexLogicModule::SetAvatarRotation(Quaternion newrot)
+void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
 {
     avatar_controllable_->SetRotation(newrot);
 }

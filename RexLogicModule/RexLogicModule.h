@@ -10,13 +10,14 @@
 #include "NetworkEvents.h"
 #include "Quaternion.h"
 
+#include <set>
+
 #include <boost/smart_ptr.hpp>
 #include <boost/function.hpp>
 
+#include <QObject>
 #include <QString>
 #include <QMap>
-#include <map>
-#include <set>
 
 class RexUUID;
 
@@ -32,6 +33,9 @@ namespace ProtocolUtilities
     class InventorySkeleton;
     class ProtocolModuleInterface;
 }
+
+typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
+typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
 
 namespace RexLogic
 {
@@ -50,13 +54,11 @@ namespace RexLogic
     class MainPanelHandler;
     class WorldInputLogic;
 
-    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
-    typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -68,8 +70,10 @@ namespace RexLogic
     };
 
     //! interface for modules
-    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::ModuleInterfaceImpl
+    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
+
     public:
         RexLogicModule();
         virtual ~RexLogicModule();
@@ -90,7 +94,7 @@ namespace RexLogic
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
-        WorldStreamConnectionPtr GetServerConnection() const { return world_stream_; }
+        WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
@@ -105,6 +109,7 @@ namespace RexLogic
         PrimitivePtr GetPrimitiveHandler() const;
 
         /// @return Invetory pointer.
+        /// @otdo Delete this function entirely when PythonScriptModule is not dependendant of it anymore.
         InventoryPtr GetInventory() const;
 
         //! Returns the camera controllable
@@ -206,7 +211,7 @@ namespace RexLogic
 
         //! XXX have linking probs to AvatarController so trying this wrapper
         void SetAvatarYaw(Real newyaw);
-        void SetAvatarRotation(Quaternion newrot);
+        void SetAvatarRotation(const Quaternion &newrot);
         void SetCameraYawPitch(Real newyaw, Real newpitch);
 
         entity_id_t GetUserAvatarId() const;
@@ -229,8 +234,7 @@ namespace RexLogic
         void EntityClicked(Scene::Entity* entity);
 
     private:
-        RexLogicModule(const RexLogicModule &);
-        RexLogicModule &operator=(const RexLogicModule &);
+        Q_DISABLE_COPY(RexLogicModule);
 
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
@@ -260,7 +264,7 @@ namespace RexLogic
         FrameworkEventHandler *framework_handler_;
 
         //! Server connection
-        WorldStreamConnectionPtr world_stream_;
+        WorldStreamPtr world_stream_;
 
         //! Movement damping constant
         Real movement_damping_constant_;
