@@ -8,42 +8,19 @@
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL
+#include "LibMumbleThread.h"
 #include "Connection.h"
 #include "PCMAudioFrame.h"
 
 namespace MumbleVoip
 {
-    void LibMumbleMainloopThread::run()
-    {
-        MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-        if (!mumble_lib)
-        {
-            return;
-        }
-        MumbleVoipModule::LogDebug("Mumble library mainloop started");
-        try
-        {
-            mumble_lib->Run();
-        }
-        catch(std::exception &e)
-        {
-            QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
-            MumbleVoipModule::LogError(message.toStdString());
-        }
-        catch(...)
-        {
-            QString message = QString("Mumble library mainloop stopped by unknown exception.");
-            MumbleVoipModule::LogError(message.toStdString());
-        }
-        MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
-    }
 
     ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
-        mumble_lib(0),
         framework_(framework),
         audio_playback_channel_(0),
         sending_audio_(false),
-        recording_device_("")
+        recording_device_(""),
+        lib_mumble_thread_(0)
     {
     }
 
@@ -106,29 +83,33 @@ namespace MumbleVoip
 
     void ConnectionManager::StartMumbleLibrary()
     {
-        //mumble_lib = MumbleClient::MumbleClientLib::instance();
-        //if (!mumble_lib)
-        //{
-        //    return;
-        //}
-        if (lib_thread_.isRunning())
+        if (!lib_mumble_thread_)
+            lib_mumble_thread_ = new LibMumbleThread();
+
+        if (lib_mumble_thread_->isRunning())
             return;
                 
-        lib_thread_.setPriority(QThread::LowPriority);
-        lib_thread_.start();
+        lib_mumble_thread_->setPriority(QThread::LowPriority);
+        lib_mumble_thread_->start();
     }
 
     void ConnectionManager::StopMumbleLibrary()
     {
-        mumble_lib = MumbleClient::MumbleClientLib::instance();
+        if (!lib_mumble_thread_)
+            return;
+
+        //lib_mumble_thread_->shutdown();
+        MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
         {
+            MumbleVoipModule::LogError("Cannot stop Mumble library: No library instance available.");
             return;
         }
-
         mumble_lib->Shutdown();
-        lib_thread_.wait();
-        MumbleVoipModule::LogDebug("Mumble library uninitialized.");
+
+        lib_mumble_thread_->wait();
+        SAFE_DELETE(lib_mumble_thread_);
+        MumbleVoipModule::LogDebug("Mumble thread exited.library uninitialized.");
     }
 
     void ConnectionManager::OnAudioFramesAvailable(Connection* connection)
@@ -171,18 +152,9 @@ namespace MumbleVoip
 
     void ConnectionManager::SendAudio(bool send)
     {
-        if (!framework_)
-            throw std::exception("Framework cannot be found.");
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        if (!service_manager.get())
-            throw std::exception("service_manager cannot be found.");
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
+        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+        if (!sound_service.get())
             throw std::exception("SoundServiceInterface cannot be found.");
-
-        //StringVector devices = soundsystem->GetRecordingDevices();
-        //if (devices.size() == 0)
-        //    throw std::exception("No recording devices.");
 
         if (!sending_audio_ && send)
         {
@@ -191,13 +163,13 @@ namespace MumbleVoip
             bool sixteenbit = true;
             bool stereo = false;
             int buffer_size = SAMPLE_WIDTH/2*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
-            soundsystem->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
+            sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
         }
 
         if (sending_audio_ && !send)
         {
             sending_audio_ = false;
-            soundsystem->StopRecording();
+            sound_service->StopRecording();
         }
     }
 

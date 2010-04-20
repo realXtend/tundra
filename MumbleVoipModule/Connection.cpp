@@ -88,8 +88,8 @@ namespace MumbleVoip
         client_ = mumble_lib->NewClient();
 
         QString port = "64738"; // default port name
+
         // \todo Handle connection error
-        
 	    client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
         client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
         client_->SetChannelRemoveCallback(boost::bind(&ChannelRemoveCallback, _1, this));
