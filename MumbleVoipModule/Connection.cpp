@@ -153,6 +153,8 @@ namespace MumbleVoip
         celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
 	    celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AudioQuality()));
 
+        celt_decoder_ = CreateCELTDecoder();
+
         MumbleVoipModule::LogDebug("CELT initialized.");
     }
 
@@ -160,11 +162,7 @@ namespace MumbleVoip
     {
         celt_encoder_destroy(celt_encoder_);
         celt_encoder_ = 0;
-        foreach(CELTDecoder* decoder, celt_decoders_)
-        {
-            celt_decoder_destroy(decoder);
-        }
-        celt_decoders_.clear();
+        celt_decoder_destroy(celt_decoder_);
         celt_mode_destroy(celt_mode_);
         MumbleVoipModule::LogDebug("CELT uninitialized.");
     }
@@ -456,26 +454,23 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
-        QMutexLocker locker(&mutex_playback_queue_);
-
-        CELTDecoder* decoder = celt_decoders_[session];
-        if (!decoder)
+        foreach(User* user, users_)
         {
-            decoder = CreateCELTDecoder();
-            celt_decoders_[session] = decoder;
-            QString message = QString("Created CELT decoder for session %1.").arg(session);
-            MumbleVoipModule::LogDebug(message.toStdString());
+            if (user->Session() == session)
+                user->OnAudioFrameReceived(); // \todo Thread safe
         }
 
         PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
 
-        int ret = celt_decode(decoder, data, size, (short*)audio_frame->DataPtr());
+        int ret = celt_decode(celt_decoder_, data, size, (short*)audio_frame->DataPtr());
 
         switch (ret)
         {
         case CELT_OK:
             {
                 int buffer_frames_max = SAMPLE_RATE/SAMPLES_IN_FRAME*PLAYBACK_BUFFER_MS_/1000;
+                QMutexLocker locker(&mutex_playback_queue_);
+
                 if (playback_queue_.size() < buffer_frames_max)
                 {
                     playback_queue_.push_back(audio_frame);

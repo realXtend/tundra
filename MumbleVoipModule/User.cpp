@@ -3,6 +3,8 @@
 #include "MumbleVoipModule.h"
 #include "stdint.h"
 
+#include <QTimer>
+
 //#define BUILDING_DLL // for dll import/export declarations
 //#define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/user.h>
@@ -10,7 +12,7 @@
 
 namespace MumbleVoip
 {
-    User::User(const MumbleClient::User& user) : user_(user)
+    User::User(const MumbleClient::User& user) : user_(user), speaking_(false)
     {
     }
 
@@ -42,6 +44,27 @@ namespace MumbleVoip
     QString User::Comment()
     {
         return QString(user_.comment.c_str());
+    }
+
+    bool User::Speaking()
+    {
+        return speaking_;
+    }
+
+    void User::OnAudioFrameReceived()
+    {
+        if (!speaking_)
+            emit StartSpeaking();
+        speaking_ = true;
+
+        QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(SpeakingTimeout()));
+    }
+
+    void User::SpeakingTimeout()
+    {
+        if (speaking_)
+            emit StopSpeaking();
+        speaking_ = false;
     }
 
 } // namespace MumbleVoip
