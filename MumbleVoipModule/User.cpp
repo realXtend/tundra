@@ -12,7 +12,7 @@
 
 namespace MumbleVoip
 {
-    User::User(const MumbleClient::User& user) : user_(user), speaking_(false)
+    User::User(const MumbleClient::User& user) : user_(user), speaking_(false), position_known_(false), position_(0,0,0)
     {
     }
 
@@ -65,6 +65,16 @@ namespace MumbleVoip
         if (speaking_)
             emit StopSpeaking();
         speaking_ = false;
+    }
+
+    void User::UpdatePosition(Vector3df position)
+    {
+        position_ = position;
+    }
+
+    Vector3df User::Position()
+    {
+        return position_;
     }
 
 } // namespace MumbleVoip

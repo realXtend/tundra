@@ -112,8 +112,8 @@ namespace MumbleVoip
         mutex_playback_queue_.lock();
         while (playback_queue_.size() > 0)
         {
-            QPair<int, PCMAudioFrame*> frame = playback_queue_.takeFirst();
-            SAFE_DELETE(frame.second);
+            AudioPacket packet = playback_queue_.takeFirst();
+            SAFE_DELETE(packet.second);
         }
         mutex_playback_queue_.unlock();
 
@@ -127,11 +127,11 @@ namespace MumbleVoip
             Channel* c = channels_.takeFirst();
             SAFE_DELETE(c);
         }
-        while(users_.size() > 0)
+        foreach(User* u, users_)
         {
-            User* u = users_.takeFirst();
             SAFE_DELETE(u);
         }
+        users_.clear();
     }
 
     void Connection::Close()
@@ -217,12 +217,12 @@ namespace MumbleVoip
         }
     }
 
-    QPair<int,PCMAudioFrame*> Connection::GetAudioFrame()
+    AudioPacket Connection::GetAudioPacket()
     {
         QMutexLocker locker(&mutex_playback_queue_);
 
         if (playback_queue_.size() == 0)
-            return QPair<int,PCMAudioFrame*>(0,0);
+            return AudioPacket(0,0);
 
         return playback_queue_.takeFirst();
     }
@@ -280,9 +280,10 @@ namespace MumbleVoip
 	    }
         if (send_position_)
         {
-            data_stream << static_cast<float>(x);
+            // Coordinate conversion: Naali -> Mumble
             data_stream << static_cast<float>(y);
             data_stream << static_cast<float>(z);
+            data_stream << static_cast<float>(-x);
         }
 
         client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
@@ -410,11 +411,17 @@ namespace MumbleVoip
         int bytes_left = data_stream.left();
         if (bytes_left)
         {
-            float position[3];
-            data_stream >> position[0];
-            data_stream >> position[1];
-            data_stream >> position[2];
-            // \todo store position data
+            // Coordinate conversion: Mumble -> Naali 
+            Vector3df position;
+
+            data_stream >> position.y;
+            data_stream >> position.z;
+            data_stream >> position.x;
+            position.x *= -1;
+
+            User* user = users_[session];
+            if (user)
+                user->UpdatePosition(position);
         }
     }
 
@@ -423,7 +430,7 @@ namespace MumbleVoip
         QMutexLocker locker(&mutex_users_);
 
         User* u = new User(user);
-        users_.append(u);
+        users_[u->Id()] = u;
         QString message = QString("User '%1' joined.").arg(u->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         emit UserJoined(u);
@@ -433,18 +440,17 @@ namespace MumbleVoip
     {
         QMutexLocker locker(&mutex_users_);
 
-        int i = 0;
-        for (int i = 0; i < users_.size(); ++i)
-        {
-            if (users_.at(i)->Id() == user.user_id)
-            {
-                QString message = QString("User '%1' Left.").arg(users_.at(i)->Name());
-                MumbleVoipModule::LogDebug(message.toStdString());
-                //emit UserLeft(u);
-                users_.removeAt(i); // do we want to remove object or just mark as left
-                break;
-            }
-        }
+        if (!users_.contains(user.user_id))
+            return;
+
+        User* u = users_[user.user_id];
+
+        QString message = QString("User '%1' Left.").arg(u->Name());
+        MumbleVoipModule::LogDebug(message.toStdString());
+        //emit UserLeft(u);
+
+        delete u;
+        users_.remove(user.user_id);
     }
 
     QList<QString> Connection::Channels()
@@ -480,8 +486,17 @@ namespace MumbleVoip
 
                 if (playback_queue_.size() < buffer_frames_max)
                 {
-                    playback_queue_.push_back(QPair<int,PCMAudioFrame*>(session, audio_frame));
-                    emit AudioFramesAvailable(this);
+                    User* user = users_[session];
+                    if (user)
+                    {
+                        playback_queue_.push_back(AudioPacket(user, audio_frame));
+                        emit AudioFramesAvailable(this);
+                    }
+                    else
+                    {
+                        QString message = QString("Audio packet from unknown user: %1").arg(session);
+                        MumbleVoipModule::LogWarning(message.toStdString());
+                    }
                 }
                 else
                 {

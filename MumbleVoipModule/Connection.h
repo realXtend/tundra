@@ -32,6 +32,8 @@ namespace MumbleVoip
     class User;
     class PCMAudioFrame;
 
+    typedef QPair<User*, PCMAudioFrame*> AudioPacket;
+
     //class AudioSourceInterface : QObject
     //{
     //    Q_OBJECT
@@ -75,9 +77,10 @@ namespace MumbleVoip
         //! \todo create channels if it doesn't exist
         virtual void Join(QString channel);
 
-        //! \return first audio frame from playback queue
-        //! \return null if playback queue is empty
-        virtual QPair<int,PCMAudioFrame*> GetAudioFrame();
+        //! \return first <user,audio frame> pair from playback queue
+        //! \return <0,0> if playback queue is empty
+        //! The caller must delete audio frame object after usage
+        virtual AudioPacket GetAudioPacket();
 
         //! Encode and send given frame to Mumble server
         //! Frame object is NOT deleted by this method 
@@ -114,10 +117,10 @@ namespace MumbleVoip
         State state_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel
-        QList< QPair<int,PCMAudioFrame*> > playback_queue_;
+        QList< AudioPacket > playback_queue_;
         QList<PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_;
-        QList<User*> users_;
+        QMap<int, User*> users_;
 
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
