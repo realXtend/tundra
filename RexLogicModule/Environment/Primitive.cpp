@@ -579,17 +579,16 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
             WriteNullTerminatedStringToBytes(UrlForRexObjectUpdatePacket(i->second.asset_id), &buffer[0], idx);
             ++i;
         }
-    }  
-          
+    }
+
     buffer.resize(idx);
 
-    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
     StringVector strings;
     strings.push_back(fullid.ToString());
     conn->SendGenericMessageBinary("RexPrimData", strings, buffer);
-    
 }
 
 void Primitive::HandleECsModified(entity_id_t entityid)
@@ -640,18 +639,18 @@ void Primitive::SendRexFreeData(entity_id_t entityid)
 
     EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
     EC_FreeData* free = entity->GetComponent<EC_FreeData>().get();
-    if (!free)
+    if (!free || !prim )
         return;
-    
-    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+
+    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
-        
+
     RexUUID fullid = prim->FullId;
     StringVector strings;
     strings.push_back(fullid.ToString());
     const std::string& freedata = free->FreeData;
-    
+
     // Split freedata into chunks of 200
     for (uint i = 0; i < freedata.length(); i += 200)
     {

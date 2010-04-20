@@ -39,7 +39,7 @@ namespace RexLogic
 
     void ScriptDialogHandler::ShowDialog(ScriptDialogRequest& request)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if ( !ui_module.get())
         {
             // todo: LogError: "Cannot show ScriptDialogWidget, ui_module pointer not valid."
@@ -52,7 +52,8 @@ namespace RexLogic
         connect(widget, SIGNAL( OnClosed(s32, QString)), this, SLOT( OnDialogClosed(s32, QString)) );
 
         UiServices::UiWidgetProperties widget_properties(widget_name, UiServices::SceneWidget);
-        UiServices::UiProxyWidget *proxy_widget = ui_module->GetInworldSceneController()->AddWidgetToScene(widget, widget_properties); // we don't need to store a proxy widget here..
+        // we don't need to store a proxy widget here..
+        UiServices::UiProxyWidget *proxy_widget = ui_module->GetInworldSceneController()->AddWidgetToScene(widget, widget_properties);
 
         proxy_widget->show();
     }
@@ -65,7 +66,7 @@ namespace RexLogic
             boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
             if (rexlogic.get())
             {
-                RexLogic::WorldStreamConnectionPtr connection = rexlogic->GetServerConnection();
+                WorldStreamPtr connection = rexlogic->GetServerConnection();
                 if (connection)
                     connection->SendChatFromViewerPacket(std::string(answer.toUtf8()).c_str(), channel);
             }

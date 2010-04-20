@@ -25,5 +25,11 @@ inline Dst checked_static_cast(Src src)
 //! use to suppress warning C4101 (unreferenced local variable)
 #define UNREFERENCED_PARAM(P)               (P)
 
+/// Use for QObjects
+#define SAFE_DELETE_LATER(p) p->deleteLater(); p = 0;
+
+/// Use for strings that are shown in the UI
+#define TRANSLATE(context, key) QApplication::translate(context, key)
+
 #endif
 

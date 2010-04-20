@@ -659,7 +659,7 @@ namespace RexLogic
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
             return false;
-        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
+        WorldStreamPtr conn = owner_->GetServerConnection();
         if (!conn)
             return false;
         
@@ -677,7 +677,7 @@ namespace RexLogic
         }
         
         // See whether to use legacy storage or inventory
-        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
+        WorldStreamPtr conn = owner_->GetServerConnection();
         if (!conn)
         {
             RexLogicModule::LogError("Not connected to server, cannot export avatar");

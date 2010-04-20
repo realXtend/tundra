@@ -39,7 +39,7 @@ namespace OpensimIM
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot accept Opensim friend request, RexLogicModule is not found");
-        RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
+        WorldStreamPtr connection = rexlogic_->GetServerConnection();
 
         if ( connection == NULL )
             throw Exception("Cannot accept Opensim friend request rex server connection is not found");
@@ -61,7 +61,7 @@ namespace OpensimIM
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot reject Opensim friend request, RexLogicModule is not found");
-        RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
+        WorldStreamPtr connection = rexlogic_->GetServerConnection();
 
         if ( connection == NULL )
             throw Exception("Cannot reject Opensim friend request rex server connection is not found");
