@@ -11,7 +11,6 @@
 #include "NetworkEvents.h"
 #include "RexUUID.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
 #include "Avatar/AvatarAppearance.h"
 
 #include <QStringList>

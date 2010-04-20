@@ -99,7 +99,7 @@ namespace Naali
         /// @param timeToShow 
         void ApplyBillboard(Scene::Entity &entity, const std::string &texture, float timeToShow);
 
-        /// Returns scene entity pointer with the wanter ID:
+        /// Returns primitive or avatar entity with the wanted ID.
         /// @param id ID of the entity.
         /// @return Entity pointer matching the id or 0 if not found.
         Scene::Entity *GetEntityWithId(const RexUUID &id);
@@ -139,6 +139,9 @@ namespace Naali
 
         /// Log file.
         QFile *logFile_;
+
+    //private slots:
+        //void RepositionChatWidget(const QRectF &rect)
     };
 }
 

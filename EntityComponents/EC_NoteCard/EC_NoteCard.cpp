@@ -15,6 +15,7 @@
 #include "Inworld/InworldSceneController.h"
 
 #include <QCoreApplication>
+#include <QApplication>
 #include <QDomDocument>
 #include <QFile>
 #include <QLineEdit>
@@ -148,6 +149,29 @@ void EC_NoteCard::SyncToNetwork()
     }
 }
 
+void EC_NoteCard::Show()
+{
+    if (!widget_)
+        UpdateWidget();
+    if (widget_)
+        widget_->show();
+}
+
+void EC_NoteCard::Hide()
+{
+    if (widget_)
+        widget_->hide();
+}
+
+void EC_NoteCard::ChangeLanguage()
+{
+    if (widget_)
+    {
+        QString translation = QApplication::translate("NoteCard", "Notecard");
+        widget_->graphicsProxyWidget()->setWindowTitle(translation);
+    }
+}
+
 void EC_NoteCard::UpdateWidget()
 {
     if (!widget_)
@@ -161,6 +185,7 @@ void EC_NoteCard::UpdateWidget()
         }
         
         QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/notecard.ui");
         file.open(QFile::ReadOnly);
         widget_ = loader.load(&file);
@@ -173,8 +198,10 @@ void EC_NoteCard::UpdateWidget()
         }
         
         UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(widget_,
-            UiServices::UiWidgetProperties("Notecard", UiServices::SceneWidget));
+            UiServices::UiWidgetProperties(widget_->windowTitle(), UiServices::SceneWidget));
         proxy->show();
+        
+        QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
         
         // Notecard initial position
         //! \todo Something less hardcoded

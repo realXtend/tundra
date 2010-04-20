@@ -33,30 +33,30 @@ InventoryTreeView::InventoryTreeView(QWidget *parent) : QTreeView(parent)
     //setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
     setStyleSheet(
-    "QTreeView::branch:has-siblings:!adjoins-item"
-    "{"
-        "border-image: url(:/images/iconBranchVLine.png) 0;"
-    "}"
-    "QTreeView::branch:has-siblings:adjoins-item"
-    "{"
-        "border-image: url(:/images/iconBranchMore.png) 0;"
-    "}"
-    "QTreeView::branch:!has-children:!has-siblings:adjoins-item"
-    "{"
-        "border-image: url(:/images/iconBranchEnd.png) 0;"
-    "}"
-    "QTreeView::branch:has-children:!has-siblings:closed,"
-    "QTreeView::branch:closed:has-children:has-siblings"
-    "{"
-        "border-image: none;"
-        "image: url(:/images/iconBranchClosed.png);"
-    "}"
-    "QTreeView::branch:open:has-children:!has-siblings,"
-    "QTreeView::branch:open:has-children:has-siblings"
-    "{"
-        "border-image: none;"
-        "image: url(:/images/iconBranchOpen.png);"
-    "}");
+        "QTreeView::branch:has-siblings:!adjoins-item"
+        "{"
+            "border-image: url(:/images/iconBranchVLine.png) 0;"
+        "}"
+        "QTreeView::branch:has-siblings:adjoins-item"
+        "{"
+            "border-image: url(:/images/iconBranchMore.png) 0;"
+        "}"
+        "QTreeView::branch:!has-children:!has-siblings:adjoins-item"
+        "{"
+            "border-image: url(:/images/iconBranchEnd.png) 0;"
+        "}"
+        "QTreeView::branch:has-children:!has-siblings:closed,"
+        "QTreeView::branch:closed:has-children:has-siblings"
+        "{"
+            "border-image: none;"
+            "image: url(:/images/iconBranchClosed.png);"
+        "}"
+        "QTreeView::branch:open:has-children:!has-siblings,"
+        "QTreeView::branch:open:has-children:has-siblings"
+        "{"
+            "border-image: none;"
+            "image: url(:/images/iconBranchOpen.png);"
+        "}");
 }
 
 // virtual
@@ -83,8 +83,15 @@ void InventoryTreeView::contextMenuEvent(QContextMenuEvent *event)
     {
         QAction *action = it.next();
         if (action->isEnabled())
+        {
+            // This is kind of hack, but we might have case that base language is not english. 
+            InventoryAction* act = qobject_cast<InventoryAction* >(action);
+            QString text = QApplication::translate("Inventory::InventoryWindow", act->GetText().toStdString().c_str());
+            action->setText(text);
+
             menu->addAction(action);
-    }
+        } 
+   }
 
     if (menu->actions().size() > 1) // separator "action" is always enabled, hence the 1
         menu->popup(event->globalPos());

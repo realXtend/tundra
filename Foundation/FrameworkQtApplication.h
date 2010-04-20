@@ -5,13 +5,13 @@
 
 #include "ForwardDefines.h"
 
-#include <QObject>
 #include <QTimer>
 #include <QApplication>
-#include <QGraphicsView>
-#include <QTranslator>
-#include <QDir>
 #include <QStringList>
+
+class QDir;
+class QGraphicsView;
+class QTranslator;
 
 namespace Foundation
 {
@@ -24,38 +24,37 @@ namespace Foundation
     class FrameworkQtApplication : public QApplication
     {
         Q_OBJECT
-        
-        public:
-            FrameworkQtApplication (Framework *owner, int &argc, char** argv);
-            ~FrameworkQtApplication();
 
-            QGraphicsView *GetUIView() const;
-            void SetUIView (std::auto_ptr <QGraphicsView> view);
-              
-            void Go();
+    public:
+        FrameworkQtApplication (Framework *owner, int &argc, char** argv);
+        ~FrameworkQtApplication();
 
-        public slots:
-            void UpdateFrame();
-            void ChangeLanguage(const QString& file);
+        QGraphicsView *GetUIView() const;
+        void SetUIView (std::auto_ptr <QGraphicsView> view);
 
-        signals:
-            /// Signal is sent when QApplication language is changed, provided for convience.
-            void LanguageChanged();
+        void Go();
 
-        protected:
-            bool eventFilter (QObject *obj, QEvent *event);
-            
-        private:
-            
-            QStringList GetQmFiles(const QDir& dir);
-        
-            Framework   *framework_;
-            QTimer      frame_update_timer_;
-            bool        app_activated_;
+    public slots:
+        void UpdateFrame();
+        void ChangeLanguage(const QString& file);
 
-            std::auto_ptr <QGraphicsView> view_;
-            QTranslator* native_translator_;
-            QTranslator* app_translator_;
+    signals:
+        /// Signal is sent when QApplication language is changed, provided for convience.
+        void LanguageChanged();
+
+    protected:
+        bool eventFilter (QObject *obj, QEvent *event);
+
+    private:
+        QStringList GetQmFiles(const QDir& dir);
+
+        Framework *framework_;
+        QTimer frame_update_timer_;
+        bool app_activated_;
+
+        std::auto_ptr <QGraphicsView> view_;
+        QTranslator* native_translator_;
+        QTranslator* app_translator_;
     };
 
 }

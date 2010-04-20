@@ -62,6 +62,7 @@ InventoryWindow::InventoryWindow(InventoryModule *owner, QWidget *parent) :
 //    uploadWidget_(0)
 {
     InitInventoryWindow();
+    
 }
 
 // virtual
@@ -130,7 +131,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
         const QItemSelection &)), this, SLOT(UpdateActions()));
 
     // Connect notification delayed sending to avoid ui thread problems when creating the notification widget
-    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(QString, int)), this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
+    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(const QString &, int)),
+        this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
 
 //    connect(inventoryItemModel_, SIGNAL(dataChanged), treeView_, SLOT(
 
@@ -142,6 +144,22 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 void InventoryWindow::ResetInventoryTreeModel()
 {
     SAFE_DELETE(inventoryItemModel_);
+}
+
+void InventoryWindow::changeEvent(QEvent* e)
+{
+    if (e->type() == QEvent::LanguageChange)
+    {
+        QString text = QApplication::translate("Inventory::InventoryWindow", "Inventory");
+        this->setWindowTitle(text);
+        QGraphicsProxyWidget* widget = this->graphicsProxyWidget();
+        widget->setWindowTitle(text);
+    }
+    else
+    {
+        QWidget::changeEvent(e);
+    }
+
 }
 
 void InventoryWindow::OpenItem()
@@ -367,6 +385,7 @@ void InventoryWindow::UploadFailed(const QString &filename, const QString &reaso
 void InventoryWindow::InitInventoryWindow()
 {
     QUiLoader loader;
+    loader.setLanguageChangeEnabled(true);
     QFile uiFile("./data/ui/inventory.ui");
     mainWidget_ = loader.load(&uiFile, this);
     uiFile.close();
@@ -403,67 +422,67 @@ void InventoryWindow::CreateActions()
     connect(actionMenu_, SIGNAL(aboutToShow()), this, SLOT(UpdateActions()));
 */
     // File transfer actions
-    actionUpload_= new QAction(tr("&Upload"), this);
+    actionUpload_= new InventoryAction(tr("&Upload"), this);
     actionUpload_->setStatusTip(tr("Upload file to your inventory"));
     connect(actionUpload_, SIGNAL(triggered()), this, SLOT(Upload()));
     treeView_->addAction(actionUpload_);
 
-    actionDownload_= new QAction(tr("&Download"), this);
+    actionDownload_= new InventoryAction(tr("&Download"), this);
     actionDownload_->setStatusTip(tr("Download assets to your hard drive"));
     connect(actionDownload_, SIGNAL(triggered()), this, SLOT(Download()));
     treeView_->addAction(actionDownload_);
 
     // Add separator
-    actionSeparator_= new QAction(this);
+    actionSeparator_= new InventoryAction(this);
     actionSeparator_->setSeparator(true);
     treeView_->addAction(actionSeparator_);
 
     // Inventory item actions.
-    actionDelete_ = new QAction(tr("&Delete"), this);
+    actionDelete_ = new InventoryAction(tr("&Delete"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionDelete_->setStatusTip(tr("Delete this item"));
     connect(actionDelete_, SIGNAL(triggered()), this, SLOT(DeleteItem()));
     treeView_->addAction(actionDelete_);
 
-    actionRename_ = new QAction(tr("&Rename"), this);
+    actionRename_ = new InventoryAction(tr("&Rename"), this);
     //actionRename_->setShortcuts();
     actionRename_->setStatusTip(tr("Rename this item"));
     connect(actionRename_, SIGNAL(triggered()), this, SLOT(RenameItem()));
     treeView_->addAction(actionRename_);
 
 /*
-    actionCut_ = new QAction(tr("&Cut"), this);
+    actionCut_ = new InventoryAction(tr("&Cut"), this);
     actionDelete_->setShortcuts(QKeySequence::Cut);
     actionDelete_->setStatusTip(tr("Cut this item"));
     connect(actionCut_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionCut_);
 
-    actionPaste_ = new QAction(tr("&Paste"), this);
+    actionPaste_ = new InventoryAction(tr("&Paste"), this);
     actionDelete_->setShortcuts(QKeySequence::Paste);
     actionDelete_->setStatusTip(tr("Paste this item"));
     connect(actionPaste_, SIGNAL(triggered()), this, SLOT(Test()));
     treeView_->addAction(actionPaste_);
 */
 
-    actionNewFolder_ = new QAction(tr("&New folder"), this);
+    actionNewFolder_ = new InventoryAction(tr("&New folder"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionNewFolder_->setStatusTip(tr("Create new folder"));
     connect(actionNewFolder_, SIGNAL(triggered()), this, SLOT(AddFolder()));
     treeView_->addAction(actionNewFolder_);
 
-    actionOpen_ = new QAction(tr("&Open"), this);
+    actionOpen_ = new InventoryAction(tr("&Open"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionOpen_->setStatusTip(tr("Open this item"));
     connect(actionOpen_, SIGNAL(triggered()), this, SLOT(OpenItem()));
     treeView_->addAction(actionOpen_);
 
-    actionProperties_= new QAction(tr("&Properties"), this);
+    actionProperties_= new InventoryAction(tr("&Properties"), this);
     //actionProperties_->setShortcuts(QKeySequence::Delete);
     actionProperties_->setStatusTip(tr("View item properties"));
     connect(actionProperties_, SIGNAL(triggered()), this, SLOT(OpenItemProperties()));
     treeView_->addAction(actionProperties_);
 
-    actionCopyAssetReference_ = new QAction(tr("&Copy asset reference"), this);
+    actionCopyAssetReference_ = new InventoryAction(tr("&Copy asset reference"), this);
     //actionDelete_->setShortcuts(QKeySequence::Delete);
     actionCopyAssetReference_->setStatusTip(tr("Delete this item"));
     connect(actionCopyAssetReference_, SIGNAL(triggered()), this, SLOT(CopyAssetReference()));

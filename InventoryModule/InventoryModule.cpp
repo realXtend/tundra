@@ -18,22 +18,19 @@
 #include "ItemPropertiesWindow.h"
 #include "InventoryService.h"
 
+#include "Framework.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "Framework.h"
+#include "WorldStream.h"
 #include "ConsoleCommandServiceInterface.h"
-//#include "QtUtils.h"
-
 #include "NetworkEvents.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "NetworkMessages/NetInMessage.h"
 #include "Inventory/InventoryEvents.h"
-
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "NetworkMessages/NetInMessage.h"
-
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
@@ -155,7 +152,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
                 /*proxyWidget_ = */ui_module->GetInworldSceneController()->AddWidgetToScene(
-                    inventoryWindow_, UiServices::UiWidgetProperties("Inventory", UiServices::ModuleWidget));
+                    inventoryWindow_, UiServices::UiWidgetProperties(QApplication::translate("Inventory::InventoryWindow", "Inventory"), UiServices::ModuleWidget));
 
                 connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
                     SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));

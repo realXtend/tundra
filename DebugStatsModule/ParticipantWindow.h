@@ -13,17 +13,13 @@
 #include <QWidget>
 #include <QMap>
 
-class QVBoxLayout;
 class QLabel;
+
+class EC_OpenSimPresence;
 
 namespace Foundation
 {
     class Framework;
-}
-
-namespace RexLogic
-{
-    class EC_OpenSimPresence;
 }
 
 namespace DebugStats
@@ -41,25 +37,29 @@ namespace DebugStats
         /// Destructor.
         ~ParticipantWindow();
 
-public slots:
-        ///
-        void PopulateUsernameList();
+        /// Adds user entry to the list.
+        /// @param presence EC_OpenSimPresence component
+        void AddUserEntry(EC_OpenSimPresence *presence);
 
-        ///
-        void AddUser(RexLogic::EC_OpenSimPresence *presence);
+        /// Removes user entry from the list.
+        /// @param presence EC_OpenSimPresence component
+        void RemoveUserEntry(EC_OpenSimPresence *presence);
 
-        ///
-        void RemoveUser(RexLogic::EC_OpenSimPresence *presence);
+        /// Adds new custom info field to the list.
+        /// @param user_id User ID of the user the info field
+        /// @param widget Info widget
+        void AddInfoField(const RexUUID &user_id, QWidget *widget);
 
     private:
-        ///
+        /// Populates the user list when this widget is created
+        void PopulateUserList();
+
+        /// Framework pointer.
         Foundation::Framework *framework_;
 
-        ///
-        QVBoxLayout *usernameLayout_;
+        /// List of user entry widgets.
+        QMap<RexUUID, QWidget *> entries_;
 
-        ///
-        QMap<RexUUID, QLabel *> users_;
     };
 }
 

@@ -785,7 +785,12 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
     // (primitive form of EC serialization/replication)
     QDomDocument temp_doc;
     if (temp_doc.setContent(QByteArray::fromRawData(freedata.c_str(), freedata.size())))
+    {
         DeserializeECsFromFreeData(entity, temp_doc);
+        Scene::Events::SceneEventData event_data(entity->GetId());
+        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
+    }
 }
 
 void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)

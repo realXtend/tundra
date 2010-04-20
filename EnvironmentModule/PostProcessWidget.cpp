@@ -43,8 +43,8 @@ namespace Environment
             // Because of widget propertie contains orginal strings we will use them for base of translations.
             // if we would use directly proxy widget info (example title) translations to english to finnish 
             // would produce that finnish to German would left it as Finnish so we use as a base language English.
-            QString orginal_title = graphicsProxyWidget()->windowTitle();
-            QString title = qApp->translate("PostProcessWidget", orginal_title.toStdString().c_str());
+           
+            QString title = qApp->translate("PostProcessWidget", "Post-processing");
             graphicsProxyWidget()->setWindowTitle(title);
 
             // Then set this widget to right state for each widget which is created from ui - file this must be called! 

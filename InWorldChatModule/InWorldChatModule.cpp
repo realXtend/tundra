@@ -10,9 +10,11 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "InWorldChatModule.h"
+//#include "ChatWidget.h"
 
 #include "EC_ChatBubble.h"
 #include "EC_Billboard.h"
+#include "EC_OpenSimPresence.h"
 
 #include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
@@ -26,7 +28,7 @@
 #include "UiModule.h"
 #include "ConfigurationManager.h"
 
-#include "EntityComponent/EC_OpenSimPresence.h"
+//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
 
 #include <QColor>
@@ -43,6 +45,7 @@ InWorldChatModule::InWorldChatModule() :
     showChatBubbles_(true),
     logging_(false),
     logFile_(0)
+    //chatWidget_(0)
 {
 }
 
@@ -123,8 +126,13 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
             /*
             if (!uiModule_.expired())
             {
-                //uiModule_.lock()->
-            }
+                chatWidget_ = new ChatWidget(framework_);
+                connect(chatWidget_, SIGNAL(ChatEntered(const QString &)), this, SLOT(SendChatFromViewer(const QString &)));
+                chatProxy_ = uiModule_.lock()->GetSceneManager()->AddWidgetToScene(
+                    chatWidget_, UiServices::UiWidgetProperties(QPointF(0,0), QSize(chatWidget_->size()), Qt::Widget, "InWorldChat", false, false));
+                connect(chatProxy_->scene(), SIGNAL(sceneRectChanged(const QRectF &)), this, SLOT(RepositionChatWidget(const QRectF &)));
+                RepositionChatWidget(chatProxy_->scene()->sceneRect());
+                chatProxy_->show();
             */
 
             // Get settings.
@@ -133,12 +141,7 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
         }
         else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            /*
-            if (!uiModule_.expired())
-            {
-                //uiModule_.lock()->
-            }
-            */
+            //SAFE_DELETE(chatWidget_);
 
             // Save settings.
             framework_->GetDefaultConfig().SetSetting<bool>("InWorldChatModule", "ShowChatBubbles", showChatBubbles_);
@@ -244,7 +247,7 @@ Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)
     {
         Scene::Entity &entity = **iter;
 
-        boost::shared_ptr<RexLogic::EC_OpenSimPresence> ec_presence = entity.GetComponent<RexLogic::EC_OpenSimPresence>();
+        boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity.GetComponent<EC_OpenSimPresence>();
         boost::shared_ptr<RexLogic::EC_OpenSimPrim> ec_prim = entity.GetComponent<RexLogic::EC_OpenSimPrim>();
 
         if (ec_presence)
@@ -404,6 +407,14 @@ bool InWorldChatModule::CreateLogFile()
     LogDebug(entry.toStdString());
     return true;
 }
+
+/*
+void InWorldChatModule::RepositionChatWidget(const QRectF &rect)
+{
+    if (rect.isValid() && chatProxy_ && chatWidget_)
+        chatProxy_->setPos(rect.width()-chatWidget_->size().width(), rect.height()-chatWidget_->size().height());
+}
+*/
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

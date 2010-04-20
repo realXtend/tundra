@@ -10,9 +10,15 @@
 
 #include "AbstractInventoryDataModel.h"
 
+#include "RexTypes.h"
+
+#include <boost/shared_ptr.hpp>
+
 #include <QMap>
 #include <QPair>
 #include <QVector>
+
+class RexUUID;
 
 namespace Foundation
 {
@@ -156,7 +162,7 @@ namespace Inventory
          *  @return true if successful
          */
         bool UploadFile(
-            const asset_type_t &asset_type,
+            const asset_type_t asset_type,
             std::string filename,
             const std::string &name,
             const std::string &description,
@@ -173,7 +179,7 @@ namespace Inventory
          */
 
         bool UploadBuffer(
-            const asset_type_t &asset_type,
+            const asset_type_t asset_type,
             const std::string &filename,
             const std::string &name,
             const std::string &description,

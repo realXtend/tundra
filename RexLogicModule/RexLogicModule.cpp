@@ -4,15 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "RexLogicModule.h"
-#include "ComponentManager.h"
-#include "EventDataInterface.h"
-#include "TextureInterface.h"
-#include "SoundServiceInterface.h"
-#include "InputServiceInterface.h"
-#include "SceneManager.h"
-#include "Avatar/AvatarControllable.h"
-#include "CameraControllable.h"
-
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
@@ -20,21 +11,33 @@
 #include "EventHandlers/FrameworkEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
-
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EntityComponent/EC_OpenSimPrim.h"
-#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
+#include "Avatar/Avatar.h"
+#include "Avatar/AvatarEditor.h"
+#include "Avatar/AvatarControllable.h"
+#include "Environment/Primitive.h"
+#include "CameraControllable.h"
 
-// External EC's
-#include "EC_Highlight.h"
-#include "EC_HoveringText.h"
-#include "EC_Clone.h"
-#include "EC_Light.h"
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "ModuleManager.h"
+#include "ConsoleCommand.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "ServiceManager.h"
+#include "ComponentManager.h"
+#include "EventDataInterface.h"
+#include "TextureInterface.h"
+#include "SoundServiceInterface.h"
+#include "InputServiceInterface.h"
+#include "SceneManager.h"
+#include "WorldStream.h"
+#include "UiModule.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -48,26 +51,17 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
+// External EC's
+#include "EC_Highlight.h"
+#include "EC_HoveringText.h"
+#include "EC_Clone.h"
+#include "EC_Light.h"
+#include "EC_OpenSimPresence.h"
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
 #include <OgreEntity.h>
-
-#include "Avatar/Avatar.h"
-#include "Environment/Primitive.h"
-#include "WorldStream.h"
-
-#include "Avatar/AvatarEditor.h"
-#include "RexTypes.h"
-
-#include "UiModule.h"
-
-#include "EventManager.h"
-#include "ConfigurationManager.h"
-#include "ModuleManager.h"
-#include "ConsoleCommand.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "ServiceManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -101,15 +95,17 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_FreeData);
     DECLARE_MODULE_EC(EC_AttachedSound);
     DECLARE_MODULE_EC(EC_OpenSimPrim);
-    DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimAvatar);
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
+
+    // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
+    DECLARE_MODULE_EC(EC_OpenSimPresence);
 }
 
 // virtual
@@ -338,7 +334,7 @@ void RexLogicModule::Uninitialize()
 #ifdef _DEBUG
 void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 {
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
+    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
     if (!renderer.get())
         return;
 
@@ -420,13 +416,9 @@ bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t eve
     PROFILE(RexLogicModule_HandleEvent);
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
     if (i != event_handlers_.end())
-    {
-        for (size_t j=0 ; j<i->second.size() ; j++)
-        {
+        for(size_t j=0 ; j<i->second.size() ; j++)
             if ((i->second[j])(event_id, data))
                 return true;
-        }
-    }
     return false;
 }
 
@@ -487,98 +479,89 @@ void RexLogicModule::SetCameraYawPitch(Real newyaw, Real newpitch)
     camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
 
-entity_id_t RexLogicModule::GetUserAvatarId()
+entity_id_t RexLogicModule::GetUserAvatarId() const
 {
-    RexLogic::AvatarPtr avatarPtr = GetAvatarHandler();
-    Scene::EntityPtr entity = avatarPtr->GetUserAvatar();
-    return entity->GetId();
+    return GetAvatarHandler()->GetUserAvatar()->GetId();
 }
 
-Vector3df RexLogicModule::GetCameraUp()
+Vector3df RexLogicModule::GetCameraUp() const
 {
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    if (!placeable_ptr)
+    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
+        //! \todo check if Ogre or OpenSim axis convention should actually be used
+        return placeable->GetOrientation() * Vector3df(0.0f,1.0f,0.0f);
+    else
         return Vector3df();
-
-    //! \todo check if Ogre or OpenSim axis convention should actually be used
-    return placeable_ptr->GetOrientation() * Vector3df(0.0f,1.0f,0.0f);
 }
 
-Vector3df RexLogicModule::GetCameraRight()
+Vector3df RexLogicModule::GetCameraRight() const
 {
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    if (!placeable_ptr)
+    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
+        //! \todo check if Ogre or OpenSim axis convention should actually be used
+        return placeable->GetOrientation() * Vector3df(1.0f,0.0f,0.0f);
+    else
         return Vector3df();
-
-    //! \todo check if Ogre or OpenSim axis convention should actually be used
-    return placeable_ptr->GetOrientation() * Vector3df(1.0f,0.0f,0.0f);
 }
 
-Real RexLogicModule::GetCameraFOV()
-{
-    if (camera_entity_.expired())
-        return 0.0f;
-
-    Foundation::ComponentPtr camera = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
-    OgreRenderer::EC_OgreCamera* camera_ptr = dynamic_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
-    if (!camera_ptr)
-        return 0.0f;
-
-    return camera_ptr->GetVerticalFov(); 
-}
-
-Real RexLogicModule::GetCameraViewportWidth()
-{
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return 0;
-
-    Ogre::Viewport *viewport = renderer->GetViewport();
-    return viewport->getActualWidth();
-}
-
-Real RexLogicModule::GetCameraViewportHeight()
-{
-    OgreRenderer::RendererPtr renderer = GetRendererPtr();
-    if (!renderer.get())
-        return 0;
-
-    Ogre::Viewport *viewport = renderer->GetViewport();
-    return viewport->getActualHeight();
-}
-
-Vector3df RexLogicModule::GetCameraPosition()
+Vector3df RexLogicModule::GetCameraPosition() const
 {
     if (camera_entity_.expired())
         return Vector3df();
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    if (!placeable_ptr)
+    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
+        return placeable->GetPosition();
+    else
         return Vector3df();
-
-    return placeable_ptr->GetPosition();
 }
 
-Quaternion RexLogicModule::GetCameraOrientation()
+Quaternion RexLogicModule::GetCameraOrientation() const
 {
     if (camera_entity_.expired())
         return Quaternion::IDENTITY;
 
-    Foundation::ComponentPtr placeable = camera_entity_.lock()->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    OgreRenderer::EC_OgrePlaceable* placeable_ptr = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    if (!placeable_ptr)
+    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (placeable)
+        return placeable->GetOrientation();
+    else
         return Quaternion::IDENTITY;
+}
 
-    return placeable_ptr->GetOrientation();
+Real RexLogicModule::GetCameraViewportWidth() const
+{
+    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
+    if (renderer.get())
+        return renderer->GetViewport()->getActualWidth();
+    else
+        return 0;
+}
+
+Real RexLogicModule::GetCameraViewportHeight() const
+{
+    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
+    if (renderer.get())
+        return renderer->GetViewport()->getActualHeight();
+    else
+        return 0;
+}
+
+Real RexLogicModule::GetCameraFOV() const
+{
+    if (camera_entity_.expired())
+        return 0.0f;
+
+    OgreRenderer::EC_OgreCamera* camera = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+    if (camera)
+        return camera->GetVerticalFov();
+    else
+        return 0.0f;
 }
 
 void RexLogicModule::SendRexPrimData(entity_id_t entityid)
@@ -586,7 +569,7 @@ void RexLogicModule::SendRexPrimData(entity_id_t entityid)
     GetPrimitiveHandler()->SendRexPrimData(entityid);
 }
 
-OgreRenderer::RendererPtr RexLogicModule::GetRendererPtr()
+OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
 {
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
 }
@@ -769,7 +752,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
         Foundation::ComponentPtr camera = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
 
         if ((placeable) && (camera))
-        {    
+        {
             Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
             
             entity->AddComponent(placeable);
@@ -779,30 +762,20 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
             camera_ptr->SetPlaceable(placeable);
             camera_ptr->SetActive();
             camera_entity_ = entity;
-            // Set camera controllable to use this camera entity. Note: it's a weak pointer so will not keep the camera alive needlessly
+            // Set camera controllable to use this camera entity.
+            //Note: it's a weak pointer so will not keep the camera alive needlessly
             camera_controllable_->SetCameraEntity(entity);
         }
-    }    
+    }
 
     event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
     if (scene_event_category == 0)
         LogError("Failed to query \"Scene\" event category");
 
-    // Also create a default terrain to the Scene. This is done here dynamically instead of fixed in RexLogic,
-    // since we might have 0-N terrains later on, depending on where we actually connect to. Now of course
-    // we just create one default terrain.
-    //CreateTerrain();
-
-    // Also create a default sky to the scene.
-    //CreateSky();
-
-    // Create a water handler.
-    //CreateWater();
-
     return GetCurrentActiveScene();
 }
 
-Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid)
+Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid) const
 {
     if (!activeScene_)
         return Scene::EntityPtr();
@@ -810,7 +783,7 @@ Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid)
     return activeScene_->GetEntity(entityid);
 }
 
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent)
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent) const
 {
     if (!activeScene_)
         return Scene::EntityPtr();
@@ -822,18 +795,18 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, co
         return Scene::EntityPtr();
 }
 
-Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid)
+Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid) const
 {
-    IDMap::iterator iter = UUIDs_.find(entityuuid);
+    IDMap::const_iterator iter = UUIDs_.find(entityuuid);
     if (iter == UUIDs_.end())
         return Scene::EntityPtr();
     else
         return GetPrimEntity(iter->second);
 }
 
-Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid)
+Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid) const
 {
-    IDMap::iterator iter = UUIDs_.find(entityuuid);
+    IDMap::const_iterator iter = UUIDs_.find(entityuuid);
     if (iter == UUIDs_.end())
         return Scene::EntityPtr();
     else
@@ -1069,6 +1042,13 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
     }
 }
 
+void RexLogicModule::EntityClicked(Scene::Entity* entity)
+{
+    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
+    if (name_tag.get())
+        name_tag->Clicked();
+}
+
 void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
@@ -1126,7 +1106,7 @@ void RexLogicModule::AboutToDeleteWorld()
         if (!paths.first.isEmpty() && !paths.second.isEmpty())
         {
             SetAllTextOverlaysVisible(false);
-            GetRendererPtr()->CaptureWorldAndAvatarToFile(
+            GetOgreRendererPtr()->CaptureWorldAndAvatarToFile(
                 avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
         }
     }
@@ -1177,13 +1157,6 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         else if (!name_tag->IsVisible())
             name_tag->AnimatedShow();
     }
-}
-
-void RexLogicModule::EntityClicked(Scene::Entity* entity)
-{
-    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-    if (name_tag.get())
-        name_tag->Clicked();
 }
 
 } // namespace RexLogic
