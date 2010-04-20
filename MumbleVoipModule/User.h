@@ -27,10 +27,20 @@ namespace MumbleVoip
         int Session();
         int Id();
         Channel* Channel();
+        bool Speaking();
+    public slots:
+        void OnAudioFrameReceived();
+        void SpeakingTimeout();
+
     private:
         const MumbleClient::User& user_;
+        bool speaking_;
+        static const int SPEAKING_TIMEOUT_MS = 1000;
+
     signals:
         void Left();
+        void StartSpeaking();
+        void StopSpeaking();
     };
 
 } // namespace MumbleVoip
