@@ -24,24 +24,59 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
+        //! Default constructor
         User(const MumbleClient::User& user);
+
+        //! Default deconstructor
         virtual ~User();
+
+        //! \return name of user
         virtual QString Name();
+
+        //! \return textual comment about user
         virtual QString Comment();
-        virtual QString Hash(); // ???
+
+//        virtual QString Hash(); // ???
+
+        //! \return session id of the user
         virtual int Session();
+
+        //! \return id of the user
         virtual int Id();
+
+        //! \return channel of where user is
         virtual Channel* Channel();
+
+        //! \return true is user is speaking
         virtual bool IsSpeaking();
+
+        //! \return true if the position of the user is known return false if not
         virtual bool PositionKnown() {return position_known_;}
+
+        //! \return position od the user
         virtual Vector3df Position();
-        virtual double PlaybackBufferAvailableMs();
+
+        //! \return length of playback buffer is ms for this user 
+        virtual int PlaybackBufferAvailableMs();
+
+        //! \return oldest audio frame available for playback 
+        //! \note caller must delete audio frame object after usage
         virtual PCMAudioFrame* GetAudioFrame();
 
     public slots:
+
+        //! Put audio frame to end of playback buffer 
+        //! If playback buffer is full then delete the frame
+        //! \param frame Audio frame received from network
         void OnAudioFrameReceived(PCMAudioFrame* frame);
-        void SpeakingTimeout();
+
+        //! Updatedes user last known position
+        //! Also set position_known_ flag up
+        //! \param pos the curren position of this user
         void UpdatePosition(Vector3df pos);
+
+    private slots:
+        void OnSpeakingTimeout();
 
     private:
         const MumbleClient::User& user_;
@@ -53,8 +88,13 @@ namespace MumbleVoip
         QList<PCMAudioFrame*> playback_queue_;
 
     signals:
+        //! Emited when user has left from server
         void Left();
+
+        //! Emited when user starts to speak
         void StartSpeaking();
+
+        //! Emited when user stops speaking
         void StopSpeaking();
     };
 
