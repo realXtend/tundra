@@ -2,18 +2,25 @@
 #include "User.h"
 #include "MumbleVoipModule.h"
 #include "stdint.h"
+#include "MumbleDefines.h"
 
 #include <QTimer>
 
-//#define BUILDING_DLL // for dll import/export declarations
-//#define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/user.h>
-//#undef BUILDING_DLL // for dll import/export declarations
 
 namespace MumbleVoip
 {
     User::User(const MumbleClient::User& user) : user_(user), speaking_(false), position_known_(false), position_(0,0,0)
     {
+    }
+
+    User::~User()
+    {
+        foreach(PCMAudioFrame* audio, playback_queue_)
+        {
+            SAFE_DELETE(audio);
+        }
+        playback_queue_.clear();
     }
 
     QString User::Name()
@@ -46,13 +53,16 @@ namespace MumbleVoip
         return QString(user_.comment.c_str());
     }
 
-    bool User::Speaking()
+    bool User::IsSpeaking()
     {
         return speaking_;
     }
 
-    void User::OnAudioFrameReceived()
+    void User::OnAudioFrameReceived(PCMAudioFrame* frame)
     {
+        if (PlaybackBufferAvailableMs() < PLAYBACK_BUFFER_MS_)
+            playback_queue_.push_back(frame);
+
         if (!speaking_)
             emit StartSpeaking();
         speaking_ = true;
@@ -75,6 +85,19 @@ namespace MumbleVoip
     Vector3df User::Position()
     {
         return position_;
+    }
+
+    double User::PlaybackBufferAvailableMs()
+    {
+        return 1000 * playback_queue_.size() * SAMPLES_IN_FRAME / SAMPLE_RATE;
+    }
+    
+    PCMAudioFrame* User::GetAudioFrame()
+    {
+        if (playback_queue_.size() == 0)
+            return 0;
+
+        return playback_queue_.takeFirst();
     }
 
 } // namespace MumbleVoip
