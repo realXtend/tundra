@@ -67,7 +67,7 @@ namespace MumbleVoip
             emit StartSpeaking();
         speaking_ = true;
 
-        QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(SpeakingTimeout()));
+        QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()));
     }
 
     void User::SpeakingTimeout()
