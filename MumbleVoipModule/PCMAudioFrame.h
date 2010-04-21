@@ -6,20 +6,20 @@
 namespace MumbleVoip
 {
     /**
-     * Makes copy of given data when constructed. Data will be freed in deconstructor.
+     * Raw pulse code modulated audio data
      *
      */
     class PCMAudioFrame
     {
     public:
+        //! Allocates memory for data
+        PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size);
+
         //! Copies data from given source
         PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
 
-        PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size);
-
-        PCMAudioFrame(PCMAudioFrame*);
-        ////! Creates
-        //PCMAudioFrame(int sample_rate, int sample_widh, int channels, int data_size);
+        //! Copies data from given audio frame
+        PCMAudioFrame(PCMAudioFrame* frame);
 
         virtual ~PCMAudioFrame();
         virtual char* DataPtr();

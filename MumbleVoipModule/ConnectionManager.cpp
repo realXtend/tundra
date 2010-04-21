@@ -22,9 +22,7 @@ namespace MumbleVoip
         sending_audio_(false),
         recording_device_(""),
         lib_mumble_thread_(0),
-        position_x_(0.0),
-        position_y_(0.0),
-        position_z_(0.0)
+        users_position_(0.0,0.0,0.0)
     {
     }
 
@@ -162,11 +160,9 @@ namespace MumbleVoip
         delete frame;
     }
 
-    void ConnectionManager::SetAudioSourcePosition(double x, double y, double z)
+    void ConnectionManager::SetAudioSourcePosition(Vector3df position)
     {
-        position_x_ = x;
-        position_y_ = y;
-        position_z_ = z;
+        users_position_ = position;
     }
 
     void ConnectionManager::SendAudio(bool send)
@@ -217,7 +213,7 @@ namespace MumbleVoip
                 {
                     Connection* connection = *i;
                     if (connection->SendingAudio())
-                        connection->SendAudioFrame(frame, position_x_, position_y_, position_z_);
+                        connection->SendAudioFrame(frame, users_position_);
                 }
                 delete frame;
             }

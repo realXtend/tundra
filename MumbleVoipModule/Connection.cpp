@@ -240,7 +240,7 @@ namespace MumbleVoip
         return sending_audio_;
     }
 
-    void Connection::SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z)
+    void Connection::SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position)
     {
         QMutexLocker locker(&mutex_encode_audio_);
 
@@ -294,9 +294,9 @@ namespace MumbleVoip
         if (send_position_)
         {
             // Coordinate conversion: Naali -> Mumble
-            data_stream << static_cast<float>(y);
-            data_stream << static_cast<float>(z);
-            data_stream << static_cast<float>(-x);
+            data_stream << static_cast<float>(users_position.y);
+            data_stream << static_cast<float>(users_position.z);
+            data_stream << static_cast<float>(-users_position.x);
         }
 
         client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
@@ -424,7 +424,7 @@ namespace MumbleVoip
 
             User* user = users_[session];
             if (user)
-                QMutexLocker locker(user);
+                QMutexLocker user_locker(user);
                 user->UpdatePosition(position);
         }
     }

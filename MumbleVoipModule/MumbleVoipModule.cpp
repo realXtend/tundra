@@ -85,7 +85,7 @@ namespace MumbleVoip
             Vector3df position;
             Vector3df direction;
             if (GetAvatarPosition(position, direction))
-                connection_manager_->SetAudioSourcePosition(position.x, position.y, position.z);
+                connection_manager_->SetAudioSourcePosition(position);
             connection_manager_->Update(frametime);
         }
     }

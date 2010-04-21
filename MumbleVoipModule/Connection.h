@@ -8,7 +8,7 @@
 #include <QMutex>
 #include <QMap>
 #include <QPair>
-
+#include "Core.h"
 #include "CoreTypes.h"
 #include "ServerInfo.h"
 #include "stdint.h"
@@ -34,46 +34,33 @@ namespace MumbleVoip
 
     typedef QPair<User*, PCMAudioFrame*> AudioPacket;
 
-    //class AudioSourceInterface : QObject
-    //{
-    //    Q_OBJECT
-    //public:
-    //    QList<PCMAudioFrame*> GetPCMAudioFrames();
-    //signals:
-    //    void PCMAudioFramesAvailable();
-    //};
-
-    //class AudioSinkInterface : QObject
-    //{
-
-    //};
-
-    //class VideoSourceInterface : QObject
-    //{
-    //    Q_OBJECT
-    //public:
-    //    QList<PCMAudioFrame*> GetVideoFrames();
-    //signals:
-    //    void VideoFramesAvailable();
-    //};
-
     //! Connection to a single mumble server.
     //!
-    //! \todo Thread safety !!!
+    //! Do not use this class directly. Only ConnectionManager class is supposed
+    //! to use this class.
     //!
+    //! This is basically a wrapper over Client class of mumbleclient library.
+    //  Mumbleclient library has a main loop whitch calls callback functions in this class
+    //! so thread safaty have to be dealed within this class.
     class Connection : public QObject
     {
         Q_OBJECT
     public:
         enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
+        //! Default constructor
         Connection(ServerInfo &info);
+
+        //! Default deconstructor
         virtual ~Connection();
 
         //! Closes connection to Mumble server
         virtual void Close();
 
         //! Joins to given channel if channels exist
+        //! If authtorization is not completed yet the join request is queuesd
+        //! and executed again after successfullu authorization
+        //!
         //! \todo create channels if it doesn't exist
         virtual void Join(QString channel);
 
@@ -84,28 +71,33 @@ namespace MumbleVoip
 
         //! Encode and send given frame to Mumble server
         //! Frame object is NOT deleted by this method 
-        virtual void SendAudioFrame(PCMAudioFrame* frame, double x, double y, double z);
+        virtual void SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position);
 
         //! \return list of channels available
         virtual QList<QString> Channels();
 
+        //! Set audio sending true/false 
         virtual void SendAudio(bool send);
+
+        //! \return true if connection is sending audio, return false otherwise
         virtual bool SendingAudio();
 
-        //! \param quality 0.0 .. 1.0 where 0.0 means lowest bitrate and worst quality
-        //!        and 1.0 meas highest bitrate and best quality.
+        //! \param quality [0.0 .. 1.0] where:
+        //!        0.0 means lowest bitrate and worst quality
+        //!        1.0 means highest bitrate and best quality.
         virtual void SetEncodingQuality(double quality);
 
+        //! Set position sending on/off
         virtual void SendPosition(bool value) { send_position_ = value; }
+
+        //! Return true if position information is send with audio data
         virtual bool IsSendingPosition() { return send_position_; }
 
         // virtual State State();
-        // virtual QString Reason();
     private:
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
-        static const int PLAYBACK_BUFFER_MS_ = 100;
 
         void InitializeCELT();
         void UninitializeCELT();
@@ -150,7 +142,6 @@ namespace MumbleVoip
         void OnUserJoinedCallback(const MumbleClient::User& user);
         void OnUserLeftCallback(const MumbleClient::User& user);
         
-
     signals:
 //        void Closed();
         void TextMessage(QString &text);

@@ -3,7 +3,6 @@
 #ifndef incl_MumbleVoipModule_ConnectionManager_h
 #define incl_MumbleVoipModule_ConnectionManager_h
 
-
 #include <QObject>
 #include <QString>
 #include <QThread>
@@ -31,20 +30,9 @@ namespace MumbleVoip
     class User;
 
     /**
-     * Thread for running the lib mumble mainloop
-     *
-     */
-    class LibMumbleMainloopThread : public QThread 
-    {
-    public:
-        virtual void run();
-    };
-
-    /**
 	 *  Handles connections to mumble servers.
      * 
-     *  Fetch recorted audio from AudioModule.
-	 *  Current implementation launches mumble client. 
+     *  Sends audio data to mumble servers recorded by audioModule.
      *
      *  Future implementation uses integrated mumble client and allow multiple
      *  simultaneous connections to mumble servers.
@@ -54,22 +42,23 @@ namespace MumbleVoip
         Q_OBJECT
 
     public:
+        //! Default constructor
         ConnectionManager(Foundation::Framework* framework);
+
         virtual ~ConnectionManager();
 
-        //! opens mumble client with auto connect to given server and
-        //! starts link plugin
-        //!
-        //! If mumble client is already running it closes current connections
-        //! and open a new connection to given server.
+        //! Open connection to given Mumble server
         virtual void OpenConnection(ServerInfo info);
 
+        //! Closes connection to given Mumble server
+        //! If such a connection cannot be found then do nothing
         virtual void CloseConnection(ServerInfo info);
 
+        //! Set audio sending on/off
         //! \throw std::exception if audio recording cannot be started
-        virtual void SendAudio(bool value);
+        virtual void SendAudio(bool send);
 
-        //! \return true if sending audio false if not
+        //! \return true if audio is transmitted to mumble server
         virtual bool SendingAudio();
 
         //! Start mumble client application with given server url
@@ -83,7 +72,8 @@ namespace MumbleVoip
 
         virtual void Update(f64 frametime);
 
-        virtual void SetAudioSourcePosition(double x, double y, double z);
+        //! Set user's own position. This value is sent to Mumble server with audio packets
+        virtual void SetAudioSourcePosition(Vector3df position);
 
     private:
         void StartMumbleLibrary();
@@ -94,12 +84,9 @@ namespace MumbleVoip
         QMap<QString, Connection*> connections_; // maps: server address - connection object
         LibMumbleThread* lib_mumble_thread_;
         Foundation::Framework* framework_;
-//        sound_id_t audio_playback_channel_;
         bool sending_audio_;
         std::string recording_device_;
-        double position_x_;
-        double position_y_;
-        double position_z_;
+        Vector3df users_position_;
         QMap<int, sound_id_t> audio_playback_channels_;
 
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
