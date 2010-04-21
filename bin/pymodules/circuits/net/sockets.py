@@ -14,11 +14,19 @@ from _socket import socket as SocketType
 from collections import defaultdict, deque
 from socket import gethostname, gethostbyname
 
+try:
+    import ssl
+    HAS_SSL = 1
+except ImportError:
+    import warnings
+    warnings.warn("No SSL support available. Using python-2.5 ? Try isntalling the ssl module: http://pypi.python.org/pypi/ssl/")
+    HAS_SSL = 0
+
 from circuits.net.pollers import Select as DefaultPoller
 from circuits.core import handler, Event, Component
 
 BUFSIZE = 4096 # 4KB Buffer
-BACKLOG = 128  # 128 Concurrent Connections
+BACKLOG = 5000 #  5K Concurrent Connections
 
 ###
 ### Event Objects
@@ -33,11 +41,11 @@ class Connect(Event):
 
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: (host, port) Server: (sock, host, port)
-    @type  args: tuple
+    :param args:  Client: (host, port) Server: (sock, host, port)
+    :type  args: tuple
 
-    @param kwargs: Client: (ssl)
-    @type  kwargs: dict
+    :param kwargs: Client: (ssl)
+    :type  kwargs: dict
     """
 
     def __init__(self, *args, **kwargs):
@@ -53,8 +61,8 @@ class Disconnect(Event):
 
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: () Server: (sock)
-    @type  tuple: tuple
+    :param args:  Client: () Server: (sock)
+    :type  tuple: tuple
     """
 
     def __init__(self, *args):
@@ -69,11 +77,11 @@ class Connected(Event):
 
     @note: This event is for Client Components.
 
-    @param host: The hostname connected to.
-    @type  str:  str
+    :param host: The hostname connected to.
+    :type  str:  str
 
-    @param port: The port connected to
-    @type  int:  int
+    :param port: The port connected to
+    :type  int:  int
     """
 
     def __init__(self, host, port):
@@ -101,8 +109,8 @@ class Read(Event):
 
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: (data) Server: (sock, data)
-    @type  tuple: tuple
+    :param args:  Client: (data) Server: (sock, data)
+    :type  tuple: tuple
     """
 
     def __init__(self, *args):
@@ -117,8 +125,8 @@ class Error(Event):
 
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: (error) Server: (sock, error)
-    @type  tuple: tuple
+    :param args:  Client: (error) Server: (sock, error)
+    :type  tuple: tuple
     """
 
     def __init__(self, *args):
@@ -135,8 +143,8 @@ class Write(Event):
     @note: This event is never sent, it is used to send data.
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: (data) Server: (sock, data)
-    @type  tuple: tuple
+    :param args:  Client: (data) Server: (sock, data)
+    :type  tuple: tuple
     """
 
     def __init__(self, *args):
@@ -154,8 +162,8 @@ class Close(Event):
     @note: This event is never sent, it is used to close.
     @note: This event is used for both Client and Server Components.
 
-    @param args:  Client: () Server: (sock)
-    @type  tuple: tuple
+    :param args:  Client: () Server: (sock)
+    :type  tuple: tuple
     """
 
     def __init__(self, *args):
@@ -197,7 +205,7 @@ class Client(Component):
 
         Poller = kwargs.get("poller", DefaultPoller)
 
-        self._poller = Poller()
+        self._poller = Poller(channel=self.channel)
         self._poller.register(self)
 
         self._sock = None
@@ -396,13 +404,16 @@ class Server(Component):
             self.bind = bind
 
         self.ssl = ssl
+        if self.ssl:
+            self.certfile = kwargs.get("certfile", None)
+            self.keyfile = kwargs.get("keyfile", None)
 
         self._bufsize = kwargs.get("bufsize", BUFSIZE)
         self._backlog = kwargs.get("backlog", BACKLOG)
 
         Poller = kwargs.get("poller", DefaultPoller)
 
-        self._poller = Poller()
+        self._poller = Poller(channel=self.channel)
         self._poller.register(self)
 
         self._sock = None
@@ -501,6 +512,12 @@ class Server(Component):
     def _accept(self):
         try:
             newsock, host = self._sock.accept()
+            if self.ssl and HAS_SSL:
+                newsock = ssl.wrap_socket(newsock,
+                    server_side=True,
+                    certfile=self.certfile,
+                    keyfile=self.keyfile,
+                    ssl_version=ssl.PROTOCOL_TLSv1)
         except socket.error, e:
             if e[0] in (EWOULDBLOCK, EAGAIN):
                 return
@@ -698,7 +715,7 @@ class UDPServer(Server):
 
 UDPClient = UDPServer
 
-def Pipe(channels=("pipe.a", "pipe.b"), **kwargs):
+def Pipe(channels=("pipe", "pipe"), **kwargs):
     """Create a new full duplex Pipe
 
     Returns a pair of UNIXClient instances connected on either side of

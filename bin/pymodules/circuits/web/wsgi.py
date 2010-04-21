@@ -7,23 +7,20 @@
 This module implements WSGI Components.
 """
 
-import warnings
 from urllib import unquote
 from cStringIO import StringIO
-from traceback import format_exc
 from sys import exc_info as _exc_info
 
-from circuits import handler, Component
+from circuits.core import handler, BaseComponent
 
 import wrappers
+from http import HTTP
+from events import Request
 from headers import Headers
-from utils import quoteHTML
+from errors import HTTPError
 from dispatchers import Dispatcher
-from events import Request, Response
-from errors import HTTPError, NotFound
-from constants import RESPONSES, DEFAULT_ERROR_MESSAGE
 
-class Application(Component):
+class Application(BaseComponent):
 
     headerNames = {
             "HTTP_CGI_AUTHORIZATION": "Authorization",
@@ -36,6 +33,7 @@ class Application(Component):
     def __init__(self):
         super(Application, self).__init__()
 
+        HTTP().register(self)
         Dispatcher().register(self)
 
     def translateHeaders(self, environ):
@@ -57,9 +55,10 @@ class Application(Component):
         request = wrappers.Request(None,
                 env("REQUEST_METHOD"),
                 env("wsgi.url_scheme"),
-                env("PATH_INFO"),
+                env("PATH_INFO", ""),
                 protocol,
-                env("QUERY_STRING"))
+                env("QUERY_STRING", ""))
+        request.server = None
 
         request.remote = wrappers.Host(env("REMOTE_ADDR"), env("REMTOE_PORT"))
 
@@ -73,75 +72,26 @@ class Application(Component):
 
         return request, response
 
-    def setError(self, response, status, message=None, traceback=None):
-        try:
-            short, long = RESPONSES[status]
-        except KeyError:
-            short, long = "???", "???"
-
-        if message is None:
-            message = short
-
-        explain = long
-
-        content = DEFAULT_ERROR_MESSAGE % {
-            "status": status,
-            "message": quoteHTML(message),
-            "traceback": traceback or ""}
-
-        response.body = content
-        response.status = "%s %s" % (status, message)
-
-    def _handleError(self, error):
-        response = error.response
-
-        v = self.send(error, "httperror", self.channel)
-
-        if v:
-            if issubclass(type(v), basestring):
-                response.body = v
-                res = Response(response)
-                self.send(res, "response", self.channel)
-            elif isinstance(v, HTTPError):
-                self.send(Response(v.response), "response", self.channel)
-            else:
-                assert v, "type(v) == %s" % type(v)
-
-    def response(self, response):
-        response.done = True
-
     def __call__(self, environ, start_response, exc_info=None):
-        request, response = self.getRequestResponse(environ)
+        self.request, self.response = self.getRequestResponse(environ)
+        self.push(Request(self.request, self.response), "request", "web")
 
-        try:
-            req = Request(request, response)
+        self.run()
 
-            v = self.send(req, "request", self.channel, errors=True)
+        self.response.prepare()
+        body = self.response.body
+        status = self.response.status
+        headers = self.response.headers.items()
 
-            if v:
-                if issubclass(type(v), basestring):
-                    response.body = v
-                    res = Response(response)
-                    self.send(res, "response", self.channel)
-                elif isinstance(v, HTTPError):
-                    self._handleError(v)
-                elif isinstance(v, wrappers.Response):
-                    res = Response(v)
-                    self.send(res, "response", self.channel)
-                else:
-                    assert v, "type(v) == %s" % type(v)
-            else:
-                error = NotFound(request, response)
-                self._handleError(error)
-        except:
-            error = HTTPError(request, response, 500, error=format_exc())
-            self._handleError(error)
-        finally:
-            body = response.process()
-            start_response(response.status, response.headers.items(), exc_info)
-            return [body]
+        start_response(status, headers, exc_info)
+        return body
 
-class Gateway(Component):
+    @handler("response", filter=True, target="http")
+    def response(self, response):
+        self.stop()
+        return True
+
+class Gateway(BaseComponent):
 
     channel = "web"
 
@@ -155,7 +105,7 @@ class Gateway(Component):
 
         self._request = self._response = None
 
-    def _createEnviron(self):
+    def createEnviron(self):
         environ = {}
         req = self._request
         env = environ.__setitem__
@@ -210,9 +160,9 @@ class Gateway(Component):
         self._response = response
 
         try:
-            return "".join(self.app(self._createEnviron(), self.start_response))
+            return self.app(self.createEnviron(), self.start_response)
         except Exception, error:
-            status = error.code
-            message = error.message
+            status = 500
+            message = str(error)
             error = _exc_info()
             return HTTPError(request, response, status, message, error)

@@ -11,8 +11,9 @@ import sys
 from cStringIO import StringIO
 from traceback import format_tb
 
+from handlers import handler
+from components import Component
 from circuits.tools import reprhandler
-from circuits.core import handler, Component
 
 class Debugger(Component):
     """Create a new Debugger Component
@@ -44,31 +45,24 @@ class Debugger(Component):
         self.IgnoreChannels.extend(kwargs.get("IgnoreChannels", []))
 
     @handler("exception", filter=True)
-    def exception(self, *args, **kwargs):
+    def exception(self, type, value, traceback, handler=None):
         if not self.errors:
             return
 
         s = StringIO()
 
-        if len(args) == 3:
-            type, value, traceback = args
-            handler = kwargs.get("handler", None)
-            if handler is None:
-                handler = "'Unknown'"
-            else:
-                handler = reprhandler(handler)
-            s.write("ERROR in %s (%s): %s\n" % (handler, type, value))
-            s.write("%s\n" % "".join(format_tb(traceback)))
+        if handler is None:
+            handler = ""
         else:
-            s.write("Unknown Error\n")
-            s.write("args:   %s\n" % repr(args))
-            s.write("kwargs: %s\n" % repr(kwargs))
+            handler = reprhandler(handler)
+
+        s.write("ERROR %s(%s): %s\n" % ("%s " % handler, type, value))
+        s.write("%s\n" % "".join(format_tb(traceback)))
 
         s.seek(0)
 
         if self.logger is not None:
-            for line in s:
-                self.logger.error(line)
+            self.logger.error(s.getvalue())
         else:
             self.file.write(s.read())
             self.file.flush()
@@ -87,6 +81,7 @@ class Debugger(Component):
             return
 
         channel = event.channel
+
         if True in [event.name == x.__name__ for x in self.IgnoreEvents]:
             return
         elif channel in self.IgnoreChannels:

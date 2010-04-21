@@ -1,32 +1,29 @@
 #!/usr/bin/env python
 
 from threading import Thread as _Thread
-from threading import enumerate as threads
 
 try:
     from multiprocessing import Pipe as _Pipe
     from multiprocessing import Value as _Value
     from multiprocessing import Process as _Process
+    from multiprocessing.sharedctypes import Synchronized
 
-    from multiprocessing import cpu_count as cpus
-    from multiprocessing import active_children as processes
     HAS_MULTIPROCESSING = 2
 except:
     try:
         from processing import Pipe as _Pipe
         from processing import Value as _Value
         from processing import Process as _Process
+        from processing.sharedctypes import Synchronized
 
-        from processing import cpuCount as cpus
-        from processing import activeChildren as processes
         HAS_MULTIPROCESSING = 1
     except:
         HAS_MULTIPROCESSING = 0
 
 
-from circuits.core import BaseComponent as _BaseComponent
+from components import BaseComponent as _BaseComponent
 
-POLL_INTERVAL = 0.00001
+TIMEOUT = 0.2
 
 class Thread(_BaseComponent):
 
@@ -40,7 +37,7 @@ class Thread(_BaseComponent):
         self._thread.start()
 
     def run(self):
-        pass
+        """To be implemented by subclasses"""
 
     def stop(self):
         self._running = False
@@ -60,62 +57,62 @@ if HAS_MULTIPROCESSING:
             super(Process, self).__init__(*args, **kwargs)
 
             self._running = _Value("b", False)
-            self.process = _Process(target=self._run, args=(self.run, self._running,))
-            self.parent, self.child = _Pipe()
+            self._timeout = kwargs.get("timeou", TIMEOUT)
+            self._process = _Process(target=self._run,
+                    args=(self.run, self._running,))
+            self._parent, self._child = _Pipe()
+
+        def __tick__(self):
+            if self._parent.poll(self._timeout):
+                event = self._parent.recv()
+                channel = event.channel
+                target = event.target
+                self.push(event, channel, target)
 
         def _run(self, fn, running):
             thread = _Thread(target=fn)
             thread.start()
 
             try:
-                while running.value:
+                while running.value and thread.isAlive():
                     try:
                         self.flush()
-                        if self.child.poll(POLL_INTERVAL):
-                            event = self.child.recv()
+                        if self._child.poll(self._timeout):
+                            event = self._child.recv()
                             channel = event.channel
                             target = event.target
-                            self.send(event, channel, target)
-                    except SystemExit:
+                            self.push(event, channel, target)
+                    except KeyboardInterrupt, SystemExit:
                         running.acquire()
                         running.value = False
                         running.release()
-                        break
-                    except KeyboardInterrupt:
-                        running.acquire()
-                        running.value = False
-                        running.release()
-                        break
             finally:
                 running.acquire()
                 running.value = False
                 running.release()
-                thread.join()
                 self.flush()
 
         def start(self):
             self._running.acquire()
             self._running.value = True
             self._running.release()
-            self.process.start()
+            self._process.start()
 
         def run(self):
-            pass
+            """To be implemented by subclasses"""
 
         def stop(self):
             self._running.acquire()
             self._running.value = False
             self._running.release()
 
-        def isAlive(self):
-            return self._running.value
+        def join(self):
+            return self._process.join()
 
-        def poll(self, wait=POLL_INTERVAL):
-            if self.parent.poll(POLL_INTERVAL):
-                event = self.parent.recv()
-                channel = event.channel
-                target = event.target
-                self.send(event, channel, target)
+        @property
+        def alive(self):
+            if type(self._running) is Synchronized:
+                return self._running.value and self._process.is_alive()
 
 else:
     Process = Thread
