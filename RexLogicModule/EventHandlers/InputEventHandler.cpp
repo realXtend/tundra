@@ -23,7 +23,7 @@ namespace RexLogic
     {
         if (event_id == Input::Events::SWITCH_CAMERA_STATE)
         {
-            WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+            WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
             // Only switch if connected
             if (conn->IsConnected())
                 rexlogicmodule_->SwitchCameraState();

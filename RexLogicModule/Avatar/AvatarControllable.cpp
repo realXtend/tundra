@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "Avatar/AvatarControllable.h"
+#include "EntityComponent/EC_Controllable.h"
 #include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
@@ -332,6 +333,13 @@ namespace RexLogic
         SendMovementToServer(controlflags);
     }
 
+    bool AvatarControllable::IsAvatar(const Foundation::ComponentPtr &component) const
+    {
+        if (!component)
+            return false;
+        return (checked_static_cast<EC_Controllable*>(component.get())->GetType() == RexTypes::CT_AVATAR);
+    }
+
     void AvatarControllable::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
     {
         //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but this function can handle exactly one controllable. -cm
@@ -348,10 +356,10 @@ namespace RexLogic
         netpos->Updated();    
     }    
 
-	void AvatarControllable::SetYaw(Real newyaw)
-	{
-		//keys left/right set to -1/1 .. but this can use fractions too, right?
-		//and is seeminly not overridden by anything at least in AddTime.
+    void AvatarControllable::SetYaw(Real newyaw)
+    {
+        //keys left/right set to -1/1 .. but this can use fractions too, right?
+        //and is seeminly not overridden by anything at least in AddTime.
         //XXX ! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
         Scene::ScenePtr scene = framework_->GetScene("World");
         Scene::SceneManager::iterator it = scene->begin();
@@ -363,15 +371,15 @@ namespace RexLogic
             {
                 EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->yaw = newyaw;
-			}
-		}
-		net_dirty_ = true;
-	}
+            }
+        }
+        net_dirty_ = true;
+    }
 
-	void AvatarControllable::SetRotation(Quaternion newrot)
-	{
-		RexLogicModule::LogDebug("AvatarControllable::SetRotation");
-		Scene::ScenePtr scene = framework_->GetScene("World");
+    void AvatarControllable::SetRotation(const Quaternion &newrot)
+    {
+        RexLogicModule::LogDebug("AvatarControllable::SetRotation");
+        Scene::ScenePtr scene = framework_->GetScene("World");
         Scene::SceneManager::iterator it = scene->begin();
         Foundation::ComponentPtr component;
         for ( ; it != scene->end() ; ++it)
@@ -379,14 +387,13 @@ namespace RexLogic
             component = (*it)->GetComponent(EC_Controllable::TypeNameStatic());
             if (IsAvatar(component))
             {
-				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-				netpos->orientation_ = newrot * netpos->orientation_;
-				netpos->Updated();
-			}
-		}
-
+                EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
+                netpos->orientation_ = newrot * netpos->orientation_;
+                netpos->Updated();
+            }
+        }
 
         net_dirty_ = true;
-	}
+    }
 }
 
