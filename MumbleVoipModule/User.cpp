@@ -28,10 +28,10 @@ namespace MumbleVoip
         return QString(user_.name.c_str());
     }
     
-    QString User::Hash()
-    {
-        return QString(user_.hash.c_str());
-    }
+    //QString User::Hash()
+    //{
+    //    return QString(user_.hash.c_str());
+    //}
     
     int User::Session()
     {
@@ -70,7 +70,7 @@ namespace MumbleVoip
         QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()));
     }
 
-    void User::SpeakingTimeout()
+    void User::OnSpeakingTimeout()
     {
         if (speaking_)
             emit StopSpeaking();
@@ -88,7 +88,7 @@ namespace MumbleVoip
         return position_;
     }
 
-    double User::PlaybackBufferAvailableMs()
+    int User::PlaybackBufferAvailableMs()
     {
         return 1000 * playback_queue_.size() * SAMPLES_IN_FRAME / SAMPLE_RATE;
     }
