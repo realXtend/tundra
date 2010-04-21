@@ -123,7 +123,7 @@ namespace MumbleVoip
         {
             AudioPacket packet = connection->GetAudioPacket();
             if (packet.second == 0)
-                break;
+                break; // nothing to play anymore
             PlaybackAudioPacket(packet.first, packet.second);
         }
     }
@@ -137,15 +137,17 @@ namespace MumbleVoip
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
         sound_buffer.data_ = frame->DataPtr();
         sound_buffer.frequency_ = frame->SampleRate();
-
         if (frame->SampleWidth() == 16)
             sound_buffer.sixteenbit_ = true;
         else
             sound_buffer.sixteenbit_ = false;
         sound_buffer.size_ = frame->GetLengthBytes();
-        sound_buffer.stereo_ = false;
-        QMutexLocker locker(user);
+        if (frame->Channels() == 2)
+            sound_buffer.stereo_ = true;
+        else
+            sound_buffer.stereo_ = false;
 
+        QMutexLocker user_locker(user);
         if (audio_playback_channels_.contains(user->Session()))
             if (user->PositionKnown())
                 sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
