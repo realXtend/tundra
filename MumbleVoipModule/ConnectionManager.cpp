@@ -179,7 +179,7 @@ namespace MumbleVoip
             int frequency = SAMPLE_RATE;
             bool sixteenbit = true;
             bool stereo = false;
-            int buffer_size = SAMPLE_WIDTH/2*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
+            int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
             sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
         }
 
