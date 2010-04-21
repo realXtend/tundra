@@ -49,7 +49,7 @@ namespace MumbleVoip
         Vector3df position_;
         bool position_known_;
         static const int SPEAKING_TIMEOUT_MS = 1000;
-        static const int PLAYBACK_BUFFER_MS_= 100;
+        static const int PLAYBACK_BUFFER_MS_= 200;
         QList<PCMAudioFrame*> playback_queue_;
 
     signals:
