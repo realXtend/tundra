@@ -10,12 +10,12 @@ These tools can also be used within Controlelrs and request handlers.
 
 import os
 import stat
-import types
 import hashlib
-import datetime
 import mimetypes
 import mimetools
+from time import mktime
 from rfc822 import formatdate
+from datetime import datetime, timedelta
 
 mimetypes.init()
 mimetypes.add_type("image/x-dwg", ".dwg")
@@ -23,7 +23,7 @@ mimetypes.add_type("image/x-icon", ".ico")
 mimetypes.add_type("application/xhtml+xml", ".xhtml")
 
 import _httpauth
-from utils import url, valid_status, get_ranges, compress
+from utils import valid_status, get_ranges, compress
 from errors import HTTPError, NotFound, Redirect, Unauthorized
 
 def expires(request, response, secs=0, force=False):
@@ -54,7 +54,7 @@ def expires(request, response, secs=0, force=False):
                 break
     
     if not cacheable:
-        if isinstance(secs, datetime.timedelta):
+        if isinstance(secs, timedelta):
             secs = (86400 * secs.days) + secs.seconds
         
         if secs == 0:
@@ -64,7 +64,9 @@ def expires(request, response, secs=0, force=False):
                 if force or "Cache-Control" not in headers:
                     headers["Cache-Control"] = "no-cache, must-revalidate"
             # Set an explicit Expires date in the past.
-            expiry = formatdate(1169942400.0)
+            now = datetime.now()
+            lastyear = now.replace(year=now.year-1)
+            expiry = formatdate(mktime(lastyear.timetuple()))
         else:
             expiry = formatdate(response.time + secs)
         if force or "Expires" not in headers:
@@ -265,60 +267,21 @@ def validate_since(request, response):
                 else:
                     return HTTPError(request, response, 412)
 
-def redirect(request, response, url=''):
-    raise Redirect(request, response, url)
-
-def trailing_slash(request, response, missing=True, extra=False):
-    """Redirect if request.path has (missing|extra) trailing slash."""
-
-    pi = request.path
-    
-    if request.index is True:
-        if missing:
-            if not pi.endswith('/'):
-                new_url = url(request, pi + '/', request.qs)
-                return Redirect(request, response, new_url)
-    elif request.index is False:
-        if extra:
-            # If pi == '/', don't redirect to ''!
-            if pi.endswith('/') and pi != '/':
-                new_url = url(request, pi[:-1], request.qs)
-                return Redirect(request, response, new_url)
-    else:
-        return response
-
-def flatten(request, response):
-    """Wrap response.body in a generator that recursively iterates over body.
-    
-    This allows response.body to consist of 'nested generators';
-    that is, a set of generators that yield generators.
-    """
-    def flattener(input):
-        for x in input:
-            if not isinstance(x, types.GeneratorType):
-                yield x
-            else:
-                for y in flattener(x):
-                    yield y 
-
-    response.body = flattener(response.body)
-    return response
-
 def check_auth(request, response, realm, users, encrypt=None):
     """Check Authentication
 
     If an authorization header contains credentials, return True, else False.
 
-    @param realm: The authentication realm.
-    @type  realm: str
+    :param realm: The authentication realm.
+    :type  realm: str
 
-    @param users: A dict of the form: {username: password} or a callable
+    :param users: A dict of the form: {username: password} or a callable
                   returning a dict.
-    @type  users: dict or callable
+    :type  users: dict or callable
 
-    @param encrypt: Callable used to encrypt the password returned from
+    :param encrypt: Callable used to encrypt the password returned from
                     the user-agent. if None it defaults to a md5 encryption.
-    @type  encrypt: callable
+    :type  encrypt: callable
     """
 
     if 'authorization' in request.headers:
@@ -366,19 +329,19 @@ def basic_auth(request, response, realm, users, encrypt=None):
     If auth fails, returns an Unauthorized error  with a
     basic authentication header.
     
-    @param realm: The authentication realm.
-    @type  realm: str
+    :param realm: The authentication realm.
+    :type  realm: str
 
-    @param users: A dict of the form: {username: password} or a callable
+    :param users: A dict of the form: {username: password} or a callable
                   returning a dict.
-    @type  users: dict or callable
+    :type  users: dict or callable
 
-    @param encrypt: Callable used to encrypt the password returned from
+    :param encrypt: Callable used to encrypt the password returned from
                     the user-agent. if None it defaults to a md5 encryption.
-    @type  encrypt: callable
+    :type  encrypt: callable
     """
 
-    if check_auth(request, response, users, encrypt):
+    if check_auth(request, response, realm, users, encrypt):
         return
     
     # inform the user-agent this path is protected
@@ -391,15 +354,15 @@ def digest_auth(request, response, realm, users):
     
     If auth fails, raise 401 with a digest authentication header.
     
-    @param realm: The authentication realm.
-    @type  realm: str
+    :param realm: The authentication realm.
+    :type  realm: str
 
-    @param users: A dict of the form: {username: password} or a callable
+    :param users: A dict of the form: {username: password} or a callable
                   returning a dict.
-    @type  users: dict or callable
+    :type  users: dict or callable
     """
 
-    if check_auth(request, response, users, realm=realm):
+    if check_auth(request, response, realm, users):
         return
     
     # inform the user-agent this path is protected

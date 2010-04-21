@@ -9,16 +9,17 @@ This module implements the Request and Response objects.
 
 
 import os
-import stat
-import types
 from cStringIO import StringIO
 from time import strftime, time
 from Cookie import SimpleCookie
+from types import FileType, ListType
 
+from utils import url
 from headers import Headers
-from constants import BUFFER_SIZE, SERVER_VERSION
+from constants import SERVER_VERSION
+from circuits.net.sockets import BUFSIZE
 
-def file_generator(input, chunkSize=BUFFER_SIZE):
+def file_generator(input, chunkSize=BUFSIZE):
     chunk = input.read(chunkSize)
     while chunk:
         yield chunk
@@ -49,23 +50,23 @@ class Host(object):
 class Request(object):
     """Creates a new Request object to hold information about a request.
     
-    @param sock: The socket object of the request.
-    @type  sock: socket.socket
+    :param sock: The socket object of the request.
+    :type  sock: socket.socket
 
-    @param method: The requsted method.
-    @type  method: str
+    :param method: The requsted method.
+    :type  method: str
 
-    @param scheme: The requsted scheme.
-    @type  scheme: str
+    :param scheme: The requsted scheme.
+    :type  scheme: str
 
-    @param path: The requsted path.
-    @type  path: str
+    :param path: The requsted path.
+    :type  path: str
 
-    @param protocol: The requsted protocol.
-    @type  protocol: str
+    :param protocol: The requsted protocol.
+    :type  protocol: str
 
-    @param qs: The query string of the request.
-    @type  qs: str
+    :param qs: The query string of the request.
+    :type  qs: str
     """
 
     server = None
@@ -77,6 +78,8 @@ class Request(object):
     host = ""
     local = Host("127.0.0.1", 80)
     remote = Host("127.0.0.1", 1111)
+
+    xhr = False
 
     index = None
     script_name = ""
@@ -98,7 +101,12 @@ class Request(object):
         self._headers = None
 
         if sock:
-            self.remote = Host(*sock.getpeername())
+            name = sock.getpeername()
+            if name:
+                self.remote = Host(*name)
+            else:
+                name = sock.getsockname()
+                self.remote = Host(name, "", name)
 
         self.body = StringIO()
 
@@ -116,11 +124,39 @@ class Request(object):
             host = self.local.name or self.local.ip
         self.base = "%s://%s" % (self.scheme, host)
 
+        self.xhr = self.headers.get("X-Requested-With", "").lower() == \
+                "xmlhttprequest"
+
     headers = property(_getHeaders, _setHeaders)
 
     def __repr__(self):
         protocol = "HTTP/%d.%d" % self.protocol
         return "<Request %s %s %s>" % (self.method, self.path, protocol)
+
+    def url(self):
+        return url(self)
+
+class Body(object):
+    """Response Body"""
+    
+    def __get__(self, response, cls=None):
+        if response is None:
+            return self
+        else:
+            return response._body
+    
+    def __set__(self, response, value):
+        if isinstance(value, basestring):
+            if value:
+                value = [value]
+            else:
+                value = []
+        elif isinstance(value, FileType):
+            response.stream = True
+            value = file_generator(value)
+        elif value is None:
+            value = []
+        response._body = value
 
 class Response(object):
     """Response(sock, request) -> new Response object
@@ -131,6 +167,7 @@ class Response(object):
     """
 
     chunked = False
+    body = Body()
 
     def __init__(self, sock, request):
         "initializes x; see x.__class__.__doc__ for signature"
@@ -145,19 +182,12 @@ class Response(object):
                 self.headers["Content-Type"],
                 (len(self.body) if type(self.body) == str else 0))
     
-    def output(self):
-        protocol = "HTTP/%d.%d" % self.request.server_protocol
+    def __str__(self):
+        self.prepare()
+        protocol = self.protocol
         status = self.status
         headers = self.headers
-        body = self.process() or ""
-        yield "%s %s\r\n" % (protocol, status)
-        yield str(headers)
-        if body:
-            if self.chunked:
-                buf = [hex(len(body))[2:], "\r\n", body, "\r\n"]
-                yield "".join(buf)
-            else:
-                yield body
+        return "%s %s\r\n%s" % (protocol, status, headers)
 
     def clear(self):
         self.done = False
@@ -169,18 +199,33 @@ class Response(object):
             server_version = SERVER_VERSION
 
         self.headers = Headers([
-            ("Server", server_version),
             ("Date", strftime("%a, %d %b %Y %H:%M:%S %Z")),
             ("X-Powered-By", server_version)])
+
+        if self.request.server is not None:
+            self.headers.add_header("Server", server_version)
 
         self.cookie = self.request.cookie
 
         self.stream = False
-        self.body = None
+        self._body = []
         self.time = time()
         self.status = "200 OK"
+        self.protocol = "HTTP/%d.%d" % self.request.server_protocol
 
-    def process(self):
+    def prepare(self):
+        if self.body and type(self.body) is ListType:
+            if unicode in map(type, self.body):
+                cLength = sum(map(lambda s: len(s.encode("utf-8")), self.body))
+            else:
+                cLength = sum(map(len, self.body))
+
+            self.headers.setdefault("Content-Type", "text/html")
+            self.headers["Content-Length"] = str(cLength)
+
+        if self.stream:
+            self.headers.setdefault("Content-Type", "application/octet-stream")
+
         for k, v in self.cookie.iteritems():
             self.headers.add_header("Set-Cookie", v.OutputString())
 
@@ -193,13 +238,14 @@ class Response(object):
                 pass
             else:
                 if self.protocol == "HTTP/1.1" \
-                        and self.request.method != "HEAD":
+                        and self.request.method != "HEAD" \
+                        and self.request.server is not None:
                     self.chunked = True
                     self.headers.add_header("Transfer-Encoding", "chunked")
                 else:
                     self.close = True
 
-        if "Connection" not in self.headers:
+        if self.request.server is not None and "Connection" not in self.headers:
             if self.protocol == "HTTP/1.1":
                 if self.close:
                     self.headers.add_header("Connection", "close")
@@ -207,20 +253,5 @@ class Response(object):
                 if not self.close:
                     self.headers.add_header("Connection", "Keep-Alive")
 
-        if isinstance(self.body, basestring):
-            self.headers["Content-Length"] = str(len(self.body))
-            self.headers.setdefault("Content-Type", "text/html")
-            return self.body
-        elif type(self.body) is types.GeneratorType:
-            self.stream = True
-            return self.body.next()
-        elif type(self.body) is types.FileType:
-            st = os.fstat(self.body.fileno())
-            self.headers.setdefault("Content-Length", str(st.st_size))
-            self.headers.setdefault("Content-Type", "application/octet-stream")
-            self.stream = True
-            self.file = self.body
-            self.body = file_generator(self.body)
-            return None
-        else:
-            return None
+        if self.headers.get("Transfer-Encoding", "") == "chunked":
+            self.chunked = True
