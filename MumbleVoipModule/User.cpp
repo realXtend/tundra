@@ -79,6 +79,7 @@ namespace MumbleVoip
 
     void User::UpdatePosition(Vector3df position)
     {
+        position_known_ = true;
         position_ = position;
     }
 
