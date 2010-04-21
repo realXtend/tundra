@@ -3,20 +3,20 @@
 #ifndef incl_RexLogic_AvatarControllable_h
 #define incl_RexLogic_AvatarControllable_h
 
-#include "EntityComponent/EC_Controllable.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
-#include "Quaternion.h"
 
 namespace ProtocolUtilities
 {
     class WorldStream;
 }
 
+typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
+
 namespace RexLogic
 {
     class RexLogicModule;
-    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
+    class EC_Controllable;
 
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.
@@ -51,10 +51,11 @@ namespace RexLogic
         //! Add time to avatar control simulation for all controllable avatars
         void AddTime(f64 frametime);
 
-		//! Sets the yaw of the avatar, experimental for py api
-		void SetYaw(Real newyaw);
-		//! Sets the rotation of the avatar, experimental for py api
-		void SetRotation(Quaternion newrot);
+        //! Sets the yaw of the avatar, experimental for py api
+        void SetYaw(Real newyaw);
+
+        //! Sets the rotation of the avatar, experimental for py api
+        void SetRotation(const Quaternion &newrot);
 
         //! Agent movement complete (network) event handling
         void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);
@@ -77,11 +78,7 @@ namespace RexLogic
             \param component Controllable component, if null, false is returned
             \return True if controllable is avatar, false otherwise
         */
-        bool IsAvatar(const Foundation::ComponentPtr &component)
-        {
-            if (!component) return false;
-            return (checked_static_cast<EC_Controllable*>(component.get())->GetType() == RexTypes::CT_AVATAR);
-        }
+        bool IsAvatar(const Foundation::ComponentPtr &component) const;
 
         typedef std::map<int, RexTypes::ControlFlags> ActionControlFlagMap;
 
@@ -107,7 +104,7 @@ namespace RexLogic
         ActionControlFlagMap control_flags_;
 
         //! Rex server connection used to send updates
-        WorldStreamConnectionPtr connection_;
+        WorldStreamPtr connection_;
 
         //! default speed for avatar rotation
         Real rotation_sensitivity_;

@@ -8,10 +8,12 @@
 namespace Naali
 {
     AudioSignalLabel::AudioSignalLabel(QWidget *parent, Qt::WindowFlags flags):
-        QLabel(parent, flags)
+        QLabel(parent, flags),
+        widget_resized_(false)
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         setScaledContents(true);
+        setMinimumSize(QSize(1,1));
     }
 
     AudioSignalLabel::~AudioSignalLabel()
@@ -38,16 +40,7 @@ namespace Naali
         if(bitsPerSample_ <= 0 || frequency_ <= 0 || audioData_.empty())
             return;
 
-        QSize newImageSize(width() * 0.95f, height() * 0.95f);
-        /*if(pixmap())
-        {
-            QSize imageSize = pixmap()->size();
-            // area size has not increased enought so no need to update the image just stretch it.
-            if(abs(newImageSize.width() - imageSize.width()) <= 10 && abs(newImageSize.height() - imageSize.height()) <= 10)
-                return;
-        }*/
-
-        QImage image(newImageSize, QImage::Format_RGB888);
+        QImage image(size(), QImage::Format_RGB888);
         image.fill(qRgb(0,0,0));
 
         int channels = 2;
@@ -59,56 +52,107 @@ namespace Naali
 
         // Calcute how many audio samples are included per image pixel (usually one pixel contain many audio samples).
         float samples_per_pixel = (float(audioData_.size()) / float(bitsPerSample_ / 8)) / float(image.width());
-        // Take inverse of samples per pixels value cause image width might contain more pixels than we have samples in audio file.
-        // and in that case we need to repeat same audio value in many pixel.
-        float steps = 1.0f / samples_per_pixel;
-        QPair<int, int> min_max_values;
-        min_max_values.first = 32767;
-        min_max_values.second = -32768;
-
-        short* sample_ptr;
-        float sampleNum = 0;
-        int image_width_index = 0;
-        int steps_per_sample = bitsPerSample_ / 8;
-        int half_image_height = image.height() / 2;
-        for(uint i = 0; i < audioData_.size(); i += steps_per_sample)
+        if(samples_per_pixel >= 10.0f)
         {
-            sample_ptr = (short*)&audioData_[i];
-            if(min_max_values.first > *sample_ptr)
-                min_max_values.first = *sample_ptr;
-            if(min_max_values.second < *sample_ptr)
-                min_max_values.second = *sample_ptr;
+            // Take inverse of samples per pixels value cause image width might contain more pixels than we have samples in audio file.
+            // and in that case we need to repeat same audio value in many pixel.
+            float steps = 1.0f / samples_per_pixel;
+            QPair<int, int> min_max_values;
+            min_max_values.first = 32767;
+            min_max_values.second = -32768;
 
-            if(sampleNum >= 1.0f)
+            short* sample_ptr;
+            float sampleNum = 0;
+            int image_width_index = 0;
+            int steps_per_sample = bitsPerSample_ / 8;
+            int half_image_height = image.height() / 2;
+            for(uint i = 0; i < audioData_.size(); i += steps_per_sample)
             {
-                double normalized_max_value = (double(min_max_values.second) + 32768) / double(65536);
-                double normalized_min_value = (double(min_max_values.first) + 32768) / double(65536);
-                int start_height = (normalized_min_value * image.height());
-                int end_height = (normalized_max_value * image.height());
-                if(start_height == end_height && start_height > 0)
-                    start_height--;
+                sample_ptr = (short*)&audioData_[i];
+                if(min_max_values.first > *sample_ptr)
+                    min_max_values.first = *sample_ptr;
+                if(min_max_values.second < *sample_ptr)
+                    min_max_values.second = *sample_ptr;
 
-                while(sampleNum >= 1.0f)
+                if(sampleNum >= 1.0f)
                 {
-                    //Draw a verticalline between min and max signal values.
-                    for(int i = start_height; i < end_height; i++)
-                        image.setPixel(image_width_index, i, qRgb(0, 255, 0));
+                    double normalized_max_value = (double(min_max_values.second) + 32768) / double(65536);
+                    double normalized_min_value = (double(min_max_values.first) + 32768) / double(65536);
+                    int start_height = (normalized_min_value * image.height());
+                    int end_height = (normalized_max_value * image.height());
+                    if(start_height == end_height && start_height > 0)
+                        start_height--;
+
+                    while(sampleNum >= 1.0f)
+                    {
+                        //Draw a vertical line between min and max signal values.
+                        for(int i = start_height; i < end_height; i++)
+                            image.setPixel(image_width_index, i, qRgb(0, 255, 0));
+                        image_width_index++;
+                        sampleNum -= 1.0f;
+                    }
+                    
+                    min_max_values.first = 32767;
+                    min_max_values.second = -32768;
+                }
+                sampleNum += steps;
+            }
+        }
+        else
+        {
+            QPainter painter;
+            painter.begin(&image);
+            painter.setBrush(QColor(0,255,0));
+            painter.setPen(QColor(0,255,0));
+            QPoint previous_point(0,0);
+
+            short* sample_ptr;
+            float sampleNum = 0;
+            int image_width_index = 0;
+            int steps_per_sample = bitsPerSample_ / 8;
+            int half_image_height = image.height() / 2;
+            for(uint i = 0; i < audioData_.size(); i += steps_per_sample)
+            {
+                sample_ptr = (short*)&audioData_[i];
+
+                while(sampleNum < 1.0f)
+                {
+                    sampleNum += samples_per_pixel;
                     image_width_index++;
-                    sampleNum -= 1.0f;
+                }
+                //No point to paint if we are outside of the image.
+                if(image_width_index <= image.width())
+                {
+                    double normalized_y_value = (double(*sample_ptr) + 32768) / double(65536);
+                    int y_value_pos = normalized_y_value * image.height();
+                    if(!previous_point.isNull())
+                        painter.drawLine(previous_point, QPoint(image_width_index, y_value_pos));
+                    previous_point = QPoint(image_width_index, y_value_pos);
                 }
                 
-                min_max_values.first = 32767;
-                min_max_values.second = -32768;
+                sampleNum -= 1.0f;
             }
-            sampleNum += steps;
+            
+            painter.end();
         }
-        setPixmap(QPixmap::fromImage(image));
+        QPixmap pixmap = QPixmap::fromImage(image);
+        setPixmap(pixmap);
     }
 
-    void AudioSignalLabel::ResizeImage(QSize size)
+    void AudioSignalLabel::resizeEvent(QResizeEvent *ev)
     {
-        setMaximumSize(QSize(size.width(), size.height() * 0.66f));
-        resize(size);
-        GenerateAudioSignalImage();
+        QLabel::resizeEvent(ev);
+        widget_resized_ = true;
+        //GenerateAudioSignalImage();
+    }
+
+    void AudioSignalLabel::paintEvent(QPaintEvent *ev)
+    {
+        QLabel::paintEvent(ev);
+        if(widget_resized_)
+        {
+            GenerateAudioSignalImage();
+            widget_resized_ = false;
+        }
     }
 }

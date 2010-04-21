@@ -181,7 +181,7 @@ namespace OpensimIM
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot send text message, RexLogicModule is not found");
-        RexLogic::WorldStreamConnectionPtr connection = rexlogic_->GetServerConnection();
+        WorldStreamPtr connection = rexlogic_->GetServerConnection();
 
         if ( connection == NULL )
             throw Exception("Cannot send text message, rex server connection is not found");

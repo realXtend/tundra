@@ -58,8 +58,8 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
 
     connect(lineEditName_, SIGNAL(editingFinished()), this, SLOT(EditingFinished()));
     connect(lineEditDescription_, SIGNAL(editingFinished()), this, SLOT(EditingFinished()));
-    connect(lineEditName_, SIGNAL(textChanged()), this, SLOT(EditingFinished()));
-    connect(lineEditDescription_, SIGNAL(textChanged()), this, SLOT(EditingFinished()));
+//    connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(EditingFinished()));
+//    connect(lineEditDescription_, SIGNAL(textChanged(const QString &)), this, SLOT(EditingFinished()));
 
     connect(pushButtonSave_, SIGNAL(clicked()), this, SLOT(Save()));
     connect(pushButtonCancel_, SIGNAL(clicked()), this, SLOT(Cancel()));
@@ -74,12 +74,13 @@ ItemPropertiesWindow::~ItemPropertiesWindow()
 void ItemPropertiesWindow::SetItem(InventoryAsset *item)
 {
     inventoryId_ = item->GetID();
+    originalName_ = item->GetName();
+    originalDescription_ = item->GetDescription();
     lineEditName_->setText(item->GetName());
     lineEditDescription_->setText(item->GetDescription());
     labelAssetIdData_->setText(item->GetAssetReference());
     labelTypeData_->setText(RexTypes::GetTypeNameFromAssetType(item->GetAssetType()).c_str());
     labelCreationTimeData_->setText(item->GetCreationTimeString());
-
     creatorId_ = item->GetCreatorId();
     ownerId_ = item->GetOwnerId();
     groupId_ = item->GetGroupId();

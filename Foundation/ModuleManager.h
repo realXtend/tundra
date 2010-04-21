@@ -162,12 +162,9 @@ namespace Foundation
         */
         ModuleWeakPtr GetModule(const std::string &name)
         {
-            ModuleVector::iterator it = modules_.begin();
-            for (; it != modules_.end() ; ++it)
-            {
+            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
                 if (it->module_->Name() == name)
                     return ModuleWeakPtr(it->module_);
-            }
             return ModuleWeakPtr();
         }
 
@@ -180,24 +177,39 @@ namespace Foundation
             return GetModule(Module::NameFromType(type));
         }
 
-        //! Returns module by type
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
-
-            \param type type of the module
-            \return The module, or null if the module of type 'type' was not found, or if dynamic cast fails
-        */
+        /** Returns module by type
+         *
+         *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
+         *
+         *  \param type type of the module
+         *  \return The module, or null if the module of type 'type' was not found, or if dynamic cast fails
+         */
         template <class T>
         boost::weak_ptr<T> GetModule(Foundation::Module::Type type)
         {
             assert (type != Module::MT_Unknown);
-
             for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
                 if (it->module_->Type() == type)
                     return boost::dynamic_pointer_cast<T>(it->module_);
 //                    return boost::weak_ptr<T>(boost::shared_ptr<T>());//dynamic_cast<T*>(it->module_));
 //                    return boost::weak_ptr<T>(dynamic_cast<T*>(it->module_));
+            return boost::weak_ptr<T>();
+        }
 
+        /** Returns module by name
+         *
+         *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
+         *
+         *  \param name Name of the module.
+         *  \return The module, or null if the module of name 'name' was not found, or if dynamic cast fails
+         */
+        template <class T>
+        boost::weak_ptr<T> GetModule(const std::string &name)
+        {
+            assert (!name.empty());
+            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+                if (it->module_->Name() == name)
+                    return boost::dynamic_pointer_cast<T>(it->module_);
             return boost::weak_ptr<T>();
         }
 
@@ -206,7 +218,7 @@ namespace Foundation
         const ModuleVector &GetModuleList() const { return modules_; }
 
         //! Returns true if module is loaded, false otherwise
-        bool HasModule(Module::Type type) const
+        bool HasModule(Module::Type type)
         {
             return HasModule(Module::NameFromType(type));
         }
@@ -214,11 +226,9 @@ namespace Foundation
         //! Returns true if module is loaded, false otherwise
         bool HasModule(const std::string &name) const
         {
-            for (size_t i = 0 ; i < modules_.size() ; ++i)
-            {
+            for(size_t i = 0 ; i < modules_.size() ; ++i)
                 if (modules_[i].module_->Name() == name)
                     return true;
-            }
             return false;
         }
 
@@ -226,10 +236,8 @@ namespace Foundation
         bool HasModuleEntry(const std::string &entry) const
         {
             for (size_t i = 0 ; i < modules_.size() ; ++i)
-            {
                 if (modules_[i].entry_ == entry)
                     return true;
-            }
             return false;
         }
 

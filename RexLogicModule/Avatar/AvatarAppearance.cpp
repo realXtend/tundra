@@ -958,12 +958,12 @@ namespace RexLogic
             Inventory::InventoryItemEventData* event_data = dynamic_cast<Inventory::InventoryItemEventData*>(data);
             if (event_data)
             {
-                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml && inv_export_state_ == Avatar)                
+                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml && inv_export_state_ == Avatar)
                 {
                     // See that the asset is actually an avatar description we uploaded
                     if (event_data->name.find("Avatar") != std::string::npos)
-                    {                   
-                        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                    {
+                        WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
                         if (conn)
                         {
                             RexLogicModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
@@ -971,7 +971,7 @@ namespace RexLogic
                             std::string method = "RexSetAppearance";
                             strings.push_back(conn->GetInfo().agentID.ToString());
                             strings.push_back(event_data->assetId.ToString());
-                            conn->SendGenericMessage(method, strings);                                                            
+                            conn->SendGenericMessage(method, strings);
                         }
                         
                         // Inventory based export done!
@@ -1645,9 +1645,9 @@ namespace RexLogic
                 {
                     RexLogicModule::LogInfo("Avatar exported successfully");
                     // Send information of appearance change
-                    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
                     if (conn)
-                    {                    
+                    {
                         std::string method = "RexAppearance";
                         StringVector strings;
                         conn->SendGenericMessage(method, strings);
