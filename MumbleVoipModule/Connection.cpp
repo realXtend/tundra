@@ -15,12 +15,11 @@
 #include "User.h"
 #include "PCMAudioFrame.h"
 
-#include <libcelt/celt_types.h> 
-#include <libcelt/celt.h> 
+#include <celt/celt_types.h> 
+#include <celt/celt.h> 
 
 namespace MumbleVoip
 {
-
     // \todo Move these static callback functions to separeate file...
 
     void TextMessageCallback(const std::string& message, Connection* connection)
@@ -468,8 +467,27 @@ namespace MumbleVoip
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
         User* user = users_[session];
-        if (user)
-            user->OnAudioFrameReceived(); // \todo Thread safe
+        if (!user)
+        {
+            QString message = QString("Audio packet from unknown user: %1").arg(session);
+            MumbleVoipModule::LogWarning(message.toStdString());
+            return;
+        }
+
+        if (!mutex_playback_queue_.tryLock(10))
+        {
+//            MumbleVoipModule::LogDebug("Drop incoming Mumble audio packet: playback queue locked");
+            return;
+        }
+
+        int buffer_frames_max = SAMPLE_RATE/SAMPLES_IN_FRAME*PLAYBACK_BUFFER_MS_/1000;
+        if (playback_queue_.size() < buffer_frames_max)
+        {
+//            MumbleVoipModule::LogDebug("Drop incoming Mumble audio packet: playback_queue is full");
+            return;
+        }
+
+        user->OnAudioFrameReceived(); // \todo Thread safe
 
         PCMAudioFrame* audio_frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
 
@@ -479,28 +497,11 @@ namespace MumbleVoip
         {
         case CELT_OK:
             {
-                int buffer_frames_max = SAMPLE_RATE/SAMPLES_IN_FRAME*PLAYBACK_BUFFER_MS_/1000;
-                QMutexLocker locker(&mutex_playback_queue_);
-
-                if (playback_queue_.size() < buffer_frames_max)
+                User* user = users_[session];
+                if (user)
                 {
-                    User* user = users_[session];
-                    if (user)
-                    {
-                        playback_queue_.push_back(AudioPacket(user, audio_frame));
-                        emit AudioFramesAvailable(this);
-                    }
-                    else
-                    {
-                        QString message = QString("Audio packet from unknown user: %1").arg(session);
-                        MumbleVoipModule::LogWarning(message.toStdString());
-                    }
-                }
-                else
-                {
-                    delete audio_frame;
-                    MumbleVoipModule::LogDebug("Drop incoming Mumble audio packet");
-                    return;
+                    playback_queue_.push_back(AudioPacket(user, audio_frame));
+                    emit AudioFramesAvailable(this);
                 }
             }
             break;
@@ -520,6 +521,7 @@ namespace MumbleVoip
             MumbleVoipModule::LogError("CELT decoding error: CELT_UNIMPLEMENTED");
             break;
         }
+        mutex_playback_queue_.unlock();
     }
 
     void Connection::SetEncodingQuality(double quality)

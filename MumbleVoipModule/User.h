@@ -15,6 +15,7 @@ namespace MumbleClient
 namespace MumbleVoip
 {
     class Channel;
+    class PCMAudioFrame;
 
     //! Wrapper over libmumbleclient library's User class
     class User : public QObject
@@ -34,7 +35,7 @@ namespace MumbleVoip
         Vector3df Position();
 
     public slots:
-        void OnAudioFrameReceived();
+        void OnAudioFrameReceived(PCMAudioFrame* frame);
         void SpeakingTimeout();
         void UpdatePosition(Vector3df pos);
 

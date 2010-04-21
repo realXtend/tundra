@@ -1,7 +1,6 @@
 #include "StableHeaders.h"
 #include "ConnectionManager.h"
 #include "MumbleVoipModule.h"
-//#include "SoundServiceInterface.h"
 #include <QDesktopServices>
 #include <QPair>
 
