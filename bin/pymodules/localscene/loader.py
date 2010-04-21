@@ -9,22 +9,6 @@ else:
     Vec = PythonQt.QtGui.QVector3D
     Quat = PythonQt.QtGui.QQuaternion
 
-def rotquat(x, y, z):
-    rot = Quat()
-    rot.setVector(x, y, z)
-        
-    xyzsum = 1 - rot.x()**2 - rot.y()**2 - rot.z()**2
-
-    if xyzsum > 0:
-        w = math.sqrt(xyzsum)
-    else:
-        w = 0
-    rot.setScalar(w)        
-    return rot
-    #in libomv Quat(x,y,z)
-    #float xyzsum = 1 - X * X - Y * Y - Z * Z;
-    #W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
-
 class OgreNode:
     """the equivalent of Ogre Node in Naali for this import now.
     perhaps this will wrap or just be the Naali .. placeable E-C?"""
@@ -55,15 +39,20 @@ class OgreNode:
         XXX this could skip all conversions, like quat now, 
         by dotscene.py doing the qt types directly"""
         p = e.placeable
+        #p.Position = Vec(*self.position)
+        mp = self.position
+        #p.Position = Vec(-mp[0], mp[2], mp[1])
+        p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+200)
         #print p.Position.toString(), self.position
-        p.Position = Vec(*self.position)
             
         #print p.Orientation.toString(), self.orientation
-        o = self.orientation
-        #o.__imul__(rotquat(0, 0, 1))
-        #o.__imul__(rotquat(1, 0, 0))
-        #o.__imul__(rotquat(0, 1, 0))
+        mo = self.orientation #mock to where dotscene was read
+        o = Quat(mo.w, mo.x, mo.y, mo.z)
+        #print dir(o)
+        o.__imul__(Quat(1, 1, 0, 0))
+        #o.__imul__(Quat(1, 0, 1, 0))
         p.Orientation = o
+        print p.Orientation.toString(), o.toString()
 
         p.Scale = Vec(*self.scale)
 

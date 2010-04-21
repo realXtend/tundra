@@ -1,7 +1,7 @@
 <scene formatVersion="">
     <nodes>
         <node name="Jack" id="3">
-            <position x="128" y="128" z="28" />
+            <position x="128" y="128" z="30" />
             <rotation qx="0" qy="0" qz="0" qw="1" />
             <scale x="2" y="2" z="2" />
             <entity name="Jack" meshFile="Jack.mesh" static="false" />
