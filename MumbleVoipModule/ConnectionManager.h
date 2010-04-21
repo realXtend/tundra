@@ -28,6 +28,7 @@ namespace MumbleVoip
     class PCMAudioFrame;
     class LibMumbleThread;
     class User;
+    class VoiceIndicatorInterface;
 
     /**
 	 *  Handles connections to mumble servers.
@@ -88,6 +89,7 @@ namespace MumbleVoip
         std::string recording_device_;
         Vector3df users_position_;
         QMap<int, sound_id_t> audio_playback_channels_;
+        VoiceIndicatorInterface* voice_indicator_;
 
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
 
