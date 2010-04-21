@@ -13,6 +13,7 @@
 #include "Connection.h"
 #include "PCMAudioFrame.h"
 #include "User.h"
+#include "VoiceIndicator.h"
 
 namespace MumbleVoip
 {
@@ -22,8 +23,10 @@ namespace MumbleVoip
         sending_audio_(false),
         recording_device_(""),
         lib_mumble_thread_(0),
-        users_position_(0.0,0.0,0.0)
+        users_position_(0.0,0.0,0.0),
+        voice_indicator_(0)
     {
+        voice_indicator_ = new SimpleVoiceIndicator();
     }
 
     ConnectionManager::~ConnectionManager()
@@ -34,6 +37,7 @@ namespace MumbleVoip
         }
         connections_.clear();
         StopMumbleLibrary();
+        SAFE_DELETE(voice_indicator_);
     }
 
     void ConnectionManager::OpenConnection(ServerInfo info)
@@ -209,9 +213,20 @@ namespace MumbleVoip
                 PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
                 int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), SAMPLES_IN_FRAME*SAMPLE_WIDTH/8);
 
+                if (voice_indicator_)
+                {
+                    voice_indicator_->AnalyzeAudioFrame(frame);
+                    if (!voice_indicator_->IsSpeaking())
+                    {
+                        delete frame;
+                        continue;
+                    }
+                }
+
                 for (QMap<QString, Connection*>::iterator i = connections_.begin(); i != connections_.end(); ++i)
                 {
                     Connection* connection = *i;
+
                     if (connection->SendingAudio())
                         connection->SendAudioFrame(frame, users_position_);
                 }
