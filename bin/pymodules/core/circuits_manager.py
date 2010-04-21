@@ -84,6 +84,21 @@ class ComponentRunner(Component):
     def RexNetMsgChatFromSimulator(self, frm, message):
         self.m.send(Chat(frm, message), "on_chat")
         
+    """
+    XXX this can be removed with a newer circuits that returns
+    a Value object for triggered events, from where a return value
+    or whether an error occurred can be seen:
+    00:28 <@prologic> Value objects are used here
+00:29 <@prologic> x will be an instance of a Value
+00:29 <@prologic> returned immediately
+00:29 <+antont> what happens with them on errors?
+00:29 <@prologic> but only set when it'a associated event handlers are done and 
+                  their associated values are done, etc, etc, etc
+00:29 <@prologic> it can nest infinitely
+00:29 <@prologic> if errors occur then x.errors == True
+00:29 <@prologic> and x.value will contain a 3-item tuple of (etype, evalue, 
+                  etraceback)
+    """
     def callback(self, value):
         self.eventhandled = value
         
