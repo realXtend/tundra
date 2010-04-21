@@ -2,13 +2,10 @@
 #include "LinkPlugin.h"
 #include "LinkedMem.h"
 
-#ifndef WIN32
-#include <unistd.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+#ifdef Q_WS_X11
 #include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/fcntl.h>
 #endif
 
 //! QString::ToStdWString() doesn't work with Visual Studio 2008

@@ -3,6 +3,7 @@
 #include "MumbleVoipModule.h"
 #include <QDesktopServices>
 #include <QPair>
+#include <QMutexLocker>
 
 #define BUILDING_DLL
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
@@ -42,10 +43,10 @@ namespace MumbleVoip
         Connection* connection = new Connection(info);
         connections_[info.server] = connection;
         connection->Join(info.channel);
-        connection->SendAudio(true); // test here
-        connection->SetEncodingQuality(0.1);
-        connection->SendPosition(false); // test here
-        QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
+        connection->SendAudio(true);
+        connection->SetEncodingQuality(0.5);
+        connection->SendPosition(true); 
+//        QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
     }
 
@@ -116,7 +117,7 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble thread exited.library uninitialized.");
     }
 
-    void ConnectionManager::OnAudioFramesAvailable(Connection* connection)
+    void ConnectionManager::PlaybackAudio(Connection* connection)
     {
         for(;;)
         {
@@ -129,14 +130,9 @@ namespace MumbleVoip
 
     void ConnectionManager::PlaybackAudioPacket(User* user, PCMAudioFrame* frame)
     {
-        if (!framework_)
-            return;
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        if (!service_manager.get())
-            return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;     
+        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+        if (!sound_service.get())
+            return;    
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
         sound_buffer.data_ = frame->DataPtr();
@@ -148,17 +144,18 @@ namespace MumbleVoip
             sound_buffer.sixteenbit_ = false;
         sound_buffer.size_ = frame->GetLengthBytes();
         sound_buffer.stereo_ = false;
+        QMutexLocker locker(user);
 
         if (audio_playback_channels_.contains(user->Session()))
             if (user->PositionKnown())
-                soundsystem->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+                sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
             else
-                soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
+                sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
         else
             if (user->PositionKnown())
-                audio_playback_channels_[user->Session()] = soundsystem->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
             else
-                audio_playback_channels_[user->Session()] = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
 
         delete frame;
     }
@@ -222,6 +219,11 @@ namespace MumbleVoip
                 }
                 delete frame;
             }
+        }
+
+        foreach(Connection* connection, connections_)
+        {
+            PlaybackAudio(connection);
         }
     }
 

@@ -117,7 +117,6 @@ namespace MumbleVoip
         State state_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel
-        QList< AudioPacket > playback_queue_;
         QList<PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_;
         QMap<int, User*> users_;
@@ -135,7 +134,6 @@ namespace MumbleVoip
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
-        QMutex mutex_playback_queue_;
         QMutex mutex_encode_audio_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
@@ -158,7 +156,7 @@ namespace MumbleVoip
         void TextMessage(QString &text);
         void AudioDataAvailable(short* data, int size);
         void RelayTunnelData(char*, int);
-        void AudioFramesAvailable(Connection* connection);
+        void AudioFramesAvailable(Connection* connection); // do we need this
         void UserLeft(User* user);
         void UserJoined(User* user);
         void ChannelAdded(Channel* channel); 

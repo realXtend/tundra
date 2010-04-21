@@ -105,7 +105,7 @@ namespace MumbleVoip
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
 
     public slots:
-        void OnAudioFramesAvailable(Connection* connection);
+        void PlaybackAudio(Connection* connection);
     };
 
 } // end of namespace: MumbleVoip
