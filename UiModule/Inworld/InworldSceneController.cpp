@@ -54,6 +54,9 @@ namespace UiServices
 
         // Connect settings widget
         connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
+		
+		//catch SceneResized(const QRectF) signal when resized and reposition active proxy widgets
+		connect(layout_manager_, SIGNAL(SceneResized(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
     }
 
     InworldSceneController::~InworldSceneController()
@@ -200,4 +203,20 @@ namespace UiServices
             widget->SetShowAnimationSpeed(new_animation_speed);
         }
     }
+
+	//Applying new proxy position
+	void InworldSceneController::ApplyNewProxyPosition(const QRectF &new_rect)
+	{
+		foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
+        {
+			if(widget->isVisible())
+			{
+				if (!new_rect.contains(widget->geometry()))
+				{
+					widget->setX(qMin(new_rect.right() - widget->size().width(), qMax(widget->x(), new_rect.left() + widget->size().width() )));
+					widget->setY(qMin(new_rect.bottom() - widget->size().height(), qMax(widget->y(), new_rect.top()+ - widget->size().height())));
+				}
+			}
+        }
+	}
 }
