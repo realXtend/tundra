@@ -73,6 +73,8 @@ namespace MumbleVoip
         {
             QString message = QString("Mumble server info not available for server %1").arg(reply->url().toString());
             MumbleVoipModule::LogInfo(message.toStdString());
+            reply->abort();
+            reply->deleteLater();
             return;
         }
 
