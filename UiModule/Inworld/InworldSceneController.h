@@ -105,6 +105,9 @@ namespace UiServices
         //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
         QObject *GetSettingsObject() const;
 
+		//Applying new proxy position
+		void ApplyNewProxyPosition(const QRectF &new_rect);
+
     private:
         Q_DISABLE_COPY(InworldSceneController);
 
