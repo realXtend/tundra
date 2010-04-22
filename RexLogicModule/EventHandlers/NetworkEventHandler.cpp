@@ -481,6 +481,7 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInbo
     {
         pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + url + "');");
     }
+    return false;
 }
 
 } //namespace RexLogic
