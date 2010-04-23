@@ -139,7 +139,7 @@ namespace RexLogic
             {
                 // The data contents:
                 // ofs 16 - pos xyz - 3 x float (3x4 bytes)
-                netpos->position_ = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[16]));
+                netpos->position_ = *reinterpret_cast<const Vector3df*>(&objectdatabytes[16]);
                 netpos->Updated();
             }
 
@@ -155,11 +155,7 @@ namespace RexLogic
 
             // Hide own name overlay
             if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
-            {
-                EC_HoveringText *overlay= entity->GetComponent<EC_HoveringText>().get();
-                if (overlay)
-                    overlay->Hide();
-            }
+                ShowAvatarNameOverlay(presence->localId, false);
             else
                 ShowAvatarNameOverlay(presence->localId);
 
@@ -479,7 +475,7 @@ namespace RexLogic
     }
 */
 
-    void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id)
+    void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
     {
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
@@ -506,6 +502,8 @@ namespace RexLogic
             overlay->SetTextColor(QColor(255,255,255,230));
             overlay->SetBackgroundGradient(QColor(0,0,0,230), QColor(50,50,50,230));
             overlay->ShowMessage(presence->GetFullName().c_str());
+            if (!visible)
+                overlay->Hide();
         }
     }
     
