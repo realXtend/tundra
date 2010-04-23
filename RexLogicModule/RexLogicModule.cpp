@@ -1045,7 +1045,12 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 {
     boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
-        name_tag->Clicked();
+    {
+        if (name_tag->IsVisible())
+            name_tag->AnimatedHide();
+        else
+            name_tag->Clicked();
+    }
 }
 
 void RexLogicModule::AboutToDeleteWorld()
