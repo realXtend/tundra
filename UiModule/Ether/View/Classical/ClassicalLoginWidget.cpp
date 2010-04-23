@@ -26,6 +26,8 @@ namespace CoreUi
 
             connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ),
                     login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
+            connect(web_login_, SIGNAL( WebLoginUrlRecived(QString) ),
+                    login_notifier, SLOT( EmitTaigaLogin(QString) ));
             connect(traditional_widget_, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ),
                     login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
             connect(traditional_widget_, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ),

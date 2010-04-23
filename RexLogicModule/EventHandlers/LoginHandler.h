@@ -101,6 +101,7 @@ namespace RexLogic
     public slots:
         void ProcessCommandParameterLogin(QString &entry_point_url);
         void ProcessWebLogin(QWebFrame *web_frame);
+        void ProcessWebLogin(QString url);
 
     private:
         //! Pointer to the taiga network interface.
