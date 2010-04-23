@@ -93,7 +93,8 @@ namespace RexLogic
 
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.
-        void ShowAvatarNameOverlay(entity_id_t entity_id);
+        //! @param visible Do we want the overlay to be visible or not.
+        void ShowAvatarNameOverlay(entity_id_t entity_id, bool visible = true);
 
         //! Starts requested avatar animations, stops others
         void StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids);
