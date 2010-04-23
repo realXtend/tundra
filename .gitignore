@@ -59,3 +59,4 @@ build/
 
 # Binary compiled translation files
 bin/data/translations/*.qm
+bin/data/translations/*.ts
