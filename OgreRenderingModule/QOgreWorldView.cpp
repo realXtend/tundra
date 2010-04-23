@@ -4,11 +4,9 @@
 #include "QOgreWorldView.h"
 #include "Profiler.h"
 
-#include <Ogre.h>
-
 namespace OgreRenderer
 {
-    QOgreWorldView::QOgreWorldView(Ogre::RenderWindow *win) : win_(win)
+    QOgreWorldView::QOgreWorldView(Ogre::RenderWindow *win) : win_(win), texture_name_("test/texture/UI")
     {
         root_ = Ogre::Root::getSingletonPtr();
     }
@@ -20,32 +18,32 @@ namespace OgreRenderer
     void QOgreWorldView::InitializeOverlay(int width, int height)
     {
         // set up off-screen texture
-        ui_overlay_texture_ = Ogre::TextureManager::getSingleton().createManual(
-            "test/texture/UI", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-             Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        Ogre::TexturePtr ui_overlay_texture_ = Ogre::TextureManager::getSingleton().createManual(
+            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
         Ogre::MaterialPtr material(Ogre::MaterialManager::getSingleton().create(
             "test/material/UI", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
         Ogre::TextureUnitState *state(material->getTechnique(0)->getPass(0)->createTextureUnitState());
 
-        state->setTextureName ("test/texture/UI");
+        state->setTextureName(texture_name_);
 
         material->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
         // Setup fog override so that scene fog does not affect UI rendering
         material->setFog(true, Ogre::FOG_NONE);
 
         // set up overlays
-        ui_overlay_ = (Ogre::OverlayManager::getSingleton().create("test/overlay/UI"));
+        ui_overlay_ = Ogre::OverlayManager::getSingleton().create("test/overlay/UI");
 
-        ui_overlay_container_ = (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "test/overlay/UIPanel"));
+        ui_overlay_container_ = Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "test/overlay/UIPanel");
 
         ui_overlay_container_->setMaterialName("test/material/UI");
         ui_overlay_container_->setMetricsMode(Ogre::GMM_PIXELS);
         ui_overlay_container_->setPosition(0, 0);
 
-        ui_overlay_->add2D(static_cast <Ogre::OverlayContainer *>(ui_overlay_container_));
-        ui_overlay_->setZOrder(Ogre::ushort(500));
+        ui_overlay_->add2D(static_cast<Ogre::OverlayContainer *>(ui_overlay_container_));
+        ui_overlay_->setZOrder(500);
         ui_overlay_->show();
 
         ResizeOverlay(width, height);
@@ -76,10 +74,14 @@ namespace OgreRenderer
             ui_overlay_container_->setPosition(left, top);
 
             // resize the backing texture
-            ui_overlay_texture_->freeInternalResources();
-            ui_overlay_texture_->setWidth(width);
-            ui_overlay_texture_->setHeight(height);
-            ui_overlay_texture_->createInternalResources();
+            Ogre::TextureManager &mgr = Ogre::TextureManager::getSingleton();
+            Ogre::TexturePtr texture = mgr.getByName(texture_name_);
+            assert(texture.get());
+
+            texture->freeInternalResources();
+            texture->setWidth(width);
+            texture->setHeight(height);
+            texture->createInternalResources();
         }
     }
 
@@ -96,7 +98,10 @@ namespace OgreRenderer
     void QOgreWorldView::OverlayUI(Ogre::PixelBox &ui)
     {
         PROFILE(QOgreWorldView_OverlayUI);
-        ui_overlay_texture_->getBuffer()->blitFromMemory(ui);
+        Ogre::TextureManager &mgr = Ogre::TextureManager::getSingleton();
+        Ogre::TexturePtr texture = mgr.getByName(texture_name_);
+        assert(texture.get());
+        texture->getBuffer()->blitFromMemory(ui);
     }
 
     void QOgreWorldView::ShowUiOverlay()
