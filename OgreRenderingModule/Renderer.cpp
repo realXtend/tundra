@@ -30,7 +30,7 @@
 #include <QVBoxLayout>
 #include <QGraphicsScene>
 
-//#include "MemoryLeakCheck.h"
+#include "MemoryLeakCheck.h"
 
 ///\todo Bring in the D3D9RenderSystem includes to fix Ogre & Qt fighting over SetCursor.
 //#include <OgreD3D9RenderWindow.h>
@@ -145,8 +145,10 @@ namespace OgreRenderer
 
         resource_handler_.reset();
         root_.reset();
-        //main_window_->deleteLater();
-        //main_window_ = 0;
+        SAFE_DELETE(q_ogre_world_view_);
+        ///\note    We cannot delete main window here because it will cause many dangling pointers in UiModule.
+        ///         Probably we will refactor the UiModule to be authorative of the main window instead of Renderer.
+        //SAFE_DELETE(main_window_);
     }
 
     void Renderer::RemoveLogListener()
@@ -160,13 +162,15 @@ namespace OgreRenderer
 
     void Renderer::InitializeQt()
     {
-        main_window_ = new QWidget;
+        ///\todo Memory leak below, see very end of ~Renderer() for comments.
+        main_window_ = new QWidget; ///\todo Memory leak, see very end of ~Renderer().
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
         QPixmap pm(16,16);
         pm.fill(Qt::transparent);
         main_window_->setWindowIcon(QIcon(pm));
+        ///\todo Memory leak below, see very end of ~Renderer() for comments.
         main_window_->setLayout(new QVBoxLayout(main_window_));
         main_window_->layout()->setMargin(0);
         main_window_->layout()->addWidget(q_ogre_ui_view_);
@@ -198,11 +202,13 @@ namespace OgreRenderer
         // Create Ogre root with logfile
         logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
+#include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
+#include "EnableMemoryLeakCheck.h"
 
         // Setup Ogre logger (use LL_NORMAL for more prints of init)
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
-        log_listener_ = OgreLogListenerPtr(new LogListener);   
+        log_listener_ = OgreLogListenerPtr(new LogListener);
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
         // Read naali config
