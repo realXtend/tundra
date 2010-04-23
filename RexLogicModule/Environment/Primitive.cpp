@@ -228,7 +228,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         //RexLogicModule::LogInfo("MediaURL: " + prim->MediaUrl);
         if (prim->MediaUrl.compare(prevMediaUrl) != 0)
         {
-            RexLogicModule::LogInfo("MediaURL changed: " + prim->MediaUrl);
+            //RexLogicModule::LogInfo("MediaURL changed: " + prim->MediaUrl);
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
             Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
