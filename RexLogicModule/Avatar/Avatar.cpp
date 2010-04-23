@@ -30,7 +30,7 @@
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
-#include "EC_HoveringIconGroup.h"
+#include "EC_HoveringWidget.h"
 #include <UiModule.h>
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
@@ -108,10 +108,11 @@ namespace RexLogic
         defaultcomponents.push_back(EC_AvatarAppearance::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-        defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        defaultcomponents.push_back(EC_HoveringText::NameStatic());
+        defaultcomponents.push_back(EC_HoveringWidget::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::NameStatic());
+        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::NameStatic());
         
         // Note: we assume the avatar is created because of a message from network
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, Foundation::Network);
@@ -121,7 +122,7 @@ namespace RexLogic
         {
             //CreateNameOverlay(placeable, entityid);
             ShowAvatarNameOverlay(entityid);
-            CreateInfoIconOverlay(placeable, entityid);
+            CreateWidgetOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
         }
 
@@ -477,6 +478,29 @@ namespace RexLogic
         avatar_appearance_.Update(frametime);
     }
 
+    void Avatar::CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
+    {
+        Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+        if (!scene)
+            return;
+
+        Scene::EntityPtr entity = scene->GetEntity(entity_id);
+        if (!entity)
+            return;
+
+
+        EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (overlay && presence)
+        {
+            overlay->SetText(presence->GetFullName().c_str());
+            overlay->AddButton("Poke");
+            overlay->AddButton("Mute");
+            overlay->InitializeBillboards();
+        }
+
+
+    }
 
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {

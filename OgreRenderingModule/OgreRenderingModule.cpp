@@ -30,8 +30,7 @@
 #include "EventManager.h"
 #include <Ogre.h>
 
-#include "EC_HoveringIconGroup.h"
-#include "HoveringIcon.h"
+
 #include "SceneManager.h"
 
 namespace OgreRenderer
@@ -119,7 +118,7 @@ namespace OgreRenderer
     bool OgreRenderingModule::CheckInfoIconIntersection(int x, int y)
     {
         bool ret_val = false;
-        QList<HoveringIcon*> visible_icons;
+        /*QList<HoveringIcon*> visible_icons;
         Real scr_x = x/(Real)renderer_->GetWindowWidth();
         Real scr_y = y/(Real)renderer_->GetWindowHeight();
 
@@ -172,7 +171,7 @@ namespace OgreRenderer
             }
 
         
-        }
+        }*/
 
         return ret_val;
     }
