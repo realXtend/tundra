@@ -24,7 +24,6 @@ namespace CoreUi
 
             if (operation == GetOperation)
             {
-                qDebug() << "Emitting url" << request.url().toString() << endl;
                 emit WebLoginUrlRecived(request.url());
                 return new CablebeachReply(request.url());
             }
