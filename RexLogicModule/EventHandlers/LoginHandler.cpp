@@ -231,6 +231,8 @@ namespace RexLogic
     {
         connect(notifier, SIGNAL( StartTaigaLogin(QWebFrame *) ),
                 SLOT( ProcessWebLogin(QWebFrame *) ));
+        connect(notifier, SIGNAL( StartTaigaLogin(QString) ),
+                SLOT( ProcessWebLogin(QString) ));
     }
 
     void TaigaLoginHandler::InstantiateWorldSession()
@@ -285,6 +287,17 @@ namespace RexLogic
         if (server_entry_point_url_.isValid())
         {
             Logout();
+            emit LoginStarted();
+            InstantiateWorldSession();
+        }
+    }
+
+    void TaigaLoginHandler::ProcessWebLogin(QString url)
+    {
+        server_entry_point_url_ = ValidateServerUrl(url);
+        dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl("NotNeeded");
+        if (server_entry_point_url_.isValid())
+        {
             emit LoginStarted();
             InstantiateWorldSession();
         }

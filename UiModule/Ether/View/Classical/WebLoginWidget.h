@@ -27,12 +27,14 @@ namespace CoreUi
             void LoadStarted();
             void UpdateUi(int progress);
             void ProcessPage(bool success);
+            void LoadUrl(QUrl url);
 
         private:
             QString address_;
 
         signals:
             void WebLoginInfoRecieved(QWebFrame *);
+            void WebLoginUrlRecived(QString);
         };
     }
 }

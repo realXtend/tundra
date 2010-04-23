@@ -33,6 +33,7 @@ namespace Ether
             void EmitOpenSimLogin(QMap<QString, QString> info_map);
             void EmitRealXtendLogin(QMap<QString, QString> info_map);
             void EmitTaigaLogin(QWebFrame *web_frame);
+            void EmitTaigaLogin(QString url);
             void ExitApplication();
 
         private:
@@ -42,6 +43,7 @@ namespace Ether
             void StartOsLogin(QMap<QString, QString> info_map);
             void StartRexLogin(QMap<QString, QString> info_map);
             void StartTaigaLogin(QWebFrame *web_frame);
+            void StartTaigaLogin(QString url);
             void Quit();
         };
     }

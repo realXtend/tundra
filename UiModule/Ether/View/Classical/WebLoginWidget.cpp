@@ -7,8 +7,10 @@
 #include <QFile>
 #include <QLineEdit>
 #include <QWebFrame>
+#include <QUrl>
 
 #include "MemoryLeakCheck.h"
+#include "NetworkAccessManager.h"
 
 namespace CoreUi
 {
@@ -50,6 +52,12 @@ namespace CoreUi
 
         void WebLoginWidget::ConnectSignals()
         {
+            QNetworkAccessManager *oldManager = webView->page()->networkAccessManager();
+            NetworkAccessManager *newManager = new NetworkAccessManager(oldManager, webView);
+            webView->page()->setNetworkAccessManager(newManager);
+
+            connect(newManager, SIGNAL( WebLoginUrlRecived(QUrl) ), this, SLOT( LoadUrl(QUrl) ));
+
             // Buttons
             connect(pushButton_Back, SIGNAL( clicked() ), webView, SLOT( back() ));
             connect(pushButton_Forward, SIGNAL( clicked() ), webView, SLOT( forward() ));
@@ -107,7 +115,27 @@ namespace CoreUi
 
                 // Do actual HTML page processing if this was a login success page...
                 if (webView->page()->mainFrame()->title() == "LoginSuccess")
-                    emit WebLoginInfoRecieved(webView->page()->mainFrame());
+                {
+                    int pos1, pos2;
+                    QString entry_point_url;
+                    QString returnValue = webView->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()").toString();
+
+                    pos1 = returnValue.indexOf(QString("http://"), 0);
+                    pos2 = returnValue.indexOf(QString("?"), 0);
+                    entry_point_url = returnValue.mid(pos1, pos2-pos1);
+                    //emit WebLoginInfoRecieved(webView->page()->mainFrame());
+                    emit WebLoginUrlRecived(entry_point_url);
+                }
+            }
+        }
+
+        void WebLoginWidget::LoadUrl(QUrl url)
+        {
+            if (url.scheme() == "cablebeach")
+            {
+                QString entry_point_url;
+                QString urlString = url.toString().replace("cablebeach://", "http://");
+                emit WebLoginUrlRecived(urlString);
             }
         }
     }

@@ -71,6 +71,11 @@ namespace Ether
             emit StartTaigaLogin(web_frame);
         }
 
+        void EtherLoginNotifier::EmitTaigaLogin(QString url)
+        {
+            emit StartTaigaLogin(url);
+        }
+
         void EtherLoginNotifier::ExitApplication()
         {
             emit Quit();
