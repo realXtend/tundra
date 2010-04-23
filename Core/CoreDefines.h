@@ -26,10 +26,10 @@ inline Dst checked_static_cast(Src src)
 #define UNREFERENCED_PARAM(P)               (P)
 
 /// Use for QObjects
-#define SAFE_DELETE_LATER(p) p->deleteLater(); p = 0;
+#define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
 /// Use for strings that are shown in the UI
-#define TRANSLATE(context, key) QApplication::translate(context, key)
+#define TR(context, key) QApplication::translate(context, key)
 
 #endif
 
