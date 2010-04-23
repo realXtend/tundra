@@ -30,20 +30,11 @@
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 
-#include "EventManager.h"
-#include "ConfigurationManager.h"
-#include "ModuleManager.h"
-#include "ConsoleCommand.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "ServiceManager.h"
-#include "ComponentManager.h"
-#include "EventDataInterface.h"
-#include "TextureInterface.h"
-#include "SoundServiceInterface.h"
-#include "InputServiceInterface.h"
-#include "SceneManager.h"
-#include "WorldStream.h"
-#include "UiModule.h"
+// External EC's
+#include "EC_Highlight.h"
+#include "EC_HoveringText.h"
+#include "EC_HoveringWidget.h"
+#include "EC_Clone.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -111,7 +102,7 @@ void RexLogicModule::Load()
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
-    DECLARE_MODULE_EC(EC_HoveringIconGroup);
+    DECLARE_MODULE_EC(EC_HoveringWidget);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
@@ -1038,7 +1029,7 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();
 
-    boost::shared_ptr<EC_HoveringIconGroup> info_icon = entity->GetComponent<EC_HoveringIconGroup>();
+    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->Clicked();
 }
