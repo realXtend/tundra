@@ -24,6 +24,9 @@
 
 #include <OgreMaterialManager.h>
 
+// LoadURL webview opening code is not on the py side, experimentally at least
+#include "ScriptServiceInterface.h"
+
 namespace
 {
 /// Clones a new Ogre material that renders using the given ambient color. 
@@ -123,6 +126,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgScriptDialog:
         return HandleOSNE_ScriptDialog(netdata);
+
+    case RexNetMsgLoadURL:
+        return HandleOSNE_LoadURL(netdata);
 
     default:
         break;
@@ -455,6 +461,26 @@ bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEven
     if (script_dialog_handler_)
         script_dialog_handler_->Handle(request);
 
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    std::string object_name = msg.ReadString(); // FirstName
+    std::string object_id = msg.ReadUUID().ToString(); // ObjectID
+    std::string owner_id = msg.ReadUUID().ToString(); // ObjectID
+    bool owner_is_group = msg.ReadBool(); // OwnerIsGroup
+    std::string message = msg.ReadString(); // Message
+    std::string url = msg.ReadString(); // URL
+
+    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+    if (pyservice)
+    {
+        pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + url + "');");
+    }
     return false;
 }
 

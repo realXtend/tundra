@@ -126,6 +126,13 @@ except ImportError: #socket not avaible in debugmode
 else:
     from webserver.webcontroller import WebServer
 
+try:
+    loadurlhandler
+except: #first run
+    import loadurlhandler
+else:
+    loadurlhandler = reload(loadurlhandler)
+
 import apitest.testrunner
 import mediaurlhandler.mediaurlhandler
     
@@ -134,9 +141,10 @@ modules.extend([
     #usr.chathandler.ChatHandler,
     usr.keycommands.KeyCommander,
     #usr.sleeper.Sleeper,
-    #objectedit.objectedit.ObjectEdit, #only_layout.OnlyLayout, #now at import for failsafety
+    #objectedit.objectedit.ObjectEdit, #now added to list at import due to new eror reporting tech
     #usr.anonlogin.AnonLogin,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
+    loadurlhandler.LoadURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,

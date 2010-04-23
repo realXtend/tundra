@@ -18,6 +18,8 @@
 #include <QDebug>
 #include <QStringList>
 
+#define MAX_HTTP_CONNECTIONS 10
+
 namespace Asset
 {
     QtHttpAssetProvider::QtHttpAssetProvider(Foundation::Framework *framework) :
@@ -34,6 +36,8 @@ namespace Asset
             AssetModule::LogWarning("QtHttpAssetProvider >> Could not get event category for Asset events");
 
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(TranferCompleted(QNetworkReply*)));
+
+        AssetModule::LogWarning(QString("QtHttpAssetProvider >> Initialized with max %1 parallel HTTP connections").arg(QString::number(MAX_HTTP_CONNECTIONS)).toStdString());
     }
 
     QtHttpAssetProvider::~QtHttpAssetProvider()
@@ -45,7 +49,7 @@ namespace Asset
 
     void QtHttpAssetProvider::Update(f64 frametime)
     {
-
+        StartTransferFromQueue();
     }
 
     const std::string& QtHttpAssetProvider::Name()
@@ -88,7 +92,7 @@ namespace Asset
             QtHttpAssetTransfer *transfer = new QtHttpAssetTransfer(asset_url, asset_id_qstring, asset_type_int, tag);
             transfer->setOriginatingObject(transfer);
 
-            if (assetid_to_transfer_map_.count() <= 20)
+            if (assetid_to_transfer_map_.count() <= MAX_HTTP_CONNECTIONS)
             {
                 assetid_to_transfer_map_[asset_id_qstring] = transfer;
                 network_manager_->get(*transfer);
@@ -177,6 +181,7 @@ namespace Asset
 
             //QStringList debug_parts = error_transfer_data.id.split("/");
             //qDebug() << "    <ASSET-CANCELED> " << debug_parts.at(debug_parts.length()-2);
+            reply->deleteLater();
             return;
         }
 
@@ -203,8 +208,11 @@ namespace Asset
                 clip_count = 5;
             else if (url_path.endsWith("/data/"))
                 clip_count = 6;
-            else 
+            else
+            {
+                reply->deleteLater();
                 return;
+            }
             url_path = url_path.left(url_path.count()-clip_count);
             url_path = url_path + "/metadata";
             metadata_url.setPath(url_path);
@@ -232,7 +240,10 @@ namespace Asset
             HttpAssetTransferInfo transfer_data = metadata_to_assetptr_[metadata_transfer_url].first;
             Foundation::AssetPtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
             if (!ready_asset_ptr)
+            {
+                reply->deleteLater();
                 return;
+            }
 
             // Fill metadata
             const QByteArray &inbound_metadata = reply->readAll();
@@ -264,6 +275,8 @@ namespace Asset
             //QStringList debug_parts = transfer_data.id.split("/");
             //qDebug() << "       <ASSET-READY> " << debug_parts.at(debug_parts.length()-2);
         }
+
+        reply->deleteLater();
     }
     
     bool QtHttpAssetProvider::CheckRequestQueue(QString assed_id)
@@ -284,7 +297,7 @@ namespace Asset
 
     void QtHttpAssetProvider::StartTransferFromQueue()
     {
-        if (assetid_to_transfer_map_.count() <= 20 && pending_request_queue_.count() > 0)
+        if (assetid_to_transfer_map_.count() <= MAX_HTTP_CONNECTIONS && pending_request_queue_.count() > 0)
         {
             QtHttpAssetTransfer *new_transfer = pending_request_queue_.takeAt(0);
             assetid_to_transfer_map_[new_transfer->GetTranferInfo().id] = new_transfer;
