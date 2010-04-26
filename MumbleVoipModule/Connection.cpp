@@ -266,7 +266,7 @@ namespace MumbleVoip
             delete audio_frame;
         }
         int session = 0;
-	    char data[1024];
+	    static char data[1024];
 	    int flags = 0; // target = 0
 	    flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
 	    data[0] = static_cast<unsigned char>(flags);
