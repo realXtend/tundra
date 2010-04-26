@@ -177,6 +177,15 @@ macro (configure_caelum)
     sagase_configure_report (CAELUM)
 endmacro (configure_caelum)
 
+macro (configure_qtpropertybrowser)
+    sagase_configure_package (QT_PROPERTY_BROWSER 
+        NAMES QtPropertyBrowser
+        COMPONENTS QtPropertyBrowser
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    sagase_configure_report (QT_PROPERTY_BROWSER)
+endmacro (configure_qtpropertybrowser)
+
 macro (configure_hydrax)
     sagase_configure_package (HYDRAX 
         NAMES Hydrax

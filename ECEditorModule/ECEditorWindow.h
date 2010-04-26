@@ -15,6 +15,7 @@ class QListWidget;
 class QTextEdit;
 class QComboBox;
 class QKeyEvent;
+class QtTreePropertyBrowser;
 
 namespace UiServices
 {
@@ -51,6 +52,8 @@ namespace ECEditor
         void SaveData();
         void RefreshEntityComponents();
         void RefreshComponentData();
+        void RefreshPropertyBrowser();
+        void TogglePropertiesBrowser();
         
     protected:
         void hideEvent(QHideEvent *hide_event);
@@ -68,9 +71,11 @@ namespace ECEditor
         QPushButton* revert_button_;
         QPushButton* create_button_;
         QPushButton* delete_button_;
+        QPushButton* toggle_browser_button_;
         QListWidget* entity_list_;
         QListWidget* component_list_;
         QTextEdit* data_edit_;
+        QtTreePropertyBrowser* property_browser_;
         QComboBox* create_combo_;
         QShortcut* delete_shortcut_;
         UiServices::UiProxyWidget* proxy_;

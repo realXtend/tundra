@@ -255,6 +255,9 @@ namespace Environment
         //! Create new terrain paint brush that will display where user is painting the terrain.
         //! Paint area color is calculated using distance between middle point and individual vertex.
         //! This method will destroy the previous mesh until it begin to create a new mesh.
+        //! @todo It's heavier to recreate the mesh each time the paint area location has changed, so
+        //! in a future this code should be replaced with one that will update already created mesh each
+        //! time the bush has moved on the scene.
         //! @param x_pos X coordinate where paint mesh middle point is located.
         //! @param y_pos Y coordinate where paint mesh middle point is located.
         //! @param color Paint area color.
