@@ -26,7 +26,7 @@ namespace MumbleVoip
         users_position_(0.0,0.0,0.0),
         voice_indicator_(0)
     {
-        voice_indicator_ = new SimpleVoiceIndicator();
+//        voice_indicator_ = new SimpleVoiceIndicator();
     }
 
     ConnectionManager::~ConnectionManager()
@@ -255,6 +255,19 @@ namespace MumbleVoip
             return boost::shared_ptr<Foundation::SoundServiceInterface>();
 
         return soundsystem;
+    }
+
+    void ConnectionManager::EnableVAD(bool enable)
+    {
+        if (enable)
+        {
+            if (!voice_indicator_)
+                voice_indicator_ = new SimpleVoiceIndicator();
+        }
+        else
+        {
+            SAFE_DELETE(voice_indicator_);
+        }
     }
 
     // GetRecordedSoundData(void* buffer, uint size)
