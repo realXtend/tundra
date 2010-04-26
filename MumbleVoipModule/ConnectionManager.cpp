@@ -137,13 +137,16 @@ namespace MumbleVoip
             return;    
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-        sound_buffer.data_ = frame->DataPtr();
+        
+        sound_buffer.data_.resize(frame->GetLengthBytes());
+        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->GetLengthBytes());
+
         sound_buffer.frequency_ = frame->SampleRate();
         if (frame->SampleWidth() == 16)
             sound_buffer.sixteenbit_ = true;
         else
             sound_buffer.sixteenbit_ = false;
-        sound_buffer.size_ = frame->GetLengthBytes();
+        
         if (frame->Channels() == 2)
             sound_buffer.stereo_ = true;
         else
