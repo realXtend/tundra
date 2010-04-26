@@ -14,7 +14,7 @@
 
 #add_subdirectory (TestModule)
 #add_subdirectory (UnitTests)
-#add_subdirectory (DebugStatsModule)
+add_subdirectory (DebugStatsModule)
 #add_subdirectory (NetTestLogicModule)
 
 add_subdirectory (PythonScriptModule)
