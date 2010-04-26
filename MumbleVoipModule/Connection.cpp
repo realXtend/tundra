@@ -490,7 +490,7 @@ namespace MumbleVoip
                 User* user = users_[session];
                 if (user)
                 {
-                    if (user->tryLock(10))
+                    if (user->tryLock(5))
                     {
                         user->OnAudioFrameReceived(audio_frame);
                         emit AudioFramesAvailable(this);
