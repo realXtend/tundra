@@ -57,6 +57,10 @@ namespace Asset
         QMap<QUrl, QPair<HttpAssetTransferInfo, Foundation::AssetPtr> > metadata_to_assetptr_;
         QList<QtHttpAssetTransfer *> pending_request_queue_;
 
+        bool filling_stack_;
+        bool fake_metadata_fetch_;
+        QUrl fake_metadata_url_;
+
     };
 }
 
