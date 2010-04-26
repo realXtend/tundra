@@ -98,7 +98,12 @@ namespace Environment
         {
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
             EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-            assert(terrain_component);
+            if(!terrain_component)
+            {
+                environment_module_->LogWarning("Can't get access to Terrain's entity component.");
+                return;
+            }
+            //assert(terrain_component);
 
             if(terrain_component->AllPatchesLoaded())
             {
