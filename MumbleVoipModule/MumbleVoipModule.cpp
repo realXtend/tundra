@@ -27,7 +27,8 @@ namespace MumbleVoip
           server_observer_(0),
           connection_manager_(0),
           use_camera_position_(false),
-          mumble_client_started_(false)
+          mumble_client_started_(false),
+          mumble_use_library_(false)
     {
     }
 
@@ -69,6 +70,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::PostInitialize()
     {
+        event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+        if (event_category_framework_ == 0)
+            LogError("Unable to find event category for Framework");
     }
 
     void MumbleVoipModule::Uninitialize()
@@ -94,6 +98,27 @@ namespace MumbleVoip
     {
         if (server_observer_)
             server_observer_->HandleEvent(category_id, event_id, data);
+
+        if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
+        {
+			QMap<int, QString> map;
+			QString command, parameter;
+            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
+
+			for( int count = 0; count < po_event->argc; count++ )
+				map[count] = QString(po_event->argv[count]);
+
+			command = map[1];
+			parameter = map[2];
+
+			if (!command.isEmpty())
+            {
+                if (command == "--usemumblelibrary")
+                {
+                    mumble_use_library_ = true;
+                }
+            }
+        }
 
         return false;
     }
@@ -260,21 +285,25 @@ namespace MumbleVoip
 
         try
         {
-            connection_manager_->OpenConnection(info);
-            LogInfo("Mumble connection established.");
-            connection_manager_->SendAudio(true);
-            LogDebug("Start sending audio.");
+            if (mumble_use_library_)
+            {
+                connection_manager_->OpenConnection(info);
+                LogInfo("Mumble connection established.");
+                connection_manager_->SendAudio(true);
+                LogDebug("Start sending audio.");
+            }
+            else
+            {
+                LogInfo("Starting mumble client.");
+                ConnectionManager::StartMumbleClient(murmur_url.toString());
 
-            
-            //LogInfo("Starting mumble client.");
-            //ConnectionManager::StartMumbleClient(murmur_url.toString());
-
-            //// it takes some time for a mumble client to setup shared memory for link plugins
-            //// so we have to wait some time before we can start our link plugin.
-            //user_id_for_link_plugin_ = info.avatar_id;
-            //context_id_for_link_plugin_ = info.context_id;
-            //QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
-            //mumble_client_started_ = true;
+                // it takes some time for a mumble client to setup shared memory for link plugins
+                // so we have to wait some time before we can start our link plugin.
+                user_id_for_link_plugin_ = info.avatar_id;
+                context_id_for_link_plugin_ = info.context_id;
+                QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+                mumble_client_started_ = true;
+            }
         }
         catch(std::exception &e)
         {
