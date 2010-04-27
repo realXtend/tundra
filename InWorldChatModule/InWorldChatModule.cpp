@@ -165,7 +165,10 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
         {
         case RexNetMsgGenericMessage:
             if (ParseGenericMessageMethod(msg) == "RexEmotionIcon")
-                HandleRexEmotionIconMessage(ParseGenericMessageParameters(msg));
+            {
+                StringVector sv = ParseGenericMessageParameters(msg);
+                HandleRexEmotionIconMessage(sv);
+            }
             return false;
         case RexNetMsgChatFromSimulator:
             HandleChatFromSimulatorMessage(msg);
