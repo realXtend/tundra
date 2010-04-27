@@ -95,7 +95,6 @@ void RexLogicModule::Load()
 
     DECLARE_MODULE_EC(EC_FreeData);
     DECLARE_MODULE_EC(EC_AttachedSound);
-    DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_OpenSimAvatar);
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
@@ -107,6 +106,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
+    DECLARE_MODULE_EC(EC_OpenSimPrim);
 }
 
 // virtual

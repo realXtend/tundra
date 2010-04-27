@@ -7,7 +7,7 @@
  */
 
 #include "StableHeaders.h"
-//#include "DebugOperatorNew.h"
+#include "DebugOperatorNew.h"
 #include "EC_ChatBubble.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
@@ -25,7 +25,7 @@
 #include <QLinearGradient>
 #include <QTimer>
 
-//#include "MemoryLeakCheck.h"
+#include "MemoryLeakCheck.h"
 
 EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -141,7 +141,9 @@ void EC_ChatBubble::Refresh()
 
     // Create texture
     QImage img = pixmap.toImage();
+#include "DisableMemoryLeakCheck.h"
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
+#include "EnableMemoryLeakCheck.h"
     std::string tex_name("ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
     Ogre::Texture *tex = checked_static_cast<Ogre::Texture *>(manager.create(

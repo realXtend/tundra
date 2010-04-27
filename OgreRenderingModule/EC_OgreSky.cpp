@@ -5,7 +5,6 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgreSky.h"
-#include "ConversionUtils.h"
 
 #include <Ogre.h>
 

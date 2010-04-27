@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Billboard.cpp
- *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
+ *  @brief  EC_Billboard shows a billboard_ (3D sprite) that is attached to an entity.
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
  */
 
@@ -19,8 +19,18 @@
 #include <OgreTextureManager.h>
 #include <OgreResource.h>
 
+#include <QTimer>
+
+#include <Poco/Logger.h>
+
+#define LogError(msg) Poco::Logger::get("EC_Billboard").error("Error: " + std::string(msg));
+#define LogInfo(msg) Poco::Logger::get("EC_Billboard").information(msg);
+
 EC_Billboard::EC_Billboard(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework())
+    Foundation::ComponentInterface(module->GetFramework()),
+    billboardSet_(0),
+    billboard_(0),
+    materialName_("")
 {
 }
 
@@ -28,7 +38,13 @@ EC_Billboard::~EC_Billboard()
 {
 }
 
-void EC_Billboard::Show(const Vector3df &offset, float timeToShow, const char *imageName)
+void EC_Billboard::SetPosition(const Vector3df& position)
+{
+    if (IsCreated())
+        billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+}
+
+void EC_Billboard::Show(const std::string &imageName, int timeToShow)
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -45,15 +61,73 @@ void EC_Billboard::Show(const Vector3df &offset, float timeToShow, const char *i
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (!placeable)
+        return;
+
+    Ogre::SceneNode *node = placeable->GetSceneNode();
+    assert(node);
     if (!node)
         return;
 
-    Ogre::SceneNode *ogreNode = node->GetSceneNode();
-    assert(ogreNode);
-    if (!ogreNode)
+    if (imageName.empty())
         return;
 
+    bool succesful = CreateOgreTextureResource(imageName);
+    if (!succesful)
+        return;
+
+    if (!IsCreated())
+    {
+        // Billboard not created yet, create it now.
+        billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName(), 1);
+        assert(billboardSet_);
+
+        materialName_ = std::string("material") + renderer->GetUniqueObjectName(); 
+        Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
+        OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
+        billboardSet_->setMaterialName(materialName_);
+
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
+        assert(billboard_);
+        billboard_->setDimensions(1, 1);
+
+        node->attachObject(billboardSet_);
+    }
+    else
+    {
+        // Billboard already created Set new texture for the material
+        assert(!materialName_.empty());
+        if (!materialName_.empty())
+        {
+            Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
+            Ogre::MaterialPtr material = mgr.getByName(materialName_);
+            assert(material.get());
+            OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
+        }
+    }
+
+    Show(timeToShow);
+}
+
+void EC_Billboard::Show(int timeToShow)
+{
+    if (IsCreated())
+    {
+        billboardSet_->setVisible(true);
+        if (timeToShow > 0)
+            QTimer::singleShot(timeToShow, this, SLOT(Hide()));
+    }
+}
+
+void EC_Billboard::Hide()
+{
+    if (IsCreated())
+        billboardSet_->setVisible(false);
+}
+
+bool EC_Billboard::CreateOgreTextureResource(const std::string &imageName)
+{
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
     Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(imageName).get());
     if (!tex)
@@ -62,30 +136,18 @@ void EC_Billboard::Show(const Vector3df &offset, float timeToShow, const char *i
         ///     exists in folder spesified in the resource.cfg
         std::stringstream ss;
         ss << "Ogre Texture \"" << imageName << "\" not found!";
-        std::cout << ss.str() << std::endl;
+        LogError(ss.str());
 
         Ogre::ResourcePtr rp = manager.create(imageName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (!rp.isNull())
         {
-            std::cout << "But should be now..." << std::endl;
+            LogInfo("But should be now...");
+            return true;
         }
+
+        return false;
     }
 
-    ///\todo GetUniqueObjectName generates object names, not material or billboardset names, but anything unique goes.
-    /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
-
-    Ogre::BillboardSet *billboardSet = scene->createBillboardSet(renderer->GetUniqueObjectName(), 1);
-    assert(billboardSet);
-
-    std::string newName = std::string("material") + renderer->GetUniqueObjectName(); 
-    Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", newName);
-    OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
-    billboardSet->setMaterialName(newName);
-
-    Ogre::Billboard *billboard = billboardSet->createBillboard(Ogre::Vector3(offset.x, offset.y, offset.z));
-    assert(billboard);
-    billboard->setDimensions(2, 1);
-
-    ogreNode->attachObject(billboardSet);
+    return true;
 }
 

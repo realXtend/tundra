@@ -146,9 +146,11 @@ namespace OgreRenderer
         resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(q_ogre_world_view_);
-        ///\note    We cannot delete main window here because it will cause many dangling pointers in UiModule.
-        ///         Probably we will refactor the UiModule to be authorative of the main window instead of Renderer.
-        //SAFE_DELETE(main_window_);
+        /** @note   We cannot delete main window here because it will cause many dangling pointers
+         *          in UiModule which is uninitalized after destruction of Renderer. Probably we will 
+         *          refactor the UiModule to be authorative of the main window instead of Renderer.
+         */
+         //SAFE_DELETE(main_window_);
     }
 
     void Renderer::RemoveLogListener()
@@ -163,7 +165,7 @@ namespace OgreRenderer
     void Renderer::InitializeQt()
     {
         ///\todo Memory leak below, see very end of ~Renderer() for comments.
-        main_window_ = new QWidget; ///\todo Memory leak, see very end of ~Renderer().
+        main_window_ = new QWidget;
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
@@ -334,7 +336,7 @@ namespace OgreRenderer
             {
                 root_->loadPlugin(plugin_dir + plugins[i]);
             }
-            catch (Ogre::Exception e)
+            catch (Ogre::Exception &/*e*/)
             {
                 OgreRenderingModule::LogError("Plugin " + plugins[i] + " failed to load");
             }
@@ -830,7 +832,7 @@ namespace OgreRenderer
      } */
 
     //qt wrapper / upcoming replacement for the one above
-    QVariantList Renderer::FrustumQuery(QRect viewrect)
+    QVariantList Renderer::FrustumQuery(QRect &viewrect)
     {
         QVariantList l;
         l << 1;

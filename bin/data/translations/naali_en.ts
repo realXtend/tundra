@@ -403,16 +403,16 @@ QPushButton::pressed {
 <context>
     <name>ECEditor::ECEditorWindow</name>
     <message>
-        <source>ECEditor</source>
-        <comment>Entity-component Editor</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Properties &gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Properties &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ECEditor</source>
+        <comment>Entity-component Editor</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>

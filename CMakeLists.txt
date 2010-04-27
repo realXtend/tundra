@@ -66,6 +66,7 @@ configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
 configure_propertyeditor ()
+configure_qtpropertybrowser ()
 
 if (CAELUM)
     configure_caelum ()

@@ -1,11 +1,11 @@
 # Define target name and output directory
-init_target (EC_Billboard)
+init_target (EC_OpenSimPrim)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EC_Billboard.h)
+file (GLOB MOC_FILES EC_OpenSimPrim.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
@@ -17,17 +17,15 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 use_package (BOOST)
 use_package (POCO)
-use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule)
+use_modules (Core Foundation Interfaces SceneManager RexCommon)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_package (OGRE)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule)
+link_modules (Core Foundation Interfaces SceneManager RexCommon)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

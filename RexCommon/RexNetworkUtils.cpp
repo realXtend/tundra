@@ -10,7 +10,6 @@
 
 #include "RexNetworkUtils.h"
 #include "QuatUtils.h"
-#include "ConversionUtils.h"
 #include <QStringList>
 
 namespace RexTypes
@@ -27,8 +26,7 @@ namespace RexTypes
         uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
         Quaternion rotation = UnpackQuaternionFromU16_4(rot);
         rotation.normalize();
-
-        return OpenSimToOgreQuaternion(rotation);
+        return rotation;
     }
 
     Vector3df GetProcessedScaledVectorFromUint16(const uint8_t* bytes, float scale)

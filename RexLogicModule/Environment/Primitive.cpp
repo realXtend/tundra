@@ -25,7 +25,6 @@
 #include "OgreSkeletonResource.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
-#include "ConversionUtils.h"
 #include "QuatUtils.h"
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
@@ -137,7 +136,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         prim->Material = msg->ReadU8();
         prim->ClickAction = msg->ReadU8();
 
-        prim->Scale = OpenSimToOgreCoordinateAxes(msg->ReadVector3());
+        prim->Scale = msg->ReadVector3();
         // Scale is not handled by interpolation system, so set directly
         HandlePrimScaleAndVisibility(localid);
 
@@ -153,20 +152,20 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             // ofs 48 - angular velocity - 3 x float (3x4 bytes)
             // total 60 bytes
 
-            Vector3df vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[0]));
+            Vector3df vec = (*reinterpret_cast<const Vector3df*>(&objectdatabytes[0]));
             if (IsValidPositionVector(vec))
                 netpos->position_ = vec;
 
-            vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[12])); 
+            vec = *reinterpret_cast<const Vector3df*>(&objectdatabytes[12]);
             if (IsValidVelocityVector(vec))
                 netpos->velocity_ = vec;
 
-            vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[24]));
+            vec = *reinterpret_cast<const Vector3df*>(&objectdatabytes[24]);
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Acceleration as well - it's ok as they are quite similar.
                 netpos->accel_ = vec;
 
-            netpos->orientation_ = OpenSimToOgreQuaternion(UnpackQuaternionFromFloat3((float*)&objectdatabytes[36])); 
-            vec = OpenSimToOgreCoordinateAxes(*reinterpret_cast<const Vector3df*>(&objectdatabytes[48]));
+            netpos->orientation_ = UnpackQuaternionFromFloat3((float*)&objectdatabytes[36]);
+            vec = *reinterpret_cast<const Vector3df*>(&objectdatabytes[48]);
             if (IsValidVelocityVector(vec)) // Use Velocity validation for Angular Velocity as well - it's ok as they are quite similar.
                 netpos->rotvel_ = vec;
             netpos->Updated();
