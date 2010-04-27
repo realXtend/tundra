@@ -370,6 +370,8 @@ macro (configure_mumbleclient)
 endmacro (configure_mumbleclient)
 
 macro (configure_openssl)
+	# NOTE: This doesn't work with CMake 2.8 Windows version
+	#       CMake 2.6 must be used
     sagase_configure_package(OPENSSL
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
