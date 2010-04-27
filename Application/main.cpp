@@ -136,6 +136,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     bool cmd = false;
     bool quote = false;
 
+    arguments.push_back("viewer");
+    
     for (i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
@@ -183,7 +185,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Naali_v0.1";
+    WCHAR* szVersion = L"Naali_v0.2.1";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

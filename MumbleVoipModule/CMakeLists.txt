@@ -32,6 +32,11 @@ endmacro (UiFolder)
 #############################################################################################
 
 
+configure_protobuf ()
+configure_openssl ()
+configure_mumbleclient ()
+configure_celt ()
+
 # Define target name and output directory
 init_target (MumbleVoipModule OUTPUT modules/core)
 
@@ -60,6 +65,10 @@ use_package (POCO)
 use_package (QT4)
 use_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
 use_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
+use_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
+use_package (OPENSSL) # NEEDED BY MUMBLECLIENT
+use_package (MUMBLECLIENT)
+use_package (CELT)
 
 use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
 
@@ -71,6 +80,10 @@ link_package (QT4)
 link_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
 link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
+link_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
+link_package (OPENSSL) # NEEDED BY MUMBLECLIENT
+link_package (MUMBLECLIENT)
+link_package (CELT)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

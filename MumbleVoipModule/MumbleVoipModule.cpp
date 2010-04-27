@@ -26,17 +26,32 @@ namespace MumbleVoip
           time_from_last_update_ms_(0),
           server_observer_(0),
           connection_manager_(0),
-          use_camera_position_(false)
+          use_camera_position_(false),
+          mumble_client_started_(false),
+          mumble_use_library_(false)
     {
     }
 
     MumbleVoipModule::~MumbleVoipModule()
     {
+        if (mumble_client_started_ && connection_manager_)
+        {
+            connection_manager_->KillMumbleClient();
+        }
+
+        if (link_plugin_)
+            SAFE_DELETE(link_plugin_);
+
+        if (server_observer_)
+            SAFE_DELETE(server_observer_);
+
+        if (connection_manager_)
+            SAFE_DELETE(connection_manager_);
     }
 
     void MumbleVoipModule::Load()
     {
-        connection_manager_ = new ConnectionManager();
+        connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
         server_observer_ = new ServerObserver(framework_);
         connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
@@ -56,6 +71,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::PostInitialize()
     {
+        event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+        if (event_category_framework_ == 0)
+            LogError("Unable to find event category for Framework");
     }
 
     void MumbleVoipModule::Uninitialize()
@@ -66,12 +84,42 @@ namespace MumbleVoip
     {
         if (link_plugin_ && link_plugin_->IsRunning())
             UpdateLinkPlugin(frametime);
+        
+        if (connection_manager_)
+        {
+            Vector3df position;
+            Vector3df direction;
+            if (GetAvatarPosition(position, direction))
+                connection_manager_->SetAudioSourcePosition(position);
+            connection_manager_->Update(frametime);
+        }
     }
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (server_observer_)
             server_observer_->HandleEvent(category_id, event_id, data);
+
+        if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
+        {
+            QMap<int, QString> map;
+            QString command, parameter;
+            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
+
+            for( int count = 0; count < po_event->argc; count++ )
+                map[count] = QString(po_event->argv[count]);
+
+            command = map[1];
+            parameter = map[2];
+
+            if (!command.isEmpty())
+            {
+                if (command == "--usemumblelibrary")
+                {
+                    mumble_use_library_ = true;
+                }
+            }
+        }
 
         return false;
     }
@@ -85,57 +133,81 @@ namespace MumbleVoip
         if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
             return;
         time_from_last_update_ms_ = 0;
+
+        Vector3df top_vector = Vector3df::UNIT_Z;
+        Vector3df position;
+        Vector3df direction;
+        if (GetAvatarPosition(position, direction))
+        {
+            link_plugin_->SetAvatarPosition(position, direction, top_vector);
+        }
+
+        if (use_camera_position_)
+        {
+            if (GetCameraPosition(position, direction))
+                link_plugin_->SetCameraPosition(position, direction, top_vector);
+        }
+        else
+        {
+            if (GetAvatarPosition(position, direction))
+                link_plugin_->SetCameraPosition(position, direction, top_vector);
+        }
+
+        link_plugin_->SendData();
+    }
+
+    bool MumbleVoipModule::GetAvatarPosition(Vector3df& position, Vector3df& direction)
+    {
         ///\todo Remove RexLogicModule dependency!
         /// Iterate scene entities and get EC_OpenSimPresence. If EC_OpenSimPresence exists and it agentId
         /// matches with worlstream->GetInfo().agentId it's our user's entity.
         RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
-            return;
+            return false;
 
         RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
-        if (avatar)
-        {
-            Scene::EntityPtr entity = avatar->GetUserAvatar();
-            if (!entity)
-                return;
+        if (!avatar)
+            return false;
 
-            const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
-            if (placeable_component)
-            {
-                Vector3df top_vector = Vector3df::UNIT_Z;
-                OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                Quaternion q = ogre_placeable->GetOrientation();
-                Vector3df position_vector = ogre_placeable->GetPosition(); 
-                Vector3df front_vector = q*Vector3df::UNIT_X;
+        Scene::EntityPtr entity = avatar->GetUserAvatar();
+        if (!entity)
+            return false;
 
-                link_plugin_->SetAvatarPosition(position_vector, front_vector, top_vector);
-                if (!use_camera_position_)
-                    link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
-            }
+        const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
+        if (!placeable_component)
+            return false;
 
-            ///\todo Remove RexLogicModule dependency!
-            /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active
-            /// use that entity.
-            Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
-            if (camera)
-            {
-                const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
-                if (placeable_component)
-                {
-                    Vector3df top_vector = Vector3df::UNIT_Z;
+        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+        Quaternion q = ogre_placeable->GetOrientation();
+        position = ogre_placeable->GetPosition(); 
+        direction = q*Vector3df::UNIT_Z;
 
-                    OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
-                    Quaternion q = ogre_placeable->GetOrientation();
+        return true;
+    }
 
-                    Vector3df position_vector = ogre_placeable->GetPosition(); 
-                    Vector3df front_vector = q*Vector3df::UNIT_X;
-                    if (use_camera_position_)
-                        link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
-                }
-            }
+    bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
+    {
+        ///\todo Remove RexLogicModule dependency!
+        /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active
+        /// use that entity.
+        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        if (!rex_logic_module)
+            return false;
 
-            link_plugin_->SendData();
-        }
+        Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
+        if (!camera)
+            return false;
+
+        const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
+        if (!placeable_component)
+            return false;
+
+        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+        Quaternion q = ogre_placeable->GetOrientation();
+
+        position = ogre_placeable->GetPosition(); 
+        direction = q*Vector3df::UNIT_X;
+        return true;
     }
 
     void MumbleVoipModule::InitializeConsoleCommands()
@@ -146,6 +218,8 @@ namespace MumbleVoip
             console_service->RegisterCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
             console_service->RegisterCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
             console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector", Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector", Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
         }
     }
     
@@ -218,16 +292,27 @@ namespace MumbleVoip
         murmur_url.setPassword(info.password);
         murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
 
-        LogInfo("Starting mumble client.");
         try
         {
-            ConnectionManager::StartMumbleClient(murmur_url.toString());
+            if (mumble_use_library_)
+            {
+                connection_manager_->OpenConnection(info);
+                LogInfo("Mumble connection established.");
+                connection_manager_->SendAudio(true);
+                LogDebug("Start sending audio.");
+            }
+            else
+            {
+                LogInfo("Starting mumble client.");
+                ConnectionManager::StartMumbleClient(murmur_url.toString());
 
-            // it takes some time for a mumble client to setup shared memory for link plugins
-            // so we have to wait some time before we can start our link plugin.
-            user_id_for_link_plugin_ = info.avatar_id;
-            context_id_for_link_plugin_ = info.context_id;
-            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+                // it takes some time for a mumble client to setup shared memory for link plugins
+                // so we have to wait some time before we can start our link plugin.
+                user_id_for_link_plugin_ = info.avatar_id;
+                context_id_for_link_plugin_ = info.context_id;
+                QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+                mumble_client_started_ = true;
+            }
         }
         catch(std::exception &e)
         {
@@ -255,6 +340,20 @@ namespace MumbleVoip
             QString error_message = QString("Link plugin connection cannot be established. %1 ").arg(link_plugin_->GetReason());
             LogError(error_message.toStdString());
         }
+    }
+
+    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
+    {
+        connection_manager_->EnableVAD(true);
+        QString message = QString("Voice activity detector enabled.");
+        return Console::ResultSuccess(message.toStdString());
+    }
+
+    Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
+    {
+        connection_manager_->EnableVAD(false);
+        QString message = QString("Voice activity detector disabled.");
+        return Console::ResultSuccess(message.toStdString());
     }
 
 } // end of namespace: MumbleVoip

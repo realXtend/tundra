@@ -40,13 +40,21 @@ namespace MumbleVoip
                     if (event_data)
                     {
                         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_ = event_data->WorldStream;
+
+                        QString cap_mumble_server_info = current_world_stream_->GetCapability("mumble_server_info").c_str();
                         ProtocolUtilities::ClientParameters client_info = current_world_stream_->GetInfo();
                         QString agent_id = QString(client_info.agentID.ToString().c_str());
-                        QString grid_url = QString(client_info.gridUrl.c_str());
-                        RequestMumbleServerInfo(grid_url, agent_id);
+                        QString region_udp_url = QString(client_info.gridUrl.c_str());
+                        RequestMumbleServerInfo(region_udp_url, agent_id);
                     }
                     break;
                 }
+
+//                case EVENT_SERVER_DISCONNECTED:
+                    // \todo Close mumble connections
+                    // \todo Stop recording audio
+//                    break;
+
                 default:
                     break;
             }
