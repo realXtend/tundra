@@ -64,6 +64,8 @@ namespace MumbleVoip
         virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
         virtual Console::CommandResult OnConsoleMumbleUnlink(const StringVector &params);
         virtual Console::CommandResult OnConsoleMumbleStart(const StringVector &params);
+        virtual Console::CommandResult OnConsoleEnableVoiceActivityDetector(const StringVector &params);
+        virtual Console::CommandResult OnConsoleDisableVoiceActivityDetector(const StringVector &params);
 
         virtual void UpdateLinkPlugin(f64 frametime);
         virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);

@@ -76,6 +76,9 @@ namespace MumbleVoip
         //! Set user's own position. This value is sent to Mumble server with audio packets
         virtual void SetAudioSourcePosition(Vector3df position);
 
+        //! /param enable If true then voice activity detector is enabled. If false then voice activity detector is disabled
+        virtual void EnableVAD(bool enable);
+
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
