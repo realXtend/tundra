@@ -3,10 +3,17 @@
 #ifndef incl_Interfaces_ResourceInterface_h
 #define incl_Interfaces_ResourceInterface_h
 
-#include <map>
+// Disable C4251 warnings in MSVC.
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4251 )
+#endif
+
 #include "CoreTypes.h"
 #include "EventDataInterface.h"
 #include "CoreModuleApi.h"
+
+#include <map>
 
 namespace Foundation
 {
@@ -136,5 +143,9 @@ namespace Resource
         };
     }
 }
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #endif
