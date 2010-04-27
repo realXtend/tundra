@@ -7,8 +7,8 @@ CablebeachReply::CablebeachReply(const QUrl &url) : QNetworkReply()
     content = "<html><head><title>Cablebeach reply</title></head><body>Processing cablebeach url</body></html>";
     offset = 0;
 
-    setHeader(QNetworkRequest.ContentTypeHeader, QVariant("text/html; charset=ASCII"));
-    setHeader(QNetworkRequest.ContentLengthHeader, QVariant(content.size()));
+    setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/html; charset=ASCII"));
+    setHeader(QNetworkRequest::ContentLengthHeader, QVariant(content.size()));
 
     emit readyRead();
     emit finished();
