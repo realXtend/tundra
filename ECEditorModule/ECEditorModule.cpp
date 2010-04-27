@@ -1,15 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
+#include "EC_SerializationTest.h"
+
 #include "EventManager.h"
 #include "SceneEvents.h"
 #include "NetworkEvents.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "ModuleManager.h"
+#include "UiModule.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/InworldSceneController.h"
 
-#include "EC_SerializationTest.h"
+#include "MemoryLeakCheck.h"
 
 namespace ECEditor
 {
@@ -36,16 +44,15 @@ namespace ECEditor
 
     void ECEditorModule::Initialize()
     {
-        editor_window_ = new ECEditorWindow(GetFramework());
         event_manager_ = framework_->GetEventManager();
     }
 
     void ECEditorModule::PostInitialize()
     {
-        RegisterConsoleCommand(Console::CreateCommand("ECEditor", 
+        RegisterConsoleCommand(Console::CreateCommand("ECEditor",
             "Shows the EC editor.",
             Console::Bind(this, &ECEditorModule::ShowWindow)));
-            
+
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
@@ -58,11 +65,8 @@ namespace ECEditor
 
     void ECEditorModule::Uninitialize()
     {
-        if (editor_window_)
-        {
-            editor_window_->deleteLater();
-            editor_window_ = 0;
-        }
+        event_manager_.reset();
+        SAFE_DELETE_LATER(editor_window_);
     }
 
     void ECEditorModule::Update(f64 frametime)
@@ -72,9 +76,21 @@ namespace ECEditor
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!ui_module)
+            return Console::ResultFailure("Failed to acquire UiModule pointer!");
+
         if (editor_window_)
-            editor_window_->BringToFront();
-        
+        {
+            ui_module->GetInworldSceneController()->BringProxyToFront(editor_window_);
+            return Console::ResultSuccess();
+        }
+
+        editor_window_ = new ECEditorWindow(GetFramework());
+        UiServices::UiWidgetProperties widget_properties(editor_window_->windowTitle(), UiServices::SceneWidget);
+        ui_module->GetInworldSceneController()->AddWidgetToScene(editor_window_, widget_properties);
+        ui_module->GetInworldSceneController()->ShowProxyForWidget(editor_window_);
+
         return Console::ResultSuccess();
     }
     
