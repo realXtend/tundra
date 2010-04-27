@@ -101,19 +101,12 @@ namespace MumbleVoip
 
         if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
         {
-			QMap<int, QString> map;
-			QString command, parameter;
             Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
 
-			for( int count = 0; count < po_event->argc; count++ )
-				map[count] = QString(po_event->argv[count]);
-
-			command = map[1];
-			parameter = map[2];
-
-			if (!command.isEmpty())
+			for( int count = 0; count < po_event->argc; ++count )
             {
-                if (command == "--usemumblelibrary")
+                QString arg = QString(po_event->argv[count]);
+                if (arg == "--usemumblelibrary")
                 {
                     mumble_use_library_ = true;
                 }
