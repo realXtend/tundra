@@ -122,7 +122,7 @@ class ObjectEdit(Component):
         self.keypressed = False
         self.windowActive = False
         self.canmove = False
-        self.selection_box = None
+        #self.selection_box = None
         self.selection_rect_startpos = None
     
     def resetManipulators(self):
@@ -139,7 +139,7 @@ class ObjectEdit(Component):
         
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.id)
-        self.updateSelectionBox(ent)
+        #self.updateSelectionBox(ent)
         self.highlight(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
@@ -204,7 +204,7 @@ class ObjectEdit(Component):
             for ent in self.sels:
                 self.remove_highlight(ent)
             self.sels = []
-            self.hideSelector()
+            #self.hideSelector()
             
             self.hideManipulator() #manipulator
 
@@ -214,17 +214,17 @@ class ObjectEdit(Component):
 
             self.window.deselected()
             
-    def updateSelectionBox(self, ent): 
-        if ent is not None:
-            bb = list(ent.boundingbox)
-            height = abs(bb[4] - bb[1]) 
-            width = abs(bb[3] - bb[0])
-            depth = abs(bb[5] - bb[2])
+    # def updateSelectionBox(self, ent): 
+#         if ent is not None:
+#             bb = list(ent.boundingbox)
+#             height = abs(bb[4] - bb[1]) 
+#             width = abs(bb[3] - bb[0])
+#             depth = abs(bb[5] - bb[2])
 
-            self.selection_box.placeable.Position = ent.placeable.Position
+#             self.selection_box.placeable.Position = ent.placeable.Position
             
-            self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
-            self.selection_box.placeable.Orientation = ent.placeable.Orientation
+#             self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
+#             self.selection_box.placeable.Orientation = ent.placeable.Orientation
                 
     def highlight(self, ent):
         try:
@@ -265,13 +265,13 @@ class ObjectEdit(Component):
     def hideManipulator(self):
         self.manipulator.hideManipulator()
 
-    def hideSelector(self):
-        try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
-            if self.selection_box is not None:
-                self.selection_box.placeable.Scale = Vec(0.0, 0.0, 0.0)
-                self.selection_box.placeable.Position = Vec(0.0, 0.0, 0.0)
-        except RuntimeError, e:
-            r.logDebug("hideSelector failed")
+#     def hideSelector(self):
+#         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
+#             if self.selection_box is not None:
+#                 self.selection_box.placeable.Scale = Vec(0.0, 0.0, 0.0)
+#                 self.selection_box.placeable.Position = Vec(0.0, 0.0, 0.0)
+#         except RuntimeError, e:
+#             r.logDebug("hideSelector failed")
         
     def getSelectedObjectIds(self):
         ids = []
@@ -302,8 +302,8 @@ class ObjectEdit(Component):
         
         self.dragStarted(mouseinfo) #need to call this to enable working dragging
         
-        if self.selection_box is None:
-            self.selection_box = r.createEntity("Selection.mesh", -10000)
+#         if self.selection_box is None:
+#             self.selection_box = r.createEntity("Selection.mesh", -10000)
         
         self.left_button_down = True
         
@@ -324,7 +324,7 @@ class ObjectEdit(Component):
 
         if ent is not None:
             #print "Got entity:", ent, ent.editable
-            if not self.manipulator.compareIds(ent.id) and ent.id != self.selection_box.id and ent.editable:                
+            if not self.manipulator.compareIds(ent.id) and ent.editable: #ent.id != self.selection_box.id and 
                 #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
                 
                 r.eventhandled = self.EVENTHANDLED
@@ -438,7 +438,7 @@ class ObjectEdit(Component):
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
             if id != r.getUserAvatarId(): #add other avatar id's check
-                if not self.manipulator.compareIds(id) and id != self.selection_box.id:
+                if not self.manipulator.compareIds(id):  #and id != self.selection_box.id:
                     return True
         return False
         
@@ -592,7 +592,7 @@ class ObjectEdit(Component):
                     #~ r.logInfo("trying to delete a parent, need to fix this!")
             
             self.manipulator.hideManipulator()
-            self.hideSelector()        
+            #self.hideSelector()        
             self.deselect_all()
             self.sels = []
             
@@ -651,7 +651,7 @@ class ObjectEdit(Component):
                 
                 self.modified = True
 
-                self.updateSelectionBox(ent)
+                #self.updateSelectionBox(ent)
             
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -675,7 +675,7 @@ class ObjectEdit(Component):
                     
                 self.modified = True
                 #self.window.update_rotvals(ort)
-                self.selection_box.placeable.Orientation = ort
+                #self.selection_box.placeable.Orientation = ort
     
     def getActive(self):
         if len(self.sels) > 0:
@@ -721,12 +721,12 @@ class ObjectEdit(Component):
                 ent = self.active
                 if self.time > self.UPDATE_INTERVAL:
                     try:
-                        sel_pos = self.selection_box.placeable.Position
+                        #sel_pos = self.selection_box.placeable.Position
                         arr_pos = self.manipulator.getManipulatorPosition()
                         ent_pos = ent.placeable.Position
-                        if sel_pos != ent_pos:
-                            self.time = 0
-                            self.selection_box.placeable.Position = ent_pos
+                        #if sel_pos != ent_pos:
+                        self.time = 0 #XXX NOTE: is this logic correct?
+                        #    self.selection_box.placeable.Position = ent_pos
                         if arr_pos != ent_pos:
                             self.manipulator.moveTo(self.sels)
                     except RuntimeError, e:
