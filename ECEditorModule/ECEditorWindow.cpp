@@ -1,26 +1,24 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
+
 #include "ModuleManager.h"
-#include "UiModule.h"
-#include "UiDefines.h"
 #include "SceneManager.h"
 #include "ComponentInterface.h"
 #include "ComponentManager.h"
-#include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
 
-#include "qttreepropertybrowser.h"
-#include "qtpropertymanager.h"
-#include "qteditorfactory.h"
-#include "qtvariantproperty.h"
+#include <qttreepropertybrowser.h>
+#include <qtpropertymanager.h>
+#include <qteditorfactory.h>
+#include <qtvariantproperty.h>
 
 #include <QApplication>
 #include <QDomDocument>
@@ -32,6 +30,9 @@
 #include <QTextEdit>
 #include <QComboBox>
 #include <QListWidget>
+#include <QGraphicsProxyWidget>
+
+#include "MemoryLeakCheck.h"
 
 using namespace RexTypes;
 
@@ -50,6 +51,7 @@ namespace ECEditor
     }
     
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
+        QWidget(),
         framework_(framework),
         contents_(0),
         save_button_(0),
@@ -62,8 +64,7 @@ namespace ECEditor
         create_combo_(0),
         data_edit_(0),
         property_browser_(0),
-        delete_shortcut_(0),
-        proxy_(0)
+        delete_shortcut_(0)
     {
         Initialize();
     }
@@ -140,11 +141,12 @@ namespace ECEditor
         
         property_browser_->addProperty(item0);*/
 
-        QVBoxLayout *layout = new QVBoxLayout;
+        QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(contents_);
         layout->setContentsMargins(0,0,0,0);
         setLayout(layout);
-        
+        setWindowTitle(contents_->windowTitle());
+
         save_button_ = findChild<QPushButton*>("but_save");
         revert_button_ = findChild<QPushButton*>("but_revert");
         create_button_ = findChild<QPushButton*>("but_create");
@@ -178,31 +180,10 @@ namespace ECEditor
             QObject::connect(revert_button_, SIGNAL(pressed()), this, SLOT(RevertData()));
         if (toggle_browser_button_)
             QObject::connect(toggle_browser_button_, SIGNAL(pressed()), this, SLOT(TogglePropertiesBrowser()));
-            
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
-        if (ui_module)
-        {
-            UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
-            proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, widget_properties);
-        }
-        else
-            ECEditorModule::LogError("Could not add widget to scene");
-        
+
         RefreshAvailableComponents();
     }
-    
-    void ECEditorWindow::BringToFront()
-    {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
-        if (ui_module)
-        {
-            ui_module->GetInworldSceneController()->BringProxyToFront(this);
-            ui_module->GetInworldSceneController()->ShowProxyForWidget(this);
-        }
-    }
-    
+
     void ECEditorWindow::RefreshAvailableComponents()
     {
         // Fill the create component combo box with the types of EC's the ComponentManager can create
@@ -359,7 +340,7 @@ namespace ECEditor
     {
         if (e->type() == QEvent::LanguageChange)
         {
-            QString title = QApplication::translate("ECEditor", "Entity-component Editor");
+            QString title = TR("ECEditor", "Entity-component Editor");
             graphicsProxyWidget()->setWindowTitle(title);
         }
         else
