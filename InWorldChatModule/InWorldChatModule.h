@@ -9,6 +9,7 @@
 #ifndef incl_InWorldChatModule_InWorldChatModule_h
 #define incl_InWorldChatModule_InWorldChatModule_h
 
+#include "InWorldChatModuleApi.h"
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
@@ -46,7 +47,7 @@ QT_END_NAMESPACE
 
 namespace Naali
 {
-    class InWorldChatModule :  public QObject, public Foundation::ModuleInterfaceImpl
+    class INWORLDCHAT_MODULE_API InWorldChatModule :  public QObject, public Foundation::ModuleInterfaceImpl
     {
         Q_OBJECT
 
@@ -143,9 +144,6 @@ namespace Naali
 
         /// Log file.
         QFile *logFile_;
-
-    //private slots:
-        //void RepositionChatWidget(const QRectF &rect)
     };
 }
 

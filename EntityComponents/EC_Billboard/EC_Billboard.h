@@ -4,7 +4,7 @@
  *  @file   EC_Billboard.h
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
-*/
+ */
 
 #ifndef incl_EC_Billboard_EC_BillBoard_h
 #define incl_EC_Billboard_EC_BillBoard_h
@@ -34,10 +34,17 @@ public:
     /// Destructor.
     ~EC_Billboard();
 
-    /// Sets postion for the chat bubble.
+    /// Sets postion for the billboard.
     /// @param position Position.
     /// @note The position is relative to the entity to which the billboard is attached.
+    /// @note Call this after you have first called Show()
     void SetPosition(const Vector3df& position);
+
+    /// Sets the width and height for billboard.
+    /// @param w Width.
+    /// @param h height.
+    /// @note Call this after you have first called Show()
+    void SetDimensions(float w, float h);
 
     /// Returns true if the billboard is created properly.
     bool IsCreated() const { return billboardSet_ != 0 && billboard_ != 0; }
