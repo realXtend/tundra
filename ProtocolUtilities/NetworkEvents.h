@@ -19,6 +19,8 @@ namespace ProtocolUtilities
     class InventorySkeleton;
     class BuddyList;
 
+    typedef boost::shared_ptr<InventorySkeleton> InventoryPtr;
+
       /// Protocol type enumeration.
     enum ProtocolType
     {
@@ -151,7 +153,7 @@ namespace ProtocolUtilities
         AuthenticationType type;
         std::string identityUrl;
         std::string hostUrl;
-        InventorySkeleton *inventorySkeleton;
+        InventoryPtr inventorySkeleton;
     };
 
     /// Event data interface for inbound messages.

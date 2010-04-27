@@ -36,6 +36,13 @@ namespace RexLogic
     class AvatarControllable;
 }
 
+namespace ProtocolUtilities
+{
+    class InventorySkeleton;
+}
+
+typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
+
 namespace PythonScript
 {
     class PythonEngine;
@@ -95,6 +102,9 @@ namespace PythonScript
         PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);
 
         PyTypeObject *GetRexPyTypeObject();
+
+        // Inventory skeleton retrieved during login process
+        InventoryPtr inventory;
 
     private:
 

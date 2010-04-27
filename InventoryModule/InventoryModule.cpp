@@ -151,8 +151,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 inventoryWindow_ = new InventoryWindow(this);
                 connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-                /*proxyWidget_ = */ui_module->GetInworldSceneController()->AddWidgetToScene(
-                    inventoryWindow_, UiServices::UiWidgetProperties(QApplication::translate("Inventory::InventoryWindow", "Inventory"), UiServices::ModuleWidget));
+                /*proxyWidget_ = */ui_module->GetInworldSceneController()->AddWidgetToScene(inventoryWindow_,
+                    UiServices::UiWidgetProperties(TR("Inventory::InventoryWindow", "Inventory"), UiServices::ModuleWidget));
 
                 connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
                     SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
@@ -188,7 +188,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             case ProtocolUtilities::AT_RealXtend:
             {
                 // Create OpenSim inventory model.
-                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, auth->inventorySkeleton));
+                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, auth->inventorySkeleton.get()));
 
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
@@ -219,8 +219,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 if (inventoryWindow_)
                 {
                     ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(inventoryWindow_);
-                    inventoryWindow_->deleteLater();
-                    inventoryWindow_ = 0;
+                    SAFE_DELETE_LATER(inventoryWindow_);
                 }
 /*
                 if (uploadProgressWindow_)
@@ -520,6 +519,8 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
             ///\todo WebDAV needs the old name and we don't have it here.
             inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
     }
+
+    SAFE_DELETE_LATER(wnd);
 }
 
 void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)

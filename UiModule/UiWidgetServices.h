@@ -5,7 +5,7 @@
 
 // QUICK TUTORIAL TO THE WIDGET SERVICES
 // ==========================================
-// Accuire UiModule pointer to gain access to the services
+// Acquire UiModule pointer to gain access to the services
 // boost::shared_ptr<UiServices::UiModule> ui_module = GetFramework()->GetModuleManager()->
 //     GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
 //

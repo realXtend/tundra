@@ -2,19 +2,13 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "UiModule.h"
 #include "UiProxyStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
-
-#include "EventManager.h"
-#include "ConfigurationManager.h"
-#include "Framework.h"
-#include "WorldStream.h"
-
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
-
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
@@ -25,9 +19,12 @@
 #include "Inworld/Notifications/InputNotification.h"
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
-
 #include "Common/UiAction.h"
 
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "Framework.h"
+#include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
 #include "ConsoleEvents.h"
@@ -66,6 +63,7 @@ namespace UiServices
 
     void UiModule::Load()
     {
+        // Application take ownership of the new UiProxyStyle
         QApplication::setStyle(new UiProxyStyle());
         event_query_categories_ << "Framework" << "Scene"  << "Console" << "Input";
     }
@@ -79,7 +77,7 @@ namespace UiServices
         ui_view_ = framework_->GetUIView();
         if (ui_view_)
         {
-            ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_);
+            ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             UiAction *ether_action = new UiAction(ui_state_machine_);
             QObject::connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
@@ -102,7 +100,7 @@ namespace UiServices
 
         }
         else
-            LogWarning("Could not accuire QGraphicsView shared pointer from framework, UiServices are disabled");
+            LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
     }
 
     void UiModule::PostInitialize()

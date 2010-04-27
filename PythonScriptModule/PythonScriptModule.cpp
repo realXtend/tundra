@@ -35,6 +35,9 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
                 in rexlogic it makes the packets too, and not e.g. worldstream
                 which doesn't know EC_OpenSimPrim
 
+
+2010/04/21 Removed the RexLogicModule::GetInventory() dependecy. -Stinkifst
+
 */
 
 #include "StableHeaders.h"
@@ -65,8 +68,8 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 
 #include "Avatar/Avatar.h"
-//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EC_OpenSimPresence.h"
+#include "EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
@@ -363,12 +366,19 @@ namespace PythonScript
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
                 value = PyObject_CallMethod(pmmInstance, "LOGIN_INFO", "i", event_id);
+
+                // Save inventory skeleton for later use.
+                ProtocolUtilities::AuthenticationEventData *auth = checked_static_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+                assert(auth);
+                if (!auth)
+                    return false;
+
+                inventory = auth->inventorySkeleton;
             }
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             {
                 value = PyObject_CallMethod(pmmInstance, "SERVER_DISCONNECTED", "i", event_id);
             }
-
         }
         else if (category_id == framework_category_id && event_id == Foundation::NETWORKING_REGISTERED)
         {
@@ -548,6 +558,7 @@ namespace PythonScript
 
         em_.reset();
         engine_.reset();
+        inventory.reset();
     }
     
     // virtual
@@ -940,7 +951,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 //
 //        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
 //        if (!primentity) continue;
-//        RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(entity.GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
+//        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
 //        
 //        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
 //        {
@@ -1006,7 +1017,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
     if (!primentity) Py_RETURN_NONE;
-    RexLogic::EC_OpenSimPrim &prim = *checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
+    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(primentity->GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
     
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
     {
@@ -1015,9 +1026,9 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
         // If don't have the actual mesh entity yet, no use trying to set texture
         if (!meshptr->GetEntity()) Py_RETURN_NONE;
-        
-        RexLogic::MaterialMap::const_iterator i = prim.Materials.begin();
-        
+
+        MaterialMap::const_iterator i = prim.Materials.begin();
+
         //which -- if any -- submeshes / mat indices use the given textureuuid in this mesh
         std::vector<uint> submeshes_;
 
@@ -1556,9 +1567,7 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 
 PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    ProtocolUtilities::InventoryFolderSkeleton *folder = rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
+    ProtocolUtilities::InventoryFolderSkeleton *folder = PythonScript::self()->inventory->GetFirstChildFolderByName("Trash");
     if (folder)
         return Py_BuildValue("s", folder->id.ToString().c_str());
     return NULL;

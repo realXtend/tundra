@@ -12,6 +12,8 @@
 #include "EC_OgreMesh.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_Highlight.h"
+#include "EC_OpenSimPrim.h"
+
 #include <PythonQt.h>
 
 #include "MemoryLeakCheck.h"
@@ -88,12 +90,12 @@ namespace PythonScript
         0,                         /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT,        /*tp_flags*/
         "Entity object",           /* tp_doc */
-        0,		           /* tp_traverse */
-        0,		           /* tp_clear */
-        0,		           /* tp_richcompare */
-        0,		           /* tp_weaklistoffset */
-        0,		           /* tp_iter */
-        0,		           /* tp_iternext */
+        0,                   /* tp_traverse */
+        0,                   /* tp_clear */
+        0,                   /* tp_richcompare */
+        0,                   /* tp_weaklistoffset */
+        0,                   /* tp_iter */
+        0,                   /* tp_iternext */
         entity_methods,            /* tp_methods */
         0,                         /* tp_members */
         0,                         /* tp_getset */
@@ -189,15 +191,8 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     PyEntity *eob = (PyEntity*) self;
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
-    const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-    RexLogic::EC_OpenSimPrim *prim = 0;
-    if (prim_component)
-        prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-	
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    OgreRenderer::EC_OgrePlaceable *placeable = 0;
-    if (ogre_component)
-        placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
 
     RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
 
@@ -224,7 +219,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     }
 
     else if (s_name.compare("mesh") == 0)
-	{
+    {
         Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
@@ -232,7 +227,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     }
     
     else if (s_name.compare("placeable") == 0)
-	{    
+    {    
         return PythonQt::self()->wrapQObject(placeable);
     }
     
@@ -244,7 +239,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if(s_name.compare("editable") == 0)
     {
         // refactor to take into account permissions etc aswell later?
-        if(!prim_component || !placeable)
+        if(!prim || !placeable)
             Py_RETURN_FALSE;
         else
             Py_RETURN_TRUE;
@@ -257,7 +252,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }       
-		//std::cout << placeable->GetSelectPriority() << std::endl;
+        //std::cout << placeable->GetSelectPriority() << std::endl;
         /* this must probably return a new object, a 'Place' instance, that has these.
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
@@ -267,7 +262,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         /* .. i guess best to wrap the Rex Vector and other types soon,
            the pyrr irrlicht binding project does it for these using swig,
            https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i 
-	Now am experimenting with the new QVector3D type, see GetQPlaceable*/
+    Now am experimenting with the new QVector3D type, see GetQPlaceable*/
         return Py_BuildValue("fff", pos.x, pos.y, pos.z);
     }
 
@@ -278,7 +273,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
             return NULL;   
         }     
-		Vector3df scale = placeable->GetScale();
+        Vector3df scale = placeable->GetScale();
 
         return Py_BuildValue("fff", scale.x, scale.y, scale.z);
     }
@@ -340,7 +335,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
                 return Py_BuildValue("ffffffi", min.x, min.y, min.z, max.x, max.y, max.z, 1);
             }
         }
-		
+        
         PyErr_SetString(PyExc_AttributeError, "getting the bb failed.");
         return NULL;  
     }
@@ -401,17 +396,9 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
-    const Foundation::ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");
-	RexLogic::EC_OpenSimPrim *prim = 0;
-    if (prim_component)
-	   prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(prim_component.get());  
-	
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-	OgreRenderer::EC_OgrePlaceable *placeable = 0;
-    if (ogre_component)
-		placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-    
-    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    RexLogic::EC_NetworkPosition* networkpos = entity->GetComponent<RexLogic::EC_NetworkPosition>().get();
 
     if (s_name.compare("pos") == 0)
     {
@@ -419,30 +406,30 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
            or do we wanna hide the E-C system in the api and have these directly on entity? 
            probably not a good idea to hide the actual system that much. or? */
         float x, y, z;
-		x = 0;
-		y = 0;
-		z = 0;
+        x = 0;
+        y = 0;
+        z = 0;
 
-		//int parsing;
-		//parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
-		/*
-		PyObject* pos;
-		if(!parsing) {
-			parsing = PyArg_ParseTuple(value, "O", &pos);
-			if (parsing != 0)
-			{
-				PyErr_SetString(PyExc_ValueError, "it worked.");
-				return -1;
-			}
-		}
-		*/
+        //int parsing;
+        //parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
+        /*
+        PyObject* pos;
+        if(!parsing) {
+            parsing = PyArg_ParseTuple(value, "O", &pos);
+            if (parsing != 0)
+            {
+                PyErr_SetString(PyExc_ValueError, "it worked.");
+                return -1;
+            }
+        }
+        */
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {	
+        {    
             //std::cout << "...parse error" << std::endl;
             //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
             return -1;
         }
-		
+        
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "placeable not found.");
@@ -472,9 +459,9 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     else if (s_name.compare("scale") == 0)
     {
         float x, y, z;
-		x = 0;
-		y = 0;
-		z = 0;
+        x = 0;
+        y = 0;
+        z = 0;
         if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
         {
             //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
@@ -551,7 +538,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
             {
                 PyErr_SetString(PyExc_AttributeError, "prim not found.");
                 return -1;   
-            }  
+            }
 
             prim->MeshID = text;
             prim->DrawType = RexTypes::DRAWTYPE_MESH;
@@ -566,6 +553,6 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     }
 
     //std::cout << "unknown component typse."  << std::endl;
-	PythonScript::self()->LogDebug("Unknown component type.");
+    PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }

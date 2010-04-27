@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MumbleVoipModule.h"
-#include "MemoryLeakCheck.h"
 #include "RexLogicModule.h"
 #include "ModuleManager.h"
 #include "Avatar/Avatar.h"
@@ -15,12 +14,13 @@
 #include "LinkPlugin.h"
 #include "ServerObserver.h"
 #include "ConnectionManager.h"
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
-	std::string MumbleVoipModule::module_name_ = "MumbleVoipModule";
+    std::string MumbleVoipModule::module_name_ = "MumbleVoipModule";
 
-	MumbleVoipModule::MumbleVoipModule()
+    MumbleVoipModule::MumbleVoipModule()
         : ModuleInterfaceImpl(module_name_),
           link_plugin_(0),
           time_from_last_update_ms_(0),
@@ -44,6 +44,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Unload()
     {
+        SAFE_DELETE(connection_manager_);
         SAFE_DELETE(link_plugin_);
         SAFE_DELETE(server_observer_);
     }
@@ -84,7 +85,9 @@ namespace MumbleVoip
         if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
             return;
         time_from_last_update_ms_ = 0;
-        
+        ///\todo Remove RexLogicModule dependency!
+        /// Iterate scene entities and get EC_OpenSimPresence. If EC_OpenSimPresence exists and it agentId
+        /// matches with worlstream->GetInfo().agentId it's our user's entity.
         RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
             return;
@@ -110,6 +113,9 @@ namespace MumbleVoip
                     link_plugin_->SetCameraPosition(position_vector, front_vector, top_vector);
             }
 
+            ///\todo Remove RexLogicModule dependency!
+            /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active
+            /// use that entity.
             Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
             if (camera)
             {
