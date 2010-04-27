@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Billboard.cpp
- *  @brief  EC_Billboard shows a billboard_ (3D sprite) that is attached to an entity.
+ *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
  */
 
@@ -14,7 +14,6 @@
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 
-#include <Ogre.h>
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
 #include <OgreResource.h>
@@ -42,6 +41,12 @@ void EC_Billboard::SetPosition(const Vector3df& position)
 {
     if (IsCreated())
         billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+}
+
+void EC_Billboard::SetDimensions(float w, float h)
+{
+    if (IsCreated())
+        billboardSet_->setDefaultDimensions(w, h);
 }
 
 void EC_Billboard::Show(const std::string &imageName, int timeToShow)
@@ -90,7 +95,7 @@ void EC_Billboard::Show(const std::string &imageName, int timeToShow)
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
         assert(billboard_);
-        billboard_->setDimensions(1, 1);
+        billboardSet_->setDefaultDimensions(0.5f, 0.5f);
 
         node->attachObject(billboardSet_);
     }

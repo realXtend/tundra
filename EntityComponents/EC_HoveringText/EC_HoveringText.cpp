@@ -199,7 +199,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
         assert(billboard_);
-        billboard_->setDimensions(2, 1);
+        billboardSet_->setDefaultDimensions(2, 1);
 
         sceneNode->attachObject(billboardSet_);
     }

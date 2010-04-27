@@ -85,7 +85,7 @@ void EC_ChatBubble::ShowMessage(const QString &msg)
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
         assert(billboard_);
-        billboard_->setDimensions(2, 1);
+        billboardSet_->setDefaultDimensions(2, 1);
 
         sceneNode->attachObject(billboardSet_);
     }

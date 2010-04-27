@@ -120,18 +120,6 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
     {
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
-            /*
-            if (!uiModule_.expired())
-            {
-                chatWidget_ = new ChatWidget(framework_);
-                connect(chatWidget_, SIGNAL(ChatEntered(const QString &)), this, SLOT(SendChatFromViewer(const QString &)));
-                chatProxy_ = uiModule_.lock()->GetSceneManager()->AddWidgetToScene(
-                    chatWidget_, UiServices::UiWidgetProperties(QPointF(0,0), QSize(chatWidget_->size()), Qt::Widget, "InWorldChat", false, false));
-                connect(chatProxy_->scene(), SIGNAL(sceneRectChanged(const QRectF &)), this, SLOT(RepositionChatWidget(const QRectF &)));
-                RepositionChatWidget(chatProxy_->scene()->sceneRect());
-                chatProxy_->show();
-            */
-
             // Get settings.
             showChatBubbles_ = framework_->GetDefaultConfig().GetSetting<bool>("InWorldChatModule", "ShowChatBubbles");
             logging_ = framework_->GetDefaultConfig().GetSetting<bool>("InWorldChatModule", "Logging");
@@ -204,14 +192,15 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
         assert(component.get());
         component->SetName("VoipIndicator");
         entity->AddComponent(component);
+        entity->GetComponent<EC_Billboard>()->SetDimensions(10, 10);
     }
 
     boost::shared_ptr<EC_Billboard> billboard = entity->GetComponent<EC_Billboard>();
-    assert(billboard.get());
     if (visibility)
-        billboard->Show("voipindicator.png");
+        billboard->Show("SpeakerIcon.png");
     else
         billboard->Hide();
+
 }
 
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
