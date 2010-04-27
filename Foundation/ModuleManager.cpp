@@ -2,19 +2,19 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
-#include "Framework.h"
 #include "ModuleManager.h"
+
 #include "ConfigurationManager.h"
-#include "Poco/UnicodeConverter.h"
 #include "CoreException.h"
 
 #include <algorithm>
 #include <sstream>
-#include <QString>
 
 #include <Poco/Environment.h>
+#include <Poco/UnicodeConverter.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace fs = boost::filesystem;
 
@@ -283,13 +283,13 @@ namespace Foundation
 
         // Some modules have a dependency XML in the following form:
         // <config>
-	    // <dependency>ModuleX</dependency>
+        // <dependency>ModuleX</dependency>
         // </config>
         // instead of:
         // Some modules have a dependency XML in the following form:
         // <config>
         // <entry>Module</entry>
-	    // <dependency>ModuleX</dependency>
+        // <dependency>ModuleX</dependency>
         // </config>
         // In this case, try to guess the module name from the name of the XML file.
         if (entries.empty())

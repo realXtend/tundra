@@ -281,8 +281,7 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(ProtocolUtilities::Ne
         Vector3 lookat = msg.ReadVector3();
 
         assert(rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
-        rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(
-            OpenSimToOgreCoordinateAxes(position), OpenSimToOgreCoordinateAxes(lookat));
+        rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(position, lookat);
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
         uint64_t regionhandle = msg.ReadU64();

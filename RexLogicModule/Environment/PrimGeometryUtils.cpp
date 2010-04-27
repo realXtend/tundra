@@ -35,12 +35,13 @@
 #include "Environment/PrimMesher.h"
 #include "RexTypes.h"
 #include "RexLogicModule.h"
-#include "EntityComponent/EC_OpenSimPrim.h"
+//#include "EntityComponent/EC_OpenSimPrim.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "Renderer.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
+#include "EC_OpenSimPrim.h"
 
 #ifndef unix
 #include <float.h>

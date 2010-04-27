@@ -10,12 +10,20 @@
 #include "UiModuleFwd.h"
 #include "UiDefines.h"
 
+#include <QObject>
 #include <QMap>
 #include <QPair>
 #include <QStringList>
 
-namespace OgreRenderer      { class QOgreUIView; }
-namespace ProtocolUtilities { class WorldStream; }
+namespace OgreRenderer
+{
+    class QOgreUIView;
+}
+
+namespace ProtocolUtilities
+{
+    class WorldStream;
+}
 
 namespace UiServices
 {
@@ -24,8 +32,9 @@ namespace UiServices
     /// For details about Notification Services read UiNotificationServices.h
     /// Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
 
-    class UI_MODULE_API UiModule : public Foundation::ModuleInterfaceImpl
+    class UI_MODULE_API UiModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
 
     public:
         UiModule();

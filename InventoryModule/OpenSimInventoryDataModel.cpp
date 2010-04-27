@@ -6,7 +6,7 @@
  */
 
 #include "StableHeaders.h"
-//#include "DebugOperatorNew.h"
+#include "DebugOperatorNew.h"
 #include "OpenSimInventoryDataModel.h"
 #include "InventoryModule.h"
 #include "InventoryFolder.h"
@@ -37,7 +37,7 @@
 #include <OgreImage.h>
 #include <OgreException.h>
 
-//#include "MemoryLeakCheck.h"
+#include "MemoryLeakCheck.h"
 
 using namespace RexTypes;
 
@@ -511,7 +511,9 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
         Ogre::Image image;
         try
         {
+#include "DisableMemoryLeakCheck.h"
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)asset->GetData(), asset->GetSize(), false));
+#include "EnableMemoryLeakCheck.h"
             image.load(stream);
             image.save(i.value().toStdString());
         }
@@ -732,7 +734,9 @@ bool OpenSimInventoryDataModel::UploadBuffer(
         Ogre::Image image;
         try
         {
+#include "DisableMemoryLeakCheck.h"
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&buffer[0], buffer.size(), false));
+#include "EnableMemoryLeakCheck.h"
             image.load(stream);
         }
         catch (Ogre::Exception &e)

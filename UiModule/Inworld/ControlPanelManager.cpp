@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ControlPanelManager.h"
 #include "UiDefines.h"
 
@@ -16,6 +18,7 @@
 #include "Inworld/ControlPanel/LanguageWidget.h"
 
 #include <QAction>
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {

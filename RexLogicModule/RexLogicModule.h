@@ -30,12 +30,10 @@ namespace OgreRenderer
 namespace ProtocolUtilities
 {
     class WorldStream;
-    class InventorySkeleton;
     class ProtocolModuleInterface;
 }
 
 typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
-typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
 
 namespace RexLogic
 {
@@ -108,10 +106,6 @@ namespace RexLogic
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler() const;
 
-        /// @return Invetory pointer.
-        /// @otdo Delete this function entirely when PythonScriptModule is not dependendant of it anymore.
-        InventoryPtr GetInventory() const;
-
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable()  const { return camera_controllable_; }
 
@@ -139,8 +133,8 @@ namespace RexLogic
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         Scene::EntityPtr GetEntity(entity_id_t entityid) const;
 
-        //! Get a component with certain entitycomponent in it
-        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent) const;
+        //! Get a component with certain entity component in it
+        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &component) const;
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.

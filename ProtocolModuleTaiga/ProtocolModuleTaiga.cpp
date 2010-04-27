@@ -4,14 +4,17 @@
 #include "DebugOperatorNew.h"
 
 #include "ProtocolModuleTaiga.h"
+
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "HttpRequest.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 
-#include "Poco/Net/NetException.h"
 #include <Poco/ClassLibrary.h>
+#include <Poco/Net/NetException.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace TaigaProtocol
 {
@@ -174,7 +177,7 @@ namespace TaigaProtocol
             {
                 auth_data.SetIdentity(identityUrl_);
                 auth_data.SetHost(hostUrl_);
-                auth_data.inventorySkeleton = GetClientParameters().inventory.get();
+                auth_data.inventorySkeleton = GetClientParameters().inventory;
             }
             eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
             

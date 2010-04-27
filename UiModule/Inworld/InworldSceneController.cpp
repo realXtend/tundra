@@ -148,6 +148,7 @@ namespace UiServices
     {
         if (!inworld_scene_)
             return;
+        ShowProxyForWidget(widget);
         inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
         inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
     }

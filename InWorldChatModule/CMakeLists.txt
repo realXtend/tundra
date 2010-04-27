@@ -31,12 +31,13 @@ use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule RexLogicModule
-    EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard EntityComponents/EC_OpenSimPresence)
+    EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard EntityComponents/EC_OpenSimPresence
+    EntityComponents/EC_OpenSimPrim)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule RexLogicModule
-    EC_ChatBubble EC_Billboard EC_OpenSimPresence)
+    EC_ChatBubble EC_Billboard EC_OpenSimPresence EC_OpenSimPrim)
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)

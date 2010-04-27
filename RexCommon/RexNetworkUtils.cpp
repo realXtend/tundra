@@ -40,21 +40,19 @@ namespace RexTypes
         resultvector.y = scale * ((vec[1] / 32768.0f) - 1.0f);
         resultvector.z = scale * ((vec[2] / 32768.0f) - 1.0f);
 
-        return OpenSimToOgreCoordinateAxes(resultvector);        
+        return resultvector;
     }
 
     Vector3df GetProcessedVectorFromUint16(const uint8_t* bytes)
     {
         uint16_t *vec = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);
-
-        return OpenSimToOgreCoordinateAxes(Vector3df(vec[0],vec[1],vec[2]));    
+        return Vector3df(vec[0],vec[1],vec[2]);
     }
-    
+
     Vector3df GetProcessedVector(const uint8_t* bytes)
     {
         Vector3df resultvector = *reinterpret_cast<Vector3df*>((Vector3df*)&bytes[0]);
-
-        return OpenSimToOgreCoordinateAxes(resultvector);  
+        return resultvector;
     }
     
     bool IsValidPositionVector(const Vector3df &pos)

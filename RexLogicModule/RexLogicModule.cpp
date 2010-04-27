@@ -13,7 +13,7 @@
 #include "EventHandlers/MainPanelHandler.h"
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
-#include "EntityComponent/EC_OpenSimPrim.h"
+//#include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
@@ -57,6 +57,7 @@
 #include "EC_Clone.h"
 #include "EC_Light.h"
 #include "EC_OpenSimPresence.h"
+#include "EC_OpenSimPrim.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -715,11 +716,6 @@ PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
     return primitive_;
 }
 
-InventoryPtr RexLogicModule::GetInventory() const
-{
-    return world_stream_->GetInfo().inventory;
-}
-
 void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
 {
     activeScene_ = scene;
@@ -782,13 +778,13 @@ Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid) const
     return activeScene_->GetEntity(entityid);
 }
 
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &requiredcomponent) const
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &component) const
 {
     if (!activeScene_)
         return Scene::EntityPtr();
 
     Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
-    if (entity && entity->GetComponent(requiredcomponent))
+    if (entity && entity->GetComponent(component))
         return entity;
     else
         return Scene::EntityPtr();
@@ -826,63 +822,61 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
 
 void RexLogicModule::UpdateObjects(f64 frametime)
 {
+    using namespace OgreRenderer;
+
     //! \todo probably should not be directly in RexLogicModule
     if (!activeScene_)
         return;
 
     // Damping interpolation factor, dependent on frame time
     Real factor = pow(2.0, -frametime * movement_damping_constant_);
-    if (factor < 0.0) factor = 0.0;
-    if (factor > 1.0) factor = 1.0;
+    clamp(factor, 0.0f, 1.0f);
     Real rev_factor = 1.0 - factor;
 
     found_avatars_.clear();
-    
-    for(Scene::SceneManager::iterator iter = activeScene_->begin();
-        iter != activeScene_->end(); ++iter)
+
+    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentPtr ogrepos_ptr = entity.GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-        Foundation::ComponentPtr netpos_ptr = entity.GetComponent(EC_NetworkPosition::TypeNameStatic());
-        if (ogrepos_ptr && netpos_ptr)
-        {
-            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get()); 
-            EC_NetworkPosition &netpos = *checked_static_cast<EC_NetworkPosition*>(netpos_ptr.get()); 
 
-            if (netpos.time_since_update_ <= dead_reckoning_time_)
+        boost::shared_ptr<EC_OgrePlaceable> ogrepos = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_NetworkPosition> netpos = entity.GetComponent<EC_NetworkPosition>();
+        if (ogrepos && netpos)
+        {
+            if (netpos->time_since_update_ <= dead_reckoning_time_)
             {
-                netpos.time_since_update_ += frametime; 
+                netpos->time_since_update_ += frametime; 
 
                 // Interpolate motion
                 // acceleration disabled until figured out what goes wrong. possibly mostly irrelevant with OpenSim server
-                // netpos.velocity_ += netpos.accel_ * frametime;
-                netpos.position_ += netpos.velocity_ * frametime;
+                // netpos->velocity_ += netpos->accel_ * frametime;
+                netpos->position_ += netpos->velocity_ * frametime;
 
                 // Interpolate rotation
-                if (netpos.rotvel_.getLengthSQ() > 0.001)
+                if (netpos->rotvel_.getLengthSQ() > 0.001)
                 {
                     Quaternion rot_quat1;
                     Quaternion rot_quat2;
                     Quaternion rot_quat3;
 
-                    rot_quat1.fromAngleAxis(netpos.rotvel_.x * 0.5 * frametime, Vector3df(1,0,0));
-                    rot_quat2.fromAngleAxis(netpos.rotvel_.y * 0.5 * frametime, Vector3df(0,1,0));
-                    rot_quat3.fromAngleAxis(netpos.rotvel_.z * 0.5 * frametime, Vector3df(0,0,1));
+                    rot_quat1.fromAngleAxis(netpos->rotvel_.x * 0.5 * frametime, Vector3df(1,0,0));
+                    rot_quat2.fromAngleAxis(netpos->rotvel_.y * 0.5 * frametime, Vector3df(0,1,0));
+                    rot_quat3.fromAngleAxis(netpos->rotvel_.z * 0.5 * frametime, Vector3df(0,0,1));
 
-                    netpos.orientation_ *= rot_quat1;
-                    netpos.orientation_ *= rot_quat2;
-                    netpos.orientation_ *= rot_quat3;
+                    netpos->orientation_ *= rot_quat1;
+                    netpos->orientation_ *= rot_quat2;
+                    netpos->orientation_ *= rot_quat3;
                 }
 
                 // Dampened (smooth) movement
-                if (netpos.damped_position_ != netpos.position_)
-                    netpos.damped_position_ = netpos.position_ * rev_factor + netpos.damped_position_ * factor;
+                if (netpos->damped_position_ != netpos->position_)
+                    netpos->damped_position_ = netpos->position_ * rev_factor + netpos->damped_position_ * factor;
 
-                if (netpos.damped_orientation_ != netpos.orientation_)
-                    netpos.damped_orientation_.slerp(netpos.orientation_, netpos.damped_orientation_, factor);
+                if (netpos->damped_orientation_ != netpos->orientation_)
+                    netpos->damped_orientation_.slerp(netpos->orientation_, netpos->damped_orientation_, factor);
 
-                ogrepos.SetPosition(netpos.damped_position_);
-                ogrepos.SetOrientation(netpos.damped_orientation_);
+                ogrepos->SetPosition(netpos->damped_position_);
+                ogrepos->SetOrientation(netpos->damped_orientation_);
             }
         }
 
@@ -892,23 +886,19 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             found_avatars_.push_back(*iter);
             avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
-           
-        Foundation::ComponentPtr animctrl_ptr = entity.GetComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
-        if (animctrl_ptr)
-        {
-            // General animation controller update
-            OgreRenderer::EC_OgreAnimationController &animctrl = *checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(animctrl_ptr.get());
-            animctrl.Update(frametime);
-        }
-        
+
+        // General animation controller update
+        boost::shared_ptr<EC_OgreAnimationController> animctrl = entity.GetComponent<EC_OgreAnimationController>();
+        if (animctrl)
+            animctrl->Update(frametime);
+
         // Attached sound update
-        Foundation::ComponentPtr sound_ptr = entity.GetComponent(EC_AttachedSound::TypeNameStatic());
-        if (ogrepos_ptr && sound_ptr)
+        boost::shared_ptr<EC_OgrePlaceable> placeable = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_AttachedSound> sound = entity.GetComponent<EC_AttachedSound>();
+        if (placeable && sound)
         {
-            OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(ogrepos_ptr.get());
-            EC_AttachedSound &sound = *checked_static_cast<EC_AttachedSound*>(sound_ptr.get());
-            sound.Update(frametime);
-            sound.SetPosition(ogrepos.GetPosition());
+            sound->Update(frametime);
+            sound->SetPosition(placeable->GetPosition());
         }
     }
 }
@@ -940,7 +930,9 @@ void RexLogicModule::UpdateSoundListener()
     // In freelook, use camera position. Otherwise use avatar position
     Vector3df listener_pos;
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
+    {
         listener_pos = GetCameraPosition();
+    }
     else
     {
         Scene::EntityPtr entity = avatar_->GetUserAvatar();
@@ -961,13 +953,13 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!child_placeable)
         return;
 
     // If object is a prim, parent id is in the prim component, and in presence component for an avatar
-    EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
-    EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+    boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();
+    boost::shared_ptr<EC_OpenSimPresence> presence = entity->GetComponent<EC_OpenSimPresence>();
 
     entity_id_t parentid = 0;
     if (prim)
@@ -981,15 +973,15 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         child_placeable->SetParent(Foundation::ComponentPtr());
         return;
     }
-    
+
     Scene::EntityPtr parent_entity = GetEntity(parentid);
     if (!parent_entity)
     {
         // If can't get the parent entity yet, add to pending parent list
         pending_parents_[parentid].insert(entityid);
         return;
-    }   
-    
+    }
+
     Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     child_placeable->SetParent(parent_placeable);
 }
@@ -1000,12 +992,12 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     Scene::EntityPtr parent_entity = GetEntity(entityid);
     if (!parent_entity)
         return;
-    
+
     // See if any accumulated objects missing the parent
     ObjectParentMap::iterator i = pending_parents_.find(entityid);
     if (i == pending_parents_.end())
         return;
-   
+
     std::set<entity_id_t>::const_iterator j = i->second.begin();
     while (j != i->second.end())
     {
@@ -1118,13 +1110,12 @@ void RexLogicModule::AboutToDeleteWorld()
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {
-    QList<Scene::EntityPtr> all_avatars;
-
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
     if (!current_scene.get() || !users_avatar.get())
         return;
 
     // Iterate all avatars to a list
+    QList<Scene::EntityPtr> all_avatars;
     Scene::SceneManager::iterator iter = current_scene->begin();
     Scene::SceneManager::iterator end = current_scene->end();
     while (iter != end)
@@ -1138,26 +1129,23 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 
     // Get users position
-    boost::shared_ptr<EC_HoveringText> name_tag;
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if (!placable.get())
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if (!placeable.get())
         return;
 
-    Vector3Df users_position = placable->GetPosition();
+    Vector3Df users_position = placeable->GetPosition();
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
-        placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-        name_tag = avatar->GetComponent<EC_HoveringText>();
-        if (!placable.get() || !name_tag.get())
+        placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        boost::shared_ptr<EC_HoveringText> name_tag = avatar->GetComponent<EC_HoveringText>();
+        if (!placeable.get() || !name_tag.get())
             continue;
 
         // Check distance, update name tag visibility
-        f32 distance = users_position.getDistanceFrom(placable->GetPosition());
+        f32 distance = users_position.getDistanceFrom(placeable->GetPosition());
         if (distance > 13.0)
-        {
             if (name_tag->IsVisible())
                 name_tag->AnimatedHide();
-        }
         else if (!name_tag->IsVisible())
             name_tag->AnimatedShow();
     }

@@ -15,6 +15,8 @@
 class QColor;
 class QDomDocument;
 
+class EC_OpenSimPrim;
+
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
@@ -23,7 +25,6 @@ namespace ProtocolUtilities
 namespace RexLogic
 {
     class RexLogicModule;
-    class EC_OpenSimPrim;
     class EC_AttachedSound;
 
     class Primitive

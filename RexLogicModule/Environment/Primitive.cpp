@@ -10,7 +10,6 @@
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EC_OgrePlaceable.h"
@@ -39,6 +38,7 @@
 #include "ServiceManager.h"
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
+#include "EC_OpenSimPrim.h"
 
 #include <OgreSceneNode.h>
 
@@ -849,18 +849,15 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
     if (prim)
         fullid = prim->FullId;
 
-    //need to remove children aswell... is there a better way of doing this?
+    //need to remove children aswell... ///\todo is there a better way of doing this?
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-
-        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
-        if (!primentity)
+        EC_OpenSimPrim *prim = entity.GetComponent<EC_OpenSimPrim>().get();
+        if (!prim)
             continue;
 
-        RexLogic::EC_OpenSimPrim *prim = entity.GetComponent<RexLogic::EC_OpenSimPrim>().get();
-        assert(prim);
-        if (prim && prim->ParentId == objectid)
+        if (prim->ParentId == objectid)
         {
             childfullid = prim->FullId;
             scene->RemoveEntity(prim->LocalId);
