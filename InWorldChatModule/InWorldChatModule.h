@@ -4,7 +4,6 @@
  *  @file   InWorldChatModule.h
  *  @brief  Simple OpenSim world chat module. Listens for ChatFromSimulator packets and shows the chat on the UI.
  *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles, EC_Billboards, chat logging etc.
- *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #ifndef incl_InWorldChatModule_InWorldChatModule_h
@@ -76,6 +75,11 @@ namespace Naali
         /// Sends chat message to server.
         /// @param msg Chat message to be sent.
         void SendChatFromViewer(const QString &msg);
+
+        /// Shows VOIP activity indicator above user avatar.
+        /// @param id AgentID of the user.
+        /// @param visibility Do we want icon to to be shown or hidden.
+        void ShowUserVoipActivityIcon(const RexUUID &id, const bool visibility);
 
     private:
         Q_DISABLE_COPY(InWorldChatModule);

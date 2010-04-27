@@ -3,14 +3,6 @@
 #ifndef incl_OgreRenderer_Renderer_h
 #define incl_OgreRenderer_Renderer_h
 
-//to make this a QObject
-#include <QObject>
-#include <boost/shared_ptr.hpp>
-#include "CoreTypes.h"
-#include <qrect.h> //for frustum scene query
-#include <QVariant>
-
-//what was here before QObjectification
 #include "RenderServiceInterface.h"
 #include "LogListenerInterface.h"
 #include "ResourceInterface.h"
@@ -18,7 +10,8 @@
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 
-class QWidget;
+#include <QObject>
+#include <QVariant>
 
 namespace Foundation
 {
@@ -35,6 +28,9 @@ namespace Ogre
     class RaySceneQuery;
     class Viewport;
 }
+
+class QWidget;
+class QRect;
 
 namespace OgreRenderer
 {
@@ -62,7 +58,7 @@ namespace OgreRenderer
         //! \param config Config filename.
         //! \param plugins Plugins filename.
         //! \param window_title Renderer window title.
-        Renderer(
+        Renderer( 
             Foundation::Framework* framework,
             const std::string& config,
             const std::string& plugins,
@@ -169,6 +165,8 @@ namespace OgreRenderer
         Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
+        ///\todo Generates object names, not material or billboardset names, but anything unique goes.
+        /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
         std::string GetUniqueObjectName();
 
         //! Returns resource handler
@@ -211,7 +209,7 @@ namespace OgreRenderer
 
     public slots:
         //! Do a frustum query to the world from viewport coordinates.
-        virtual QVariantList FrustumQuery(QRect viewrect);
+        virtual QVariantList FrustumQuery(QRect &viewrect);
 
     private:
         //! Initialises Qt

@@ -8,7 +8,6 @@
 #include "RexLogicModule.h"
 #include "Entity.h"
 #include "Avatar/AvatarControllable.h"
-#include "ConversionUtils.h"
 #include "BitStream.h"
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"

@@ -25,8 +25,8 @@
 
 #include "MemoryLeakCheck.h"
 
-#define LogInfo(msg) Poco::Logger::get("EC_Clone").error("Error: " + msg);
-#define LogError(msg) Poco::Logger::get("EC_Clone").information(msg);
+#define LogError(msg) Poco::Logger::get("EC_Clone").error("Error: " + std::string(msg));
+#define LogInfo(msg) Poco::Logger::get("EC_Clone").information(msg);
 
 EC_Clone::EC_Clone(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),

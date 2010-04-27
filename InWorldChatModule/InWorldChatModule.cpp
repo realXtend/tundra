@@ -4,7 +4,6 @@
  *  @file   InWorldChatModule.cpp
  *  @brief  Simple OpenSim world chat module. Listens for ChatFromSimulator packets and shows the chat on the UI.
  *          Outgoing chat sent using ChatFromViewer packets. Manages EC_ChatBubbles, EC_Billboards, chat logging etc.
- *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #include "StableHeaders.h"
@@ -28,9 +27,6 @@
 #include "ConfigurationManager.h"
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
-
-//#include "EntityComponent/EC_OpenSimPresence.h"
-//#include "EntityComponent/EC_OpenSimPrim.h"
 
 #include <QColor>
 #include "MemoryLeakCheck.h"
@@ -195,6 +191,29 @@ void InWorldChatModule::SendChatFromViewer(const QString &msg)
         currentWorldStream_->SendChatFromViewerPacket(std::string(msg.toUtf8()));
 }
 
+void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool visibility)
+{
+    Scene::Entity *entity = GetEntityWithId(id);
+    if (!entity)
+        return;
+
+    Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_Billboard", "VoipIndicator");
+    if (!component)
+    {
+        component = framework_->GetComponentManager()->CreateComponent("EC_Billboard");
+        assert(component.get());
+        component->SetName("VoipIndicator");
+        entity->AddComponent(component);
+    }
+
+    boost::shared_ptr<EC_Billboard> billboard = entity->GetComponent<EC_Billboard>();
+    assert(billboard.get());
+    if (visibility)
+        billboard->Show("voipindicator.png");
+    else
+        billboard->Hide();
+}
+
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
@@ -206,7 +225,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
         entity->AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
         EC_Billboard *billboard = entity->GetComponent<EC_Billboard>().get();
         assert(billboard);
-        billboard->Show(Vector3df(0.f, 0.f, 1.5f), 10.f, "smoke.png");
+        billboard->Show("smoke.png", 4000);
     }
 
     return Console::ResultSuccess();
@@ -241,7 +260,7 @@ void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string 
         assert(ec_bb.get());
     }
 
-    ec_bb->Show(Vector3df(0.f, 0.f, 1.5f), timeToShow, texture.c_str());
+    ec_bb->Show(texture, timeToShow);
 }
 
 Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)

@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   ECBillboard.h
+ *  @file   EC_Billboard.h
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
 */
@@ -13,20 +13,16 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
-/*
-namespace Scene
-{
-    class Entity;
-}
-
 namespace Ogre
 {
-    class SceneManager;
+    class BillboardSet;
+    class Billboard;
 }
-*/
 
 class EC_Billboard : public Foundation::ComponentInterface
 {
+    Q_OBJECT
+
     DECLARE_EC(EC_Billboard);
 
 private:
@@ -38,10 +34,42 @@ public:
     /// Destructor.
     ~EC_Billboard();
 
-    /// @param offset
-    /// @param timeToShow How long this billboard is visible. Note: not used yet.
+    /// Sets postion for the chat bubble.
+    /// @param position Position.
+    /// @note The position is relative to the entity to which the billboard is attached.
+    void SetPosition(const Vector3df& position);
+
+    /// Returns true if the billboard is created properly.
+    bool IsCreated() const { return billboardSet_ != 0 && billboard_ != 0; }
+
+public slots:
+    /// Creates and shows billboard.
     /// @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
-    void Show(const Vector3df &offset, float timeToShow, const char *imageName);
+    /// @param timeToShow How long this billboard is visible in milliseconds.
+    /// Use -1 (default)if you want the billboard be visible always.
+    void Show(const std::string &imageName, int timeToShow = -1);
+
+    /// Shows the billboard if it exists with the texture.
+    /// @param timeToShow How long this billboard is visible in milliseconds.
+    /// Use -1 (default)if you want the billboard be visible always.
+    void Show(int timeToShow = -1);
+
+    /// Hides the billboard.
+    void Hide();
+
+private:
+    /// Creates Ogre texture resource for image.
+    /// @return True if creation was succesful, false otherwise.
+    bool CreateOgreTextureResource(const std::string &imageName);
+
+    /// Name of the material used for the billboard set.
+    std::string materialName_;
+
+    /// Ogre billboard set.
+    Ogre::BillboardSet *billboardSet_;
+
+    /// Ogre billboard.
+    Ogre::Billboard *billboard_;
 };
 
 #endif

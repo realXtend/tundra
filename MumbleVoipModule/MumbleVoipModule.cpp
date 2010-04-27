@@ -35,18 +35,10 @@ namespace MumbleVoip
     MumbleVoipModule::~MumbleVoipModule()
     {
         if (mumble_client_started_ && connection_manager_)
-        {
             connection_manager_->KillMumbleClient();
-        }
-
-        if (link_plugin_)
-            SAFE_DELETE(link_plugin_);
-
-        if (server_observer_)
-            SAFE_DELETE(server_observer_);
-
-        if (connection_manager_)
-            SAFE_DELETE(connection_manager_);
+        SAFE_DELETE(link_plugin_);
+        SAFE_DELETE(server_observer_);
+        SAFE_DELETE(connection_manager_);
     }
 
     void MumbleVoipModule::Load()
@@ -59,12 +51,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Unload()
     {
-        SAFE_DELETE(connection_manager_);
-        SAFE_DELETE(link_plugin_);
-        SAFE_DELETE(server_observer_);
     }
 
-    void MumbleVoipModule::Initialize() 
+    void MumbleVoipModule::Initialize()
     {
         InitializeConsoleCommands();
     }
@@ -161,7 +150,10 @@ namespace MumbleVoip
         ///\todo Remove RexLogicModule dependency!
         /// Iterate scene entities and get EC_OpenSimPresence. If EC_OpenSimPresence exists and it agentId
         /// matches with worlstream->GetInfo().agentId it's our user's entity.
-        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        /// You could also save weak pointer of the avatar entity so that you don't have to
+        /// retrieve it again every time at the update.
+        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(
+            framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
             return false;
 
@@ -173,11 +165,10 @@ namespace MumbleVoip
         if (!entity)
             return false;
 
-        const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
-        if (!placeable_component)
+        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        if (!ogre_placeable)
             return false;
 
-        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
         Quaternion q = ogre_placeable->GetOrientation();
         position = ogre_placeable->GetPosition(); 
         direction = q*Vector3df::UNIT_Z;
@@ -188,9 +179,10 @@ namespace MumbleVoip
     bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
     {
         ///\todo Remove RexLogicModule dependency!
-        /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active
-        /// use that entity.
-        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active use that entity.
+        /// You could also save weak pointer of the camera entity so that you don't have to retrieve it again every time at the update.
+        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(
+            framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
         if (!rex_logic_module)
             return false;
 
@@ -198,13 +190,11 @@ namespace MumbleVoip
         if (!camera)
             return false;
 
-        const Foundation::ComponentInterfacePtr &placeable_component = camera->GetComponent("EC_OgrePlaceable");
-        if (!placeable_component)
+        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        if (!ogre_placeable)
             return false;
 
-        OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
         Quaternion q = ogre_placeable->GetOrientation();
-
         position = ogre_placeable->GetPosition(); 
         direction = q*Vector3df::UNIT_X;
         return true;
@@ -215,11 +205,16 @@ namespace MumbleVoip
         boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
         if (console_service)
         {
-            console_service->RegisterCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector", Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector", Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
+                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
+                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
+                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
+                Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
+            console_service->RegisterCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
+                Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
         }
     }
     

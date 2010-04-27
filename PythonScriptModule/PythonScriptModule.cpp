@@ -1012,6 +1012,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     textureuuid.FromString(std::string(uuidstr));
 
     // Get RexLogic module
+    ///\todo Remove RexLogic dependency by iterating the scene and checking if the entity has EC_OpenSimPrim component available.
     RexLogic::RexLogicModule *rexlogicmodule_;
     rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
@@ -1193,10 +1194,10 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
+    ///\todo Remove RexLogicModule dependency by getting the world stream from the WORLDSTREAM_READY event
     RexLogic::RexLogicModule *rexlogic_;
-
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    
+
     std::string meshname;
     const char* c_text;
     float prio = 0;
@@ -1506,6 +1507,7 @@ PyObject* GetUIView(PyObject *self)
 
 PyObject* GetServerConnection(PyObject *self)
 {
+    ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
@@ -1516,6 +1518,7 @@ PyObject* GetServerConnection(PyObject *self)
 
 PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 {
+    ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)

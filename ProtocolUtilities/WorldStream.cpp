@@ -8,7 +8,6 @@
 #include "ProtocolModuleOpenSim.h"
 #include "ProtocolModuleTaiga.h"
 #include "QuatUtils.h"
-#include "ConversionUtils.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
@@ -16,6 +15,7 @@
 #include <QString>
 #include <QUrl>
 #include <QStringList> //for pythonqt compat override of SendGenericMessage
+#include "MemoryLeakCheck.h"
 
 namespace ProtocolUtilities
 {
@@ -387,8 +387,8 @@ void WorldStream::SendAgentUpdatePacket(
 
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
-    m->AddQuaternion(OgreToOpenSimQuaternion(bodyrot));
-    m->AddQuaternion(OgreToOpenSimQuaternion(headrot));
+    m->AddQuaternion(bodyrot);
+    m->AddQuaternion(headrot);
     m->AddU8(state);
     m->AddVector3(camcenter);
     m->AddVector3(camataxis);
@@ -486,14 +486,14 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
 
     if (!update_info_list.size())
         return;
-          
+
     // Will actually send two packets: first one for position & scale, then one for rotation.
     // Protocol does not seem to support sending all three
-    
-    // 1. Position & scale packet                             
+
+    // 1. Position & scale packet
     NetOutMessage *m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
     assert(m);
-                
+
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
@@ -511,11 +511,11 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(13);
 
         // Position
-        memcpy(&data[offset], &OgreToOpenSimCoordinateAxes(update_info_list[i].position_), sizeof(Vector3));
+        memcpy(&data[offset], &update_info_list[i].position_, sizeof(Vector3));
         offset += sizeof(Vector3);
 
         // Scale
-        memcpy(&data[offset], &OgreToOpenSimCoordinateAxes(update_info_list[i].scale_), sizeof(Vector3));
+        memcpy(&data[offset], &update_info_list[i].scale_, sizeof(Vector3));
         offset += sizeof(Vector3);
     }
 
@@ -523,10 +523,10 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
     m->AddBuffer(offset, data);
     FinishMessageBuilding(m);
     
-    // 2. Rotation packet                          
+    // 2. Rotation packet
     m = StartMessageBuilding(RexNetMsgMultipleObjectUpdate);
     assert(m);
-                
+
     // AgentData
     m->AddUUID(clientParameters_.agentID);
     m->AddUUID(clientParameters_.sessionID);
@@ -549,7 +549,7 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
 
     // Add the data.
     m->AddBuffer(offset, data);
-    FinishMessageBuilding(m);    
+    FinishMessageBuilding(m);
 }
 
 void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)
@@ -559,7 +559,7 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
 
     if (!name_info_list.size())
         return;
-            
+
     NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectName);
     assert(m);
 

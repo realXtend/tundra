@@ -25,7 +25,6 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_HoveringText.h"
-#include "ConversionUtils.h"
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"

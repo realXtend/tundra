@@ -1,7 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
+#include "EventManager.h"
 #include "Framework.h"
 #include "EventDataInterface.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "CoreException.h"
 
@@ -11,6 +15,8 @@
 #include <QThread>
 
 #include <algorithm>
+
+#include "MemoryLeakCheck.h"
 
 namespace Foundation
 {
