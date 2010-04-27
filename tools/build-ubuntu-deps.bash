@@ -18,7 +18,7 @@ tags=$deps/tags
 
 # -j<n> param for make, for how many processes to run concurrently
 
-nprocs=2
+nprocs=`grep -c "^processor" /proc/cpuinfo` 
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
@@ -31,6 +31,16 @@ export CPLUS_INCLUDE_PATH=$prefix/include
 export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
+
+if lsb_release -c | grep -q lucid; then
+	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
+	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
+	 build-essential g++ libglib libogre-dev libboost-all-dev \
+	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
+	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
+
+	
+fi
 
 if lsb_release -c | grep -q karmic; then
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \

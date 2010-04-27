@@ -7,6 +7,7 @@
 
 macro (configure_boost)
     if (MSVC)
+	    set(Boost_USE_MULTITHREADED ON) # test by mattiku
         set (Boost_USE_STATIC_LIBS ON)
     else ()
         set (Boost_USE_STATIC_LIBS OFF)
@@ -352,10 +353,55 @@ macro (configure_vorbis)
         NAMES vorbisfile vorbis libvorbis
         COMPONENTS vorbis libvorbis libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
-        
+
         # Force include dir on MSVC
         if (MSVC)
   		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
         endif ()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
+
+macro (configure_mumbleclient)
+    sagase_configure_package(MUMBLECLIENT
+        NAMES mumbleclient
+        COMPONENTS mumbleclient client
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libmumbleclient)
+    sagase_configure_report (MUMBLECLIENT)
+endmacro (configure_mumbleclient)
+
+macro (configure_openssl)
+	# NOTE: This doesn't work with CMake 2.8 Windows version
+	#       CMake 2.6 must be used
+    sagase_configure_package(OPENSSL
+        NAMES openssl
+        COMPONENTS libeay32 ssleay32 ssl
+        PREFIXES ${ENV_NAALI_DEP_PATH}/OpenSSL)
+    # remove 'NOTFOUND' entry which makes to linking impossible		 
+    if (MSVC)
+        list(REMOVE_ITEM OPENSSL_LIBRARIES NOTFOUND)
+    endif ()		
+    sagase_configure_report (OPENSSL)
+endmacro (configure_openssl)
+
+macro (configure_protobuf)
+	message(PROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR})
+	message(PROTOBUF_LIBRARY=${PROTOBUF_LIBRARY})
+    sagase_configure_package(PROTOBUF
+        NAMES google protobuf
+        COMPONENTS libprotobuf
+        PREFIXES ${ENV_NAALI_DEP_PATH}/protobuf)
+    # Force include dir and libraries on MSVC
+    if (MSVC)
+  	    set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
+    endif ()
+    sagase_configure_report (PROTOBUF)
+	
+endmacro (configure_protobuf)
+
+macro (configure_celt)
+    sagase_configure_package(CELT
+        NAMES celt
+        COMPONENTS celt0 celt celt # for celt.h
+        PREFIXES ${ENV_NAALI_DEP_PATH}/celt)
+    sagase_configure_report (CELT)
+endmacro (configure_celt)

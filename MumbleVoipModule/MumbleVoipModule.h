@@ -6,9 +6,10 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "MumbleVoipModuleApi.h"
-
+#include "Core.h"
 #include <QObject>
 #include "ServerInfo.h"
+
 
 namespace MumbleVoip
 {
@@ -24,7 +25,16 @@ namespace MumbleVoip
      *    'mumble unlink'
      *    'mumble start(server_url)'
      *  
-     *  Starts mumble client with link plugin when user logins to world server.
+     *  Request mumble server information when user has logged to world and establish a connection
+     *  to mumble server.
+     *
+     *  By default the nativi mumble client is used to establish the connection.
+     *  If command line argument '--usemumblelibrary' has been given then mumbleclient library is used to 
+     *  establish a connection.
+     *
+     *  In future this module will implement InWorldVoiceProvider interface and is controlled by user interface and 
+     *  mumbleclient library is used to make connections.
+     * 
      */
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
@@ -51,11 +61,15 @@ namespace MumbleVoip
 		static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
-        virtual Console::CommandResult  OnConsoleMumbleLink(const StringVector &params);
-        virtual Console::CommandResult  OnConsoleMumbleUnlink(const StringVector &params);
-        virtual Console::CommandResult  OnConsoleMumbleStart(const StringVector &params);
+        virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
+        virtual Console::CommandResult OnConsoleMumbleUnlink(const StringVector &params);
+        virtual Console::CommandResult OnConsoleMumbleStart(const StringVector &params);
+        virtual Console::CommandResult OnConsoleEnableVoiceActivityDetector(const StringVector &params);
+        virtual Console::CommandResult OnConsoleDisableVoiceActivityDetector(const StringVector &params);
 
         virtual void UpdateLinkPlugin(f64 frametime);
+        virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
+        virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
 
 		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
     private:
@@ -69,6 +83,9 @@ namespace MumbleVoip
         QString user_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
         bool use_camera_position_; 
+        bool mumble_client_started_;
+        bool mumble_use_library_;
+        event_category_id_t event_category_framework_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);

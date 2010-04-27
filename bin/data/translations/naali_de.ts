@@ -197,6 +197,76 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>ChatSessionWidget</name>
+    <message>
+        <source>ChatSessionWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QLineEdit {
+	min-height: 20px;
+	border: 0px;
+	border-top: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+}
+
+QPlainTextEdit {
+	border: 0px;
+}
+
+QPushButton {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(255, 255, 255);
+}
+
+QPushButton:hover {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QPushButton::pressed {
+	color: rgb(0,0,0);
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(207, 207, 207);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ClassicalLoginWidget</name>
     <message>
         <source>ClassicalLoginWidget</source>
@@ -323,6 +393,26 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ECEditor::ECEditorWindow</name>
+    <message>
+        <source>ECEditor</source>
+        <comment>Entity-component Editor</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &lt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -926,6 +1016,43 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>FrienListWidget</name>
+    <message>
+        <source>Friends List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QPushButton {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+}
+
+QPushButton:hover {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+	color: rgb(51, 98, 255);
+}
+
+QPushButton::pressed {
+	border: 0px;
+	background-color: rgba(255, 255, 255, 0);
+	color: rgb(74, 122, 255);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>x new friend request</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QListView::item {
+     min-height: 30px;
+ }
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Inventory::InventoryModule</name>
     <message>
         <source>Inventory::InventoryWindow</source>
@@ -1063,6 +1190,17 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>LoadingWidget</name>
+    <message>
+        <source>Connecting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginControllerWidget</name>
     <message>
         <source>Login Controller</source>
@@ -1115,6 +1253,49 @@ QPushButton:hover {
     </message>
     <message>
         <source>temp</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoginWidget</name>
+    <message>
+        <source>IM Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Provide your IM credentials</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last stored credentials</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Google account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Facebook account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1384,6 +1565,13 @@ Duration: %1 sec</source>
     </message>
 </context>
 <context>
+    <name>OpenSimChatWidget</name>
+    <message>
+        <source>OpenSimChatWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PersonalWidget</name>
     <message>
         <source>PersonalWidget</source>
@@ -1405,6 +1593,13 @@ Duration: %1 sec</source>
     </message>
     <message>
         <source>View Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RequestManagerWidget</name>
+    <message>
+        <source>Pending Friend Requests</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1435,6 +1630,63 @@ Duration: %1 sec</source>
     </message>
     <message>
         <source>Toggle postprocessing effects</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SessionManagerWidget</name>
+    <message>
+        <source>IM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Question label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>username@server.com</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>status message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QWidget {
+	background-color: #f4f4f4;
+}
+
+QLabel {
+	color: rgb(0, 0, 0);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>color: rgb(69, 159, 255);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hello and Welcome to Naali Communications Widget!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can find all important functionality from the menu that is located at the top of this window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To start click the Show Friend List button. There you can start chat,  video or audio sessions with your friends.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  Connected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1505,6 +1757,29 @@ Duration: %1 sec</source>
     </message>
     <message>
         <source>Voice Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SpatialVoiceConfigureWidget</name>
+    <message>
+        <source>3D Voice Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select avatar and start tracking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Avatar List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Tracking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop Tracking</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1637,6 +1912,132 @@ QPushButton:hover {
     </message>
     <message>
         <source>Uploading file </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VideoSessionControlsWidget</name>
+    <message>
+        <source>VideoSessionControlsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QWidget#VideoSessionControls {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0,0,0);
+}
+
+QCheckBox {
+	spacing: 3px;
+}
+
+QCheckBox::indicator {
+	width: 16px;
+	height: 16px;
+}
+
+QCheckBox::indicator:checked {
+	image: url(:images/iconGreen.png);
+}
+
+QCheckBox::indicator:unchecked {
+	image: url(:images/iconRed.png);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VideoSessionWidget</name>
+    <message>
+        <source>VideoSessionWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+QWidget#MainFrame {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0,0,0);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>color: rgb(0,0,0);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QPushButton {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(255, 255, 255);
+}
+
+QPushButton:hover {
+	font-size: 10px;
+	color: rgb(0,0,0);
+	padding: 0px;
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
+}
+
+QPushButton::pressed {
+	color: rgb(0,0,0);
+	padding-right: 3px;
+	padding-left: 3px;
+	min-height: 20px;
+	max-height: 20px;
+	border: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-top: 1px solid rgb(69, 159, 255);
+	border-left: 1px solid rgb(69, 159, 255);
+	border-radius: 0px;
+	background-color: rgb(207, 207, 207);
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
