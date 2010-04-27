@@ -90,10 +90,14 @@ namespace MumbleVoip
         //! Set position sending on/off
         virtual void SendPosition(bool value) { send_position_ = value; }
 
-        //! Return true if position information is send with audio data
+        //! \return true if position information is send with audio data
         virtual bool IsSendingPosition() { return send_position_; }
 
-        // virtual State State();
+        //! \return current state of the connection
+        virtual State GetState();
+
+        //! \return textual description for the reason for current state
+        virtual QString GetReason();
     private:
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
@@ -107,6 +111,7 @@ namespace MumbleVoip
         bool CheckState(QList<State> allowed_states); // testing
 
         State state_;
+        QString reason_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel
         QList<PCMAudioFrame*> encode_queue_;

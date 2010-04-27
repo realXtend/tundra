@@ -18,6 +18,7 @@
 #include "Channel.h"
 #include "User.h"
 #include "PCMAudioFrame.h"
+#include <QUrl>
 
 #include <celt/celt_types.h>
 #include <celt/celt.h>
@@ -93,7 +94,10 @@ namespace MumbleVoip
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         client_ = mumble_lib->NewClient();
 
-        QString port = "64738"; // default port name
+        QUrl server_url(QString("mumble://%1").arg(info.server));
+
+        QString port = QString::number(server_url.port(64738)); // default port name
+        QString server = server_url.host();
 
         // \todo Handle connection error
 	    client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
@@ -103,7 +107,15 @@ namespace MumbleVoip
         client_->SetAuthCallback(boost::bind(&AuthCallback, this));
         client_->SetUserJoinedCallback(boost::bind(&UserJoinedCallback, _1, this));
         client_->SetUserLeftCallback(boost::bind(&UserLeftCallback, _1, this));
-        client_->Connect(MumbleClient::Settings(info.server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
+        try
+        {
+            client_->Connect(MumbleClient::Settings(server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
+        }
+        catch(std::exception &e)
+        {
+            state_ = STATE_ERROR;
+            reason_ = QString(e.what());
+        }
     }
 
     Connection::~Connection()
@@ -129,6 +141,16 @@ namespace MumbleVoip
             SAFE_DELETE(u);
         }
         users_.clear();
+    }
+
+    Connection::State Connection::GetState()
+    {
+        return state_;
+    }
+
+    QString Connection::GetReason()
+    { 
+        return reason_;
     }
 
     void Connection::Close()
