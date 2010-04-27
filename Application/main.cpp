@@ -136,6 +136,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     bool cmd = false;
     bool quote = false;
 
+    arguments.push_back("viewer");
+    
     for (i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
