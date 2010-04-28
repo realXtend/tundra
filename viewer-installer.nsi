@@ -50,11 +50,11 @@ Section "Uninstall"
   #removing the APPDATA\roaming\realxtend doesn't seem to work properly on Vista. (maybe incorrect user information is given through add/remove programs)
   SetShellVarContext all
   RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\Naali"
+  RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
 
   SetShellVarContext current
   RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\Naali"
+  RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali"
 SectionEnd
