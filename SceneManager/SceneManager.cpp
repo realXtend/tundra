@@ -1,12 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
+#include "ComponentInterface.h"
+#include "ForwardDefines.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace Scene
 {
@@ -40,17 +46,15 @@ namespace Scene
 
         Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid));
         for (size_t i=0 ; i<components.size() ; ++i)
-        {
             entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
-        }
-        
+
         entities_[entity->GetId()] = entity;
-        
+
         // Send event.
         Events::SceneEventData event_data(entity->GetId());
         event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
         framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_ADDED, &event_data);
-        
+
         return entity;
     }
 
@@ -67,25 +71,40 @@ namespace Scene
     {
         while(entities_.find(gid_) != entities_.end())
             gid_ = (gid_ + 1) % static_cast<uint>(-1);
-        
+
         return gid_;
     }
 
     void SceneManager::RemoveEntity(entity_id_t id)
     {
         EntityMap::iterator it = entities_.find(id);
-        if (it != entities_.end())    
+        if (it != entities_.end())
         {
-            Scene::EntityPtr del_entity = it->second;    
-            
-            // Send event.         
+            Scene::EntityPtr del_entity = it->second;
+
+            // Send event.
             Events::SceneEventData event_data(id);
             event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
             framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
 
-            entities_.erase(it); 
+            entities_.erase(it);
             del_entity.reset();
         }
+    }
+
+    EntityList SceneManager::GetEntitiesWithComponent(const std::string &type_name)
+    {
+        std::list<EntityPtr> entities;
+        EntityMap::const_iterator it = entities_.begin();
+        while(it != entities_.end())
+        {
+            EntityPtr entity = it->second;
+            if (entity->HasComponent(type_name))
+                entities.push_back(entity);
+            ++it;
+        }
+
+        return entities;
     }
 }
 

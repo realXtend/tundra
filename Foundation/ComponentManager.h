@@ -17,7 +17,6 @@ namespace Foundation
         \defgroup Scene_group Scene Model Client Interface
     */
 
-
     //! Manages components. Also works as a component factory.
     /*! \ingroup Foundation_group
         \ingroup Scene_group
@@ -30,9 +29,10 @@ namespace Foundation
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
         typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
-        
+
         //! default constructor
         ComponentManager(Framework *framework) : framework_(framework) {}
+
         //! destructor
         ~ComponentManager() { }
 
@@ -40,7 +40,6 @@ namespace Foundation
         void RegisterFactory(const std::string &component, const ComponentFactoryInterfacePtr &factory)
         {
             assert(factories_.find(component) == factories_.end());
-
             factories_[component] = factory;
         }
 
@@ -49,24 +48,32 @@ namespace Foundation
         {
             ComponentFactoryMap::iterator iter = factories_.find(component);
             assert(iter != factories_.end());
-
             factories_.erase(iter);
         }
 
         //! Returns true if component can be created (a factory for the component has registered itself)
         /*!
-            \param type name of the component type
+            \param type_name name of the component type
             \return true if component can be created, false otherwise
         */
-        bool CanCreate(const std::string &type);
+        bool CanCreate(const std::string &type_name);
 
         //! Create a new component
         /*!
             Precondition: CanCreate(componentName)
 
-            \param type type of the component to create
+            \param type_name type of the component to create
         */
-        ComponentPtr CreateComponent(const std::string &type);
+        ComponentPtr CreateComponent(const std::string &type_name);
+
+        //! Create a new component
+        /*!
+            Precondition: CanCreate(componentName)
+
+            \param type_name type of the component to create
+            \param name name of the component to create
+        */
+        ComponentPtr CreateComponent(const std::string &type_name, const std::string &name);
 
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
@@ -75,12 +82,12 @@ namespace Foundation
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
     private:
-
         //! map of component factories
         ComponentFactoryMap factories_;
 
+        //! Framework
         Framework *framework_;
     };
 }
 
-#endif 
+#endif

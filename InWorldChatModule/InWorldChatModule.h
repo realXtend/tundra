@@ -86,6 +86,7 @@ namespace Naali
         Q_DISABLE_COPY(InWorldChatModule);
 
         /// Console command for testing billboards.
+        /// Adds billboard to each entity with EC_OpenSimPrim component present.
         /// @param params Parameters.
         Console::CommandResult TestAddBillboard(const StringVector &params);
 
