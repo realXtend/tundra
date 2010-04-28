@@ -406,7 +406,6 @@ class ObjectEditWindow:
         self.proxywidget.hide()
         uism = r.getUiSceneManager()
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
-        uism.RemoveProxyWidgetFromScene(self.propeditwidget)
         
     def objectDeleted(self, ent_id): #XXX not the best way of doing this
         if self.mainTabList.has_key(ent_id):

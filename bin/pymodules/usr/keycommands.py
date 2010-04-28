@@ -26,11 +26,12 @@ class KeyCommander(Component):
         
         (KEY_ID, MOD_ID): methodToCall()
         """
-        self.keymap = {
-            (OIS_KEY_PERIOD, OIS_KEY_ALT): self.run_commandpy,
+        #Gone with OIS
+        #self.keymap = {
+        #    (OIS_KEY_PERIOD, OIS_KEY_ALT): self.run_commandpy,
             #(OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui,
-            (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
-        }
+        #    (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
+        #}
         
         """
         These are the input events as they have already been translated within Naali internals.
@@ -46,34 +47,32 @@ class KeyCommander(Component):
         uiview = r.getUiView()
         uiview.connect("PythonRestartRequest()", self.restart_modulemanager)
         
-    def on_keydown(self, key, mods, callback):
+    #def on_keydown(self, key, mods):
         #print "on_keydown call -> ", key, mods, (key, mods), self.keymap.has_key((key, mods))
-        if (key, mods) in self.keymap:
-            eventhandled = self.keymap[(key, mods)]()
-            callback(eventhandled)
-        else:
-            callback(False)
+    #    if (key, mods) in self.keymap:
+    #        return self.keymap[(key, mods)]()
+    #    else:
+    #        return False
 
-    def on_keyup(self, key, mods, callback):
-        pass
+    #def on_keyup(self, key, mods):
+    #    pass
         
-    def on_input(self, evid, callback):
+    def on_input(self, evid):
         #print "Commander got input", evid
         if evid in self.inputmap:
-            eventhandled = self.inputmap[evid]()
-            callback(eventhandled)
+            return self.inputmap[evid]()
         else:
-            callback(False)
+            return False
     
     #uncomment this for raycasting tests
-    #~ def on_mousemove(self, mouseinfo, callback):
+    #~ def on_mousemove(self, mouseinfo):
         #~ print "MouseMove", mouseinfo.x, mouseinfo.y
         #~ ent = r.rayCast(mouseinfo.x, mouseinfo.y)
         #~ print "Got entity:", ent
         #~ if ent is not None:
             #~ print "Entity position is", ent.pos
     
-    #~ def on_entityupdated(self, id, callback):
+    #~ def on_entityupdated(self, id):
         #~ e = r.getEntity(id)
         #~ print "Entity got touched", id#, "got", e, e.pos
     

@@ -1,65 +1,32 @@
-# Filename: log.py
-# Module:   log
+# Module:   logging
 # Date:     11th June 2006
 # Author:   James Mills <prologic@shortcircuit.net.au>
 
-"""Log
-
-...
-"""
+"""Logging Components"""
 
 import sys
 import logging
+from logging import DEBUG, INFO, WARNING, WARN, ERROR, CRITICAL
 
-from circuits import Event, Component
+from circuits.core import handler, Event, BaseComponent
 
-###
-### Events
-###
-
-class Debug(Event):
-    """Debug(Event) -> Debug Log Event
-
-    args: msg
-    """
-
-class Info(Event):
-    """Info(Event) -> Info Log Event
-
-    args: msg
-    """
-
-class Warning(Event):
-    """Warning(Event) -> Warning Log Event
-
-    args: msg
-    """
-
-class Error(Event):
-    """Error(Event) -> Error Log Event
-
-    args: msg
-    """
-
-class Exception(Event):
-    """Exception(Event) -> Exception Log Event
-
-    args: msg
-    """
-
-class Critical(Event):
-    """Critical(Event) -> Critical Log Event
-
-    args: msg
-    """
-
-###
-### Components
-###
-
-class Logger(Component):
+class Log(Event):
+    """Log Event"""
 
     channel = "log"
+    target = "logger"
+
+    success = "log_successful", target
+    filter = "log_filtered", target
+    failure = "log_failed", target
+
+class Logger(BaseComponent):
+
+    channel = "logger"
+
+    LEVELS = {"debug": DEBUG, "info": INFO, "warning": WARNING,
+            "warn": WARN, "error": ERROR, "exception": ERROR,
+            "critical": CRITICAL}
 
     def __init__(self, filename, name, type, level, channel=channel):
         super(Logger, self).__init__(channel=channel)
@@ -99,6 +66,10 @@ class Logger(Component):
         formatter = logging.Formatter(format,dateFormat)
         hdlr.setFormatter(formatter)
         self.logger.addHandler(hdlr)
+
+    @handler("log")
+    def log(self, level, msg, *args, **kwargs):
+        self.logger.log(self.LEVELS[level.lower()], msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         self.logger.debug(msg, *args, **kwargs)

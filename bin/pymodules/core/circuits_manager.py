@@ -42,7 +42,6 @@ class ComponentRunner(Component):
         #m.start() #instead we tick() & flush() in update
         
         self.firstrun = True
-        self.eventhandled = False
         r.restart = False
         self.start()
         r.manager = self
@@ -75,17 +74,28 @@ class ComponentRunner(Component):
                     
     def run(self, deltatime=0.1):
         #print ".",
+        self.send_event(Update(deltatime), "update") #so that all components are updated immediately once for this frame
+        #XXX should this be using the __tick__ mechanism of circuits, and how?
         m = self.m
-        m.send(Update(deltatime), "update") #XXX should this be using the __tick__ mechanism of circuits, and how?
         m.tick()
         m.flush()
         #XXX NOTE: now that we tick & flush, circuits works normally, and we could change from send() to push() for the events
+
+    def send_event(self, event, channel):
+        """simulate sync sending of events using the async lib.
+        needed to be able to return the info of whether the event is to be
+        send to more handlers on the c++ side in the Naali event system"""
+        m = self.m
+        ret = m.push(event, channel)
+        while m: m.flush() #circuits components evaluate to false when have no pending events left
+        if not ret.errors:
+            return ret.value
+        else:
+            #did the debugger already show the traceback?
+            return False
         
     def RexNetMsgChatFromSimulator(self, frm, message):
-        self.m.send(Chat(frm, message), "on_chat")
-        
-    def callback(self, value):
-        self.eventhandled = value
+        self.send_event(Chat(frm, message), "on_chat")
         
     def INPUT_EVENT(self, evid):
         """Note: the PygameDriver for circuits has a different design:
@@ -95,9 +105,7 @@ class ComponentRunner(Component):
         'cause the c++ internals don't do that apart from the constant name.
         """
         #print "circuits_manager ComponentRunner got input event:", evid       
-        self.eventhandled = False
-        self.m.send(Input(evid, self.callback), "on_input")
-        return self.eventhandled
+        return self.send_event(Input(evid), "on_input")
         
     def KEY_INPUT_EVENT(self, evid, keycode, keymod):
         """Handles key inputs, creates a Circuits Key event with the data provided
@@ -106,70 +114,55 @@ class ComponentRunner(Component):
         """
         
         #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
-        self.eventhandled = False
         if evid == r.KeyPressed:
-            self.m.send(Key(keycode, keymod, self.callback), "on_keydown")
+            return self.send_event(Key(keycode, keymod), "on_keydown")
         elif evid == r.KeyReleased:
-            self.m.send(Key(keycode, keymod, self.callback), "on_keyup")
-        return self.eventhandled
+            return self.send_event(Key(keycode, keymod), "on_keyup")
             
     def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
-        self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         #print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
-        self.m.send(MouseMove(event, self.mouseinfo, self.callback), "on_mousedrag")
-        return self.eventhandled
+        return self.send_event(MouseMove(event, self.mouseinfo), "on_mousedrag")
         
     def MOUSE_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         #print "CircuitsManager got a mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
-        self.eventhandled = False
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
         if event == r.MouseMove:
-            self.m.send(MouseMove(event, self.mouseinfo, self.callback), "on_mousemove")
+            return self.send_event(MouseMove(event, self.mouseinfo), "on_mousemove")
         else:
-            self.m.send(MouseClick(event, self.mouseinfo, self.callback), "on_mouseclick")
-        return self.eventhandled
-        
+            return self.send_event(MouseClick(event, self.mouseinfo), "on_mouseclick")
+
     def SCENE_EVENT(self, evid, entid):
-        self.m.send(EntityUpdate(evid, entid), "on_scene")
+        return self.send_event(EntityUpdate(evid, entid), "on_scene")
         
     def ENTITY_UPDATED(self, entid):
         #print "Entity updated!", entid
-        self.eventhandled = False
-        self.m.send(EntityUpdate(entid, self.callback), "on_entityupdated")
-        return self.eventhandled
+        return self.send_event(EntityUpdate(entid), "on_entityupdated")
 
     def ENTITY_VISUALS_MODIFIED(self, entid):
-        self.m.send(EntityUpdate(entid), "on_entity_visuals_modified")
-        return False
+        return self.send_event(EntityUpdate(entid), "on_entity_visuals_modified")
 
     def LOGIN_INFO(self, *args): 
         #print "Login Info", args
-        self.eventhandled = False
-        #self.m.send(LoginInfo(self.callback), "on_login")
-        return self.eventhandled
+        #self.send_event(LoginInfo(), "on_login") #XXX so wasn't needed or?
+        return False
     
     def SERVER_DISCONNECTED(self, id):
         #print "Circuits got the server disconnection event."
-        self.m.send(Logout(id), "on_logout")
-        return False
+        return self.send_event(Logout(id), "on_logout")
         
     def INBOUND_NETWORK(self, id, name):
         #print "Circuits got network_in event:", id, name
-        self.eventhandled = False
-        self.m.send(InboundNetwork(id, name, self.callback), "on_inboundnetwork")
-        return self.eventhandled
+        return self.send_event(InboundNetwork(id, name), "on_inboundnetwork")
         ##r.randomTest(id) #for testing whether the id gotten is the same after a circulation on the python, note: worked
 
     def GENERIC_MESSAGE(self, typename, data):
-        self.eventhandled = False
         #print "Circuits got Generic Message event:", data
-        self.m.send(GenericMessage(typename, data), "on_genericmessage")
-        return self.eventhandled
+        return self.send_event(GenericMessage(typename, data), "on_genericmessage")
                
     def exit(self):
         r.logInfo("Circuits manager stopping...")
-        self.m.send(Exit(), "on_exit") #am not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
+        self.send_event(Exit(), "on_exit") #was originally not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         self.m.stop() #was not going to components now so made the exit event above as a quick fix
         #XXX now that we are using flush() and tick(), does stop() propagate to components too?
         

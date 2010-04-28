@@ -1,12 +1,20 @@
-# Module:	__init__
-# Date:		8th November 2008
-# Author:	James Mills, prologic at shortcircuit dot net dot au
+# Module:   __init__
+# Date:     8th November 2008
+# Author:   James Mills, prologic at shortcircuit dot net dot au
 
 """Circuits Tools
 
 circuits.tools contains a standard set of tools for circuits. These
 tools are installed as executables with a prefix of "circuits."
 """
+
+from hashlib import md5
+
+try:
+    import pydot
+    HAS_PYDOT = True
+except ImportError:
+    HAS_PYDOT = False
 
 def walk(x, f, d=0, v=None):
     if not v:
@@ -22,25 +30,17 @@ def edges(x, e=None, v=None):
     if not e:
         e = set()
     if not v:
-        v = set()
+        v = []
     for c in x.components.copy():
-        if c not in v:
-            v.add(c)
-            e.add((x, c))
-            edges(c, e, v)
+        e.add((x, c))
+        edges(c, e, v)
     return e
 
-def findroot(x, v=None):
-    if not v:
-        v = set()
+def findroot(x):
     if x.manager == x:
         return x
     else:
-        if x.manager not in v:
-            v.add(x.manager)
-            return findroot(x.manager, v)
-        else:
-            return x.manager
+        return findroot(x.manager)
 
 def kill(x):
     for c in x.components.copy():
@@ -51,74 +51,60 @@ def kill(x):
 def graph(x, name=None):
     """Display a directed graph of the Component structure of x
 
-    @param x: A Component or Manager to graph
-    @type  x: Component or Manager
+    :param x: A Component or Manager to graph
+    :type  x: Component or Manager
 
-    @param name: A name for the graph (defaults to x's name)
-    @type  name: str
+    :param name: A name for the graph (defaults to x's name)
+    :type  name: str
 
     @return: A directed graph representing x's Component sturcture.
     @rtype:  str
     """
 
-    try:
-        import pydot
-        
+    def getname(c):
+        return "%s-%s" % (c.name, md5(str(hash(c))).hexdigest()[-4:])
+
+    if HAS_PYDOT:
         graph_edges = []
-        nodes = []
-        names = []
         for (u, v) in edges(x):
-            if v.name in names and v not in nodes:
-                i = 1
-                new_name = "%s-%d" % (v.name, i)
-                while new_name in names:
-                    i += 1
-                    new_name = "%s-%d" % (v.name, i)
-                graph_edges.append((u.name, new_name))
-            else:
-                nodes.append(u)
-                nodes.append(v)
-                names.append(v.name)
-                graph_edges.append((u.name, v.name))
+            graph_edges.append(("\"%s\"" % getname(u), "\"%s\"" % getname(v)))
 
         g = pydot.graph_from_edges(graph_edges, directed=True)
         g.write("%s.dot" % (name or x.name))
         g.write("%s.png" % (name or x.name), format="png")
-    except ImportError:
-        pass
-    except:
-        raise
 
     def printer(d, x):
         return "%s* %s" % (" " * d, x)
 
     return "\n".join(walk(x, printer))
     
-def reprhandler(x):
-    """Display a nicely formatted Event Handler, x
+def reprhandler(c, h):
+    """Display a nicely formatted Event Handler, h from Component c.
 
-    @param x: An Event Handler
-    @type  x: function or method
+    :param c: A Component that contains Event Handler h
+    :type c: Manager or Manager subclass
+
+    :param x: An Event Handler
+    :type  x: function or method
 
     @return: A nicely formatted representation of the Event Handler, x
     @rtype:  str
     """
 
-    if not hasattr(x, "handler"):
-        raise TypeError("%r is not an Event Handler" % x)
+    attrs = c._handlerattrs[h]
 
     format = "<%s on %s {target=%s, priority=%0.1f}>"
-    channels = repr(x.channels)
-    f = "filter" if x.filter else "listener"
-    t = repr(x.target)
-    p = x.priority
+    channels = repr(attrs["channels"])
+    f = "filter" if attrs["filter"] else "listener"
+    t = repr(attrs["target"])
+    p = attrs["priority"]
     return format % (f, channels, t, p)
 
 def inspect(x):
     """Display an inspection report of the Component or Manager x
 
-    @param x: A Component or Manager to graph
-    @type  x: Component or Manager
+    :param x: A Component or Manager to graph
+    :type  x: Component or Manager
 
     @return: A detailed inspection report of x
     @rtype:  str
@@ -141,6 +127,6 @@ def inspect(x):
     for (t, c) in x.channels:
         write("  %s:%s; %d\n" % (t, c, len(x.channels[(t, c)])))
         for handler in x.channels[(t, c)]:
-            write("   %s\n" % reprhandler(handler))
+            write("   %s\n" % reprhandler(x, handler))
 
     return "".join(s)
