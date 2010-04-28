@@ -30,7 +30,6 @@
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
-#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
@@ -90,6 +89,8 @@ namespace OgreRenderer
         window_title_(window_title),
         main_window_(0),
         q_ogre_ui_view_(0),
+        last_width_(0),
+        last_height_(0),
         resized_dirty_(0),
         view_distance_(500.0)
     {
@@ -437,48 +438,38 @@ namespace OgreRenderer
 
         PROFILE(Renderer_Render);
 
-        // Update the ui overlay every 20 ms
-        if (ui_update_timer_.elapsed() > 20)
+        // If rendering into different size window, dirty the UI view for now & next frame
+        if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
-            if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
-            {
-                last_width_ = GetWindowWidth();
-                last_height_ = GetWindowHeight();
-                resized_dirty_ = 2;
-            }
-
-            if (q_ogre_ui_view_->isDirty() || resized_dirty_)
-            {
-                PROFILE(Renderer_Render_QtBlit);
-
-                QSize viewsize(q_ogre_ui_view_->viewport()->size());
-                QRect viewrect(QPoint(0, 0), viewsize);
-
-                // If window size changed update ui buffer size
-                if (last_view_rect_ != viewrect)
-                {
-                    ui_buffer_ = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);
-                    last_view_rect_ = viewrect;
-                }
-
-                ui_buffer_.fill(Qt::transparent);
-
-                // Paint ui view into buffer
-                QPainter painter(&ui_buffer_);
-                q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
-
-                // Blit ogre view into buffer
-                Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
-                Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)ui_buffer_.bits());
-
-                q_ogre_world_view_->OverlayUI(bufbox);
-                ui_update_timer_.start();
-
-                if (resized_dirty_ > 0) resized_dirty_--;
-            }
+            last_width_ = GetWindowWidth();
+            last_height_ = GetWindowHeight();
+            resized_dirty_ = 2;
         }
 
-        // Update Ogre every main loop cycle
+        if (q_ogre_ui_view_->isDirty() || resized_dirty_)
+        {
+            PROFILE(Renderer_Render_QtBlit);
+
+            QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
+            QRect viewrect(QPoint(0, 0), viewsize);
+
+            // Compositing back buffer
+            QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
+            buffer.fill(Qt::transparent);
+
+            // Paint ui view into buffer
+            QPainter painter(&buffer);
+            q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+
+            // Blit ogre view into buffer
+            Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
+            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
+
+            q_ogre_world_view_->OverlayUI(bufbox);
+            if (resized_dirty_ > 0)
+                resized_dirty_--;
+        }
+        
         q_ogre_world_view_->RenderOneFrame();
         q_ogre_ui_view_->setDirty(false);
     }

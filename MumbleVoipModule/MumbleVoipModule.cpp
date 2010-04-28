@@ -15,7 +15,11 @@
 #include "EventManager.h"
 #include "WorldLogicInterface.h"
 #include "Entity.h"
-
+#include "CommunicationsService.h"
+#include "LinkPlugin.h"
+#include "ServerObserver.h"
+#include "Provider.h"
+#include "ConnectionManager.h"
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
@@ -45,6 +49,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Load()
     {
+        in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
         connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
         server_observer_ = new ServerObserver(framework_);
@@ -250,6 +255,18 @@ namespace MumbleVoip
 
     void MumbleVoipModule::OnMumbleServerInfoReceived(const ServerInfo &info)
     {
+        // begin: Test service API
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communication).lock();
+            if (comm.get())
+            {
+                comm->Register(*in_world_voice_provider_);
+            }
+        }
+
+        // end: Test service API
+
         QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
         murmur_url.setUserName(info.user_name);
         murmur_url.setPassword(info.password);

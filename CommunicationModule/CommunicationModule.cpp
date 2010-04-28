@@ -51,6 +51,11 @@ namespace Communication
     void CommunicationModule::Initialize() 
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+
+        communications_service_ = CommunicationsServicePtr(Communications::Service::Instance());
+        if (!communications_service_.get())
+            return;
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communications_service_);
     }
 
     void CommunicationModule::PostInitialize()
@@ -107,6 +112,7 @@ namespace Communication
 
     void CommunicationModule::Update(f64 frametime)
     {
+
     }
 
     bool CommunicationModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)

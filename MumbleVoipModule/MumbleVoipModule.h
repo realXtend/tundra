@@ -6,9 +6,10 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "MumbleVoipModuleApi.h"
-#include "Vector3d.h"
-
+#include "CommunicationsService.h"
+#include "Core.h"
 #include <QObject>
+#include "ServerInfo.h"
 
 namespace MumbleVoip
 {
@@ -16,6 +17,11 @@ namespace MumbleVoip
     class ServerObserver;
     class ConnectionManager;
     class ServerInfo;
+
+    namespace InWorldVoice
+    {
+        class Provider;
+    } 
 
     /**
      *  Mumble support for Naali viewer.
@@ -84,6 +90,7 @@ namespace MumbleVoip
         bool mumble_client_started_;
         bool mumble_use_library_;
         event_category_id_t event_category_framework_;
+        InWorldVoice::Provider* in_world_voice_provider_;
 
     private slots:
         void OnMumbleServerInfoReceived(const ServerInfo &info);
