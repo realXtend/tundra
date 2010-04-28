@@ -284,11 +284,10 @@ class ScaleManipulator(Manipulator):
             
             newscale = Vec(scale[0], scale[1], scale[2])
             ent.placeable.Scale = newscale
-            self.controller.updateSelectionBox(ent) 
             qprim = ent.prim
             if qprim is not None:
                 children = qprim.GetChildren()
-                for child_id in children:
+                for child_id in children: #XXX this might not be the wanted behaviour with linksets! .. when just scaling the rootpart.
                     child = r.getEntity(int(child_id))
                     child.placeable.Scale = newscale
             

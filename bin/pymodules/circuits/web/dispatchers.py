@@ -8,8 +8,8 @@ This module implements URL dispatchers.
 """
 
 import os
-import warnings
 import xmlrpclib
+from string import Template
 from urlparse import urljoin as _urljoin
 
 try:
@@ -20,16 +20,40 @@ except ImportError:
         import simplejson as json
         HAS_JSON = 1
     except ImportError:
+        import warnings
         HAS_JSON = 0
         warnings.warn("No json support available.")
 
 from circuits import handler, Event, Component
 
-from core import Controller
+from events import Response
 from errors import HTTPError
-from cgifs import FieldStorage
+from cgi import FieldStorage
+from controllers import BaseController
 from tools import expires, serve_file
 from utils import parseQueryString, dictform
+
+DEFAULT_DIRECTORY_INDEX_TEMPLATE = """
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="en-us" />
+        <meta name="robots" content="NONE,NOARCHIVE" />
+        <title>Index of $directory</title>
+    </head>
+    <body>
+        <h1>Index of $directory</h1>
+        <ul>
+            $url_up
+            $listing
+        </ul>
+    </body>
+</html>
+"""
+
+_dirlisting_template = Template(DEFAULT_DIRECTORY_INDEX_TEMPLATE)
+
 
 class RPC(Event): pass
 
@@ -38,38 +62,81 @@ class Static(Component):
 
     channel = "web"
 
-    def __init__(self, path=None, docroot=None, defaults=("index.html",)):
+    def __init__(self, path=None, docroot=None,
+            defaults=("index.html", "index.xhtml",), dirlisting=False):
         super(Static, self).__init__()
 
         self.path = path
         self.docroot = docroot or os.getcwd()
         self.defaults = defaults
+        self.dirlisting = dirlisting
 
     @handler("request", filter=True, priority=0.9)
-    def request(self, event, request, response):
+    def request(self, request, response):
         if self.path is not None and not request.path.startswith(self.path):
             return
 
-        req = event
         path = request.path
 
         if self.path is not None:
             path = path[len(self.path):]
         path = path.strip("/")
 
-        filename = None
-
         if path:
-            filename = os.path.abspath(os.path.join(self.docroot, path))
+            location = os.path.abspath(os.path.join(self.docroot, path))
         else:
-            for default in self.defaults:
-                filename = os.path.abspath(os.path.join(self.docroot, default))
-                if os.path.exists(filename):
-                    break
+            location = os.path.abspath(os.path.join(self.docroot, "."))
 
-        if filename and os.path.exists(filename):
+        if not os.path.exists(location):
+            return
+
+        # Is it a file we can serve directly?
+        if os.path.isfile(location):
             expires(request, response, 3600*24*30)
-            return serve_file(request, response, filename)
+            return serve_file(request, response, location)
+
+        # Is it a directory?
+        elif os.path.isdir(location):
+
+            # Try to serve one of default files first..
+            for default in self.defaults:
+                location = os.path.abspath(
+                        os.path.join(self.docroot, path, default))
+                if os.path.exists(location):
+                    expires(request, response, 3600*24*30)
+                    return serve_file(request, response, location)
+
+            # .. serve a directory listing if allowed to.
+            if self.dirlisting:
+                directory = os.path.abspath(os.path.join(self.docroot, path))
+                cur_dir = os.path.join(self.path, path) if self.path else ""
+
+                if not path:
+                    url_up = ""
+                else:
+                    if self.path is None:
+                        url_up = os.path.join("/", os.path.split(path)[0])
+                    else:
+                        url_up = os.path.join(cur_dir, "..")
+                    url_up = '<li><a href="%s">%s</a></li>' % (url_up, "..")
+
+                listing = []
+                for item in os.listdir(directory):
+                    if not item.startswith("."):
+                        url = os.path.join("/", path, cur_dir, item)
+                        location = os.path.abspath(
+                                os.path.join(self.docroot, path, item))
+                        if os.path.isdir(location):
+                            li = '<li><a href="%s">%s/</a></li>' % (url, item)
+                        else:
+                            li = '<li><a href="%s">%s</a></li>' % (url, item)
+                        listing.append(li)
+
+                ctx = {}
+                ctx["directory"] = cur_dir or os.path.join("/", cur_dir, path)
+                ctx["url_up"] = url_up
+                ctx["listing"] = "\n".join(listing)
+                return _dirlisting_template.safe_substitute(ctx)
 
 class Dispatcher(Component):
 
@@ -78,7 +145,7 @@ class Dispatcher(Component):
     def __init__(self, **kwargs):
         super(Dispatcher, self).__init__(**kwargs)
 
-        self.paths = []
+        self.paths = set(["/"])
 
     def _parseBody(self, request, response, params):
         body = request.body
@@ -187,14 +254,14 @@ class Dispatcher(Component):
 
     @handler("registered", target="*")
     def registered(self, c, m):
-        if isinstance(c, Controller) and c not in self.components:
-            self.paths.append(c.channel)
+        if isinstance(c, BaseController) and c not in self.components:
+            self.paths.add(c.channel)
             c.unregister()
             self += c
 
     @handler("unregistered", target="*")
     def unregistered(self, c, m):
-        if isinstance(c, Controller) and c in self.components and m == self:
+        if isinstance(c, BaseController) and c in self.components and m == self:
             self.paths.remove(c.channel)
 
     @handler("request", filter=True, priority=0.1)
@@ -351,7 +418,7 @@ class RoutesDispatcher(Component):
             if vpath:
                 req.args += tuple(vpath)
 
-            return self.send(req, channel, target=target, errors=True)
+            return self.push(req, channel, target=target)
 
     @handler("registered", target="*")
     def registered(self, event, component, manager):
@@ -383,8 +450,8 @@ class VirtualHosts(Component):
      - http://www.domain2.example     -> /domain2
      - http://www.domain2.example:443 -> /secure
     
-    @param domains: a dict of {host header value: virtual prefix} pairs.
-    @type  domains: dict
+    :param domains: a dict of {host header value: virtual prefix} pairs.
+    :type  domains: dict
 
     The incoming "Host" request header is looked up in this dict,
     and, if a match is found, the corresponding "virtual prefix"
@@ -419,17 +486,24 @@ class XMLRPC(Component):
 
     channel = "web"
 
-    def __init__(self, path=None, target=None, encoding="utf-8"):
+    def __init__(self, path=None, target="*", encoding="utf-8"):
         super(XMLRPC, self).__init__()
 
         self.path = path
         self.target = target
         self.encoding = encoding
 
+    def rpcvalue(self, value):
+        response = value.response
+        response.body = self._response(value.value)
+        self.push(Response(response), target="http")
+
     @handler("request", filter=True, priority=0.1)
     def request(self, request, response):
         if self.path is not None and self.path != request.path.rstrip("/"):
             return
+
+        response.headers["Content-Type"] = "text/xml"
 
         try:
             data = request.body.read()
@@ -440,19 +514,22 @@ class XMLRPC(Component):
             else:
                 t, c = self.target, method
 
-            result = self.send(RPC(*params), c, t, errors=True)
-            if result:
-                r = self._response(result)
-            else:
-                r = self._error(1, "method '%s' does not exist" % method)
+            value = self.push(RPC(*params), c, t)
+            value.response = response
+            value.onSet = ("rpcvalue", self)
+
+            #TODO: How do we implement this ?
+            #else:
+            #    r = self._error(1, "method '%s' does not exist" % method)
         except Exception, e:
             r = self._error(1, "%s: %s" % (type(e), e))
-
-        response.headers["Content-Type"] = "text/xml"
-        return r
+            return r
+        else:
+            return True
 
     def _response(self, result):
-        return xmlrpclib.dumps((result,), encoding=self.encoding, allow_none=True)
+        return xmlrpclib.dumps((result,), encoding=self.encoding,
+            allow_none=True)
 
     def _error(self, code, message):
         fault = xmlrpclib.Fault(code, message)
@@ -462,17 +539,25 @@ class JSONRPC(Component):
 
     channel = "web"
 
-    def __init__(self, path=None, target=None, encoding="utf-8"):
+    def __init__(self, path=None, target="*", encoding="utf-8"):
         super(JSONRPC, self).__init__()
 
         self.path = path
         self.target = target
         self.encoding = encoding
 
+    def rpcvalue(self, value):
+        id = value.id
+        response = value.response
+        response.body = self._response(id, value.value)
+        self.push(Response(response), target="http")
+
     @handler("request", filter=True, priority=0.1)
     def request(self, request, response):
         if self.path is not None and self.path != request.path.rstrip("/"):
             return
+
+        response.headers["Content-Type"] = "application/javascript"
 
         try:
             data = request.body.read()
@@ -487,19 +572,22 @@ class JSONRPC(Component):
                 t, c = self.target, method
 
             if type(params) is dict:
-                result = self.send(RPC(**params), c, t, errors=True)
+                value = self.push(RPC(**params), c, t)
             else:
-                result = self.send(RPC(*params), c, t, errors=True)
+                value = self.push(RPC(*params), c, t)
 
-            if result:
-                r = self._response(id, result)
-            else:
-                r = self._error(id, 100, "method '%s' does not exist" % method)
+            value.id = id
+            value.response = response
+            value.onSet = ("rpcvalue", self)
+
+            #TODO: How do we implement this ?
+            #else:
+            #    r = self._error(id, 100, "method '%s' does not exist" % method)
         except Exception, e:
             r = self._error(-1, 100, "%s: %s" % (e.__class__.__name__, e))
-
-        response.headers["Content-Type"] = "application/javascript"
-        return r
+            return r
+        else:
+            return True
 
     def _response(self, id, result):
         data = {

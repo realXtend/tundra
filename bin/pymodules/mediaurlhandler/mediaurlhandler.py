@@ -60,7 +60,7 @@ class MediaURLHandler(Component):
                 print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
                 r.applyUICanvasToSubmeshes(entid, submeshes, wc.canvas)
         
-    def on_keydown(self, key, mods, callback):
-        if key == 46: #C
+    def on_keydown(self, key, mods):
+        if key == 46: #C #XXX was OIS input dependent, broken now
             for tx, wc in self.texture2canvas.iteritems():
                 r.applyUICanvasToSubmeshesWithTexture(wc.canvas, tx)
