@@ -176,7 +176,10 @@ const std::string &InWorldChatModule::NameStatic()
 void InWorldChatModule::SendChatFromViewer(const QString &msg)
 {
     if (currentWorldStream_)
+    {
         currentWorldStream_->SendChatFromViewerPacket(std::string(msg.toUtf8()));
+        ShowUserVoipActivityIcon(currentWorldStream_->GetInfo().agentID, true);
+    }
 }
 
 void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool visibility)
@@ -185,22 +188,20 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
     if (!entity)
         return;
 
-    Foundation::ComponentInterfacePtr component = entity->GetComponent("EC_Billboard", "VoipIndicator");
-    if (!component)
+    if (!entity->HasComponent("EC_Billboard", "VoipIndicator"))
     {
-        component = framework_->GetComponentManager()->CreateComponent("EC_Billboard");
+        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
         assert(component.get());
-        component->SetName("VoipIndicator");
         entity->AddComponent(component);
         entity->GetComponent<EC_Billboard>()->SetDimensions(10, 10);
     }
 
-    boost::shared_ptr<EC_Billboard> billboard = entity->GetComponent<EC_Billboard>();
+    boost::shared_ptr<EC_Billboard> billboard = entity->GetComponent<EC_Billboard>("VoipIndicator");
+    assert(billboard.get());
     if (visibility)
         billboard->Show("SpeakerIcon.png");
     else
         billboard->Hide();
-
 }
 
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
@@ -208,13 +209,16 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one
     /// instead of RexLogicModule, so no dependency to it is needed.
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    Scene::EntityList prims = scene->GetEntitiesWithComponent(EC_OpenSimPrim::TypeNameStatic());
+    Scene::EntityListIterator it = prims.begin();
+    while(it != prims.end())
     {
-        Scene::EntityPtr entity = *iter;
+        Scene::EntityPtr entity = *it;
         entity->AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
         EC_Billboard *billboard = entity->GetComponent<EC_Billboard>().get();
         assert(billboard);
         billboard->Show("smoke.png", 4000);
+        ++it;
     }
 
     return Console::ResultSuccess();
