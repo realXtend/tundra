@@ -23,7 +23,7 @@ class MouseControl(Component):
         self.target = r.getEntity(idnum)
         print "MouseControl inited with target", self.target
         
-    def on_mousemove(self, callback, m):
+    def on_mousemove(self, m):
         e = self.target
         print m
         print "moved from", e.pos, "to ->",
