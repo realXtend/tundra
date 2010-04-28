@@ -27,6 +27,8 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QDebug>
+
 namespace UiServices
 {
     InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) 
@@ -55,8 +57,8 @@ namespace UiServices
         // Connect settings widget
         connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
 		
-		//catch SceneResized(const QRectF) signal when resized and reposition active proxy widgets
-		connect(layout_manager_, SIGNAL(SceneResized(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
+	//apply new positions to active widgets when the inworld_scene_ is resized
+	connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
     }
 
     InworldSceneController::~InworldSceneController()
@@ -203,20 +205,53 @@ namespace UiServices
             widget->SetShowAnimationSpeed(new_animation_speed);
         }
     }
-
-	//Applying new proxy position
-	void InworldSceneController::ApplyNewProxyPosition(const QRectF &new_rect)
+	//Apply new proxy position
+    void InworldSceneController::ApplyNewProxyPosition(const QRectF &new_rect)
 	{
+		QPointF left_distance;
+		QPointF right_distance;
 		foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
-        {
+        	{
 			if(widget->isVisible())
+			{	
+				left_distance.setX(widget->x() / last_scene_rect.width() * new_rect.width());
+				left_distance.setY(widget->y() / last_scene_rect.height() * new_rect.height());
+
+				right_distance.setX((widget->x() + widget->size().width()) / last_scene_rect.width() * new_rect.width());
+				right_distance.setY((widget->y() + widget->size().height()) / last_scene_rect.height() * new_rect.height());			
+			}
+			
+			if(new_rect.contains(right_distance))
 			{
-				if (!new_rect.contains(widget->geometry()))
+				if(widget->size().width() < new_rect.width() && right_distance.x() > new_rect.width() / 2)
 				{
-					widget->setX(qMin(new_rect.right() - widget->size().width(), qMax(widget->x(), new_rect.left() + widget->size().width() )));
-					widget->setY(qMin(new_rect.bottom() - widget->size().height(), qMax(widget->y(), new_rect.top()+ - widget->size().height())));
+					widget->setX(right_distance.x() - widget->size().width());
+				}
+				else
+				{		
+					widget->setX(left_distance.x());
+				}
+			}else
+			{
+				widget->setX(left_distance.x());
+			}
+		
+			if(new_rect.contains(right_distance))
+			{
+				if(widget->size().height() < new_rect.height())
+				{
+					widget->setY(right_distance.y() - widget->size().height());
+				}
+				else
+				{		
+					widget->setY(left_distance.y());
 				}
 			}
-        }
+			else
+			{
+				widget->setY(left_distance.y());
+			}
+        	}
+		last_scene_rect = new_rect;
 	}
 }
