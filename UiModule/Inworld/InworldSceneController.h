@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QRectF>
 
 class QRectF;
 class QGraphicsLinearLayout;
@@ -134,6 +135,9 @@ namespace UiServices
 
         //! Framework pointer.
         Foundation::Framework *framework_;
+	
+	//Store last scene rectangle 
+	QRectF last_scene_rect;
 
     private slots:
         //! Slot for applying new ui settings to all proxy widgets

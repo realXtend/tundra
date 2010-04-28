@@ -50,8 +50,6 @@ namespace CoreUi
         layout_container_->setGeometry(new_rect);
         foreach (QGraphicsWidget *widget, full_screen_widgets_)
             widget->setGeometry(new_rect);
-		//emit signal whene the scene is resized
-		emit SceneResized(new_rect);
     }
 
     void AnchorLayoutManager::CheckVisibility(QGraphicsLayoutItem *layout_item)

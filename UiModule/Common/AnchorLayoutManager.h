@@ -45,10 +45,6 @@ namespace CoreUi
         QGraphicsAnchorLayout *anchor_layout_;
         QList<QGraphicsWidget *> full_screen_widgets_;
 
-	signals:
-		//signals when a scene is resized
-		void SceneResized(const QRectF &new_rect);
-
     };
 }
 #endif
