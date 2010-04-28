@@ -148,6 +148,11 @@ namespace Environment
         //! Create the sky
         void CreateSky();
 
+        void ReleaseTerrain();
+        void ReleaseWater();
+        void ReleaseEnvironment();
+        void ReleaseSky();
+
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;
 
