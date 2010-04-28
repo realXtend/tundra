@@ -446,14 +446,14 @@ class ObjectEdit(Component):
         #r.logInfo("rightmouse up")
         self.right_button_down = False
         
-    def on_mouseclick(self, click_id, mouseinfo, callback):
+    def on_mouseclick(self, click_id, mouseinfo):
         if self.windowActive: #XXXnot self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)
                 #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
         #r.logInfo("on_mouseclick %d" % (click_id))
 
-    def on_mousemove(self, event_id, mouseinfo, callback):
+    def on_mousemove(self, event_id, mouseinfo):
         """for hilighting manipulator parts when hovering over them"""
         #print "m"
         if self.windowActive:# and event_id == :
@@ -469,7 +469,7 @@ class ObjectEdit(Component):
                 self.manipulator.resethighlight()
         
                 
-    def on_mousedrag(self, move_id, mouseinfo, callback):
+    def on_mousedrag(self, move_id, mouseinfo):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         #print "mousedrag:", move_id, mouseinfo
@@ -517,15 +517,15 @@ class ObjectEdit(Component):
                         
                         self.window.update_guivals(ent)
    
-    def on_input(self, evid, callback):
+    def on_input(self, evid):
         #print "input", evid
         if self.windowActive:
             if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
                 self.keypressed = True
                 self.shortcuts[evid]()
-                callback(True)
+                return True
         
-    def on_inboundnetwork(self, evid, name, callback):
+    def on_inboundnetwork(self, evid, name):
         return False
         #print "editgui got an inbound network event:", id, name
 
@@ -695,7 +695,6 @@ class ObjectEdit(Component):
 
     def on_hide(self, shown):
         self.windowActive = shown
-
         
         if self.windowActive:
             self.sels = []
