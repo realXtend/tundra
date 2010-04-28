@@ -10,12 +10,12 @@
 
 namespace Scene
 {
-    Entity::Entity(Foundation::Framework* framework) : 
+    Entity::Entity(Foundation::Framework* framework) :
         framework_(framework)
     {
     }
     
-    Entity::Entity(Foundation::Framework* framework, uint id) : 
+    Entity::Entity(Foundation::Framework* framework, uint id) :
         framework_(framework),
         id_(id)
     {
@@ -27,12 +27,7 @@ namespace Scene
         for (size_t i=0 ; i<components_.size() ; ++i)
             components_[i]->SetParentEntity(0);
     }
-    
-    void Entity::SetNewId(entity_id_t id)
-    {
-        id_ = id;
-    }
-    
+
     void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component)
     {
         // Must exist and be free
@@ -55,7 +50,8 @@ namespace Scene
                 (*iter)->SetParentEntity(0);
                 components_.erase(iter);
                 ///\todo Ali: send event
-            } else
+            }
+            else
             {
                 Foundation::RootLogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + ToString(GetId()));
             }
@@ -98,6 +94,19 @@ namespace Scene
         return Foundation::ComponentInterfacePtr();
     }
 
-    const Entity::ComponentVector &Entity::GetComponentVector() const { return components_; }
+    bool Entity::HasComponent(const std::string &type_name) const
+    {
+        for(size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeName() == type_name)
+                return true;
+        return false;
+    }
 
+    bool Entity::HasComponent(const std::string &type_name, const std::string& name) const
+    {
+        for(size_t i=0 ; i<components_.size() ; ++i)
+            if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
+                return true;
+        return false;
+    }
 }

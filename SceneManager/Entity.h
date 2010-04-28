@@ -29,9 +29,9 @@ namespace Scene
     class Entity : public QObject
     {
         Q_OBJECT
-        
+
         friend class SceneManager;
-        
+
     private:
         //! constructor
         explicit Entity(Foundation::Framework* framework);
@@ -44,7 +44,7 @@ namespace Scene
         Entity(Foundation::Framework* framework, uint id);
 
         //! Set new id
-        void SetNewId(entity_id_t id);
+        void SetNewId(entity_id_t id) { id_ = id; }
 
     public:
         //! component container
@@ -112,22 +112,31 @@ namespace Scene
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
 
+        //! Returns whether or not this entity has a component with certain type and name.
+        //! \param type_name Type of the component.
+        bool HasComponent(const std::string &type_name) const;
+
+        //! Returns whether or not this entity has a component with certain type and name.
+        //! \param type_name type of the component
+        //! \param name name of the component
+        bool HasComponent(const std::string &type_name, const std::string &name) const;
+
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 
         //! introspection for the entity, returns all components
-        const ComponentVector &GetComponentVector() const;
+        const ComponentVector &GetComponentVector() const { return components_; }
 
         //! Returns framework
-        Foundation::Framework* GetFramework() { return framework_; }
-        
+        Foundation::Framework *GetFramework() const { return framework_; }
+
     private:
         //! a list of all components
         ComponentVector components_;
 
         //! Unique id for this entity
         entity_id_t id_;
-        
+
         //! Pointer to framework
         Foundation::Framework* framework_;
    };
