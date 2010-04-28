@@ -659,7 +659,7 @@ namespace Foundation
 
         // Do this in windows only for now,
         // untill linux crash caused by this is resolved
-#ifdef Q_WS_WIN
+#if defined(WIN32)
 
         std::string path = Poco::Environment::get("path", "");
         std::string cwd = Poco::Path::current();
