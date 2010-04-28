@@ -42,6 +42,12 @@ namespace CommunicationTest
     class Test;
 }
 
+namespace Communications
+{
+    class ServiceInterface;
+    }
+typedef boost::shared_ptr<Communications::ServiceInterface> CommunicationsServicePtr;
+
 namespace Communication
 {
     /**
@@ -92,6 +98,9 @@ namespace Communication
         // Event category IDs
         event_category_id_t event_category_networkstate_;
         event_category_id_t event_category_framework_;
+
+        CommunicationsServicePtr communications_service_;
+//        Communications::ServiceInterface* communications_service_;
 
     private:
         void AddWidgetToUi(const QString &name);

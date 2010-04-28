@@ -218,3 +218,54 @@ namespace Communication
     }
 
 } // end of namespace: Communication
+
+namespace Communications
+{
+    Service* Service::instance_ = 0;
+
+    Service::Service() :
+        in_world_voice_provider_(0),
+        in_world_chat_provider_(0)
+    {
+
+    }
+
+    Service::~Service()
+    {
+
+    }
+
+    ServiceInterface* Service::Instance()
+    {
+        if (!Service::instance_)
+            Service::instance_ = new Service();
+        return Service::instance_;
+    }
+
+    InWorldVoice::SessionInterface* Service::InWorldVoiceSession() const
+    {
+        if (!in_world_voice_provider_)
+            return 0;
+        else
+            return in_world_voice_provider_->Session();
+    }
+
+    InWorldChat::SessionInterface* Service::InWorldChatSession() const
+    {
+        if (!in_world_chat_provider_)
+            return 0;
+        else
+            return in_world_chat_provider_->Session();
+    }
+
+    void Service::Register(InWorldVoice::ProviderInterface& provider)
+    {
+        in_world_voice_provider_ = &provider;
+    }
+
+    void Service::Register(InWorldChat::ProviderInterface& provider)
+    {
+        in_world_chat_provider_ = &provider;
+    }
+
+} // Communications
