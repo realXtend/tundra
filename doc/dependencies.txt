@@ -45,6 +45,8 @@ This project has the following dependencies:
 
 - dbus , http://www.freedesktop.org/wiki/Software/dbus
 
+- QtPropertyBrowser 2.5_1 , http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Widgets/qtpropertybrowser
+
 
 Dependencies with modifications that are not in upstream yet
 ------------------------------------------------------------

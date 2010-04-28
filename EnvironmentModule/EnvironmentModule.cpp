@@ -152,8 +152,14 @@ namespace Environment
             }
 
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+            {
                 if(postprocess_dialog_)
                     postprocess_dialog_->DisableAllEffects();
+                ReleaseTerrain();
+                ReleaseWater();
+                ReleaseEnvironment();
+                ReleaseSky();
+            }
         }
         else if(category_id == input_event_category_)
         {
@@ -535,6 +541,27 @@ namespace Environment
 
         if (!GetEnvironmentHandler()->IsCaelum())
             sky_->CreateDefaultSky();
+    }
+
+    void EnvironmentModule::ReleaseTerrain()
+    {
+        terrain_.reset();
+        waiting_for_regioninfomessage_ = false;
+    }
+
+    void EnvironmentModule::ReleaseWater()
+    {
+        water_.reset();
+    }
+
+    void EnvironmentModule::ReleaseEnvironment()
+    {
+        environment_.reset();
+    }
+
+    void EnvironmentModule::ReleaseSky()
+    {
+        sky_.reset();
     }
 }
 
