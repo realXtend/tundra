@@ -33,7 +33,7 @@ namespace Asset
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id
          */
-        virtual bool IsValidId(const std::string& asset_id);
+        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type);
         
         //! Requests an asset for download
         /*! \param asset_id Asset UUID

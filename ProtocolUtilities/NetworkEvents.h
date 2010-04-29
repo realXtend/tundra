@@ -88,6 +88,11 @@ namespace ProtocolUtilities
          *  Notifies that user (not us) has disconnected to the world.
          */
         static const event_id_t EVENT_USER_DISCONNECTED = 0x06;
+
+        /**
+         *  Notifies that caps fetch is done. You can query caps from world stream after this is sent.
+         */
+        static const event_id_t EVENT_CAPS_FETCHED = 0x07;
     }
 
     /// Enumeration of the network connection states.

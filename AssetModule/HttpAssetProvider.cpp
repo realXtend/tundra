@@ -51,7 +51,7 @@ namespace Asset
         return name;
 	}
 
-    bool HttpAssetProvider::IsValidId(const std::string& asset_url)
+    bool HttpAssetProvider::IsValidId(const std::string& asset_url, const std::string& asset_type)
     {
 	    // Differentiate between UDP & URL based requests
         //! \todo check URL validity in more sophisticated way, if desired
@@ -63,7 +63,7 @@ namespace Asset
 
 	bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
 	{
-	    if (!IsValidId(asset_id))
+	    if (!IsValidId(asset_id, asset_type))
 	        return false;
 
         asset_type_t asset_type_int = GetAssetTypeFromTypeName(asset_type);
