@@ -76,7 +76,7 @@ void EC_NoteCard::SerializeTo(QDomDocument& doc, QDomElement& base_element) cons
     WriteAttribute(doc, comp_element, "text", safe_text);
 }
 
-void EC_NoteCard::DeserializeFrom(QDomElement& element)
+void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ChangeType change)
 {
     // Check that type is right, otherwise do nothing
     if (!BeginDeserialization(element))

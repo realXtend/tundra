@@ -95,7 +95,7 @@ void EC_Light::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     WriteAttribute(doc, comp_element, "spot outer", WriteReal(outer_angle_));
 }
 
-void EC_Light::DeserializeFrom(QDomElement& element)
+void EC_Light::DeserializeFrom(QDomElement& element, Foundation::ChangeType change)
 {
     // Check that type is right, otherwise do nothing
     if (!BeginDeserialization(element))

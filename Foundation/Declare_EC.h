@@ -88,5 +88,4 @@ namespace Foundation
     }                                                                                       \
   private:                                                                                  \
 
-
 #endif

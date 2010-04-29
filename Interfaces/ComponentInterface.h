@@ -10,6 +10,8 @@
 
 #include <QObject>
 
+#include <vector>
+
 class QDomDocument;
 class QDomElement;
 
@@ -21,17 +23,35 @@ namespace Scene
 namespace Foundation
 {
     class Framework;
-
+    
+    class AttributeInterface;
+    typedef std::vector<AttributeInterface*> AttributeVector;
+    
+    //! Enumeration of attribute/component change types for replication
+    enum ChangeType
+    {
+        //! No change: attribute/component is up to date
+        None = 0,
+        //! Local change that should be replicated to server
+        Local,
+        //! Local change that should not be replicated to server
+        LocalOnly,
+        //! Change that came from network
+        Network
+    };
+    
     //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
     class /*MODULE_API*/ ComponentInterface : public QObject
     {
+        friend class AttributeInterface;
+        
         Q_OBJECT
         
     public:
         explicit ComponentInterface(Foundation::Framework *framework);
-        ComponentInterface(const ComponentInterface &rhs);
+        ComponentInterface(const ComponentInterface& rhs);
         virtual ~ComponentInterface();
         virtual const std::string &TypeName() const = 0;
         Foundation::Framework* GetFramework() const { return framework_; }
@@ -44,13 +64,21 @@ namespace Foundation
         
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
-        //! Serialize to XML
-        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const {};
-        //! Deserialize from XML
-        virtual void DeserializeFrom(QDomElement& element) {};
+        //! Return attributes of this component for reflection
+        const AttributeVector& GetAttributes() const { return attributes_; }
         
-    private:
-        ComponentInterface();
+        //! Attribute has changed. Send notification up in hierarchy
+        void AttributeChanged(AttributeInterface* attr);
+        //! Serialize to XML
+        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element);
+        //! Deserialize from XML
+        /*! \param element XML element to serialize from
+            \param change Source of data, usually Network
+         */
+        virtual void DeserializeFrom(QDomElement& element, ChangeType change);
+        
+        //! Called by AttributeInterface on initialization of each attribute
+        void AddAttribute(AttributeInterface* attr) { attributes_.push_back(attr); }
         
     protected:
         //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
@@ -71,11 +99,15 @@ namespace Foundation
         Scene::Entity* parent_entity_;
         //! Name for further identification of EC. By default empty
         std::string name_;
+        //! Attribute list for introspection/reflection
+        AttributeVector attributes_;
         
-        //! Signal when component data has changed, probably as result of deserialization
     signals:
+        //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
         void OnChanged();
         
+    private:
+        ComponentInterface();
     };
 }
 

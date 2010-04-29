@@ -4,6 +4,7 @@
 #define incl_ECEditorModule_EC_SerializationTest_h
 
 #include "Framework.h"
+#include "AttributeInterface.h"
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
@@ -21,12 +22,10 @@ namespace ECEditor
         virtual ~EC_SerializationTest();
 
         virtual bool IsSerializable() const { return true; }
-        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
-        virtual void DeserializeFrom(QDomElement& element);
         
-        Vector3df attr1_;
-        Quaternion attr2_;
-        std::string attr3_;
+        Foundation::Attribute<Vector3df> attr1_;
+        Foundation::Attribute<Quaternion> attr2_;
+        Foundation::Attribute<std::string> attr3_;
         
     private:
         EC_SerializationTest(Foundation::ModuleInterface* module);
