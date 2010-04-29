@@ -52,12 +52,12 @@ public:
 public slots:
     /// Creates and shows billboard.
     /// @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
-    /// @param timeToShow How long this billboard is visible in milliseconds.
+    /// @param timeToShow How long this billboard is visible in seconds.
     /// Use -1 (default)if you want the billboard be visible always.
     void Show(const std::string &imageName, int timeToShow = -1);
 
     /// Shows the billboard if it exists with the texture.
-    /// @param timeToShow How long this billboard is visible in milliseconds.
+    /// @param timeToShow How long this billboard is visible in seconds.
     /// Use -1 (default)if you want the billboard be visible always.
     void Show(int timeToShow = -1);
 
