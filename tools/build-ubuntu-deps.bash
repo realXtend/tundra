@@ -145,6 +145,25 @@ else
     touch $tags/$what-done
 fi
 
+cd $build
+what=qtpropertybrowser
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    pkgbase=${what}-2.5_1-opensource
+    rm -rf $pkgbase
+    zip=../tarballs/$pkgbase.tar.gz
+    test -f $zip || wget -O $zip http://get.qt.nokia.com/qt/solutions/lgpl/$pkgbase.tar.gz
+    tar zxf $zip
+    cd $pkgbase
+    echo yes | ./configure -library
+    qmake
+    make
+    cp lib/lib* $prefix/lib/
+    cp src/qt*.h $prefix/include/
+    touch $tags/$what-done
+fi
+
 ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 
 build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
