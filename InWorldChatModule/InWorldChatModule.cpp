@@ -207,8 +207,6 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
 Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &params)
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    /// If/when there are multiple scenes at some day, have the SceneManager know the currently active one
-    /// instead of RexLogicModule, so no dependency to it is needed.
     Scene::EntityList prims = scene->GetEntitiesWithComponent(EC_OpenSimPrim::TypeNameStatic());
     Scene::EntityListIterator it = prims.begin();
     while(it != prims.end())
@@ -217,7 +215,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
         entity->AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
         EC_Billboard *billboard = entity->GetComponent<EC_Billboard>().get();
         assert(billboard);
-        billboard->Show("smoke.png", 4000);
+        billboard->Show("smoke.png", 4);
         ++it;
     }
 

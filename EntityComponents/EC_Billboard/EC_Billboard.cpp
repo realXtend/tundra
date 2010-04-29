@@ -120,8 +120,9 @@ void EC_Billboard::Show(int timeToShow)
     if (IsCreated())
     {
         billboardSet_->setVisible(true);
+        clamp(timeToShow, -1, 86401);
         if (timeToShow > 0)
-            QTimer::singleShot(timeToShow, this, SLOT(Hide()));
+            QTimer::singleShot(1000*timeToShow, this, SLOT(Hide()));
     }
 }
 
