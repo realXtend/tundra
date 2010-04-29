@@ -17,7 +17,11 @@
 
 namespace MumbleVoip
 {
-    User::User(const MumbleClient::User& user) : user_(user), speaking_(false), position_known_(false), position_(0,0,0)
+    User::User(const MumbleClient::User& user)
+        : user_(user),
+          speaking_(false),
+          position_known_(false),
+          position_(0,0,0)
     {
     }
 

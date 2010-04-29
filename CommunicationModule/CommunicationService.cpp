@@ -262,11 +262,24 @@ namespace Communications
     void Service::Register(InWorldVoice::ProviderInterface& provider)
     {
         in_world_voice_provider_ = &provider;
+        emit InWorldVoiceAvailable();
+        //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        //if (ui_module.get())
+        //{
+        //    if (name == "IM")
+        //    {
+        //        UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);
+        //        im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
+        //        if (im_ui_proxy_widget_)
+        //            ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
+        //    }
+        //}
     }
 
     void Service::Register(InWorldChat::ProviderInterface& provider)
     {
         in_world_chat_provider_ = &provider;
+        emit InWorldChatAvailable();
     }
 
 } // Communications

@@ -20,6 +20,7 @@ namespace MumbleVoip
             connection_manager_->OpenConnection(server_info);
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)) );
+            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
         }
 
         Session::~Session()
@@ -100,15 +101,28 @@ namespace MumbleVoip
             connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
             connect(p, SIGNAL(SopSpeaking()), SLOT(OnuserStopSpeaking()) );
 
-//            emit ParticipantJoined(p);
+            emit ParticipantJoined(p);
+        }
+
+        void Session::OnUserLeft(User* user)
+        {
+            foreach(Participant* p, participants_)
+            {
+                if (p->UserPtr() == user)
+                {
+                    participants_.removeOne(p);
+                    //! \todo: Inform about user list change
+                    SAFE_DELETE(p);
+                }
+            }
         }
 
         void Session::OnUserStartSpeaking()
         {
             bool was_receiving_audio = receiving_audio_;
             receiving_audio_ = true;
-            //if (!was_receiving_audio)
-            //    emit StartReceivingAudio();
+            if (!was_receiving_audio)
+                emit StartReceivingAudio();
         }
 
         void Session::OnUserStopSpeaking()
@@ -123,8 +137,8 @@ namespace MumbleVoip
                 }
             }
             receiving_audio_ = false;
-            //if (was_receiving_audio)
-            //    emit StopReceivingAudio();
+            if (was_receiving_audio)
+                emit StopReceivingAudio();
         }
 
     } // InWorldVoice

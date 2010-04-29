@@ -57,7 +57,7 @@ namespace MumbleVoip
         void Participant::OnStopSpeaking()
         {
             speaking_ = false;
-//            emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
+            emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
         }
 
         void Participant::OnPositionUpdated()
@@ -66,6 +66,11 @@ namespace MumbleVoip
                 return;
             
             position_ = user_->Position();
+        }
+
+        User* Participant::UserPtr() const
+        {
+            return user_;
         }
 
     } // InWorldVoice

@@ -78,6 +78,9 @@ namespace Communications
     //        virtual QString Alias() const = 0;
     //        virtual void SetAlias(QString alias) const = 0;
     //        virtual void Remove() = 0;
+    //    signals:
+    //        void PresenceChanged();
+    //        void FriendshipTerminated();
     //    };
 
     //    class ContactListInterface : QObject
@@ -198,7 +201,7 @@ namespace Communications
         //!
         class ProviderInterface : public QObject
         {
-            Q_OBJECT // DOES NOT COMPILE
+            Q_OBJECT
         public:
             virtual ~ProviderInterface() {};
             virtual Communications::InWorldVoice::SessionInterface* Session() = 0;
@@ -224,15 +227,18 @@ namespace Communications
 
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
         virtual InWorldChat::SessionInterface* InWorldChatSession() const = 0;
+//        virtual IM::ContactList* ContactList(QString type) const = 0;
 
         //! Registrationd methods for communication providers
         virtual void Register(InWorldVoice::ProviderInterface& provider) = 0;
         virtual void Register(InWorldChat::ProviderInterface& provider) = 0;
 
     signals:
-        void InWorldVoiceSessionAvailable(InWorldVoice::SessionInterface* session);
-        void InWorldTextChatAvailable(InWorldChat::SessionInterface* session);
+        void InWorldVoiceAvailable();
+        void InWorldChatAvailable();
         //void PrivateChatRequest(PrivateChat::Session session);
+        //void VoiceCallRequest(VoiceCall call);
+        //void VideoCallRqeust(VideoCall call);
     };
     typedef boost::shared_ptr<ServiceInterface> ServicePtr;
 

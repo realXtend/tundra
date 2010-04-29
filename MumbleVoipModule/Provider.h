@@ -6,7 +6,6 @@
 #include <QObject>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
-//#include "Session.h"
 
 namespace Foundation
 {
@@ -15,7 +14,6 @@ namespace Foundation
 
 namespace MumbleVoip
 {
-//    class ConnectionManager;
     class ServerObserver;
 
     namespace InWorldVoice
