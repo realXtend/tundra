@@ -37,13 +37,13 @@ namespace Asset
         return GetFromCache(asset_id);
     }
   
-    bool AssetManager::IsValidId(const std::string& asset_id)
+    bool AssetManager::IsValidId(const std::string& asset_id, const std::string& asset_type)
     {
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
         {
             // See if a provider can handle request
-            if ((*i)->IsValidId(asset_id))
+            if ((*i)->IsValidId(asset_id, asset_type))
                 return true;
             
             ++i;

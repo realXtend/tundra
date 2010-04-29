@@ -24,11 +24,13 @@ namespace Asset
         QtHttpAssetProvider(Foundation::Framework *framework);
         virtual ~QtHttpAssetProvider();
 
+        void SetGetTextureCap(std::string url);
+
         //! Interface implementation
         void Update(f64 frametime);
 
         const std::string& Name();
-        bool IsValidId(const std::string& asset_id);
+        bool IsValidId(const std::string& asset_id, const std::string& asset_type);
         
         bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         bool InProgress(const std::string& asset_id);
@@ -60,6 +62,8 @@ namespace Asset
         bool filling_stack_;
         bool fake_metadata_fetch_;
         QUrl fake_metadata_url_;
+
+        QUrl get_texture_cap_;
 
     };
 }
