@@ -95,6 +95,8 @@ namespace MumbleVoip
 
         //! Emited when user stops speaking
         void StopSpeaking();
+
+        void PositionUpdated();
     };
 
 } // namespace MumbleVoip

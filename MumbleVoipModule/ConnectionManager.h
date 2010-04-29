@@ -62,6 +62,17 @@ namespace MumbleVoip
         //! \return true if audio is transmitted to mumble server
         virtual bool SendingAudio();
 
+        virtual void ReceiveAudio(bool receive);
+
+
+        //virtual void ReceiveAudio(bool receive);
+
+        //virtual bool IsAudioSendingEnabled() const;
+
+        //virtual void EnableAudioSending();
+
+        //virtual void DisableAudioSending();
+
         //! Start mumble client application with given server url
         //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
         //!
@@ -89,6 +100,7 @@ namespace MumbleVoip
         LibMumbleThread* lib_mumble_thread_;
         Foundation::Framework* framework_;
         bool sending_audio_;
+        bool receiving_audio_;
         std::string recording_device_;
         Vector3df users_position_;
         QMap<int, sound_id_t> audio_playback_channels_;
@@ -98,6 +110,12 @@ namespace MumbleVoip
 
     public slots:
         void PlaybackAudio(Connection* connection);
+
+    private slots:
+        void OnUserJoined(User* user);
+
+    signals:
+        void UserJoined(User* user);
     };
 
 } // end of namespace: MumbleVoip

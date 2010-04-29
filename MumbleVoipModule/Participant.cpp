@@ -1,20 +1,24 @@
 #include "StableHeaders.h"
 #include "Participant.h"
+#include "User.h"
 
 namespace MumbleVoip
 {
     namespace InWorldVoice
     {
-        Participant::Participant() :
+        Participant::Participant(User* user) :
             muted_(false),
             speaking_(false),
             position_known_(false),
-            position_(0.0, 0.0, 0.0)
+            position_(0.0, 0.0, 0.0),
+            user_(user)
         {
-
+            connect(user_, SIGNAL(StartSpeaking()), SLOT(OnStartSpeaking()) );
+            connect(user_, SIGNAL(StopSpeaking()), SLOT(OnStopSpeaking()) );
+            connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
         }
 
-            Participant::~Participant()
+        Participant::~Participant()
         {
 
         }
@@ -37,6 +41,31 @@ namespace MumbleVoip
         Vector3df Participant::Position() const
         {
             return position_;
+        }
+
+        void Participant::Add(User* user)
+        {
+            user_ = user;
+        }
+
+        void Participant::OnStartSpeaking()
+        {
+            speaking_ = true;
+//            emit StartSpeaking();
+        }
+
+        void Participant::OnStopSpeaking()
+        {
+            speaking_ = false;
+//            emit StopSpeaking();
+        }
+
+        void Participant::OnPositionUpdated()
+        {
+            if (!user_)
+                return;
+            
+            position_ = user_->Position();
         }
 
     } // InWorldVoice

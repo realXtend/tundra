@@ -268,6 +268,11 @@ namespace MumbleVoip
         return sending_audio_;
     }
 
+    void Connection::ReceiveAudio(bool receive)
+    {
+        receiving_audio_ = receive;
+    }
+
     void Connection::SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position)
     {
         QMutexLocker locker(&mutex_encode_audio_);
@@ -383,6 +388,9 @@ namespace MumbleVoip
 
     void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
     {
+        if (!receiving_audio_)
+            return;
+
         mutex_raw_udp_tunnel_.lock();
         if (state_ != STATE_OPEN)
         {

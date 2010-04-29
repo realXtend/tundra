@@ -82,6 +82,9 @@ namespace MumbleVoip
         //! \return true if connection is sending audio, return false otherwise
         virtual bool SendingAudio();
 
+        //! Set audio sending true/false 
+        virtual void ReceiveAudio(bool receive);
+
         //! \param quality [0.0 .. 1.0] where:
         //!        0.0 means lowest bitrate and worst quality
         //!        1.0 means highest bitrate and best quality.
@@ -124,6 +127,7 @@ namespace MumbleVoip
 
         bool authenticated_;
         bool sending_audio_;
+        bool receiving_audio_;
         double encoding_quality_;
         int frame_sequence_;
         bool send_position_;

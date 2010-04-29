@@ -97,10 +97,11 @@ namespace Communication
 
 namespace Communications
 {
-    class Service : public Communications::ServiceInterface
+    class Service : QObject //: public ServiceInterface
     {
         Q_OBJECT
     private:
+    public: // test
         // Private constructor
         Service(); 
 

@@ -52,10 +52,11 @@ namespace Communication
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-        communications_service_ = CommunicationsServicePtr(Communications::Service::Instance());
-        if (!communications_service_.get())
-            return;
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communication, communications_service_);
+        // Publish CommunicationsService implementation
+        //communications_service_ = Communications::ServicePtr(Communications::Service::Instance());
+        //if (!communications_service_.get())
+        //    return;
+        //framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
     }
 
     void CommunicationModule::PostInitialize()
