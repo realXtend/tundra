@@ -38,7 +38,7 @@ use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule
+link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule Interfaces
     EC_ChatBubble EC_Billboard EC_OpenSimPresence EC_OpenSimPrim)
 link_package (BOOST)
 link_package (POCO)

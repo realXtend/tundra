@@ -36,7 +36,7 @@ use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities AssetModule 
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon UiModule OgreRenderingModule)
+link_modules (Core Foundation Interfaces RexCommon UiModule OgreRenderingModule Interfaces)
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)

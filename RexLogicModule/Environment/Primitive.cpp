@@ -804,7 +804,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             type_names.push_back(type_name);
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
-                new_comp->DeserializeFrom(comp_elem);
+                new_comp->DeserializeFrom(comp_elem, Foundation::Network);
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
             comp_elem = comp_elem.nextSiblingElement("component");

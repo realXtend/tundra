@@ -3,6 +3,7 @@
 #include <boost/smart_ptr.hpp>
 
 #include "Framework.h"
+#include "AttributeInterface.h"
 #include "ComponentInterface.h"
 #include "ServiceInterface.h"
 #include "ServiceManager.h"
@@ -82,6 +83,42 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     }
     
     return std::string();
+}
+
+void ComponentInterface::AttributeChanged(AttributeInterface* attr)
+{
+    //! \todo raise notification on scenemanager or entity
+}
+
+void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element)
+{
+    if (!IsSerializable())
+        return;
+    
+    QDomElement comp_element = BeginSerialization(doc, base_element);
+    
+    for (uint i = 0; i < attributes_.size(); ++i)
+    {
+        WriteAttribute(doc, comp_element, attributes_[i]->GetNameString(), attributes_[i]->ToString());
+    }
+}
+
+void ComponentInterface::DeserializeFrom(QDomElement& element, ChangeType change)
+{
+    if (!IsSerializable())
+        return;
+        
+    if (!BeginDeserialization(element))
+        return;
+    
+    for (uint i = 0; i < attributes_.size(); ++i)
+    {
+        std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString());
+        attributes_[i]->FromString(attr_str, change);
+    }
+    
+    // Raise internal change signal after deserializing everything
+    OnChanged();
 }
 
 }

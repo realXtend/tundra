@@ -298,7 +298,7 @@ namespace ECEditor
                     {
                         Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString());
                         if (comp)
-                            comp->DeserializeFrom(comp_elem);
+                            comp->DeserializeFrom(comp_elem, Foundation::Local);
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
                     
