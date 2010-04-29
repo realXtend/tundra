@@ -90,7 +90,7 @@ void ComponentInterface::AttributeChanged(AttributeInterface* attr)
     //! \todo raise notification on scenemanager or entity
 }
 
-void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element)
+void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
 {
     if (!IsSerializable())
         return;

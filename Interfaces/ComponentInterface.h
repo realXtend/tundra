@@ -70,7 +70,8 @@ namespace Foundation
         //! Attribute has changed. Send notification up in hierarchy
         void AttributeChanged(AttributeInterface* attr);
         //! Serialize to XML
-        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element);
+        virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
+        
         //! Deserialize from XML
         /*! \param element XML element to serialize from
             \param change Source of data, usually Network
