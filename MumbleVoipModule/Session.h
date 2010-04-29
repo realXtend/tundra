@@ -4,6 +4,10 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
+#include "Participant.h"
+#include "User.h"
+#include "ServerInfo.h"
+#include "ConnectionManager.h"
 
 namespace Foundation
 {
@@ -12,14 +16,14 @@ namespace Foundation
 
 namespace MumbleVoip
 {
-    class ConnectionManager;
-    class ServerInfo;
-    class User;
+    //class ConnectionManager;
+    //class ServerInfo;
+//    class User;
 
     namespace InWorldVoice
     {
-        class Participant;
-        typedef QList<Participant*> ParticipantList;
+        //class Participant;
+        //typedef QList<Participant*> ParticipantList;
 
         class Session : public Communications::InWorldVoice::SessionInterface
         {

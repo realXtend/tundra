@@ -4,10 +4,11 @@
 #define incl_MumbleVoipModule_Participant_h
 
 #include "CommunicationsService.h"
+#include "user.h"
 
 namespace MumbleVoip
 {
-    class User;
+//    class User;
 
     namespace InWorldVoice
     {

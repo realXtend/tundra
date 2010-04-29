@@ -80,8 +80,9 @@ namespace Communications
     //        virtual void Remove() = 0;
     //    };
 
-    //    class ContactListInterface
+    //    class ContactListInterface : QObject
     //    {
+    //        Q_OBJECT
     //    public:
     //        virtual ~ContactListInterface() {};
     //        virtual ContactInterface& SelfContact() = 0;
@@ -134,7 +135,7 @@ namespace Communications
     {
         class ParticipantInterface : public QObject
         {
-            //Q_OBJECT
+            Q_OBJECT
         public:
             virtual ~ParticipantInterface() {};
          //   virtual QString AvatarUUID() const = 0; // do we get this always ?
@@ -149,6 +150,7 @@ namespace Communications
         signals:
             void StartSpeaking(); 
             void StopSpeaking();
+
   //          void Left();
 //            void PositionUpdated();
         };
@@ -160,7 +162,7 @@ namespace Communications
         //!       - List channels (names, positional audio, listen/speak)
         class SessionInterface : public QObject
         {
-            //Q_OBJECT
+            Q_OBJECT
         public:
             enum State {STATE_CLOSED, STATE_INITIALIZING, STATE_OPEN, STATE_ERROR};
 
@@ -196,7 +198,7 @@ namespace Communications
         //!
         class ProviderInterface : public QObject
         {
-           // Q_OBJECT // DOES NOT COMPILE
+            Q_OBJECT // DOES NOT COMPILE
         public:
             virtual ~ProviderInterface() {};
             virtual Communications::InWorldVoice::SessionInterface* Session() = 0;

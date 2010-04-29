@@ -12,14 +12,14 @@
 namespace MumbleVoip
 {
 
-    SimpleVoiceIndicator::SimpleVoiceIndicator() : speaking_(false), last_voice_ms_(0)
+    SimpleVoiceIndicator::SimpleVoiceIndicator() :
+        speaking_(false),
+        last_voice_ms_(0)
     {
-
     }
 
     SimpleVoiceIndicator::~SimpleVoiceIndicator()
     {
-
     }
     
     bool SimpleVoiceIndicator::IsSpeaking()
@@ -56,7 +56,7 @@ namespace MumbleVoip
                 last_voice_ms_ = 0;
                 if (!was_speaking)
                 {
-                    emit StartSpeaking();
+                    emit VoiceIndicatorInterface::StartSpeaking();
                 }
             }
             else
@@ -68,7 +68,7 @@ namespace MumbleVoip
                     speaking_ = false;
                     if (was_speaking)
                     {
-                        emit StopSpeaking();
+                        emit VoiceIndicatorInterface::StopSpeaking();
                     }
                 }
             }

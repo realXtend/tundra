@@ -4,10 +4,11 @@
 #define incl_MumbleVoipModule_VoiceIndicator_h
 
 #include <QObject>
+#include "PCMAudioFrame.h"
 
 namespace MumbleVoip
 {
-    class PCMAudioFrame;
+//    class PCMAudioFrame;
 
     class VoiceIndicatorInterface : public QObject
     {
