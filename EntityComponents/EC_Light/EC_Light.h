@@ -4,9 +4,11 @@
 #define incl_EC_Light_EC_Light_h
 
 #include "ComponentInterface.h"
+#include "AttributeInterface.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Color.h"
+
 
 class QDomDocument;
 class QDomElement;
@@ -51,37 +53,37 @@ public:
     Ogre::Light* GetLight() const { return light_; }
     
     //! Light direction
-    Vector3df direction_;
+    Foundation::Attribute<Vector3df> directionAttr_;
     
     //! Light type
-    Type type_;
+    Foundation::Attribute<int> typeAttr_;
     
     //! Light diffuse color
-    Color diffuse_color_;
+    Foundation::Attribute<Color> diffColorAttr_;
     
     //! Light specular color
-    Color specular_color_;
+    Foundation::Attribute<Color> specColorAttr_;
     
     //! Cast shadows flag
-    bool cast_shadows_;
+    Foundation::Attribute<bool> castShadowsAttr_;
     
     //! Light range
-    Real range_;
+    Foundation::Attribute<Real> rangeAttr_;
     
     //! Light constant attenuation
-    Real constant_atten_;
+    Foundation::Attribute<Real> constAttenAttr_;
     
     //! Light linear attenuation
-    Real linear_atten_;
+    Foundation::Attribute<Real> linearAttenAttr_;
     
     //! Light quadratic attenuation
-    Real quadratic_atten_;
+    Foundation::Attribute<Real> quadraAttenAttr_;
     
     //! Spotlight inner angle (degrees)
-    Real inner_angle_;
+    Foundation::Attribute<Real> innerAngleAttr_;
     
     //! Spotlight outer angle (degrees)
-    Real outer_angle_;
+    Foundation::Attribute<Real> outerAngleAttr_;
     
 private slots:
     void UpdateOgreLight();

@@ -23,18 +23,17 @@ using namespace OgreRenderer;
 EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     light_(0),
-    type_(LT_Point),
-    direction_(Vector3df(0.0f, 0.0f, 1.0f)),
-    diffuse_color_(Color(1.0f, 1.0f, 1.0f)),
-    specular_color_(Color(0.0f, 0.0f, 0.0f)),
-    cast_shadows_(false),
-    range_(10.0f),
-    constant_atten_(1.0f),
-    linear_atten_(0.0f),
-    quadratic_atten_(0.0f),
-    inner_angle_(30.0f),
-    outer_angle_(40.0f),
-    attached_(false)
+    typeAttr_(this, "light type", LT_Point),
+    directionAttr_(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
+    diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
+    specColorAttr_(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
+    castShadowsAttr_(this, "cast shadows", false),
+    rangeAttr_(this, "light range", 10.0f),
+    constAttenAttr_(this, "constant atten", 1.0f),
+    linearAttenAttr_(this, "linear atten", 0.0f),
+    quadraAttenAttr_(this, "quadratic atten", 0.0f),
+    innerAngleAttr_(this, "light inner angle", 30.0f),
+    outerAngleAttr_(this, "light outer angle", 40.0f)
 {
     boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -68,7 +67,7 @@ void EC_Light::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
     std::string type;
-    switch (type_)
+    switch (typeAttr_.Get())
     {
     case LT_Point:
         type = "point";
@@ -82,17 +81,17 @@ void EC_Light::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     }
     WriteAttribute(doc, comp_element, "type", type);
     
-    WriteAttribute(doc, comp_element, "direction", WriteVector3(direction_));
-    WriteAttribute(doc, comp_element, "diffuse", WriteColor(diffuse_color_));
-    WriteAttribute(doc, comp_element, "specular", WriteColor(specular_color_));
-    WriteAttribute(doc, comp_element, "shadows", WriteBool(cast_shadows_));
-    WriteAttribute(doc, comp_element, "range", WriteReal(range_));
+    WriteAttribute(doc, comp_element, "direction", WriteVector3(directionAttr_.Get()));//direction_));
+    WriteAttribute(doc, comp_element, "diffuse", WriteColor(diffColorAttr_.Get()));
+    WriteAttribute(doc, comp_element, "specular", WriteColor(specColorAttr_.Get()));
+    WriteAttribute(doc, comp_element, "shadows", WriteBool(castShadowsAttr_.Get()));
+    WriteAttribute(doc, comp_element, "range", WriteReal(rangeAttr_.Get()));
     
-    Vector3df atten(constant_atten_, linear_atten_, quadratic_atten_);
+    Vector3df atten(constAttenAttr_.Get(), linearAttenAttr_.Get(), quadraAttenAttr_.Get());
     WriteAttribute(doc, comp_element, "attenuation", WriteVector3(atten));
     
-    WriteAttribute(doc, comp_element, "spot inner", WriteReal(inner_angle_));
-    WriteAttribute(doc, comp_element, "spot outer", WriteReal(outer_angle_));
+    WriteAttribute(doc, comp_element, "spot inner", WriteReal(innerAngleAttr_.Get()));
+    WriteAttribute(doc, comp_element, "spot outer", WriteReal(outerAngleAttr_.Get()));
 }
 
 void EC_Light::DeserializeFrom(QDomElement& element, Foundation::ChangeType change)
@@ -101,26 +100,27 @@ void EC_Light::DeserializeFrom(QDomElement& element, Foundation::ChangeType chan
     if (!BeginDeserialization(element))
         return;
     
-    type_ = LT_Point;
+    typeAttr_.Set(LT_Point, Foundation::Local);
     std::string type = ReadAttribute(element, "type");
     if (type == "directional")
-        type_ = LT_Directional;
+        typeAttr_.Set(LT_Directional, Foundation::Local);
     if (type == "spot")
-        type_ = LT_Spot;
+        typeAttr_.Set(LT_Spot, Foundation::Local);
     
-    direction_ = ParseVector3(ReadAttribute(element, "direction"));
-    diffuse_color_ = ParseColor(ReadAttribute(element, "diffuse"));
-    specular_color_ = ParseColor(ReadAttribute(element, "specular"));
-    cast_shadows_ = ParseBool(ReadAttribute(element, "shadows"));
-    range_ = ParseReal(ReadAttribute(element, "range"));
+    //direction_ = ParseVector3(ReadAttribute(element, "direction"));
+    directionAttr_.Set(ParseVector3(ReadAttribute(element, "direction")), Foundation::Local);
+    diffColorAttr_.Set(ParseColor(ReadAttribute(element, "diffuse")), Foundation::Local);
+    specColorAttr_.Set(ParseColor(ReadAttribute(element, "specular")), Foundation::Local);
+    castShadowsAttr_.Set(ParseBool(ReadAttribute(element, "shadows")), Foundation::Local);
+    rangeAttr_.Set(ParseReal(ReadAttribute(element, "range")), Foundation::Local);
     
     Vector3df atten = ParseVector3(ReadAttribute(element, "attenuation"));
-    constant_atten_ = atten.x;
-    linear_atten_ = atten.y;
-    quadratic_atten_ = atten.z;
+    constAttenAttr_.Set(atten.x, Foundation::Local);
+    linearAttenAttr_.Set(atten.y, Foundation::Local);
+    quadraAttenAttr_.Set(atten.z, Foundation::Local);
     
-    inner_angle_ = ParseReal(ReadAttribute(element, "spot inner"));
-    outer_angle_ = ParseReal(ReadAttribute(element, "spot outer"));
+    innerAngleAttr_.Set(ParseReal(ReadAttribute(element, "spot inner")), Foundation::Local);
+    outerAngleAttr_.Set(ParseReal(ReadAttribute(element, "spot outer")), Foundation::Local);
     
     // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
     if (parent_entity_)
@@ -170,7 +170,7 @@ void EC_Light::UpdateOgreLight()
 {
     Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
 
-    switch (type_)
+    switch (typeAttr_.Get())
     {
         case LT_Spot:
         ogre_type = Ogre::Light::LT_SPOTLIGHT;
@@ -184,13 +184,13 @@ void EC_Light::UpdateOgreLight()
     try
     {
         light_->setType(ogre_type);
-        light_->setDirection(ToOgreVector3(direction_));
-        light_->setDiffuseColour(ToOgreColor(diffuse_color_));
-        light_->setSpecularColour(ToOgreColor(specular_color_));
-        light_->setAttenuation(range_, constant_atten_, linear_atten_, quadratic_atten_);
+        light_->setDirection(ToOgreVector3(directionAttr_.Get()));
+        light_->setDiffuseColour(ToOgreColor(diffColorAttr_.Get()));
+        light_->setSpecularColour(ToOgreColor(specColorAttr_.Get()));
+        light_->setAttenuation(rangeAttr_.Get(), constAttenAttr_.Get(), linearAttenAttr_.Get(), quadraAttenAttr_.Get());
         // Note: Ogre throws exception if we try to set this when light is not spotlight
-        if (type_ == LT_Spot)
-            light_->setSpotlightRange(Ogre::Degree(inner_angle_), Ogre::Degree(outer_angle_));
+        if (typeAttr_.Get() == LT_Spot)
+            light_->setSpotlightRange(Ogre::Degree(innerAngleAttr_.Get()), Ogre::Degree(outerAngleAttr_.Get()));
     }
     catch (Ogre::Exception& e)
     {

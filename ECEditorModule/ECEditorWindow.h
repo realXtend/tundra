@@ -8,6 +8,7 @@
 
 #include <QWidget>
 #include <QShortcut>
+#include <map>
 
 namespace Foundation
 {
@@ -22,6 +23,8 @@ class QTextEdit;
 class QComboBox;
 class QKeyEvent;
 class QtTreePropertyBrowser;
+class QtVariantPropertyManager;
+class QtProperty;
 
 struct EntityComponentSelection
 {
@@ -31,6 +34,8 @@ struct EntityComponentSelection
 
 namespace ECEditor
 {
+    class AbstractECEditor;
+
     class ECEditorWindow : public QWidget
     {
         Q_OBJECT
@@ -52,7 +57,9 @@ namespace ECEditor
         void RefreshComponentData();
         void RefreshPropertyBrowser();
         void TogglePropertiesBrowser();
-
+        //! Begin to update spesific property
+        void PropertyChanged(QtProperty *property);
+        
     protected:
         void hideEvent(QHideEvent *hide_event);
         void showEvent(QShowEvent *show_event);
@@ -75,8 +82,11 @@ namespace ECEditor
         QListWidget* component_list_;
         QTextEdit* data_edit_;
         QtTreePropertyBrowser* property_browser_;
+        QtVariantPropertyManager *variantManager_;
         QComboBox* create_combo_;
         QShortcut* delete_shortcut_;
+        typedef std::map<std::string, AbstractECEditor *> EditorEntityList;
+        EditorEntityList editorEntityList_;
     };
 }
 
