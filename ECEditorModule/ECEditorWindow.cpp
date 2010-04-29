@@ -19,6 +19,8 @@
 #include <qtpropertymanager.h>
 #include <qteditorfactory.h>
 #include <qtvariantproperty.h>
+#include "ECLightEditor.h"
+#include <QtProperty>
 
 #include <QApplication>
 #include <QDomDocument>
@@ -71,6 +73,11 @@ namespace ECEditor
     
     ECEditorWindow::~ECEditorWindow()
     {
+        while(!editorEntityList_.empty())
+        {
+            SAFE_DELETE(editorEntityList_.begin()->second)
+            editorEntityList_.erase(editorEntityList_.begin());
+        }
     }
     
     void ECEditorWindow::Initialize()
@@ -87,59 +94,17 @@ namespace ECEditor
         }
         file.close();
 
-        /*QWidget *w = new QWidget();
-
-        QtBoolPropertyManager *boolManager = new QtBoolPropertyManager(w);
-        QtIntPropertyManager *intManager = new QtIntPropertyManager(w);
-        QtStringPropertyManager *stringManager = new QtStringPropertyManager(w);
-        QtSizePropertyManager *sizeManager = new QtSizePropertyManager(w);
-        QtRectPropertyManager *rectManager = new QtRectPropertyManager(w);
-        QtSizePolicyPropertyManager *sizePolicyManager = new QtSizePolicyPropertyManager(w);
-        QtEnumPropertyManager *enumManager = new QtEnumPropertyManager(w);
-        QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(w);*/
-
-        //QtProperty *item0 = groupManager->addProperty("QObject");
-        //QtProperty *item1 = stringManager->addProperty("objectName");
-        /*item0->addSubProperty(item1);
-
-        QtProperty *item2 = boolManager->addProperty("enabled");
-        item0->addSubProperty(item2);
-
-        QtProperty *item3 = rectManager->addProperty("geometry");
-        item0->addSubProperty(item3);
-
-        QtProperty *item4 = sizePolicyManager->addProperty("sizePolicy");
-        item0->addSubProperty(item4);
-
-        QtProperty *item5 = sizeManager->addProperty("sizeIncrement");
-        item0->addSubProperty(item5);
-
-        QtProperty *item7 = boolManager->addProperty("mouseTracking");
-        item0->addSubProperty(item7);
-
-        QtCheckBoxFactory *checkBoxFactory = new QtCheckBoxFactory(w);
-        QtSpinBoxFactory *spinBoxFactory = new QtSpinBoxFactory(w);
-        QtSliderFactory *sliderFactory = new QtSliderFactory(w);
-        QtScrollBarFactory *scrollBarFactory = new QtScrollBarFactory(w);
-        QtLineEditFactory *lineEditFactory = new QtLineEditFactory(w);
-        QtEnumEditorFactory *comboBoxFactory = new QtEnumEditorFactory(w);*/
-
+        //Intialize property browser, manager and factory for future use.
         property_browser_ = new QtTreePropertyBrowser();
         QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
         property_layout->addWidget(property_browser_);
         property_browser_->setResizeMode(QtTreePropertyBrowser::ResizeToContents);
         property_browser_->hide();
-
-        /*property_browser_->setFactoryForManager(boolManager, checkBoxFactory);
-        property_browser_->setFactoryForManager(intManager, spinBoxFactory);
-        property_browser_->setFactoryForManager(stringManager, lineEditFactory);
-        property_browser_->setFactoryForManager(sizeManager->subIntPropertyManager(), spinBoxFactory);
-        property_browser_->setFactoryForManager(rectManager->subIntPropertyManager(), spinBoxFactory);
-        property_browser_->setFactoryForManager(sizePolicyManager->subIntPropertyManager(), spinBoxFactory);
-        property_browser_->setFactoryForManager(sizePolicyManager->subEnumPropertyManager(), comboBoxFactory);
-        property_browser_->setFactoryForManager(enumManager, comboBoxFactory);
         
-        property_browser_->addProperty(item0);*/
+        variantManager_ = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        property_browser_->setFactoryForManager(variantManager_, variantFactory);
+        QObject::connect(variantManager_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(contents_);
@@ -483,6 +448,11 @@ namespace ECEditor
             return;
         
         property_browser_->clear();
+        while(!editorEntityList_.empty())
+        {
+            SAFE_DELETE(editorEntityList_.begin()->second)
+            editorEntityList_.erase(editorEntityList_.begin());
+        }
         
         std::vector<EntityComponentSelection> selection = GetSelectedComponents();
         if (!selection.size())
@@ -490,54 +460,6 @@ namespace ECEditor
 
         if (selection.size() == 1)
         {
-            // Single entity
-            //QDomElement entity_elem = temp_doc.createElement("entity");
-            //temp_doc.appendChild(entity_elem);
-            /*QWidget *widget = new QWidget();
-
-            QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();
-            QtProperty *topItem = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("Entity"));
-
-            QtVariantProperty *item = variantManager->addProperty(QtVariantPropertyManager::enumTypeId(), QString("EnumProperty"));
-            QStringList enumNames;
-            enumNames << "Point" << "Spot" << "Directional";
-            item->setAttribute(QString("enumNames"), enumNames);
-            item->setValue(1);
-            topItem->addSubProperty(item);
-
-            QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
-            property_browser_->setFactoryForManager(variantManager, variantFactory);
-
-            QtBoolPropertyManager *boolManager = new QtBoolPropertyManager(widget);
-            QtIntPropertyManager *intManager = new QtIntPropertyManager(widget);
-            QtStringPropertyManager *stringManager = new QtStringPropertyManager(widget);
-            QtSizePropertyManager *sizeManager = new QtSizePropertyManager(widget);
-            QtRectPropertyManager *rectManager = new QtRectPropertyManager(widget);
-            QtSizePolicyPropertyManager *sizePolicyManager = new QtSizePolicyPropertyManager(widget);
-            QtEnumPropertyManager *enumManager = new QtEnumPropertyManager(widget);
-            QtColorPropertyManager *colorManager = new QtColorPropertyManager(widget);
-            QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(widget);
-
-            QtCheckBoxFactory *checkBoxFactory = new QtCheckBoxFactory(widget);
-            QtSpinBoxFactory *spinBoxFactory = new QtSpinBoxFactory(widget);
-            QtSliderFactory *sliderFactory = new QtSliderFactory(widget);
-            QtScrollBarFactory *scrollBarFactory = new QtScrollBarFactory(widget);
-            QtLineEditFactory *lineEditFactory = new QtLineEditFactory(widget);
-            QtEnumEditorFactory *comboBoxFactory = new QtEnumEditorFactory(widget);
-            QtColorEditorFactory *colorFactory = new QtColorEditorFactory(widget);
-
-            property_browser_->setFactoryForManager(boolManager, checkBoxFactory);
-            property_browser_->setFactoryForManager(intManager, spinBoxFactory);
-            property_browser_->setFactoryForManager(stringManager, lineEditFactory);
-            property_browser_->setFactoryForManager(sizeManager->subIntPropertyManager(), spinBoxFactory);
-            property_browser_->setFactoryForManager(rectManager->subIntPropertyManager(), spinBoxFactory);
-            property_browser_->setFactoryForManager(sizePolicyManager->subIntPropertyManager(), spinBoxFactory);
-            property_browser_->setFactoryForManager(sizePolicyManager->subEnumPropertyManager(), comboBoxFactory);
-            property_browser_->setFactoryForManager(enumManager, comboBoxFactory);
-            property_browser_->setFactoryForManager(colorManager, colorFactory);
-
-            std::string entity_id = "Entity Id: " + ToString<unsigned int>(selection[0].entity_->GetId()); 
-            QtProperty *item0 = groupManager->addProperty(entity_id.c_str());
             for (uint j = 0; j < selection[0].components_.size(); ++j)
             {
                 if (selection[0].components_[j]->IsSerializable())
@@ -545,30 +467,15 @@ namespace ECEditor
                     std::string type = selection[0].components_[j]->TypeName();
                     if(type == "EC_Light")
                     {
-                        QtProperty *lightTypeProperty = enumManager->addProperty("Light type");
-                        QStringList enumNames;
-                        enumNames << "Point" << "Spot" << "Directional";
-                        enumManager->setEnumNames(lightTypeProperty, enumNames);
-                        item0->addSubProperty(lightTypeProperty);
-                        item0->addSubProperty(lightTypeProperty);
-                        item0->addSubProperty(lightTypeProperty);
+                        EditorEntityList::iterator iter = editorEntityList_.find(type);
+                        if(iter == editorEntityList_.end())
+                            editorEntityList_[type] = new ECLightEditor(variantManager_, selection[0].components_[j]);
+                        //ECLightEditor *editor = new ECLightEditor(variantManager_, selection[0].components_[j]);
+                        
+                        property_browser_->addProperty(editorEntityList_[type]->GetRootProperty());
                     }
-                    //selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
                 }
             }
-
-            property_browser_->addProperty(topItem);
-            //QtProperty *item1 = stringManager->addProperty("objectName");
-            
-            QString id_str;
-            id_str.setNum((int)selection[0].entity_->GetId());
-            entity_elem.setAttribute("id", id_str);
-            for (uint j = 0; j < selection[0].components_.size(); ++j)
-            {
-                if (selection[0].components_[j]->IsSerializable())
-                    selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
-            }
-            temp_doc.appendChild(entity_elem);*/
         }
     }
 
@@ -591,6 +498,21 @@ namespace ECEditor
                     toggle_browser_button_->setText(tr("Properties <"));
             }
         }
+    }
+
+    void ECEditorWindow::PropertyChanged(QtProperty *property)
+    {
+        EditorEntityList::iterator iter = editorEntityList_.begin();
+        while(iter != editorEntityList_.end())
+        {
+            if(iter->second->ContainProperty(property))
+            {
+                iter->second->SetPropertyValue(property);
+            }
+            iter++;
+        }
+        RevertData();
+        //if(property->propertyName)
     }
     
     std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities()

@@ -5,7 +5,7 @@ init_target (ECEditorModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h)
+file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h ECLightEditor.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -19,8 +19,10 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
+use_package (CURL)
+use_package (XMLRPC)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_Light)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -28,9 +30,10 @@ link_package (OGRE)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
+link_package (CURL)
+link_package (XMLRPC)
 link_package (QT_PROPERTY_BROWSER)
-
-link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules)
+link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities EC_Light)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
