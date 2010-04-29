@@ -27,8 +27,6 @@
 
 #include "MemoryLeakCheck.h"
 
-#include <QDebug>
-
 namespace UiServices
 {
     InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) 
@@ -205,7 +203,8 @@ namespace UiServices
             widget->SetShowAnimationSpeed(new_animation_speed);
         }
     }
-	//Apply new proxy position
+
+    //Apply new proxy position
     void InworldSceneController::ApplyNewProxyPosition(const QRectF &new_rect)
 	{
 		QPointF left_distance;
@@ -220,30 +219,46 @@ namespace UiServices
 				right_distance.setX((widget->x() + widget->size().width()) / last_scene_rect.width() * new_rect.width());
 				right_distance.setY((widget->y() + widget->size().height()) / last_scene_rect.height() * new_rect.height());			
 			}
-			
-			if(new_rect.contains(right_distance))
+		
+			if(widget->size().width() < new_rect.width())
 			{
-				if(widget->size().width() < new_rect.width() && right_distance.x() > new_rect.width() / 2)
+				if(left_distance.x() > widget->size().width())
 				{
-					widget->setX(right_distance.x() - widget->size().width());
+					if(new_rect.width() > right_distance.x())
+					{
+						widget->setX(right_distance.x() - widget->size().width());
+					}
+					else
+					{
+						widget->setX(left_distance.x());
+					}
 				}
 				else
-				{		
+				{
 					widget->setX(left_distance.x());
 				}
-			}else
+			}
+			else
 			{
 				widget->setX(left_distance.x());
 			}
-		
-			if(new_rect.contains(right_distance))
+
+
+			if(widget->size().height() < new_rect.height())
 			{
-				if(widget->size().height() < new_rect.height())
+				if(left_distance.y() > widget->size().height())
 				{
-					widget->setY(right_distance.y() - widget->size().height());
+					if(new_rect.height() > right_distance.y())
+					{
+						widget->setY(right_distance.y() - widget->size().height());
+					}
+					else
+					{
+						widget->setY(left_distance.y());
+					}
 				}
 				else
-				{		
+				{
 					widget->setY(left_distance.y());
 				}
 			}
