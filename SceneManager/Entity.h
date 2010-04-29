@@ -18,7 +18,9 @@ namespace Scene
     class Entity;
     typedef boost::weak_ptr<Entity> EntityWeakPtr;
     typedef boost::shared_ptr<Entity> EntityPtr;
-
+    
+    class SceneManager;
+    
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
         the entity is and what it does.
@@ -34,18 +36,25 @@ namespace Scene
 
     private:
         //! constructor
-        explicit Entity(Foundation::Framework* framework);
+        /*!
+            \param framework Framework
+            \param scene Scene this entity belongs to
+        */
+        explicit Entity(Foundation::Framework* framework, SceneManager* scene);
 
         //! constructor that takes an id for the entity
         /*!
             \param framework Framework
             \param id unique id for the entity.
+            \param scene Scene this entity belongs to
         */
-        Entity(Foundation::Framework* framework, uint id);
+        Entity(Foundation::Framework* framework, uint id, SceneManager* scene);
 
         //! Set new id
         void SetNewId(entity_id_t id) { id_ = id; }
-
+        //! Set new scene
+        void SetScene(SceneManager* scene) { scene_ = scene; }
+        
     public:
         //! component container
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
@@ -130,6 +139,9 @@ namespace Scene
         //! Returns framework
         Foundation::Framework *GetFramework() const { return framework_; }
 
+        //! Returns scene
+        SceneManager* GetScene() const { return scene_; }
+        
     private:
         //! a list of all components
         ComponentVector components_;
@@ -139,6 +151,9 @@ namespace Scene
 
         //! Pointer to framework
         Foundation::Framework* framework_;
+        
+        //! Pointer to scene
+        SceneManager* scene_;
    };
 }
 

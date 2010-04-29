@@ -66,20 +66,15 @@ namespace Foundation
         virtual bool IsSerializable() const { return false; }
         //! Return attributes of this component for reflection
         const AttributeVector& GetAttributes() const { return attributes_; }
+        //! Component has changed. Send notification & queue network replication as necessary
+        /*! Note: call this when you're satisfied & done with your current modifications
+         */
+        void ComponentChanged(ChangeType change);
         
-        //! Attribute has changed. Send notification up in hierarchy
-        void AttributeChanged(AttributeInterface* attr);
         //! Serialize to XML
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
-        
         //! Deserialize from XML
-        /*! \param element XML element to serialize from
-            \param change Source of data, usually Network
-         */
         virtual void DeserializeFrom(QDomElement& element, ChangeType change);
-        
-        //! Called by AttributeInterface on initialization of each attribute
-        void AddAttribute(AttributeInterface* attr) { attributes_.push_back(attr); }
         
     protected:
         //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
@@ -109,6 +104,9 @@ namespace Foundation
         
     private:
         ComponentInterface();
+        
+        //! Called by AttributeInterface on initialization of each attribute
+        void AddAttribute(AttributeInterface* attr) { attributes_.push_back(attr); }
     };
 }
 

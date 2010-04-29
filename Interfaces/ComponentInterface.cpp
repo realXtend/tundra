@@ -7,6 +7,8 @@
 #include "ComponentInterface.h"
 #include "ServiceInterface.h"
 #include "ServiceManager.h"
+#include "Entity.h"
+#include "SceneManager.h"
 
 #include <QDomDocument>
 
@@ -85,9 +87,30 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     return std::string();
 }
 
-void ComponentInterface::AttributeChanged(AttributeInterface* attr)
+void ComponentInterface::ComponentChanged(Foundation::ChangeType change)
 {
-    //! \todo raise notification on scenemanager or entity
+    if (parent_entity_)
+    {
+        Scene::SceneManager* scene = parent_entity_->GetScene();
+        if (scene)
+        {
+            // This is an evil hack: we rather not send raw component pointers around, so we seek inside the entity 
+            // for the corresponding shared pointer. If found to be a bottleneck by profiling, can be substituted
+            // with sending a raw pointer
+            const Scene::Entity::ComponentVector& comps = parent_entity_->GetComponentVector();
+            for (uint i = 0; i < comps.size(); ++i)
+            {
+                if (comps[i].get() == this)
+                {
+                    scene->EmitComponentChanged(comps[i], change);
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Trigger also internal change
+    emit OnChanged();
 }
 
 void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
@@ -118,7 +141,7 @@ void ComponentInterface::DeserializeFrom(QDomElement& element, ChangeType change
     }
     
     // Raise internal change signal after deserializing everything
-    OnChanged();
+    emit OnChanged();
 }
 
 }

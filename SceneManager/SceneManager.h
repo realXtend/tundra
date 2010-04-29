@@ -3,8 +3,12 @@
 #ifndef incl_SceneManager_SceneManager_h
 #define incl_SceneManager_SceneManager_h
 
+#include "CoreStdIncludes.h"
 #include "CoreAnyIterator.h"
 #include "Entity.h"
+#include "ComponentInterface.h"
+
+#include <QObject>
 
 namespace Scene
 {
@@ -22,8 +26,10 @@ namespace Scene
 
         \ingroup Scene_group
     */
-    class SceneManager
+    class SceneManager : public QObject
     {
+        Q_OBJECT;
+        
         friend class Foundation::Framework;
     private:
         //! default constructor
@@ -42,6 +48,9 @@ namespace Scene
         static uint gid_;
 
     public:
+        //! destructor
+        ~SceneManager();
+        
         //! entity map
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
@@ -50,12 +59,6 @@ namespace Scene
 
         //! const entity iterator. see begin() and end()
         typedef MapIterator<EntityMap::const_iterator, const Scene::EntityPtr> const_iterator;
-
-        //! destructor
-        ~SceneManager() {}
-
-        //! assignment operator. The two scenes will contain pointers to same entities after this.
-        SceneManager &operator =(const SceneManager &other) { if (&other != this) entities_ = other.entities_; return *this; }
 
         //! Returns true if the two scenes have the same name
         bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
@@ -68,12 +71,6 @@ namespace Scene
 
         //! Returns scene name
         const std::string &Name() const { return name_; }
-
-        //! Make a soft clone of this scene. The new scene will contain pointers to the same entities as the old one.
-        /*! 
-            \param newName Name of the new scene
-        */
-        ScenePtr Clone(const std::string &newName) const;
 
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
@@ -96,9 +93,7 @@ namespace Scene
         bool HasEntity(entity_id_t id) const { return (entities_.find(id) != entities_.end()); }
 
         //! Remove entity with specified id
-        /*! The entity may not get deleted if the entity is shared between multiple scenes,
-            or if dangling references to a pointer to the entity exists.
-
+        /*! The entity may not get deleted if dangling references to a pointer to the entity exists.
             \param id Id of the entity to remove
         */
         void RemoveEntity(entity_id_t id);
@@ -118,7 +113,15 @@ namespace Scene
         //! \param type_name Type name of the component
         EntityList GetEntitiesWithComponent(const std::string &type_name);
 
+        //! Emit a notification of a component's attributes changing. Called by the components themselves
+        /*! \param comp Component pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change);
+        
     private:
+        SceneManager &operator =(const SceneManager &other);
+        
         //! Entities in a map
         EntityMap entities_;
 
@@ -127,6 +130,12 @@ namespace Scene
 
         //! Name of the scene
         const std::string name_;
+        
+    signals:
+        //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
+        /*! Network synchronization managers should connect to this
+         */
+        void ComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change);
     };
 }
 

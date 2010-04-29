@@ -85,20 +85,20 @@ void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ChangeType c
     title_ = ReadAttribute(element, "title");
     text_ = ReadAttribute(element, "text");
     
-    OnChanged();
+    emit OnChanged();
 }
 
 void EC_NoteCard::SetTitle(const std::string& title)
 {
     title_ = title;
-    OnChanged();
+    emit OnChanged();
     SyncToNetwork();
 }
 
 void EC_NoteCard::SetText(const std::string& text)
 {
     text_ = text;
-    OnChanged();
+    emit OnChanged();
     SyncToNetwork();
 }
 
