@@ -4,11 +4,10 @@
 #define incl_MumbleVoipModule_Participant_h
 
 #include "CommunicationsService.h"
-#include "user.h"
 
 namespace MumbleVoip
 {
-//    class User;
+    class User;
 
     namespace InWorldVoice
     {
@@ -25,6 +24,7 @@ namespace MumbleVoip
             virtual Vector3df Position() const;
 
             virtual void Add(User* user);
+            virtual User* UserPtr() const;
         private:
             bool muted_;
             bool speaking_;
