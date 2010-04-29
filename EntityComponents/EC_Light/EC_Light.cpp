@@ -62,83 +62,11 @@ EC_Light::~EC_Light()
     }
 }
 
-void EC_Light::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
-{
-    QDomElement comp_element = BeginSerialization(doc, base_element);
-
-    std::string type;
-    switch (typeAttr_.Get())
-    {
-    case LT_Point:
-        type = "point";
-        break;
-    case LT_Spot:
-        type = "spot";
-        break;
-    case LT_Directional:
-        type = "directional";
-        break;
-    }
-    WriteAttribute(doc, comp_element, "type", type);
-    
-    WriteAttribute(doc, comp_element, "direction", WriteVector3(directionAttr_.Get()));//direction_));
-    WriteAttribute(doc, comp_element, "diffuse", WriteColor(diffColorAttr_.Get()));
-    WriteAttribute(doc, comp_element, "specular", WriteColor(specColorAttr_.Get()));
-    WriteAttribute(doc, comp_element, "shadows", WriteBool(castShadowsAttr_.Get()));
-    WriteAttribute(doc, comp_element, "range", WriteReal(rangeAttr_.Get()));
-    
-    Vector3df atten(constAttenAttr_.Get(), linearAttenAttr_.Get(), quadraAttenAttr_.Get());
-    WriteAttribute(doc, comp_element, "attenuation", WriteVector3(atten));
-    
-    WriteAttribute(doc, comp_element, "spot inner", WriteReal(innerAngleAttr_.Get()));
-    WriteAttribute(doc, comp_element, "spot outer", WriteReal(outerAngleAttr_.Get()));
-}
-
-void EC_Light::DeserializeFrom(QDomElement& element, Foundation::ChangeType change)
-{
-    // Check that type is right, otherwise do nothing
-    if (!BeginDeserialization(element))
-        return;
-    
-    typeAttr_.Set(LT_Point, Foundation::Local);
-    std::string type = ReadAttribute(element, "type");
-    if (type == "directional")
-        typeAttr_.Set(LT_Directional, Foundation::Local);
-    if (type == "spot")
-        typeAttr_.Set(LT_Spot, Foundation::Local);
-    
-    //direction_ = ParseVector3(ReadAttribute(element, "direction"));
-    directionAttr_.Set(ParseVector3(ReadAttribute(element, "direction")), Foundation::Local);
-    diffColorAttr_.Set(ParseColor(ReadAttribute(element, "diffuse")), Foundation::Local);
-    specColorAttr_.Set(ParseColor(ReadAttribute(element, "specular")), Foundation::Local);
-    castShadowsAttr_.Set(ParseBool(ReadAttribute(element, "shadows")), Foundation::Local);
-    rangeAttr_.Set(ParseReal(ReadAttribute(element, "range")), Foundation::Local);
-    
-    Vector3df atten = ParseVector3(ReadAttribute(element, "attenuation"));
-    constAttenAttr_.Set(atten.x, Foundation::Local);
-    linearAttenAttr_.Set(atten.y, Foundation::Local);
-    quadraAttenAttr_.Set(atten.z, Foundation::Local);
-    
-    innerAngleAttr_.Set(ParseReal(ReadAttribute(element, "spot inner")), Foundation::Local);
-    outerAngleAttr_.Set(ParseReal(ReadAttribute(element, "spot outer")), Foundation::Local);
-    
-    // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
-    if (parent_entity_)
-    {
-        Foundation::ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        if (placeable)
-            SetPlaceable(placeable);
-        else
-            LogError("No EC_OgrePlaceable in entity, EC_Light could not attach itself to scenenode");
-    }
-    else
-        LogError("Parent entity not set, EC_Light could not auto-set placeable");
-    
-    emit OnChanged();
-}
-
 void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)
 {
+    if (placeable_ == placeable)
+        return;
+    
     DetachLight();
     placeable_ = placeable;
     AttachLight();
@@ -168,6 +96,18 @@ void EC_Light::DetachLight()
 
 void EC_Light::UpdateOgreLight()
 {
+    // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
+    if (parent_entity_)
+    {
+        Foundation::ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        if (placeable)
+            SetPlaceable(placeable);
+        else
+            LogError("No EC_OgrePlaceable in entity, EC_Light could not attach itself to scenenode");
+    }
+    else
+        LogError("Parent entity not set, EC_Light could not auto-set placeable");
+    
     Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
 
     switch (typeAttr_.Get())

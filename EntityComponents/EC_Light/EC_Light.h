@@ -37,8 +37,6 @@ public:
     ~EC_Light();
     
     virtual bool IsSerializable() const { return true; }
-    virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
-    virtual void DeserializeFrom(QDomElement& element, Foundation::ChangeType change);
 
     //! Gets placeable component
     Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
