@@ -8,7 +8,7 @@
 #include "MumbleVoipModule.h"
 #include "stdint.h"
 #include "MumbleDefines.h"
-
+#include "PCMAudioFrame.h"
 #include <QTimer>
 
 #include <mumbleclient/user.h>
@@ -87,6 +87,8 @@ namespace MumbleVoip
     {
         position_known_ = true;
         position_ = position;
+
+        emit PositionUpdated();
     }
 
     Vector3df User::Position() const

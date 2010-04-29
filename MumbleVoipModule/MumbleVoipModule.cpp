@@ -258,13 +258,12 @@ namespace MumbleVoip
         // begin: Test service API
         if (framework_ &&  framework_->GetServiceManager())
         {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communication).lock();
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
             if (comm.get())
             {
                 comm->Register(*in_world_voice_provider_);
             }
         }
-
         // end: Test service API
 
         QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.

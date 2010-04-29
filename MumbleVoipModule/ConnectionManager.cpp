@@ -27,6 +27,7 @@ namespace MumbleVoip
     ConnectionManager::ConnectionManager(Foundation::Framework* framework) :
         framework_(framework),
         sending_audio_(false),
+        receiving_audio_(false),
         recording_device_(""),
         lib_mumble_thread_(0),
         users_position_(0.0,0.0,0.0),
@@ -49,6 +50,7 @@ namespace MumbleVoip
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
         Connection* connection = new Connection(info);
+        connect(connection, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)));
         connections_[info.server] = connection;
         connection->Join(info.channel);
         connection->SendAudio(true);
@@ -201,6 +203,16 @@ namespace MumbleVoip
         }
     }
 
+    void ConnectionManager::ReceiveAudio(bool receive)
+    {
+        receiving_audio_ = receive;
+        foreach(Connection* connection, connections_)
+        {
+            PlaybackAudio(connection);
+        }
+    }
+
+
     bool ConnectionManager::SendingAudio()
     {
         return sending_audio_;
@@ -274,6 +286,11 @@ namespace MumbleVoip
         {
             SAFE_DELETE(voice_indicator_);
         }
+    }
+
+    void ConnectionManager::OnUserJoined(User* user)
+    {
+        emit UserJoined(user);
     }
 
     // GetRecordedSoundData(void* buffer, uint size)

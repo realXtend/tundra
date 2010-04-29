@@ -7,23 +7,34 @@
 
 namespace MumbleVoip
 {
+    class User;
+
     namespace InWorldVoice
     {
+        //! ParticipantInterface implementation using mumble User object
         class Participant : public Communications::InWorldVoice::ParticipantInterface
         {
             Q_OBJECT
         public:
-            Participant();
+            Participant(User* user);
             virtual ~Participant();
-            virtual bool IsSpeaking() const = 0;
-            virtual void Mute(bool mute) = 0;
-            virtual bool IsMuted() const = 0;
-            virtual Vector3df Position() const = 0;
+            virtual bool IsSpeaking() const;
+            virtual void Mute(bool mute);
+            virtual bool IsMuted() const;
+            virtual Vector3df Position() const;
+
+            virtual void Add(User* user);
         private:
             bool muted_;
             bool speaking_;
             bool position_known_;
             Vector3df position_;
+            User* user_;
+
+        private slots:
+            void OnStartSpeaking();
+            void OnStopSpeaking();
+            void OnPositionUpdated();
         };
         typedef QList<Participant*> ParticipantList;
 

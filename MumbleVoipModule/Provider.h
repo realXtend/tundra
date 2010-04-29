@@ -6,6 +6,7 @@
 #include <QObject>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
+//#include "Session.h"
 
 namespace Foundation
 {
@@ -14,7 +15,7 @@ namespace Foundation
 
 namespace MumbleVoip
 {
-    class ConnectionManager;
+//    class ConnectionManager;
     class ServerObserver;
 
     namespace InWorldVoice
@@ -30,15 +31,17 @@ namespace MumbleVoip
             virtual Communications::InWorldVoice::SessionInterface* Session();
             virtual QString& Description();
         private:
+            Foundation::Framework* framework_;
             QString description_;
-            InWorldVoice::Session* session_;
-            ConnectionManager* connection_manager_;
+            MumbleVoip::InWorldVoice::Session* session_;
             ServerObserver* server_observer_;
             ServerInfo* server_info_;
 
         private slots:
             void OnMumbleServerInfoReceived(ServerInfo info);
 
+        signals:
+            void SessionAvailable();
         };
 
     } // InWorldVoice

@@ -239,7 +239,8 @@ namespace Communications
     {
         if (!Service::instance_)
             Service::instance_ = new Service();
-        return Service::instance_;
+        return 0; // test
+//        return Service::instance_;
     }
 
     InWorldVoice::SessionInterface* Service::InWorldVoiceSession() const

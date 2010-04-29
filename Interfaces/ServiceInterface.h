@@ -44,7 +44,7 @@ namespace Foundation
             ST_Texture,
             ST_Sound,
             ST_Input,
-            ST_Communication,
+            ST_Communications,
             ST_Unknown
         };
     }

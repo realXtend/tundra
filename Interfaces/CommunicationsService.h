@@ -8,9 +8,10 @@
 #include <Vector3D.h>
 #include <QList>
 #include <QByteArray>
-
-class QString;
-class QDateTime;
+#include <QString>
+#include <QDateTime>
+//class QString;
+//class QDateTime;
 
 namespace Communications
 {
@@ -35,10 +36,6 @@ namespace Communications
     //! IM type such as irc and jabber.
     //! 
     //! - Contact list ..... List of contacts from certain IM service
-    //!
-    //!
-    //!
-    //!
     //!
     //!
     //!
@@ -105,7 +102,6 @@ namespace Communications
         {
         public:
             virtual const QString &Name() const = 0;
-
         };
 
         class TextMessageInterface : public Communications::TextMessageInterface
@@ -138,10 +134,11 @@ namespace Communications
     {
         class ParticipantInterface : public QObject
         {
-            Q_OBJECT
+            //Q_OBJECT
         public:
             virtual ~ParticipantInterface() {};
          //   virtual QString AvatarUUID() const = 0; // do we get this always ?
+            //virtual QString Name() const = 0;
             virtual bool IsSpeaking() const = 0;
             virtual void Mute(bool mute) = 0;
             virtual bool IsMuted() const = 0;
@@ -150,32 +147,42 @@ namespace Communications
             //! \return true if participant has left 
 //            virtual bool IsLeft() const = 0; // \todo better name for method
         signals:
-            void StartSpkeaking(); 
+            void StartSpeaking(); 
             void StopSpeaking();
   //          void Left();
+//            void PositionUpdated();
         };
 //        typedef shared_ptr<ParticipantInterface> ParticipantPtr;
 
         //! In-world voice session for virtual reality environments
-        class SessionInterface : QObject
+        //!
+        //! \todo Design channel system ???
+        //!       - List channels (names, positional audio, listen/speak)
+        class SessionInterface : public QObject
         {
-            Q_OBJECT
+            //Q_OBJECT
         public:
-            virtual ~SessionInterface() {};
-            virtual QString Description() = 0;
-            virtual bool IsSendingAudio() = 0;
-            virtual bool IsReceivingAudio() = 0;
+            enum State {STATE_CLOSED, STATE_INITIALIZING, STATE_OPEN, STATE_ERROR};
 
+            virtual ~SessionInterface() {};
+            virtual QString Description() const = 0;
+
+            //virtual void Close() = 0;
+            //virtual State State() = 0;
+            //virtual QString Reason() = 0;
+            virtual bool IsSendingAudio() const = 0;
+            virtual bool IsReceivingAudio() const = 0;
             virtual void EnableAudioSending() = 0;
             virtual void DisableAudioSending() = 0;
-            virtual bool IsAudioSendingEnabled() = 0;
+            virtual bool IsAudioSendingEnabled() const = 0;
             virtual void EnableAudioReceiving() = 0;
             virtual void DisableAudioReceiving() = 0;
-            virtual bool IsAudioReceivingEnabled() = 0;
+            virtual bool IsAudioReceivingEnabled() const = 0;
 
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
+
         signals:
             void ParticipantJoined(ParticipantInterface* participant);
             void ParticipantLeft(ParticipantInterface* participant);
@@ -186,9 +193,10 @@ namespace Communications
         };
 
         //! Provider in-world voice sessions
+        //!
         class ProviderInterface : public QObject
         {
-            Q_OBJECT
+           // Q_OBJECT // DOES NOT COMPILE
         public:
             virtual ~ProviderInterface() {};
             virtual Communications::InWorldVoice::SessionInterface* Session() = 0;
@@ -200,12 +208,17 @@ namespace Communications
 
     } // InWorldVoice
 
-    class ServiceInterface : public Foundation::ServiceInterface , public QObject
+    //! Provides all communication methods to rest of the viewer. 
+    //!
+    //! Communication implementers can register their providers trhough Register metgods.
+    //! 
+    class ServiceInterface : public QObject, Foundation::ServiceInterface 
     {
         Q_OBJECT
     public:
-        static ServiceInterface* Instance();
+        
         virtual ~ServiceInterface() {};
+        static ServiceInterface* Instance();
 
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
         virtual InWorldChat::SessionInterface* InWorldChatSession() const = 0;
@@ -215,8 +228,8 @@ namespace Communications
         virtual void Register(InWorldChat::ProviderInterface& provider) = 0;
 
     signals:
-        void InWorldVoiceSessionRequest(InWorldVoice::SessionInterface* session);
-        void InWorldTextChatRequst(InWorldChat::SessionInterface* session);
+        void InWorldVoiceSessionAvailable(InWorldVoice::SessionInterface* session);
+        void InWorldTextChatAvailable(InWorldChat::SessionInterface* session);
         //void PrivateChatRequest(PrivateChat::Session session);
     };
     typedef boost::shared_ptr<ServiceInterface> ServicePtr;
