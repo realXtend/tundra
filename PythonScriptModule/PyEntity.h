@@ -13,9 +13,6 @@
     #include <Python.h>
 #endif
 
-//#include "EntityComponent/EC_OpenSimPrim.h"
-//#include "EC_OpenSimPrim.h"
-
 #include "EC_OgrePlaceable.h"
 
 namespace PythonScript

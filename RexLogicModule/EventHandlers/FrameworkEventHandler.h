@@ -16,16 +16,17 @@ namespace RexLogic
     class FrameworkEventHandler
     {
     public:
-        FrameworkEventHandler(ProtocolUtilities::WorldStream *connection, Foundation::Framework *framework, RexLogicModule *rexLogic)
-            : connection_(connection), framework_(framework), rexLogic_(rexLogic) {}
+        FrameworkEventHandler(ProtocolUtilities::WorldStream *connection, RexLogicModule *rexLogic) :
+            connection_(connection), rexLogic_(rexLogic) {}
+        ~FrameworkEventHandler() {}
 
         //! handle framework event
         bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     private:
         //! server connection
         ProtocolUtilities::WorldStream *connection_;
+        //! owner module
         RexLogicModule *rexLogic_;
-        Foundation::Framework *framework_;
     };
 }
 

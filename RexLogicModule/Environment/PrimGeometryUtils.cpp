@@ -35,7 +35,6 @@
 #include "Environment/PrimMesher.h"
 #include "RexTypes.h"
 #include "RexLogicModule.h"
-//#include "EntityComponent/EC_OpenSimPrim.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "Renderer.h"

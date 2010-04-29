@@ -9,9 +9,8 @@
 
 namespace RexLogic
 {
-    InputEventHandler::InputEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
+    InputEventHandler::InputEventHandler(RexLogicModule *rexlogicmodule)
     {
-        framework_ = framework;
         rexlogicmodule_ = rexlogicmodule;
     }
 

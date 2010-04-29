@@ -15,14 +15,14 @@ namespace RexLogic
 {
     struct DecodedTerrainPatch;
     class RexLogicModule;
-	class ScriptDialogHandler;
-	typedef boost::shared_ptr<ScriptDialogHandler> ScriptDialogHandlerPtr;
+    class ScriptDialogHandler;
+    typedef boost::shared_ptr<ScriptDialogHandler> ScriptDialogHandlerPtr;
 
     /// Handles incoming SLUDP network events in a reX-specific way. \todo Break down into more logical functions.
     class NetworkEventHandler
     {
     public:
-        NetworkEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
+        explicit NetworkEventHandler(RexLogicModule *rexlogicmodule);
         virtual ~NetworkEventHandler();
 
         // !Handle network events coming from OpenSimProtocolModule
@@ -45,8 +45,6 @@ namespace RexLogic
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
 
         void DebugCreateTerrainVisData(const DecodedTerrainPatch &heightData, int patchSize);
-
-        Foundation::Framework *framework_;
 
         boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
 

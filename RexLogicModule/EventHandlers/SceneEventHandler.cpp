@@ -5,7 +5,6 @@
 #include "SceneEvents.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
-//#include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
 #include "SoundServiceInterface.h"
@@ -25,7 +24,7 @@ void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest,
 
         boost::shared_ptr<EC_OpenSimPrim> prim = src[i]->GetComponent<EC_OpenSimPrim>();
         boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_pos = src[i]->GetComponent<OgreRenderer::EC_OgrePlaceable >();
-        if (!prim ||!ogre_pos)
+        if (!prim && !ogre_pos)
             continue;
 
         ProtocolUtilities::ObjectUpdateInfo new_info;
@@ -38,8 +37,7 @@ void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest,
     }
 }
 
-SceneEventHandler::SceneEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule) :
-    framework_(framework), rexlogicmodule_(rexlogicmodule)
+SceneEventHandler::SceneEventHandler(RexLogicModule *rexlogicmodule) : rexlogicmodule_(rexlogicmodule)
 {
 }
 
