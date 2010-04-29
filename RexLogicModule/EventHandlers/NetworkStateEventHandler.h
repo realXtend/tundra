@@ -22,9 +22,8 @@ namespace RexLogic
     {
     public:
         /// Constructor
-        /// @param fw Framework.
         /// @param owner Owner module.
-        NetworkStateEventHandler(Foundation::Framework *fw, RexLogicModule *owner);
+        explicit NetworkStateEventHandler(RexLogicModule *owner);
 
         /// Destructor.
         virtual ~NetworkStateEventHandler();
@@ -35,9 +34,6 @@ namespace RexLogic
         bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
-        /// Framework.
-        Foundation::Framework *framework_;
-
         /// Owner module.
         RexLogicModule *owner_;
 

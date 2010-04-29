@@ -13,7 +13,6 @@
 #include "EventHandlers/MainPanelHandler.h"
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
-//#include "EntityComponent/EC_OpenSimPrim.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
@@ -122,14 +121,14 @@ void RexLogicModule::Initialize()
     avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
     world_stream_ = WorldStreamPtr(new ProtocolUtilities::WorldStream(framework_));
-    network_handler_ = new NetworkEventHandler(framework_, this);
-    network_state_handler_ = new NetworkStateEventHandler(framework_, this);
-    input_handler_ = new InputEventHandler(framework_, this);
-    scene_handler_ = new SceneEventHandler(framework_, this);
-    framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
+    network_handler_ = new NetworkEventHandler(this);
+    network_state_handler_ = new NetworkStateEventHandler(this);
+    input_handler_ = new InputEventHandler(this);
+    scene_handler_ = new SceneEventHandler(this);
+    framework_handler_ = new FrameworkEventHandler(world_stream_.get(), this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
-    main_panel_handler_ = new MainPanelHandler(framework_, this);
+    main_panel_handler_ = new MainPanelHandler(this);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);

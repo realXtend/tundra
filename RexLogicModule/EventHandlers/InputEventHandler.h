@@ -7,7 +7,6 @@
 
 namespace Foundation
 {
-    class Framework;
     class EventDataInterface;
 }
 
@@ -20,17 +19,15 @@ namespace RexLogic
     class InputEventHandler
     {
     public:
-        InputEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule);
+        explicit InputEventHandler(RexLogicModule *rexlogicmodule);
         virtual ~InputEventHandler();
-        
+
         //! handle an input event
         bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         void Update(f64 frametime);
 
     private:
-        Foundation::Framework *framework_;
-     
         RexLogicModule *rexlogicmodule_;
     };
 }

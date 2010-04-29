@@ -3,19 +3,18 @@
 #ifndef incl_RexLogic_MainPanelHandler_h
 #define incl_RexLogic_MainPanelHandler_h
 
-#include "RexLogicModule.h"
-
 #include <QObject>
 
 namespace RexLogic
 {
+    class RexLogicModule;
+
     class MainPanelHandler : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-        MainPanelHandler(Foundation::Framework *framework, RexLogicModule *logic_module);
+        explicit MainPanelHandler(RexLogicModule *logic_module);
         ~MainPanelHandler();
 
     public slots:
@@ -23,9 +22,7 @@ namespace RexLogic
         void QuitRequested();
 
     private:
-        Foundation::Framework *framework_;
         RexLogicModule *rex_logic_module_;
-
     };
 }
 

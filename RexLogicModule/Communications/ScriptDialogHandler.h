@@ -26,7 +26,7 @@ namespace RexLogic
         Q_OBJECT
 
     public:
-        ScriptDialogHandler(Foundation::Framework* framework);
+        explicit ScriptDialogHandler(Foundation::Framework* framework);
         ~ScriptDialogHandler();
 
         //! handle given script dialog request by creating 

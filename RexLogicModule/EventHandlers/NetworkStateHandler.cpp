@@ -15,8 +15,7 @@
 namespace RexLogic
 {
 
-NetworkStateEventHandler::NetworkStateEventHandler(Foundation::Framework *fw, RexLogicModule *owner)
-    : framework_(fw), owner_(owner)
+NetworkStateEventHandler::NetworkStateEventHandler(RexLogicModule *owner) : owner_(owner)
 {
 }
 
@@ -33,9 +32,9 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             // The client has connected to the server. Create a new scene for that.
             owner_->CreateNewActiveScene("World");
             // Send WorldStream as internal event
-            event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
+            event_category_id_t framework_category_id = owner_->GetFramework()->GetEventManager()->QueryEventCategory("Framework");
             ProtocolUtilities::WorldStreamReadyEvent event_data(owner_->GetServerConnection());
-            framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
+            owner_->GetFramework()->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
             break;
         }
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
@@ -45,7 +44,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             // Make sure the rexlogic also thinks connection is closed.
             if (owner_->GetServerConnection()->IsConnected())
                 owner_->GetServerConnection()->ForceServerDisconnect();
-            if (framework_->HasScene("World"))
+            if (owner_->GetFramework()->HasScene("World"))
                 owner_->DeleteScene("World");
             break;
         }

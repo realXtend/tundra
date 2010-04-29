@@ -50,10 +50,9 @@ void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, f
 namespace RexLogic
 {
 
-NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLogicModule *rexlogicmodule)
+NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
+    rexlogicmodule_(rexlogicmodule)
 {
-    framework_ = framework;
-    rexlogicmodule_ = rexlogicmodule;
 
     // Get the pointe to the current protocol module
     protocolModule_ = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
@@ -62,7 +61,7 @@ NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLo
     if (!sp.get())
         RexLogicModule::LogInfo("NetworkEventHandler: Protocol module not set yet. Will fetch when networking occurs.");
     
-    Foundation::ModuleWeakPtr renderer = framework_->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
+    Foundation::ModuleWeakPtr renderer = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
     if (renderer.expired() == false)
     {
         DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
@@ -70,12 +69,12 @@ NetworkEventHandler::NetworkEventHandler(Foundation::Framework *framework, RexLo
         DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
     }
 
-    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(framework));
+    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_->GetFramework()));
 }
 
 NetworkEventHandler::~NetworkEventHandler()
 {
-
+    script_dialog_handler_.reset();
 }
 
 bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -376,7 +375,7 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEven
 
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
 
