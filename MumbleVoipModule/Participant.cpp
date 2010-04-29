@@ -51,13 +51,13 @@ namespace MumbleVoip
         void Participant::OnStartSpeaking()
         {
             speaking_ = true;
-//            emit StartSpeaking();
+            emit Communications::InWorldVoice::ParticipantInterface::StartSpeaking();
         }
 
         void Participant::OnStopSpeaking()
         {
             speaking_ = false;
-//            emit StopSpeaking();
+//            emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
         }
 
         void Participant::OnPositionUpdated()
