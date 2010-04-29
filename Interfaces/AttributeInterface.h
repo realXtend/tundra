@@ -82,8 +82,6 @@ namespace Foundation
         {
             value_ = new_value;
             change_ = change;
-            if (owner_)
-                owner_->AttributeChanged(this);
         }
         
         virtual std::string ToString() const;

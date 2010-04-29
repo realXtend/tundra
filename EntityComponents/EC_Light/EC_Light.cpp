@@ -134,7 +134,7 @@ void EC_Light::DeserializeFrom(QDomElement& element, Foundation::ChangeType chan
     else
         LogError("Parent entity not set, EC_Light could not auto-set placeable");
     
-    OnChanged();
+    emit OnChanged();
 }
 
 void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)

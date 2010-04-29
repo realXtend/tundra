@@ -10,14 +10,16 @@
 
 namespace Scene
 {
-    Entity::Entity(Foundation::Framework* framework) :
-        framework_(framework)
+    Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
+        framework_(framework),
+        scene_(scene)
     {
     }
     
-    Entity::Entity(Foundation::Framework* framework, uint id) :
+    Entity::Entity(Foundation::Framework* framework, uint id, SceneManager* scene) :
         framework_(framework),
-        id_(id)
+        id_(id),
+        scene_(scene)
     {
     }
 

@@ -18,15 +18,18 @@ namespace Scene
 {
     uint SceneManager::gid_ = 0;
 
-    Scene::ScenePtr SceneManager::Clone(const std::string &newName) const
+    SceneManager::~SceneManager()
     {
-        ScenePtr new_scene = framework_->CreateScene(newName);
-        if (new_scene)
-            *new_scene = *this;
-
-        return new_scene;
+        EntityMap::iterator it = entities_.begin();
+        while (it != entities_.end())
+        {
+            // If entity somehow manages to live, at least it doesn't belong to the scene anymore
+            it->second->SetScene(0);
+            ++it;
+        }
+        entities_.clear();
     }
-
+    
     Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components)
     {
         // Figure out new entity id
@@ -44,7 +47,7 @@ namespace Scene
                 newentityid = id;
         }
 
-        Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid));
+        Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid, this));
         for (size_t i=0 ; i<components.size() ; ++i)
             entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
 
@@ -88,6 +91,8 @@ namespace Scene
             framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
 
             entities_.erase(it);
+            // If entity somehow manages to live, at least it doesn't belong to the scene anymore
+            del_entity->SetScene(0);
             del_entity.reset();
         }
     }
@@ -105,6 +110,11 @@ namespace Scene
         }
 
         return entities;
+    }
+    
+    void SceneManager::EmitComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change)
+    {
+        emit ComponentChanged(comp, change);
     }
 }
 
