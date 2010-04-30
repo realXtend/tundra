@@ -42,9 +42,11 @@ namespace Asset
     private slots:
         QUrl CreateUrl(QString assed_id);
         void TranferCompleted(QNetworkReply *reply);
-        bool CheckRequestQueue(QString assed_id);
         void RemoveFinishedTransfers(QString asset_transfer_key, QUrl metadata_transfer_key);
         void StartTransferFromQueue();
+
+        bool CheckRequestQueue(QString assed_id);
+        bool QtHttpAssetProvider::IsAcceptableAssetType(const std::string& asset_type);
 
     private:
         Foundation::Framework *framework_;
