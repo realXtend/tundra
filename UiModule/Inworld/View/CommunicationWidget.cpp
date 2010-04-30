@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "CommunicationWidget.h"
 #include "UiProxyWidget.h"
-
+#include <CommunicationsService.h>
 #include <QWidget>
 #include <QStackedLayout>
 #include <QPlainTextEdit>
@@ -11,6 +11,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
 #include <QGraphicsScene>
+#include <CommunicationsService.h>
 
 namespace CoreUi
 {
@@ -19,6 +20,7 @@ namespace CoreUi
         internal_widget_(new QWidget()),
         current_controller_(0),
         im_proxy_(0),
+        voice_proxy_(0),
         viewmode_(Normal),
         resizing_horizontal_(false),
         resizing_vertical_(false)
@@ -99,6 +101,11 @@ namespace CoreUi
             else
                 im_proxy_->AnimatedHide();
         }
+    }
+
+    void CommunicationWidget::ToggleVoice()
+    {
+
     }
 
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
@@ -246,6 +253,12 @@ namespace CoreUi
     void CommunicationWidget::SetFocusToChat()
     {
         chatLineEdit->setFocus(Qt::MouseFocusReason);
+    }
+
+    void CommunicationWidget::SetupInWorldVoiceSession(Communications::InWorldVoice::SessionInterface* session)
+    {
+        in_world_voice_session_ = session;
+//        connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivity(double)), SLOT(ShowSpeakerVoiceActivity(double)) );
     }
 
     // NormalChatViewWidget : QWidget

@@ -17,6 +17,14 @@ namespace UiServices
     class UiProxyWidget;
 }
 
+namespace Communications
+{
+    namespace InWorldVoice
+    {
+        class SessionInterface;
+    }
+}
+
 namespace CoreUi
 {
     class NormalChatViewWidget;
@@ -36,6 +44,7 @@ namespace CoreUi
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
 
         void SetFocusToChat();
+        void SetupInWorldVoiceSession(Communications::InWorldVoice::SessionInterface* session);
         
     protected:
         void hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event);
@@ -49,6 +58,7 @@ namespace CoreUi
         void ChangeViewPressed();
         void ChangeView(ViewMode new_mode);
         void ToggleImWidget();
+        void ToggleVoice();
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
@@ -62,6 +72,8 @@ namespace CoreUi
         QPlainTextEdit *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
+        UiServices::UiProxyWidget *voice_proxy_;
+        Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
 
         QPointF press_pos_;
         QPointF release_pos_;

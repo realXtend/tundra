@@ -99,6 +99,16 @@ namespace Communication
                 LogInfo( message.toStdString() );
             }
         }
+
+        //! \todo: Move this code to Comm UI implementation
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+         //       comm->Register(*in_world_voice_provider_);
+            }
+        }
     }
 
     void CommunicationModule::Uninitialize()
