@@ -67,7 +67,7 @@ namespace Asset
     bool QtHttpAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
     {
         // Textures over http with the GetTexture cap
-        if (RexTypes::GetAssetTypeFromTypeName(asset_type) == RexTypes::RexAT_Texture)
+        if (IsAcceptableAssetType(asset_type))
             if (RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
                 return true;
 
@@ -97,7 +97,7 @@ namespace Asset
             asset_type_t asset_type_int = RexTypes::GetAssetTypeFromTypeName(asset_type);
             QtHttpAssetTransfer *transfer = 0;
     
-            if (RexTypes::GetAssetTypeFromTypeName(asset_type) == RexTypes::RexAT_Texture)
+            if (IsAcceptableAssetType(asset_type))
             {
                 // Http texture via cap url
                 QString texture_url_string = get_texture_cap_.toString() + "?texture_id=" + asset_id_qstring;
@@ -194,8 +194,13 @@ namespace Asset
         {
             // Send asset canceled events
             HttpAssetTransferInfo error_transfer_data = transfer->GetTranferInfo();
-            Events::AssetCanceled cancel_data(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
-            event_manager_->SendEvent(asset_event_category_, Events::ASSET_CANCELED, &cancel_data);
+ 
+            // Crashes in OgreRenderer if i send this...
+            /*
+            Events::AssetCanceled *data = new Events::AssetCanceled(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
+            Foundation::EventDataPtr data_ptr(data);
+            event_manager_->SendDelayedEvent(asset_event_category_, Events::ASSET_CANCELED, data_ptr, 0);
+            */
 
             // Clean up
             RemoveFinishedTransfers(error_transfer_data.id, reply->url());
@@ -330,14 +335,6 @@ namespace Asset
         }
         reply->deleteLater();
     }
-    
-    bool QtHttpAssetProvider::CheckRequestQueue(QString assed_id)
-    {
-        foreach (QtHttpAssetTransfer *transfer, pending_request_queue_)
-            if (transfer->GetTranferInfo().id == assed_id)
-                return true;
-        return false;
-    }
 
     void QtHttpAssetProvider::RemoveFinishedTransfers(QString asset_transfer_key, QUrl metadata_transfer_key)
     {
@@ -374,5 +371,31 @@ namespace Asset
                 StartTransferFromQueue(); // Recursivly fill the transfer map
             }
         }
+    }
+
+    bool QtHttpAssetProvider::CheckRequestQueue(QString assed_id)
+    {
+        foreach (QtHttpAssetTransfer *transfer, pending_request_queue_)
+            if (transfer->GetTranferInfo().id == assed_id)
+                return true;
+        return false;
+    }
+
+    bool QtHttpAssetProvider::IsAcceptableAssetType(const std::string& asset_type)
+    {
+        using namespace RexTypes;
+        
+        bool accepted = false;
+        switch (GetAssetTypeFromTypeName(asset_type))
+        {
+            case RexAT_Texture:
+            case RexAT_Mesh:
+                accepted = true;
+                break;
+            default:
+                accepted = false;
+                break;
+        }
+        return accepted;
     }
 }
