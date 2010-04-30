@@ -146,8 +146,8 @@ namespace MumbleVoip
 
         Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
         
-        sound_buffer.data_.resize(frame->GetLengthBytes());
-        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->GetLengthBytes());
+        sound_buffer.data_.resize(frame->DataSize());
+        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
 
         sound_buffer.frequency_ = frame->SampleRate();
         if (frame->SampleWidth() == 16)
@@ -251,6 +251,7 @@ namespace MumbleVoip
                     if (connection->SendingAudio())
                         connection->SendAudioFrame(frame, users_position_);
                 }
+                emit AudioFrameSent(frame);
                 delete frame;
             }
         }

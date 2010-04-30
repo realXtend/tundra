@@ -25,10 +25,10 @@ namespace MumbleVoip
             sample_rate_(frame->SampleRate()),
             sample_width_(frame->SampleWidth()),
             data_(0),
-            data_size_(frame->GetLengthBytes())
+            data_size_(frame->DataSize())
     {
-        data_ = new char[frame->GetLengthBytes()];
-        memcpy(data_, frame->DataPtr(), frame->GetLengthBytes());
+        data_ = new char[frame->DataSize()];
+        memcpy(data_, frame->DataPtr(), frame->DataSize());
     }
 
     PCMAudioFrame::PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size):
@@ -51,6 +51,28 @@ namespace MumbleVoip
         return data_;
     }
 
+    int PCMAudioFrame::SampleAt(int i)
+    {
+        if (i >= SampleCount() || i < 0)
+            throw std::exception("Out of bounds");
+
+        switch(sample_width_)
+        {
+        case 8:
+            {
+            char* data = (char*)data_;
+            return data[i];
+            }
+        case 16:
+            {
+            short* data = (short*)data_;
+            return data[i];
+            }
+        default:
+            throw std::exception("Sample witdth is not supported");
+        }
+    }
+
     int PCMAudioFrame::Channels()
     {
         return channels_;
@@ -66,17 +88,17 @@ namespace MumbleVoip
         return sample_width_;
     }
         
-    int PCMAudioFrame::Samples()
+    int PCMAudioFrame::SampleCount()
     {
         return data_size_ / sample_width_;
     }
 
-    int PCMAudioFrame::GetLengthMs()
+    int PCMAudioFrame::LengthMs()
     {
-        return 1000 * Samples() / sample_rate_;
+        return 1000 * SampleCount() / sample_rate_;
     }
 
-    int PCMAudioFrame::GetLengthBytes()
+    int PCMAudioFrame::DataSize()
     {
         return data_size_;
     }

@@ -3,6 +3,7 @@
 #include "Participant.h"
 #include "ConnectionManager.h"
 #include "ServerInfo.h"
+#include "PCMAudioFrame.h"
 
 namespace MumbleVoip
 {
@@ -21,6 +22,9 @@ namespace MumbleVoip
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)) );
             connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
+            connect(connection_manager_, SIGNAL(AudioPacketSent(PCMAudioFrame*)), SLOT(OnAudioPacketSent(PCMAudioFrame*)) );
+
+            //SpeakerVoiceActivity
         }
 
         Session::~Session()
@@ -139,6 +143,29 @@ namespace MumbleVoip
             receiving_audio_ = false;
             if (was_receiving_audio)
                 emit StopReceivingAudio();
+        }
+
+        void Session::OnAudioPacketSent(PCMAudioFrame* frame)
+        {
+            static int counter;
+            counter++;
+            counter = counter % 10;
+            if (counter != 0)
+                return;
+
+            short top;
+            short max = 2000; //! \todo Use more proper value
+            for(int i = 0; i < frame->SampleCount(); ++i)
+            {
+                int sample = frame->SampleAt(i);
+                if (sample > top)
+                    top = sample;
+            }
+
+            double activity = top / max;
+            if (activity > 1.0)
+                activity = 1.0;
+            emit SpeakerVoiceActivity(activity);
         }
 
     } // InWorldVoice
