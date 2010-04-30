@@ -49,7 +49,7 @@ namespace UiServices
         menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
         
         // Communication core UI
-        communication_widget_ = new CoreUi::CommunicationWidget();
+        communication_widget_ = new CoreUi::CommunicationWidget(framework);
         layout_manager_->AddCornerAnchor(communication_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
 
         // Connect settings widget
