@@ -189,12 +189,15 @@ namespace Communications
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
 
         signals:
+            //void StateChanged(State state);
             void ParticipantJoined(ParticipantInterface* participant);
             void ParticipantLeft(ParticipantInterface* participant);
             void StartSendingAudio();
             void StopSendingAudio();
             void StartReceivingAudio();
             void StopReceivingAudio();
+            void SpeakerVoiceActivity(double volume);
+//            void ReceivedVoiceActivity(double volume);
         };
 
         //! Provider in-world voice sessions

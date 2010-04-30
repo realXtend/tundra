@@ -15,6 +15,7 @@ namespace MumbleVoip
     class ConnectionManager;
     class ServerInfo;
     class User;
+    class PCMAudioFrame;
 
     namespace InWorldVoice
     {
@@ -58,6 +59,7 @@ namespace MumbleVoip
             void OnUserLeft(User*);
             void OnUserStartSpeaking();
             void OnUserStopSpeaking();
+            void OnAudioPacketSent(PCMAudioFrame*);
         };
 
     } // InWorldVoice

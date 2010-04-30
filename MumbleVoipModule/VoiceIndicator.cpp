@@ -42,7 +42,7 @@ namespace MumbleVoip
         if (frame->SampleWidth() == 16)
         {
             short* data = (short*)frame->DataPtr();
-            int samples = frame->Samples();
+            int samples = frame->SampleCount();
             for(int i = 0; i < samples; ++i)
             {
                 short sample = data[i];
@@ -62,7 +62,7 @@ namespace MumbleVoip
             else
             {
                 // Didn't notice any voice activity 
-                last_voice_ms_ += frame->GetLengthMs();
+                last_voice_ms_ += frame->LengthMs();
                 if (last_voice_ms_ > voice_timeout_ms)
                 {
                     speaking_ = false;

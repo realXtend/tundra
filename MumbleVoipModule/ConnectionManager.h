@@ -116,6 +116,7 @@ namespace MumbleVoip
 
     signals:
         void UserJoined(User* user);
+        void AudioFrameSent(PCMAudioFrame* frame);
     };
 
 } // end of namespace: MumbleVoip
