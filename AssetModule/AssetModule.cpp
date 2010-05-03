@@ -132,7 +132,8 @@ namespace Asset
         {
             if (udp_asset_provider_)
                 checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->ClearAllTransfers();
-            // TODO: abort all http transfers
+            if (http_asset_provider_)
+                checked_static_cast<QtHttpAssetProvider*>(http_asset_provider_.get())->ClearAllTransfers();
         }
         if (category_id == network_state_category_id_ && event_id == ProtocolUtilities::Events::EVENT_CAPS_FETCHED)
         {

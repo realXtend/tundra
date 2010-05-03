@@ -345,6 +345,17 @@ namespace Asset
         SAFE_DELETE(remove_transfer);
     }
 
+    void QtHttpAssetProvider::ClearAllTransfers()
+    {
+        foreach (QtHttpAssetTransfer *transfer, assetid_to_transfer_map_.values())
+            SAFE_DELETE(transfer);
+        assetid_to_transfer_map_.clear();
+
+        foreach (QtHttpAssetTransfer *transfer, pending_request_queue_)
+            SAFE_DELETE(transfer);
+        pending_request_queue_.clear();
+    }
+
     void QtHttpAssetProvider::StartTransferFromQueue()
     {
         if (pending_request_queue_.count() == 0)

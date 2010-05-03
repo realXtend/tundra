@@ -25,6 +25,7 @@ namespace Asset
         virtual ~QtHttpAssetProvider();
 
         void SetGetTextureCap(std::string url);
+        void ClearAllTransfers();
 
         //! Interface implementation
         void Update(f64 frametime);
