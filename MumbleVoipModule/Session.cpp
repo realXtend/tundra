@@ -1,9 +1,16 @@
 #include "StableHeaders.h"
 #include "Session.h"
+#include "MemoryLeakCheck.h"
 #include "Participant.h"
 #include "ConnectionManager.h"
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
+#include "Vector3D.h"
+#include "EC_OgrePlaceable.h" // for avatar position
+#include "SceneManager.h"     // for avatar position
+#include "ModuleManager.h"    // for avatar position
+#include "RexLogicModule.h"   // for avatar position
+#include "Avatar/Avatar.h"    // for avatar position
 
 namespace MumbleVoip
 {
@@ -11,6 +18,7 @@ namespace MumbleVoip
     {
         Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
             state_(STATE_INITIALIZING),
+            framework_(framework),
             description_(""),
             sending_audio_(false),
             receiving_audio_(false),
@@ -51,12 +59,14 @@ namespace MumbleVoip
         {
             audio_sending_enabled_ = true;
             connection_manager_->SendAudio(true);
+            emit StartSendingAudio();
         }
 
         void Session::DisableAudioSending()
         {
             audio_sending_enabled_ = false;
             connection_manager_->SendAudio(false);
+            emit StopSendingAudio();
         }
 
         bool Session::IsAudioSendingEnabled() const
@@ -68,12 +78,14 @@ namespace MumbleVoip
         {
             audio_receiving_enabled_ = true;
             connection_manager_->ReceiveAudio(true);
+//            emit StartReceivingAudio();
         }
 
         void Session::DisableAudioReceiving()
         {
             audio_receiving_enabled_ = false;
             connection_manager_->ReceiveAudio(false);
+//            emit StopReceivingAudio();
         }
 
         bool Session::IsAudioReceivingEnabled() const
@@ -95,15 +107,21 @@ namespace MumbleVoip
         void Session::Update(f64 frametime)
         {
             if (connection_manager_)
+            {
+                Vector3df avatar_position;
+                Vector3df avatar_direction;
+                if (GetOwnAvatarPosition(avatar_position, avatar_direction))
+                    connection_manager_->SetAudioSourcePosition(avatar_position);
                 connection_manager_->Update(frametime);
+            }
         }
 
         void Session::OnUserJoined(User* user)
         {
             Participant* p = new Participant(user);
             participants_.append(p);
-            connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
-            connect(p, SIGNAL(SopSpeaking()), SLOT(OnuserStopSpeaking()) );
+            connect(p, SIGNAL(Communications::InWorldVoice::ParticipantInterface::StartSpeaking()), SLOT(OnUserStartSpeaking()) );
+            connect(p, SIGNAL(Communications::InWorldVoice::ParticipantInterface::StopSpeaking()), SLOT(OnuserStopSpeaking()) );
 
             emit ParticipantJoined(p);
         }
@@ -153,7 +171,7 @@ namespace MumbleVoip
             if (counter != 0)
                 return;
 
-            short top;
+            short top = 0;
             short max = 2000; //! \todo Use more proper value
             for(int i = 0; i < frame->SampleCount(); ++i)
             {
@@ -168,6 +186,35 @@ namespace MumbleVoip
             emit SpeakerVoiceActivity(activity);
         }
 
+        bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
+        {
+            RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+            if (!rex_logic_module)
+                return false;
+
+            RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
+            if (!avatar)
+                return false;
+
+            Scene::EntityPtr entity = avatar->GetUserAvatar();
+            if (!entity)
+                return false;
+
+            const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
+            if (!placeable_component)
+                return false;
+
+            OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
+            Quaternion q = ogre_placeable->GetOrientation();
+            position = ogre_placeable->GetPosition(); 
+            direction = q*Vector3df::UNIT_Z;
+
+            return true;
+        }
+
+
     } // InWorldVoice
+
+
 
 } // MumbleVoip

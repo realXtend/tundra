@@ -189,7 +189,7 @@ namespace Communications
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
 
         signals:
-            //void StateChanged(State state);
+            void StateChanged(State state);
             void ParticipantJoined(ParticipantInterface* participant);
             void ParticipantLeft(ParticipantInterface* participant);
             void StartSendingAudio();
@@ -218,9 +218,11 @@ namespace Communications
 
     //! Provides all communication methods to rest of the viewer. 
     //!
-    //! Communication implementers can register their providers trhough Register metgods.
+    //! Communication feature implementations must register/unregister the functionality they provide.
     //! 
-    class ServiceInterface : public QObject, Foundation::ServiceInterface 
+    //! Consumers should connect to *Available signals and then request services when they came available.
+    //! The services are considired to be available until viewer shutdown. (???)
+    class ServiceInterface : public QObject, public Foundation::ServiceInterface 
     {
         Q_OBJECT
     public:
@@ -228,16 +230,22 @@ namespace Communications
         virtual ~ServiceInterface() {};
         static ServiceInterface* Instance();
 
+        //! \todo use WeakPtr instead ?
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
+
+        //! \todo use WeakPtr instead ?
         virtual InWorldChat::SessionInterface* InWorldChatSession() const = 0;
 //        virtual IM::ContactList* ContactList(QString type) const = 0;
 
         //! Registrationd methods for communication providers
         virtual void Register(InWorldVoice::ProviderInterface& provider) = 0;
+        //virtual void Unregister(InWorldVoice::ProviderInterface& provider) = 0;
         virtual void Register(InWorldChat::ProviderInterface& provider) = 0;
+        //virtual void Unregister(InWorldChat::ProviderInterface& provider) = 0;
 
     signals:
         void InWorldVoiceAvailable();
+        //void InWorldVoiceUnvailable();
         void InWorldChatAvailable();
         //void PrivateChatRequest(PrivateChat::Session session);
         //void VoiceCallRequest(VoiceCall call);

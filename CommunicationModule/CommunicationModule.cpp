@@ -21,6 +21,7 @@
 #include <Inworld/View/UiProxyWidget.h>
 
 #include "MemoryLeakCheck.h"
+#include "Service.h"
 
 namespace Communication
 {
@@ -52,11 +53,13 @@ namespace Communication
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-        // Publish CommunicationsService implementation
+        //Publish CommunicationsService implementation
         //communications_service_ = Communications::ServicePtr(Communications::Service::Instance());
-        //if (!communications_service_.get())
-        //    return;
-        //framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
+        //communications_service_ = boost::shared_ptr<Communications::Service>(Communications::Service::Instance());
+        communications_service_ = Communications::Service::IntancePtr();
+//        ServiceWeakPtr service = communications_service_
+        if (communications_service_.get())
+            framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
     }
 
     void CommunicationModule::PostInitialize()
@@ -97,16 +100,6 @@ namespace Communication
                 QString message = "IM protocol support for: ";
                 message.append(*i);
                 LogInfo( message.toStdString() );
-            }
-        }
-
-        //! \todo: Move this code to Comm UI implementation
-        if (framework_ &&  framework_->GetServiceManager())
-        {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-            if (comm.get())
-            {
-         //       comm->Register(*in_world_voice_provider_);
             }
         }
     }

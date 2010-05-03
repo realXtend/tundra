@@ -50,10 +50,10 @@ namespace MumbleVoip
     void MumbleVoipModule::Load()
     {
         in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
-        connection_manager_ = new ConnectionManager(framework_);
-        link_plugin_ = new LinkPlugin();
-        server_observer_ = new ServerObserver(framework_);
-        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(const ServerInfo &)) );
+//        connection_manager_ = new ConnectionManager(framework_);
+//        link_plugin_ = new LinkPlugin();
+//        server_observer_ = new ServerObserver(framework_);
+//        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
     }
 
     void MumbleVoipModule::Unload()
@@ -88,6 +88,9 @@ namespace MumbleVoip
                 connection_manager_->SetAudioSourcePosition(position);
             connection_manager_->Update(frametime);
         }
+
+        if (in_world_voice_provider_)
+            in_world_voice_provider_->Update(frametime);
     }
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
@@ -106,6 +109,8 @@ namespace MumbleVoip
                     mumble_use_library_ = true;
             }
         }
+        if (in_world_voice_provider_)
+            in_world_voice_provider_->HandleEvent(category_id, event_id, data);
 
         return false;
     }
@@ -263,6 +268,7 @@ namespace MumbleVoip
             {
                 comm->Register(*in_world_voice_provider_);
             }
+            return;
         }
         // end: Test service API
 

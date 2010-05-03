@@ -95,33 +95,4 @@ namespace Communication
     };
 } // end of namespace: Communication
 
-namespace Communications
-{
-    class Service : public ServiceInterface
-    {
-        Q_OBJECT
-    private:
-        // Private constructor
-        Service(); 
-
-    public:
-        // Default deconstructor
-        virtual ~Service();
-
-        static ServiceInterface* Instance();
-
-        virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const;
-        virtual InWorldChat::SessionInterface* InWorldChatSession() const;
-
-        //! Registration methods for communication providers
-        virtual void Register(InWorldVoice::ProviderInterface& provider);
-        virtual void Register(InWorldChat::ProviderInterface& provider);
-
-    private:
-        static Service* instance_;
-        InWorldVoice::ProviderInterface* in_world_voice_provider_;
-        InWorldChat::ProviderInterface* in_world_chat_provider_;
-    };
-}
-
 #endif // incl_Comm_CommunicationService_h
