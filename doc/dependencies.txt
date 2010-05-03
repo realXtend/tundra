@@ -47,6 +47,13 @@ This project has the following dependencies:
 
 - QtPropertyBrowser 2.5_1 , http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Widgets/qtpropertybrowser
 
+- Celt 0.7.1 , http://www.celt-codec.org/
+
+- OpenSSL, http://www.openssl.org/
+
+- Google Protocol Buffers 2.3.0 , http://code.google.com/apis/protocolbuffers/
+
+
 
 Dependencies with modifications that are not in upstream yet
 ------------------------------------------------------------
