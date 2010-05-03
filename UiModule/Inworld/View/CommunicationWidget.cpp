@@ -32,10 +32,10 @@ namespace CoreUi
         switch(state_)
         {
         case STATE_OFFLINE:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_offline.png'); background-position: top left; background-repeat: no-repeat; }");
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_offline.png'); background-position: top left; background-repeat: no-repeat; }");
             break;
         case STATE_ONLINE:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
             break;
         case STATE_BUSY:
             setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_busy.png'); background-position: top left; background-repeat: no-repeat; }");
