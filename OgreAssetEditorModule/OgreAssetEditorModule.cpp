@@ -280,6 +280,9 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
     }
     else if (category_id == resourceEventCategory_)
     {
+        if (event_id == Resource::Events::RESOURCE_CANCELED)
+            return false;
+
         Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
         assert(res);
         if (!res)

@@ -18,7 +18,7 @@
 #include <QDebug>
 #include <QStringList>
 
-#define MAX_HTTP_CONNECTIONS 10
+#define MAX_HTTP_CONNECTIONS 10000 // Basically means no limit to parallel connections
 
 namespace Asset
 {
@@ -27,7 +27,9 @@ namespace Asset
         framework_(framework),
         event_manager_(framework->GetEventManager().get()),
         name_("QtHttpAssetProvider"),
-        network_manager_(new QNetworkAccessManager())
+        network_manager_(new QNetworkAccessManager()),
+        filling_stack_(false),
+        get_texture_cap_(QUrl())
     {
 		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "http_timeout", 120.0);
         if (event_manager_)
@@ -45,6 +47,13 @@ namespace Asset
         SAFE_DELETE(network_manager_);
     }
 
+    void QtHttpAssetProvider::SetGetTextureCap(std::string url)
+    {
+        get_texture_cap_ = QUrl(QString::fromStdString(url));
+        if (get_texture_cap_.isValid())
+            AssetModule::LogInfo("Server supports HTTP assets: using HTTP to fetch textures and meshes.");
+    }
+
     // Interface implementation
 
     void QtHttpAssetProvider::Update(f64 frametime)
@@ -57,8 +66,13 @@ namespace Asset
         return name_;
     }
 
-    bool QtHttpAssetProvider::IsValidId(const std::string& asset_id)
+    bool QtHttpAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
     {
+        // Textures over http with the GetTexture cap
+        if (IsAcceptableAssetType(asset_type))
+            if (RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
+                return true;
+
         QString id(asset_id.c_str());
         if (!id.startsWith("http://"))
             return false;
@@ -72,7 +86,7 @@ namespace Asset
     
     bool QtHttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id))
+        if (!IsValidId(asset_id, asset_type))
             return false;
 
         QString asset_id_qstring = QString::fromStdString(asset_id);
@@ -82,23 +96,32 @@ namespace Asset
         }
         else
         {
-            QUrl asset_url = CreateUrl(asset_id_qstring);
             asset_type_t asset_type_int = RexTypes::GetAssetTypeFromTypeName(asset_type);
-            if (asset_type_int < 0 || !asset_url.isValid())
+            QtHttpAssetTransfer *transfer = 0;
+    
+            if (IsAcceptableAssetType(asset_type) && RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
+            {
+                // Http texture/meshes via cap url
+                QString texture_url_string = get_texture_cap_.toString() + "?texture_id=" + asset_id_qstring;
+                QUrl texture_url(texture_url_string);
+                transfer = new QtHttpAssetTransfer(texture_url, asset_id_qstring, asset_type_int, tag);
+            }
+            else
+            {
+                // Normal http get
+                QUrl asset_url = CreateUrl(asset_id_qstring);
+                transfer = new QtHttpAssetTransfer(asset_url, asset_id_qstring, asset_type_int, tag);
+            }
+
+            if (!transfer)
                 return false;
-            if (!asset_url.path().endsWith("/data"))
-                asset_url.setPath(asset_url.path() + "/data");
 
-            QtHttpAssetTransfer *transfer = new QtHttpAssetTransfer(asset_url, asset_id_qstring, asset_type_int, tag);
             transfer->setOriginatingObject(transfer);
-
             if (assetid_to_transfer_map_.count() <= MAX_HTTP_CONNECTIONS)
             {
                 assetid_to_transfer_map_[asset_id_qstring] = transfer;
                 network_manager_->get(*transfer);
-
-                //QStringList debug_parts = transfer->GetTranferInfo().id.split("/");
-                //qDebug() << "     <HTTP-GET-DATA> " << debug_parts.at(debug_parts.length()-2);
+                AssetModule::LogDebug("New HTTP asset request: " + asset_id + " type: " + asset_type);
             }
             else
                 pending_request_queue_.append(transfer);
@@ -165,22 +188,23 @@ namespace Asset
 
     void QtHttpAssetProvider::TranferCompleted(QNetworkReply *reply)
     {
+        fake_metadata_fetch_ = false;
         QtHttpAssetTransfer *transfer = dynamic_cast<QtHttpAssetTransfer*>(reply->request().originatingObject());
 
-        /**** THIS IS A /data REQUEST REPLY AND IT FAILED****/
+        /**** THIS IS A DATA REQUEST REPLY AND IT FAILED ****/
         if (reply->error() != QNetworkReply::NoError && transfer)
         {
             // Send asset canceled events
             HttpAssetTransferInfo error_transfer_data = transfer->GetTranferInfo();
-            Events::AssetCanceled cancel_data(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
-            event_manager_->SendEvent(asset_event_category_, Events::ASSET_CANCELED, &cancel_data);
+            Events::AssetCanceled *data = new Events::AssetCanceled(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
+            Foundation::EventDataPtr data_ptr(data);
+            event_manager_->SendDelayedEvent(asset_event_category_, Events::ASSET_CANCELED, data_ptr, 0);
 
             // Clean up
             RemoveFinishedTransfers(error_transfer_data.id, reply->url());
             StartTransferFromQueue();
 
-            //QStringList debug_parts = error_transfer_data.id.split("/");
-            //qDebug() << "    <ASSET-CANCELED> " << debug_parts.at(debug_parts.length()-2);
+            AssetModule::LogDebug("HTTP asset " + error_transfer_data.id.toStdString() + " canceled");
             reply->deleteLater();
             return;
         }
@@ -200,85 +224,164 @@ namespace Asset
             for (int index = 0; index < data_array.count(); ++index)
                 data_vector.push_back(data_array.at(index));
 
-            // Get metadata
-            QUrl metadata_url = tranfer_info.url;
+            // Get metadata if available
             QString url_path = tranfer_info.url.path();
-            int clip_count;
-            if (url_path.endsWith("/data"))
-                clip_count = 5;
-            else if (url_path.endsWith("/data/"))
-                clip_count = 6;
+            if (url_path.endsWith("/data") || url_path.endsWith("/data/"))
+            {
+                // Generate metada url
+                int clip_count;
+                if (url_path.endsWith("/data"))
+                    clip_count = 5;
+                else if (url_path.endsWith("/data/"))
+                    clip_count = 6;
+                else
+                {
+                    reply->deleteLater();
+                    return;
+                }
+
+                QUrl metadata_url = tranfer_info.url;
+                url_path = url_path.left(url_path.count()-clip_count);
+                url_path = url_path + "/metadata";
+                metadata_url.setPath(url_path);
+                tranfer_info.url = metadata_url;
+
+                QNetworkRequest *metada_request = new QNetworkRequest(metadata_url);
+
+                // Store tranfer data and asset data pointer internally
+                QPair<HttpAssetTransferInfo, Foundation::AssetPtr> data_pair;
+                data_pair.first = tranfer_info;
+                data_pair.second = asset_ptr;
+                metadata_to_assetptr_[metada_request->url()] = data_pair;
+                
+                // Send metadata network request
+                //network_manager_->get(*metada_request);
+                
+                // HACK to avoid metadata fetch for now
+                fake_metadata_url_ = metada_request->url();
+                fake_metadata_fetch_ = true;
+            }
+            // Asset data feched, lets store
             else
             {
-                reply->deleteLater();
-                return;
+                // Store asset
+                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                if (asset_service)
+                    asset_service->StoreAsset(asset_ptr);
+
+                // Send asset ready events
+                foreach (request_tag_t tag, tranfer_info.tags)
+                {
+                    Events::AssetReady event_data(asset_ptr.get()->GetId(), asset_ptr.get()->GetType(), asset_ptr, tag);
+                    event_manager_->SendEvent(asset_event_category_, Events::ASSET_READY, &event_data);
+                }
+
+                RemoveFinishedTransfers(tranfer_info.id, QUrl());
+                StartTransferFromQueue();
+                AssetModule::LogDebug("HTTP asset " + tranfer_info.id.toStdString() + " completed");
             }
-            url_path = url_path.left(url_path.count()-clip_count);
-            url_path = url_path + "/metadata";
-            metadata_url.setPath(url_path);
-            tranfer_info.url = metadata_url;
-
-            QNetworkRequest *metada_request = new QNetworkRequest(metadata_url);
-
-            // Store tranfer data and asset data pointer internally
-            QPair<HttpAssetTransferInfo, Foundation::AssetPtr> data_pair;
-            data_pair.first = tranfer_info;
-            data_pair.second = asset_ptr;
-            metadata_to_assetptr_[metada_request->url()] = data_pair;
-
-            // Send metadata network request
-            network_manager_->get(*metada_request);
-
-            //QStringList debug_parts = tranfer_info.id.split("/");
-            //qDebug() << " <HTTP-GET-METADATA> " << debug_parts.at(debug_parts.length()-2);
         }
-        /**** THIS IS A /metadata REQUEST REPLY ****/
-        else if (metadata_to_assetptr_.contains(reply->url()))
+
+        // Complete /data and /metadata sequence, fake is here as long as we dont have xml parser for metadata
+        // or actually we dont use metadata in naali so thats the main reason its not fetched
+        if (fake_metadata_fetch_)
         {
-            // Pull out transfer data and asset pointer assosiated with this reply url
-            QUrl metadata_transfer_url = reply->url();
-            HttpAssetTransferInfo transfer_data = metadata_to_assetptr_[metadata_transfer_url].first;
-            Foundation::AssetPtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
-            if (!ready_asset_ptr)
+            /**** THIS IS A /metadata REQUEST REPLY ****/
+            if (metadata_to_assetptr_.contains(fake_metadata_url_))
             {
-                reply->deleteLater();
-                return;
+                // Pull out transfer data and asset pointer assosiated with this reply url
+                QUrl metadata_transfer_url = fake_metadata_url_;
+                HttpAssetTransferInfo transfer_data = metadata_to_assetptr_[metadata_transfer_url].first;
+                Foundation::AssetPtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
+                if (!ready_asset_ptr)
+                {
+                    reply->deleteLater();
+                    return;
+                }
+
+                // Fill metadata
+                /*
+                const QByteArray &inbound_metadata = reply->readAll();
+                QString decoded_metadata = QString::fromUtf8(inbound_metadata.data());
+                #if defined(__GNUC__)
+                RexAssetMetadata *m = dynamic_cast<RexAssetMetadata*>(ready_asset_ptr.get()->GetMetadata());
+                #else	   
+                Foundation::AssetMetadataInterface *metadata = ready_asset_ptr.get()->GetMetadata();
+                RexAssetMetadata *m = static_cast<RexAssetMetadata*>(metadata);
+                #endif
+                std::string std_md(decoded_metadata.toStdString());
+                
+                m->DesesrializeFromJSON(std_md); // TODO: implement a xml based metadata parser.
+                */
+
+                // Store asset
+                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                if (asset_service)
+                    asset_service->StoreAsset(ready_asset_ptr);
+
+                // Send asset ready events
+                foreach (request_tag_t tag, transfer_data.tags)
+                {
+                    Events::AssetReady event_data(ready_asset_ptr.get()->GetId(), ready_asset_ptr.get()->GetType(), ready_asset_ptr, tag);
+                    event_manager_->SendEvent(asset_event_category_, Events::ASSET_READY, &event_data);
+                }
+
+                RemoveFinishedTransfers(transfer_data.id, metadata_transfer_url);
+                StartTransferFromQueue();
+                AssetModule::LogDebug("HTTP asset " + transfer_data.id.toStdString() + " completed with metadata");
             }
-
-            // Fill metadata
-            const QByteArray &inbound_metadata = reply->readAll();
-            QString decoded_metadata = QString::fromUtf8(inbound_metadata.data());
-            #if defined(__GNUC__)
-            RexAssetMetadata *m = dynamic_cast<RexAssetMetadata*>(ready_asset_ptr.get()->GetMetadata());
-            #else	   
-            Foundation::AssetMetadataInterface *metadata = ready_asset_ptr.get()->GetMetadata();
-            RexAssetMetadata *m = static_cast<RexAssetMetadata*>(metadata);
-            #endif
-            std::string std_md(decoded_metadata.toStdString());
-            m->DesesrializeFromJSON(std_md); // TODO: implement a xml based metadata parser.
-
-            // Store asset
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-            if (asset_service)
-                asset_service->StoreAsset(ready_asset_ptr);
-
-            // Send asset ready events
-            foreach (request_tag_t tag, transfer_data.tags)
-            {
-                Events::AssetReady event_data(ready_asset_ptr.get()->GetId(), ready_asset_ptr.get()->GetType(), ready_asset_ptr, tag);
-                event_manager_->SendEvent(asset_event_category_, Events::ASSET_READY, &event_data);
-            }
-
-            RemoveFinishedTransfers(transfer_data.id, metadata_transfer_url);
-            StartTransferFromQueue();
-
-            //QStringList debug_parts = transfer_data.id.split("/");
-            //qDebug() << "       <ASSET-READY> " << debug_parts.at(debug_parts.length()-2);
         }
-
         reply->deleteLater();
     }
-    
+
+    void QtHttpAssetProvider::RemoveFinishedTransfers(QString asset_transfer_key, QUrl metadata_transfer_key)
+    {
+        QtHttpAssetTransfer *remove_transfer = assetid_to_transfer_map_[asset_transfer_key];
+        assetid_to_transfer_map_.remove(asset_transfer_key);
+        if (metadata_transfer_key.isValid())
+            metadata_to_assetptr_.remove(metadata_transfer_key);
+        SAFE_DELETE(remove_transfer);
+    }
+
+    void QtHttpAssetProvider::ClearAllTransfers()
+    {
+        foreach (QtHttpAssetTransfer *transfer, assetid_to_transfer_map_.values())
+            SAFE_DELETE(transfer);
+        assetid_to_transfer_map_.clear();
+
+        foreach (QtHttpAssetTransfer *transfer, pending_request_queue_)
+            SAFE_DELETE(transfer);
+        pending_request_queue_.clear();
+    }
+
+    void QtHttpAssetProvider::StartTransferFromQueue()
+    {
+        if (pending_request_queue_.count() == 0)
+            return;
+
+        // If the whole map is empty then go and start new MAX_HTTP_CONNECTIONS amount of http gets
+        if (assetid_to_transfer_map_.count() == 0)
+            filling_stack_ = true;
+
+        if (!filling_stack_)
+            return;
+
+        if (assetid_to_transfer_map_.count() <= MAX_HTTP_CONNECTIONS && pending_request_queue_.count() > 0)
+        {
+            if (assetid_to_transfer_map_.count() == MAX_HTTP_CONNECTIONS || pending_request_queue_.count() == 0)
+                filling_stack_ = false; 
+            else
+            {
+                QtHttpAssetTransfer *new_transfer = pending_request_queue_.takeAt(0);
+                assetid_to_transfer_map_[new_transfer->GetTranferInfo().id] = new_transfer;
+                network_manager_->get(*new_transfer);
+
+                AssetModule::LogDebug("New HTTP asset request from queue: " + new_transfer->GetTranferInfo().id.toStdString() + " type: " + RexTypes::GetAssetTypeString(new_transfer->GetTranferInfo().type));
+                StartTransferFromQueue(); // Recursivly fill the transfer map
+            }
+        }
+    }
+
     bool QtHttpAssetProvider::CheckRequestQueue(QString assed_id)
     {
         foreach (QtHttpAssetTransfer *transfer, pending_request_queue_)
@@ -287,24 +390,21 @@ namespace Asset
         return false;
     }
 
-    void QtHttpAssetProvider::RemoveFinishedTransfers(QString asset_transfer_key, QUrl metadata_transfer_key)
+    bool QtHttpAssetProvider::IsAcceptableAssetType(const std::string& asset_type)
     {
-        QtHttpAssetTransfer *remove_transfer = assetid_to_transfer_map_[asset_transfer_key];
-        assetid_to_transfer_map_.remove(asset_transfer_key);
-        metadata_to_assetptr_.remove(metadata_transfer_key);
-        SAFE_DELETE(remove_transfer);
-    }
-
-    void QtHttpAssetProvider::StartTransferFromQueue()
-    {
-        if (assetid_to_transfer_map_.count() <= MAX_HTTP_CONNECTIONS && pending_request_queue_.count() > 0)
+        using namespace RexTypes;
+        
+        bool accepted = false;
+        switch (GetAssetTypeFromTypeName(asset_type))
         {
-            QtHttpAssetTransfer *new_transfer = pending_request_queue_.takeAt(0);
-            assetid_to_transfer_map_[new_transfer->GetTranferInfo().id] = new_transfer;
-            network_manager_->get(*new_transfer);
-
-            //QStringList debug_parts = new_transfer->GetTranferInfo().id.split("/");
-            //qDebug() << "     <HTTP-GET-DATA> " << debug_parts.at(debug_parts.length()-2) << " FROM QUEUE";
+            case RexAT_Texture:
+            case RexAT_Mesh:
+                accepted = true;
+                break;
+            default:
+                accepted = false;
+                break;
         }
+        return accepted;
     }
 }

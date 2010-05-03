@@ -51,7 +51,7 @@ namespace Asset
         return name;
     }
 
-    bool XMLRPCAssetProvider::IsValidId(const std::string& asset_id)
+    bool XMLRPCAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
     {
         // Has to be protocol based url
         if (asset_id.find("://") == std::string::npos)
@@ -71,7 +71,7 @@ namespace Asset
     
     bool XMLRPCAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id))
+        if (!IsValidId(asset_id, asset_type))
             return false;
 
         // See if request already exists, just add tag in that case

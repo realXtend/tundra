@@ -53,7 +53,7 @@ namespace Foundation
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id
          */
-        virtual bool IsValidId(const std::string& asset_id) = 0;
+        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Requests an asset for download
         /*! Note: implementation should not queue multiple transfers if for some reason RequestAsset gets called

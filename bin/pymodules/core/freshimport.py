@@ -1,4 +1,5 @@
 import sys
+import traceback
 
 try:
     import rexviewer as r
@@ -6,20 +7,24 @@ except:
     import mockviewer as r
 
 def freshimport(modulename): #aka. load_or_reload
+    mod = None
     fromlist = []
     if '.' in modulename:
         fromlist.append("") #to change __import__ to give submodule #modulename.split('.')[0])
     if sys.modules.has_key(modulename):
         try:
-            m = reload(sys.modules[modulename])
+            mod = reload(sys.modules[modulename])
         except Exception, e:
             msg = "Problem reloading plugin '%s'" % modulename
-            r.logError(msg)
-            r.logError(e)
-            r.logError(traceback.format_exc())
-            return None
+            r.logInfo(msg)
+            r.logInfo(str(e))
+            r.logInfo(traceback.format_exc())
 
     else:
-        m = __import__(modulename, globals(), locals(), fromlist)
+        try:
+            mod = __import__(modulename, globals(), locals(), fromlist)
+        except:
+            r.logInfo("couldn't load %s" % modulename)
+            r.logInfo(traceback.format_exc())
 
-    return m
+    return mod

@@ -14,6 +14,8 @@
 #include "ServiceManager.h"
 #include "CoreException.h"
 
+#include "Interfaces/ProtocolModuleInterface.h"
+
 namespace Asset
 {
     AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_), inboundcategory_id_(0)
@@ -35,22 +37,17 @@ namespace Asset
         manager_ = AssetManagerPtr(new AssetManager(framework_));
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_);
 
-        udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
-        manager_->RegisterAssetProvider(udp_asset_provider_);
-
         // Add XMLRPC asset provider before http asset provider, so it will take requests it recognizes though both use http
         xmlrpc_asset_provider_ = Foundation::AssetProviderPtr(new XMLRPCAssetProvider(framework_));
         manager_->RegisterAssetProvider(xmlrpc_asset_provider_);
 
-        try
-        {
-            http_asset_provider_ = Foundation::AssetProviderPtr(new QtHttpAssetProvider(framework_));
-            manager_->RegisterAssetProvider(http_asset_provider_);
-        }
-        catch (Exception &/*e*/)
-        {
-            AssetModule::LogWarning("Failed to create HTTP asset provider.");
-        }
+        // Add HTTP handler before UDP so it can handle the texture http gets with UUID via GetTexture caps url
+        http_asset_provider_ = Foundation::AssetProviderPtr(new QtHttpAssetProvider(framework_));
+        manager_->RegisterAssetProvider(http_asset_provider_);
+
+        // Last fallback is UDP provider
+        udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
+        manager_->RegisterAssetProvider(udp_asset_provider_);
 
         framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     }
@@ -135,6 +132,16 @@ namespace Asset
         {
             if (udp_asset_provider_)
                 checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->ClearAllTransfers();
+            if (http_asset_provider_)
+                checked_static_cast<QtHttpAssetProvider*>(http_asset_provider_.get())->ClearAllTransfers();
+        }
+        if (category_id == network_state_category_id_ && event_id == ProtocolUtilities::Events::EVENT_CAPS_FETCHED)
+        {
+            if (protocolModule_.lock().get() && http_asset_provider_)
+            {
+                std::string get_texture_cap = protocolModule_.lock()->GetCapability("GetTexture");
+                checked_static_cast<QtHttpAssetProvider*>(http_asset_provider_.get())->SetGetTextureCap(get_texture_cap);
+            }
         }
 
         return false;

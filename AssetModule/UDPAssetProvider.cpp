@@ -46,14 +46,14 @@ namespace Asset
         return name;
     }
 
-    bool UDPAssetProvider::IsValidId(const std::string& asset_id)
+    bool UDPAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
     {
         return RexUUID::IsValid(asset_id);
     }
 
     bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id))
+        if (!IsValidId(asset_id, asset_type))
             return false;
 
         RexUUID uuid(asset_id);

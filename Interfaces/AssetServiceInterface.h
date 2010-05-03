@@ -75,7 +75,7 @@ namespace Foundation
         //! Checks asset id for validity
         /*! \return true if asset id is valid
          */
-        virtual bool IsValidId(const std::string& asset_id) = 0;
+        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
