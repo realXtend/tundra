@@ -12,7 +12,7 @@ class DotSceneManager:
     
     def __init__(self):
         self.nodes = {}
-        self.flipZY = True
+        self.flipZY = False
         
     def setPosition(self, x, y ,z):
         """ set new position diff for nodes """
