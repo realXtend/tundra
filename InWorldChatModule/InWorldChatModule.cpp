@@ -176,10 +176,7 @@ const std::string &InWorldChatModule::NameStatic()
 void InWorldChatModule::SendChatFromViewer(const QString &msg)
 {
     if (currentWorldStream_)
-    {
         currentWorldStream_->SendChatFromViewerPacket(std::string(msg.toUtf8()));
-        ShowUserVoipActivityIcon(currentWorldStream_->GetInfo().agentID, true);
-    }
 }
 
 void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool visibility)
