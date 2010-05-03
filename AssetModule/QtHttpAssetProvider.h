@@ -24,11 +24,14 @@ namespace Asset
         QtHttpAssetProvider(Foundation::Framework *framework);
         virtual ~QtHttpAssetProvider();
 
+        void SetGetTextureCap(std::string url);
+        void ClearAllTransfers();
+
         //! Interface implementation
         void Update(f64 frametime);
 
         const std::string& Name();
-        bool IsValidId(const std::string& asset_id);
+        bool IsValidId(const std::string& asset_id, const std::string& asset_type);
         
         bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         bool InProgress(const std::string& asset_id);
@@ -40,9 +43,11 @@ namespace Asset
     private slots:
         QUrl CreateUrl(QString assed_id);
         void TranferCompleted(QNetworkReply *reply);
-        bool CheckRequestQueue(QString assed_id);
         void RemoveFinishedTransfers(QString asset_transfer_key, QUrl metadata_transfer_key);
         void StartTransferFromQueue();
+
+        bool CheckRequestQueue(QString assed_id);
+        bool QtHttpAssetProvider::IsAcceptableAssetType(const std::string& asset_type);
 
     private:
         Foundation::Framework *framework_;
@@ -56,6 +61,12 @@ namespace Asset
         QMap<QString, QtHttpAssetTransfer *> assetid_to_transfer_map_;
         QMap<QUrl, QPair<HttpAssetTransferInfo, Foundation::AssetPtr> > metadata_to_assetptr_;
         QList<QtHttpAssetTransfer *> pending_request_queue_;
+
+        bool filling_stack_;
+        bool fake_metadata_fetch_;
+        QUrl fake_metadata_url_;
+
+        QUrl get_texture_cap_;
 
     };
 }

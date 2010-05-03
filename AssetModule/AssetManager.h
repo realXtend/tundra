@@ -52,7 +52,7 @@ namespace Asset
         //! Checks asset id for validity
         /*! \return true if asset id is valid
          */
-        virtual bool IsValidId(const std::string& asset_id);
+        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type);
         
         //! Requests an asset download
         /*! Events will be sent when download progresses, and when asset is ready.

@@ -17,6 +17,8 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QDebug>
+
 namespace OpenSimProtocol
 {
 
@@ -267,6 +269,7 @@ namespace OpenSimProtocol
             "<string>ViewerStartAuction</string>"
             "<string>UntrustedSimulatorMessage</string>"
             "<string>ViewerStats</string>"
+            "<string>GetTexture</string>"
             "</array></llsd>";
 
         HttpUtilities::HttpRequest request;
@@ -292,6 +295,8 @@ namespace OpenSimProtocol
         std::string response_str = (char *)&response[0];
 
         ExtractCapabilitiesFromXml(response_str);
+
+        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, Foundation::EventDataPtr(), 0);
     }
 
     void ProtocolModuleOpenSim::ExtractCapabilitiesFromXml(std::string xml)

@@ -484,7 +484,7 @@ namespace OgreRenderer
             if (asset_service)
             {
                 // Check that the dependency is asset based
-                if (asset_service->IsValidId(references[i].id_))
+                if (asset_service->IsValidId(references[i].id_, references[i].type_))
                 {
                     // If can get the depended resource directly, OK
                     Foundation::ResourcePtr res = GetResourceInternal(references[i].id_, references[i].type_);
