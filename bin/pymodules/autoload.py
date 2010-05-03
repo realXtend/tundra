@@ -31,7 +31,7 @@ modules = [
     #objectedit.objectedit.ObjectEdit, #now added to list at import due to new eror reporting tech
     #usr.anonlogin.AnonLogin,
     #mediaurlhandler.mediaurlhandler.MediaURLHandler,
-    #loadurlhandler.LoadURLHandler,
+    loadurlhandler.LoadURLHandler,
     #apitest.pythonqt_gui.TestGui,
     #WebServer,
     #usr.mousecontrol.MouseControl,
