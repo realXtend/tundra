@@ -42,7 +42,8 @@ class OgreNode:
         #p.Position = Vec(*self.position)
         mp = self.position
         #p.Position = Vec(-mp[0], mp[2], mp[1])
-        p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+200)
+        #p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+200)
+        p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+25)
         #print p.Position.toString(), self.position
             
         #print p.Orientation.toString(), self.orientation
@@ -122,6 +123,7 @@ class NaaliSceneManagerFacade:
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()
     ds = dotscene.DotScene(fname, sm)
+    return ds, ds.dotscenemanager
 
 if __name__ == '__main__':
     load_dotscene("test.scene")

@@ -6,3 +6,6 @@ forwardevent = False
 
 def sendChat(m):
     print "MOCK chat sent", m
+
+def logError(s):
+    print "ERROR:", s
