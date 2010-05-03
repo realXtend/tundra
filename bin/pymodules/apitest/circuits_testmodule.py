@@ -34,11 +34,11 @@ class TestModule(Component):
     def on_chat(self, frm, msg):
         print "Test Module received chat message:", frm, msg
         
-    #def on_input(self, evid):
-        #print "Test Module receiving input event:", evid
+    def on_input(self, evid):
+        print "Test Module received input event:", evid
         
-    #    if evid in inputtests:
-    #        print inputtests[evid]
+        if evid in inputtests:
+            print inputtests[evid]
             
     #def on_mousemove(self, m):
     #    pass
