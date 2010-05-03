@@ -189,18 +189,14 @@ namespace Asset
         fake_metadata_fetch_ = false;
         QtHttpAssetTransfer *transfer = dynamic_cast<QtHttpAssetTransfer*>(reply->request().originatingObject());
 
-        /**** THIS IS A /data REQUEST REPLY AND IT FAILED****/
+        /**** THIS IS A DATA REQUEST REPLY AND IT FAILED ****/
         if (reply->error() != QNetworkReply::NoError && transfer)
         {
             // Send asset canceled events
             HttpAssetTransferInfo error_transfer_data = transfer->GetTranferInfo();
- 
-            // Crashes in OgreRenderer if i send this...
-            /*
             Events::AssetCanceled *data = new Events::AssetCanceled(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
             Foundation::EventDataPtr data_ptr(data);
             event_manager_->SendDelayedEvent(asset_event_category_, Events::ASSET_CANCELED, data_ptr, 0);
-            */
 
             // Clean up
             RemoveFinishedTransfers(error_transfer_data.id, reply->url());
