@@ -291,13 +291,8 @@ namespace ECEditor
                 Foundation::ComponentPtr component = componentInterface_.lock();
                 if(component.get())
                 {
-                    Scene::Entity *entity = component.get()->GetParentEntity();
-                    if(entity)
-                    {
-                        Scene::Events::SceneEventData event_data(entity->GetId());
-                        Foundation::EventManagerPtr event_manager = entity->GetFramework()->GetEventManager();
-                        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
-                    }
+                    // Trigger sync to network
+                    component->ComponentChanged(Foundation::Local);
                 }
             }
         }

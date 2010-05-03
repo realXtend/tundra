@@ -189,20 +189,20 @@ namespace ECEditor
         for(uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
             //QListWidgetItem* item = component_list_->item(i);
-            QTreeWidgetItem *item = component_list_->takeTopLevelItem(i);
+            QTreeWidgetItem *item = component_list_->topLevelItem(i);
             if (item->isSelected())
                 components.push_back(item->text(0).toStdString());
         }
         
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        
         for (uint i = 0; i < entities.size(); ++i)
         {
             for (uint j = 0; j < components.size(); ++j)
-                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]));
-            
-            Scene::Events::SceneEventData event_data(entities[i]->GetId());
-            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
-        }
+            {
+                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
+            }
+         }
         
         RefreshEntityComponents();
     }
@@ -215,15 +215,14 @@ namespace ECEditor
         std::string name = create_combo_->currentText().toStdString();
         
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        
         for (uint i = 0; i < entities.size(); ++i)
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            entities[i]->GetOrCreateComponent(name);
-            
-            Scene::Events::SceneEventData event_data(entities[i]->GetId());
-            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
+            entities[i]->GetOrCreateComponent(name, Foundation::Local);
         }
         
         RefreshEntityComponents();
@@ -277,13 +276,13 @@ namespace ECEditor
                     {
                         Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString());
                         if (comp)
+                        {
                             comp->DeserializeFrom(comp_elem, Foundation::Local);
+                            // Trigger sync to network
+                            comp->ComponentChanged(Foundation::Local);
+                        }
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
-                    
-                    Scene::Events::SceneEventData event_data(entity->GetId());
-                    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-                    event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
                 }
                 else
                 {

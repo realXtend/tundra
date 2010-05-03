@@ -93,24 +93,17 @@ void ComponentInterface::ComponentChanged(Foundation::ChangeType change)
     {
         Scene::SceneManager* scene = parent_entity_->GetScene();
         if (scene)
-        {
-            // This is an evil hack: we rather not send raw component pointers around, so we seek inside the entity 
-            // for the corresponding shared pointer. If found to be a bottleneck by profiling, can be substituted
-            // with sending a raw pointer
-            const Scene::Entity::ComponentVector& comps = parent_entity_->GetComponentVector();
-            for (uint i = 0; i < comps.size(); ++i)
-            {
-                if (comps[i].get() == this)
-                {
-                    scene->EmitComponentChanged(comps[i], change);
-                    break;
-                }
-            }
-        }
+            scene->EmitComponentChanged(this, change);
     }
     
     // Trigger also internal change
     emit OnChanged();
+}
+
+void ComponentInterface::ResetChange()
+{
+    for (uint i = 0; i < attributes_.size(); ++i)
+        attributes_[i]->ResetChange();
 }
 
 void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const

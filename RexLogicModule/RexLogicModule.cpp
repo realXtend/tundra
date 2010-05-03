@@ -371,6 +371,9 @@ void RexLogicModule::Update(f64 frametime)
         avatar_->Update(frametime);
         UpdateAvatarNameTags(avatar_->GetUserAvatar());
 
+        // update primitive stuff (EC network sync etc.)
+        primitive_->Update(frametime);
+        
         // update sound listener position/orientation
         UpdateSoundListener();
 
@@ -737,7 +740,10 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
 
     activeScene_ = framework_->CreateScene(name);
     framework_->SetDefaultWorldScene(activeScene_);
-
+    
+    // Listen to component changes to serialize them via RexFreeData
+    primitive_->RegisterToComponentChangeSignals(activeScene_);
+    
     // Create camera entity into the scene
     {
         Foundation::Framework* fw = GetFramework();

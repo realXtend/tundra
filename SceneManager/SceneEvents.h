@@ -90,9 +90,11 @@ namespace Scene
         static const event_id_t EVENT_ENTITY_MEDIAURL_SET = 0x11; //REMOTE == from server
 
         /// An internal event telling that an entity's XML serializable EC data was modified, and should be encoded to RexFreeData & sent over network
+        /// This is deprecated, and no longer responded to. Will be removed in the future.
         static const event_id_t EVENT_ENTITY_ECS_MODIFIED = 0x12;
 
         /// An internal event telling that an entity's XML serializable EC data was received from network
+        /// Will possibly be removed later in favour of using only SceneManager signals for same purpose
         static const event_id_t EVENT_ENTITY_ECS_RECEIVED = 0x13;
         
         /// Event data interface for Scene object related events.

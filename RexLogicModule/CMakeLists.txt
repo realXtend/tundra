@@ -22,7 +22,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES RexLogicModule.h Avatar/AvatarEditor.h EventHandlers/LoginHandler.h
-    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Communications/*.h)
+    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Communications/*.h Environment/Primitive.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)

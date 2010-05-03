@@ -30,7 +30,7 @@ namespace Scene
             components_[i]->SetParentEntity(0);
     }
 
-    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component)
+    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ChangeType change)
     {
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
@@ -38,11 +38,14 @@ namespace Scene
             component->SetParentEntity(this);
             components_.push_back(component);
         
+            if (scene_)
+                scene_->EmitComponentAdded(this, component.get(), change);
+            
             ///\todo Ali: send event
         }
     }
 
-    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component)
+    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ChangeType change)
     {
         if (component)
         {
@@ -50,7 +53,12 @@ namespace Scene
             if (iter != components_.end())
             {
                 (*iter)->SetParentEntity(0);
+                
+                if (scene_)
+                    scene_->EmitComponentRemoved(this, (*iter).get(), change);
+                    
                 components_.erase(iter);
+                
                 ///\todo Ali: send event
             }
             else
@@ -60,7 +68,7 @@ namespace Scene
         }
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name)
+    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name, Foundation::ChangeType change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
@@ -70,7 +78,7 @@ namespace Scene
         Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
-            AddComponent(new_comp);
+            AddComponent(new_comp, change);
             return new_comp;
         }
 

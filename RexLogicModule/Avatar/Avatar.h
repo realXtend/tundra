@@ -108,6 +108,10 @@ namespace RexLogic
 
         //! Avatar appearance controller
         AvatarAppearance avatar_appearance_;
+
+        //! Pending avatar appearances
+        typedef std::map<RexUUID, std::string> AvatarAppearanceMap;
+        AvatarAppearanceMap pending_appearances_;
     };
 }
 

@@ -112,9 +112,19 @@ namespace Scene
         return entities;
     }
     
-    void SceneManager::EmitComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change)
+    void SceneManager::EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change)
     {
         emit ComponentChanged(comp, change);
+    }
+    
+    void SceneManager::EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+    {
+        emit ComponentAdded(entity, comp, change);
+    }
+    
+    void SceneManager::EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+    {
+        emit ComponentRemoved(entity, comp, change);
     }
 }
 
