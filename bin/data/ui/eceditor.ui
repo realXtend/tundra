@@ -196,7 +196,22 @@ QLabel {
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="list_components"/>
+             <widget class="QTreeWidget" name="list_components">
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="rootIsDecorated">
+               <bool>false</bool>
+              </property>
+              <property name="headerHidden">
+               <bool>true</bool>
+              </property>
+              <column>
+               <property name="text">
+                <string notr="true">1</string>
+               </property>
+              </column>
+             </widget>
             </item>
            </layout>
           </item>

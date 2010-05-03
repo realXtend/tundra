@@ -19,6 +19,7 @@ class QHideEvent;
 class QShowEvent;
 class QPushButton;
 class QListWidget;
+class QTreeWidget;
 class QTextEdit;
 class QComboBox;
 class QKeyEvent;
@@ -79,7 +80,7 @@ namespace ECEditor
         QPushButton* delete_button_;
         QPushButton* toggle_browser_button_;
         QListWidget* entity_list_;
-        QListWidget* component_list_;
+        QTreeWidget* component_list_;
         QTextEdit* data_edit_;
         QtTreePropertyBrowser* property_browser_;
         QtVariantPropertyManager *variantManager_;
