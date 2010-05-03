@@ -71,6 +71,11 @@ namespace Foundation
          */
         void ComponentChanged(ChangeType change);
         
+        //! Reset change status of all attributes
+        /*! Called by serialization managers when they have managed syncing the component
+         */
+        void ResetChange();
+        
         //! Serialize to XML
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
         //! Deserialize from XML

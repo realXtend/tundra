@@ -67,6 +67,17 @@ namespace RexLogic
                 EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
                 presence->localId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
                 presence->agentId = fullid;
+
+                // If we do have a pending appearance, apply it here
+                if (pending_appearances_.find(fullid) != pending_appearances_.end())
+                {
+                    std::string appearance = pending_appearances_[fullid];
+                    pending_appearances_.erase(pending_appearances_.find(fullid));
+                    EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+                    avatar->SetAppearanceAddress(appearance,false);
+                    avatar_appearance_.DownloadAppearance(entity);
+                    RexLogicModule::LogDebug("Used pending appearance " + appearance + " for new avatar");
+                }
             }
         }
         return entity;
@@ -329,6 +340,10 @@ namespace RexLogic
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->SetAppearanceAddress(avataraddress,overrideappearance);
                 avatar_appearance_.DownloadAppearance(entity);
+            }
+            else
+            {
+                pending_appearances_[avatarid] = avataraddress;
             }
         }
 
@@ -709,5 +724,6 @@ namespace RexLogic
     void Avatar::HandleLogout()
     {
         avatar_appearance_.InventoryExportReset();
+        pending_appearances_.clear();
     }
 }

@@ -87,10 +87,6 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
             rexlogicmodule_->EntityClicked(entity_clicked_data->entity);
         break;
     }
-    case Scene::Events::EVENT_ENTITY_ECS_MODIFIED:
-        if (event_data)
-            rexlogicmodule_->GetPrimitiveHandler()->HandleECsModified(event_data->localID);
-        break;
     default:
         break;
     }

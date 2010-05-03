@@ -135,18 +135,9 @@ void EC_NoteCard::OnTextChanged()
 
 void EC_NoteCard::SyncToNetwork()
 {
-    if (parent_entity_)
-    {
-        Scene::Events::SceneEventData event_data(parent_entity_->GetId());
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
-        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_MODIFIED, &event_data);
-        text_dirty_ = false;
-        title_dirty_ = false;
-    }
-    else
-    {
-        LogError("No parent entity set, cannot sync to network");
-    }
+    ComponentChanged(Foundation::Local);
+    text_dirty_ = false;
+    title_dirty_ = false;
 }
 
 void EC_NoteCard::Show()

@@ -5,6 +5,7 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
+#include "ComponentInterface.h"
 
 #include <QObject>
 
@@ -75,14 +76,15 @@ namespace Scene
             although in most cases it is probably not sensible.
 
             \param component An entity component
+            \param change Origin of change for network replication
         */
-        void AddComponent(const Foundation::ComponentInterfacePtr &component);
+        void AddComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ChangeType change = Foundation::LocalOnly);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const Foundation::ComponentInterfacePtr &component);
+        void RemoveComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ChangeType change = Foundation::LocalOnly);
 
         //! Returns a component with type 'type_name' or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -101,8 +103,9 @@ namespace Scene
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
+            \param change Change type for network replication, in case component has to be created
         */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, Foundation::ChangeType change = Foundation::LocalOnly);
 
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).

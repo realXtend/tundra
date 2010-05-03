@@ -117,7 +117,21 @@ namespace Scene
         /*! \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change);
+        void EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        
+        //! Emit a notification of a component being added to entity. Called by the entity
+        /*! \param entity Entity pointer
+            \param comp Component pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        
+        //! Emit a notification of a component being removed from entity. Called by the entity
+        /*! \param entity Entity pointer
+            \param comp Component pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
         
     private:
         SceneManager &operator =(const SceneManager &other);
@@ -135,7 +149,15 @@ namespace Scene
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(Foundation::ComponentInterfacePtr comp, Foundation::ChangeType change);
+        void ComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
+        /*! Network synchronization managers should connect to this
+         */
+        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
+        /*! Network synchronization managers should connect to this
+         */
+        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
     };
 }
 

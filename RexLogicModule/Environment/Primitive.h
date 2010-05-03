@@ -11,6 +11,11 @@
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "ComponentInterface.h"
+#include "SceneManager.h"
+#include "Color.h"
+
+#include <QObject>
 
 class QColor;
 class QDomDocument;
@@ -27,11 +32,16 @@ namespace RexLogic
     class RexLogicModule;
     class EC_AttachedSound;
 
-    class Primitive
+    class Primitive : public QObject
     {
+        Q_OBJECT
+        
      public:
         Primitive(RexLogicModule *rexlogicmodule);
         ~Primitive();
+        
+        // Frame update
+        void Update(f64 frametime);
         
         bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleOSNE_KillObject(uint32_t objectid); 
@@ -60,12 +70,18 @@ namespace RexLogic
         // Send RexFreeData of a prim entity (if exists) to server
         void SendRexFreeData(entity_id_t entityid);
 
-        // Encode serializable EC's into XML format, put to RexFreeData, and send to server
-        void HandleECsModified(entity_id_t entityid);
-
+        // Start listening to Scene's EC notification signals
+        void RegisterToComponentChangeSignals(Scene::ScenePtr scene);
+        
         // Deserialize EC's sent by server
         void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc);
-
+        
+    public slots:
+        //! Trigger EC sync because of component attributes changing
+        void OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        //! Trigger EC sync because of components added/removed to entity
+        void OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        
     private:
         //! The owning module.
         RexLogicModule *rexlogicmodule_;
@@ -157,6 +173,9 @@ namespace RexLogic
         //! discards request tags for certain entity
         void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
 
+        // Go through dirty lists & send changed components to server
+        void SerializeECsToNetwork();
+
         //! Return valid uuid if given id is valid uuid or if given id
         //! is valid asset url with format: 'http://domain/path/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
         //! Return zero uuid if either above works
@@ -179,6 +198,12 @@ namespace RexLogic
         //! pending rexfreedatas
         typedef std::map<RexUUID, std::string > RexFreeDataMap;
         RexFreeDataMap pending_rexfreedata_;
+        
+        typedef std::set<entity_id_t> EntityIdSet;
+        //! entities with local EC changes
+        EntityIdSet local_dirty_entities_;
+        //! entities with EC changes from the network
+        EntityIdSet network_dirty_entities_;
     };
 }
 #endif

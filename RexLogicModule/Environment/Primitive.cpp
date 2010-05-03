@@ -56,6 +56,11 @@ Primitive::~Primitive()
 {
 }
 
+void Primitive::Update(f64 frametime)
+{
+    SerializeECsToNetwork();
+}
+
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid)
 {
     // Make sure scene exists
@@ -590,46 +595,6 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     conn->SendGenericMessageBinary("RexPrimData", strings, buffer);
 }
 
-void Primitive::HandleECsModified(entity_id_t entityid)
-{
-    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
-    if (!entity)
-        return;
-    
-    const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
-    
-    // Get/create freedata component
-    Foundation::ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
-    if (!freeptr)
-        return;
-    EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
-    
-    QDomDocument temp_doc;
-    QDomElement entity_elem = temp_doc.createElement("entity");
-    
-    QString id_str;
-    id_str.setNum(entity->GetId());
-    entity_elem.setAttribute("id", id_str);
-    
-    for (uint i = 0; i < components.size(); ++i)
-    {
-        if (components[i]->IsSerializable())
-            components[i]->SerializeTo(temp_doc, entity_elem);
-    }
-    
-    temp_doc.appendChild(entity_elem);
-    QByteArray bytes = temp_doc.toByteArray();
-    
-    if (bytes.size() > 1000)
-    {
-        RexLogicModule::LogError("Entity component serialized data is too large (>1000 bytes), not sending update");
-        return;
-    }
-    
-    free.FreeData = std::string(bytes.data(), bytes.size());
-    SendRexFreeData(entityid);
-}
-
 void Primitive::SendRexFreeData(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -788,48 +753,6 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
         Scene::Events::SceneEventData event_data(entity->GetId());
         Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
         event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
-    }
-}
-
-void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
-{
-    StringVector type_names;
-    QDomElement entity_elem = doc.firstChildElement("entity");
-    if (!entity_elem.isNull())
-    {
-        QDomElement comp_elem = entity_elem.firstChildElement("component");
-        while (!comp_elem.isNull())
-        {
-            std::string type_name = comp_elem.attribute("type").toStdString();
-            type_names.push_back(type_name);
-            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
-            if (new_comp)
-                new_comp->DeserializeFrom(comp_elem, Foundation::Network);
-            else
-                RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
-            comp_elem = comp_elem.nextSiblingElement("component");
-        }
-    }
-    
-    // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
-    // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
-    for (uint i = 0; i < all_components.size(); ++i)
-    {
-        if (all_components[i]->IsSerializable())
-        {
-            bool found = false;
-            for (uint j = 0; j < type_names.size(); ++j)
-            {
-                if (type_names[j] == all_components[i]->TypeName())
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                entity->RemoveComponent(all_components[i]);
-        }
     }
 }
 
@@ -1951,6 +1874,8 @@ void Primitive::HandleLogout()
     prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
+    local_dirty_entities_.clear();
+    network_dirty_entities_.clear();
 }
 
 
@@ -1979,6 +1904,150 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
         return url.toString().toStdString();
     else
         return "";
+}
+
+void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
+{
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
+}
+
+void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+{
+    Scene::Entity* parent_entity = comp->GetParentEntity();
+    if (!parent_entity)
+        return;
+    entity_id_t entityid = parent_entity->GetId();
+    
+    if (change == Foundation::Local)
+        local_dirty_entities_.insert(entityid);
+    if (change == Foundation::Network)
+        network_dirty_entities_.insert(entityid);
+}
+
+void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+{
+    if (!entity)
+        return;
+    
+    // Entity has had either a component added or removed. We will do full EC-data sync
+    // (actually the component pointer is of no interest right now)
+    entity_id_t entityid = entity->GetId();
+    
+    if (change == Foundation::Local)
+        local_dirty_entities_.insert(entityid);
+    if (change == Foundation::Network)
+        network_dirty_entities_.insert(entityid);
+}
+void Primitive::SerializeECsToNetwork()
+{
+    // Process first the Network change list. This actually needs no further actions, except that we reset 
+    // the attribute dirty flags resulting from deserializing the EC data that came from server
+    for (EntityIdSet::iterator i = network_dirty_entities_.begin(); i != network_dirty_entities_.end(); ++i)
+    {
+        // If we have a pending local update while a network update occurred, we just override it. Sorry!
+        if (local_dirty_entities_.find(*i) != local_dirty_entities_.end())
+            local_dirty_entities_.erase(*i);
+        // Network based change needs no work except resetting the change flag on all components
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
+        if (!entity)
+            continue;
+        const Scene::Entity::ComponentVector& comps = entity->GetComponentVector();
+        for (uint j = 0; j < comps.size(); ++j)
+            comps[j]->ResetChange();
+    }
+    network_dirty_entities_.clear();
+    
+    // Process the local change list for entities we have modified ourselves and have to send the EC data for
+    for (EntityIdSet::iterator i = local_dirty_entities_.begin(); i != local_dirty_entities_.end(); ++i)
+    {
+        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
+        if (!entity)
+            continue;
+        
+        const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
+        
+        // Get/create freedata component
+        Foundation::ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
+        if (!freeptr)
+            continue;
+        EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
+        
+        QDomDocument temp_doc;
+        QDomElement entity_elem = temp_doc.createElement("entity");
+        
+        QString id_str;
+        id_str.setNum(entity->GetId());
+        entity_elem.setAttribute("id", id_str);
+        
+        for (uint j = 0; j < components.size(); ++j)
+        {
+            if (components[j]->IsSerializable())
+                components[j]->SerializeTo(temp_doc, entity_elem);
+            // Clear the change flag now that component has been processed
+            components[j]->ResetChange();
+        }
+        
+        temp_doc.appendChild(entity_elem);
+        QByteArray bytes = temp_doc.toByteArray();
+        
+        if (bytes.size() > 1000)
+        {
+            RexLogicModule::LogError("Entity component serialized data is too large (>1000 bytes), not sending update");
+            continue;
+        }
+        
+        free.FreeData = std::string(bytes.data(), bytes.size());
+        std::cout << "Sending rexfreedata" << std::endl;
+        SendRexFreeData(*i);
+    }
+    local_dirty_entities_.clear();
+}
+
+void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
+{
+    StringVector type_names;
+    QDomElement entity_elem = doc.firstChildElement("entity");
+    if (!entity_elem.isNull())
+    {
+        QDomElement comp_elem = entity_elem.firstChildElement("component");
+        while (!comp_elem.isNull())
+        {
+            std::string type_name = comp_elem.attribute("type").toStdString();
+            type_names.push_back(type_name);
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
+            if (new_comp)
+                new_comp->DeserializeFrom(comp_elem, Foundation::Network);
+            else
+                RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
+    }
+    
+    // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
+    // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
+    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    for (uint i = 0; i < all_components.size(); ++i)
+    {
+        if (all_components[i]->IsSerializable())
+        {
+            bool found = false;
+            for (uint j = 0; j < type_names.size(); ++j)
+            {
+                if (type_names[j] == all_components[i]->TypeName())
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                entity->RemoveComponent(all_components[i]);
+        }
+    }
 }
 
 } // namespace RexLogic
