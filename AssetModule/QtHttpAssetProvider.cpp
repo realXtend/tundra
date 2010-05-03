@@ -50,6 +50,8 @@ namespace Asset
     void QtHttpAssetProvider::SetGetTextureCap(std::string url)
     {
         get_texture_cap_ = QUrl(QString::fromStdString(url));
+        if (get_texture_cap_.isValid())
+            AssetModule::LogInfo("Server supports HTTP assets: using HTTP to fetch textures and meshes.");
     }
 
     // Interface implementation
@@ -97,9 +99,9 @@ namespace Asset
             asset_type_t asset_type_int = RexTypes::GetAssetTypeFromTypeName(asset_type);
             QtHttpAssetTransfer *transfer = 0;
     
-            if (IsAcceptableAssetType(asset_type))
+            if (IsAcceptableAssetType(asset_type) && RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
             {
-                // Http texture via cap url
+                // Http texture/meshes via cap url
                 QString texture_url_string = get_texture_cap_.toString() + "?texture_id=" + asset_id_qstring;
                 QUrl texture_url(texture_url_string);
                 transfer = new QtHttpAssetTransfer(texture_url, asset_id_qstring, asset_type_int, tag);
