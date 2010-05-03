@@ -8,6 +8,7 @@
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationsService.h"
+#include "Service.h"
 
 #include <QObject>
 
@@ -43,11 +44,12 @@ namespace CommunicationTest
     class Test;
 }
 
-namespace Communications
-{
-//    class ServiceInterface;
-    typedef boost::shared_ptr<ServiceInterface> ServicePtr;
-}
+//namespace Communications
+//{
+////    class ServiceInterface;
+//    typedef boost::shared_ptr<ServiceInterface> ServicePtr;
+//    class Service;
+//}
 
 
 namespace Communication
@@ -100,8 +102,10 @@ namespace Communication
         // Event category IDs
         event_category_id_t event_category_networkstate_;
         event_category_id_t event_category_framework_;
+        typedef boost::shared_ptr<Communications::ServiceInterface> CommunicationsServicePtr;
+        CommunicationsServicePtr communications_service_;
 
-        Communications::ServicePtr communications_service_;
+//        Communications::Service* communications_service_;
 //        Communications::ServiceInterface* communications_service_;
 
     private:

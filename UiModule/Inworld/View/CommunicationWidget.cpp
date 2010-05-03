@@ -15,21 +15,62 @@
 
 namespace CoreUi
 {
-    CommunicationWidget::CommunicationWidget() :
+
+    StateIndicatorWidget::StateIndicatorWidget(QWidget * parent, Qt::WindowFlags f)
+        : QPushButton(parent),
+          state_(STATE_OFFLINE)
+    {
+        setMinimumSize(28,28);
+        setObjectName("stateIndicatorWidget"); // There can be obly one instance of this calss
+        setState(STATE_OFFLINE);
+    }
+
+    void StateIndicatorWidget::setState(State state)
+    {
+        state_ = state;
+
+        switch(state_)
+        {
+        case STATE_OFFLINE:
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_offline.png'); background-position: top left; background-repeat: no-repeat; }");
+            break;
+        case STATE_ONLINE:
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
+            break;
+        case STATE_BUSY:
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_busy.png'); background-position: top left; background-repeat: no-repeat; }");
+            break;
+        case STATE_AWAY:
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: transparent; background-image: url('./data/ui/images/comm/status_away.png'); background-position: top left; background-repeat: no-repeat; }");
+            break;
+        }
+        emit StateChanged();
+    }
+
+    StateIndicatorWidget::State StateIndicatorWidget::state() const
+    {
+        return state_;
+    }
+
+    CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
+        framework_(framework),
         QGraphicsProxyWidget(),
         internal_widget_(new QWidget()),
         current_controller_(0),
         im_proxy_(0),
-        voice_proxy_(0),
         viewmode_(Normal),
         resizing_horizontal_(false),
-        resizing_vertical_(false)
+        resizing_vertical_(false),
+        in_world_speak_mode_on_(false),
+        voice_status_(0)
     {
         Initialise();
         ChangeView(viewmode_);
     }
 
     // Private
+
+
 
     void CommunicationWidget::Initialise()
     {
@@ -59,6 +100,7 @@ namespace CoreUi
         connect(viewModeButton, SIGNAL( clicked() ), SLOT( ChangeViewPressed() ));
         connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
+//        connect(voiceToggle, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
     }
 
     void CommunicationWidget::ChangeViewPressed()
@@ -105,7 +147,14 @@ namespace CoreUi
 
     void CommunicationWidget::ToggleVoice()
     {
+        if (!in_world_voice_session_)
+            return;
 
+        in_world_speak_mode_on_ = !in_world_speak_mode_on_;
+        if (in_world_speak_mode_on_)
+            in_world_voice_session_->EnableAudioSending();
+        else
+            in_world_voice_session_->DisableAudioSending();
     }
 
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
@@ -248,6 +297,16 @@ namespace CoreUi
     {
         im_proxy_ = im_proxy;
         imButton->setEnabled(true);
+
+        // Initialize In-World Voice
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+            }
+        }
     }
 
     void CommunicationWidget::SetFocusToChat()
@@ -255,10 +314,56 @@ namespace CoreUi
         chatLineEdit->setFocus(Qt::MouseFocusReason);
     }
 
-    void CommunicationWidget::SetupInWorldVoiceSession(Communications::InWorldVoice::SessionInterface* session)
+    void CommunicationWidget::InitializeInWorldVoice()
     {
-        in_world_voice_session_ = session;
-//        connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivity(double)), SLOT(ShowSpeakerVoiceActivity(double)) );
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                in_world_voice_session_ = comm->InWorldVoiceSession();
+                connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(StateChanged()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantJoined()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantLeft()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
+            }
+        }
+        
+        voice_status_ = new StateIndicatorWidget(0);
+        connect(voice_status_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
+        this->voiceLayoutH->addWidget(voice_status_);
+        voice_status_->setAutoFillBackground(true);
+        voice_status_->show();
+    }
+
+    void CommunicationWidget::UpdateInWorldVoiceIndicator()
+    {
+        if (!in_world_voice_session_)
+            return;
+
+        if (in_world_voice_session_->IsAudioSendingEnabled())
+        {
+            if (voice_status_)
+                voice_status_->setState(StateIndicatorWidget::STATE_ONLINE);
+
+//            voiceControl->
+            //! \todo show green ball
+        }
+        else
+        {
+            if (voice_status_)
+                voice_status_->setState(StateIndicatorWidget::STATE_OFFLINE);
+            //! \todo show gray ball
+        }
+
+    }
+
+    void CommunicationWidget::UninitializeInWorldVoice()
+    {
+        //! \todo: set indicator status -> disabled (hide voice controls)
+        in_world_voice_session_ = 0;
     }
 
     // NormalChatViewWidget : QWidget
@@ -313,5 +418,7 @@ namespace CoreUi
     {
         emit DestroyMe(this);
     }
+
+
 
 }

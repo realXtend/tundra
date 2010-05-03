@@ -10,6 +10,7 @@
 namespace Foundation
 {
     class Framework;
+    class EventDataInterface;
 }
 
 namespace MumbleVoip
@@ -28,6 +29,8 @@ namespace MumbleVoip
             virtual ~Provider();
             virtual Communications::InWorldVoice::SessionInterface* Session();
             virtual QString& Description();
+            virtual void Update(f64 frametime);
+            virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
         private:
             Foundation::Framework* framework_;
             QString description_;
@@ -38,8 +41,8 @@ namespace MumbleVoip
         private slots:
             void OnMumbleServerInfoReceived(ServerInfo info);
 
-        signals:
-            void SessionAvailable();
+        //signals:
+        //    void SessionAvailable();
         };
 
     } // InWorldVoice

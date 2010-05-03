@@ -79,6 +79,15 @@ QPushButton#imButton::pressed {
 	background-image: url('./data/ui/images/chat/uibutton_IM_click.png');
 }
 
+/* Voice control */
+QPushButton#voiceToggle {
+	border: 0px;
+	background-color: transparent;
+	background-image: url('./data/ui/images/chat/communications_iconGrey.png');
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+
 /* Misc */
 
 QScrollBar {
@@ -313,7 +322,7 @@ QScrollBar {
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_voip" stretch="0">
+      <layout class="QVBoxLayout" name="voiceLayout" stretch="0">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -321,7 +330,7 @@ QScrollBar {
         <number>0</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QVBoxLayout" name="voiceLayoutV">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -342,17 +351,39 @@ QScrollBar {
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="voiceControl">
-           <property name="minimumSize">
-            <size>
-             <width>75</width>
-             <height>28</height>
-            </size>
+          <layout class="QHBoxLayout" name="voiceLayoutH">
+           <property name="margin">
+            <number>0</number>
            </property>
-           <property name="text">
-            <string>Voice</string>
-           </property>
-          </widget>
+           <item>
+            <widget class="QLabel" name="voiceLabel">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>MS Sans Serif</family>
+               <pointsize>10</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QLabel#voiceLabel { border: 0px; background-color:  rgba(34,34,34,191); background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }
+</string>
+             </property>
+             <property name="text">
+              <string>Voice</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>

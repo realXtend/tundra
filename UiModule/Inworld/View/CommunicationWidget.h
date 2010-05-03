@@ -25,10 +25,31 @@ namespace Communications
     }
 }
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace CoreUi
 {
     class NormalChatViewWidget;
     class ChatLabel;
+
+    //! Presents status with set of status icons.
+    //!
+    class StateIndicatorWidget : public QPushButton
+    {
+        Q_OBJECT
+    public:
+        enum State { STATE_OFFLINE, STATE_ONLINE, STATE_BUSY, STATE_AWAY };
+        StateIndicatorWidget(QWidget * parent = 0, Qt::WindowFlags f = 0 );
+        virtual void setState(State state);
+        virtual State state() const;
+    signals:
+        void StateChanged();
+    private:
+        State state_;
+    };
 
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
     {
@@ -36,7 +57,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        CommunicationWidget();
+        CommunicationWidget(Foundation::Framework* framework);
         enum ViewMode { Normal, History };      
 
     public slots:
@@ -44,7 +65,6 @@ namespace CoreUi
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
 
         void SetFocusToChat();
-        void SetupInWorldVoiceSession(Communications::InWorldVoice::SessionInterface* session);
         
     protected:
         void hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event);
@@ -62,8 +82,12 @@ namespace CoreUi
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
+        void InitializeInWorldVoice();
+        void UninitializeInWorldVoice();
+        void UpdateInWorldVoiceIndicator();
 
     private:
+        Foundation::Framework* framework_;
         ViewMode viewmode_;
 
         QWidget *internal_widget_;
@@ -72,13 +96,15 @@ namespace CoreUi
         QPlainTextEdit *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
-        UiServices::UiProxyWidget *voice_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
+        bool in_world_speak_mode_on_;
 
         QPointF press_pos_;
         QPointF release_pos_;
         bool resizing_vertical_;
         bool resizing_horizontal_;
+
+        StateIndicatorWidget* voice_status_;
 
     signals:
         void SendMessageToServer(const QString &message);

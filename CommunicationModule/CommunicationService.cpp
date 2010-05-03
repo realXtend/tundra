@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "CommunicationModule.h"
 #include "CommunicationService.h"
 #include <QList>
 #include "NetworkEvents.h"
@@ -219,67 +220,3 @@ namespace Communication
 
 } // end of namespace: Communication
 
-namespace Communications
-{
-    Service* Service::instance_ = 0;
-
-    Service::Service() :
-        in_world_voice_provider_(0),
-        in_world_chat_provider_(0)
-    {
-
-    }
-
-    Service::~Service()
-    {
-
-    }
-
-    ServiceInterface* Service::Instance()
-    {
-        if (!Service::instance_)
-            Service::instance_ = new Service();
-//        return 0; // test
-        return Service::instance_;
-    }
-
-    InWorldVoice::SessionInterface* Service::InWorldVoiceSession() const
-    {
-        if (!in_world_voice_provider_)
-            return 0;
-        else
-            return in_world_voice_provider_->Session();
-    }
-
-    InWorldChat::SessionInterface* Service::InWorldChatSession() const
-    {
-        if (!in_world_chat_provider_)
-            return 0;
-        else
-            return in_world_chat_provider_->Session();
-    }
-
-    void Service::Register(InWorldVoice::ProviderInterface& provider)
-    {
-        in_world_voice_provider_ = &provider;
-        emit InWorldVoiceAvailable();
-        //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-        //if (ui_module.get())
-        //{
-        //    if (name == "IM")
-        //    {
-        //        UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);
-        //        im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
-        //        if (im_ui_proxy_widget_)
-        //            ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
-        //    }
-        //}
-    }
-
-    void Service::Register(InWorldChat::ProviderInterface& provider)
-    {
-        in_world_chat_provider_ = &provider;
-        emit InWorldChatAvailable();
-    }
-
-} // Communications

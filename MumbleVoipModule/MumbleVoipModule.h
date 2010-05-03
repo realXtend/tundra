@@ -30,6 +30,7 @@ namespace MumbleVoip
      *    'mumble link(avatar_id, context_id)'
      *    'mumble unlink'
      *    'mumble start(server_url)'
+     * todo 'mumble status'
      *  
      *  Request mumble server information when user has logged to world and establish a connection
      *  to mumble server.
