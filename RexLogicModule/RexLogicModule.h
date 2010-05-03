@@ -204,19 +204,27 @@ namespace RexLogic
         void UpdateSoundListener();
 
         //! XXX have linking probs to AvatarController so trying this wrapper
+        //! \todo figure workarounds for these functions so that dependency to RexLogicModule
+        //! is not needed anymore.
         void SetAvatarYaw(Real newyaw);
         void SetAvatarRotation(const Quaternion &newrot);
         void SetCameraYawPitch(Real newyaw, Real newpitch);
 
+        ///\todo Remove. Get this information using WorldStream and/or EC_OpenSimPresence.
         entity_id_t GetUserAvatarId() const;
-
+        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
         Vector3df GetCameraUp() const;
+        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
         Vector3df GetCameraRight() const;
+        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
         Vector3df GetCameraPosition() const;
+        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
         Quaternion GetCameraOrientation() const;
+        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
         Real GetCameraViewportWidth() const;
+        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
         Real GetCameraViewportHeight() const;
-
+        ///\todo Remove. Get this information from other modules using EC_OgreCamera.
         Real GetCameraFOV() const;
 
         void SendRexPrimData(entity_id_t entityid);
@@ -236,7 +244,7 @@ namespace RexLogic
         void AboutToDeleteWorld();
 
         //! Gets a map of all avatars in world and the distance from users avatar,
-        //! for updating the name tag fades after certain discanse
+        //! for updating the name tag fades after certain distance.
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
 
         /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
