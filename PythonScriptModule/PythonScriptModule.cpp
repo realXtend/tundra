@@ -1470,6 +1470,18 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         uiproperty.SetMenuNodeStyleMap(map);
     }
 
+    if (uiproperty.GetWidgetName() == "Local Scene")
+    {
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::TextNormal] = base_url + "edbutton_LSCENEtxt_normal.png";
+        map[UiDefines::TextHover] = base_url + "edbutton_LSCENEtxt_hover.png";
+        map[UiDefines::TextPressed] = base_url + "edbutton_LSCENEtxt_click.png";
+        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
+        uiproperty.SetMenuNodeStyleMap(map);
+    }
+
     UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
     return PythonQt::self()->wrapQObject(uiproxywidget);
 }

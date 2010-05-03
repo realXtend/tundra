@@ -60,6 +60,28 @@ else:
     else:
         modules.append(objectedit.objectedit.ObjectEdit)
 
+try: 
+    localscene.localscene
+except: # first run
+    try:
+        import localscene.localscene
+    except: #ImportError, e:
+        print "couldn't load localscene:"
+        traceback.print_exc()
+    else:
+        print "loading"
+        print localscene.localscene.LocalScene
+        modules.append(localscene.localscene.LocalScene)
+else:
+    r.logDebug("   reloading localscene")
+    try:
+        localscene.localscene = reload(localscene.localscene)
+    except: #e.g. a syntax error in the source, reload fail
+        print "couldn't reload localscene:"
+        traceback.print_exc()
+    else:
+        modules.append(localscene.localscene.LocalScene)
+
 #another exceptional import: failsafe loading of webserver
 if WEBSERVER:
     try:
