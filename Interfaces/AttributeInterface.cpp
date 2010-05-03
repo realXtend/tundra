@@ -10,13 +10,13 @@
 namespace Foundation
 {
 
-std::string Attribute<std::string>::ToString() const
+template<> std::string Attribute<std::string>::ToString() const
 {
     // Todo decode/encode XML-risky characters
     return Get();
 }
 
-std::string Attribute<bool>::ToString() const
+template<> std::string Attribute<bool>::ToString() const
 {
     if (Get())
         return "true";
@@ -24,22 +24,22 @@ std::string Attribute<bool>::ToString() const
         return "false";
 }
 
-std::string Attribute<int>::ToString() const
+template<> std::string Attribute<int>::ToString() const
 {
     return ::ToString<int>(Get());
 }
 
-std::string Attribute<uint>::ToString() const
+template<> std::string Attribute<uint>::ToString() const
 {
     return ::ToString<uint>(Get());
 }
 
-std::string Attribute<Real>::ToString() const
+template<> std::string Attribute<Real>::ToString() const
 {
     return ::ToString<Real>(Get());
 }
 
-std::string Attribute<Vector3df>::ToString() const
+template<> std::string Attribute<Vector3df>::ToString() const
 {
     Vector3df value = Get();
     
@@ -48,7 +48,7 @@ std::string Attribute<Vector3df>::ToString() const
         ::ToString<Real>(value.z);
 }
     
-std::string Attribute<Quaternion>::ToString() const
+template<> std::string Attribute<Quaternion>::ToString() const
 {
     Quaternion value = Get();
     
@@ -58,7 +58,7 @@ std::string Attribute<Quaternion>::ToString() const
         ::ToString<Real>(value.z);
 }
 
-std::string Attribute<Color>::ToString() const
+template<> std::string Attribute<Color>::ToString() const
 {
     Color value = Get();
     
@@ -68,13 +68,13 @@ std::string Attribute<Color>::ToString() const
         ::ToString<Real>(value.a);
 }
 
-void Attribute<std::string>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change)
 {
     // Todo decode/encode XML-risky characters
     Set(str, change);
 }
 
-void Attribute<bool>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change)
 {
     std::string str_lower = str;
     boost::algorithm::to_lower(str_lower);
@@ -83,7 +83,7 @@ void Attribute<bool>::FromString(const std::string& str, ChangeType change)
     Set(value, change);
 }
 
-void Attribute<int>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<int>::FromString(const std::string& str, ChangeType change)
 {
     try
     {
@@ -93,7 +93,7 @@ void Attribute<int>::FromString(const std::string& str, ChangeType change)
     catch (...) {}
 }
 
-void Attribute<uint>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<uint>::FromString(const std::string& str, ChangeType change)
 {
     try
     {
@@ -103,7 +103,7 @@ void Attribute<uint>::FromString(const std::string& str, ChangeType change)
     catch (...) {}
 }
 
-void Attribute<Real>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Real>::FromString(const std::string& str, ChangeType change)
 {
     try
     {
@@ -113,7 +113,7 @@ void Attribute<Real>::FromString(const std::string& str, ChangeType change)
     catch (...) {}
 }
 
-void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 3)
@@ -130,7 +130,7 @@ void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change)
     }
 }
 
-void Attribute<Color>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change)
 {
     Color value;
     StringVector components = SplitString(str, ' ');
@@ -159,7 +159,7 @@ void Attribute<Color>::FromString(const std::string& str, ChangeType change)
     }
 }
 
-void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 4)
