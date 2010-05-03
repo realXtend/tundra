@@ -11,88 +11,29 @@ import traceback
 
 from core.freshimport import freshimport
 
-#import or reload, to support refreshing the code on the fly
-sleeper = freshimport("usr.sleeper")
-circuits_testmodule = freshimport("apitest.circuits_testmodule")
-chathandler = freshimport("usr.chathandler")
-keycommands = freshimport("usr.keycommands")
-loadurlhandler = freshimport("loadurlhandler")
+#TODO: add reading these from a .ini file or something to ease custom modding
+modulenames = [
+    #("usr.sleeper", "Sleeper"),
+    #("apitest.circuits_testmodule", "TestModule"),
+    #("usr.chathandler", ChatHandler),
+    ("usr.keycommands", "KeyCommander"),
+    ("loadurlhandler", "LoadURLHandler"),
+    #("mediaurlhandler.mediaurlhandler", "MediaURLHandler"),
+    #("apitest.testrunner", "TestLoginLogoutExit",
+    #("webserver.webcontroller", "WebServer"),
+    ("localscene.localscene", "LocalScene"),
+    ("objectedit.objectedit", "ObjectEdit")
+    ]
 
-import apitest.testrunner
-#import mediaurlhandler.mediaurlhandler
-
-WEBSERVER = False
-  
-modules = [
-    #circuits_testmodule.TestModule,
-    #chathandler.ChatHandler,
-    keycommands.KeyCommander,
-    sleeper.Sleeper,
-    #objectedit.objectedit.ObjectEdit, #now added to list at import due to new eror reporting tech
-    #usr.anonlogin.AnonLogin,
-    #mediaurlhandler.mediaurlhandler.MediaURLHandler,
-    loadurlhandler.LoadURLHandler,
-    #apitest.pythonqt_gui.TestGui,
-    #WebServer,
-    #usr.mousecontrol.MouseControl,
-    #apitest.testrunner.TestLoginLogoutExit,
-]
-
-#the error reporting here might be still better than in freshimport()
-#- test and accommodate possible remaining feats from this block to there
-try:
-    objectedit.objectedit
-except: #first run
-    try:
-        import objectedit.objectedit
-    except:  #ImportError, e:
-        print "couldn't load objectedit:"
-        traceback.print_exc()
-    else:
-        modules.append(objectedit.objectedit.ObjectEdit) #copy-pasted from the other successful case below :/
-else:
-    r.logDebug("   reloading objectedit")
-    try:
-        objectedit.objectedit = reload(objectedit.objectedit)
-    except: #e.g. a syntax error in the source, reload fail
-        print "couldn't reload objectedit:"
-        traceback.print_exc()
-    else:
-        modules.append(objectedit.objectedit.ObjectEdit)
-
-try: 
-    localscene.localscene
-except: # first run
-    try:
-        import localscene.localscene
-    except: #ImportError, e:
-        print "couldn't load localscene:"
-        traceback.print_exc()
-    else:
-        print "loading"
-        print localscene.localscene.LocalScene
-        modules.append(localscene.localscene.LocalScene)
-else:
-    r.logDebug("   reloading localscene")
-    try:
-        localscene.localscene = reload(localscene.localscene)
-    except: #e.g. a syntax error in the source, reload fail
-        print "couldn't reload localscene:"
-        traceback.print_exc()
-    else:
-        modules.append(localscene.localscene.LocalScene)
-
-#another exceptional import: failsafe loading of webserver
-if WEBSERVER:
-    try:
-        import webserver.webcontroller
-    except ImportError: #socket not avaible in debugmode
-        print "NOTE: not enabling webserver 'cause socket module not available"
-    else:
-        from webserver.webcontroller import WebServer
-        modules.append(WebServer)
+modules = []
+for modname, compname in modulenames:
+    m = freshimport(modname)
+    if m is not None: #loaded succesfully. if not, freshload logged traceback
+        c = getattr(m, compname)
+        modules.append(c)
 
 #modules.append(headtrack.control.HeadTrack)
+
 def load(circuitsmanager):
     for klass in modules:
         #~ modinst = klass()
@@ -101,9 +42,8 @@ def load(circuitsmanager):
         try:
             modinst = klass()            
         except Exception, exc:
-            print "failed to instansciate pymodule", klass
-            print exc
-            traceback.print_exc()
+            r.logInfo("failed to instansciate pymodule %s" % klass)
+            r.logInfo(traceback.format_exc())
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
 
