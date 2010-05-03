@@ -5,6 +5,7 @@
 
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
+#include "ECLightEditor.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -19,7 +20,7 @@
 #include <qtpropertymanager.h>
 #include <qteditorfactory.h>
 #include <qtvariantproperty.h>
-#include "ECLightEditor.h"
+
 #include <QtProperty>
 
 #include <QApplication>
@@ -33,6 +34,7 @@
 #include <QComboBox>
 #include <QListWidget>
 #include <QGraphicsProxyWidget>
+#include <QTreeWidget>
 
 #include "MemoryLeakCheck.h"
 
@@ -40,18 +42,28 @@ using namespace RexTypes;
 
 namespace ECEditor
 {
-    uint AddUniqueItem(QListWidget* list, const QString& name)
+    uint AddUniqueListItem(QListWidget* list, const QString& name)
     {
         for (int i = 0; i < list->count(); ++i)
-        {
             if (list->item(i)->text() == name)
                 return i;
-        }
-        
+
         list->addItem(name);
         return list->count() - 1;
     }
-    
+
+    uint AddUniqueTreeItem(QTreeWidget *list, const QString &name)
+    {
+        for(int i = 0; i < list->topLevelItemCount(); ++i)
+            if (list->topLevelItem(i)->text(0) == name)
+                return i;
+
+        QTreeWidgetItem *item = new QTreeWidgetItem(list);
+        item->setText(0, name);
+        list->addTopLevelItem(item);
+        return list->topLevelItemCount() - 1;
+    }
+
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
         QWidget(),
         framework_(framework),
@@ -118,7 +130,7 @@ namespace ECEditor
         delete_button_ = findChild<QPushButton*>("but_delete");
         toggle_browser_button_ = findChild<QPushButton *>("but_show_properties");
         entity_list_ = findChild<QListWidget*>("list_entities");
-        component_list_ = findChild<QListWidget*>("list_components");
+        component_list_ = findChild<QTreeWidget*>("list_components");
         data_edit_ = findChild<QTextEdit*>("text_attredit");
         create_combo_ = findChild<QComboBox*>("combo_create");
         
@@ -173,11 +185,13 @@ namespace ECEditor
         
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         StringVector components;
-        for (uint i = 0; i < component_list_->count(); ++i)
+        //for (uint i = 0; i < component_list_->count(); ++i)
+        for(uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
-            QListWidgetItem* item = component_list_->item(i);
+            //QListWidgetItem* item = component_list_->item(i);
+            QTreeWidgetItem *item = component_list_->takeTopLevelItem(i);
             if (item->isSelected())
-                components.push_back(item->text().toStdString());
+                components.push_back(item->text(0).toStdString());
         }
         
         for (uint i = 0; i < entities.size(); ++i)
@@ -334,7 +348,7 @@ namespace ECEditor
             QString entity_id_str;
             entity_id_str.setNum((int)entity_id);
             
-            entity_list_->setCurrentRow(AddUniqueItem(entity_list_, entity_id_str));
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
         }
     }
     
@@ -360,20 +374,23 @@ namespace ECEditor
                 QString component_name = QString::fromStdString(components[j]->TypeName());
                 added_components.push_back(component_name);
                 // If multiple selected entities have the same component, add it only once to the EC selector list
-                AddUniqueItem(component_list_, QString::fromStdString(components[j]->TypeName()));
+                AddUniqueTreeItem(component_list_, QString::fromStdString(components[j]->TypeName()));
             }
         }
         
         // Now delete components that should not be in the component list
         // Note: the whole reason for going to this trouble (instead of just nuking and refilling the list)
         // is to retain the user's selection, if several entities share a set of components, as often is the case
-        for (int i = component_list_->count() - 1; i >= 0; --i)
+        //for (int i = component_list_->count() - 1; i >= 0; --i)
+        for (int i = component_list_->topLevelItemCount() - 1; i >= 0; --i)
         {
             bool found = false;
-            QListWidgetItem* item = component_list_->item(i);
+            //QListWidgetItem* item = component_list_->item(i);
+            QTreeWidgetItem* item = component_list_->topLevelItem(i);
             for (uint j = 0; j < added_components.size(); ++j)
             {
-                if (item->text() == added_components[j])
+                //if (item->text() == added_components[j])
+                if (item->text(0) == added_components[j])
                 {
                     found = true;
                     break;
@@ -382,7 +399,8 @@ namespace ECEditor
             
             if (!found)
             {
-                QListWidgetItem* item = component_list_->takeItem(i);
+                //QListWidgetItem* item = component_list_->takeItem(i);
+                QTreeWidgetItem* item = component_list_->topLevelItem(i);
                 delete item;
             }
         }
@@ -544,18 +562,20 @@ namespace ECEditor
     std::vector<EntityComponentSelection> ECEditorWindow::GetSelectedComponents()
     {
         std::vector<EntityComponentSelection> ret;
-        
+
         if (!component_list_)
             return ret;
-        
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         StringVector components;
-        
-        for (uint i = 0; i < component_list_->count(); ++i)
+
+//        for (uint i = 0; i < component_list_->count(); ++i)
+        for (uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
-            QListWidgetItem* item = component_list_->item(i);
+            //QListWidgetItem* item = component_list_->item(i);
+            QTreeWidgetItem* item = component_list_->topLevelItem(i);
             if (item->isSelected())
-                components.push_back(item->text().toStdString());
+                components.push_back(item->text(0).toStdString());
         }
         
         for (uint i = 0; i < entities.size(); ++i)
