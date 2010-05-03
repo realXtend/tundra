@@ -14,6 +14,7 @@
 #include "CoreModuleApi.h"
 
 #include <map>
+#include <string>
 
 namespace Foundation
 {
