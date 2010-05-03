@@ -89,7 +89,8 @@ class ComponentRunner(Component):
         ret = m.push(event, channel)
         while m: m.flush() #circuits components evaluate to false when have no pending events left
         if not ret.errors:
-            return ret.value
+            #print "EVENT:", event, ret.value
+            return True in ret.value
         else:
             #did the debugger already show the traceback?
             return False
