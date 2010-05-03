@@ -35,8 +35,10 @@ export CCACHE_DIR=$deps/ccache
 if lsb_release -c | grep -q lucid; then
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libglib libogre-dev libboost-all-dev \
+	 build-essential g++ libglib libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
+         libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
+         libtelepathy-qt4-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
 
 	
@@ -145,18 +147,42 @@ else
     touch $tags/$what-done
 fi
 
+cd $build
+what=qtpropertybrowser
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    pkgbase=${what}-2.5_1-opensource
+    rm -rf $pkgbase
+    zip=../tarballs/$pkgbase.tar.gz
+    test -f $zip || wget -O $zip http://get.qt.nokia.com/qt/solutions/lgpl/$pkgbase.tar.gz
+    tar zxf $zip
+    cd $pkgbase
+    echo yes | ./configure -library
+    qmake
+    make
+    cp lib/lib* $prefix/lib/
+    cp src/qt*.h $prefix/include/
+    touch $tags/$what-done
+fi
+
 ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 
-build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
-build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
-build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
-build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
-build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
-build-regular http://farsight.freedesktop.org/releases/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
-build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
-build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
-build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
-build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
+if lsb_release -c | grep -q lucid; then
+    : # nothing
+else
+    build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
+    build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
+    build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
+    build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
+    build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
+    build-regular http://farsight.freedesktop.org/releases/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
+    build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
+    build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
+    build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
+    build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
+fi
+
 
 if test "$1" = "--depsonly"; then
     exit 0

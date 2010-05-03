@@ -21,6 +21,10 @@ import string
 #import ogre.renderer.OGRE as ogre
 from quat import Quaternion
 
+import dotscenemanager
+from dotscenemanager import DotSceneManager as DSManager
+
+
 """
 self.dotscene = DotScene(self.fileName, self.sceneManager, rootnode)
 """     
@@ -34,6 +38,7 @@ class DotScene:
         self.prefix = prefix # used to prefix the node name when creating nodes
         nodes = self.findNodes(minidom.parse(self.fileName).documentElement,'nodes')
         self.root = nodes[0].childNodes
+        self.dotscenemanager = DSManager()
         
         if rootNode:
             self.rootNode = rootNode
@@ -151,6 +156,7 @@ class DotScene:
                 #try:
                 if attachMe is not None:
                     newNode.attachObject(attachMe)
+                    self.dotscenemanager.nodes[realName] = newNode
                 #except:
                     #print "could not attach:",realName
                 

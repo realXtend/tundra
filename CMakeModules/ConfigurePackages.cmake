@@ -180,8 +180,8 @@ endmacro (configure_caelum)
 
 macro (configure_qtpropertybrowser)
     sagase_configure_package (QT_PROPERTY_BROWSER 
-        NAMES QtPropertyBrowser
-        COMPONENTS QtPropertyBrowser
+        NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
+        COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
     sagase_configure_report (QT_PROPERTY_BROWSER)

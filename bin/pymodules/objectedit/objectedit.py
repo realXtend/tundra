@@ -142,6 +142,8 @@ class ObjectEdit(Component):
         #self.updateSelectionBox(ent)
         self.highlight(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
+
+        #print "selected", ent
         
         return ent, children
         
