@@ -1,7 +1,25 @@
 <scene formatVersion="">
     <nodes>
         <node name="Jack" id="3">
-            <position x="128" y="128" z="30" />
+            <position x="0" y="0" z="0" />
+            <rotation qx="0" qy="0" qz="0" qw="1" />
+            <scale x="2" y="2" z="2" />
+            <entity name="Jack" meshFile="Jack.mesh" static="false" />
+        </node>
+        <node name="Jack2" id="3">
+            <position x="2" y="0" z="0" />
+            <rotation qx="0" qy="0" qz="0" qw="1" />
+            <scale x="2" y="2" z="2" />
+            <entity name="Jack" meshFile="Jack.mesh" static="false" />
+        </node>
+        <node name="Jack3" id="3">
+            <position x="4" y="0" z="0" />
+            <rotation qx="0" qy="0" qz="0" qw="1" />
+            <scale x="2" y="2" z="2" />
+            <entity name="Jack" meshFile="Jack.mesh" static="false" />
+        </node>
+        <node name="Jack4" id="3">
+            <position x="6" y="0" z="0" />
             <rotation qx="0" qy="0" qz="0" qw="1" />
             <scale x="2" y="2" z="2" />
             <entity name="Jack" meshFile="Jack.mesh" static="false" />

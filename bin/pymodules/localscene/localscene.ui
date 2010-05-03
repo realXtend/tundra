@@ -10,6 +10,12 @@
     <height>135</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -28,11 +34,14 @@
     </property>
     <item>
      <widget class="QCheckBox" name="checkBoxFlipZY">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="text">
        <string>flip z-y</string>
       </property>
       <property name="checked">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </item>
