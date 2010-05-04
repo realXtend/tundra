@@ -183,6 +183,7 @@ namespace Communications
             virtual void EnableAudioReceiving() = 0;
             virtual void DisableAudioReceiving() = 0;
             virtual bool IsAudioReceivingEnabled() const = 0;
+            virtual double SpeakerVoiceActivity() const = 0;
 
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
@@ -196,7 +197,7 @@ namespace Communications
             void StopSendingAudio();
             void StartReceivingAudio();
             void StopReceivingAudio();
-            void SpeakerVoiceActivity(double volume);
+            void SpeakerVoiceActivityChanged(double volume);
 //            void ReceivedVoiceActivity(double volume);
         };
 

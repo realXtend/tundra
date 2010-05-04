@@ -24,13 +24,14 @@ namespace MumbleVoip
             receiving_audio_(false),
             audio_sending_enabled_(false),
             audio_receiving_enabled_(false),
+            speaker_voice_activity_(0),
             connection_manager_(new ConnectionManager(framework))
         {
             connection_manager_->OpenConnection(server_info);
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)) );
             connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
-            connect(connection_manager_, SIGNAL(AudioPacketSent(PCMAudioFrame*)), SLOT(OnAudioPacketSent(PCMAudioFrame*)) );
+            connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
 
             //SpeakerVoiceActivity
         }
@@ -91,6 +92,11 @@ namespace MumbleVoip
         bool Session::IsAudioReceivingEnabled() const
         {
             return audio_receiving_enabled_;
+        }
+
+        double Session::SpeakerVoiceActivity() const
+        {
+            return speaker_voice_activity_;
         }
 
         QList<Communications::InWorldVoice::ParticipantInterface*> Session::Participants() const
@@ -163,7 +169,7 @@ namespace MumbleVoip
                 emit StopReceivingAudio();
         }
 
-        void Session::OnAudioPacketSent(PCMAudioFrame* frame)
+        void Session::UpdateSpeakerActivity(PCMAudioFrame* frame)
         {
             static int counter;
             counter++;
@@ -172,10 +178,10 @@ namespace MumbleVoip
                 return;
 
             short top = 0;
-            short max = 2000; //! \todo Use more proper value
+            short max = 50; //! \todo Use more proper treshold value
             for(int i = 0; i < frame->SampleCount(); ++i)
             {
-                int sample = frame->SampleAt(i);
+                int sample = abs(frame->SampleAt(i));
                 if (sample > top)
                     top = sample;
             }
@@ -183,7 +189,9 @@ namespace MumbleVoip
             double activity = top / max;
             if (activity > 1.0)
                 activity = 1.0;
-            emit SpeakerVoiceActivity(activity);
+
+            speaker_voice_activity_ = activity;
+            emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
         }
 
         bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
