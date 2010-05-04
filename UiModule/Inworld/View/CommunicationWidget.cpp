@@ -16,40 +16,77 @@
 namespace CoreUi
 {
 
-    StateIndicatorWidget::StateIndicatorWidget(QWidget * parent, Qt::WindowFlags f)
+    VoiceStateWidget::VoiceStateWidget(QWidget * parent, Qt::WindowFlags f)
         : QPushButton(parent),
           state_(STATE_OFFLINE)
     {
-        setMinimumSize(28,28);
-        setObjectName("stateIndicatorWidget"); // There can be obly one instance of this calss
+        setMinimumSize(32,32);
+        setObjectName("stateIndicatorWidget"); // There can be obly one instance of this class
         setState(STATE_OFFLINE);
+        update_timer_.start(VOICE_ACTIVITY_UPDATE_INTERVAL_MS_);
+        update_timer_.setSingleShot(false);
+        connect(&update_timer_, SIGNAL(timeout()), SLOT(UpdateVoiceActivity()) );
     }
 
-    void StateIndicatorWidget::setState(State state)
+    void VoiceStateWidget::setState(State state)
     {
         state_ = state;
-
-        switch(state_)
-        {
-        case STATE_OFFLINE:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_offline.png'); background-position: top left; background-repeat: no-repeat; }");
-            break;
-        case STATE_ONLINE:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
-            break;
-        case STATE_BUSY:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191; background-image: url('./data/ui/images/comm/status_busy.png'); background-position: top left; background-repeat: no-repeat; }");
-            break;
-        case STATE_AWAY:
-            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: transparent; background-image: url('./data/ui/images/comm/status_away.png'); background-position: top left; background-repeat: no-repeat; }");
-            break;
-        }
+        UpdateStatusIcon();
         emit StateChanged();
     }
 
-    StateIndicatorWidget::State StateIndicatorWidget::state() const
+    VoiceStateWidget::State VoiceStateWidget::state() const
     {
         return state_;
+    }
+
+    void VoiceStateWidget::UpdateVoiceActivity()
+    {
+        voice_activity_ -= static_cast<double>(VOICE_ACTIVITY_UPDATE_INTERVAL_MS_)/VOICE_ACTIVITY_FADEOUT_MAX_MS_;
+        if (voice_activity_ < 0)
+            voice_activity_ = 0;
+        UpdateStatusIcon();
+    }
+
+    void VoiceStateWidget::SetVoiceActivity(double activity)
+    {
+        if (activity > 1)
+            activity = 1;
+        if (activity < 0)
+            activity = 0;
+        if (activity > voice_activity_)
+            voice_activity_ = activity;
+
+        UpdateStatusIcon();
+    }
+
+    void VoiceStateWidget::UpdateStatusIcon()
+    {
+        if (state_ == STATE_OFFLINE)
+        {
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_offline.png'); background-position: top left; background-repeat: no-repeat; }");
+            voice_activity_ = 0;
+            return;
+        }
+
+        if (voice_activity_ > 0.60)
+        {
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/voice_5.png'); background-position: top left; background-repeat: no-repeat; }");
+            return;
+        }
+
+        if (voice_activity_ > 0.30)
+        {
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/voice_3.png'); background-position: top left; background-repeat: no-repeat; }");
+            return;
+        }
+
+        if (voice_activity_ > 0.5)
+        {
+            setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/voice_1.png'); background-position: top left; background-repeat: no-repeat; }");
+            return;
+        }
+        setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
     }
 
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
@@ -62,15 +99,13 @@ namespace CoreUi
         resizing_horizontal_(false),
         resizing_vertical_(false),
         in_world_speak_mode_on_(false),
-        voice_status_(0)
+        voice_state_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
     }
 
     // Private
-
-
 
     void CommunicationWidget::Initialise()
     {
@@ -325,17 +360,18 @@ namespace CoreUi
                 connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(StateChanged()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantJoined()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantLeft()), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::SessionInterface::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::SessionInterface::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
+                connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
             }
         }
         
-        voice_status_ = new StateIndicatorWidget(0);
-        connect(voice_status_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
-        this->voiceLayoutH->addWidget(voice_status_);
-        voice_status_->setAutoFillBackground(true);
-        voice_status_->show();
+        voice_state_widget_ = new VoiceStateWidget(0);
+        connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
+        this->voiceLayoutH->addWidget(voice_state_widget_);
+//        voice_state_widget_->setAutoFillBackground(true);
+        voice_state_widget_->show();
     }
 
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
@@ -345,19 +381,17 @@ namespace CoreUi
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
         {
-            if (voice_status_)
-                voice_status_->setState(StateIndicatorWidget::STATE_ONLINE);
-
-//            voiceControl->
-            //! \todo show green ball
+            if (voice_state_widget_)
+            {
+                voice_state_widget_->setState(VoiceStateWidget::STATE_ONLINE);
+                voice_state_widget_->SetVoiceActivity(in_world_voice_session_->SpeakerVoiceActivity());
+            }
         }
         else
         {
-            if (voice_status_)
-                voice_status_->setState(StateIndicatorWidget::STATE_OFFLINE);
-            //! \todo show gray ball
+            if (voice_state_widget_)
+                voice_state_widget_->setState(VoiceStateWidget::STATE_OFFLINE);
         }
-
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()

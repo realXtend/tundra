@@ -31,7 +31,7 @@ namespace MumbleVoip
           link_plugin_(0),
           time_from_last_update_ms_(0),
           server_observer_(0),
-          connection_manager_(0),
+//          connection_manager_(0),
           use_camera_position_(false),
           mumble_client_started_(false),
           mumble_use_library_(false)
@@ -40,18 +40,21 @@ namespace MumbleVoip
 
     MumbleVoipModule::~MumbleVoipModule()
     {
-        if (mumble_client_started_ && connection_manager_)
-            connection_manager_->KillMumbleClient();
+        //if (mumble_client_started_ && connection_manager_)
+        //{
+        //    connection_manager_->KillMumbleClient();
+        //}
+
         SAFE_DELETE(link_plugin_);
         SAFE_DELETE(server_observer_);
-        SAFE_DELETE(connection_manager_);
+        //    SAFE_DELETE(connection_manager_);
     }
 
     void MumbleVoipModule::Load()
     {
         in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
 //        connection_manager_ = new ConnectionManager(framework_);
-//        link_plugin_ = new LinkPlugin();
+        link_plugin_ = new LinkPlugin();
 //        server_observer_ = new ServerObserver(framework_);
 //        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
     }
@@ -81,13 +84,14 @@ namespace MumbleVoip
         if (link_plugin_ && link_plugin_->IsRunning())
             UpdateLinkPlugin(frametime);
         
-        if (connection_manager_)
-        {
-            Vector3df position, direction;
-            if (GetAvatarPosition(position, direction))
-                connection_manager_->SetAudioSourcePosition(position);
-            connection_manager_->Update(frametime);
-        }
+        //if (connection_manager_)
+        //{
+        //    Vector3df position;
+        //    Vector3df direction;
+        //    if (GetAvatarPosition(position, direction))
+        //        connection_manager_->SetAudioSourcePosition(position);
+        //    connection_manager_->Update(frametime);
+        //}
 
         if (in_world_voice_provider_)
             in_world_voice_provider_->Update(frametime);
@@ -109,6 +113,7 @@ namespace MumbleVoip
                     mumble_use_library_ = true;
             }
         }
+
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);
 
@@ -258,54 +263,54 @@ namespace MumbleVoip
         }
     }
 
-    void MumbleVoipModule::OnMumbleServerInfoReceived(const ServerInfo &info)
-    {
-        // begin: Test service API
-        if (framework_ &&  framework_->GetServiceManager())
-        {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-            if (comm.get())
-            {
-                comm->Register(*in_world_voice_provider_);
-            }
-            return;
-        }
-        // end: Test service API
+    //void MumbleVoipModule::OnMumbleServerInfoReceived(ServerInfo info)
+    //{
+    //    // begin: Test service API
+    //    if (framework_ &&  framework_->GetServiceManager())
+    //    {
+    //        boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+    //        if (comm.get())
+    //        {
+    //            comm->Register(*in_world_voice_provider_);
+    //        }
+    //        return;
+    //    }
+    //    // end: Test service API
 
-        QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
-        murmur_url.setUserName(info.user_name);
-        murmur_url.setPassword(info.password);
-        murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
+    //    QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
+    //    murmur_url.setUserName(info.user_name);
+    //    murmur_url.setPassword(info.password);
+    //    murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
 
-        try
-        {
-            if (mumble_use_library_)
-            {
-                connection_manager_->OpenConnection(info);
-                LogInfo("Mumble connection established.");
-                connection_manager_->SendAudio(true);
-                LogDebug("Start sending audio.");
-            }
-            else
-            {
-                LogInfo("Starting mumble client.");
-                ConnectionManager::StartMumbleClient(murmur_url.toString());
+    //    try
+    //    {
+    //        //if (mumble_use_library_)
+    //        //{
+    //        //    connection_manager_->OpenConnection(info);
+    //        //    LogInfo("Mumble connection established.");
+    //        //    connection_manager_->SendAudio(true);
+    //        //    LogDebug("Start sending audio.");
+    //        //}
+    //        //else
+    //        {
+    //            LogInfo("Starting mumble client.");
+    //            ConnectionManager::StartMumbleClient(murmur_url.toString());
 
-                // it takes some time for a mumble client to setup shared memory for link plugins
-                // so we have to wait some time before we can start our link plugin.
-                user_id_for_link_plugin_ = info.avatar_id;
-                context_id_for_link_plugin_ = info.context_id;
-                QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
-                mumble_client_started_ = true;
-            }
-        }
-        catch(std::exception &e)
-        {
-            QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
-            LogError(messge.toStdString());
-            return;
-        }
-    }
+    //            // it takes some time for a mumble client to setup shared memory for link plugins
+    //            // so we have to wait some time before we can start our link plugin.
+    //            user_id_for_link_plugin_ = info.avatar_id;
+    //            context_id_for_link_plugin_ = info.context_id;
+    //            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+    //            mumble_client_started_ = true;
+    //        }
+    //    }
+    //    catch(std::exception &e)
+    //    {
+    //        QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
+    //        LogError(messge.toStdString());
+    //        return;
+    //    }
+    //}
 
     void MumbleVoipModule::StartLinkPlugin()
     {
@@ -329,14 +334,14 @@ namespace MumbleVoip
 
     Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
     {
-        connection_manager_->EnableVAD(true);
+//        connection_manager_->EnableVAD(true);
         QString message = QString("Voice activity detector enabled.");
         return Console::ResultSuccess(message.toStdString());
     }
 
     Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
     {
-        connection_manager_->EnableVAD(false);
+  //      connection_manager_->EnableVAD(false);
         QString message = QString("Voice activity detector disabled.");
         return Console::ResultSuccess(message.toStdString());
     }

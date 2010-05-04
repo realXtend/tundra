@@ -113,9 +113,11 @@ namespace MumbleVoip
 
     private slots:
         void OnUserJoined(User* user);
+        void OnUserLeft(User* user);
 
     signals:
         void UserJoined(User* user);
+        void UserLeft(User* user);
         void AudioFrameSent(PCMAudioFrame* frame);
     };
 

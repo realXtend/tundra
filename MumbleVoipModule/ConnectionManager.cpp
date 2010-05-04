@@ -51,6 +51,7 @@ namespace MumbleVoip
     {
         Connection* connection = new Connection(info);
         connect(connection, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)));
+        connect(connection, SIGNAL(UserLeft(User*)), SLOT(OnUserJoined(User*)));
         connections_[info.server] = connection;
         connection->Join(info.channel);
         connection->SendAudio(true);
@@ -292,6 +293,11 @@ namespace MumbleVoip
     void ConnectionManager::OnUserJoined(User* user)
     {
         emit UserJoined(user);
+    }
+
+    void ConnectionManager::OnUserLeft(User* user)
+    {
+        emit UserLeft(user);
     }
 
     // GetRecordedSoundData(void* buffer, uint size)

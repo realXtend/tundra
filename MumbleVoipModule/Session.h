@@ -39,6 +39,7 @@ namespace MumbleVoip
             virtual void EnableAudioReceiving();
             virtual void DisableAudioReceiving();
             virtual bool IsAudioReceivingEnabled() const;
+            virtual double SpeakerVoiceActivity() const;
 
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
 
@@ -56,13 +57,14 @@ namespace MumbleVoip
             bool audio_receiving_enabled_;
             ParticipantList participants_;
             ConnectionManager* connection_manager_;  // In future session could have multiple connections
+            double speaker_voice_activity_;
 
         private slots:
             void OnUserJoined(User*);
             void OnUserLeft(User*);
             void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
             void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus
-            void OnAudioPacketSent(PCMAudioFrame*);
+            void UpdateSpeakerActivity(PCMAudioFrame*);
         };
 
     } // InWorldVoice

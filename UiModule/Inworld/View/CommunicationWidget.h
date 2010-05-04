@@ -7,6 +7,7 @@
 #include "ui_CommunicationWidget.h"
 
 #include <QLabel>
+#include <QTimer>
 
 class QStackedLayout;
 class QPlainTextEdit;
@@ -35,20 +36,44 @@ namespace CoreUi
     class NormalChatViewWidget;
     class ChatLabel;
 
-    //! Presents status with set of status icons.
+    //! Presents state with a set of status icons.
     //!
-    class StateIndicatorWidget : public QPushButton
+    class VoiceStateWidget : public QPushButton
     {
         Q_OBJECT
     public:
-        enum State { STATE_OFFLINE, STATE_ONLINE, STATE_BUSY, STATE_AWAY };
-        StateIndicatorWidget(QWidget * parent = 0, Qt::WindowFlags f = 0 );
+        enum State { STATE_OFFLINE, STATE_ONLINE };
+        VoiceStateWidget(QWidget * parent = 0, Qt::WindowFlags f = 0 );
         virtual void setState(State state);
         virtual State state() const;
+        virtual void SetVoiceActivity(double activity);
     signals:
         void StateChanged();
     private:
+        void UpdateStatusIcon(); 
+        static const int VOICE_ACTIVITY_UPDATE_INTERVAL_MS_ = 50;
+        static const int VOICE_ACTIVITY_FADEOUT_MAX_MS_ = 500;
+
         State state_;
+        double voice_activity_;
+        QTimer update_timer_;
+    private slots:
+        void UpdateVoiceActivity();
+    };
+
+    //! Show user count and voice activity
+    //!
+    //!
+    class UsersInfoWidget : QPushButton
+    {
+        Q_OBJECT
+    public:
+        virtual void SetUsersCount(int count);
+        virtual int UsersCount() const;
+        virtual void SetVoiceActivity(double activity);
+    private:
+        int user_count_;
+        double voice_activity_;
     };
 
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
@@ -104,7 +129,7 @@ namespace CoreUi
         bool resizing_vertical_;
         bool resizing_horizontal_;
 
-        StateIndicatorWidget* voice_status_;
+        VoiceStateWidget* voice_state_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);
