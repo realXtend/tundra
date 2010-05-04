@@ -29,10 +29,18 @@ class ToolBarWindow:
         pass
 
     def on_exit(self):
-        print "on_exit"
-        self.proxywidget.hide()
-        uism = r.getUiSceneManager()
-        uism.RemoveProxyWidgetFromScene(self.proxywidget)
+        print "window on_exit.."
+        try:
+            self.proxywidget.hide()
+            uism = r.getUiSceneManager()
+            uism.RemoveProxyWidgetFromScene(self.proxywidget)
+            print "remove proxy widget"
+            return True
+        except:
+            print "ToolBarWindow (LocalSceneWindow) failure:"
+            traceback.print_exc()
+            return False
+        
         
         
 class LocalSceneWindow(ToolBarWindow):
@@ -56,6 +64,8 @@ class LocalSceneWindow(ToolBarWindow):
         self.btnPublish = self.gui.findChild("QPushButton", "pushButtonPublish")
         
         self.chkBoxFlipZY = self.gui.findChild("QCheckBox", "checkBoxFlipZY")
+        self.checkBoxHighlight = self.gui.findChild("QCheckBox", "checkBoxHighlight")
+        self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
         
         self.btnLoad.connect("clicked(bool)", self.btnLoadClicked)
         self.btnUnload.connect("clicked(bool)", self.btnUnloadClicked)
@@ -70,8 +80,10 @@ class LocalSceneWindow(ToolBarWindow):
         self.zscale.connect("valueChanged(double)", self.spinBoxZScaleValueChanged)
         
         self.chkBoxFlipZY.connect("toggled(bool)", self.checkBoxZYToggled)
+        self.checkBoxHighlight.connect("toggled(bool)", self.checkBoxHighlightToggled)
+        self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
         
-        # print self.gui
+        self.sizeLock = False
         
         pass
         
@@ -93,8 +105,6 @@ class LocalSceneWindow(ToolBarWindow):
         return button
 
     def btnLoadClicked(self, args):
-        print "load clicked"
-        #filename=QFileDialog.getOpenFileName("", "*.scene", self, "FileDialog")
         filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
         self.controller.loadScene(filename)
 
@@ -113,13 +123,40 @@ class LocalSceneWindow(ToolBarWindow):
         self.controller.setzpos(double)
 
     def spinBoxXScaleValueChanged(self, double):
-        self.controller.setxscale(double)
+        if(self.sizeLock):
+            self.controller.setxscale(double)
+            self.controller.setyscale(double)
+            self.controller.setzscale(double)
+            self.yscale.setValue(double)
+            self.zscale.setValue(double)
+        else:
+            self.controller.setxscale(double)
+            
     def spinBoxYScaleValueChanged(self, double):
-        self.controller.setyscale(double)
+        if(self.sizeLock):
+            self.controller.setxscale(double)
+            self.controller.setyscale(double)
+            self.controller.setzscale(double)
+            self.xscale.setValue(double)
+            self.zscale.setValue(double)
+        else:
+            self.controller.setyscale(double)
+    
     def spinBoxZScaleValueChanged(self, double):
-        self.controller.setzscale(double)
+        if(self.sizeLock):
+            self.controller.setxscale(double)
+            self.controller.setyscale(double)
+            self.controller.setzscale(double)
+            self.xscale.setValue(double)
+            self.yscale.setValue(double)
+        else:
+            self.controller.setzscale(double)
 
     def checkBoxZYToggled(self, enabled):
         self.controller.checkBoxZYToggled(enabled)
         
-    
+    def checkBoxHighlightToggled(self, enabled):
+        self.controller.checkBoxHighlightToggled(enabled)
+        
+    def checkBoxLockScaleToggled(self, enabled):
+        self.sizeLock = enabled
