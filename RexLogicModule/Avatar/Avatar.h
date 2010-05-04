@@ -2,18 +2,20 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   Avatar.h
- *  @brief  Avatar logic handler.
+ *  @brief  Logic handler for avatar entities.
  */
 
-#ifndef incl_RexLogic_Avatar_h
-#define incl_RexLogic_Avatar_h
+#ifndef incl_RexLogicModule_Avatar_h
+#define incl_RexLogicModule_Avatar_h
 
-#include "NetworkEvents.h"
 #include "RexUUID.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "Avatar/AvatarAppearance.h"
 
-#include <QStringList>
+namespace ProtocolUtilities
+{
+    class NetworkEventInboundData;
+}
 
 namespace OgreRenderer
 {
@@ -26,29 +28,51 @@ namespace RexLogic
 
     class REXLOGIC_MODULE_API Avatar
     {
-     public:
-        Avatar(RexLogicModule *owner);
+    public:
+        //! Constructor.
+        //! \param owner Owner module.
+        explicit Avatar(RexLogicModule *owner);
+
+        //! Destructor.
         ~Avatar();
 
+        //! Handles ObjectUpdate network message for avatars.
+        //! \param data Network message data.
         bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
+
+        //! Destroys avatar entity if it exists.
+        //! \param data objectid Entity ID.
         bool HandleOSNE_KillObject(uint32_t objectid);
+
+        //! Handles AvatarAnimation network message for avatars.
+        //! \param data Network message data.
         bool HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data);
 
+        //! Handles RexAppearance generic message for avatars.
+        //! \param data Network message data.
         bool HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data);
+
+        //! Handles RexAnim generic message for avatars.
+        //! \param data Network message data.
         bool HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data);
 
+        //! Handles the optimized TerseObjectUpdate (30 bytes) network message for avatars.
+        //! \param bytes Raw byte data.
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
+
+        //! Handles the regular TerseObjectUpdate (60 bytes) network message for avatars.
+        //! \param bytes Raw byte data.
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
-        
+
         //! Misc. frame-based update
         void Update(f64 frametime);
-        
+
         //! Updates running avatar animations
         void UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime);
-        
+
         //! Handles resource event
         bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-                
+
         //! Handles inventory event
         bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
@@ -57,16 +81,16 @@ namespace RexLogic
 
         //! Handles logout
         void HandleLogout();
-        
+
         //! Returns user's avatar
         Scene::EntityPtr GetUserAvatar();
-        
+
         //! Returns whether export avatar currently supported
         bool AvatarExportSupported();
-        
+
         //! Exports user's avatar, if in scene
         void ExportUserAvatar();
-        
+
         //! Reloads user's avatar, if in scene
         void ReloadUserAvatar();
 
@@ -74,14 +98,23 @@ namespace RexLogic
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
 
     private:
+        //! Owner module.
         RexLogicModule *owner_;
 
-        //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimAvatar component,
-        //!         and EC_OpenSimPresence component.
-        //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
-        Scene::EntityPtr GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid);
+        /*! Returns entity pointer to an avatar entity. If the entity doesn't exist,
+            an entity with the given entityid and fullid is created and returned.
+            The entity is guaranteed to have EC_OpenSimAvatar and EC_OpenSimPresence components.
+            \param entityid Entity ID.
+            \param fullid Full agent ID.
+            \param existing [out] Returns true or false dependenging if the avatar entity already existed.
+            \return The entity corresponding to given entity ID and UUID. Should not return null ever.
+        */
+        Scene::EntityPtr GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing);
+
+        //! Creates new avatar entity.
+        //! \param entityid Entity ID for the new avatar.
         Scene::EntityPtr CreateNewAvatarEntity(entity_id_t entityid);
-        
+
         //! Creates mesh for the avatar / sets up appearance, animations
         void CreateAvatarMesh(entity_id_t entity_id);
 

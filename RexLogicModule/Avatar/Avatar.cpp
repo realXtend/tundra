@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   Avatar.cpp
- *  @brief  Avatar logic handler.
+ *  @brief  Logic handler for avatar entities.
  */
 
 #include "StableHeaders.h"
@@ -18,7 +18,6 @@
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include "ModuleManager.h"
 #include "WorldStream.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
@@ -50,7 +49,7 @@ namespace RexLogic
     {
     }
 
-    Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid)
+    Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing)
     {
         // Make sure scene exists
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
@@ -58,28 +57,34 @@ namespace RexLogic
             return Scene::EntityPtr();
 
         Scene::EntityPtr entity = owner_->GetAvatarEntity(entityid);
-        if (!entity)
+        if (entity)
         {
-            entity = CreateNewAvatarEntity(entityid);
-            if (entity)
-            {
-                owner_->RegisterFullId(fullid,entityid);
-                EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
-                presence->localId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
-                presence->agentId = fullid;
-
-                // If we do have a pending appearance, apply it here
-                if (pending_appearances_.find(fullid) != pending_appearances_.end())
-                {
-                    std::string appearance = pending_appearances_[fullid];
-                    pending_appearances_.erase(pending_appearances_.find(fullid));
-                    EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
-                    avatar->SetAppearanceAddress(appearance,false);
-                    avatar_appearance_.DownloadAppearance(entity);
-                    RexLogicModule::LogDebug("Used pending appearance " + appearance + " for new avatar");
-                }
-            }
+            *existing = true;
+            return entity;
         }
+
+        *existing = false;
+        entity = CreateNewAvatarEntity(entityid);
+        assert(entity.get());
+        if (!entity)
+            return entity;
+
+        owner_->RegisterFullId(fullid,entityid);
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        presence->localId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
+        presence->agentId = fullid;
+
+        // If we do have a pending appearance, apply it here
+        if (pending_appearances_.find(fullid) != pending_appearances_.end())
+        {
+            std::string appearance = pending_appearances_[fullid];
+            pending_appearances_.erase(pending_appearances_.find(fullid));
+            EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+            avatar->SetAppearanceAddress(appearance,false);
+            avatar_appearance_.DownloadAppearance(entity);
+            RexLogicModule::LogDebug("Used pending appearance " + appearance + " for new avatar");
+        }
+
         return entity;
     }
 
@@ -127,13 +132,14 @@ namespace RexLogic
         size_t instance_count = msg.ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < instance_count; ++i)
         {
-            uint32_t localid = msg.ReadU32(); 
+            uint32_t localid = msg.ReadU32();
             msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'State' U8
             RexUUID fullid = msg.ReadUUID();
             msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'CRC' U#"
             uint8_t pcode = msg.ReadU8();
 
-            Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid);
+            bool existing_avatar = false;
+            Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid, &existing_avatar);
             if (!entity)
                 return false;
 
@@ -204,7 +210,7 @@ namespace RexLogic
             }
 
             // Send event notifying about new user in the world
-            if (presence->agentId != owner_->GetServerConnection()->GetInfo().agentID)
+            if (!existing_avatar && presence->agentId != owner_->GetServerConnection()->GetInfo().agentID)
             {
                 Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
