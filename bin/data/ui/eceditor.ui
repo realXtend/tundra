@@ -201,7 +201,7 @@ QLabel {
                <set>QAbstractItemView::NoEditTriggers</set>
               </property>
               <property name="rootIsDecorated">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="headerHidden">
                <bool>true</bool>
@@ -209,6 +209,12 @@ QLabel {
               <property name="columnCount">
                <number>2</number>
               </property>
+              <attribute name="headerVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="headerVisible">
+               <bool>false</bool>
+              </attribute>
               <column>
                <property name="text">
                 <string notr="true">1</string>

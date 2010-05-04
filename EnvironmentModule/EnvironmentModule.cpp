@@ -113,6 +113,7 @@ namespace Environment
 
     void EnvironmentModule::Update(f64 frametime)
     {
+        RESETPROFILER;
         // HACK Initialize editor_widget_ in correct time. 
         if (environment_editor_ == 0 && terrain_.get() != 0 && water_.get() != 0)
             environment_editor_ = new EnvironmentEditor(this);
