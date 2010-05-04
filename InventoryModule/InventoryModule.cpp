@@ -128,6 +128,7 @@ void InventoryModule::SubscribeToNetworkEvents()
 
 void InventoryModule::Update(f64 frametime)
 {
+    RESETPROFILER;
 }
 
 bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
