@@ -253,7 +253,12 @@ namespace ECEditor
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            entities[i]->GetOrCreateComponent(name, Foundation::Local);
+            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name, Foundation::Local);
+            if (comp)
+            {
+                // Trigger change notification in the component so that it updates its initial internal state, if necessary
+                comp->ComponentChanged(Foundation::Local);
+            }
         }
 
         RefreshEntityComponents();

@@ -30,7 +30,7 @@ namespace Scene
         entities_.clear();
     }
     
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components, Foundation::ChangeType change)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -53,6 +53,8 @@ namespace Scene
 
         entities_[entity->GetId()] = entity;
 
+        EmitEntityCreated(entity.get(), change);
+        
         // Send event.
         Events::SceneEventData event_data(entity->GetId());
         event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
@@ -78,13 +80,15 @@ namespace Scene
         return gid_;
     }
 
-    void SceneManager::RemoveEntity(entity_id_t id)
+    void SceneManager::RemoveEntity(entity_id_t id, Foundation::ChangeType change)
     {
         EntityMap::iterator it = entities_.find(id);
         if (it != entities_.end())
         {
             Scene::EntityPtr del_entity = it->second;
 
+            EmitEntityRemoved(del_entity.get(), change);
+        
             // Send event.
             Events::SceneEventData event_data(id);
             event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
@@ -125,6 +129,16 @@ namespace Scene
     void SceneManager::EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
     {
         emit ComponentRemoved(entity, comp, change);
+    }
+    
+    void SceneManager::EmitEntityCreated(Scene::Entity* entity, Foundation::ChangeType change)
+    {
+        emit EntityCreated(entity, change);
+    }
+    
+    void SceneManager::EmitEntityRemoved(Scene::Entity* entity, Foundation::ChangeType change)
+    {
+        emit EntityRemoved(entity, change);
     }
 }
 

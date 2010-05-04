@@ -79,8 +79,9 @@ namespace Scene
 
             \param id Id of the new entity. Use GetNextFreeId().
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+            \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector());
+        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(), Foundation::ChangeType change = Foundation::LocalOnly);
 
         //! Returns entity with the specified id
         /*!
@@ -95,8 +96,9 @@ namespace Scene
         //! Remove entity with specified id
         /*! The entity may not get deleted if dangling references to a pointer to the entity exists.
             \param id Id of the entity to remove
+            \param change Origin of change regards to network replication
         */
-        void RemoveEntity(entity_id_t id);
+        void RemoveEntity(entity_id_t id, Foundation::ChangeType change = Foundation::LocalOnly);
 
         //! Get the next free entity id. Can be used with CreateEntity().
         entity_id_t GetNextFreeId();
@@ -132,6 +134,20 @@ namespace Scene
             \param change Type of change (local, from network...)
          */
         void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        //! Emit a notification of an entity having been created
+        /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
+            should not usually decide the entityID itself.
+            \param entity Entity pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitEntityCreated(Scene::Entity* entity, Foundation::ChangeType change);
+        
+        //! Emit a notification of an entity being removed. 
+        /*! Note: the entity pointer will be invalid shortly after!
+            \param entity Entity pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitEntityRemoved(Scene::Entity* entity, Foundation::ChangeType change);
         
     private:
         SceneManager &operator =(const SceneManager &other);
@@ -158,6 +174,14 @@ namespace Scene
         /*! Network synchronization managers should connect to this
          */
         void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        //! Signal when an entity created
+        /*! Note: currently there is also Naali scene event that duplicates this notification
+         */
+        void EntityCreated(Scene::Entity* entity, Foundation::ChangeType change);
+        //! Signal when an entity deleted
+        /*! Note: currently there is also Naali scene event that duplicates this notification
+         */
+        void EntityRemoved(Scene::Entity* entity, Foundation::ChangeType change);
     };
 }
 
