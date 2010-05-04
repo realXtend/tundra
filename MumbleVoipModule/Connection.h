@@ -119,7 +119,7 @@ namespace MumbleVoip
         QString join_request_; // queued request to join a channel
         QList<PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_;
-        QMap<int, User*> users_;
+        QMap<int, User*> users_; // maps: session id <-> User object
 
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;

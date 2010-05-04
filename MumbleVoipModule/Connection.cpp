@@ -480,18 +480,20 @@ namespace MumbleVoip
     {
         QMutexLocker locker(&mutex_users_);
 
-        if (!users_.contains(user.user_id))
+        if (!users_.contains(user.session))
             return;
 
-        User* u = users_[user.user_id];
+        User* u = users_[user.session];
         QMutexLocker user_locker(u);
 
         QString message = QString("User '%1' Left.").arg(u->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         //emit UserLeft(u);
+        u->SetLeft();
 
-        delete u;
-        users_.remove(user.user_id);
+//        delete u;
+//        users_.remove(user.user_id);
+//        emit UserJoined(u);
     }
 
     QList<QString> Connection::Channels()

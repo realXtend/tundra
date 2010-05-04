@@ -22,9 +22,9 @@ namespace MumbleVoip
             virtual void Mute(bool mute);
             virtual bool IsMuted() const;
             virtual Vector3df Position() const;
-
             virtual void Add(User* user);
             virtual User* UserPtr() const;
+
         private:
             bool muted_;
             bool speaking_;
@@ -36,6 +36,7 @@ namespace MumbleVoip
             void OnStartSpeaking();
             void OnStopSpeaking();
             void OnPositionUpdated();
+            void OnUserLeft();
         };
         typedef QList<Participant*> ParticipantList;
 

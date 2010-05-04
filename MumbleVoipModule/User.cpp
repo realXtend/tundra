@@ -21,7 +21,8 @@ namespace MumbleVoip
         : user_(user),
           speaking_(false),
           position_known_(false),
-          position_(0,0,0)
+          position_(0,0,0),
+          left_(false)
     {
     }
 

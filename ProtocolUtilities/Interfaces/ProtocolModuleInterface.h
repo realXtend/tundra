@@ -10,6 +10,7 @@
 namespace ProtocolUtilities
 {
     class NetMessageManager;
+    class NetOutMessage;
 
     class MODULE_API ProtocolModuleInterface
     {

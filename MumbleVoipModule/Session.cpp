@@ -6,11 +6,13 @@
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
+#include "User.h"
 #include "EC_OgrePlaceable.h" // for avatar position
 #include "SceneManager.h"     // for avatar position
 #include "ModuleManager.h"    // for avatar position
 #include "RexLogicModule.h"   // for avatar position
 #include "Avatar/Avatar.h"    // for avatar position
+#include "WorldStream.h"
 
 namespace MumbleVoip
 {
@@ -39,6 +41,16 @@ namespace MumbleVoip
         Session::~Session()
         {
             SAFE_DELETE(connection_manager_);
+            foreach(Participant* p, participants_)
+            {
+                SAFE_DELETE(p);
+            }
+            participants_.clear();
+            foreach(Participant* p, left_participants_)
+            {
+                SAFE_DELETE(p);
+            }
+            left_participants_.clear();
         }
 
         QString Session::Description() const
@@ -124,23 +136,27 @@ namespace MumbleVoip
 
         void Session::OnUserJoined(User* user)
         {
+            if (user->Name() == OwnAvatarId())
+                return; 
+
             Participant* p = new Participant(user);
             participants_.append(p);
-            connect(p, SIGNAL(Communications::InWorldVoice::ParticipantInterface::StartSpeaking()), SLOT(OnUserStartSpeaking()) );
-            connect(p, SIGNAL(Communications::InWorldVoice::ParticipantInterface::StopSpeaking()), SLOT(OnuserStopSpeaking()) );
+            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
+            connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
+            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(Left()), SLOT(OnUserLeft()) );
 
-            emit ParticipantJoined(p);
+            emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
         }
 
-        void Session::OnUserLeft(User* user)
+        void Session::OnUserLeft()
         {
             foreach(Participant* p, participants_)
             {
-                if (p->UserPtr() == user)
+                if (p->UserPtr()->IsLeft())
                 {
                     participants_.removeOne(p);
-                    //! \todo: Inform about user list change
-                    SAFE_DELETE(p);
+                    left_participants_.push_back(p);
+                    emit ParticipantLeft(p);
                 }
             }
         }
@@ -220,9 +236,12 @@ namespace MumbleVoip
             return true;
         }
 
+        QString Session::OwnAvatarId()
+        {
+            ProtocolUtilities::WorldStreamPtr world_stream = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection();
+            return world_stream->GetInfo().agentID.ToQString();
+        }
 
     } // InWorldVoice
-
-
 
 } // MumbleVoip

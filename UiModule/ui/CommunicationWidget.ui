@@ -286,7 +286,7 @@ QScrollBar {
             <number>0</number>
            </property>
            <item>
-            <widget class="QWidget" name="toggle" native="true">
+            <widget class="QWidget" name="voiceLeftBorder" native="true">
              <property name="enabled">
               <bool>false</bool>
              </property>
@@ -297,7 +297,7 @@ QScrollBar {
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">QWidget#toggle { border: 0px; background-color:transparent; background-image: url('./data/ui/images/comm/border.png'); background-position: top left; background-repeat: no-repeat; }</string>
+              <string notr="true">QWidget#voiceLeftBorder { border: 0px; background-color:transparent; background-image: url('./data/ui/images/comm/border.png'); background-position: top left; background-repeat: no-repeat; }</string>
              </property>
              <zorder>verticalSpacer_voice</zorder>
             </widget>
