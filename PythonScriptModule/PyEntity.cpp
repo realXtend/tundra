@@ -529,35 +529,8 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
         
         }
     }
-    else if (s_name.compare("meshid") == 0)
-    {
-        //std::cout << "Setting mesh" << std::endl;
-        if (PyString_Check(value) || PyUnicode_Check(value))
-        {
-            //NOTE: This is stricly done locally only for now, nothing is sent to the server.
-            const char* c_text = PyString_AsString(value);
-            std::string text = std::string(c_text);
 
-            //std::cout << ".. getting prim in mesh setting" << std::endl;
-            if (!prim)
-            {
-                PyErr_SetString(PyExc_AttributeError, "prim not found.");
-                return -1;   
-            }
-
-            prim->MeshID = text;
-            prim->DrawType = RexTypes::DRAWTYPE_MESH;
-
-            return 0;
-        }
-        else
-        {
-            PyErr_SetString(PyExc_ValueError, "Mesh asset id is expected as a string"); //XXX change the exception
-            return -1;
-        }
-    }
-
-    //std::cout << "unknown component typse."  << std::endl;
+    //std::cout << "unknown component type."  << std::endl;
     PythonScript::self()->LogDebug("Unknown component type.");
     return -1; //the way for setattr to report a failure
 }

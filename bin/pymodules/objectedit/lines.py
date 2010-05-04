@@ -121,7 +121,6 @@ class UUIDEditLine(DragDroppableEditline):
             
         
 def applymesh(ent, meshuuid):
-    #ent.meshid = meshuuid #old
     try:
         ent.mesh
     except AttributeError:
