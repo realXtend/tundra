@@ -38,7 +38,7 @@ if lsb_release -c | grep -q lucid; then
 	 build-essential g++ libglib libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
-         libtelepathy-qt4-dev \
+         libtelepathy-qt4-dev python-gst0.10-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
 
 	
