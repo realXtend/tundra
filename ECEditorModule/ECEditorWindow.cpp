@@ -35,6 +35,7 @@
 #include <QListWidget>
 #include <QGraphicsProxyWidget>
 #include <QTreeWidget>
+#include <QHeaderView>
 
 #include "MemoryLeakCheck.h"
 
@@ -52,14 +53,49 @@ namespace ECEditor
         return list->count() - 1;
     }
 
-    uint AddUniqueTreeItem(QTreeWidget *list, const QString &name)
+    uint AddTreeItem(QTreeWidget *list, const QString &name, int entity_id)
     {
         for(int i = 0; i < list->topLevelItemCount(); ++i)
-            if (list->topLevelItem(i)->text(0) == name)
-                return i;
+        {
+            QTreeWidgetItem *existing = list->topLevelItem(i);
+            if (existing && existing->text(0) == name)
+            {
+                // We have already item for this EC. Create a dummy parent for the existing EC item and
+                // the new one we're adding if it's not already.
+                ///\todo Check/test if the code block below is required for real.
+                if (existing->text(1) == "(Multiple)")
+                {
+                    // It's already dummy parent. Add new item to its child.
+                    QTreeWidgetItem *item = new QTreeWidgetItem(existing);
+                    item->setText(0, name);
+                    item->setText(1, QString::number(entity_id));
+                    existing->addChild(item);
+                    return i;
+                }
 
+                // The existing item is not dummy parent yet, make it now.
+                QTreeWidgetItem *dummyParent = new QTreeWidgetItem(list);
+                dummyParent->setText(0, name);
+                dummyParent->setText(1, "(Multiple)");
+
+                // Relocate the existing item from the top level to a child of the dummy parent.
+                existing = list->takeTopLevelItem(i);
+                dummyParent->addChild(existing);
+                list->addTopLevelItem(dummyParent);
+
+                // Finally, create new item for this EC.
+                QTreeWidgetItem *item = new QTreeWidgetItem(dummyParent);
+                item->setText(0, name);
+                item->setText(1, QString::number(entity_id));
+                dummyParent->addChild(item);
+                return i;
+            }
+        }
+
+        // No existing top level item, create one now.
         QTreeWidgetItem *item = new QTreeWidgetItem(list);
         item->setText(0, name);
+        item->setText(1, QString::number(entity_id));
         list->addTopLevelItem(item);
         return list->topLevelItemCount() - 1;
     }
@@ -82,7 +118,7 @@ namespace ECEditor
     {
         Initialize();
     }
-    
+
     ECEditorWindow::~ECEditorWindow()
     {
         while(!editorEntityList_.empty())
@@ -90,6 +126,9 @@ namespace ECEditor
             SAFE_DELETE(editorEntityList_.begin()->second)
             editorEntityList_.erase(editorEntityList_.begin());
         }
+
+        // Explicitily delete component list because it's parent of dynamically allocated items.
+        SAFE_DELETE(component_list_);
     }
     
     void ECEditorWindow::Initialize()
@@ -143,6 +182,7 @@ namespace ECEditor
         }
         if (component_list_)
         {
+            component_list_->header()->setResizeMode(QHeaderView::ResizeToContents);
             component_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             QObject::connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshComponentData()));
             QObject::connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
@@ -182,7 +222,7 @@ namespace ECEditor
     {
         if (!component_list_)
             return;
-        
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         StringVector components;
         //for (uint i = 0; i < component_list_->count(); ++i)
@@ -193,17 +233,11 @@ namespace ECEditor
             if (item->isSelected())
                 components.push_back(item->text(0).toStdString());
         }
-        
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-        
+
         for (uint i = 0; i < entities.size(); ++i)
-        {
             for (uint j = 0; j < components.size(); ++j)
-            {
                 entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
-            }
-         }
-        
+
         RefreshEntityComponents();
     }
     
@@ -211,20 +245,17 @@ namespace ECEditor
     {
         if (!create_combo_)
             return;
-        
+
         std::string name = create_combo_->currentText().toStdString();
-        
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-        
         for (uint i = 0; i < entities.size(); ++i)
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
             entities[i]->GetOrCreateComponent(name, Foundation::Local);
         }
-        
+
         RefreshEntityComponents();
     }
     
@@ -339,7 +370,7 @@ namespace ECEditor
             }
         }
     }
-    
+
     void ECEditorWindow::AddEntity(entity_id_t entity_id)
     {
         if ((isVisible()) && (entity_list_))
@@ -350,38 +381,43 @@ namespace ECEditor
             entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
         }
     }
-    
+
     void ECEditorWindow::RefreshEntityComponents()
     {
+        for(int i = component_list_->topLevelItemCount() - 1; i >= 0; --i)
+        {
+            QTreeWidgetItem *item = component_list_->takeTopLevelItem(i);
+            SAFE_DELETE(item);
+        }
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        
         // If no entities selected, just clear the list and we're done
         if (!entities.size())
+            return;
+/*
         {
-            component_list_->clear();
+            //component_list_->clear();
             return;
         }
-        
+*/
         std::vector<QString> added_components;
-        
         for (uint i = 0; i < entities.size(); ++i)
         {
             const Scene::Entity::ComponentVector& components = entities[i]->GetComponentVector();
-
             for (uint j = 0; j < components.size(); ++j)
             {
-                QString component_name = QString::fromStdString(components[j]->TypeName());
+                QString component_name = components[j]->TypeName().c_str();
                 added_components.push_back(component_name);
-                // If multiple selected entities have the same component, add it only once to the EC selector list
-                AddUniqueTreeItem(component_list_, QString::fromStdString(components[j]->TypeName()));
+                AddTreeItem(component_list_, components[j]->TypeName().c_str(), entities[i]->GetId());
             }
         }
-        
+
         // Now delete components that should not be in the component list
         // Note: the whole reason for going to this trouble (instead of just nuking and refilling the list)
         // is to retain the user's selection, if several entities share a set of components, as often is the case
         //for (int i = component_list_->count() - 1; i >= 0; --i)
-        for (int i = component_list_->topLevelItemCount() - 1; i >= 0; --i)
+/*
+        for (uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
             bool found = false;
             //QListWidgetItem* item = component_list_->item(i);
@@ -399,14 +435,19 @@ namespace ECEditor
             if (!found)
             {
                 //QListWidgetItem* item = component_list_->takeItem(i);
-                QTreeWidgetItem* item = component_list_->topLevelItem(i);
-                delete item;
+                QTreeWidgetItem* item = component_list_->takeTopLevelItem(i);
+                for(uint k = 0; k < item->childCount(); ++k)
+                {
+                    QTreeWidgetItem *child = (item->takeChild(k));
+                    SAFE_DELETE(child);
+                }
+                SAFE_DELETE(item);
             }
         }
-        
+*/
         RefreshComponentData();
     }
-    
+
     void ECEditorWindow::RefreshComponentData()
     {
         if (!data_edit_)
@@ -475,22 +516,21 @@ namespace ECEditor
         if (!selection.size())
             return;
 
-        if (selection.size() == 1)
+//        if (selection.size() == 1)
+//            return;
+        for (uint j = 0; j < selection[0].components_.size(); ++j)
         {
-            for (uint j = 0; j < selection[0].components_.size(); ++j)
+            if (selection[0].components_[j]->IsSerializable())
             {
-                if (selection[0].components_[j]->IsSerializable())
+                std::string type = selection[0].components_[j]->TypeName();
+                if(type == "EC_Light")
                 {
-                    std::string type = selection[0].components_[j]->TypeName();
-                    if(type == "EC_Light")
-                    {
-                        EditorEntityList::iterator iter = editorEntityList_.find(type);
-                        if(iter == editorEntityList_.end())
-                            editorEntityList_[type] = new ECLightEditor(variantManager_, selection[0].components_[j]);
-                        //ECLightEditor *editor = new ECLightEditor(variantManager_, selection[0].components_[j]);
-                        
-                        property_browser_->addProperty(editorEntityList_[type]->GetRootProperty());
-                    }
+                    EditorEntityList::iterator iter = editorEntityList_.find(type);
+                    if (iter == editorEntityList_.end())
+                        editorEntityList_[type] = new ECLightEditor(variantManager_, selection[0].components_[j]);
+                    //ECLightEditor *editor = new ECLightEditor(variantManager_, selection[0].components_[j]);
+                    
+                    property_browser_->addProperty(editorEntityList_[type]->GetRootProperty());
                 }
             }
         }
@@ -498,20 +538,20 @@ namespace ECEditor
 
     void ECEditorWindow::TogglePropertiesBrowser()
     {
-        if(property_browser_)
+        if (property_browser_)
         {
-            if(property_browser_->isVisible())
+            if (property_browser_->isVisible())
             {
                 property_browser_->hide();
                 resize(size().width() - property_browser_->size().width(), size().height());
-                if(toggle_browser_button_)
+                if (toggle_browser_button_)
                     toggle_browser_button_->setText(tr("Properties >"));
             }
             else
             {
                 property_browser_->show();
                 resize(size().width() + property_browser_->sizeHint().width(), size().height());
-                if(toggle_browser_button_)
+                if (toggle_browser_button_)
                     toggle_browser_button_->setText(tr("Properties <"));
             }
         }
@@ -522,10 +562,8 @@ namespace ECEditor
         EditorEntityList::iterator iter = editorEntityList_.begin();
         while(iter != editorEntityList_.end())
         {
-            if(iter->second->ContainProperty(property))
-            {
+            if (iter->second->ContainProperty(property))
                 iter->second->SetPropertyValue(property);
-            }
             iter++;
         }
         RevertData();
@@ -568,10 +606,8 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         StringVector components;
 
-//        for (uint i = 0; i < component_list_->count(); ++i)
         for (uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
-            //QListWidgetItem* item = component_list_->item(i);
             QTreeWidgetItem* item = component_list_->topLevelItem(i);
             if (item->isSelected())
                 components.push_back(item->text(0).toStdString());

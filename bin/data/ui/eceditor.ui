@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
-    <height>336</height>
+    <width>383</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -206,9 +206,17 @@ QLabel {
               <property name="headerHidden">
                <bool>true</bool>
               </property>
+              <property name="columnCount">
+               <number>2</number>
+              </property>
               <column>
                <property name="text">
                 <string notr="true">1</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string notr="true">2</string>
                </property>
               </column>
              </widget>
