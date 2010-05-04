@@ -221,6 +221,11 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if (s_name.compare("mesh") == 0)
     {
         Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        if (!component_meshptr)
+        {
+             PyErr_SetString(PyExc_AttributeError, "Entity doesn't have a mesh component.");
+             return NULL;
+        }
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
         return PythonQt::self()->wrapQObject(ogremesh);
