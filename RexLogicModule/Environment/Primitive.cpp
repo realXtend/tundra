@@ -1944,6 +1944,7 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
     if (change == Foundation::Network)
         network_dirty_entities_.insert(entityid);
 }
+
 void Primitive::SerializeECsToNetwork()
 {
     // Process first the Network change list. This actually needs no further actions, except that we reset 
@@ -2003,7 +2004,6 @@ void Primitive::SerializeECsToNetwork()
         }
         
         free.FreeData = std::string(bytes.data(), bytes.size());
-        std::cout << "Sending rexfreedata" << std::endl;
         SendRexFreeData(*i);
     }
     local_dirty_entities_.clear();
@@ -2022,7 +2022,10 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             type_names.push_back(type_name);
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
+            {
                 new_comp->DeserializeFrom(comp_elem, Foundation::Network);
+                new_comp->ComponentChanged(Foundation::Network);
+            }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
             comp_elem = comp_elem.nextSiblingElement("component");
