@@ -41,7 +41,7 @@ namespace MumbleVoip
         //! \return session id of the user
         virtual int Session() const;
 
-        //! \return id of the user
+        //! \return Mumble specific id of the user
         virtual int Id() const;
 
         //! \return channel of where user is
@@ -62,6 +62,9 @@ namespace MumbleVoip
         //! \return oldest audio frame available for playback 
         //! \note caller must delete audio frame object after usage
         virtual PCMAudioFrame* GetAudioFrame();
+
+        virtual void SetLeft() { left_ = true; emit Left(); }
+        virtual bool IsLeft() const { return left_; }
 
     public slots:
         //! Put audio frame to end of playback buffer 
@@ -85,6 +88,7 @@ namespace MumbleVoip
         static const int SPEAKING_TIMEOUT_MS = 1000;
         static const int PLAYBACK_BUFFER_MS_= 200;
         QList<PCMAudioFrame*> playback_queue_;
+        bool left_;
 
     signals:
         //! Emited when user has left from server

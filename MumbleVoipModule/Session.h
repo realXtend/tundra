@@ -47,7 +47,8 @@ namespace MumbleVoip
 
         private:
             bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
-
+            QString OwnAvatarId();
+    
             Foundation::Framework* framework_;
             State state_;
             QString description_;
@@ -56,12 +57,13 @@ namespace MumbleVoip
             bool audio_sending_enabled_;
             bool audio_receiving_enabled_;
             ParticipantList participants_;
+            ParticipantList left_participants_;
             ConnectionManager* connection_manager_;  // In future session could have multiple connections
             double speaker_voice_activity_;
 
         private slots:
             void OnUserJoined(User*);
-            void OnUserLeft(User*);
+            void OnUserLeft();
             void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
             void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus
             void UpdateSpeakerActivity(PCMAudioFrame*);

@@ -16,6 +16,7 @@ namespace MumbleVoip
             connect(user_, SIGNAL(StartSpeaking()), SLOT(OnStartSpeaking()) );
             connect(user_, SIGNAL(StopSpeaking()), SLOT(OnStopSpeaking()) );
             connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
+            connect(user_, SIGNAL(Left()), SLOT(OnUserLeft()) );
         }
 
         Participant::~Participant()
@@ -71,6 +72,11 @@ namespace MumbleVoip
         User* Participant::UserPtr() const
         {
             return user_;
+        }
+
+        void Participant::OnUserLeft()
+        {
+            emit Communications::InWorldVoice::ParticipantInterface::Left();
         }
 
     } // InWorldVoice

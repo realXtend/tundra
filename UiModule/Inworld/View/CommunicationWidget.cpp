@@ -20,9 +20,9 @@ namespace CoreUi
         : QPushButton(parent),
           state_(STATE_OFFLINE)
     {
-        setMinimumSize(32,32);
+        setMinimumSize(42,32);
         setObjectName("stateIndicatorWidget"); // There can be obly one instance of this class
-        setState(STATE_OFFLINE);
+        UpdateStyleSheet();
         update_timer_.start(VOICE_ACTIVITY_UPDATE_INTERVAL_MS_);
         update_timer_.setSingleShot(false);
         connect(&update_timer_, SIGNAL(timeout()), SLOT(UpdateVoiceActivity()) );
@@ -30,8 +30,11 @@ namespace CoreUi
 
     void VoiceStateWidget::setState(State state)
     {
+        State old_state = state_;
         state_ = state;
-        UpdateStatusIcon();
+        if (old_state == STATE_OFFLINE && state == STATE_ONLINE)
+            voice_activity_ = 1.0; // for notificate user about voice tranmission set on
+        UpdateStyleSheet();
         emit StateChanged();
     }
 
@@ -45,7 +48,7 @@ namespace CoreUi
         voice_activity_ -= static_cast<double>(VOICE_ACTIVITY_UPDATE_INTERVAL_MS_)/VOICE_ACTIVITY_FADEOUT_MAX_MS_;
         if (voice_activity_ < 0)
             voice_activity_ = 0;
-        UpdateStatusIcon();
+        UpdateStyleSheet();
     }
 
     void VoiceStateWidget::SetVoiceActivity(double activity)
@@ -57,10 +60,10 @@ namespace CoreUi
         if (activity > voice_activity_)
             voice_activity_ = activity;
 
-        UpdateStatusIcon();
+        UpdateStyleSheet();
     }
 
-    void VoiceStateWidget::UpdateStatusIcon()
+    void VoiceStateWidget::UpdateStyleSheet()
     {
         if (state_ == STATE_OFFLINE)
         {
@@ -89,6 +92,44 @@ namespace CoreUi
         setStyleSheet("QPushButton#stateIndicatorWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/status_online.png'); background-position: top left; background-repeat: no-repeat; }");
     }
 
+    VoiceUsersInfoWidget::VoiceUsersInfoWidget(QWidget* parent)
+        : QPushButton(parent),
+          count_label_(this),
+          user_count_(0)
+    {
+        count_label_.setObjectName("voiceUserCount");
+        setMinimumSize(64,32);
+        setObjectName("voiceUsersInfoWidget"); // There can be obly one instance of this class
+        UpdateStyleSheet();
+    }
+
+    void VoiceUsersInfoWidget::SetUsersCount(int count)
+    {
+        user_count_ = count;
+        UpdateStyleSheet();
+    }
+
+    int VoiceUsersInfoWidget::UsersCount() const
+    {
+        return user_count_;
+    }
+
+    void VoiceUsersInfoWidget::SetVoiceActivity(double activity)
+    {
+        //! \todo: IMPELEMENT
+    }
+
+    void VoiceUsersInfoWidget::UpdateStyleSheet()
+    {
+       setStyleSheet("QPushButton#voiceUsersInfoWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat; }");
+       count_label_.setStyleSheet("QLabel#voiceUserCount { border: 0px; background-color:  rgba(34,34,34,191); background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }");
+
+       if (user_count_ == 0)
+           count_label_.setText("0");
+       else
+           count_label_.setText(QString::number(user_count_));
+    }
+
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
         framework_(framework),
         QGraphicsProxyWidget(),
@@ -99,7 +140,8 @@ namespace CoreUi
         resizing_horizontal_(false),
         resizing_vertical_(false),
         in_world_speak_mode_on_(false),
-        voice_state_widget_(0)
+        voice_state_widget_(0),
+        voice_users_info_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -359,9 +401,9 @@ namespace CoreUi
                 in_world_voice_session_ = comm->InWorldVoiceSession();
                 connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(StateChanged()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::SessionInterface::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::SessionInterface::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
                 connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
             }
@@ -370,8 +412,11 @@ namespace CoreUi
         voice_state_widget_ = new VoiceStateWidget(0);
         connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
         this->voiceLayoutH->addWidget(voice_state_widget_);
-//        voice_state_widget_->setAutoFillBackground(true);
         voice_state_widget_->show();
+
+        voice_users_info_widget_ = new VoiceUsersInfoWidget(0);
+        this->voiceLayoutH->addWidget(voice_users_info_widget_);
+        voice_users_info_widget_->show();
     }
 
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
@@ -392,6 +437,9 @@ namespace CoreUi
             if (voice_state_widget_)
                 voice_state_widget_->setState(VoiceStateWidget::STATE_OFFLINE);
         }
+
+        if (voice_users_info_widget_)
+            voice_users_info_widget_->SetUsersCount(in_world_voice_session_->Participants().count());
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()

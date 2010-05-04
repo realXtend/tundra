@@ -38,6 +38,7 @@ namespace CoreUi
 
     //! Presents state with a set of status icons.
     //!
+    //! \todo: Move to out from UModule
     class VoiceStateWidget : public QPushButton
     {
         Q_OBJECT
@@ -50,7 +51,7 @@ namespace CoreUi
     signals:
         void StateChanged();
     private:
-        void UpdateStatusIcon(); 
+        void UpdateStyleSheet(); 
         static const int VOICE_ACTIVITY_UPDATE_INTERVAL_MS_ = 50;
         static const int VOICE_ACTIVITY_FADEOUT_MAX_MS_ = 500;
 
@@ -64,16 +65,22 @@ namespace CoreUi
     //! Show user count and voice activity
     //!
     //!
-    class UsersInfoWidget : QPushButton
+    //! \todo: Move to out from UModule
+    class VoiceUsersInfoWidget : public QPushButton
     {
         Q_OBJECT
     public:
+        VoiceUsersInfoWidget(QWidget* parent = 0);
         virtual void SetUsersCount(int count);
         virtual int UsersCount() const;
         virtual void SetVoiceActivity(double activity);
     private:
+        void UpdateStyleSheet();
+
         int user_count_;
         double voice_activity_;
+        QLabel count_label_;
+
     };
 
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
@@ -130,6 +137,7 @@ namespace CoreUi
         bool resizing_horizontal_;
 
         VoiceStateWidget* voice_state_widget_;
+        VoiceUsersInfoWidget* voice_users_info_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);
@@ -168,4 +176,4 @@ namespace CoreUi
     };
 }
 
-#endif
+#endif // incl_UiModule_CommunicationWidget_h

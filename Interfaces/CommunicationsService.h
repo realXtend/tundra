@@ -147,14 +147,14 @@ namespace Communications
             virtual void Mute(bool mute) = 0;
             virtual bool IsMuted() const = 0;
             virtual Vector3df Position() const = 0;
+//            virtual bool IsLeft() const = 0;
 
             //! \return true if participant has left 
 //            virtual bool IsLeft() const = 0; // \todo better name for method
         signals:
             void StartSpeaking(); 
             void StopSpeaking();
-
-  //          void Left();
+            void Left();
 //            void PositionUpdated();
         };
 //        typedef shared_ptr<ParticipantInterface> ParticipantPtr;
@@ -187,12 +187,13 @@ namespace Communications
 
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
+            //! \todo: Give weak_ptr instead
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
 
         signals:
-            void StateChanged(State state);
-            void ParticipantJoined(ParticipantInterface* participant);
-            void ParticipantLeft(ParticipantInterface* participant);
+            void StateChanged(Communications::InWorldVoice::SessionInterface::State state);
+            void ParticipantJoined(Communications::InWorldVoice::ParticipantInterface* participant);
+            void ParticipantLeft(Communications::InWorldVoice::ParticipantInterface* participant);
             void StartSendingAudio();
             void StopSendingAudio();
             void StartReceivingAudio();

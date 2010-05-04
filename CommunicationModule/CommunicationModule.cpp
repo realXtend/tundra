@@ -53,11 +53,9 @@ namespace Communication
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-        //Publish CommunicationsService implementation
-        //communications_service_ = Communications::ServicePtr(Communications::Service::Instance());
-        //communications_service_ = boost::shared_ptr<Communications::Service>(Communications::Service::Instance());
+        //! Publish CommunicationsService implementation
+        //! \todo Move to separate module 'CommunicationsModule'
         communications_service_ = Communications::Service::IntancePtr();
-//        ServiceWeakPtr service = communications_service_
         if (communications_service_.get())
             framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
     }
