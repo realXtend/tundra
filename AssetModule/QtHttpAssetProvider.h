@@ -47,7 +47,7 @@ namespace Asset
         void StartTransferFromQueue();
 
         bool CheckRequestQueue(QString assed_id);
-        bool QtHttpAssetProvider::IsAcceptableAssetType(const std::string& asset_type);
+        bool IsAcceptableAssetType(const std::string& asset_type);
 
     private:
         Foundation::Framework *framework_;
