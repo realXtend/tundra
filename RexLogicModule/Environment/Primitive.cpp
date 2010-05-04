@@ -106,7 +106,8 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents); 
+    // Note: we assume prim entity is created because of a message from network
+    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::Network); 
 
     //DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()),"AmbientRed");
     return entity;
