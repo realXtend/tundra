@@ -14,6 +14,7 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_Controllable.h"
+#include "EntityComponent/EC_HoveringWidget.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -24,6 +25,8 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_HoveringText.h"
+
+#include "ConversionUtils.h"
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
@@ -105,7 +108,7 @@ namespace RexLogic
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
         //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_HoveringWidget::TypeNameStatic());
+        defaultcomponents.push_back(EC_HoveringWidget::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
@@ -175,7 +178,7 @@ namespace RexLogic
             ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
             // Hide own name overlay
-            OgreRenderer::EC_HoveringWidget *overlay= entity->GetComponent<OgreRenderer::EC_HoveringWidget>().get();
+            EC_HoveringWidget *overlay= entity->GetComponent<EC_HoveringWidget>().get();
             if(overlay)
             {
                 overlay->SetText(presence->GetFullName().c_str());
@@ -491,7 +494,7 @@ namespace RexLogic
             return;
 
 
-        OgreRenderer::EC_HoveringWidget* overlay = entity->GetComponent<OgreRenderer::EC_HoveringWidget>().get();
+        EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {

@@ -15,7 +15,7 @@
 
 class QPushButton;
 
-namespace OgreRenderer
+namespace RexLogic
 {
     class HoveringWidgetController: public QWidget, private Ui::HoveringWidget
     {

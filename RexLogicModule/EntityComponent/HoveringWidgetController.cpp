@@ -4,7 +4,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 
-namespace OgreRenderer
+namespace RexLogic
 {
 
     HoveringWidgetController::HoveringWidgetController()

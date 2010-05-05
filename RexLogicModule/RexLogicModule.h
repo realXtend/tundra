@@ -102,6 +102,12 @@ namespace RexLogic
         //! Returns world stream pointer.
         WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
+                //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        /*! \param Ray ray ray to test intersection with
+            \return returns true if infoicon was hit, false otherwise
+        */
+        bool CheckInfoIconIntersection(int x, int y);
+
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
 
