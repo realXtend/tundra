@@ -38,7 +38,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
-#QT4_WRAP_UI(UI_SRCS ${UI_FILES})
+QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 #QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
@@ -59,7 +59,7 @@ use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderin
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule

@@ -1053,10 +1053,13 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>Inventory::InventoryModule</name>
+    <name>HoveringWidget</name>
     <message>
-        <source>Inventory::InventoryWindow</source>
-        <comment>Inventory</comment>
+        <source>HoveringWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>John Doe</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
