@@ -178,7 +178,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 {
                     // Create WebDAV inventory model.
                     inventoryType_ = IDMT_WebDav;
-                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->identityUrl.c_str(), auth->hostUrl.c_str()));
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
                     inventoryWindow_->InitInventoryTreeModel(inventory_);
                     SAFE_DELETE(service_);
                     service_ = new InventoryService(inventory_.get());

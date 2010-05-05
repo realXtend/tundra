@@ -264,7 +264,10 @@ namespace OpenSimProtocol
                 threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
                 threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
                 threadState_->parameters.gridUrl = GridParser::ExtractGridAddressFromXMLRPCReply(call);
-                
+
+                if (call.HasReply("webdav_inventory"))
+                    threadState_->parameters.webdavInventoryUrl = call.GetReply<std::string>("webdav_inventory");
+
                 if (threadState_->parameters.gridUrl.size() == 0)
                     throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
                 if (threadState_->parameters.sessionID.ToString() == std::string("") ||
@@ -311,6 +314,7 @@ namespace OpenSimProtocol
                 threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
                 threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
                 threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
+
                 ///\bug related to one 10 lines above. instead of using port defined in authentication server, 
                 /// use the one given by simulator.
                 /// Does this still apply? -jj. Is this a bug in the rex auth server? If so, flag as a workaround or something similar.

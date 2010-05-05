@@ -23,7 +23,7 @@ namespace Inventory
         /// Constructor
         /// @param identityUrl
         /// @param hostUrl
-        WebDavInventoryDataModel(const QString &identityUrl, const QString &hostUrl);
+        WebDavInventoryDataModel(const QString &identity, const QString &host, const QString &password);
 
         /// Destructor.
         virtual ~WebDavInventoryDataModel();
@@ -113,11 +113,12 @@ namespace Inventory
         QString ValidateFolderPath(QString path);
 
         /// Related urls to store for fetching webdav url and accessing webdav
-        QString identityUrl_;
-        QString hostUrl_;
-        QString webdavIdentityUrl_;
-        QString webdavUrl_;
-
+        QString webdav_identity_;
+        QString webdav_host_;
+        QString webdav_password_;
+        QString fetched_webdav_identity_;
+        QString fetched_webdav_host_;
+        
         /// The root folder.
         InventoryFolder *rootFolder_;
 

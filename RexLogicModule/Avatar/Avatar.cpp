@@ -682,6 +682,12 @@ namespace RexLogic
         if (!conn)
             return false;
         
+        // Support anything that has the appearance url set, webdav or legacy
+        EC_OpenSimAvatar *os_avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+        if (os_avatar)
+            if (os_avatar->GetAppearanceAddress().length() > 0)
+                return true;
+
         // For now, support only legacy storage export
         return (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection);
     }
@@ -711,6 +717,8 @@ namespace RexLogic
         
         if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        else if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationType::AT_OpenSim)
+            avatar_appearance_.WebDavExportAvatar(entity);
         else
             avatar_appearance_.InventoryExportAvatar(entity);
     }

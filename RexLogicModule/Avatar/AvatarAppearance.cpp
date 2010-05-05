@@ -1234,6 +1234,56 @@ namespace RexLogic
             }
         }
     }
+
+    void AvatarAppearance::WebDavExportAvatar(Scene::EntityPtr entity)
+    {
+        if (!entity)
+            return;
+
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;
+
+        if (inv_export_state_ != Idle)
+        {
+            RexLogicModule::LogInfo("Avatar export already running");
+            return;
+        }
+
+        // Get assets for export, inventory mode, using a dummy export request
+        inv_export_entity_ = entity;
+        inv_export_assetmap_ = AvatarAssetMap();
+        inv_export_request_ = AvatarExporterRequestPtr(new AvatarExporterRequest());
+        GetAvatarAssetsForExport(inv_export_request_, *appearance, true);   
+        
+        // Check if there were any assets, if not, we can go to final phase directly
+        if (inv_export_request_->assets_.empty())
+        {
+            InventoryExportAvatarFinalize(entity);
+            return;
+        }
+         
+        // If there are assets, stuff them all
+        inv_export_state_ = Assets;
+        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Inventory::InventoryUploadBufferEventData event_data;
+        
+        ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
+        while (i != inv_export_request_->assets_.end())
+        {
+            QVector<u8> data_buffer;
+            data_buffer.resize(i->second.data_.size());
+            memcpy(&data_buffer[0], &i->second.data_[0], i->second.data_.size());
+                        
+            // Slashes in filenames cause problems. Replace. The exact format of the filename should not
+            // matter (never used to reference the asset), as long as the asset type is deduced correctly
+            event_data.filenames.push_back(QString::fromStdString(ReplaceChar(i->first, '/', '_')));
+            event_data.buffers.push_back(data_buffer);
+            ++i;
+        }
+
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);   
+    }
     
     void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
     {

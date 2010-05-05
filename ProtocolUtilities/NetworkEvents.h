@@ -47,6 +47,7 @@ namespace ProtocolUtilities
         std::string gridUrl;
         std::string avatarStorageUrl;
         std::string seedCapabilities;
+        std::string webdavInventoryUrl;
         boost::shared_ptr<InventorySkeleton> inventory;
         boost::shared_ptr<BuddyList> buddy_list;
     };
@@ -150,14 +151,15 @@ namespace ProtocolUtilities
     class AuthenticationEventData : public Foundation::EventDataInterface
     {
     public:
-        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "", const std::string &host_Url = "") 
-            : type(auth_type), identityUrl(identity_url), hostUrl(host_Url) {}
+        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity = "", const std::string &host = "") 
+            : type(auth_type), webdav_identity(identity), webdav_host(host) {}
         virtual ~AuthenticationEventData() {}
-        void SetIdentity(const std::string &url) { identityUrl = url; }
-        void SetHost(const std::string &url) { hostUrl = url; }
+        void SetIdentity(const std::string &identity) { webdav_identity = identity; }
+        void SetHost(const std::string &url) { webdav_host = url; }
         AuthenticationType type;
-        std::string identityUrl;
-        std::string hostUrl;
+        std::string webdav_identity;
+        std::string webdav_host;
+        std::string webdav_password;
         InventoryPtr inventorySkeleton;
     };
 

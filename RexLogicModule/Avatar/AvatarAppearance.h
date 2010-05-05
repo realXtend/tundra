@@ -91,6 +91,9 @@ namespace RexLogic
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         
+        //! Exports avatar via webdav inventory
+        void WebDavExportAvatar(Scene::EntityPtr entity);
+
         //! Exports avatar to inventory
         void InventoryExportAvatar(Scene::EntityPtr entity);
 
