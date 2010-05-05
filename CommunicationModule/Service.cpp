@@ -67,6 +67,8 @@ namespace Communications
     void Service::Register(InWorldVoice::ProviderInterface& provider)
     {
         in_world_voice_provider_ = &provider;
+//        connect(in_world_voice_provider_, SIGNAL(SessionUnavailable()), SLOT(
+  //      InWorldVoiceUnvailable
         QString message = QString("In-world voice provider [%1] registered.").arg(provider.Description());
         Communication::CommunicationModule::LogInfo(message.toStdString());
         emit Communications::ServiceInterface::InWorldVoiceAvailable();

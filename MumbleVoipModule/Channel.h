@@ -12,6 +12,8 @@ namespace MumbleVoip
 {
     //! Channel on Mumble server
     //!
+    //! \todo Add signals: UserJoined, UserLeft
+    //! \todo Add Users() method
     class Channel
     {
     public:

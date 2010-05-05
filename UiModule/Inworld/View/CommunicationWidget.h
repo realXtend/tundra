@@ -5,6 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
+#include "ui_VoiceUsers.h"
 
 #include <QLabel>
 #include <QTimer>
@@ -83,6 +84,11 @@ namespace CoreUi
 
     };
 
+    class VoiceUsersWidget : public QGraphicsProxyWidget, private Ui::VoiceUsersWidget
+    {
+
+    };
+
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
     {
 
@@ -111,12 +117,15 @@ namespace CoreUi
         void ChangeView(ViewMode new_mode);
         void ToggleImWidget();
         void ToggleVoice();
+        void ToggleVoiceUsers();
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
         void InitializeInWorldVoice();
         void UninitializeInWorldVoice();
         void UpdateInWorldVoiceIndicator();
+        void ShowVoiceControls();
+        void HideVoiceControls();
 
     private:
         Foundation::Framework* framework_;
@@ -138,6 +147,7 @@ namespace CoreUi
 
         VoiceStateWidget* voice_state_widget_;
         VoiceUsersInfoWidget* voice_users_info_widget_;
+        VoiceUsersWidget* voice_users_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);

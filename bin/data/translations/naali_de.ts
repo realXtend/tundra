@@ -279,6 +279,14 @@ QPushButton::pressed {
         <source>CommunicationWidget</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Chat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voice</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CompositionHandler</name>
@@ -2041,6 +2049,17 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VoiceUsersWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voice users</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

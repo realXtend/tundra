@@ -18,6 +18,11 @@ namespace MumbleVoip
     {
     public:
         virtual void run();
+
+        //! \return information about current state
+        virtual QString Reason() const;
+    private:
+        QString reason_;
     };
 } // end of namespace: MumbleVoip
 

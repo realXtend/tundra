@@ -29,6 +29,10 @@ namespace MumbleVoip
             Session(Foundation::Framework* framework, const ServerInfo &server_info);
             virtual ~Session();
 
+            virtual void Close();
+            virtual State GetState() const;
+            virtual QString Reason() const;
+
             virtual QString Description() const;
             virtual bool IsSendingAudio() const;
             virtual bool IsReceivingAudio() const;
@@ -51,6 +55,7 @@ namespace MumbleVoip
     
             Foundation::Framework* framework_;
             State state_;
+            QString reason_;
             QString description_;
             bool sending_audio_;
             bool receiving_audio_;
@@ -60,10 +65,11 @@ namespace MumbleVoip
             ParticipantList left_participants_;
             ConnectionManager* connection_manager_;  // In future session could have multiple connections
             double speaker_voice_activity_;
+            const ServerInfo &server_info_;
 
         private slots:
-            void OnUserJoined(User*);
-            void OnUserLeft();
+            void UpdateParticipantList(User*);
+            void UpdateParticipantList();
             void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
             void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus
             void UpdateSpeakerActivity(PCMAudioFrame*);
