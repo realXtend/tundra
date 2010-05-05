@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "AttributeInterface.h"
+#include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
 #include "Framework.h"
@@ -66,6 +67,13 @@ template<> std::string Attribute<Color>::ToString() const
         ::ToString<Real>(value.g) + " " +
         ::ToString<Real>(value.b) + " " +
         ::ToString<Real>(value.a);
+}
+
+template<> std::string Attribute<AssetReference>::ToString() const
+{
+    AssetReference value = Get();
+    
+    return value.type_ + ":" + value.id_;
 }
 
 template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change)
@@ -175,6 +183,19 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Change
         }
         catch (...) {}
     }
+}
+
+template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change)
+{
+    // We store type first, then ":", then asset id
+    std::string::size_type pos = str.find(':');
+    if (pos == std::string::npos)
+        return;
+    std::string type = str.substr(0, pos);
+    std::string id = str.substr(pos + 1);
+    
+    Foundation::AssetReference value(id, type);
+    Set(value, change);
 }
 
 }
