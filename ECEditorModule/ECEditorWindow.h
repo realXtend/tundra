@@ -23,6 +23,7 @@ class QTreeWidget;
 class QTextEdit;
 class QComboBox;
 class QKeyEvent;
+
 class QtTreePropertyBrowser;
 class QtVariantPropertyManager;
 class QtProperty;
