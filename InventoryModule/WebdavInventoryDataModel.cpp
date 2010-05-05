@@ -18,16 +18,19 @@
 namespace Inventory
 {
 
-WebDavInventoryDataModel::WebDavInventoryDataModel(const QString &identityUrl, const QString &hostUrl) :
-    identityUrl_(identityUrl), hostUrl_(hostUrl), rootFolder_(0)
+WebDavInventoryDataModel::WebDavInventoryDataModel(const QString &identity, const QString &host, const QString &password) :
+    webdav_identity_(identity), webdav_host_(host), webdav_password_(password), rootFolder_(0)
 {
-    if (!InitPythonQt())
-        ErrorOccurredCreateEmptyRootFolder();
-
-    if (FetchWebdavUrlWithIdentity())
+    if (InitPythonQt())
         FetchRootFolder();
     else
-        ErrorOccurredCreateEmptyRootFolder();
+        ErrorOccurredCreateEmptyRootFolder();      
+
+    // Old code when we fetched the identiy and host from CB2
+    //if (FetchWebdavUrlWithIdentity())
+    //    FetchRootFolder();
+    //else
+    //    ErrorOccurredCreateEmptyRootFolder();    
 }
 
 WebDavInventoryDataModel::~WebDavInventoryDataModel()
@@ -351,29 +354,30 @@ bool WebDavInventoryDataModel::FetchWebdavUrlWithIdentity()
     PythonQtObjectPtr httpclient = pythonQtMainModule_.evalScript("connection.HTTPClient()\n", Py_eval_input);
 
     // Some url verification, remove http:// and everything after the port
-    int index = hostUrl_.indexOf("http://");
+    int index = webdav_host_.indexOf("http://");
     if (index != -1)
-        hostUrl_ = hostUrl_.midRef(index+7).toString();
-    index = hostUrl_.indexOf("/");
+        webdav_host_ = webdav_host_.midRef(index+7).toString();
+    index = webdav_host_.indexOf("/");
     if (index != -1)
-        hostUrl_ = hostUrl_.midRef(0, index).toString();
+        webdav_host_ = webdav_host_.midRef(0, index).toString();
 
     // Set up HTTP connection to Taiga WorldServer
-    httpclient.call("setupConnection", QVariantList() << hostUrl_ << "openid" << identityUrl_);
+    httpclient.call("setupConnection", QVariantList() << webdav_host_ << "openid" << webdav_identity_);
     // Get needed webdav access urls from Taiga WorldServer
     QStringList resultList = httpclient.call("requestIdentityAndWebDavURL").toStringList();
     // Store results
     if (resultList.count() < 1)
         return false;
 
-    webdavIdentityUrl_ = resultList.value(0);
-    webdavUrl_ = resultList.value(1);
+    fetched_webdav_identity_ = resultList.value(0);
+    fetched_webdav_host_ = resultList.value(1);
 
     return true;
 }
 
 void WebDavInventoryDataModel::FetchRootFolder()
 {
+    pythonQtMainModule_.evalScript("import connection\n");
     webdavclient_ = pythonQtMainModule_.evalScript("connection.WebDavClient()\n", Py_eval_input);
     if (!webdavclient_)
     {
@@ -382,7 +386,7 @@ void WebDavInventoryDataModel::FetchRootFolder()
     }
 
     // Set urls
-    webdavclient_.call("setHostAndUser", QVariantList() << webdavIdentityUrl_ << webdavUrl_);
+    webdavclient_.call("setHostAndUser", QVariantList() << webdav_identity_ << webdav_host_ << webdav_password_);
     // Connect to webdav
     webdavclient_.call("setupConnection");
     // Fetch root resources

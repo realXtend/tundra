@@ -91,6 +91,9 @@ namespace OpenSimProtocol
         ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
 
+        const std::string GetUsername() const { return firstName_ + " " + lastName_; }
+        const std::string GetPassword() const { return password_; }
+
     private:
         OpenSimLoginThread(const OpenSimLoginThread &);
         void operator=(const OpenSimLoginThread &);

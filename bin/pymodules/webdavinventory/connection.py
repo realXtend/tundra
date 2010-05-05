@@ -80,9 +80,10 @@ class WebDavClient(object):
         self.user = identityurl
         self.url = webdavurl
         
-    def setHostAndUser(self, user, url):
+    def setHostAndUser(self, user, url, password):
         self.user = user
         self.url = url
+        self.password = password
     
     def setupConnection(self):
         if (self.connection != None):
@@ -102,11 +103,11 @@ class WebDavClient(object):
             except AuthorizationError as e:                           
                 if e.authType == "Basic":
                     #self.password = QInputDialog.getText(None, "WebDav Inventory Password", "WebDav Inventory is asking for Basic authentication\n\nPlease give your password:", QLineEdit.Normal, "")
-                    self.password = "" # CableBeach server does not check passwords yet
+                    #self.password = "" # CableBeach server does not check passwords yet
                     self.resource.connection.addBasicAuthorization(self.user, str(self.password))
                 elif e.authType == "Digest":
                     #self.password = QInputDialog.getText(None, "WebDav Inventory Password", "WebDav Inventory is asking for Digest authentication\n\nPlease give your password:", QLineEdit.Normal, "")
-                    self.password = "" # CableBeach server does not check passwords yet
+                    #self.password = "" # CableBeach server does not check passwords yet
                     info = WebdavClient.parseDigestAuthInfo(e.authInfo)
                     self.resource.connection.addDigestAuthorization(self.user, self.password, realm=info["realm"], qop=info["qop"], nonce=info["nonce"])
                 else:
