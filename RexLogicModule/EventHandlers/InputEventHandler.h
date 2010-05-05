@@ -12,23 +12,38 @@ namespace Foundation
 
 namespace RexLogic
 {
-    class InputStateInterface;
     class RexLogicModule;
 
     //! Performs the keyboard and mouse input handling of RexLogic.
     class InputEventHandler
     {
     public:
-        explicit InputEventHandler(RexLogicModule *rexlogicmodule);
+        //! Constructor.
+        //! \param owner Owner module.
+        explicit InputEventHandler(RexLogicModule *owner);
+
+        //! Destructor.
         virtual ~InputEventHandler();
 
-        //! handle an input event
+        //! Handles an input event.
         bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
+        //! Updates xxx
+        //! \param frametime Time since the last frame.
         void Update(f64 frametime);
 
     private:
-        RexLogicModule *rexlogicmodule_;
+        //! Owner module.
+        RexLogicModule *owner_;
+
+        //! Last position of mouse cursor on the screen.
+        std::pair<int, int> lastMousePosition_;
+
+        //! Last call time of Update() function.
+        f64 lastCallTime_;
+
+        //! Raycast interval for mouse hovering in seconds.
+        double raycastInterval_;
     };
 }
 
