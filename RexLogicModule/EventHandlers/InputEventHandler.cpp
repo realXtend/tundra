@@ -11,6 +11,7 @@
 #include "Entity.h"
 #include "EventManager.h"
 #include "SceneEvents.h"
+#include "EC_Touchable.h"
 
 namespace RexLogic
 {
@@ -77,6 +78,8 @@ void InputEventHandler::Update(f64 frametime)
             data.v = result.v_;
             event_category_id_t category = eventMgr->QueryEventCategory("Scene");
             assert(category != 0);
+            if (!category)
+                return;
             eventMgr->SendEvent(category, Scene::Events::EVENT_ENTITY_MOUSE_HOVER, &data);
         }
     }
