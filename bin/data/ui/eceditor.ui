@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
+    <width>423</width>
     <height>438</height>
    </rect>
   </property>
@@ -182,7 +182,14 @@ QLabel {
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="list_entities"/>
+             <widget class="QListWidget" name="list_entities">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -207,7 +214,7 @@ QLabel {
                <bool>true</bool>
               </property>
               <property name="columnCount">
-               <number>2</number>
+               <number>3</number>
               </property>
               <attribute name="headerVisible">
                <bool>false</bool>
@@ -223,6 +230,11 @@ QLabel {
               <column>
                <property name="text">
                 <string notr="true">2</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string notr="true">3</string>
                </property>
               </column>
              </widget>
