@@ -84,8 +84,6 @@ void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ChangeType c
     
     title_ = ReadAttribute(element, "title");
     text_ = ReadAttribute(element, "text");
-    
-    emit OnChanged();
 }
 
 void EC_NoteCard::SetTitle(const std::string& title)

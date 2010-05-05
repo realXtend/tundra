@@ -132,9 +132,6 @@ void ComponentInterface::DeserializeFrom(QDomElement& element, ChangeType change
         std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString());
         attributes_[i]->FromString(attr_str, change);
     }
-    
-    // Raise internal change signal after deserializing everything
-    emit OnChanged();
 }
 
 }
