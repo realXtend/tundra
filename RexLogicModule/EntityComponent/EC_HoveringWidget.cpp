@@ -27,7 +27,7 @@
 
 
 //#include "MemoryLeakCheck.h"
-namespace OgreRenderer
+namespace RexLogic
 {
 
     EC_HoveringWidget::EC_HoveringWidget(Foundation::ModuleInterface* module) :
@@ -255,7 +255,7 @@ namespace OgreRenderer
             billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
             assert(billboard_);
             billboardSet_->setDefaultDimensions(1.5f, 0.55f);
-            billboard_->setTexcoordRect(0,0,1,0.5);
+            billboard_->setTexcoordRect(0,0.5,1,1);
 
             sceneNode->attachObject(billboardSet_);
         }

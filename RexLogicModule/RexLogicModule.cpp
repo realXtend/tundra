@@ -24,6 +24,7 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
+#include "EntityComponent/EC_HoveringWidget.h"
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -57,6 +58,7 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
+
 // External EC's
 #include "EC_Highlight.h"
 #include "EC_HoveringText.h"
@@ -67,10 +69,13 @@
 #include "EC_Touchable.h"
 #include "EC_HoveringWidget.h"
 
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
 #include <OgreEntity.h>
+#include <OgreBillboard.h>
+#include <OgreBillboardSet.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -110,7 +115,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_NetworkPosition);
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
-
+    DECLARE_MODULE_EC(EC_HoveringWidget);
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
@@ -1012,7 +1017,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 
     // Get users position
-    boost::shared_ptr<OgreRenderer::EC_HoveringWidget> widget;
+    boost::shared_ptr<EC_HoveringWidget> widget;
     boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placable.get())
         return;
@@ -1021,7 +1026,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
         placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-        widget = avatar->GetComponent<OgreRenderer::EC_HoveringWidget>();
+        widget = avatar->GetComponent<EC_HoveringWidget>();
         if (!placable.get() || !widget.get())
             continue;
 
@@ -1037,7 +1042,7 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();*/
 
-    boost::shared_ptr<OgreRenderer::EC_HoveringWidget> info_icon = entity->GetComponent<OgreRenderer::EC_HoveringWidget>();
+    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();
 }
@@ -1142,6 +1147,113 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
 
     return Console::ResultSuccess();
 }
+
+bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
+    {
+        bool ret_val = false;
+        QList<EC_HoveringWidget*> visible_widgets;
+
+        Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
+        Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
+
+        OgreRenderer::EC_OgreCamera * camera;
+        
+
+        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        if (!current_scene.get())
+            return ret_val;
+
+        Scene::SceneManager::iterator iter = current_scene->begin();
+        Scene::SceneManager::iterator end = current_scene->end();
+
+        while (iter != end)
+        {
+            Scene::EntityPtr entity = (*iter);
+            ++iter;
+            if (!entity.get())
+                continue;
+
+            EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+            OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            if(c)
+            {
+                camera = c;
+            }
+            if(widget && widget->IsVisible())
+                visible_widgets.append(widget);
+        }
+        if(!camera)
+        {
+            return false;
+        }
+        OgreRenderer::EC_OgrePlaceable* cam_placeable = camera->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        Ogre::Ray original_ray = camera->GetCamera()->getCameraToViewportRay(scr_x, scr_y);
+        
+
+        /////TEST
+        OgreRenderer::EC_OgrePlaceable* test;
+
+        if(!visible_widgets.empty())
+        {
+            test  = visible_widgets.at(0)->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        }
+        else
+            return false;
+        /////
+
+        Quaternion camera_orientation = test->GetOrientation();
+        
+        for(int i=0; i< visible_widgets.size();i++)
+        {
+            
+            Ogre::Ray ray = original_ray;
+            EC_HoveringWidget* widget = visible_widgets.at(i);
+            Ogre::Billboard board = widget->GetBillboard();
+            Ogre::Vector3 vec = board.getPosition();
+            Ogre::Real billboard_h = widget->GetBillboardSet().getDefaultHeight();
+            Ogre::Real billboard_w = widget->GetBillboardSet().getDefaultWidth();
+
+            OgreRenderer::EC_OgrePlaceable* placeable = widget->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if(!placeable)
+                continue;
+            
+            //a bit "hacky". Should modify transformation matrix instead
+            Quaternion orig_ori = placeable->GetOrientation();
+            placeable->SetOrientation(camera_orientation);
+            placeable->GetSceneNode()->needUpdate();
+            
+            
+            Ogre::Matrix4 mat;
+            widget->GetBillboardSet().getWorldTransforms(&mat);
+            
+            placeable->SetOrientation(orig_ori);
+            placeable->GetSceneNode()->needUpdate();
+
+
+
+
+            Ogre::AxisAlignedBox box(vec.x, vec.y - billboard_w/2, vec.z - billboard_h/2, vec.x , vec.y + billboard_w/2, vec.z + billboard_h/2);
+            //Transform cameratoviewportray into the billboards local space
+            Ogre::Vector4 temp(ray.getDirection());
+            temp.w = 0;
+            temp = mat.inverseAffine() *temp;
+            ray.setDirection(Ogre::Vector3(temp.x, temp.y, temp.z));
+            ray.setOrigin(mat.inverseAffine() * ray.getOrigin());
+            std::pair<bool, Real> result = ray.intersects(box);
+            if(result.first)
+            {
+                Ogre::Vector3 inters_point = ray.getPoint(result.second);
+                inters_point -= vec;
+                Real x = (inters_point.y + billboard_w/2)/billboard_w;
+                Real y = (inters_point.z + billboard_h/2)/billboard_h;
+                widget->WidgetClicked(1-x, 1-y);
+                ret_val = true;
+                
+            }
+        }
+
+        return ret_val;
+    }
 
 } // namespace RexLogic
 

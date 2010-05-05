@@ -19,7 +19,7 @@
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
-#include "EC_HoveringWidget.h"
+
 
 #include "InputEvents.h"
 #include "SceneEvents.h"
@@ -65,7 +65,6 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreAnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
-        DECLARE_MODULE_EC(EC_HoveringWidget);
     }
 
     // virtual
@@ -118,72 +117,7 @@ namespace OgreRenderer
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
 
-    bool OgreRenderingModule::CheckInfoIconIntersection(int x, int y)
-    {
-        bool ret_val = false;
-        QList<EC_HoveringWidget*> visible_widgets;
-        Real scr_x = x/(Real)renderer_->GetWindowWidth();
-        Real scr_y = y/(Real)renderer_->GetWindowHeight();
 
-        Ogre::Ray original_ray = renderer_->GetCurrentCamera()->getCameraToViewportRay(scr_x, scr_y);
-
-        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (!current_scene.get())
-            return ret_val;
-
-        Scene::SceneManager::iterator iter = current_scene->begin();
-        Scene::SceneManager::iterator end = current_scene->end();
-
-        while (iter != end)
-        {
-            Scene::EntityPtr entity = (*iter);
-            ++iter;
-            if (!entity.get())
-                continue;
-
-            EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-            if(widget && widget->IsVisible())
-                visible_widgets.append(widget);
-        }
-        Ogre::Quaternion quat;
-        if(!visible_widgets.empty())
-            quat = visible_widgets.at(0)->GetBillboardSet().getParentSceneNode()->getOrientation();
-        for(int i=0; i< visible_widgets.size();i++)
-        {
-            Ogre::Ray ray = original_ray;
-            EC_HoveringWidget* widget = visible_widgets.at(i);
-            Ogre::Billboard board = widget->GetBillboard();
-            Ogre::Vector3 vec = board.getPosition();
-            Ogre::Real billboard_h = widget->GetBillboardSet().getDefaultHeight();
-            Ogre::Real billboard_w = widget->GetBillboardSet().getDefaultWidth();
-            
-            widget->GetBillboardSet().getParentSceneNode()->setOrientation(renderer_->GetCurrentCamera()->getDerivedOrientation());
-            Ogre::Matrix4 mat;
-            widget->GetBillboardSet().getWorldTransforms(&mat);
-
-
-            Ogre::AxisAlignedBox box(vec.x, vec.y - billboard_w/2, vec.z - billboard_h/2, vec.x , vec.y + billboard_w/2, vec.z + billboard_h/2);
-            //Transform cameratoviewportray into the billboards local space
-            Ogre::Vector4 temp(ray.getDirection());
-            temp.w = 0;
-            temp = mat.inverseAffine() *temp;
-            ray.setDirection(Ogre::Vector3(temp.x, temp.y, temp.z));
-            ray.setOrigin(mat.inverseAffine() * ray.getOrigin());
-            std::pair<bool, Real> result = ray.intersects(box);
-            if(result.first)
-            {
-                Ogre::Vector3 inters_point = ray.getPoint(result.second);
-                inters_point -= vec;
-                Real x = (inters_point.y + billboard_w/2)/billboard_w;
-                Real y = (inters_point.z + billboard_h/2)/billboard_h;
-                widget->WidgetClicked(1-x, 1-y);
-                ret_val = true;
-                
-            }
-        }
-
-        return ret_val;
-    }
 
     // virtual
     bool OgreRenderingModule::HandleEvent(
@@ -210,7 +144,6 @@ namespace OgreRenderer
         {
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-            CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 
             Scene::Entity *entity = result.entity_;

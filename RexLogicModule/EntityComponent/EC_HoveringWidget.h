@@ -12,7 +12,7 @@
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
-#include "OgreModuleApi.h"
+#include "RexLogicModuleApi.h"
 
 #include "HoveringWidgetController.h"
 
@@ -30,17 +30,22 @@ namespace Ogre
     class MaterialPtr;
 }
 
+namespace OgreRenderer
+{
+    class Renderer;
+}
+
 class QPushButton;
 
 QT_BEGIN_NAMESPACE
 class QTimeLine;
 QT_END_NAMESPACE
 
-namespace OgreRenderer
+namespace RexLogic
 {
-    class Renderer;
 
-    class OGRE_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
+
+    class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
     {
         Q_OBJECT
         DECLARE_EC(EC_HoveringWidget);
