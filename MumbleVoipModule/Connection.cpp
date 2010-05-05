@@ -116,6 +116,7 @@ namespace MumbleVoip
             state_ = STATE_ERROR;
             reason_ = QString(e.what());
         }
+        state_ = STATE_OPEN;
     }
 
     Connection::~Connection()
@@ -124,7 +125,6 @@ namespace MumbleVoip
 
         Close();
         UninitializeCELT();
-        SAFE_DELETE(client_);
         
         while (encode_queue_.size() > 0)
         {
@@ -141,6 +141,7 @@ namespace MumbleVoip
             SAFE_DELETE(u);
         }
         users_.clear();
+        SAFE_DELETE(client_);
     }
 
     Connection::State Connection::GetState()
@@ -155,8 +156,11 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
-        state_ = STATE_CLOSED;
-        client_->Disconnect();
+        if (state_ == STATE_OPEN)
+        {
+            state_ = STATE_CLOSED;
+            client_->Disconnect();
+        }
     }
 
     void Connection::InitializeCELT()

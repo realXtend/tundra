@@ -20,6 +20,7 @@ namespace MumbleVoip
 
     ServerObserver::ServerObserver(Foundation::Framework* framework) :
         framework_event_category_(0),
+        networkstate_event_category_(0),
         framework_(framework),
         server_info_request_manager_(new QNetworkAccessManager())
     {
@@ -36,11 +37,15 @@ namespace MumbleVoip
         if (!framework_event_category_ && framework_)
            framework_event_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
+        if (!networkstate_event_category_ && framework_)
+           networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+
+
         if (category_id == framework_event_category_)
         {
             switch (event_id)
             {
-                case Foundation::WORLD_STREAM_READY:
+            case Foundation::WORLD_STREAM_READY:
                 {
                     ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
                     if (event_data)
@@ -55,16 +60,22 @@ namespace MumbleVoip
                     }
                     break;
                 }
-
-//                case EVENT_SERVER_DISCONNECTED:
-                    // \todo Close mumble connections
-                    // \todo Stop recording audio
-//                    break;
-
                 default:
                     break;
             }
         }
+
+        //if (category_id == networkstate_event_category_)
+        //{
+        //    switch (event_id)
+        //    {
+        //    case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+        //        break;
+        //    case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
+        //        break;
+        //    }
+        //}
+
         return false;
     }
 

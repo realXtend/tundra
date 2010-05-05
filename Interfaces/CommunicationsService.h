@@ -35,20 +35,26 @@ namespace Communications
     //! can offer contact list with presence support. User can open only one connection per
     //! IM type such as irc and jabber.
     //! 
-    //! - Contact list ..... List of contacts from certain IM service
+    //! - Contact list ..... List of contacts from certain IM service. 
+    //!                      Support presence features (contact presences and self presence)
+    //! - Contact .......... IM contact
+    //! - Credendials ...... Used for login to IM services
     //!
     //!
     //!
 
-    class VoiceCallInterface;       // \todo: Define       telepathy
-    class VideoCallInterface;       // \todo: Define       telepathy
-    class PublicChatSessionInterface;  // \todo: Define       telepathy
-    class PrivateChatSessionInterface; // \todo: Define       telepathy
-
-    class ContactInterface;         // \todo: Define       telepathy, opensim
-    class ContactListInterface;     // \todo: Define       telepathy, opensim
-    class InWorldVoiceInterface;    //                     mumble
-    class InWorldTextChat;          //                     opensim
+    class TextMessageInterface;
+    // namespace: IM
+    class VoiceCallInterface;           // \todo: Define       telepathy
+    class VideoCallInterface;           // \todo: Define       telepathy
+    class PublicChatSessionInterface;   // \todo: Define       telepathy
+    class PrivateChatSessionInterface;  // \todo: Define       telepathy
+    class ContactInterface;             // \todo: Define       telepathy, opensim
+    class ContactListInterface;         // \todo: Define       telepathy, opensim
+    // namespace: InWorldVoice
+    class InWorldVoiceInterface;        //                     mumble
+    // namespace: InWorldChat
+    class InWorldTextChat;              //                     opensim
 
     //!
     class TextMessageInterface
@@ -60,8 +66,14 @@ namespace Communications
         virtual QList<QByteArray> Attachments() const = 0;
     };
 
-    //namespace IM
-    //{
+    namespace IM
+    {
+    //    class CredentialInterface
+    //    {
+    //
+    //
+    //    };
+    //
     //    class FriendRequestInterface
     //    {
     //    public:
@@ -98,15 +110,42 @@ namespace Communications
     //        void FriendRequest(FriendRequestInterface& request);
     //    };
 
-    //} // IM
+        //! (TEST IDEA...)
+        //! 'Connection'
+        //class ServiceInterface : public QObject
+        //{
+        //    Q_OBJECT
+        //public:
+        //    virtual QString Description() const = 0;
+        //    virtual void Close() = 0;
+        //    //virtual ContactList ContactList() = 0;
+        //signals:
+        //    void StateChanged();
+        //    void BecameUnavailable();
+        //};
 
+    } // IM
+
+    //! In-world chat in virtual reality systems
+    //!
+    //! There can be up to one in-world chat session intance per virtual world session.
+    //! This chat session can be obtained by calling InWorldChatSession method from 
+    //! CommunicationsService interface.
+    //!
+    //! \todo Define way to inform about session becames inavailable
+    //!
     namespace InWorldChat
     {
+        //! Participant of in-world chat session. Participant list must be request from
+        //! session object 
+        //!
+        //!
         class ParticipantInterface
         {
         public:
             virtual const QString &Name() const = 0;
         };
+        typedef QList<ParticipantInterface*> ParticipantList;
 
         class TextMessageInterface : public Communications::TextMessageInterface
         {
@@ -119,9 +158,12 @@ namespace Communications
             Q_OBJECT
         public:
             virtual void SendTextMessage(const QString &text);
+            virtual ParticipantList Participants() const;
 
         signals:
             void TextMessageReceived(const TextMessageInterface &message);
+            void ParticipantJoined(ParticipantInterface* participant);
+            void ParticipantLeft(ParticipantInterface* participant);
         };
 
         //! Provider in-world chat sessions
@@ -157,6 +199,7 @@ namespace Communications
             void Left();
 //            void PositionUpdated();
         };
+        typedef QList<ParticipantInterface*> ParticipantList;
 //        typedef shared_ptr<ParticipantInterface> ParticipantPtr;
 
         //! In-world voice session for virtual reality environments
@@ -172,9 +215,9 @@ namespace Communications
             virtual ~SessionInterface() {};
             virtual QString Description() const = 0;
 
-            //virtual void Close() = 0;
-            //virtual State State() = 0;
-            //virtual QString Reason() = 0;
+            virtual void Close() = 0;
+            virtual State GetState() const = 0;
+            virtual QString Reason() const = 0;
             virtual bool IsSendingAudio() const = 0;
             virtual bool IsReceivingAudio() const = 0;
             virtual void EnableAudioSending() = 0;
@@ -213,7 +256,7 @@ namespace Communications
             virtual QString& Description() = 0;
         signals:
             void SessionAvailable();
-          //  void SessionInavailable();
+            void SessionUnavailable();
         };
 
     } // InWorldVoice
@@ -224,6 +267,8 @@ namespace Communications
     //! 
     //! Consumers should connect to *Available signals and then request services when they came available.
     //! The services are considired to be available until viewer shutdown. (???)
+    //!
+    //! \todo Define how to signal about service becomes unavailable.
     class ServiceInterface : public QObject, public Foundation::ServiceInterface 
     {
         Q_OBJECT
@@ -245,10 +290,15 @@ namespace Communications
         virtual void Register(InWorldChat::ProviderInterface& provider) = 0;
         //virtual void Unregister(InWorldChat::ProviderInterface& provider) = 0;
 
+        //virtual void LoginToIMService(IM::Credentials credentials) = 0;
+        //virtual void LogoutFromIMService(IM::Credentials credentials) = 0;
+        //virtual IM:ServiceList IMServices() const = 0;
+
     signals:
         void InWorldVoiceAvailable();
-        //void InWorldVoiceUnvailable();
+        void InWorldVoiceUnvailable();
         void InWorldChatAvailable();
+        void InWorldChatUnavailable();
         //void PrivateChatRequest(PrivateChat::Session session);
         //void VoiceCallRequest(VoiceCall call);
         //void VideoCallRqeust(VideoCall call);

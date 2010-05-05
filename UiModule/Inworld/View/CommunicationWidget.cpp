@@ -141,7 +141,8 @@ namespace CoreUi
         resizing_vertical_(false),
         in_world_speak_mode_on_(false),
         voice_state_widget_(0),
-        voice_users_info_widget_(0)
+        voice_users_info_widget_(0),
+        voice_users_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -178,6 +179,28 @@ namespace CoreUi
         connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
 //        connect(voiceToggle, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
+
+        HideVoiceControls();
+    }
+
+    void CommunicationWidget::ShowVoiceControls()
+    {
+        this->voiceLabel->show();
+        this->voiceLeftBorder->show();
+        if (voice_state_widget_)
+            voice_state_widget_->show();
+        if (voice_users_info_widget_)
+            voice_users_info_widget_->show();
+    }
+
+    void CommunicationWidget::HideVoiceControls()
+    {
+        this->voiceLabel->hide();
+        this->voiceLeftBorder->hide();
+        if (voice_state_widget_)
+            voice_state_widget_->hide();
+        if (voice_users_info_widget_)
+            voice_users_info_widget_->hide();
     }
 
     void CommunicationWidget::ChangeViewPressed()
@@ -232,6 +255,15 @@ namespace CoreUi
             in_world_voice_session_->EnableAudioSending();
         else
             in_world_voice_session_->DisableAudioSending();
+    }
+
+    void CommunicationWidget::ToggleVoiceUsers()
+    {
+        if (!voice_users_widget_)
+            return;
+
+        if (voice_users_widget_)
+            voice_users_widget_->show();
     }
 
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
@@ -406,23 +438,45 @@ namespace CoreUi
                 connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
                 connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
+                connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()));
             }
         }
-        
+
+        if (voice_state_widget_)
+        {
+            this->voiceLayoutH->removeWidget(voice_state_widget_);
+            SAFE_DELETE(voice_state_widget_);
+        }
         voice_state_widget_ = new VoiceStateWidget(0);
         connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
         this->voiceLayoutH->addWidget(voice_state_widget_);
         voice_state_widget_->show();
 
+        if (voice_users_info_widget_)
+        {
+            this->voiceLayoutH->removeWidget(voice_users_info_widget_);
+            SAFE_DELETE(voice_users_info_widget_);
+        }
         voice_users_info_widget_ = new VoiceUsersInfoWidget(0);
         this->voiceLayoutH->addWidget(voice_users_info_widget_);
+        connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceUsers() ) );
         voice_users_info_widget_->show();
+
+//        voice_users_widget_ = new VoiceUsersWidget();
+        UpdateInWorldVoiceIndicator();
+        ShowVoiceControls();
     }
 
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
     {
         if (!in_world_voice_session_)
             return;
+
+        if (in_world_voice_session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+        {
+            HideVoiceControls();
+            return;
+        }
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
         {

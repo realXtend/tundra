@@ -20,6 +20,7 @@ namespace MumbleVoip
     {
         Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
             state_(STATE_INITIALIZING),
+            reason_(""),
             framework_(framework),
             description_(""),
             sending_audio_(false),
@@ -27,15 +28,15 @@ namespace MumbleVoip
             audio_sending_enabled_(false),
             audio_receiving_enabled_(false),
             speaker_voice_activity_(0),
-            connection_manager_(new ConnectionManager(framework))
+            connection_manager_(new ConnectionManager(framework)),
+            server_info_(server_info)
         {
             connection_manager_->OpenConnection(server_info);
+            state_ = STATE_OPEN; // \todo get this information from connection_manager
             connection_manager_->SendAudio(audio_sending_enabled_);
-            connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)) );
-            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
+            connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
+//            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
-
-            //SpeakerVoiceActivity
         }
 
         Session::~Session()
@@ -51,6 +52,23 @@ namespace MumbleVoip
                 SAFE_DELETE(p);
             }
             left_participants_.clear();
+        }
+
+        void Session::Close()
+        {
+            connection_manager_->CloseConnection(server_info_);
+            state_ = STATE_CLOSED;
+            emit StateChanged(state_);
+        }
+
+        Communications::InWorldVoice::SessionInterface::State Session::GetState() const
+        {
+            return state_;
+        }
+
+        QString Session::Reason() const
+        {
+            return reason_;
         }
 
         QString Session::Description() const
@@ -91,14 +109,12 @@ namespace MumbleVoip
         {
             audio_receiving_enabled_ = true;
             connection_manager_->ReceiveAudio(true);
-//            emit StartReceivingAudio();
         }
 
         void Session::DisableAudioReceiving()
         {
             audio_receiving_enabled_ = false;
             connection_manager_->ReceiveAudio(false);
-//            emit StopReceivingAudio();
         }
 
         bool Session::IsAudioReceivingEnabled() const
@@ -134,7 +150,7 @@ namespace MumbleVoip
             }
         }
 
-        void Session::OnUserJoined(User* user)
+        void Session::UpdateParticipantList(User* user)
         {
             if (user->Name() == OwnAvatarId())
                 return; 
@@ -143,12 +159,12 @@ namespace MumbleVoip
             participants_.append(p);
             connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
             connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
-            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(Left()), SLOT(OnUserLeft()) );
+            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
 
             emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
         }
 
-        void Session::OnUserLeft()
+        void Session::UpdateParticipantList()
         {
             foreach(Participant* p, participants_)
             {

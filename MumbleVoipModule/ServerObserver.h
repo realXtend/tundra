@@ -26,6 +26,8 @@ namespace MumbleVoip
     /**
      *  Requests mumble server info when user connects to world.
      *  Emits MumbleServerInfoReceived signal when server info is available.
+     *
+     * \todo Rename to 'ServerInfoProvider'
      */
     class ServerObserver : public QObject
     {
@@ -47,6 +49,7 @@ namespace MumbleVoip
         Foundation::Framework* framework_;
         QNetworkAccessManager* server_info_request_manager_;
         event_category_id_t framework_event_category_; 
+        event_category_id_t networkstate_event_category_;
 
     private slots:
         void OnMumbleServerInfoHttpResponse(QNetworkReply* reply);

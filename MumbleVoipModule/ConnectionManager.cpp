@@ -9,10 +9,10 @@
 #include <QPair>
 #include <QMutexLocker>
 
-#define BUILDING_DLL
+#define BUILDING_DLL // for dll import/export declarations
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
-#undef BUILDING_DLL
+#undef BUILDING_DLL // for dll import/export declarations
 #include "LibMumbleThread.h"
 #include "Connection.h"
 #include "PCMAudioFrame.h"
@@ -31,7 +31,8 @@ namespace MumbleVoip
         recording_device_(""),
         lib_mumble_thread_(0),
         users_position_(0.0,0.0,0.0),
-        voice_indicator_(0)
+        voice_indicator_(0),
+        state_(STATE_NO_CONNECTIONS)
     {
 //        voice_indicator_ = new SimpleVoiceIndicator();
     }
@@ -43,13 +44,21 @@ namespace MumbleVoip
             delete c;
         }
         connections_.clear();
-        StopMumbleLibrary();
+        //StopMumbleLibrary(); // test
         SAFE_DELETE(voice_indicator_);
     }
 
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
         Connection* connection = new Connection(info);
+        if (connection->GetState() != Connection::STATE_OPEN)
+        {
+            state_ = STATE_ERROR;
+            reason_ = connection->GetReason();
+            return;
+        }
+        state_ = STATE_CONNECTION_OPEN;
+
         connect(connection, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)));
         connect(connection, SIGNAL(UserLeft(User*)), SLOT(OnUserJoined(User*)));
         connections_[info.server] = connection;
@@ -68,7 +77,10 @@ namespace MumbleVoip
             Connection* connection = connections_[info.server];
             connection->Close();
             connections_.remove(info.server);
+            SAFE_DELETE(connection);
+            //StopMumbleLibrary(); // Is this needed
         }
+        state_ = STATE_NO_CONNECTIONS;
     }
 
     // static
@@ -104,9 +116,12 @@ namespace MumbleVoip
 
         if (lib_mumble_thread_->isRunning())
             return;
+
+        connect(lib_mumble_thread_, SIGNAL(finished()), SLOT(MumbleThreadFinished()) );
+        connect(lib_mumble_thread_, SIGNAL(terminated()), SLOT(MumbleThreadFinished()) );
                 
-        lib_mumble_thread_->setPriority(QThread::LowPriority);
         lib_mumble_thread_->start();
+        lib_mumble_thread_->setPriority(QThread::LowPriority);
     }
 
     void ConnectionManager::StopMumbleLibrary()
@@ -121,11 +136,19 @@ namespace MumbleVoip
             MumbleVoipModule::LogError("Cannot stop Mumble library: No library instance available.");
             return;
         }
-        mumble_lib->Shutdown();
+//        mumble_lib->Shutdown();
 
         lib_mumble_thread_->wait();
         SAFE_DELETE(lib_mumble_thread_);
         MumbleVoipModule::LogDebug("Mumble thread exited.library uninitialized.");
+    }
+
+    void ConnectionManager::MumbleThreadFinished()
+    {
+        if (!lib_mumble_thread_)
+            return;
+
+        //! \todo If there was a problem then start mainloop again if
     }
 
     void ConnectionManager::PlaybackAudio(Connection* connection)
@@ -298,6 +321,16 @@ namespace MumbleVoip
     void ConnectionManager::OnUserLeft(User* user)
     {
         emit UserLeft(user);
+    }
+
+    ConnectionManager::State ConnectionManager::GetState() const
+    {
+        return state_;
+    }
+
+    QString ConnectionManager::GetReason() const
+    {
+        return reason_;
     }
 
     // GetRecordedSoundData(void* buffer, uint size)

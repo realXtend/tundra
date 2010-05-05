@@ -32,17 +32,20 @@ namespace MumbleVoip
             virtual void Update(f64 frametime);
             virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
         private:
+            void CloseSession();
             Foundation::Framework* framework_;
             QString description_;
             MumbleVoip::InWorldVoice::Session* session_;
+
+            //! \todo Use shared ptr ...
+            //Session* session_;
+            
             ServerObserver* server_observer_;
             ServerInfo* server_info_;
+            event_category_id_t networkstate_event_category_;
 
         private slots:
             void OnMumbleServerInfoReceived(ServerInfo info);
-
-        //signals:
-        //    void SessionAvailable();
         };
 
     } // InWorldVoice

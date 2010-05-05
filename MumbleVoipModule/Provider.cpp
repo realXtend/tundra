@@ -3,6 +3,8 @@
 #include "Session.h"
 #include "MumbleVoipModule.h"
 #include "ServerObserver.h"
+#include "EventManager.h"
+#include "NetworkEvents.h" // For network events
 
 namespace MumbleVoip
 {
@@ -35,12 +37,27 @@ namespace MumbleVoip
         {
             if (server_observer_)
                 server_observer_->HandleEvent(category_id, event_id, data);
+
+            if (category_id == networkstate_event_category_)
+            {
+                switch (event_id)
+                {
+                case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
+                    CloseSession();
+                    break;
+                }
+            }
+
             return false;
         }
 
         Communications::InWorldVoice::SessionInterface* Provider::Session()
         {
-            if (session_ == 0)
+            if (session_ && session_->GetState() == Session::STATE_CLOSED)
+                SAFE_DELETE(session_) //! \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
+
+            if (!session_)
             {
                 if (!server_info_)
                     return 0;
@@ -58,6 +75,8 @@ namespace MumbleVoip
         {
             server_info_ = new ServerInfo(info);
 
+            networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+
             if (framework_ &&  framework_->GetServiceManager())
             {
                 boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
@@ -68,6 +87,14 @@ namespace MumbleVoip
                 return;
             }
         }
+
+        void Provider::CloseSession()
+        {
+            if (session_)
+                session_->Close();
+            emit SessionUnavailable();
+        }
+
     } // InWorldVoice
 
 } // MumbleVoip

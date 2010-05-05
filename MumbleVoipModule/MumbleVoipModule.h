@@ -42,6 +42,8 @@ namespace MumbleVoip
      *  In future this module will implement InWorldVoiceProvider interface and is controlled by user interface and 
      *  mumbleclient library is used to make connections.
      * 
+     * \todo REMOVE DIRECT MUMBLE OLD IMPLEMENTATION 
+     * \todo MOVE MUMBLE APPLIACTION LAUNCH CODE TO SEPARATE FILES and MAKE AVAILABLE THROUGH CONSOLE AND '--usemumbleapplication' ARGUMENT
      */
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterfaceImpl
     {

@@ -43,6 +43,7 @@ namespace MumbleVoip
         Q_OBJECT
 
     public:
+        enum State { STATE_NO_CONNECTIONS, STATE_CONNECTION_OPEN, STATE_ERROR };
         //! Default constructor
         ConnectionManager(Foundation::Framework* framework);
 
@@ -77,9 +78,13 @@ namespace MumbleVoip
         //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
         //!
         //! There is no way to stop mumle client from this module it has to be closed by user.
+        //!
+        //! \todo MOVE TO ANOTHER CLASS
         static void StartMumbleClient(const QString& server_url);
 
         //! Kill mumble client process
+        //!
+        //! \todo MOVE TO ANOTHER CLASS
         static void KillMumbleClient();
 
         virtual void Update(f64 frametime);
@@ -90,12 +95,19 @@ namespace MumbleVoip
         //! /param enable If true then voice activity detector is enabled. If false then voice activity detector is disabled
         virtual void EnableVAD(bool enable);
 
+        virtual State GetState() const;
+
+        virtual QString GetReason() const;
+
     private:
         void StartMumbleLibrary();
         void StopMumbleLibrary();
+        
         void PlaybackAudioPacket(User* user, PCMAudioFrame* frame);
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
 
+        State state_;
+        QString reason_;
         QMap<QString, Connection*> connections_; // maps: server address - connection object
         LibMumbleThread* lib_mumble_thread_;
         Foundation::Framework* framework_;
@@ -114,6 +126,7 @@ namespace MumbleVoip
     private slots:
         void OnUserJoined(User* user);
         void OnUserLeft(User* user);
+        void MumbleThreadFinished();
 
     signals:
         void UserJoined(User* user);
