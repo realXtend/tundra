@@ -415,19 +415,13 @@ void RexLogicModule::Update(f64 frametime)
 
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
-        
+
         // update sound listener position/orientation
         UpdateSoundListener();
 
-        //! This is not needed anymore, as ether is the new login ui. If we want to send these world stream states to ui layer,
-        //! 
-        //ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
-
         /// \todo Move this to OpenSimProtocolModule.
         if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-        {
             world_stream_->CreateUdpConnection();
-        }
 
         if (send_input_state_)
         {
@@ -445,9 +439,9 @@ void RexLogicModule::Update(f64 frametime)
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
-
             // Update overlays last, after camera update
             UpdateAvatarOverlays();
+            input_handler_->Update(frametime);
         }
     }
 
