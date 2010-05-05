@@ -98,9 +98,9 @@ class UUIDEditLine(DragDroppableEditline):
         self.deactivateButtons()
 
     def applyMaterial(self, ent, matinfo, index):
-        qprim =ent.prim
+        qprim = ent.prim
         mats = qprim.Materials
-        mats[index]  = matinfo
+        mats[index] = matinfo
         qprim.Materials = mats
         r.sendRexPrimData(ent.id)
         
