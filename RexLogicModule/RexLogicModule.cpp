@@ -30,11 +30,20 @@
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 
-// External EC's
-#include "EC_Highlight.h"
-#include "EC_HoveringText.h"
-#include "EC_HoveringWidget.h"
-#include "EC_Clone.h"
+#include "EventManager.h"
+#include "ConfigurationManager.h"
+#include "ModuleManager.h"
+#include "ConsoleCommand.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "ServiceManager.h"
+#include "ComponentManager.h"
+#include "EventDataInterface.h"
+#include "TextureInterface.h"
+#include "SoundServiceInterface.h"
+#include "InputServiceInterface.h"
+#include "SceneManager.h"
+#include "WorldStream.h"
+#include "UiModule.h"
 
 // Ogre -specific
 #include "Renderer.h"
@@ -56,6 +65,7 @@
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
+#include "EC_HoveringWidget.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -63,6 +73,8 @@
 #include <OgreEntity.h>
 
 #include "MemoryLeakCheck.h"
+
+
 
 namespace RexLogic
 {
@@ -102,7 +114,6 @@ void RexLogicModule::Load()
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
-    DECLARE_MODULE_EC(EC_HoveringWidget);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
@@ -1001,37 +1012,34 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 
     // Get users position
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if (!placeable.get())
+    boost::shared_ptr<OgreRenderer::EC_HoveringWidget> widget;
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if (!placable.get())
         return;
 
-    Vector3Df users_position = placeable->GetPosition();
+    Vector3Df camera_position = this->GetCameraPosition();
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
-        placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-        boost::shared_ptr<EC_HoveringText> name_tag = avatar->GetComponent<EC_HoveringText>();
-        if (!placeable.get() || !name_tag.get())
+        placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        widget = avatar->GetComponent<OgreRenderer::EC_HoveringWidget>();
+        if (!placable.get() || !widget.get())
             continue;
 
         // Check distance, update name tag visibility
-        f32 distance = users_position.getDistanceFrom(placeable->GetPosition());
-        if (distance > 13.0)
-            if (name_tag->IsVisible())
-                name_tag->AnimatedHide();
-        else if (!name_tag->IsVisible())
-            name_tag->AnimatedShow();
+        f32 distance = camera_position.getDistanceFrom(placable->GetPosition());
+        widget->SetCameraDistance(distance);
     }
 }
 
 void RexLogicModule::EntityClicked(Scene::Entity* entity)
 {
-    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
+    /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
-        name_tag->Clicked();
+        name_tag->Clicked();*/
 
-    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+    boost::shared_ptr<OgreRenderer::EC_HoveringWidget> info_icon = entity->GetComponent<OgreRenderer::EC_HoveringWidget>();
     if(info_icon.get())
-        info_icon->Clicked();
+        info_icon->EntityClicked();
 }
 
 

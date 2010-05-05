@@ -188,19 +188,6 @@ namespace Scene
         };
 
 
-        class HoveringIconClickedData : public SceneEventData
-        {
-        public:
-            explicit HoveringIconClickedData(Scene::Entity *ent,const QString b);
-            virtual ~HoveringIconClickedData(){};
-
-            //Entity associated with the clicked icon
-            Scene::Entity *entity;
-
-            //billboard that was clicked
-            QString icon_name;
-        };
-
         class EntityClickedData : public SceneEventData
         {
         public:
