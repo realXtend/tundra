@@ -10,7 +10,8 @@ namespace ECEditor
         Foundation::ComponentInterface(module->GetFramework()),
         attr1_(this, "attr1"),
         attr2_(this, "attr2"),
-        attr3_(this, "attr3")
+        attr3_(this, "attr3"),
+        attr4_(this, "attr4")
     {
     }
     

@@ -5,6 +5,7 @@
 
 #include "Framework.h"
 #include "AttributeInterface.h"
+#include "AssetInterface.h"
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
@@ -26,6 +27,7 @@ namespace ECEditor
         Foundation::Attribute<Vector3df> attr1_;
         Foundation::Attribute<Quaternion> attr2_;
         Foundation::Attribute<std::string> attr3_;
+        Foundation::Attribute<Foundation::AssetReference> attr4_;
         
     private:
         EC_SerializationTest(Foundation::ModuleInterface* module);
