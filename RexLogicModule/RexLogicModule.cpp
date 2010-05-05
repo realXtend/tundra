@@ -57,6 +57,7 @@
 #include "EC_Light.h"
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_Touchable.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -106,6 +107,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Light);
     DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimPrim);
+    DECLARE_MODULE_EC(EC_Touchable);
 }
 
 // virtual
