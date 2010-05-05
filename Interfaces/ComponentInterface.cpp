@@ -89,6 +89,8 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
 
 void ComponentInterface::ComponentChanged(Foundation::ChangeType change)
 {
+    change_ = change;
+    
     if (parent_entity_)
     {
         Scene::SceneManager* scene = parent_entity_->GetScene();
@@ -104,6 +106,8 @@ void ComponentInterface::ResetChange()
 {
     for (uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->ResetChange();
+    
+    change_ = Foundation::None;
 }
 
 void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
