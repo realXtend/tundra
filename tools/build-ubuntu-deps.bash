@@ -162,7 +162,7 @@ else
     qmake
     make
     cp lib/lib* $prefix/lib/
-    cp src/qt*.h $prefix/include/
+    cp src/qt*.h src/QtProperty $prefix/include/
     touch $tags/$what-done
 fi
 
