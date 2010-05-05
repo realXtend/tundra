@@ -7,7 +7,7 @@
  */
 
 #include "StableHeaders.h"
-//#include "DebugOperatorNew.h"
+#include "DebugOperatorNew.h"
 #include "EC_HoveringText.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
@@ -25,7 +25,7 @@
 #include <QTimer>
 #include <QTimeLine>
 
-//#include "MemoryLeakCheck.h"
+#include "MemoryLeakCheck.h"
 
 EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -223,7 +223,9 @@ void EC_HoveringText::Redraw()
 
     // Create texture
     QImage img = pixmap.toImage();
+#include "DisableMemoryLeakCheck.h"
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
+#include "EnableMemoryLeakCheck.h"
     std::string tex_name("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
     Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
     Ogre::Texture *tex = checked_static_cast<Ogre::Texture *>(manager.create(
