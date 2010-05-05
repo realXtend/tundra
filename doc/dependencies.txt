@@ -9,8 +9,6 @@ This project has the following dependencies:
 
 - Ogre 1.6.1 or newer, http://www.ogre3d.org 
 
-- OIS 1.2 or newer, http://sourceforge.net/projects/wgois
-
 - Qt 4.6.1 or newer, http://www.qtsoftware.com/ 
 
 - Python 2.6 or newer (but not 3.* currently): http://www.python.org/

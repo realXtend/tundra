@@ -27,19 +27,33 @@ XML_CONTENT_TYPE = 'text/xml; charset="utf-8"'
 # block size for copying files up to the server
 BLOCKSIZE = 16384
 
+#a trick to support running without _ssl module,
+#when running in windows in debugmode without _ssl_d.pyd built
+Connection = None #the connection class used, either the HTTP or HTTPS version
+has_ssl = None
+if not hasattr(httplib, 'HTTPSConnection'):
+    Connection = httplib.HTTPConnection
+    has_ssl = False
+else:
+    Connection = httplib.HTTPSConnection
+    has_ssl = True
 
-class HTTPProtocolChooser(httplib.HTTPSConnection):
+class HTTPProtocolChooser(Connection):
     def __init__(self, *args, **kw):
         self.protocol = kw.pop('protocol')
         if self.protocol == "https":
+            if not has_ssl:
+                raise RuntimeError, "Running without SSL, HTTPS not supported, aborting connecting."
             self.default_port = 443
         else:
             self.default_port = 80
             
-        apply(httplib.HTTPSConnection.__init__, (self,) + args, kw)
+        apply(Connection.__init__, (self,) + args, kw)
 
     def connect(self):
         if self.protocol == "https":
+            if not has_ssl:
+                raise RuntimeError, "Running without SSL, HTTPS not supported, aborting connecting."
             httplib.HTTPSConnection.connect(self)
         else:
             httplib.HTTPConnection.connect(self)

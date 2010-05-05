@@ -121,12 +121,12 @@ class UUIDEditLine(DragDroppableEditline):
             
         
 def applymesh(ent, meshuuid):
-    #ent.meshid = meshuuid #old
-    if ent.mesh is not None:
-        ent.mesh.SetMesh(meshuuid)
+    try:
+        ent.mesh
+    except AttributeError:
+        ent.prim.MeshID = meshuuid #new
         #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
     else:
-        ent.prim.MeshID = meshuuid #new
-        
+        ent.mesh.SetMesh(meshuuid)        
     r.sendRexPrimData(ent.id)
-        #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
+    #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)

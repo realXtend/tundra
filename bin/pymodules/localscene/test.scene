@@ -3,13 +3,13 @@
         <node name="Jack" id="3">
             <position x="0" y="0" z="0" />
             <rotation qx="0" qy="0" qz="0" qw="1" />
-            <scale x="2" y="2" z="2" />
+            <scale x="1" y="1" z="1" />
             <entity name="Jack" meshFile="Jack.mesh" static="false" />
         </node>
         <node name="Jack2" id="3">
             <position x="2" y="0" z="0" />
             <rotation qx="0" qy="0" qz="0" qw="1" />
-            <scale x="2" y="2" z="2" />
+            <scale x="1" y="1" z="1" />
             <entity name="Jack" meshFile="Jack.mesh" static="false" />
         </node>
         <node name="Jack3" id="3">

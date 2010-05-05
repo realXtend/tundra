@@ -18,7 +18,6 @@ class LocalScene(Component):
     def __init__(self):
         print "__init__"
         Component.__init__(self)
-        #self.window = LocalSceneWindow(self)
         self.window = LCwindow(self)
         self.xsift = 127
         self.ysift = 127
@@ -28,13 +27,18 @@ class LocalScene(Component):
         self.zscale = 1
         self.dotScene = None
         self.dsManager = None
-        self.flipZY = True
+        self.flipZY = False
+        self.highlight = False
         pass
 
     def loadScene(self, filename):
-        print "loading: ", filename
-        #file = QFile(filename)
-        self.dotScene, self.dsManager = loader.load_dotscene(filename)
+        if(filename!=None):
+            if(filename!=""):
+                self.dotScene, self.dsManager = loader.load_dotscene(filename)
+                self.dsManager.setHighlight(self.highlight)
+                #enabled, xsift, ysift, zsift, xscale, yscale, zscale
+                self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
+
 
     def unloadScene(self):
         #loader.unload()
@@ -83,6 +87,7 @@ class LocalScene(Component):
         print "local scene exit"
         r.logInfo("Local Scene exiting...")
         self.window.on_exit()  
+        r.logInfo("Local Done exiting...")
 
     def on_hide(self, shown):
         print "on hide"
@@ -93,3 +98,10 @@ class LocalScene(Component):
 
     def on_logout(self, id):
         r.logInfo("Local scene Logout.")
+        
+    def checkBoxHighlightToggled(self, enabled):
+        self.highlight = enabled
+        if(self.dsManager!=None):
+            self.dsManager.setHighlight(enabled)
+
+            
