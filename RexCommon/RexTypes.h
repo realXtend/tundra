@@ -5,10 +5,9 @@
  *  @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
  */
 
-#ifndef incl_RexTypes_h
-#define incl_RexTypes_h
+#ifndef incl_RexCommon_RexTypes_h
+#define incl_RexCommon_RexTypes_h
 
-//#include "CoreStableHeaders.h"
 #include "Vector3D.h"
 #include <map>
 #include <boost/cstdint.hpp>
@@ -342,7 +341,7 @@ namespace RexTypes
     const uint8_t MATERIALTYPE_SHINY = 0xc0;
 
     // Attached sound flags
-    const uint8_t ATTACHED_SOUND_LOOP = 0x01;    
+    const uint8_t ATTACHED_SOUND_LOOP = 0x01;
 
     typedef std::string RexAssetID;
 
@@ -354,8 +353,8 @@ namespace RexTypes
     //! camera controllable type
     const ControllableType CT_CAMERA = 2;
 
-    // List of common actions for controllables
-    // Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
+    //! List of common actions for controllables
+    //! Zero is reserved and odd numbers are implicitly reserved for 'stopped' actions.
     namespace Actions
     {
         namespace
@@ -377,6 +376,28 @@ namespace RexTypes
         typedef std::map<event_id_t, int> ActionInputMap;
     }
 
+    //! List of click actions for primitives.
+    namespace ClickActions
+    {
+        //! Touch/grab (default).
+        const uint None = 0;
+        //! Touch/grab (default).
+        const uint Touch = 0;
+        //! Sit on object.
+        const uint Sit = 1;
+        //! Buy object.
+        const uint Buy = 2; 
+        //! Pay object.
+        const uint Pay = 3;
+        //! Open.
+        const uint Open = 4;
+        //! Play media.
+        const uint Play = 5;
+        //! Open media.
+        const uint OpenMedia = 6;
+    }
+
+    //! \return true if asset id is null (empty).
     bool IsNull(const RexAssetID& id);
 
     //! \return true if asset id is non-null (not empty) and can not be construed as an UUID
