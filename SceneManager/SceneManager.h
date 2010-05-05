@@ -28,7 +28,7 @@ namespace Scene
     */
     class SceneManager : public QObject
     {
-        Q_OBJECT;
+        Q_OBJECT
         
         friend class Foundation::Framework;
     private:
