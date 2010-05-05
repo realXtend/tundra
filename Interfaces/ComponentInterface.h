@@ -71,7 +71,9 @@ namespace Foundation
          */
         void ComponentChanged(ChangeType change);
         
-        //! Reset change status of all attributes
+        //! Read change status of the component
+        Foundation::ChangeType GetChange() const { return change_; }
+        //! Reset change status of component and all attributes
         /*! Called by serialization managers when they have managed syncing the component
          */
         void ResetChange();
@@ -102,6 +104,8 @@ namespace Foundation
         std::string name_;
         //! Attribute list for introspection/reflection
         AttributeVector attributes_;
+        //! Change status for the component itself
+        Foundation::ChangeType change_;
         
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
