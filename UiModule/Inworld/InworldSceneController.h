@@ -97,6 +97,8 @@ namespace UiServices
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy) const;
 
+        //void SetCommunicationWidget(UiProxyWidget *im_proxy);
+
         //! Set focus to chat line edit
         void SetFocusToChat() const;
 

@@ -12,6 +12,9 @@
 #include <QApplication>
 #include <QGraphicsScene>
 #include <CommunicationsService.h>
+#include "UiModule.h"                       // For 'UI service'
+#include "ModuleManager.h"                  // For 'UI service'
+#include <Inworld/InworldSceneController.h> // For 'UI service'
 
 namespace CoreUi
 {
@@ -130,6 +133,52 @@ namespace CoreUi
            count_label_.setText(QString::number(user_count_));
     }
 
+    VoiceUserWidget::VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant)
+        : participant_(participant)
+    {
+
+    }
+
+    VoiceUsersWidget::VoiceUsersWidget(QWidget *parent, Qt::WindowFlags wFlags)
+        : QWidget(parent, wFlags),
+          session_(0)
+    {
+        setObjectName("Voice users");
+
+        // setup layout
+        //userListLayout->setSpacing(0);
+        //userListLayout->setContentsMargins(0,0,0,0);
+        //userListLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+    }
+
+    void VoiceUsersWidget::SetSession(Communications::InWorldVoice::SessionInterface* session)
+    {
+        session_ = session;
+        if (session_)
+        {
+            connect(session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateList()) );
+            connect(session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateList()) );
+            connect(session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateList()) );
+        }
+    }
+
+    void VoiceUsersWidget::UpdateList()
+    {
+        if (!session_)
+            return;
+
+        QList<Communications::InWorldVoice::ParticipantInterface*> list = session_->Participants();
+        foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
+        {
+            //VoiceUserWidget* w = new VoiceUserWidget(0);
+            //user_widgets_.append(w);
+            //userListLayout->addWidget(w);
+//            this->userListView->Add(w);
+
+        }
+        //! @todo IMPLEMENT
+    }
+
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
         framework_(framework),
         QGraphicsProxyWidget(),
@@ -142,7 +191,8 @@ namespace CoreUi
         in_world_speak_mode_on_(false),
         voice_state_widget_(0),
         voice_users_info_widget_(0),
-        voice_users_widget_(0)
+        voice_users_widget_(0),
+        voice_users_proxy_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -259,11 +309,13 @@ namespace CoreUi
 
     void CommunicationWidget::ToggleVoiceUsers()
     {
-        if (!voice_users_widget_)
+        if (!voice_users_proxy_widget_)
             return;
 
-        if (voice_users_widget_)
-            voice_users_widget_->show();
+        if (voice_users_proxy_widget_->isVisible())
+            voice_users_proxy_widget_->hide();
+        else
+            voice_users_proxy_widget_->show();
     }
 
     void CommunicationWidget::ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message)
@@ -462,7 +514,24 @@ namespace CoreUi
         connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceUsers() ) );
         voice_users_info_widget_->show();
 
-//        voice_users_widget_ = new VoiceUsersWidget();
+        if (in_world_voice_session_)
+        {
+            voice_users_widget_ = new VoiceUsersWidget(0);
+            voice_users_widget_->SetSession(in_world_voice_session_);
+
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            if (ui_module.get())
+            {
+                //UiServices::UiWidgetProperties widget_properties("IM", UiServices::SceneWidget);
+                voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(voice_users_widget_);
+                //if (im_ui_proxy_widget_)
+                //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
+            }
+
+        }
+
+
+
         UpdateInWorldVoiceIndicator();
         ShowVoiceControls();
     }

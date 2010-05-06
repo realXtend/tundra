@@ -6,8 +6,6 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "CommunicationsModuleApi.h"
-//#include "CommunicationsService.h"
-//#include "Core.h"
 #include <QObject>
 
 namespace Communications
@@ -25,6 +23,7 @@ namespace CommunicationsService
      *  - You must not use this module directly. All functionality must be used throug service interface
      *
      *  @todo Console commands: 'communications' .. Information about available services
+     *  @todo Move Communications UI implementation here ???
      */
     class COMMUNICATIONS_MODULE_API CommunicationsModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
