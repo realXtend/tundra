@@ -17,7 +17,7 @@
 #include "ModuleInterface.h"
 #include "Entity.h"
 #include "Renderer.h"
-#include "OgreMaterialUtils.h"
+//#include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
@@ -61,7 +61,7 @@ void  EC_Touchable::Show()
 
     if (entityClone_ && sceneNode_)
         sceneNode_->getAttachedObject(cloneName_)->setVisible(true);
-    QTimer::singleShot(visibilityTime.Get(), this, SLOT(Hide()));
+    QTimer::singleShot(visibilityTime.Get() * 1000, this, SLOT(Hide()));
 }
 
 void  EC_Touchable::Hide()
@@ -74,11 +74,10 @@ bool EC_Touchable::IsVisible() const
 {
     if (entityClone_ && sceneNode_)
         return sceneNode_->getAttachedObject(cloneName_)->isVisible();
-
     return false;
 }
 
-void EC_Touchable::Update()
+void EC_Touchable::UpdateMaterial()
 {
     if (!entityClone_ ||!sceneNode_)
     {
@@ -101,13 +100,11 @@ EC_Touchable::EC_Touchable(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0),
-    materialName(this, "material name", "TouchableMaterial"),
-    visibilityTime(this, "visibility time", 1.0f)
+    materialName(this, "material name", "Touchable"),
+    visibilityTime(this, "visibility time", 0.5f)
 {
-//    materialName.Set(std::string("HighlightMaterial") + renderer_.lock()->GetUniqueObjectName(), Foundation::LocalOnly);
-
     renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(Update()));
+    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateMaterial()));
 }
 
 void EC_Touchable::Create()
@@ -159,12 +156,8 @@ void EC_Touchable::Create()
         return;
     }
 
-    assert(originalEntity);
-    if (!originalEntity)
-        return;
-
-    assert(sceneNode_);
-    if (!sceneNode_)
+    assert(originalEntity && sceneNode_);
+    if (!originalEntity || !sceneNode_)
         return;
 
     // Clone the Ogre entity.
@@ -203,7 +196,7 @@ void EC_Touchable::Create()
 
     try
     {
-        OgreRenderer::CloneMaterial("Highlight", materialName.Get());
+//        OgreRenderer::CloneMaterial("Touchable", materialName.Get());
         entityClone_->setMaterialName(materialName.Get());
     }
     catch (Ogre::Exception &e)

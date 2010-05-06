@@ -12,11 +12,6 @@
 
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
-#include "Vector3D.h"
-
-#include <QStringList>
-#include <QFont>
-#include <QColor>
 
 namespace OgreRenderer
 {
@@ -34,11 +29,6 @@ class EC_Highlight : public Foundation::ComponentInterface
     Q_OBJECT
     DECLARE_EC(EC_Highlight);
 
-private:
-    /// Constuctor.
-    /// @param module Owner module.
-    explicit EC_Highlight(Foundation::ModuleInterface *module);
-
 public:
     /// Destructor.
     ~EC_Highlight();
@@ -55,6 +45,10 @@ public slots:
     bool IsVisible() const;
 
 private:
+    /// Constuctor.
+    /// @param module Owner module.
+    explicit EC_Highlight(Foundation::ModuleInterface *module);
+
     /// Creates the clone entity used for highlighting from the original.
     void Create();
 

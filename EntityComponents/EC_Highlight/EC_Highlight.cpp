@@ -20,20 +20,10 @@
 
 #include <Poco/Logger.h>
 
-#include <Ogre.h>
-
 #include "MemoryLeakCheck.h"
 
 #define LogInfo(msg) Poco::Logger::get("EC_Highlight").error("Error: " + msg);
 #define LogError(msg) Poco::Logger::get("EC_Highlight").information(msg);
-
-EC_Highlight::EC_Highlight(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
-    entityClone_(0),
-    sceneNode_(0)
-{
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-}
 
 EC_Highlight::~EC_Highlight()
 {
@@ -57,7 +47,6 @@ void  EC_Highlight::Show()
     if (!entityClone_)
         Create();
 
-//    assert(entityClone_);
     if (!entityClone_)
     {
         LogError("EC_Highlight not initialized properly.");
@@ -80,6 +69,14 @@ bool EC_Highlight::IsVisible() const
         return sceneNode_->getAttachedObject(cloneName_)->isVisible();
 
     return false;
+}
+
+EC_Highlight::EC_Highlight(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
+    entityClone_(0),
+    sceneNode_(0)
+{
+    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 }
 
 void EC_Highlight::Create()
