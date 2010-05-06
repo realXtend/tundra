@@ -35,7 +35,6 @@ namespace RexLogic
 
     void HoveringWidgetController::ForwardMouseClickEvent(Real x, Real y)
     {
-        qDebug()  << x << " , " << y;
         //To widgetspace
         Real x_widgetspace = x*(Real)this->width();
         Real y_widgetspace = y*(Real)this->height();
