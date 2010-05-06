@@ -30,7 +30,7 @@ namespace Ether
                 {
                     Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld*>(data_cards.second);
                     info_map["WorldAddress"] = ow->loginUrl().toString();
-					info_map["StartLocation"] = ow->startLocation();
+                    info_map["StartLocation"] = ow->startLocation();
                     break;
                 }
             }

@@ -31,7 +31,7 @@ namespace CoreUi
             connect(pushButton_Exit, SIGNAL( clicked() ), parent(), SLOT( AppExitRequest() ));
 
             connect(lineEdit_WorldAddress, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
-			connect(lineEdit_StartLocation, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
+            connect(lineEdit_StartLocation, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
             connect(lineEdit_Username, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
             connect(lineEdit_Password, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
 
@@ -45,7 +45,7 @@ namespace CoreUi
             lineEdit_Username->setText(stored_login_data["account"]);
             lineEdit_Password->setText(stored_login_data["password"]);
             lineEdit_WorldAddress->setText(stored_login_data["loginurl"]);
-			lineEdit_StartLocation->setText(stored_login_data["startlocation"]);
+            lineEdit_StartLocation->setText(stored_login_data["startlocation"]);
         }
 
         void TraditionalLoginWidget::RemoveEtherButton()
@@ -59,7 +59,7 @@ namespace CoreUi
             ui_data_map["account"] = lineEdit_Username->text();
             ui_data_map["password"] = lineEdit_Password->text();
             ui_data_map["loginurl"] = lineEdit_WorldAddress->text();
-			ui_data_map["startlocation"] = lineEdit_StartLocation->text();
+            ui_data_map["startlocation"] = lineEdit_StartLocation->text();
 
             if (radioButton_OpenSim->isChecked())
                 ui_data_map["avatartype"] = "opensim";
@@ -78,7 +78,7 @@ namespace CoreUi
             map["WorldAddress"] = lineEdit_WorldAddress->text();
             map["Username"] = lineEdit_Username->text();
             map["Password"] = lineEdit_Password->text();			
-			map["StartLocation"] = lineEdit_StartLocation->text();
+            map["StartLocation"] = lineEdit_StartLocation->text();
 
             if (radioButton_OpenSim->isChecked() == true)
             {

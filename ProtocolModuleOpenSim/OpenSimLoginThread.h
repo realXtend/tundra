@@ -47,7 +47,7 @@ namespace OpenSimProtocol
                                  const QString &password,
                                  const QString &worldAddress,
                                  const QString &worldPort,
-								 const QString &startLocation,
+                                 const QString &startLocation,
                                  ProtocolUtilities::ConnectionThreadState *thread_state);
 
         /**
@@ -70,7 +70,7 @@ namespace OpenSimProtocol
             const QString &authentication_login,
             const QString &authentication_address,
             const QString &authentication_port,
-			const QString &start_location);
+            const QString &start_location);
 
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
@@ -121,7 +121,7 @@ namespace OpenSimProtocol
         std::string authenticationAddress_;
         std::string authenticationPort_;
         std::string authentication_;
-		std::string startLocation_;
+        std::string startLocation_;
 
         static std::string LOGIN_TO_SIMULATOR;
         static std::string CLIENT_AUTHENTICATION;

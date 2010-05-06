@@ -37,7 +37,7 @@ namespace OpenSimProtocol
                 credentials_->GetPassword(), 
                 serverEntryPointUrl_.host(), 
                 QString::number(serverEntryPointUrl_.port()), 
-				credentials_->GetStartLocation(),
+                credentials_->GetStartLocation(),
                 GetConnectionThreadState());
         }
         else
@@ -55,7 +55,7 @@ namespace OpenSimProtocol
         const QString& password,
         const QString& address,
         const QString& port,
-		const QString& start_location,
+        const QString& start_location,
         ProtocolUtilities::ConnectionThreadState *thread_state )
     {
         // Get ProtocolModuleOpenSim
