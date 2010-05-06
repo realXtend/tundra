@@ -407,25 +407,6 @@ QPushButton::pressed {
         <source>Properties &gt;</source>
         <translation type="unfinished"></translation>
     </message>
-<<<<<<< HEAD
-</context>
-<context>
-    <name>ECEditor::ECEditorWindow</name>
-    <message>
-        <source>Properties &gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties &lt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ECEditor</source>
-        <comment>Entity-component Editor</comment>
-        <translation type="unfinished"></translation>
-    </message>
-=======
->>>>>>> .ts file changes
 </context>
 <context>
     <name>Environment::EnvironmentEditor</name>
