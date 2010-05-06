@@ -1517,6 +1517,16 @@ PyObject* GetUIView(PyObject *self)
     return PythonQt::self()->wrapQObject(PythonScript::self()->GetFramework()->GetUIView());
 }
 
+PyObject* GetRexLogic(PyObject *self)
+{
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+        return PythonQt::self()->wrapQObject(rexlogic_);
+    PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
+    return NULL;
+}
+
 PyObject* GetServerConnection(PyObject *self)
 {
     ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
@@ -1907,8 +1917,12 @@ static PyMethodDef EmbMethods[] = {
     {"exit", (PyCFunction)Exit, METH_NOARGS,
     "Exits viewer. Takes no arguments."},
 
+    {"getRexLogic", (PyCFunction)GetRexLogic, METH_NOARGS,
+    "Gets the RexLogicModule."},
+
     {"getServerConnection", (PyCFunction)GetServerConnection, METH_NOARGS,
-    "Gets the server connection."},
+    "Gets the server connection."},    
+
 
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},

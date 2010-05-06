@@ -72,6 +72,9 @@ namespace RexLogic
     {
         Q_OBJECT
 
+    public slots:
+        void QSendRexPrimData(uint entityid);
+
     public:
         RexLogicModule();
         virtual ~RexLogicModule();
