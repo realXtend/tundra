@@ -173,13 +173,20 @@ namespace RexLogic
         ProtocolUtilities::OpenSimCredentials *osCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(credentials_);
         if (osCredentials)
         {
-            QString username = map["Username"];
+            QString username = map["Username"];			
             QStringList firstAndLast = username.split(" ");
             if (firstAndLast.length() == 2)
             {
                 osCredentials->SetFirstName(firstAndLast.at(0));
                 osCredentials->SetLastName(firstAndLast.at(1));
                 osCredentials->SetPassword(map["Password"]);
+
+				QString startLocation = map["StartLocation"];
+				if (!startLocation.isEmpty())
+				{
+					osCredentials->SetStartLocation(startLocation);
+				}
+				
                 server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
                 if (server_entry_point_url_.isValid())
                 {
@@ -205,7 +212,14 @@ namespace RexLogic
             rexCredentials->SetIdentity(map["Username"]);
             rexCredentials->SetPassword(map["Password"]);
             rexCredentials->SetAuthenticationUrl(ValidateServerUrl(map["AuthenticationAddress"]));
-            server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
+
+			QString startLocation = map["StartLocation"];
+			if (!startLocation.isEmpty())
+			{
+				rexCredentials->SetStartLocation(startLocation);
+			}
+
+			server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
             if (server_entry_point_url_.isValid())
             {
                 Logout();

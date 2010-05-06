@@ -36,14 +36,17 @@ namespace ProtocolUtilities
 		virtual QString GetFirstName();
 		virtual QString GetLastName();
 		virtual QString GetPassword();
+		virtual QString GetStartLocation();
 		virtual void SetFirstName(QString firstName);
 		virtual void SetLastName(QString firstName);
 		virtual void SetPassword(QString password);
+		virtual void SetStartLocation(QString startLocation);
 
 	private:
 		QString firstName_;
 		QString lastName_;
 		QString password_;
+		QString startLocation_;
 
 	};
 
@@ -57,14 +60,17 @@ namespace ProtocolUtilities
 		virtual QString GetIdentity();
 		virtual QString GetPassword();
 		virtual QUrl GetAuthenticationUrl();
+		virtual QString GetStartLocation();
 		virtual void SetIdentity(QString identity);
 		virtual void SetPassword(QString password);
 		virtual void SetAuthenticationUrl(QUrl authenticationUrl);
+		virtual void SetStartLocation(QString startLocation);
 
 	private:
 		QString identity_;
 		QString password_;
 		QUrl authenticationUrl_;
+		QString startLocation_;
 	};
 
 }

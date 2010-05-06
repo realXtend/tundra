@@ -46,6 +46,7 @@ namespace OpenSimProtocol
             const QString& auth_server_address_noport,
             const QString& auth_server_port,
             const QString& auth_login,
+			const QString& start_location,
             ProtocolUtilities::ConnectionThreadState *thread_state);
 
         //! Make Url validation according to type

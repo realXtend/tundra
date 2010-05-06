@@ -323,6 +323,8 @@ namespace Ether
             QLineEdit *line_edit;
             line_edit = os_world_edit_widget->findChild<QLineEdit*>("loginURLLineEdit");
             line_edit->setText(data->loginUrl().toString());
+            line_edit = os_world_edit_widget->findChild<QLineEdit*>("startLocationLineEdit");
+			line_edit->setText(data->startLocation());
 
             QPushButton *button;
             button = os_world_edit_widget->findChild<QPushButton*>("pushButtonGetGridInfo");
@@ -598,6 +600,7 @@ namespace Ether
             if (current_type_ == "world-opensim" && current_os_world_data_)
             {
                 QUrl login_url;
+				QString start_location;
                 QString url_string;
 
                 line_edit = current_widget_->findChild<QLineEdit*>("loginURLLineEdit");
@@ -620,6 +623,14 @@ namespace Ether
                         return;
                     }
                 }
+
+				line_edit = current_widget_->findChild<QLineEdit*>("startLocationLineEdit");
+				if (line_edit)
+				{
+					start_location = line_edit->text();
+					current_os_world_data_->setStartLocation(start_location);
+				}
+
                 current_os_world_data_->setGridInfo(current_grid_info_map_);
                 data_manager_->StoreOrUpdateWorld(current_os_world_data_);
             }
@@ -769,6 +780,7 @@ namespace Ether
             {
                 QUrl login_url;
                 QString url_string;
+				QString start_location;
 
                 line_edit = current_widget_->findChild<QLineEdit*>("loginURLLineEdit");
                 if (line_edit)
@@ -782,9 +794,15 @@ namespace Ether
                     line_edit->setText(login_url.toString());
                 }
 
+				line_edit = current_widget_->findChild<QLineEdit*>("startLocationLineEdit");
+				if (line_edit)
+				{
+					start_location = line_edit->text();
+				}
+
                 if (login_url.isValid())
                 {
-                    Data::OpenSimWorld *new_opensim_world = new Data::OpenSimWorld(login_url, current_grid_info_map_);
+					Data::OpenSimWorld *new_opensim_world = new Data::OpenSimWorld(login_url, start_location, current_grid_info_map_);
                     data_manager_->StoreOrUpdateWorld(new_opensim_world);
                 }
                 else if (status)

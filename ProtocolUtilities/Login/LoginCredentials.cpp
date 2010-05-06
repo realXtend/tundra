@@ -59,6 +59,12 @@ namespace ProtocolUtilities
 		password_ = password;
 	}
 
+	void OpenSimCredentials::SetStartLocation(QString startLocation)
+	{
+		startLocation_ = startLocation;
+	}
+
+
 	QString OpenSimCredentials::GetFirstName()
 	{
 		return firstName_;
@@ -73,6 +79,12 @@ namespace ProtocolUtilities
 	{
 		return password_;
 	}
+
+	QString OpenSimCredentials::GetStartLocation()
+	{
+		return startLocation_;
+	}
+
 
 	RealXtendCredentials::RealXtendCredentials()
 		: identity_(0), password_(0)
@@ -100,6 +112,11 @@ namespace ProtocolUtilities
 		return authenticationUrl_;
 	}
 
+	QString RealXtendCredentials::GetStartLocation()
+	{
+		return startLocation_;
+	}
+
 	void RealXtendCredentials::SetIdentity(QString identity)
 	{
 		identity_ = identity;
@@ -113,5 +130,10 @@ namespace ProtocolUtilities
 	void RealXtendCredentials::SetAuthenticationUrl(QUrl authenticationUrl)
 	{
 		authenticationUrl_ = authenticationUrl;
+	}
+
+	void RealXtendCredentials::SetStartLocation(QString startLocation)
+	{
+		startLocation_ = startLocation;
 	}
 }

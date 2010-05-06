@@ -75,6 +75,7 @@ namespace OpenSimProtocol
         const QString &password,
         const QString &worldAddress,
         const QString &worldPort,
+		const QString &startLocation,
         ProtocolUtilities::ConnectionThreadState *thread_state)
     {
         firstName_ = first_name.toStdString();
@@ -82,6 +83,7 @@ namespace OpenSimProtocol
         password_ = password.toStdString();
         worldAddress_ = worldAddress.toStdString();
         worldPort_ = worldPort.toStdString();
+		startLocation_ = startLocation.toStdString();
 
         authentication_ = OPENSIM_AUTHENTICATION;
         callMethod_ = LOGIN_TO_SIMULATOR;
@@ -99,7 +101,8 @@ namespace OpenSimProtocol
         ProtocolUtilities::ConnectionThreadState *thread_state,
         const QString& authentication_login,
         const QString& authentication_address,
-        const QString& authentication_port)
+        const QString& authentication_port,
+		const QString& start_location)
     {
         password_ = password.toStdString();
         worldAddress_ = worldAddress.toStdString();
@@ -107,6 +110,7 @@ namespace OpenSimProtocol
         authenticationLogin_ = authentication_login.toStdString();
         authenticationAddress_ = authentication_address.toStdString();
         authenticationPort_ = authentication_port.toStdString();
+		startLocation_ = start_location.toStdString();
 
         authentication_ = REALXTEND_AUTHENTICATION;
         callMethod_ = CLIENT_AUTHENTICATION;
@@ -183,8 +187,20 @@ namespace OpenSimProtocol
                 call.AddMember("AuthenticationAddress", QString("%1:%2").arg(authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString());
                 call.AddMember("loginuri", QString("%1:%2").arg(worldAddress_.c_str(), worldPort_.c_str()).toStdString());
             }
+				
+			if (startLocation_.empty() || startLocation_.size() == 0)
+			{
+				call.AddMember("start", QString("last").toStdString());
+			}
+			else if (startLocation_.compare("last") == 0 || startLocation_.compare("home") == 0)
+			{
+				call.AddMember("start", startLocation_);
+			}
+			else
+			{
+				call.AddMember("start", "uri:"+startLocation_+"&amp;128&amp;128&amp;0");
+			}            
 
-            call.AddMember("start", QString("last").toStdString());
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString("realXtend").toStdString());
             call.AddMember("platform", GetPlatform());

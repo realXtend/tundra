@@ -199,8 +199,8 @@ namespace Ether
             if (data_manager_->GetWorldCountInSettings() == 0)
             {
                 qDebug() << "World config file was empty, adding two anonymous login servers";
-                Data::OpenSimWorld ow1(QUrl("http://home.hulkko.net:9007"), QMap<QString, QVariant>()); // empty grid info at this point
-                Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), QMap<QString, QVariant>()); // empty grid info at this point
+                Data::OpenSimWorld ow1(QUrl("http://home.hulkko.net:9007"), "", QMap<QString, QVariant>()); // empty grid info at this point
+                Data::OpenSimWorld ow2(QUrl("http://world.realxtend.org:9000"), "", QMap<QString, QVariant>()); // empty grid info at this point
                 data_manager_->StoreOrUpdateWorld(&ow1);
                 data_manager_->StoreOrUpdateWorld(&ow2);
             }
