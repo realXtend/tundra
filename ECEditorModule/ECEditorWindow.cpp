@@ -166,6 +166,7 @@ namespace ECEditor
         layout->setContentsMargins(0,0,0,0);
         setLayout(layout);
         setWindowTitle(contents_->windowTitle());
+        resize(contents_->size());
 
         save_button_ = findChild<QPushButton*>("but_save");
         revert_button_ = findChild<QPushButton*>("but_revert");

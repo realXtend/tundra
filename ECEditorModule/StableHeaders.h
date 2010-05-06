@@ -14,6 +14,9 @@
 
 #include "Framework.h"
 
+#include <QtCore>
+#include <QtGui>
+
 #endif
 
 #endif
