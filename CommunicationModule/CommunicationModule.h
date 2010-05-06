@@ -8,7 +8,7 @@
 
 #include "CommunicationModuleApi.h"
 #include "CommunicationsService.h"
-#include "Service.h"
+//#include "Service.h"
 
 #include <QObject>
 
@@ -55,6 +55,12 @@ namespace CommunicationTest
 namespace Communication
 {
     /**
+     *  NOTE !!! THIS MODULE WILL BE OBSOLETE  !!!
+     *
+     *  >> Telepathy funtionality will be moved to TelepathyCommunication module
+     *  >> Opensim functionality will be moved to RexLogic module
+     *  >> UI functionality will be moved to Communications module
+     *
      *  Communication module
      *
      *  Provides:
@@ -104,9 +110,6 @@ namespace Communication
         event_category_id_t event_category_framework_;
         typedef boost::shared_ptr<Communications::ServiceInterface> CommunicationsServicePtr;
         CommunicationsServicePtr communications_service_;
-
-//        Communications::Service* communications_service_;
-//        Communications::ServiceInterface* communications_service_;
 
     private:
         void AddWidgetToUi(const QString &name);

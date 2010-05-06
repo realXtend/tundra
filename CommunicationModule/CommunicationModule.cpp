@@ -21,7 +21,6 @@
 #include <Inworld/View/UiProxyWidget.h>
 
 #include "MemoryLeakCheck.h"
-#include "Service.h"
 
 namespace Communication
 {
@@ -52,12 +51,6 @@ namespace Communication
     void CommunicationModule::Initialize() 
     {
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-
-        //! Publish CommunicationsService implementation
-        //! \todo Move to separate module 'CommunicationsModule'
-        communications_service_ = Communications::Service::IntancePtr();
-        if (communications_service_.get())
-            framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
     }
 
     void CommunicationModule::PostInitialize()
