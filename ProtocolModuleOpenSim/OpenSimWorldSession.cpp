@@ -37,6 +37,7 @@ namespace OpenSimProtocol
                 credentials_->GetPassword(), 
                 serverEntryPointUrl_.host(), 
                 QString::number(serverEntryPointUrl_.port()), 
+				credentials_->GetStartLocation(),
                 GetConnectionThreadState());
         }
         else
@@ -54,6 +55,7 @@ namespace OpenSimProtocol
         const QString& password,
         const QString& address,
         const QString& port,
+		const QString& start_location,
         ProtocolUtilities::ConnectionThreadState *thread_state )
     {
         // Get ProtocolModuleOpenSim
@@ -61,7 +63,7 @@ namespace OpenSimProtocol
 
         if (spOpenSim.get())
         {
-            spOpenSim->GetLoginWorker()->PrepareOpenSimLogin(first_name, last_name, password, address, port, thread_state);
+            spOpenSim->GetLoginWorker()->PrepareOpenSimLogin(first_name, last_name, password, address, port, start_location, thread_state);
             spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_OpenSim);
             // Start the thread.
             boost::thread(boost::ref( *spOpenSim->GetLoginWorker() ));

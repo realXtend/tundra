@@ -253,8 +253,11 @@ namespace Ether
                     // Get all common values out of the config
                     int type = world_settings.value(QString("%1/type").arg(world_id)).toInt();
                     QString image_path = world_settings.value(QString("%1/imagepath").arg(world_id)).toString();
-                    QUrl login_url = world_settings.value(QString("%1/loginurl").arg(world_id)).toUrl();
+                    QUrl login_url = world_settings.value(QString("%1/loginurl").arg (world_id)).toUrl();
+					QString start_location = world_settings.value(QString("%1/startlocation").arg(world_id)).toString();
                     QMap<QString, QVariant> grid_info = world_settings.value(QString("%1/gridinfo").arg(world_id)).toMap();
+
+					qDebug() << start_location;
 
                     // Umm.. default image test baby
                     if (image_path.isEmpty())
@@ -265,6 +268,7 @@ namespace Ether
                         case WorldTypes::OpenSim:
                         {
                             Data::OpenSimWorld *opensim_world = new Data::OpenSimWorld(login_url,
+																					   start_location,
                                                                                        grid_info,
                                                                                        image_path,
                                                                                        id);
@@ -307,6 +311,7 @@ namespace Ether
                         if (opensim_world)
                         {
                             world_settings.setValue("loginurl", opensim_world->loginUrl());
+							world_settings.setValue("startlocation", opensim_world->startLocation());
                             world_settings.setValue("gridinfo", opensim_world->gridInfo());
                             world_settings.setValue("imagepath", opensim_world->pixmapPath());
                             emit WorldDataCreated(opensim_world);
@@ -339,6 +344,7 @@ namespace Ether
                         if (opensim_world)
                         {
                             world_settings.setValue(QString("%1/loginurl").arg(uuid_string), opensim_world->loginUrl());
+							world_settings.setValue(QString("%1/startlocation").arg(uuid_string), opensim_world->startLocation());
                             world_settings.setValue(QString("%1/gridinfo").arg(uuid_string), opensim_world->gridInfo());
                             world_settings.setValue(QString("%1/imagepath").arg(uuid_string), opensim_world->pixmapPath());
                             
@@ -439,6 +445,7 @@ namespace Ether
             classic_settings.setValue("avatar/account", classic_login_info["account"]);
             classic_settings.setValue("avatar/password", QByteArray(classic_login_info["password"].toStdString().c_str()).toBase64());
             classic_settings.setValue("world/loginurl", QUrl(classic_login_info["loginurl"]));
+			classic_settings.setValue("world/startlocation", classic_login_info["startlocation"]);
         }
 
         QMap<QString, QString> DataManager::GetClassicLoginInfo()
@@ -446,9 +453,10 @@ namespace Ether
             QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", classic_settings_name_);
             QMap<QString, QString> data_map;
             data_map["avatartype"] = classic_settings.value("avatar/type").toString();
-            data_map["account"] = classic_settings.value("avatar/account").toString();;
+            data_map["account"] = classic_settings.value("avatar/account").toString();
             data_map["password"] = QByteArray::fromBase64(classic_settings.value("avatar/password").toByteArray());
             data_map["loginurl"] = classic_settings.value("world/loginurl").toUrl().toString();
+			data_map["startlocation"] = classic_settings.value("world/startlocation").toString();
             return data_map;
         }
 

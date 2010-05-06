@@ -15,8 +15,8 @@ namespace Ether
         Q_OBJECT
 
         public:
-            OpenSimWorld(QUrl login_url, QMap<QString, QVariant> grid_info, QString path_to_pixmap = QString(), QUuid id = 0)
-                : WorldInfo(WorldTypes::OpenSim, login_url, grid_info, path_to_pixmap, id)
+            OpenSimWorld(QUrl login_url, QString start_location, QMap<QString, QVariant> grid_info, QString path_to_pixmap = QString(), QUuid id = 0)
+                : WorldInfo(WorldTypes::OpenSim, login_url, start_location, grid_info, path_to_pixmap, id)
             {
             }
 
@@ -26,6 +26,7 @@ namespace Ether
                 qDebug() << "<OpenSimWorld>";
                 qDebug() << "    id: " << id();
                 qDebug() << "    login url: " << loginUrl();
+				qDebug() << "    start location: " << startLocation();
                 qDebug() << "    image path: " << pixmapPath();
                 qDebug() << "    grid info: " << gridInfo();
             }

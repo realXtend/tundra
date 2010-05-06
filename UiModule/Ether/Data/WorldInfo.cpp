@@ -10,11 +10,12 @@ namespace Ether
 {
     namespace Data
     {
-        WorldInfo::WorldInfo(Ether::WorldTypes::World world_type, QUrl login_url, QMap<QString, QVariant> grid_info, QString path_to_pixmap, QUuid id)
+        WorldInfo::WorldInfo(Ether::WorldTypes::World world_type, QUrl login_url, QString start_location, QMap<QString, QVariant> grid_info, QString path_to_pixmap, QUuid id)
             : QObject(),
               path_to_pixmap_(path_to_pixmap),
               world_type_(world_type),
               login_url_(login_url),
+			  start_location_(start_location),
               grid_info_(grid_info)
         {
             if (id.isNull())
