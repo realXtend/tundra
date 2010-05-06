@@ -241,6 +241,7 @@ namespace Asset
         AssetCache::AssetMap::const_iterator found_item = assets.find(asset_id);
         if (found_item != assets.end())
             return cache_->DeleteAsset(found_item->second);
+        return false;
     }
     
     Foundation::AssetTransferInfoVector AssetManager::GetAssetTransferInfo()
