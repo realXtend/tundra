@@ -720,6 +720,13 @@ if 0: #getserver test
     #worldstream.SendObjectDeletePacket(1278500474, True)
     #~ ent = r.getEntity(2208825114)
     #~ print ent
+
+if 0: #getrexlogic test
+    l = r.getRexLogic()
+    print dir(l)
+    class entity_id_t(int): pass
+    entid = entity_id_t(2)
+    l.QSendRexPrimData(entid)
     
 if 0: #undo tests
     e = r.getEntity(1752805599)

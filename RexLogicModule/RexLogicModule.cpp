@@ -649,6 +649,12 @@ Real RexLogicModule::GetCameraFOV() const
         return 0.0f;
 }
 
+//pythonqt doesn't understand typedefs. probably the same with qtscript (js).
+void RexLogicModule::QSendRexPrimData(uint entityid)
+{
+    SendRexPrimData((entity_id_t) entityid);
+}
+
 void RexLogicModule::SendRexPrimData(entity_id_t entityid)
 {
     GetPrimitiveHandler()->SendRexPrimData(entityid);
