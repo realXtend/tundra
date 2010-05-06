@@ -1,16 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+//#include "MemoryLeakCheck.h"
+
 #include "Service.h"
+#include "CommunicationsModule.h"
+//#include "NetworkEvents.h"
+//#include "EventManager.h"
 
-#include "CommunicationModule.h"
-#include "NetworkEvents.h"
-#include "EventManager.h"
-#include "Framework.h"
-
-#include "MemoryLeakCheck.h"
-
-namespace Communications
+namespace CommunicationsService
 {
     boost::shared_ptr<Service> Service::instance_;
 
@@ -48,7 +46,7 @@ namespace Communications
     //}
 
 
-    InWorldVoice::SessionInterface* Service::InWorldVoiceSession() const
+    Communications::InWorldVoice::SessionInterface* Service::InWorldVoiceSession() const
     {
         if (!in_world_voice_provider_)
             return 0;
@@ -56,7 +54,7 @@ namespace Communications
             return in_world_voice_provider_->Session();
     }
 
-    InWorldChat::SessionInterface* Service::InWorldChatSession() const
+    Communications::InWorldChat::SessionInterface* Service::InWorldChatSession() const
     {
         if (!in_world_chat_provider_)
             return 0;
@@ -64,20 +62,20 @@ namespace Communications
             return in_world_chat_provider_->Session();
     }
 
-    void Service::Register(InWorldVoice::ProviderInterface& provider)
+    void Service::Register(Communications::InWorldVoice::ProviderInterface& provider)
     {
         in_world_voice_provider_ = &provider;
 //        connect(in_world_voice_provider_, SIGNAL(SessionUnavailable()), SLOT(
   //      InWorldVoiceUnvailable
         QString message = QString("In-world voice provider [%1] registered.").arg(provider.Description());
-        Communication::CommunicationModule::LogInfo(message.toStdString());
+        CommunicationsModule::LogInfo(message.toStdString());
         emit Communications::ServiceInterface::InWorldVoiceAvailable();
     }
 
-    void Service::Register(InWorldChat::ProviderInterface& provider)
+    void Service::Register(Communications::InWorldChat::ProviderInterface& provider)
     {
         in_world_chat_provider_ = &provider;
         emit InWorldChatAvailable();
     }
 
-} // Communications
+} // CommunicationsService

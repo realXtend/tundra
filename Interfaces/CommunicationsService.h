@@ -4,6 +4,7 @@
 #define incl_Interfaces_CommunicationsService_h
 
 #include "ServiceInterface.h"
+// todo: Make these forward declarations if possible
 #include <QObject>
 #include <Vector3D.h>
 #include <QList>

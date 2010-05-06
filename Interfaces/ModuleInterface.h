@@ -65,7 +65,7 @@ namespace Foundation
             MT_Console,
             MT_Asset,
             MT_Communication,
-            MT_CommunicationUI,
+            MT_Communications,
             MT_Input,
             MT_TextureDecoder,
             MT_Inventory,
