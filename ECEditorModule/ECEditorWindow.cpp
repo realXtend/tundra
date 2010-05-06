@@ -5,23 +5,14 @@
 
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
-#include "ECLightEditor.h"
+#include "AttributeBrowser.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
-#include "ComponentInterface.h"
 #include "ComponentManager.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include "CoreStringUtils.h"
-
-#include <qttreepropertybrowser.h>
-#include <qtpropertymanager.h>
-#include <qteditorfactory.h>
-#include <qtvariantproperty.h>
-
-#include <QtProperty>
 
 #include <QApplication>
 #include <QDomDocument>
@@ -117,7 +108,7 @@ namespace ECEditor
         component_list_(0),
         create_combo_(0),
         data_edit_(0),
-        property_browser_(0),
+        attribute_browser_(0),
         delete_shortcut_(0)
     {
         Initialize();
@@ -125,11 +116,6 @@ namespace ECEditor
 
     ECEditorWindow::~ECEditorWindow()
     {
-        while(!editorEntityList_.empty())
-        {
-            SAFE_DELETE(editorEntityList_.begin()->second)
-            editorEntityList_.erase(editorEntityList_.begin());
-        }
 
         // Explicitily delete component list widget because it's parent of dynamically allocated items.
         SAFE_DELETE(component_list_);
@@ -149,18 +135,6 @@ namespace ECEditor
         }
         file.close();
 
-        //Intialize property browser, manager and factory for future use.
-        property_browser_ = new QtTreePropertyBrowser();
-        QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
-        property_layout->addWidget(property_browser_);
-        property_browser_->setResizeMode(QtTreePropertyBrowser::ResizeToContents);
-        property_browser_->hide();
-        
-        variantManager_ = new QtVariantPropertyManager(this);
-        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
-        property_browser_->setFactoryForManager(variantManager_, variantFactory);
-        QObject::connect(variantManager_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
-
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(contents_);
         layout->setContentsMargins(0,0,0,0);
@@ -177,6 +151,17 @@ namespace ECEditor
         component_list_ = findChild<QTreeWidget*>("list_components");
         data_edit_ = findChild<QTextEdit*>("text_attredit");
         create_combo_ = findChild<QComboBox*>("combo_create");
+
+        attribute_browser_ = new AttributeBrowser(this);
+        QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
+        if(property_layout)
+            property_layout->addWidget(attribute_browser_);
+        attribute_browser_->hide();
+        if (component_list_ && attribute_browser_)
+        {
+            QObject::connect(attribute_browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentData()));
+        }
+
         
         if (entity_list_)
         {
@@ -512,72 +497,39 @@ namespace ECEditor
 
     void ECEditorWindow::RefreshPropertyBrowser()
     {
-        if (!property_browser_)
-            return;
-        
-        property_browser_->clear();
-        while(!editorEntityList_.empty())
-        {
-            SAFE_DELETE(editorEntityList_.begin()->second)
-            editorEntityList_.erase(editorEntityList_.begin());
-        }
-        
         std::vector<EntityComponentSelection> selection = GetSelectedComponents();
-        if (!selection.size())
+        if (!selection.size() && attribute_browser_)
             return;
 
-//        if (selection.size() == 1)
-//            return;
-        for (uint j = 0; j < selection[0].components_.size(); ++j)
+
+        attribute_browser_->ClearBrowser();
+        for(uint i = 0; i < selection.size(); i++)
         {
-            if (selection[0].components_[j]->IsSerializable())
-            {
-                std::string type = selection[0].components_[j]->TypeName();
-                if(type == "EC_Light")
-                {
-                    EditorEntityList::iterator iter = editorEntityList_.find(type);
-                    if (iter == editorEntityList_.end())
-                        editorEntityList_[type] = new ECLightEditor(variantManager_, selection[0].components_[j]);
-                    //ECLightEditor *editor = new ECLightEditor(variantManager_, selection[0].components_[j]);
-                    
-                    property_browser_->addProperty(editorEntityList_[type]->GetRootProperty());
-                }
-            }
+            std::vector<Foundation::ComponentInterfacePtr> components = selection[i].components_;
+            for(uint j = 0; j < components.size(); j++)
+                attribute_browser_->AddEntityComponent(components[j]);
         }
     }
 
     void ECEditorWindow::TogglePropertiesBrowser()
     {
-        if (property_browser_)
+        if (attribute_browser_)
         {
-            if (property_browser_->isVisible())
+            if (attribute_browser_->isVisible())
             {
-                property_browser_->hide();
-                resize(size().width() - property_browser_->size().width(), size().height());
+                attribute_browser_->hide();
+                resize(size().width() - attribute_browser_->size().width(), size().height());
                 if (toggle_browser_button_)
                     toggle_browser_button_->setText(tr("Properties >"));
             }
             else
             {
-                property_browser_->show();
-                resize(size().width() + property_browser_->sizeHint().width(), size().height());
+                attribute_browser_->show();
+                resize(size().width() + attribute_browser_->sizeHint().width(), size().height());
                 if (toggle_browser_button_)
                     toggle_browser_button_->setText(tr("Properties <"));
             }
         }
-    }
-
-    void ECEditorWindow::PropertyChanged(QtProperty *property)
-    {
-        EditorEntityList::iterator iter = editorEntityList_.begin();
-        while(iter != editorEntityList_.end())
-        {
-            if (iter->second->ContainProperty(property))
-                iter->second->SetPropertyValue(property);
-            iter++;
-        }
-        RevertData();
-        //if(property->propertyName)
     }
     
     std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities()

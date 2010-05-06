@@ -5,7 +5,7 @@ init_target (ECEditorModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h ECLightEditor.h)
+file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h AttributeBrowser.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
@@ -22,7 +22,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_Light)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -30,7 +30,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules EC_Light)
+link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
