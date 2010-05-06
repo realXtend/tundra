@@ -437,6 +437,8 @@ void RexLogicModule::Update(f64 frametime)
         }
     }
 
+
+
     RESETPROFILER;
 }
 
@@ -1027,6 +1029,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     {
         placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         widget = avatar->GetComponent<EC_HoveringWidget>();
+
         if (!placable.get() || !widget.get())
             continue;
 
@@ -1034,6 +1037,8 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         f32 distance = camera_position.getDistanceFrom(placable->GetPosition());
         widget->SetCameraDistance(distance);
     }
+
+
 }
 
 void RexLogicModule::EntityClicked(Scene::Entity* entity)
@@ -1189,23 +1194,12 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
         OgreRenderer::EC_OgrePlaceable* cam_placeable = camera->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
         Ogre::Ray original_ray = camera->GetCamera()->getCameraToViewportRay(scr_x, scr_y);
         
+        Ogre::Vector3 campos = camera->GetCamera()->getDerivedPosition();
 
-        /////TEST
-        OgreRenderer::EC_OgrePlaceable* test;
-
-        if(!visible_widgets.empty())
-        {
-            test  = visible_widgets.at(0)->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        }
-        else
-            return false;
-        /////
-
-        Quaternion camera_orientation = test->GetOrientation();
-        
         for(int i=0; i< visible_widgets.size();i++)
         {
-            
+            Ogre::Matrix4 mat;
+            Ogre::Vector3 campos_objspace;
             Ogre::Ray ray = original_ray;
             EC_HoveringWidget* widget = visible_widgets.at(i);
             Ogre::Billboard board = widget->GetBillboard();
@@ -1217,13 +1211,20 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             if(!placeable)
                 continue;
             
-            //a bit "hacky". Should modify transformation matrix instead
+            widget->GetBillboardSet().getWorldTransforms(&mat);
+            campos_objspace = mat.inverse()*campos;
+            //TO DO: take into account that in 1st. person mode we have to rotate around all axes
+            Vector3Df lookat(campos_objspace.x, campos_objspace.y, 0);
+            Quaternion quat;
+            quat.rotationFromTo(Vector3Df::NEGATIVE_UNIT_X, lookat);
+            quat.normalize();
+            // Should modify transformation matrix instead
             Quaternion orig_ori = placeable->GetOrientation();
-            placeable->SetOrientation(camera_orientation);
+            placeable->SetOrientation(quat*orig_ori);
             placeable->GetSceneNode()->needUpdate();
             
             
-            Ogre::Matrix4 mat;
+            
             widget->GetBillboardSet().getWorldTransforms(&mat);
             
             placeable->SetOrientation(orig_ori);
