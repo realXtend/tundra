@@ -316,6 +316,7 @@ class ResourceStorer(object):
         header = {}
         if lockToken:
             header = lockToken.toHeader()
+        header["Overwrite"] = "T"
         response = None
         try: 
             response = self.connection.put(self.path, content, extra_hdrs=header)

@@ -171,7 +171,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
                 {
-                    LogError("Python module not in use. WebDAV inventory can't be used!");
+                    LogError("PythonScriptModule not present. WebDAV based inventory cannot be fetched and avatar export is disabled!");
                     inventoryType_ = IDMT_Unknown;
                 }
                 else
@@ -285,8 +285,57 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             InventoryUploadBufferEventData *upload_data = checked_static_cast<InventoryUploadBufferEventData *>(data);
             if (!upload_data)
                 return false;
-
             inventory_->UploadFilesFromBuffer(upload_data->filenames, upload_data->buffers, 0);
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST ||
+            event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST)
+        {
+            InventoryUploadBufferEventData *upload_data = checked_static_cast<InventoryUploadBufferEventData *>(data);
+            if (!upload_data)
+                return false;
+
+            if (inventoryType_ == IDMT_WebDav)
+            {
+                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                AbstractInventoryItem *avatar_item = inventory_->GetChildFolderById("Avatar"); 
+
+                if (avatar_item && asset_service)
+                {
+                    if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST)
+                    {
+                        // Clean the whole Avatar folder before pushing new assets and xml into it,
+                        // so it wont get full and messy over time
+                        InventoryFolder *avatar_folder = dynamic_cast<InventoryFolder*>(avatar_item);
+                        if (avatar_folder)
+                        {
+                            LogInfo("Clearing webdav avatar folder before exporting appearance");
+                            // Fetch current child list
+                            inventory_->FetchInventoryDescendents(avatar_folder);
+                            // Get child list
+                            QList<AbstractInventoryItem *> avatar_assets = avatar_folder->GetChildren();
+                            // Remove all items from avatar folder
+                            foreach(AbstractInventoryItem *asset, avatar_assets)
+                                inventory_->NotifyServerAboutItemRemove(asset);
+                        }
+                        LogInfo("Uploading webdav avatar assets");
+                    }
+                    else if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST)
+                        LogInfo("Uploading webdav avatar xml description");
+
+                    inventory_->UploadFilesFromBuffer(upload_data->filenames, upload_data->buffers, avatar_item);
+
+                    Inventory::WebDavInventoryUploadedData data(upload_data->filenames);
+                    if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST)
+                        eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_COMPLETE, &data);
+                    else if (event_id = Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST)
+                        eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_COMPLETE, &data);
+                }
+                else
+                    LogWarning("Could not find Avatar folder from webdav inventory");
+            }
+            else
+                LogWarning("Trying to export webdav avatar without having access to webdav inventory. Are you sure PythonScriptModule is loaded?");
         }
 
         return false;

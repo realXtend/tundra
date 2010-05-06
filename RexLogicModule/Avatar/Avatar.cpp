@@ -715,10 +715,13 @@ namespace RexLogic
             return;
         }
         
+        // Legacy avatar
         if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
-        else if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationType::AT_OpenSim)
+        // Webdav avatar
+        else if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationType::AT_Taiga)
             avatar_appearance_.WebDavExportAvatar(entity);
+        // Inventory avatar
         else
             avatar_appearance_.InventoryExportAvatar(entity);
     }

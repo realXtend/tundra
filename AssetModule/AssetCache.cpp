@@ -209,7 +209,6 @@ Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool chec
 void AssetCache::StoreAsset(Foundation::AssetPtr asset)
 {
     const std::string& asset_id = asset->GetId();
-
     AssetModule::LogDebug("Storing complete asset " + asset_id);
 
     // Store to memory cache
@@ -236,6 +235,33 @@ void AssetCache::StoreAsset(Foundation::AssetPtr asset)
     else
     {
         AssetModule::LogError("Error storing asset " + asset_id + " to cache.");
+    }
+}
+
+bool AssetCache::DeleteAsset(Foundation::AssetPtr asset)
+{
+    const std::string& asset_id = asset->GetId();
+
+    // Delete from disk cache
+    boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));
+    if (boost::filesystem::exists(file_path))
+    {
+        if (boost::filesystem::remove(file_path))
+        {
+            AssetModule::LogDebug("Removed asset " + asset_id + " from cache");
+            assets_.erase(asset_id);
+            return true;
+        }
+        else
+        {
+            AssetModule::LogDebug("Could not removed asset " + asset_id + " from cache");
+            return false;
+        }
+    }
+    else
+    {
+        AssetModule::LogDebug("File " + file_path.string() + " does not exist, could not delete from cache.");
+        return true;
     }
 }
 

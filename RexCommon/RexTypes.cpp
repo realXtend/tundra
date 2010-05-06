@@ -17,6 +17,8 @@ const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
 {
     if (asset_type == ASSETTYPENAME_TEXTURE)
         return RexAT_Texture;
+    if (asset_type == ASSETTYPENAME_IMAGE)
+        return RexAT_Image;
     if (asset_type == ASSETTYPENAME_SOUNDVORBIS)
         return RexAT_SoundVorbis;
     if (asset_type == ASSETTYPENAME_SOUNDWAV)
@@ -55,6 +57,8 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
         return ASSETTYPENAME_MATERIAL_SCRIPT;
     if (asset_type == RexAT_GenericAvatarXml)
         return ASSETTYPENAME_GENERIC_AVATAR_XML;
+    if (asset_type == RexAT_Image)
+        return ASSETTYPENAME_IMAGE;
 
     return ASSETTYPENAME_UNKNOWN;
 }

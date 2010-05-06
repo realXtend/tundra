@@ -43,6 +43,7 @@ namespace PythonScript
 #endif
             RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent
             RunString("import sys; sys.path.append('pymodules/lib');"); // libraries directory
+            RunString("import sys; sys.path.append('pymodules/DLLs');"); // dll directory (PYTHONHOME doesent seem to work to get these)
         }
         else
         {

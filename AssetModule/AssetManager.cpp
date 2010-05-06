@@ -230,7 +230,18 @@ namespace Asset
         }
         
         return ret;
-    }    
+    }
+
+    bool AssetManager::RemoveAssetFromCache(const std::string& asset_id)
+    {
+        if (!cache_)
+            return false;
+
+        const AssetCache::AssetMap& assets = cache_->GetAssets();
+        AssetCache::AssetMap::const_iterator found_item = assets.find(asset_id);
+        if (found_item != assets.end())
+            return cache_->DeleteAsset(found_item->second);
+    }
     
     Foundation::AssetTransferInfoVector AssetManager::GetAssetTransferInfo()
     {

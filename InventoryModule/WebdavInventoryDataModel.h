@@ -112,6 +112,8 @@ namespace Inventory
         /// @param path Path to be validated.
         QString ValidateFolderPath(QString path);
 
+        QString RemovePrePath(QString full_path);
+
         /// Related urls to store for fetching webdav url and accessing webdav
         QString webdav_identity_;
         QString webdav_host_;

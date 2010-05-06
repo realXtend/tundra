@@ -78,9 +78,12 @@ namespace Asset
         //! Gets information about current status of asset memory cache
         virtual Foundation::AssetCacheInfoMap GetAssetCacheInfo();
 
+        //! Removes a asset from the memory cache
+        virtual bool RemoveAssetFromCache(const std::string& asset_id);
+
         //! Gets information about current asset transfers
         virtual Foundation::AssetTransferInfoVector GetAssetTransferInfo();
-                
+        
         //! Registers an asset provider
         /*! \param asset_provider Provider to register
             \return true if successfully registered
