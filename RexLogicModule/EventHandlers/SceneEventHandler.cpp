@@ -11,6 +11,7 @@
 #include "WorldStream.h"
 #include "Environment/Primitive.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_Touchable.h"
 
 namespace RexLogic
 {
@@ -37,7 +38,7 @@ void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest,
     }
 }
 
-SceneEventHandler::SceneEventHandler(RexLogicModule *rexlogicmodule) : rexlogicmodule_(rexlogicmodule)
+SceneEventHandler::SceneEventHandler(RexLogicModule *owner) : owner_(owner)
 {
 }
 
@@ -47,44 +48,57 @@ SceneEventHandler::~SceneEventHandler()
 
 bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    Scene::Events::SceneEventData *event_data = dynamic_cast<Scene::Events::SceneEventData *>(data);
+    using namespace Scene;
+    Events::SceneEventData *event_data = dynamic_cast<Events::SceneEventData *>(data);
     //assert(event_data);
     switch(event_id)
     {
-    case Scene::Events::EVENT_ENTITY_SELECT:
-        rexlogicmodule_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
+    case Events::EVENT_ENTITY_SELECT:
+        owner_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
         break;
-    case Scene::Events::EVENT_ENTITY_DESELECT:
-        rexlogicmodule_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
+    case Events::EVENT_ENTITY_DESELECT:
+        owner_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
         break;
-    case Scene::Events::EVENT_ENTITY_UPDATED:
+    case Events::EVENT_ENTITY_UPDATED:
     {
         std::vector<ProtocolUtilities::ObjectUpdateInfo> update_info_list;
         PopulateUpdateInfos(update_info_list, event_data->entity_ptr_list);
-        rexlogicmodule_->GetServerConnection()->SendMultipleObjectUpdatePacket(update_info_list);
+        owner_->GetServerConnection()->SendMultipleObjectUpdatePacket(update_info_list);
         break;
     }
-    case Scene::Events::EVENT_ENTITY_GRAB:
-        rexlogicmodule_->GetServerConnection()->SendObjectGrabPacket(event_data->localID);
+    case Events::EVENT_ENTITY_GRAB:
+        owner_->GetServerConnection()->SendObjectGrabPacket(event_data->localID);
         break;
-    case Scene::Events::EVENT_ENTITY_DELETED:
+    case Events::EVENT_ENTITY_DELETED:
         HandleEntityDeletedEvent(event_data->localID);
         break;
-    case Scene::Events::EVENT_ENTITY_CREATE:
+    case Events::EVENT_ENTITY_CREATE:
     {
-        Scene::Events::CreateEntityEventData *pos_data = dynamic_cast<Scene::Events::CreateEntityEventData *>(data);
+        Events::CreateEntityEventData *pos_data = dynamic_cast<Events::CreateEntityEventData *>(data);
         if (pos_data)
-            rexlogicmodule_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
+            owner_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
         break;
     }
-    case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
+    case Events::EVENT_CONTROLLABLE_ENTITY:
         break;
-    case Scene::Events::EVENT_ENTITY_CLICKED:
+    case Events::EVENT_ENTITY_CLICKED:
     {
-        Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-        //Scene::EntityPtr ptr(entity_clicked_data->entity);
-        if (entity_clicked_data)
-            rexlogicmodule_->EntityClicked(entity_clicked_data->entity);
+        Events::EntityClickedData *entity_clicked_data = checked_static_cast<Events::EntityClickedData *>(data);
+        assert(entity_clicked_data);
+        owner_->EntityClicked(entity_clicked_data->entity);
+        break;
+    }
+    case Events::EVENT_ENTITY_MOUSE_HOVER:
+    {
+        Events::RaycastEventData *event_data = checked_static_cast<Events::RaycastEventData *>(data);
+        assert(event_data);
+        EntityPtr entity = owner_->GetEntity(event_data->localID);
+        if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
+        {
+            boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
+            if (!touchable->IsVisible())
+                touchable->Show();
+        }
         break;
     }
     default:

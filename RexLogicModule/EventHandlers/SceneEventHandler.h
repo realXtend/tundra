@@ -17,13 +17,13 @@ namespace RexLogic
     class SceneEventHandler
     {
     public:
-        explicit SceneEventHandler(RexLogicModule *rexlogicmodule);
+        explicit SceneEventHandler(RexLogicModule *owner);
         virtual ~SceneEventHandler();
 
         bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
     private:
-        RexLogicModule *rexlogicmodule_;
+        RexLogicModule *owner_;
 
         //! handle entity deleted event
         void HandleEntityDeletedEvent(event_id_t entityid);

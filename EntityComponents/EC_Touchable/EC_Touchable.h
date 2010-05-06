@@ -17,7 +17,6 @@
 #include "ComponentInterface.h"
 #include "AttributeInterface.h"
 #include "Declare_EC.h"
-#include "Vector3D.h"
 
 namespace OgreRenderer
 {
@@ -45,7 +44,7 @@ public:
     /// Name of the material used for this EC.
     Foundation::Attribute<std::string> materialName;
 
-    /// Time the touchable effect is visible.
+    /// Time the touchable effect is visible in seconds.
     Foundation::Attribute<float> visibilityTime;
 
 public slots:
@@ -60,8 +59,8 @@ public slots:
     bool IsVisible() const;
 
 private slots:
-    /// Updates the component if its attributes change.
-    void Update();
+    /// Updates the component if its material changes.
+    void UpdateMaterial();
 
 private:
     /// Constuctor.
