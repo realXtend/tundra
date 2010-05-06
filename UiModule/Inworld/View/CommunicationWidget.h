@@ -6,6 +6,7 @@
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
 #include "ui_VoiceUsers.h"
+#include "ui_VoiceUser.h"
 
 #include <QLabel>
 #include <QTimer>
@@ -24,6 +25,7 @@ namespace Communications
     namespace InWorldVoice
     {
         class SessionInterface;
+        class ParticipantInterface;
     }
 }
 
@@ -39,7 +41,8 @@ namespace CoreUi
 
     //! Presents state with a set of status icons.
     //!
-    //! \todo: Move to out from UModule
+    //! @todo: Move to out from UModule
+    //! @todo: Rename to VoiceStateButton
     class VoiceStateWidget : public QPushButton
     {
         Q_OBJECT
@@ -65,8 +68,8 @@ namespace CoreUi
 
     //! Show user count and voice activity
     //!
-    //!
-    //! \todo: Move to out from UModule
+    //! @todo: Move to out from UModule
+    //! @todo Rename to VoiceUsersButton
     class VoiceUsersInfoWidget : public QPushButton
     {
         Q_OBJECT
@@ -84,16 +87,35 @@ namespace CoreUi
 
     };
 
-    class VoiceUsersWidget : public QGraphicsProxyWidget, private Ui::VoiceUsersWidget
+    //! Presents InWorldVoice::Participant object
+    class VoiceUserWidget : public QWidget, private Ui::voiceUserWidget
     {
-
+        Q_OBJECT
+    public:
+        VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant);
+    private:
+        Communications::InWorldVoice::ParticipantInterface* participant_;
     };
 
+    //! VoiceUserListWidget
+    class VoiceUsersWidget : public QWidget, private Ui::VoiceUsersWidget
+    {
+        Q_OBJECT
+    public:
+        VoiceUsersWidget(QWidget *parent = 0, Qt::WindowFlags wFlags = 0);
+        virtual void SetSession(Communications::InWorldVoice::SessionInterface* session);
+    public slots:
+        void UpdateList();
+    private:
+        Communications::InWorldVoice::SessionInterface* session_;
+        QList<VoiceUserWidget *> user_widgets_;
+    };
+
+    //! Provide communications functionalities to end user
+    //! CommunicationWidget is located to bottom left corner view.
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
     {
-
-    Q_OBJECT
-
+        Q_OBJECT
     public:
         CommunicationWidget(Foundation::Framework* framework);
         enum ViewMode { Normal, History };      
@@ -101,6 +123,7 @@ namespace CoreUi
     public slots:
         void UpdateController(QObject *controller);
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
+//        void UpdateVoiceUsersWidget(UiServices::UiProxyWidget *im_proxy);
 
         void SetFocusToChat();
         
@@ -145,13 +168,14 @@ namespace CoreUi
         bool resizing_vertical_;
         bool resizing_horizontal_;
 
+        // in-world voice
         VoiceStateWidget* voice_state_widget_;
         VoiceUsersInfoWidget* voice_users_info_widget_;
         VoiceUsersWidget* voice_users_widget_;
+        UiServices::UiProxyWidget* voice_users_proxy_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);
-
     };
 
     class NormalChatViewWidget : public QWidget

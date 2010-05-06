@@ -165,6 +165,7 @@ namespace Communication
 
     void CommunicationModule::AddWidgetToUi(const QString &name)
     {
+        //! @todo Define UIServiceInterface...
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
         if (ui_module.get())
         {
