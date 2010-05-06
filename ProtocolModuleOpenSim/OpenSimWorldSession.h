@@ -42,7 +42,7 @@ namespace OpenSimProtocol
             const QString& password,
             const QString& address,
             const QString& port,
-			const QString& start_location,
+            const QString& start_location,
             ProtocolUtilities::ConnectionThreadState *thread_state);
 
         //! Make Url validation according to type

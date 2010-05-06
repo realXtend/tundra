@@ -254,10 +254,8 @@ namespace Ether
                     int type = world_settings.value(QString("%1/type").arg(world_id)).toInt();
                     QString image_path = world_settings.value(QString("%1/imagepath").arg(world_id)).toString();
                     QUrl login_url = world_settings.value(QString("%1/loginurl").arg (world_id)).toUrl();
-					QString start_location = world_settings.value(QString("%1/startlocation").arg(world_id)).toString();
+                    QString start_location = world_settings.value(QString("%1/startlocation").arg(world_id)).toString();
                     QMap<QString, QVariant> grid_info = world_settings.value(QString("%1/gridinfo").arg(world_id)).toMap();
-
-					qDebug() << start_location;
 
                     // Umm.. default image test baby
                     if (image_path.isEmpty())

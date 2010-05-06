@@ -15,7 +15,7 @@ namespace Ether
               path_to_pixmap_(path_to_pixmap),
               world_type_(world_type),
               login_url_(login_url),
-			  start_location_(start_location),
+              start_location_(start_location),
               grid_info_(grid_info)
         {
             if (id.isNull())

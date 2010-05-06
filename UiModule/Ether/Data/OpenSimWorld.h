@@ -26,7 +26,7 @@ namespace Ether
                 qDebug() << "<OpenSimWorld>";
                 qDebug() << "    id: " << id();
                 qDebug() << "    login url: " << loginUrl();
-				qDebug() << "    start location: " << startLocation();
+                qDebug() << "    start location: " << startLocation();
                 qDebug() << "    image path: " << pixmapPath();
                 qDebug() << "    grid info: " << gridInfo();
             }

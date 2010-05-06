@@ -44,25 +44,25 @@ namespace ProtocolUtilities
 		return QString(firstName_ + " " + lastName_);
 	}
 
-	void OpenSimCredentials::SetFirstName(QString firstName)
-	{
-		firstName_ = firstName;
-	}
+    void OpenSimCredentials::SetFirstName(QString firstName)
+    {
+        firstName_ = firstName;
+    }
 
-	void OpenSimCredentials::SetLastName(QString lastName)
-	{
-		lastName_ = lastName;
-	}
+    void OpenSimCredentials::SetLastName(QString lastName)
+    {
+        lastName_ = lastName;
+    }
 
-	void OpenSimCredentials::SetPassword(QString password)
-	{
-		password_ = password;
-	}
+    void OpenSimCredentials::SetPassword(QString password)
+    {
+        password_ = password;
+    }
 
-	void OpenSimCredentials::SetStartLocation(QString startLocation)
-	{
-		startLocation_ = startLocation;
-	}
+    void OpenSimCredentials::SetStartLocation(QString startLocation)
+    {
+        startLocation_ = startLocation;
+    }
 
 
 	QString OpenSimCredentials::GetFirstName()
