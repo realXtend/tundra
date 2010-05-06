@@ -91,6 +91,9 @@ namespace Foundation
         //! Gets information about current status of asset memory cache
         virtual AssetCacheInfoMap GetAssetCacheInfo() = 0;
 
+        //! Removes a asset from the memory cache
+        virtual bool RemoveAssetFromCache(const std::string& asset_id) = 0;
+
         //! Gets information about current asset transfers
         virtual AssetTransferInfoVector GetAssetTransferInfo() = 0;
                 

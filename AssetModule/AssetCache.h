@@ -34,6 +34,9 @@ namespace Asset
          */
         void StoreAsset(Foundation::AssetPtr asset);
 
+        //! Deletes the memory asset
+        bool AssetCache::DeleteAsset(Foundation::AssetPtr asset);
+
         //! Returns all assets
         const AssetMap& GetAssets() const { return assets_; }
         

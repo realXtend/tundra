@@ -34,6 +34,11 @@ namespace Inventory
 
         /// Event informing successful download of inventory asset.
         static const event_id_t EVENT_INVENTORY_ITEM_DOWNLOADED = 0x05;
+
+        static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST = 0x06;
+        static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_COMPLETE = 0x07;
+        static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST = 0x08;
+        static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_COMPLETE = 0x09;
     }
 
     /// Inventory item type enumeration.
@@ -135,6 +140,14 @@ namespace Inventory
         asset_type_t assetType;
         std::string name;
         bool handled;
+    };
+
+    class WebDavInventoryUploadedData : public Foundation::EventDataInterface
+    {
+    public:
+        WebDavInventoryUploadedData(QStringList uploaded_file_list) : file_list(uploaded_file_list) {}
+        virtual ~WebDavInventoryUploadedData() {}
+        QStringList file_list;
     };
 }
 

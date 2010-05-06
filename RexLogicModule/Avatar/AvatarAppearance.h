@@ -94,6 +94,9 @@ namespace RexLogic
         //! Exports avatar via webdav inventory
         void WebDavExportAvatar(Scene::EntityPtr entity);
 
+        //! Finalize the webdav export by sending xml file that points to uploaded files
+        void WebDavExportAvatarFinalize(Scene::EntityPtr entity, const QStringList &file_list);
+
         //! Exports avatar to inventory
         void InventoryExportAvatar(Scene::EntityPtr entity);
 
@@ -141,10 +144,10 @@ namespace RexLogic
         void ProcessAppearanceDownload(Scene::EntityPtr entity, const u8* data, uint size);
 
         //! Processes an avatar appearance asset (inventory based avatar)
-        void ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size);
+        void ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size, QString base_url = QString());
         
         //! Requests needed avatar resouces
-        uint RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode = false);
+        uint RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode = false, QString base_url = QString());
             
         //! Fixes up avatar resource references after downloading of all avatar assets complete
         void FixupResources(Scene::EntityPtr entity);

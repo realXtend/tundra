@@ -167,8 +167,10 @@ namespace RexTypes
     const asset_type_t RexAT_Skeleton = 44;
     const asset_type_t RexAT_MaterialScript = 45;
     const asset_type_t RexAT_GenericAvatarXml = 46;
+    
     const asset_type_t RexAT_ParticleScript = 47;
     const asset_type_t RexAT_FlashAnimation = 49;
+    const asset_type_t RexAT_Image = 50;
     const asset_type_t RexAT_None = -1;
 
     // UDP Inventory types.

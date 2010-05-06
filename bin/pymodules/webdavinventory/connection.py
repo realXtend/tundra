@@ -280,7 +280,7 @@ class WebDavClient(object):
         else:
             return 'False'
             
-    def renameResource(self, currentPath, newName, oldName):
+    def renameResource(self, currentPath, newName = 'ololalaa', oldName = 'ololol'):
         if (self.setCollectionStorerToPath(currentPath)):
             try:
                 newName = self.url + urllib.quote(currentPath + newName)

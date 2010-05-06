@@ -92,8 +92,10 @@ namespace RexLogic
         }
         
         // See if it's NOT legacy avatar storage based address
-        //! \todo once we get webdav urls, see that they don't contain that string. Possibly check for right index in path
-        if (appearance_address.find("/avatar/") == std::string::npos)
+        
+        // OS INVENTORY BASED AVATAR
+        QString q_app_address = QString::fromStdString(appearance_address);
+        if (!q_app_address.contains("/avatar/"))
         {
             RexLogicModule::LogDebug("Inventory based avatar address received for avatar entity " + ToString<int>(entity->GetId()) + ": " +
                 appearance_address);
@@ -110,7 +112,24 @@ namespace RexLogic
                 avatar_appearance_tags_[tag] = entity->GetId();            
               
             return;         
-        } 
+        }
+        // WEBDAV INVENTORY BASED AVATAR
+        else if (q_app_address.endsWith("Avatar.xml"))
+        {
+            RexLogicModule::LogDebug("Fetching webdav appearance from " + appearance_address);
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
+                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (asset_service)
+            {
+                asset_service->RemoveAssetFromCache(appearance_address);
+                request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
+                if (tag)
+                    avatar_appearance_tags_[tag] = entity->GetId();
+            }
+            else
+                RexLogicModule::LogError("Could not get asset service");
+            return;
+        }
            
         // See if download already exists for this avatar
         if (appearance_downloaders_.find(entity->GetId()) != appearance_downloaders_.end())
@@ -746,8 +765,8 @@ namespace RexLogic
                 appearance_downloaders_.erase(i++);
         }
     }
-    
-    void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size)
+
+    void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size, QString base_url)
     {       
         if (!entity)
             return;
@@ -770,15 +789,37 @@ namespace RexLogic
         }
         
         const AvatarAssetMap& assets = appearance->GetAssetMap(); 
-                
-        uint pending_requests = RequestAvatarResources(entity, assets, true);
+        
+        uint pending_requests;
+        if (base_url.isEmpty())
+            pending_requests = RequestAvatarResources(entity, assets, true);
+        else
+        {
+            // If base url exists, this is webdav inventory avatar
+            // Lets clear the cache as the id == url doesnt chance so
+            // we can be sure the asset is fetched again from the web
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
+                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            if (asset_service)
+            {
+                AvatarAssetMap::const_iterator iter = assets.begin();
+                AvatarAssetMap::const_iterator end = assets.end();
+                while (iter != end)
+                {
+                    std::string asset_id = iter->second;
+                    asset_service->RemoveAssetFromCache(asset_id);
+                    ++iter;
+                }
+            }
+            pending_requests = RequestAvatarResources(entity, assets, false, base_url);
+        }
         
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
     }
         
-    uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode)
+    uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode, QString base_url)
     {
         // Erase any old pending requests for this avatar, they are no longer interesting
         std::vector<std::map<request_tag_t, entity_id_t>::iterator> tags_to_remove;
@@ -810,6 +851,7 @@ namespace RexLogic
         {
             std::string resource_id = k->second;
             request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, inventorymode));
+
             if (tag)
             {
                 tags.push_back(tag);
@@ -904,6 +946,7 @@ namespace RexLogic
         // Now we know it is our request, can erase it and don't need to propagate this event      
         RexLogicModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
         entity_id_t id = i->second;
+
         avatar_resource_tags_.erase(i);
         if (avatar_pending_requests_[id])
             avatar_pending_requests_[id]--;
@@ -947,7 +990,19 @@ namespace RexLogic
         Foundation::AssetPtr asset = event_data->asset_;
         if (!asset) 
             return true;
-        ProcessInventoryAppearance(entity, asset->GetData(), asset->GetSize());
+
+        QString asset_id = QString::fromStdString(asset->GetId());
+
+        // WEBDAV
+        if (asset_id.endsWith("Avatar.xml"))
+        {
+            QString base_url = asset_id.left(asset_id.length() - QString("Avatar.xml").length());
+            ProcessInventoryAppearance(entity, asset->GetData(), asset->GetSize(), base_url);
+        }
+        // OS INVENTORY
+        else
+            ProcessInventoryAppearance(entity, asset->GetData(), asset->GetSize());
+
         return true;
     }
     
@@ -1000,6 +1055,32 @@ namespace RexLogic
                     }
                 }
             }
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_COMPLETE)
+        {
+            Inventory::WebDavInventoryUploadedData* event_data = dynamic_cast<Inventory::WebDavInventoryUploadedData*>(data);
+            if (event_data)
+            {
+                WebDavExportAvatarFinalize(inv_export_entity_.lock(), event_data->file_list);
+                return true;
+            }
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_COMPLETE)
+        {
+            WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+            EC_OpenSimAvatar* avatar = inv_export_entity_.lock()->GetComponent<EC_OpenSimAvatar>().get();
+            if (connection && avatar)
+            {
+                RexLogicModule::LogDebug("Informing ModRex about webdav avatar appearance update.");
+                StringVector strings;
+                strings.push_back(connection->GetInfo().agentID.ToString());
+                strings.push_back(avatar->GetAppearanceAddress());
+                connection->SendGenericMessage("RexSetAppearance", strings);
+            }
+            inv_export_state_ = Idle;
+            inv_export_entity_.reset();
         }
         
         return false;
@@ -1259,7 +1340,8 @@ namespace RexLogic
         // Check if there were any assets, if not, we can go to final phase directly
         if (inv_export_request_->assets_.empty())
         {
-            InventoryExportAvatarFinalize(entity);
+            // Is this gonna happen under what circumstances??
+            WebDavExportAvatarFinalize(entity, QStringList());
             return;
         }
          
@@ -1282,7 +1364,58 @@ namespace RexLogic
             ++i;
         }
 
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);   
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST, &event_data);   
+    }
+
+    void AvatarAppearance::WebDavExportAvatarFinalize(Scene::EntityPtr entity, const QStringList &file_list)
+    {
+        // Webdav based export, final phase
+        inv_export_state_ = Idle;
+        inv_export_request_.reset();  
+                
+        if (!entity)
+            return;     
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;
+        
+        EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
+        if (!avatar)
+            return;
+
+        QString app_address = QString::fromStdString(avatar->GetAppearanceAddress());
+        if (app_address.endsWith("Avatar.xml"))
+            app_address = app_address.left(app_address.length() - QString("Avatar.xml").length());
+
+        // Fill the asset map with files
+        inv_export_assetmap_ = AvatarAssetMap();
+        foreach(QString asset_name, file_list)
+            inv_export_assetmap_[asset_name.toStdString()] = app_address.toStdString() + asset_name.toStdString();
+
+        // Convert avatar appearance to xml
+        inv_export_state_ = Avatar;
+        EC_AvatarAppearance temp_appearance = *appearance;
+        temp_appearance.SetAssetMap(inv_export_assetmap_);
+        inv_export_assetmap_ = AvatarAssetMap();
+                
+        QDomDocument avatar_export("Avatar");
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, temp_appearance, true);
+        std::string avatar_export_str = avatar_export.toString().toStdString();
+
+        QVector<u8> data_buffer;
+        data_buffer.resize(avatar_export_str.length());
+        memcpy(&data_buffer[0], avatar_export_str.c_str(), data_buffer.size());
+        
+        // Get current time/date to "version" the avatar inventory item
+        QDateTime time = QDateTime::currentDateTime();
+        std::string avatarfilename = "Avatar.xml";
+                
+        // Upload appearance as inventory asset. 
+        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Inventory::InventoryUploadBufferEventData event_data;
+        event_data.filenames.push_back(QString(avatarfilename.c_str()));
+        event_data.buffers.push_back(data_buffer);
+        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST, &event_data);       
     }
     
     void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
