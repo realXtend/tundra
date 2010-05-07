@@ -42,6 +42,8 @@ namespace MumbleVoip
     //! This is basically a wrapper over Client class of mumbleclient library.
     //  Mumbleclient library has a main loop whitch calls callback functions in this class
     //! so thread safaty have to be dealed within this class.
+    //! 
+    //! Connections has Channel and User objects.
     class Connection : public QObject
     {
         Q_OBJECT
@@ -60,12 +62,13 @@ namespace MumbleVoip
         //! Joins to given channel if channels exist
         //! If authtorization is not completed yet the join request is queuesd
         //! and executed again after successfullu authorization
-        //!
-        //! \todo create channels if it doesn't exist
         virtual void Join(QString channel);
 
-        //! \return first <user,audio frame> pair from playback queue
-        //! \return <0,0> if playback queue is empty
+        //! Joins to given channel
+        virtual void Join(const Channel* channel);
+
+        //! @return first <user,audio frame> pair from playback queue
+        //!         return <0,0> if playback queue is empty
         //! The caller must delete audio frame object after usage
         virtual AudioPacket GetAudioPacket();
 
@@ -73,16 +76,27 @@ namespace MumbleVoip
         //! Frame object is NOT deleted by this method 
         virtual void SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position);
 
-        //! \return list of channels available
-        virtual QList<QString> Channels();
+        //! @return list of channels available
+        //! @todo CONSIDER TO USE boost::weak_ptr HERE
+        virtual QList<Channel*> ChannelList();
+
+        //! @return channel by id. Return 0 if channel cannot be found
+        virtual MumbleVoip::Channel* ChannelById(int id);
+
+        //! @param name The full name of the channel e.g "Root/mychannel"
+        //! @return channel by name. Return 0 if channel cannot be found
+        virtual MumbleVoip::Channel* ChannelByName(QString name);
 
         //! Set audio sending true/false 
+        //! @param send true if audio want to be sent to mumble server, otherwise false
         virtual void SendAudio(bool send);
 
-        //! \return true if connection is sending audio, return false otherwise
-        virtual bool SendingAudio();
+        //! @return true if connection is sending audio, return false otherwise
+        virtual bool SendingAudio() const;
 
         //! Set audio sending true/false 
+        //! @param receive true if received audio packets should be handled, false if 
+        //!                received audio packets should be ignoered
         virtual void ReceiveAudio(bool receive);
 
         //! \param quality [0.0 .. 1.0] where:
@@ -91,16 +105,46 @@ namespace MumbleVoip
         virtual void SetEncodingQuality(double quality);
 
         //! Set position sending on/off
-        virtual void SendPosition(bool value) { send_position_ = value; }
+        //! @param send true if position information should be sent with audio data, false otherwise
+        //! @see UpdatePosition to set current position to be sent.
+        virtual void SendPosition(bool send) { send_position_ = send; }
 
-        //! \return true if position information is send with audio data
-        virtual bool IsSendingPosition() { return send_position_; }
+        //! @return true if position is sent to server with audio data, otherwise false
+        virtual bool IsSendingPosition() const { return send_position_; }
 
-        //! \return current state of the connection
-        virtual State GetState();
+        //! @return current state of the connection
+        //! @see GetState() to get reason for the state
+        virtual State GetState() const;
 
-        //! \return textual description for the reason for current state
-        virtual QString GetReason();
+        //! @return textual description for the reason for current state
+        //! @see GetState() to get state
+        virtual QString GetReason() const;
+
+    public slots:
+
+        void SetAuthenticated();
+
+        //! @param text Text message received from Mumble server
+        void HandleIncomingTextMessage(QString text);
+
+        //! @param length the length of packet in bytes
+        //! @param the packet data
+        void HandleIncomingRawUdpTunnelPacket(int32_t length, void* buffer);
+
+//        void OnRelayTunnel(std::string &s);
+
+        //! Create a new Channel object if channels doesn't already exist
+        void AddChannel(const MumbleClient::Channel& channel);
+
+        //! Remove channel if it already exist
+        void RemoveChannel(const MumbleClient::Channel& channel);
+
+        //! Add user if it doesn't already exit
+        void Adduser(const MumbleClient::User& user);
+
+        //! Remove user from user list if it exist
+        void RemoveUser(const MumbleClient::User& user);
+
     private:
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
@@ -116,9 +160,9 @@ namespace MumbleVoip
         State state_;
         QString reason_;
         MumbleClient::MumbleClient* client_;
-        QString join_request_; // queued request to join a channel
+        QString join_request_; // queued request to join a channel @todo IMPLEMENT BETTER
         QList<PCMAudioFrame*> encode_queue_;
-        QList<Channel*> channels_;
+        QList<Channel*> channels_; // @todo Use shared ptr
         QMap<int, User*> users_; // maps: session id <-> User object
 
         CELTMode* celt_mode_;
@@ -140,23 +184,11 @@ namespace MumbleVoip
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
         QMutex mutex_state_;
-
-    public slots:
-        void OnAuthCallback();
-        void OnTextMessageCallback(QString text);
-        void OnRawUdpTunnelCallback(int32_t length, void* buffer);
-//        void OnRelayTunnel(std::string &s);
-        void OnChannelAddCallback(const MumbleClient::Channel& channel);
-        void OnChannelRemoveCallback(const MumbleClient::Channel& channel);
-        void OnUserJoinedCallback(const MumbleClient::User& user);
-        void OnUserLeftCallback(const MumbleClient::User& user);
         
     signals:
-//        void Closed();
-        void TextMessage(QString &text);
+        void StateChanged(State state);
+        void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
-        void RelayTunnelData(char*, int);
-        void AudioFramesAvailable(Connection* connection); // do we need this
         void UserLeft(User* user);
         void UserJoined(User* user);
         void ChannelAdded(Channel* channel); 

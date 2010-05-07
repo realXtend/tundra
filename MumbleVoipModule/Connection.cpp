@@ -31,12 +31,12 @@ namespace MumbleVoip
 
     void TextMessageCallback(const std::string& message, Connection* connection)
     {
-        connection->OnTextMessageCallback(QString(message.c_str()));
+        connection->HandleIncomingTextMessage(QString(message.c_str()));
     }
 
     void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
     {
-        connection->OnRawUdpTunnelCallback(length, buffer);
+        connection->HandleIncomingRawUdpTunnelPacket(length, buffer);
     }
 
     void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
@@ -54,27 +54,27 @@ namespace MumbleVoip
 
     void AuthCallback(Connection* connection)
     {
-        connection->OnAuthCallback();
+        connection->SetAuthenticated();
     }
 
     void ChannelAddCallback(const MumbleClient::Channel& channel, Connection* connection)
     {
-        connection->OnChannelAddCallback(channel);
+        connection->AddChannel(channel);
     }
 
     void ChannelRemoveCallback(const MumbleClient::Channel& channel, Connection* connection)
     {
-        connection->OnChannelRemoveCallback(channel);
+        connection->RemoveChannel(channel);
     }
 
     void UserJoinedCallback(const MumbleClient::User& user, Connection* connection)
     {
-        connection->OnUserJoinedCallback(user);
+        connection->Adduser(user);
     }
 
     void UserLeftCallback(const MumbleClient::User& user, Connection* connection)
     {
-        connection->OnUserLeftCallback(user);
+        connection->RemoveUser(user);
     }
 
     Connection::Connection(ServerInfo &info) :
@@ -118,6 +118,7 @@ namespace MumbleVoip
             return;
         }
         state_ = STATE_OPEN;
+        emit StateChanged(state_);
     }
 
     Connection::~Connection()
@@ -137,6 +138,7 @@ namespace MumbleVoip
             Channel* c = channels_.takeFirst();
             SAFE_DELETE(c);
         }
+
         foreach(User* u, users_)
         {
             SAFE_DELETE(u);
@@ -145,12 +147,12 @@ namespace MumbleVoip
         SAFE_DELETE(client_);
     }
 
-    Connection::State Connection::GetState()
+    Connection::State Connection::GetState() const
     {
         return state_;
     }
 
-    QString Connection::GetReason()
+    QString Connection::GetReason() const
     { 
         return reason_;
     }
@@ -159,8 +161,9 @@ namespace MumbleVoip
     {
         if (state_ == STATE_OPEN)
         {
-            state_ = STATE_CLOSED;
             client_->Disconnect();
+            state_ = STATE_CLOSED;
+            emit StateChanged(state_);
         }
     }
 
@@ -171,10 +174,21 @@ namespace MumbleVoip
         if (error != 0)
         {
             QString message = QString("CELT initialization failed, error code = %1").arg(error);
-            MumbleVoipModule::LogDebug(message.toStdString());
+            MumbleVoipModule::LogWarning(message.toStdString());
+            state_ = STATE_ERROR;
+            emit StateChanged(state_);
+            return;
         }
 
         celt_encoder_ = celt_encoder_create(celt_mode_,NUMBER_OF_CHANNELS, NULL );
+        if (!celt_encoder_)
+        {
+            QString message = QString("Cannot create CELT encoder");
+            MumbleVoipModule::LogWarning(message.toStdString());
+            state_ = STATE_ERROR;
+            emit StateChanged(state_);
+            return;
+        }
         celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
 	    celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AudioQuality()));
 
@@ -229,16 +243,21 @@ namespace MumbleVoip
         if (!authenticated_)
         {
             join_request_ = channel_name;
-            return; // @todo: Throw exception
+            return; 
         }
 
         foreach(Channel* c, channels_)
         {
-            if (c->Name() == channel_name)
+            if (c->FullName() == channel_name)
             {
                 client_->JoinChannel(c->Id());
             }
         }
+    }
+
+    void Connection::Join(const Channel* channel)
+    {
+        client_->JoinChannel(channel->Id());
     }
 
     AudioPacket Connection::GetAudioPacket()
@@ -250,11 +269,11 @@ namespace MumbleVoip
             if (!user->tryLock())
                 continue;
 
-            PCMAudioFrame* audio = user->GetAudioFrame();
-            if (audio)
+            PCMAudioFrame* frame = user->GetAudioFrame();
+            if (frame)
             {
                 user->unlock();
-                return AudioPacket(user, audio);
+                return AudioPacket(user, frame);
             }
 
             user->unlock();
@@ -268,7 +287,7 @@ namespace MumbleVoip
         sending_audio_ = send;
     }
 
-    bool Connection::SendingAudio()
+    bool Connection::SendingAudio() const
     {
         return sending_audio_;
     }
@@ -340,10 +359,14 @@ namespace MumbleVoip
         client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
     }
 
-    void Connection::OnAuthCallback()
+    void Connection::SetAuthenticated()
     {
-        if (state_ != STATE_INITIALIZING)
+        if (state_ != STATE_OPEN)
+        {
+            QString message = QString("Authentication notification received but state = %1").arg(state_);
+            MumbleVoipModule::LogWarning(message.toStdString());
             return;
+        }
 
         mutex_authentication_.lock();
         authenticated_ = true;
@@ -358,25 +381,31 @@ namespace MumbleVoip
         }
     }
 
-     void Connection::OnTextMessageCallback(QString text)
+     void Connection::HandleIncomingTextMessage(QString text)
     {
         if (state_ != STATE_OPEN)
             return;
 
-        emit (TextMessage(text));
+        emit (TextMessageReceived(text));
     }
 
-    void Connection::OnChannelAddCallback(const MumbleClient::Channel& channel)
+    void Connection::AddChannel(const MumbleClient::Channel& new_channel)
     {
         QMutexLocker locker(&mutex_channels_);
 
-        Channel* c = new Channel(channel);
+        foreach(Channel* c, channels_)
+        {
+            if (c->Id() == new_channel.id)
+                return;
+        }
+
+        Channel* c = new Channel(&new_channel);
         channels_.append(c);
         QString message = QString("Channel '%1' added").arg(c->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
     }
 
-    void Connection::OnChannelRemoveCallback(const MumbleClient::Channel& channel)
+    void Connection::RemoveChannel(const MumbleClient::Channel& channel)
     {
         QMutexLocker locker(&mutex_channels_);
 
@@ -385,13 +414,17 @@ namespace MumbleVoip
         {
             if (channels_.at(i)->Id() == channel.id)
             {
+                Channel* c = channels_.at(i);
                 channels_.removeAt(i);
+                // delete c; // @todo 
+                QString message = QString("Channel '%1' removed").arg(c->Name());
+                MumbleVoipModule::LogDebug(message.toStdString());
                 break;
             }
         }
     }
 
-    void Connection::OnRawUdpTunnelCallback(int32_t length, void* buffer)
+    void Connection::HandleIncomingRawUdpTunnelPacket(int32_t length, void* buffer)
     {
         if (!receiving_audio_)
             return;
@@ -470,47 +503,79 @@ namespace MumbleVoip
         }
     }
 
-    void Connection::OnUserJoinedCallback(const MumbleClient::User& user)
+    void Connection::Adduser(const MumbleClient::User& user)
     {
         QMutexLocker locker(&mutex_users_);
 
-        User* u = new User(user);
+        AddChannel(*user.channel.lock().get());
+        Channel* channel = ChannelById(user.channel.lock()->id);
+        if (!channel)
+        {
+            QString message = QString("Cannot create user '%1': Channel doesn't exist.").arg(QString(user.name.c_str()));
+            MumbleVoipModule::LogWarning(message.toStdString());
+            return;
+        }
+        User* u = new User(user, channel);
         users_[u->Session()] = u;
         QString message = QString("User '%1' joined.").arg(u->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         emit UserJoined(u);
     }
 
-    void Connection::OnUserLeftCallback(const MumbleClient::User& user)
+    void Connection::RemoveUser(const MumbleClient::User& user)
     {
         QMutexLocker locker(&mutex_users_);
 
         if (!users_.contains(user.session))
+        {
+            QString message = QString("Unknow user '%1' Left.").arg(QString(user.name.c_str()));
+            MumbleVoipModule::LogWarning(message.toStdString());
             return;
+        }
 
         User* u = users_[user.session];
         QMutexLocker user_locker(u);
 
         QString message = QString("User '%1' Left.").arg(u->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
-        //emit UserLeft(u);
         u->SetLeft();
-
-//        delete u;
-//        users_.remove(user.user_id);
-//        emit UserJoined(u);
+        emit UserLeft(u);
     }
 
-    QList<QString> Connection::Channels()
+    QList<Channel*> Connection::ChannelList() 
     {
         QMutexLocker locker(&mutex_channels_);
 
-        QList<QString> channels;
+        QList<Channel*> channels;
         foreach(Channel* c, channels_)
         {
-            channels.append(c->Name());
+            channels.append(c);
         }
         return channels;
+    }
+
+    MumbleVoip::Channel* Connection::ChannelById(int id) 
+    {
+        QMutexLocker locker(&mutex_channels_);
+
+        foreach(Channel* c, channels_)
+        {
+            if (c->Id() == id)
+                return c;
+        }
+        return 0;
+    }
+
+    MumbleVoip::Channel* Connection::ChannelByName(QString name) 
+    {
+        QMutexLocker locker(&mutex_channels_);
+
+        foreach(Channel* c, channels_)
+        {
+            if (c->FullName() == name)
+                return c;
+        }
+        return 0;
     }
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
@@ -533,10 +598,9 @@ namespace MumbleVoip
                 User* user = users_[session];
                 if (user)
                 {
-                    if (user->tryLock(5))
+                    if (user->tryLock(5)) // 5 ms
                     {
-                        user->OnAudioFrameReceived(audio_frame);
-                        emit AudioFramesAvailable(this);
+                        user->AddToPlaybackBuffer(audio_frame);
                         user->unlock();
                         return;
                     }

@@ -31,6 +31,9 @@ namespace MumbleVoip
     class VoiceIndicatorInterface;
 
     /**
+     * @NOTE THIS CLASS WILL BE OBSOLETE AND FUNCTIONALITY WILL BE MOVED TO Session CLASS
+     *       ****************************************************************************
+     *
 	 *  Handles connections to mumble servers.
      * 
      *  Sends audio data to mumble servers recorded by audioModule.

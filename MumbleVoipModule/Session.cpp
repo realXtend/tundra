@@ -13,6 +13,7 @@
 #include "RexLogicModule.h"   // for avatar position
 #include "Avatar/Avatar.h"    // for avatar position
 #include "WorldStream.h"
+#include "Channel.h"
 
 namespace MumbleVoip
 {
@@ -43,6 +44,7 @@ namespace MumbleVoip
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
 //            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
+
         }
 
         Session::~Session()
@@ -159,6 +161,12 @@ namespace MumbleVoip
         void Session::UpdateParticipantList(User* user)
         {
             if (user->Name() == OwnAvatarId())
+            {
+                self_user_ = user;
+                return; 
+            }
+
+            if (user->Channel()->Id() == self_user_->Channel()->Id())
                 return; 
 
             Participant* p = new Participant(user);

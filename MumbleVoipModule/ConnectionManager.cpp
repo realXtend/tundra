@@ -66,7 +66,6 @@ namespace MumbleVoip
         connection->SendAudio(true);
         connection->SetEncodingQuality(0.5);
         connection->SendPosition(true); 
-//        QObject::connect( connection, SIGNAL(AudioFramesAvailable(Connection*)), this, SLOT(OnAudioFramesAvailable(Connection*)) );
         StartMumbleLibrary();
     }
 
