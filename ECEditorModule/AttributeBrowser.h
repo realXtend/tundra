@@ -32,7 +32,7 @@ namespace ECEditor
 
         void AddEntityComponent(Foundation::ComponentInterfacePtr entityComponent);
         void RemoveEntityComponent(Foundation::ComponentInterfacePtr entityComponent);
-        QtTreePropertyBrowser *GetPropertyBroweser(){return propertyBrowser_;}
+        QtTreePropertyBrowser *GetPropertyBrowser() const { return propertyBrowser_; }
 
     public slots:
         void RefreshAttributeComponents();
