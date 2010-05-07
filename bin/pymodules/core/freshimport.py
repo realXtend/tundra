@@ -8,9 +8,6 @@ except:
 
 def freshimport(modulename): #aka. load_or_reload
     mod = None
-    fromlist = []
-    if '.' in modulename:
-        fromlist.append("") #to change __import__ to give submodule #modulename.split('.')[0])
     if sys.modules.has_key(modulename):
         try:
             mod = reload(sys.modules[modulename])
@@ -22,7 +19,7 @@ def freshimport(modulename): #aka. load_or_reload
 
     else:
         try:
-            mod = __import__(modulename, globals(), locals(), fromlist)
+            mod = __import__(modulename, globals(), locals(), [""])
         except:
             r.logInfo("couldn't load %s" % modulename)
             r.logInfo(traceback.format_exc())
