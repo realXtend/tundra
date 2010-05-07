@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "Connection.h"
 #include "MumbleVoipModule.h"
 #define BUILDING_DLL // for dll import/export declarations
@@ -15,8 +19,10 @@
 #include "User.h"
 #include "PCMAudioFrame.h"
 
-#include <celt/celt_types.h> 
-#include <celt/celt.h> 
+#include <celt/celt_types.h>
+#include <celt/celt.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

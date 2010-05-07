@@ -2,7 +2,12 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "MumbleVoipModule.h"
+#include "LinkPlugin.h"
+#include "ServerObserver.h"
+#include "ConnectionManager.h"
+
 #include "RexLogicModule.h"
 #include "ModuleManager.h"
 #include "Avatar/Avatar.h"
@@ -10,10 +15,8 @@
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
+#include "WorldLogicInterface.h"
 
-#include "LinkPlugin.h"
-#include "ServerObserver.h"
-#include "ConnectionManager.h"
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
@@ -168,15 +171,12 @@ namespace MumbleVoip
 
     bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
     {
-        ///\todo Remove RexLogicModule dependency!
-        /// Iterate scene entities and get EC_OgreCamera. If EC_OgreCamera exists and it's active use that entity.
-        /// You could also save weak pointer of the camera entity so that you don't have to retrieve it again every time at the update.
-        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(
-            framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-        if (!rex_logic_module)
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        if (!worldLogic)
             return false;
 
-        Scene::EntityPtr camera = rex_logic_module->GetCameraEntity().lock();
+        Scene::EntityPtr camera = worldLogic->GetCameraEntity();
         if (!camera)
             return false;
 

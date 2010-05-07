@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "LinkPlugin.h"
 #include "LinkedMem.h"
 
@@ -7,6 +11,8 @@
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 #endif
+
+#include "MemoryLeakCheck.h"
 
 //! QString::ToStdWString() doesn't work with Visual Studio 2008
 std::wstring QStringToStdWString(QString &s)

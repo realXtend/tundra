@@ -1,7 +1,13 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "VoiceIndicator.h"
 #include "MumbleVoipModule.h"
 #include "PCMAudioFrame.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

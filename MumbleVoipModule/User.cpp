@@ -1,5 +1,10 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "User.h"
+#include "PCMAudioFrame.h"
 #include "MumbleVoipModule.h"
 #include "stdint.h"
 #include "MumbleDefines.h"
@@ -7,6 +12,8 @@
 #include <QTimer>
 
 #include <mumbleclient/user.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
@@ -17,13 +24,12 @@ namespace MumbleVoip
     User::~User()
     {
         foreach(PCMAudioFrame* audio, playback_queue_)
-        {
             SAFE_DELETE(audio);
-        }
+
         playback_queue_.clear();
     }
 
-    QString User::Name()
+    QString User::Name() const
     {
         return QString(user_.name.c_str());
     }
@@ -33,27 +39,27 @@ namespace MumbleVoip
     //    return QString(user_.hash.c_str());
     //}
     
-    int User::Session()
+    int User::Session() const
     {
         return user_.session;
     }
     
-    int User::Id()
+    int User::Id() const
     {
         return user_.user_id;
     }
     
-    Channel* User::Channel()
+    Channel* User::Channel() const
     {
         return 0; // \todo: implement
     }
     
-    QString User::Comment()
+    QString User::Comment() const
     {
         return QString(user_.comment.c_str());
     }
 
-    bool User::IsSpeaking()
+    bool User::IsSpeaking() const
     {
         return speaking_;
     }
@@ -83,12 +89,12 @@ namespace MumbleVoip
         position_ = position;
     }
 
-    Vector3df User::Position()
+    Vector3df User::Position() const
     {
         return position_;
     }
 
-    int User::PlaybackBufferAvailableMs()
+    int User::PlaybackBufferAvailableMs() const
     {
         return 1000 * playback_queue_.size() * SAMPLES_IN_FRAME / SAMPLE_RATE;
     }
