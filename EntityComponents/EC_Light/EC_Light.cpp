@@ -23,6 +23,7 @@ using namespace OgreRenderer;
 EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     light_(0),
+    attached_(false),
     typeAttr_(this, "light type", LT_Point),
     directionAttr_(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
     diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
@@ -64,6 +65,12 @@ EC_Light::~EC_Light()
 
 void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)
 {
+    if (dynamic_cast<EC_OgrePlaceable*>(placeable.get()) == 0)
+    {
+        LogError("Attempted to set a placeable which is not a placeable");
+        return;
+    }
+    
     if (placeable_ == placeable)
         return;
     
