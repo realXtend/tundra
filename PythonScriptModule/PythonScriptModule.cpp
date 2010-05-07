@@ -1191,6 +1191,25 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 }*/
 
+PyObject* RemoveEntity(PyObject *self, PyObject *value)
+{
+    int ent_id;
+    if(!PyArg_ParseTuple(value, "i", &ent_id))
+    {
+        PyErr_SetString(PyExc_ValueError, "id must be int"); //XXX change the exception
+        return NULL;
+    }
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    Scene::ScenePtr scene = owner->GetScene();
+    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
+        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in RemoveEntity.");
+        return NULL;   
+    }
+    scene->RemoveEntity(ent_id);
+    //PyErr_SetString(PyExc_ValueError, "no error.");
+    Py_RETURN_NONE;
+}
+
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
@@ -1827,6 +1846,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
+
+    {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
+    "Creates a new entity with the given ID, and returns it."},
 
     {"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},

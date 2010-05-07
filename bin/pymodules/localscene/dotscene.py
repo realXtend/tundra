@@ -152,6 +152,18 @@ class DotScene:
                 except IndexError:
                     pass
                 
+                # Add id & entity data
+                #try:
+                newNode.id = node.getAttribute('id')
+                newNode.entityNode = self.findNodes(node, 'entity')[0]
+                #entity = self.findNodes(node, 'entity')
+                newNode.entityName = newNode.entityNode.getAttribute("name")
+                newNode.entityMeshFile = newNode.entityNode.getAttribute("meshFile")
+                newNode.entityStatic = newNode.entityNode.getAttribute("static")
+                #except err:
+                #    print "parsing id or mesh data failed", err
+                #    pass
+                
                 # attach it to the scene
                 #try:
                 if attachMe is not None:
