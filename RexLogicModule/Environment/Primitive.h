@@ -65,9 +65,11 @@ namespace RexLogic
         typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
+        ///\todo Move to WorldStream?
         void SendRexPrimData(entity_id_t entityid);
 
         // Send RexFreeData of a prim entity (if exists) to server
+        ///\todo Move to WorldStream?
         void SendRexFreeData(entity_id_t entityid);
 
         // Start listening to Scene's EC notification signals

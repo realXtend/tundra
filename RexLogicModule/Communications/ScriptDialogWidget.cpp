@@ -1,12 +1,15 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   ScriptDialogWidget.cpp
  *  @brief  Dialog Widget started by llDialog script command at server.
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "Communications/ScriptDialogWidget.h"
+
 #include <QFile>
 #include <QUiLoader>
 #include <QPushButton>
@@ -16,10 +19,12 @@
 #include <QTableWidget>
 #include <QGridLayout>
 
+#include "MemoryLeakCheck.h"
+
 namespace RexLogic
 {
-    SelectionButton::SelectionButton(QWidget *parent, const char *name , QString id ):
-        QPushButton(name, parent),  id_(id)
+    SelectionButton::SelectionButton(QWidget *parent, const char *name , QString id):
+        QPushButton(name, parent), id_(id)
     {
         connect(this, SIGNAL(clicked()), this, SLOT(OnClicked()) );
     }
@@ -29,7 +34,7 @@ namespace RexLogic
         emit Clicked(id_);
     }
 
-    ScriptDialogWidget::ScriptDialogWidget(ScriptDialogRequest &request, Foundation::Framework *framework, QWidget *parent) :
+    ScriptDialogWidget::ScriptDialogWidget(ScriptDialogRequest &request, QWidget *parent) :
         QWidget(parent), request_(request)
     {
         InitWindow(request_);

@@ -1194,9 +1194,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 PyObject* CreateEntity(PyObject *self, PyObject *value)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    ///\todo Remove RexLogicModule dependency by getting the world stream from the WORLDSTREAM_READY event
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
     std::string meshname;
     const char* c_text;
@@ -1232,11 +1229,11 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-    if (prio != 0)
-        ogrepos.SetSelectPriority(prio);
-    OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-    ogremesh.SetPlaceable(placeable);
-    ogremesh.SetMesh(meshname, true);
+        if (prio != 0)
+            ogrepos.SetSelectPriority(prio);
+        OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+        ogremesh.SetPlaceable(placeable);
+        ogremesh.SetMesh(meshname, true);
     
         return owner->entity_create(ent_id); //return the py wrapper for the new entity
     }

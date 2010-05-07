@@ -1,36 +1,35 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file Terrain.cpp
-/// @brief Manages Terrain-related Rex logic.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Terrain.cpp
+ *  @brief  Manages terrain-related logic.
+ */
 
 #include "StableHeaders.h"
 
-// Ogre renderer -specific.
-#include <OgreManualObject.h>
-#include <OgreSceneManager.h>
-#include <OgreMaterialManager.h>
-#include <OgreTextureManager.h>
-#include <OgreIteratorWrappers.h>
-#include <OgreTechnique.h>
+#include "Terrain.h"
+#include "TerrainDecoder.h"
+#include "EnvironmentModule.h"
 
 #include "EC_OgrePlaceable.h"
 #include "Renderer.h"
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 #include "OgreConversionUtils.h"
-
 #include "BitStream.h"
-#include "TerrainDecoder.h"
-#include "EnvironmentModule.h"
-#include "Terrain.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
 #include "ServiceManager.h"
 #include "RexTypes.h"
 #include "NetworkMessages/NetInMessage.h"
-
 #include "Entity.h"
 
+#include <OgreManualObject.h>
+#include <OgreSceneManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreIteratorWrappers.h>
+#include <OgreTechnique.h>
 #include <OgreMesh.h>
 #include <OgreEntity.h>
 
@@ -148,7 +147,7 @@ namespace Environment
     /// patch if the associated Ogre resources already exist.
     void Terrain::GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -279,7 +278,7 @@ namespace Environment
 
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
         {
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
@@ -395,17 +394,15 @@ namespace Environment
 
     void Terrain::RequestTerrainTextures()
     {
-        boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
-
-        for(int i = 0; i < num_terrain_textures; ++i)
-            terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i], OgreRenderer::OgreTextureResource::GetTypeStatic());
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (renderer)
+            for(int i = 0; i < num_terrain_textures; ++i)
+                terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i], OgreRenderer::OgreTextureResource::GetTypeStatic());
     }
 
     void Terrain::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     {
         assert(tex);
-
         for(int i = 0; i < num_terrain_textures; ++i)
         {
             if (tex->tag_ == terrain_texture_requests_[i])
@@ -421,9 +418,10 @@ namespace Environment
 
     const RexTypes::RexAssetID &Terrain::GetTerrainTextureID(int index) const
     {
-        if(index < 0) index = 0;
-        if(index > num_terrain_textures) index = num_terrain_textures;
-
+        if (index < 0)
+            index = 0;
+        if (index > num_terrain_textures)
+            index = num_terrain_textures;
         return terrain_textures_[index];
     }
 
@@ -585,23 +583,17 @@ namespace Environment
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        //RexLogic::RexLogicModule *rexLogic = dynamic_cast<RexLogic::RexLogicModule *>(owner_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-        //assert(rexLogic);
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();//GetFramework()->GetDefaultWorldScene();//rexLogic->GetCurrentActiveScene();
-
-        for(Scene::SceneManager::iterator iter = scene->begin();
-            iter != scene->end(); ++iter)
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
             Scene::Entity &entity = **iter;
             EC_Terrain *terrainComponent = entity.GetComponent<EC_Terrain>().get();
             if (terrainComponent)
-            {
                 cachedTerrainEntity_ = scene->GetEntity(entity.GetId());
-            }
         }
     }
 
-    Scene::EntityWeakPtr Terrain::GetTerrainEntity()
+    Scene::EntityWeakPtr Terrain::GetTerrainEntity() const
     {
         return cachedTerrainEntity_;
     }
