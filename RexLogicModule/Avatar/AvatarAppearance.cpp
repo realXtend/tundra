@@ -1100,7 +1100,7 @@ namespace RexLogic
             return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
         // In inventory mode, we first have no option but to j2k-decode everything (no general image asset)
         else
-            return OgreRenderer::OgreTextureResource::GetTypeStatic();        
+            return OgreRenderer::OgreTextureResource::GetTypeStatic();
     }
     
     void AvatarAppearance::FixupResources(Scene::EntityPtr entity)
@@ -1128,15 +1128,19 @@ namespace RexLogic
             Ogre::MeshPtr ogremesh = OgreRenderer::GetLocalMesh(mesh.name_);
             if (!ogremesh.isNull())
             {
-                materials.clear();
                 skeleton = AvatarAsset();
                 skeleton.name_ = ogremesh->getSkeletonName();
-                for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                
+                // Interrogate materials only if not known yet
+                if (!materials.size())
                 {
-                    Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
-                    AvatarMaterial attach_newmat;
-                    attach_newmat.asset_.name_ = submesh->getMaterialName();
-                    materials.push_back(attach_newmat);
+                    for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                    {
+                        Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
+                        AvatarMaterial attach_newmat;
+                        attach_newmat.asset_.name_ = submesh->getMaterialName();
+                        materials.push_back(attach_newmat);
+                    }
                 }
             }
         }
@@ -1850,7 +1854,7 @@ namespace RexLogic
         std::string dirname = path.branch_path().string();
         
         if (!entity)
-            return false;                             
+            return false;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return false;
