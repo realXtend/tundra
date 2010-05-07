@@ -31,40 +31,39 @@ namespace MumbleVoip
         virtual ~User();
 
         //! \return name of user
-        virtual QString Name();
+        virtual QString Name() const;
 
         //! \return textual comment about user
-        virtual QString Comment();
+        virtual QString Comment() const;
 
 //        virtual QString Hash(); // ???
 
         //! \return session id of the user
-        virtual int Session();
+        virtual int Session() const;
 
         //! \return id of the user
-        virtual int Id();
+        virtual int Id() const;
 
         //! \return channel of where user is
-        virtual Channel* Channel();
+        virtual Channel* Channel() const;
 
         //! \return true is user is speaking
-        virtual bool IsSpeaking();
+        virtual bool IsSpeaking() const;
 
         //! \return true if the position of the user is known return false if not
-        virtual bool PositionKnown() {return position_known_;}
+        virtual bool PositionKnown()  const { return position_known_;}
 
         //! \return position od the user
-        virtual Vector3df Position();
+        virtual Vector3df Position() const;
 
         //! \return length of playback buffer is ms for this user 
-        virtual int PlaybackBufferAvailableMs();
+        virtual int PlaybackBufferAvailableMs() const;
 
         //! \return oldest audio frame available for playback 
         //! \note caller must delete audio frame object after usage
         virtual PCMAudioFrame* GetAudioFrame();
 
     public slots:
-
         //! Put audio frame to end of playback buffer 
         //! If playback buffer is full then delete the frame
         //! \param frame Audio frame received from network

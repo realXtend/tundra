@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ConnectionManager.h"
 #include "MumbleVoipModule.h"
 #include <QDesktopServices>
@@ -14,6 +18,8 @@
 #include "PCMAudioFrame.h"
 #include "User.h"
 #include "VoiceIndicator.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "LibMumbleThread.h"
 #include "MumbleVoipModule.h"
 
@@ -6,6 +10,8 @@
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

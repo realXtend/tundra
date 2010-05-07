@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ServerObserver.h"
 
 #include "ModuleLoggingFunctions.h"
@@ -8,6 +12,8 @@
 #include "WorldStream.h"
 #include "MumbleVoipModule.h"
 #include "EventManager.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
