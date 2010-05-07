@@ -62,6 +62,7 @@ class LocalSceneWindow(ToolBarWindow):
         self.btnLoad = self.gui.findChild("QPushButton", "pushButtonLoad")
         self.btnUnload = self.gui.findChild("QPushButton", "pushButtonUnload")
         self.btnPublish = self.gui.findChild("QPushButton", "pushButtonPublish")
+        self.btnSave = self.gui.findChild("QPushButton", "pushButtonSave")
         
         self.chkBoxFlipZY = self.gui.findChild("QCheckBox", "checkBoxFlipZY")
         self.checkBoxHighlight = self.gui.findChild("QCheckBox", "checkBoxHighlight")
@@ -70,6 +71,7 @@ class LocalSceneWindow(ToolBarWindow):
         self.btnLoad.connect("clicked(bool)", self.btnLoadClicked)
         self.btnUnload.connect("clicked(bool)", self.btnUnloadClicked)
         self.btnPublish.connect("clicked(bool)", self.btnPublishClicked)
+        self.btnSave.connect("clicked(bool)", self.btnSaveClicked)
         
         self.xpos.connect("valueChanged(double)", self.spinBoxXPosValueChanged)
         self.ypos.connect("valueChanged(double)", self.spinBoxYPosValueChanged)
@@ -84,6 +86,7 @@ class LocalSceneWindow(ToolBarWindow):
         self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
         
         self.sizeLock = False
+        self.filename = ""
         
         pass
         
@@ -105,8 +108,8 @@ class LocalSceneWindow(ToolBarWindow):
         return button
 
     def btnLoadClicked(self, args):
-        filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
-        self.controller.loadScene(filename)
+        self.filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
+        self.controller.loadScene(self.filename)
 
     def btnUnloadClicked(self, args):
         print "unload clicked"
@@ -114,6 +117,10 @@ class LocalSceneWindow(ToolBarWindow):
         
     def btnPublishClicked(self, args):
         print "publish clicked"
+        
+    def btnSaveClicked(self, args):
+        #self.filename = QFileDialog.getSaveFileName(self.widget, "FileDialog")
+        self.controller.saveScene(self.filename)
         
     def spinBoxXPosValueChanged(self, double):
         self.controller.setxpos(double)
