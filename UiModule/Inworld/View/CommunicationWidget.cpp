@@ -527,13 +527,8 @@ namespace CoreUi
                 //if (im_ui_proxy_widget_)
                 //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
-
         }
-
-
-
         UpdateInWorldVoiceIndicator();
-        ShowVoiceControls();
     }
 
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
@@ -546,6 +541,7 @@ namespace CoreUi
             HideVoiceControls();
             return;
         }
+        ShowVoiceControls();
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
         {

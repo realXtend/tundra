@@ -115,6 +115,7 @@ namespace MumbleVoip
         {
             state_ = STATE_ERROR;
             reason_ = QString(e.what());
+            return;
         }
         state_ = STATE_OPEN;
     }

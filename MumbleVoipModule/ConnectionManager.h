@@ -35,8 +35,13 @@ namespace MumbleVoip
      * 
      *  Sends audio data to mumble servers recorded by audioModule.
      *
+     *  <future>
      *  Future implementation uses integrated mumble client and allow multiple
      *  simultaneous connections to mumble servers.
+     *  - OpenConnection(info)
+     *  - CloseConnection(info)
+     *  - Info: server, channel, user_id, password, listen_only
+     *  </future>
      */
     class ConnectionManager : public QObject
     {

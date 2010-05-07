@@ -78,8 +78,8 @@ namespace MumbleVoip
             connection->Close();
             connections_.remove(info.server);
             SAFE_DELETE(connection);
-            //StopMumbleLibrary(); // Is this needed
         }
+        //! @todo check this
         state_ = STATE_NO_CONNECTIONS;
     }
 
@@ -145,10 +145,6 @@ namespace MumbleVoip
 
     void ConnectionManager::MumbleThreadFinished()
     {
-        if (!lib_mumble_thread_)
-            return;
-
-        //! \todo If there was a problem then start mainloop again if
     }
 
     void ConnectionManager::PlaybackAudio(Connection* connection)
