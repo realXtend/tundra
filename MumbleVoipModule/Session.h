@@ -66,6 +66,7 @@ namespace MumbleVoip
             ConnectionManager* connection_manager_;  // In future session could have multiple connections
             double speaker_voice_activity_;
             const ServerInfo &server_info_;
+            User* self_user_;
 
         private slots:
             void UpdateParticipantList(User*);

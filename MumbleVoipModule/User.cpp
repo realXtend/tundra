@@ -10,19 +10,20 @@
 #include "MumbleDefines.h"
 #include "PCMAudioFrame.h"
 #include <QTimer>
-
+#include "Channel.h"
 #include <mumbleclient/user.h>
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
-    User::User(const MumbleClient::User& user)
+    User::User(const MumbleClient::User& user, MumbleVoip::Channel* channel)
         : user_(user),
           speaking_(false),
           position_known_(false),
           position_(0,0,0),
-          left_(false)
+          left_(false),
+          channel_(channel)
     {
     }
 
@@ -69,23 +70,34 @@ namespace MumbleVoip
         return speaking_;
     }
 
-    void User::OnAudioFrameReceived(PCMAudioFrame* frame)
+    void User::AddToPlaybackBuffer(PCMAudioFrame* frame)
     {
-        if (PlaybackBufferAvailableMs() < PLAYBACK_BUFFER_MS_)
-            playback_queue_.push_back(frame);
+        if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
+        {
+            foreach(PCMAudioFrame* frame, playback_queue_)
+            {
+                delete frame;
+            }
+            playback_queue_.clear();
+        }
+
+        playback_queue_.push_back(frame);
 
         if (!speaking_)
+        {
+            speaking_ = true;
             emit StartSpeaking();
-        speaking_ = true;
-
-        QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()));
+            QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()));
+        }
     }
 
     void User::OnSpeakingTimeout()
     {
         if (speaking_)
+        {
+            speaking_ = false;
             emit StopSpeaking();
-        speaking_ = false;
+        }
     }
 
     void User::UpdatePosition(Vector3df position)
@@ -101,7 +113,7 @@ namespace MumbleVoip
         return position_;
     }
 
-    int User::PlaybackBufferAvailableMs() const
+    int User::PlaybackBufferLengthMs() const
     {
         return 1000 * playback_queue_.size() * SAMPLES_IN_FRAME / SAMPLE_RATE;
     }

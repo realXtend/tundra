@@ -16,23 +16,37 @@
 
 namespace MumbleVoip
 {
-    Channel::Channel(const MumbleClient::Channel& c) : channel_(c)
+    Channel::Channel(const MumbleClient::Channel* channel) : channel_(channel)
+//    Channel::Channel(const MumbleClient::Channel& c) : channel_(c)
     {
     }
 
-    QString Channel::Name()
+    QString Channel::Name() const
     {
-        return QString(channel_.name.c_str());
+        return QString(channel_->name.c_str());
+    }
+    
+    QString Channel::FullName() const
+    {
+        QString full_name = Name();
+        boost::shared_ptr<MumbleClient::Channel> c = channel_->parent.lock();
+        while (c)
+        {
+            full_name.append("/");
+            full_name.append(c->name.c_str());
+            c = c->parent.lock();
+        }
+        return full_name;
     }
 
-    int Channel::Id()
+    int Channel::Id() const
     {
-        return channel_.id;
+        return channel_->id;
     }
 
-    QString Channel::Description()
+    QString Channel::Description() const
     {
-        return QString(channel_.description.c_str());
+        return QString(channel_->description.c_str());
     }
 
 } // namespace MumbleVoip

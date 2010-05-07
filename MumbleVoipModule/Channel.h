@@ -3,6 +3,8 @@
 #ifndef incl_MumbleVoipModule_Channel_h
 #define incl_MumbleVoipModule_Channel_h
 
+//#include <mumbleclient/channel.h>
+
 namespace MumbleClient
 {
     class Channel;
@@ -12,17 +14,29 @@ namespace MumbleVoip
 {
     //! Channel on Mumble server
     //!
-    //! \todo Add signals: UserJoined, UserLeft
-    //! \todo Add Users() method
+    //! @todo Add signals: UserJoined, UserLeft ???
+    //! @todo Add Users() method ???
     class Channel
     {
     public:
-        Channel(const MumbleClient::Channel& c);
-        QString Name();
-        int Id();
-        QString Description();
+        //! Default constructor
+        //! @param channel mumbleclient library Channel object 
+        Channel(const MumbleClient::Channel* channel);
+
+        //! @return name of the channel
+        QString Name() const;
+
+        //! @return full recursive name of the channel. e.g. "Root/parent/channel"
+        QString FullName() const;
+
+        //! @return id of the channel
+        int Id() const;
+
+        //! @return description for the channel
+        QString Description() const;
+
     private:
-        const MumbleClient::Channel& channel_;
+        const MumbleClient::Channel* channel_;
     };
 
 }// namespace MumbleVoip
