@@ -1,4 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ECAttributeEditor.h"
 #include "AttributeInterface.h"
 
@@ -8,6 +12,8 @@
 #include <QtBoolPropertyManager>
 #include <QtCheckBoxFactory>
 #include <QtProperty>
+
+#include "MemoryLeakCheck.h"
 
 namespace ECEditor
 {
@@ -264,5 +270,34 @@ namespace ECEditor
                 SetValue(newValue);
             }
         }
+    }
+
+    template<> void ECAttributeEditor<std::string>::InitializeEditor()
+    {
+        QtVariantPropertyManager *qStringPropertyManager = new QtVariantPropertyManager();
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
+        propertyMgr_ = qStringPropertyManager;
+        factory_ = variantFactory;
+        property_ = qStringPropertyManager->addProperty(QVariant::String, attributeName_);
+        if(property_)
+        {
+            UpdateEditorValue();
+            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+        }
+        owner_->setFactoryForManager(qStringPropertyManager, variantFactory);
+        owner_->addProperty(property_);
+    }
+
+    template<> void ECAttributeEditor<std::string>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *qStringPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if (property_ && attribute_)
+            qStringPropertyManager->setValue(property_, attribute_->Get().c_str());
+    }
+
+    template<> virtual void ECAttributeEditor<std::string>::SendNewValueToAttribute(QtProperty *property)
+    {
+        if (listenEditorChangedSignal_)
+            SetValue(property->valueText().toStdString());
     }
 }

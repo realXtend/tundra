@@ -1,4 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "AttributeBrowser.h"
 #include "AttributeInterface.h"
 #include "ECAttributeEditor.h"
@@ -6,6 +9,8 @@
 #include <QtAbstractEditorFactoryBase>
 #include <QtTreePropertyBrowser>
 #include <QLayout>
+
+#include "MemoryLeakCheck.h"
 
 namespace ECEditor
 {
@@ -110,6 +115,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, &attribute, this);
         else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), propertyBrowser_, &attribute, this);
+        else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), propertyBrowser_, &attribute, this);
 
         if(attributeEditor)
             QObject::connect(attributeEditor, SIGNAL(AttributeChanged()), this, SIGNAL(AttributesChanged()));

@@ -32,24 +32,25 @@ namespace ECEditor
 
         //! Get attribute name.
         //! @return attribute type name.
-        QString GetAttributeName() {return attributeName_;}
+        QString GetAttributeName() const { return attributeName_; }
 
         //! Get editor's root property.
         //! @return editor's root property pointer.
-        QtProperty *GetProperty() {return property_;}
+        QtProperty *GetProperty() const { return property_; }
 
         //! Get property manager ptr.
         //! @return property manager pointer.
-        QtAbstractPropertyManager *GetPropertyManager() {return propertyMgr_;}
+        QtAbstractPropertyManager *GetPropertyManager()  const { return propertyMgr_; }
 
         //! Get new attribute values and update them in browser window.
         virtual void UpdateEditorValue() = 0;
+
     public slots:
         //! Listens if any of component's attributes has changed.
-        void AttributeValueChanged() {UpdateEditorValue();}
+        void AttributeValueChanged() { UpdateEditorValue(); }
         
         //! Listens if any of editor's values has been changed and changed and component's attributes need to be updated.
-        void SendNewAttributeValue(QtProperty *property){SendNewValueToAttribute(property);}
+        void SendNewAttributeValue(QtProperty *property) { SendNewValueToAttribute(property); }
 
     signals:
         //! Signals when attribute values has been updated. This is used to inform the editor window
@@ -97,20 +98,20 @@ namespace ECEditor
 
         //! Send a new value to each component and emit AttributeChanged signal.
         //! @param value_ new value that is sended to component's attribute.
-        void SetValue(T value_)
+        void SetValue(T value)
         {
             if(attribute_)
             {
                 if(attribute_->GetOwner()->IsSerializable())
                 {
-                    attribute_->Set(value_, Foundation::Local);
+                    attribute_->Set(value, Foundation::Local);
                     listenEditorChangedSignal_ = false;
                     attribute_->GetOwner()->ComponentChanged(Foundation::Local);
                     listenEditorChangedSignal_ = true;
                 }
                 else
                 {
-                    attribute_->Set(value_, Foundation::LocalOnly);
+                    attribute_->Set(value, Foundation::LocalOnly);
                     listenEditorChangedSignal_ = false;
                     attribute_->GetOwner()->ComponentChanged(Foundation::LocalOnly);
                     listenEditorChangedSignal_ = true;
