@@ -12,6 +12,9 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QTime>
+#include <QRect>
+#include <QImage>
 
 namespace Foundation
 {
@@ -298,12 +301,17 @@ namespace OgreRenderer
         //! handler for post-processing effects
         CompositionHandler c_handler_;
 
-        //! last window size used in rendering ui
-        int last_width_;
+        //! last width/height
         int last_height_;
+        int last_width_;
 
         //! resized dirty count
         int resized_dirty_;
+
+        //! For render function
+        QImage ui_buffer_;
+        QRect last_view_rect_;
+        QTime ui_update_timer_;
     };
 }
 
