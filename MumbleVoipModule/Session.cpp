@@ -32,6 +32,12 @@ namespace MumbleVoip
             server_info_(server_info)
         {
             connection_manager_->OpenConnection(server_info);
+            if (connection_manager_->GetState() != ConnectionManager::STATE_CONNECTION_OPEN)
+            {
+                state_ = STATE_ERROR;
+                reason_ = connection_manager_->GetReason();
+                return;
+            }
             state_ = STATE_OPEN; // \todo get this information from connection_manager
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
