@@ -20,7 +20,13 @@ class OgreNode:
         self.scale = None
         self.object = None
         self.naali_ent = None
-
+    
+        self.id = None
+        self.entityNode = None
+        self.entityName = None
+        self.entityMeshFile = None
+        self.entityStatic = None
+        
     def createChildSceneNode(self):
         return OgreNode()
 
@@ -125,5 +131,17 @@ def load_dotscene(fname):
     ds = dotscene.DotScene(fname, sm)
     return ds, ds.dotscenemanager
 
+def unload_dotscene(ds):
+    for k, oNode in ds.dotscenemanager.nodes.iteritems():
+        # print "removing " + k
+        # print oNode.naali_ent.id
+        try:
+            rexviewer.removeEntity(oNode.naali_ent.id)
+        except:
+            print "failed in unload_dotscene"
+
+    
 if __name__ == '__main__':
     load_dotscene("test.scene")
+
+    

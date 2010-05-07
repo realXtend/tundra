@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
+    <width>360</width>
     <height>174</height>
    </rect>
   </property>
@@ -18,25 +18,25 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>330</width>
+    <width>360</width>
     <height>174</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>330</width>
+    <width>360</width>
     <height>174</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>22</y>
-     <width>241</width>
+     <x>10</x>
+     <y>20</y>
+     <width>331</width>
      <height>110</height>
     </rect>
    </property>
@@ -144,7 +144,7 @@
            <double>256.000000000000000</double>
           </property>
           <property name="singleStep">
-           <double>0.500000000000000</double>
+           <double>0.250000000000000</double>
           </property>
           <property name="value">
            <double>1.000000000000000</double>
@@ -158,6 +158,9 @@
           </property>
           <property name="maximum">
            <double>256.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.250000000000000</double>
           </property>
           <property name="value">
            <double>1.000000000000000</double>
@@ -173,7 +176,7 @@
            <double>10000.000000000000000</double>
           </property>
           <property name="singleStep">
-           <double>0.500000000000000</double>
+           <double>0.250000000000000</double>
           </property>
           <property name="value">
            <double>1.000000000000000</double>
@@ -215,7 +218,7 @@
       <item>
        <widget class="QCheckBox" name="checkBoxLockScale">
         <property name="text">
-         <string>&amp;Lock scale</string>
+         <string>L&amp;ock scale</string>
         </property>
        </widget>
       </item>
@@ -223,10 +226,20 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QPushButton" name="pushButtonLoad">
         <property name="text">
          <string>&amp;Load</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonSave">
+        <property name="text">
+         <string>&amp;Save</string>
         </property>
        </widget>
       </item>
@@ -248,10 +261,6 @@
     </item>
    </layout>
   </widget>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>checkBoxHighlight</zorder>
-  <zorder>zscale</zorder>
  </widget>
  <resources/>
  <connections/>
