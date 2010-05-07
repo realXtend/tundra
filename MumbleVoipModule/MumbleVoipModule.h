@@ -6,20 +6,20 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "MumbleVoipModuleApi.h"
-#include "Core.h"
-#include <QObject>
-#include "ServerInfo.h"
+#include "Vector3d.h"
 
+#include <QObject>
 
 namespace MumbleVoip
 {
     class LinkPlugin;
     class ServerObserver;
     class ConnectionManager;
+    class ServerInfo;
 
     /**
-	 *  Mumble support for Naali viewer.
-	 *
+     *  Mumble support for Naali viewer.
+     *
      *  Offer console commands:
      *    'mumble link(avatar_id, context_id)'
      *    'mumble unlink'
@@ -57,8 +57,8 @@ namespace MumbleVoip
         MODULE_LOGGING_FUNCTIONS
         static const std::string &NameStatic() { return module_name_; } //! returns name of this module. Needed for logging.
 
-	protected:
-		static std::string module_name_;
+    protected:
+        static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
         virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
@@ -71,9 +71,7 @@ namespace MumbleVoip
         virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
         virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
 
-		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Unknown;
     private:
-
         LinkPlugin* link_plugin_;
         ServerObserver* server_observer_;
         ConnectionManager* connection_manager_;
@@ -88,7 +86,7 @@ namespace MumbleVoip
         event_category_id_t event_category_framework_;
 
     private slots:
-        void OnMumbleServerInfoReceived(ServerInfo info);
+        void OnMumbleServerInfoReceived(const ServerInfo &info);
         void StartLinkPlugin();
     };
 

@@ -5,20 +5,20 @@
 
 #include "ServerObserver.h"
 
-#include "ModuleLoggingFunctions.h"
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
 #include "WorldStream.h"
 #include "MumbleVoipModule.h"
 #include "EventManager.h"
+
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
 
-    ServerObserver::ServerObserver(Foundation::Framework* framework) : 
+    ServerObserver::ServerObserver(Foundation::Framework* framework) :
         framework_event_category_(0),
         framework_(framework),
         server_info_request_manager_(new QNetworkAccessManager())
@@ -68,7 +68,7 @@ namespace MumbleVoip
         return false;
     }
 
-    void ServerObserver::RequestMumbleServerInfo(QString grid_url, QString agent_id)
+    void ServerObserver::RequestMumbleServerInfo(const QString &grid_url, const QString &agent_id)
     {
         QString path = "mumble_server_info";
         QUrl url(grid_url);

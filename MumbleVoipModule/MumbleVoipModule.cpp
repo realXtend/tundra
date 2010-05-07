@@ -7,15 +7,14 @@
 #include "LinkPlugin.h"
 #include "ServerObserver.h"
 #include "ConnectionManager.h"
+#include "ServerInfo.h"
 
-#include "RexLogicModule.h"
 #include "ModuleManager.h"
-#include "Avatar/Avatar.h"
 #include "EC_OgrePlaceable.h"
-#include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #include "WorldLogicInterface.h"
+#include "Entity.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -49,7 +48,7 @@ namespace MumbleVoip
         connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
         server_observer_ = new ServerObserver(framework_);
-        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
+        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(const ServerInfo &)) );
     }
 
     void MumbleVoipModule::Unload()
@@ -79,8 +78,7 @@ namespace MumbleVoip
         
         if (connection_manager_)
         {
-            Vector3df position;
-            Vector3df direction;
+            Vector3df position, direction;
             if (GetAvatarPosition(position, direction))
                 connection_manager_->SetAudioSourcePosition(position);
             connection_manager_->Update(frametime);
@@ -94,7 +92,8 @@ namespace MumbleVoip
 
         if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
         {
-            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
+            Foundation::ProgramOptionsEvent *po_event = checked_static_cast<Foundation::ProgramOptionsEvent*>(data);
+            assert(po_event);
             for(int count = 0; count < po_event->argc; ++count )
             {
                 QString arg = QString(po_event->argv[count]);
@@ -116,45 +115,28 @@ namespace MumbleVoip
             return;
         time_from_last_update_ms_ = 0;
 
-        Vector3df top_vector = Vector3df::UNIT_Z;
-        Vector3df position;
-        Vector3df direction;
+        Vector3df top_vector = Vector3df::UNIT_Z, position, direction;
         if (GetAvatarPosition(position, direction))
-        {
             link_plugin_->SetAvatarPosition(position, direction, top_vector);
-        }
 
         if (use_camera_position_)
-        {
             if (GetCameraPosition(position, direction))
                 link_plugin_->SetCameraPosition(position, direction, top_vector);
-        }
         else
-        {
             if (GetAvatarPosition(position, direction))
                 link_plugin_->SetCameraPosition(position, direction, top_vector);
-        }
 
         link_plugin_->SendData();
     }
 
     bool MumbleVoipModule::GetAvatarPosition(Vector3df& position, Vector3df& direction)
     {
-        ///\todo Remove RexLogicModule dependency!
-        /// Iterate scene entities and get EC_OpenSimPresence. If EC_OpenSimPresence exists and it agentId
-        /// matches with worlstream->GetInfo().agentId it's our user's entity.
-        /// You could also save weak pointer of the avatar entity so that you don't have to
-        /// retrieve it again every time at the update.
-        RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(
-            framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-        if (!rex_logic_module)
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        if (!worldLogic)
             return false;
 
-        RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
-        if (!avatar)
-            return false;
-
-        Scene::EntityPtr entity = avatar->GetUserAvatar();
+        Scene::EntityPtr entity = worldLogic->GetUserAvatarEntity();
         if (!entity)
             return false;
 
@@ -192,22 +174,18 @@ namespace MumbleVoip
 
     void MumbleVoipModule::InitializeConsoleCommands()
     {
-        boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
-        if (console_service)
-        {
-            console_service->RegisterCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
-                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
-                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
-                Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
-                Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-            console_service->RegisterCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
-                Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
-        }
+        RegisterConsoleCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
+            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
+        RegisterConsoleCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
+            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
+        RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
+            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+        RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
+            Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
+        RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
+            Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
     }
-    
+
     Console::CommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
     {
         if (params.size() != 2)
@@ -270,7 +248,7 @@ namespace MumbleVoip
         }
     }
 
-    void MumbleVoipModule::OnMumbleServerInfoReceived(ServerInfo info)
+    void MumbleVoipModule::OnMumbleServerInfoReceived(const ServerInfo &info)
     {
         QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
         murmur_url.setUserName(info.user_name);
@@ -352,5 +330,5 @@ void SetProfiler(Foundation::Profiler *profiler)
 using namespace MumbleVoip;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-POCO_EXPORT_CLASS(MumbleVoipModule)
+    POCO_EXPORT_CLASS(MumbleVoipModule)
 POCO_END_MANIFEST

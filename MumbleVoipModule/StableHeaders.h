@@ -14,7 +14,6 @@
 
 #include "Framework.h"
 
-// @todo: Check these
 #include <QtCore>
 #include <QtGui>
 

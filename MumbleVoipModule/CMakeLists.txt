@@ -63,23 +63,23 @@ add_definitions (-DMUMBLE_VOIP_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
-use_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
+use_package (CURL)   # NEEDED BY ProtocolUtilities
+use_package (XMLRPC) # NEEDED BY ProtocolUtilities
 use_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
 use_package (OPENSSL) # NEEDED BY MUMBLECLIENT
 use_package (MUMBLECLIENT)
 use_package (CELT)
 
-use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
-link_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
-link_modules (Core Foundation Interfaces RexCommon RexLogicModule ProtocolUtilities OgreRenderingModule SceneManager)
+link_package (CURL)   # NEEDED BY ProtocolUtilities
+link_package (XMLRPC) # NEEDED BY ProtocolUtilities
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager)
 link_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
 link_package (OPENSSL) # NEEDED BY MUMBLECLIENT
 link_package (MUMBLECLIENT)
