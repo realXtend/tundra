@@ -41,11 +41,15 @@ namespace Foundation
             touch the Foundation.
 
             \note if you add new core module type, don't forget to add its name to NameFromType()
+            \note   DO NOT ADD ANYMORE NEW ENUMS FOR MODULES. USE STRINGS INSTEAD.
+                    THIS ENUM WILL BE DEPRECATED AT SOME POINT IN THE FUTURE.
 
             \ingroup Module_group
         */
 
         //! Module enumeration.
+        //! \note   DO NOT ADD ANYMORE NEW ENUMS FOR MODULES. USE STRINGS INSTEAD.
+        //!         THIS ENUM WILL BE DEPRECATED AT SOME POINT IN THE FUTURE.
         enum Type 
         {
             MT_Renderer = 0,
