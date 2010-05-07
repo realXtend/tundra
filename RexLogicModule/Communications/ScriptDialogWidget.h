@@ -1,22 +1,18 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   ScriptDialogWidget.cpp
  *  @brief  Dialog Widget started by llDialog script command at server.
  */
 
-#ifndef incl_RexLogic_ScriptDialogWidget_h
-#define incl_RexLogic_ScriptDialogWidget_h
-
-#include <QWidget>
-#include <QPushButton>
+#ifndef incl_RexLogicModule_ScriptDialogWidget_h
+#define incl_RexLogicModule_ScriptDialogWidget_h
 
 #include "ScriptDialogRequest.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+#include <QPushButton>
+
+class QWidget;
 
 namespace RexLogic
 {
@@ -58,8 +54,7 @@ namespace RexLogic
 
     public:
         /// Constructor.
-        /// @param framework Framework pointer.
-        ScriptDialogWidget(ScriptDialogRequest &request, Foundation::Framework *framework, QWidget *parent = 0);
+        ScriptDialogWidget(ScriptDialogRequest &request, QWidget *parent = 0);
 
         /// Destructor.
         virtual ~ScriptDialogWidget();

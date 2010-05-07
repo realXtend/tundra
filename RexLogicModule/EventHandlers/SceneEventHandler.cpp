@@ -92,12 +92,16 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
     {
         Events::RaycastEventData *event_data = checked_static_cast<Events::RaycastEventData *>(data);
         assert(event_data);
-        EntityPtr entity = owner_->GetEntity(event_data->localID);
-        if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
+        ScenePtr scene = owner_->GetCurrentActiveScene();
+        if (scene)
         {
-            boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
-            if (!touchable->IsVisible())
-                touchable->Show();
+            EntityPtr entity = scene->GetEntity(event_data->localID);
+            if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
+            {
+                boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
+                if (!touchable->IsVisible())
+                    touchable->Show();
+            }
         }
         break;
     }

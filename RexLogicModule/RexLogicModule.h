@@ -1,24 +1,27 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   RexLogicModule.h
+ *  @brief  The main client module of Naali.
+ *
+ *          @todo Longer description here.
+ */
 
-#ifndef incl_RexLogicModule_h
-#define incl_RexLogicModule_h
+#ifndef incl_RexLogicModule_RexLogicModule_h
+#define incl_RexLogicModule_RexLogicModule_h
 
 #include "ModuleInterface.h"
+#include "WorldLogicInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexLogicModuleApi.h"
-#include "ForwardDefines.h"
-#include "NetworkEvents.h"
 #include "Quaternion.h"
 
 #include <set>
-
-#include <boost/smart_ptr.hpp>
 #include <boost/function.hpp>
-
 #include <QObject>
-#include <QString>
 #include <QMap>
 
+class QString;
 class RexUUID;
 
 namespace OgreRenderer
@@ -67,34 +70,36 @@ namespace RexLogic
         CS_Free
     };
 
-    //! interface for modules
-    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl, public Foundation::WorldLogicInterface
     {
         Q_OBJECT
 
-    public slots:
-        void QSendRexPrimData(uint entityid);
-
     public:
+        //! Default constructor.
         RexLogicModule();
+
+        //! Destructor.
         virtual ~RexLogicModule();
 
+        //! ModuleInterfaceImpl overrides.
         virtual void Load();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         virtual void Update(f64 frametime);
-
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         MODULE_LOGGING_FUNCTIONS;
 
-        //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        //=============== WorldLogicInterface API ===============/
+        Scene::EntityPtr GetUserAvatarEntity() const;
+        Scene::EntityPtr GetCameraEntity() const;
+        Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const;
 
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
+        //=============== RexLogicModule API ===============/
 
+        //! Returns world stream pointer.
         WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
@@ -110,14 +115,11 @@ namespace RexLogic
         PrimitivePtr GetPrimitiveHandler() const;
 
         //! Returns the camera controllable
-        CameraControllablePtr GetCameraControllable()  const { return camera_controllable_; }
+        CameraControllablePtr GetCameraControllable() const { return camera_controllable_; }
 
         //! Returns the avatar controllable
-        AvatarControllablePtr GetAvatarControllable()  const { return avatar_controllable_; }
+        AvatarControllablePtr GetAvatarControllable() const { return avatar_controllable_; }
 
-        //! Return camera entity. Note: may be expired if scene got deleted and new scene not created yet
-        Scene::EntityWeakPtr GetCameraEntity() const { return camera_entity_; }
-        
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
@@ -132,12 +134,6 @@ namespace RexLogic
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
-
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        Scene::EntityPtr GetEntity(entity_id_t entityid) const;
-
-        //! Get a component with certain entity component in it
-        Scene::EntityPtr GetEntityWithComponent(entity_id_t entityid, const std::string &component) const;
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
@@ -156,55 +152,14 @@ namespace RexLogic
         //! Unregister uuid
         void UnregisterFullId(const RexUUID &fullid);
 
-        //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handle an inventory event.
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handle an asset event.
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handle real-time update of scene objects
-        /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
-            component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
-            call to this, so it should be avoided.
-
-            Performs animation update to all objects that have an OgreAnimationController component.
-         */
-        void UpdateObjects(f64 frametime);
-        
         //! handles assignment of object as a child of other object, if applicable
         void HandleObjectParent(entity_id_t entityid);
-        
+
         //! handles assignment of child objects, who were previously missing this object as a parent
         void HandleMissingParent(entity_id_t entityid);
 
-        //! login through console
-        Console::CommandResult ConsoleLogin(const StringVector &params);
-
-        //! logout through console
-        Console::CommandResult ConsoleLogout(const StringVector &params);
-
         //! login from py - temp while loginui misses dllexport
-        void StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort);
-
-        //! toggle fly mode through console
-        Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
-
-        //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
-        Console::CommandResult ConsoleHighlightTest(const StringVector &params);
-
-        //! logout from server and delete current scene
-        void LogoutAndDeleteWorld();
-
-        //! Update avatar overlays. Must be done after other object update
-        void UpdateAvatarOverlays();
-        
-        //! Update sound listener position
-        /*! Uses current camera for now
-         */
-        void UpdateSoundListener();
+        void StartLoginOpensim(QString &qfirstAndLast, QString &qpassword, QString &qserverAddressWithPort);
 
         //! XXX have linking probs to AvatarController so trying this wrapper
         //! \todo figure workarounds for these functions so that dependency to RexLogicModule
@@ -230,16 +185,48 @@ namespace RexLogic
         ///\todo Remove. Get this information from other modules using EC_OgreCamera.
         Real GetCameraFOV() const;
 
-        void SendRexPrimData(entity_id_t entityid);
-
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         void SetAllTextOverlaysVisible(bool visible);
 
         //! Handles a click event for entity, namely showing the name tag
         void EntityClicked(Scene::Entity* entity);
 
+    public slots:
+        //! logout from server and delete current scene
+        void LogoutAndDeleteWorld();
+
+        /// Sends RexPrimData of a prim entity to server
+        ///\todo Move to WorldStream?
+        void SendRexPrimData(uint entityid);
+
     private:
         Q_DISABLE_COPY(RexLogicModule);
+
+        //! Handle real-time update of scene objects
+        /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
+            component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
+            call to this, so it should be avoided.
+
+            Performs animation update to all objects that have an OgreAnimationController component.
+         */
+        void UpdateObjects(f64 frametime);
+
+        //! Update avatar overlays. Must be done after other object update
+        void UpdateAvatarOverlays();
+        
+        //! Update sound listener position
+        /*! Uses current camera for now
+         */
+        void UpdateSoundListener();
+
+        //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
+        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! Handle an inventory event.
+        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+
+        //! Handle an asset event.
+        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
@@ -252,6 +239,21 @@ namespace RexLogic
 
         /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;
+
+        //! login through console
+        Console::CommandResult ConsoleLogin(const StringVector &params);
+
+        //! logout through console
+        Console::CommandResult ConsoleLogout(const StringVector &params);
+
+        //! toggle fly mode through console
+        Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
+
+        //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
+        Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+
+        //! Type of the module.
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -317,9 +319,6 @@ namespace RexLogic
         //! once the parent prim appears, the children will be assigned the parent and the key will be removed from here.
         typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
         ObjectParentMap pending_parents_;
-
-        //! The connection state which is shown in the login window.
-        ProtocolUtilities::Connection::State connectionState_;
 
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;

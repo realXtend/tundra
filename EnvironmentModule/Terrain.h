@@ -1,12 +1,13 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Terrain.h
+ *  @brief  Manages terrain-related logic.
+ */
 
-/// @file Terrain.h
-/// @brief Manages Terrain-related Rex logic.
+#ifndef incl_EnvironmentModule_Terrain_h
+#define incl_EnvironmentModule_Terrain_h
 
-#ifndef incl_Terrain_h
-#define incl_Terrain_h
-
-#include "ForwardDefines.h"
 #include "EC_Terrain.h"
 #include "EnvironmentModuleApi.h"
 #include "RexTypes.h"
@@ -28,6 +29,7 @@ namespace ProtocolUtilities
 
 namespace Environment
 {
+    class EC_Terrain;
     class EnvironmentModule;
     struct DecodedTerrainPatch;
 
@@ -72,7 +74,7 @@ namespace Environment
         void FindCurrentlyActiveTerrain();
 
         //! @return The scene entity that represents the terrain in the currently active world.
-        Scene::EntityWeakPtr GetTerrainEntity();
+        Scene::EntityWeakPtr GetTerrainEntity() const;
 
         //! Called whenever a texture is loaded so it can be attached to the terrain.
         void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
@@ -100,6 +102,15 @@ namespace Environment
         void TerrainTextureChanged();
 
     private:
+        void CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize);
+        void RegenerateDirtyTerrainPatches();
+        void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
+        void GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch);
+        void GenerateTerrainGeometry(EC_Terrain &terrain);
+        void GenerateTerrainGeometryForSinglePatch(EC_Terrain &terrain, int patchX, int patchY);
+        void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
+        void SetTerrainMaterialTexture(int index, const char *textureName);
+
         /// Environment module's pointer.
         EnvironmentModule *owner_;
 
@@ -116,19 +127,6 @@ namespace Environment
         Real height_ranges_[num_terrain_textures];
 
         Scene::EntityWeakPtr cachedTerrainEntity_;
-
-        void CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize);
-
-        void RegenerateDirtyTerrainPatches();
-
-        void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
-
-        void GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch);
-        void GenerateTerrainGeometry(EC_Terrain &terrain);
-        void GenerateTerrainGeometryForSinglePatch(EC_Terrain &terrain, int patchX, int patchY);
-        void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
-
-        void SetTerrainMaterialTexture(int index, const char *textureName);
     };
 }
 

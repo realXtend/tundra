@@ -1,18 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ScriptDialogHandler_h
-#define incl_ScriptDialogHandler_h
+#ifndef incl_RexLogicModule_ScriptDialogHandler_h
+#define incl_RexLogicModule_ScriptDialogHandler_h
 
 #include <QObject>
 #include <QList>
 
-namespace Foundation
-{
-    class Framework;
-}
-
 namespace RexLogic
 {
+    class RexLogicModule;
     class ScriptDialogRequest;
     class ScriptDialogWidget;
 
@@ -26,7 +22,7 @@ namespace RexLogic
         Q_OBJECT
 
     public:
-        explicit ScriptDialogHandler(Foundation::Framework* framework);
+        explicit ScriptDialogHandler(RexLogicModule *owner);
         ~ScriptDialogHandler();
 
         //! handle given script dialog request by creating 
@@ -36,12 +32,12 @@ namespace RexLogic
     protected:
         void ShowDialog(ScriptDialogRequest& request);
 
-        Foundation::Framework* framework_;
+        RexLogicModule *owner_;
         QList<ScriptDialogWidget*> dialogs_;
 
     private slots:
         // called when a ScriptDialogWidget is closed
-        void OnDialogClosed(int channel, QString answer);
+        void OnDialogClosed(int channel, const QString &answer);
     };
 }
 

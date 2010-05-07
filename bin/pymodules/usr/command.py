@@ -726,7 +726,7 @@ if 0: #getrexlogic test
     print dir(l)
     class entity_id_t(int): pass
     entid = entity_id_t(2)
-    l.QSendRexPrimData(entid)
+    l.SendRexPrimData(entid)
     
 if 0: #undo tests
     e = r.getEntity(1752805599)

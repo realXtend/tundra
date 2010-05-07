@@ -1,4 +1,11 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   RexLogicModule.cpp
+ *  @brief  The main client module of Naali.
+ *
+ *          @todo Longer description here.
+ */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -69,7 +76,8 @@
 namespace RexLogic
 {
 
-RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
+RexLogicModule::RexLogicModule() :
+    ModuleInterfaceImpl(type_static_),
     send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
@@ -116,9 +124,6 @@ void RexLogicModule::Initialize()
     PROFILE(RexLogicModule_Initialize);
     framework_->GetEventManager()->RegisterEventCategory("Action");
 
-    /// \todo fixme, register WorldLogic to the framework as realxtend worldlogicinterface!
-    // WorldLogic::registerSystem(framework);
-    // world_logic_ = new WorldLogic(framework);
     avatar_ = AvatarPtr(new Avatar(this));
     avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
@@ -140,6 +145,11 @@ void RexLogicModule::Initialize()
 
     camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
+
+    // Register ourselves as world logic service.
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
+    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldLogic, service);
 }
 
 // virtual
@@ -372,6 +382,10 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(os_login_handler_);
     SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
+
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
+    framework_->GetServiceManager()->UnregisterService(service);
 }
 
 #ifdef _DEBUG
@@ -462,6 +476,28 @@ bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t eve
     return false;
 }
 
+Scene::EntityPtr RexLogicModule::GetUserAvatarEntity() const
+{
+    return avatar_->GetUserAvatar();
+}
+
+Scene::EntityPtr RexLogicModule::GetCameraEntity() const
+{
+    return camera_entity_.lock();
+}
+
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const std::string &component) const
+{
+    if (!activeScene_)
+        return Scene::EntityPtr();
+
+    Scene::EntityPtr entity = activeScene_->GetEntity(entity_id);
+    if (entity && entity->GetComponent(component))
+        return entity;
+    else
+        return Scene::EntityPtr();
+}
+
 void RexLogicModule::SwitchCameraState()
 {
     if (camera_state_ == CS_Follow)
@@ -503,48 +539,6 @@ void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
 Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
 {
     return activeScene_;
-}
-
-bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
-{
-    // Pass the event to the avatar manager
-    avatar_->HandleResourceEvent(event_id, data);
-    // Pass the event to the primitive manager
-    primitive_->HandleResourceEvent(event_id, data);
-
-    return false;
-}
-
-bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleInventoryEvent(event_id, data);
-}
-
-bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleAssetEvent(event_id, data);
-}
-
-void RexLogicModule::LogoutAndDeleteWorld()
-{
-    AboutToDeleteWorld();
-
-    world_stream_->RequestLogout();
-    world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
-
-    if (avatar_)
-        avatar_->HandleLogout();
-    if (primitive_)
-        primitive_->HandleLogout();
-
-    if (framework_->HasScene("World"))
-        DeleteScene("World");
-
-    pending_parents_.clear();
-    activeScene_.reset();
-    UUIDs_.clear();
 }
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
@@ -649,35 +643,29 @@ Real RexLogicModule::GetCameraFOV() const
         return 0.0f;
 }
 
-//pythonqt doesn't understand typedefs. probably the same with qtscript (js).
-void RexLogicModule::QSendRexPrimData(uint entityid)
+void RexLogicModule::LogoutAndDeleteWorld()
 {
-    SendRexPrimData((entity_id_t) entityid);
+    AboutToDeleteWorld();
+
+    world_stream_->RequestLogout();
+    world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
+
+    if (avatar_)
+        avatar_->HandleLogout();
+    if (primitive_)
+        primitive_->HandleLogout();
+
+    if (framework_->HasScene("World"))
+        DeleteScene("World");
+
+    pending_parents_.clear();
+    activeScene_.reset();
+    UUIDs_.clear();
 }
 
-void RexLogicModule::SendRexPrimData(entity_id_t entityid)
+void RexLogicModule::SendRexPrimData(uint entityid)
 {
-    GetPrimitiveHandler()->SendRexPrimData(entityid);
-}
-
-Scene::EntityPtr RexLogicModule::GetEntity(entity_id_t entityid) const
-{
-    if (!activeScene_)
-        return Scene::EntityPtr();
-
-    return activeScene_->GetEntity(entityid);
-}
-
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(entity_id_t entityid, const std::string &component) const
-{
-    if (!activeScene_)
-        return Scene::EntityPtr();
-
-    Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
-    if (entity && entity->GetComponent(component))
-        return entity;
-    else
-        return Scene::EntityPtr();
+    GetPrimitiveHandler()->SendRexPrimData((entity_id_t)entityid);
 }
 
 Scene::EntityPtr RexLogicModule::GetPrimEntity(const RexUUID &entityuuid) const
@@ -708,6 +696,116 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
     IDMap::iterator iter = UUIDs_.find(fullid);
     if (iter != UUIDs_.end())
         UUIDs_.erase(iter);
+}
+
+void RexLogicModule::HandleObjectParent(entity_id_t entityid)
+{
+    if (!activeScene_)
+        return;
+
+    Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
+    if (!entity)
+        return;
+
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if (!child_placeable)
+        return;
+
+    // If object is a prim, parent id is in the prim component, and in presence component for an avatar
+    boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();
+    boost::shared_ptr<EC_OpenSimPresence> presence = entity->GetComponent<EC_OpenSimPresence>();
+
+    entity_id_t parentid = 0;
+    if (prim)
+        parentid = prim->ParentId;
+    if (presence)
+        parentid = presence->parentId;
+
+    if (parentid == 0)
+    {
+        // No parent, attach to scene root
+        child_placeable->SetParent(Foundation::ComponentPtr());
+        return;
+    }
+
+    Scene::EntityPtr parent_entity = activeScene_->GetEntity(parentid);
+    if (!parent_entity)
+    {
+        // If can't get the parent entity yet, add to pending parent list
+        pending_parents_[parentid].insert(entityid);
+        return;
+    }
+
+    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    child_placeable->SetParent(parent_placeable);
+}
+
+void RexLogicModule::HandleMissingParent(entity_id_t entityid)
+{
+    if (!activeScene_)
+        return;
+
+    // Make sure we actually can get this now
+    Scene::EntityPtr parent_entity = activeScene_->GetEntity(entityid);
+    if (!parent_entity)
+        return;
+
+    // See if any accumulated objects missing the parent
+    ObjectParentMap::iterator i = pending_parents_.find(entityid);
+    if (i == pending_parents_.end())
+        return;
+
+    std::set<entity_id_t>::const_iterator j = i->second.begin();
+    while (j != i->second.end())
+    {
+        HandleObjectParent(*j);
+        ++j;
+    }
+
+    pending_parents_.erase(i);
+}
+
+void RexLogicModule::StartLoginOpensim(QString &qfirstAndLast, QString &qpassword, QString &qserverAddressWithPort)
+{
+    if (!qserverAddressWithPort.startsWith("http://"))
+        qserverAddressWithPort = "http://" + qserverAddressWithPort;
+
+    QMap<QString, QString> map;
+    map["AuthType"] = "OpenSim";
+    map["Username"] = qfirstAndLast;
+    map["Password"] = qpassword;
+    map["WorldAddress"] = qserverAddressWithPort;
+
+    os_login_handler_->ProcessOpenSimLogin(map);
+}
+
+void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
+{
+    if (!activeScene_)
+        return;
+
+    Scene::EntityList entities = activeScene_->GetEntitiesWithComponent(EC_HoveringText::TypeNameStatic());
+    foreach(Scene::EntityPtr entity, entities)
+    {
+        boost::shared_ptr<EC_HoveringText> overlay = entity->GetComponent<EC_HoveringText>();
+        assert(overlay.get());
+        if (visible)
+            overlay->Show();
+        else
+            overlay->Hide();
+    }
+}
+
+void RexLogicModule::EntityClicked(Scene::Entity* entity)
+{
+    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
+    if (name_tag.get())
+    {
+        if (name_tag->IsVisible())
+            name_tag->AnimatedHide();
+        else
+            name_tag->Clicked();
+    }
 }
 
 void RexLogicModule::UpdateObjects(f64 frametime)
@@ -837,211 +935,26 @@ void RexLogicModule::UpdateSoundListener()
     soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
-void RexLogicModule::HandleObjectParent(entity_id_t entityid)
+bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    Scene::EntityPtr entity = GetEntity(entityid);
-    if (!entity)
-        return;
+    // Pass the event to the avatar manager
+    avatar_->HandleResourceEvent(event_id, data);
+    // Pass the event to the primitive manager
+    primitive_->HandleResourceEvent(event_id, data);
 
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if (!child_placeable)
-        return;
-
-    // If object is a prim, parent id is in the prim component, and in presence component for an avatar
-    boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();
-    boost::shared_ptr<EC_OpenSimPresence> presence = entity->GetComponent<EC_OpenSimPresence>();
-
-    entity_id_t parentid = 0;
-    if (prim)
-        parentid = prim->ParentId;
-    if (presence)
-        parentid = presence->parentId;
-
-    if (parentid == 0)
-    {
-        // No parent, attach to scene root
-        child_placeable->SetParent(Foundation::ComponentPtr());
-        return;
-    }
-
-    Scene::EntityPtr parent_entity = GetEntity(parentid);
-    if (!parent_entity)
-    {
-        // If can't get the parent entity yet, add to pending parent list
-        pending_parents_[parentid].insert(entityid);
-        return;
-    }
-
-    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    child_placeable->SetParent(parent_placeable);
+    return false;
 }
 
-void RexLogicModule::HandleMissingParent(entity_id_t entityid)
+bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    // Make sure we actually can get this now
-    Scene::EntityPtr parent_entity = GetEntity(entityid);
-    if (!parent_entity)
-        return;
-
-    // See if any accumulated objects missing the parent
-    ObjectParentMap::iterator i = pending_parents_.find(entityid);
-    if (i == pending_parents_.end())
-        return;
-
-    std::set<entity_id_t>::const_iterator j = i->second.begin();
-    while (j != i->second.end())
-    {
-        HandleObjectParent(*j);
-        ++j;
-    }
-
-    pending_parents_.erase(i);
+    // Pass the event to the avatar manager
+    return avatar_->HandleInventoryEvent(event_id, data);
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
+bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    std::string name = "Test User";
-    std::string passwd = "test";
-    std::string server = "localhost";
-
-    if (params.size() > 0)
-        name = params[0];
-    if (params.size() > 1)
-    {
-        passwd = params[1];
-        const std::string &param_pass = params[1];
-
-        // overwrite the password so it won't stay in-memory
-        const_cast<std::string&>(param_pass).replace(0, param_pass.size(), param_pass.size(), ' ');
-    }
-    if (params.size() > 2)
-        server = params[2];
-
-    //! REMOVE
-    //bool success = world_stream_->ConnectToServer(name, passwd, server);
-
-    // overwrite the password so it won't stay in-memory
-    //passwd.replace(0, passwd.size(), passwd.size(), ' ');
-
-    //if (success)
-    //    return Console::ResultSuccess();
-    //else
-    //    return Console::ResultFailure("Failed to connect to server.");
-    return Console::ResultFailure("Cannot login from console no more");
-}
-
-Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
-{
-    if (world_stream_->IsConnected())
-    {
-        LogoutAndDeleteWorld();
-        return Console::ResultSuccess();
-    } 
-    else
-    {
-        return Console::ResultFailure("Not connected to server.");
-    }
-}
-
-void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort)
-{
-    if (!qserverAddressWithPort.startsWith("http://"))
-        qserverAddressWithPort = "http://" + qserverAddressWithPort;
-
-    QMap<QString, QString> map;
-    map["AuthType"] = "OpenSim";
-    map["Username"] = qfirstAndLast;
-    map["Password"] = qpassword;
-    map["WorldAddress"] = qserverAddressWithPort;
-
-    os_login_handler_->ProcessOpenSimLogin(map);
-}
-
-Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
-{
-    event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
-    return Console::ResultSuccess();
-}
-
-Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
-{
-    if (!activeScene_)
-        return Console::ResultFailure("No active scene found.");
-
-    if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
-        return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
-
-    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
-    {
-        Scene::Entity &entity = **iter;
-        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
-        OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
-        if (ec_mesh || ec_custom)
-        {
-            if (params[0] == "add")
-            {
-                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-                if (!highlight)
-                {
-                    // If we didn't have the higihlight component yet, create one now.
-                    entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
-                    highlight = entity.GetComponent<EC_Highlight>();
-                    assert(highlight.get());
-                }
-
-                if (highlight->IsVisible())
-                    highlight->Hide();
-                else
-                    highlight->Show();
-            }
-            else if (params[0] == "remove")
-            {
-                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-                if (highlight)
-                    entity.RemoveComponent(highlight);
-            }
-        }
-    }
-
-    return Console::ResultSuccess();
-}
-
-void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
-{
-    QList<EC_HoveringText *> overlays;
-    Scene::ScenePtr word_scene = framework_->GetDefaultWorldScene();
-    if (word_scene.get())
-    {
-        for (Scene::SceneManager::iterator iter = word_scene->begin(); iter != word_scene->end(); ++iter)
-        {
-            Scene::Entity &entity = **iter;
-            EC_HoveringText *overlay = entity.GetComponent<EC_HoveringText>().get();
-            if (overlay)
-                overlays.append(overlay);
-        }
-    }
-
-    // Set visibility for all found text overlays
-    foreach(EC_HoveringText* overlay, overlays)
-    {
-        if (visible)
-            overlay->Show();
-        else
-            overlay->Hide();
-    }
-}
-
-void RexLogicModule::EntityClicked(Scene::Entity* entity)
-{
-    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-    if (name_tag.get())
-    {
-        if (name_tag->IsVisible())
-            name_tag->AnimatedHide();
-        else
-            name_tag->Clicked();
-    }
+    // Pass the event to the avatar manager
+    return avatar_->HandleAssetEvent(event_id, data);
 }
 
 void RexLogicModule::AboutToDeleteWorld()
@@ -1153,6 +1066,101 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
 {
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+}
+
+Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
+{
+    std::string name = "Test User";
+    std::string passwd = "test";
+    std::string server = "localhost";
+
+    if (params.size() > 0)
+        name = params[0];
+    if (params.size() > 1)
+    {
+        passwd = params[1];
+        const std::string &param_pass = params[1];
+
+        // overwrite the password so it won't stay in-memory
+        const_cast<std::string&>(param_pass).replace(0, param_pass.size(), param_pass.size(), ' ');
+    }
+    if (params.size() > 2)
+        server = params[2];
+
+    //! REMOVE
+    //bool success = world_stream_->ConnectToServer(name, passwd, server);
+
+    // overwrite the password so it won't stay in-memory
+    //passwd.replace(0, passwd.size(), passwd.size(), ' ');
+
+    //if (success)
+    //    return Console::ResultSuccess();
+    //else
+    //    return Console::ResultFailure("Failed to connect to server.");
+    return Console::ResultFailure("Cannot login from console no more");
+}
+
+Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
+{
+    if (world_stream_->IsConnected())
+    {
+        LogoutAndDeleteWorld();
+        return Console::ResultSuccess();
+    } 
+    else
+    {
+        return Console::ResultFailure("Not connected to server.");
+    }
+}
+
+Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
+{
+    event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
+{
+    if (!activeScene_)
+        return Console::ResultFailure("No active scene found.");
+
+    if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
+        return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
+
+    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        if (ec_mesh || ec_custom)
+        {
+            if (params[0] == "add")
+            {
+                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+                if (!highlight)
+                {
+                    // If we didn't have the higihlight component yet, create one now.
+                    entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
+                    highlight = entity.GetComponent<EC_Highlight>();
+                    assert(highlight.get());
+                }
+
+                if (highlight->IsVisible())
+                    highlight->Hide();
+                else
+                    highlight->Show();
+            }
+            else if (params[0] == "remove")
+            {
+                boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+                if (highlight)
+                    entity.RemoveComponent(highlight);
+            }
+        }
+    }
+
+    return Console::ResultSuccess();
 }
 
 } // namespace RexLogic

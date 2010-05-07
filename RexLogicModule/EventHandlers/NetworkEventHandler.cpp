@@ -69,7 +69,7 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
         DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
     }
 
-    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_->GetFramework()));
+    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_));
 }
 
 NetworkEventHandler::~NetworkEventHandler()
