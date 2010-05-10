@@ -4,7 +4,6 @@
  *  @file   DebugStats.cpp
  *  @brief  DebugStatsModule shows information about internal core data structures in separate windows.
  *          Useful for verifying and understanding the internal state of the application.
- *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #include "StableHeaders.h"
@@ -22,7 +21,6 @@
 #include "SceneEvents.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
-//#include "EntityComponent/EC_OpenSimPresence.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
