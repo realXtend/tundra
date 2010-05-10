@@ -67,6 +67,8 @@ namespace MumbleVoip
             double speaker_voice_activity_;
             const ServerInfo &server_info_;
             User* self_user_;
+            QString channel_name_;
+
 
         private slots:
             void UpdateParticipantList(User*);

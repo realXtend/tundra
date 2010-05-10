@@ -86,7 +86,7 @@ namespace MumbleVoip
             sending_audio_(false),
             frame_sequence_(0),
             encoding_quality_(0),
-            state_(STATE_INITIALIZING),
+            state_(STATE_CONNECTING),
             send_position_(false)
     {
         InitializeCELT();
@@ -117,7 +117,7 @@ namespace MumbleVoip
             reason_ = QString(e.what());
             return;
         }
-        state_ = STATE_OPEN;
+        state_ = STATE_AUTHENTICATING;
         emit StateChanged(state_);
     }
 
@@ -159,7 +159,7 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
-        if (state_ == STATE_OPEN)
+        if (state_ != STATE_ERROR) //! @todo Check if we should not filter this state out!
         {
             client_->Disconnect();
             state_ = STATE_CLOSED;
@@ -246,11 +246,11 @@ namespace MumbleVoip
             return; 
         }
 
-        foreach(Channel* c, channels_)
+        foreach(Channel* channel, channels_)
         {
-            if (c->FullName() == channel_name)
+            if (channel->FullName() == channel_name)
             {
-                client_->JoinChannel(c->Id());
+                Join(channel);
             }
         }
     }
@@ -361,7 +361,7 @@ namespace MumbleVoip
 
     void Connection::SetAuthenticated()
     {
-        if (state_ != STATE_OPEN)
+        if (state_ != STATE_AUTHENTICATING)
         {
             QString message = QString("Authentication notification received but state = %1").arg(state_);
             MumbleVoipModule::LogWarning(message.toStdString());
@@ -371,7 +371,6 @@ namespace MumbleVoip
         mutex_authentication_.lock();
         authenticated_ = true;
         mutex_authentication_.unlock();
-        state_ = STATE_OPEN;
 
         if (join_request_.length() > 0)
         {
@@ -379,13 +378,13 @@ namespace MumbleVoip
             join_request_ = "";
             Join(channel);
         }
+
+        state_ = STATE_OPEN;
+        emit StateChanged(state_);
     }
 
-     void Connection::HandleIncomingTextMessage(QString text)
+    void Connection::HandleIncomingTextMessage(QString text)
     {
-        if (state_ != STATE_OPEN)
-            return;
-
         emit (TextMessageReceived(text));
     }
 

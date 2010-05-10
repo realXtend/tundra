@@ -48,7 +48,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        enum State { STATE_INITIALIZING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
+        enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
         //! Default constructor
         Connection(ServerInfo &info);
@@ -91,6 +91,7 @@ namespace MumbleVoip
 
         //! Set audio sending true/false 
         //! @param send true if audio want to be sent to mumble server, otherwise false
+        //! @todo rename to EnableAudioSending(bool enable)
         virtual void SendAudio(bool send);
 
         //! @return true if connection is sending audio, return false otherwise
@@ -99,6 +100,7 @@ namespace MumbleVoip
         //! Set audio sending true/false 
         //! @param receive true if received audio packets should be handled, false if 
         //!                received audio packets should be ignoered
+        //! @todo rename to EnableAudioReceiving(bool enable)
         virtual void ReceiveAudio(bool receive);
 
         //! \param quality [0.0 .. 1.0] where:
