@@ -189,6 +189,28 @@ class WebDavClient(object):
         else:
             return 'False'
         
+    def findProperties(self, collectionWebDavPath):
+        if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
+            try:
+                returnlist = []
+                proplist = self.resource.findAllProperties()
+                for key, property in proplist.items():
+                    displayname = None
+                    asseturl = None
+                    for value in property.values():
+                        if value.name == "displayname":
+                            displayname = value.textof()
+                        if value.name == "assetreferenceurl":
+                            asseturl = value.textof()
+                    if displayname != None and asseturl != None:
+                        returnlist.append(displayname)
+                        returnlist.append(asseturl)
+                return returnlist
+            except Exception:
+                return 'False'
+        else:
+            return 'False'
+            
     def uploadFile(self, filePath, collectionWebDavPath, resourceWebDavName):
         dataFile = None
         rexviewer.logDebug("WebDav Connection Uploading file: %s" % filePath)

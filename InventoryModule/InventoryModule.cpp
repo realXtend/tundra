@@ -165,12 +165,47 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 {
                     if (!auth->webdav_host.empty())
                     {
-                        // Create WebDAV inventory model.
-                        inventoryType_ = IDMT_WebDav;
-                        inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
-                        inventoryWindow_->InitInventoryTreeModel(inventory_);
-                        SAFE_DELETE(service_);
-                        service_ = new InventoryService(inventory_.get());
+                        bool credentials_ok = true;
+                        if (auth->webdav_identity.empty())
+                        {
+                            QString inv_identity = QInputDialog::getText(0, "Inventory Identity", "Please provide your inventory identity", QLineEdit::Normal, "", &credentials_ok);
+                            if (credentials_ok && !inv_identity.isEmpty())
+                            {
+                                if (inv_identity.contains("@") && inv_identity.count(" ") == 0)
+                                    auth->webdav_identity = inv_identity.toStdString() + " " + inv_identity.toStdString();
+                                else
+                                    auth->webdav_identity = inv_identity.toStdString();
+                            }
+                            else
+                            {
+                                credentials_ok = false;
+                                LogError("Cannot get webdav inventory without identity.");
+                            }
+                        }
+
+                        if (credentials_ok && auth->webdav_password.empty())
+                        {
+                            QString inv_password = QInputDialog::getText(0, "Inventory password", "Please provide your inventory password", QLineEdit::Password, "", &credentials_ok);
+                            if (credentials_ok && !inv_password.isEmpty())
+                                auth->webdav_password = inv_password.toStdString();
+                            else
+                            {
+                                credentials_ok = false;
+                                LogError("Cannot get webdav inventory without password.");
+                            }
+                        }
+
+                        if (credentials_ok)
+                        {
+                            // Create WebDAV inventory model.
+                            inventoryType_ = IDMT_WebDav;
+                            inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
+                            inventoryWindow_->InitInventoryTreeModel(inventory_);
+                            SAFE_DELETE(service_);
+                            service_ = new InventoryService(inventory_.get());
+                        }
+                        else
+                            LogError("Could not get valid credentials to access webdav inventory! Disabling inventory.");
                     }
                     else
                     {
@@ -293,6 +328,14 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             {
                 boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
                 AbstractInventoryItem *avatar_item = inventory_->GetChildFolderById("Avatar"); 
+
+                // If Avatar folder does not exist, create it.
+                if (avatar_item == 0)
+                {
+                    InventoryFolder *root_folder = dynamic_cast<InventoryFolder*>(inventory_->GetRoot());
+                    if (root_folder)
+                        avatar_item = inventory_->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *root_folder->GetFirstChildFolderByName("My Inventory"), "Avatar");
+                }
 
                 if (avatar_item && asset_service)
                 {
