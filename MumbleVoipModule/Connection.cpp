@@ -159,7 +159,7 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
-        if (state_ != STATE_ERROR) //! @todo Check if we should not filter this state out!
+        if (state_ != STATE_OPEN) //! @todo Check if we should not filter this state out!
         {
             client_->Disconnect();
             state_ = STATE_CLOSED;
