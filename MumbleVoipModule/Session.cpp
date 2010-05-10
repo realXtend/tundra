@@ -8,6 +8,7 @@
 #include "Vector3D.h"
 #include "User.h"
 #include "EC_OgrePlaceable.h" // for avatar position
+#include "EC_OpenSimPresence.h" // for avatar position
 //#include "SceneManager.h"     // for avatar position
 #include "ModuleManager.h"    // for avatar info
 #include "RexLogicModule.h"   // for avatar position
@@ -249,11 +250,11 @@ namespace MumbleVoip
         bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
         {
             using namespace Foundation;
-            boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-            if (!worldLogic)
+            boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+            if (!world_logic)
                 return false;
 
-            Scene::EntityPtr user_avatar = worldLogic->GetUserAvatarEntity();
+            Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
             if (!user_avatar)
                 return false;
 
@@ -270,9 +271,20 @@ namespace MumbleVoip
 
         QString Session::OwnAvatarId()
         {
-            //! @todo REMOVE RexLogicModule DEPENDENCY
-            ProtocolUtilities::WorldStreamPtr world_stream = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection();
-            return world_stream->GetInfo().agentID.ToQString();
+            using namespace Foundation;
+            boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+            if (!world_logic)
+                return "";
+
+            Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+            if (!user_avatar)
+                return "";
+
+            boost::shared_ptr<EC_OpenSimPresence> opensim_presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+            if (!opensim_presence)
+                return "";
+
+            return opensim_presence->agentId.ToQString();
         }
 
     } // InWorldVoice
