@@ -47,14 +47,13 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
             lastMousePosition_.first = move->x_.abs_;
             lastMousePosition_.second = move->y_.abs_;
         }
-        if(event_id == Input::Events::INWORLD_CLICK)
-        {
-            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-            rexlogicmodule_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
-        }
         return false;
     }
-
+    if(event_id == Input::Events::INWORLD_CLICK)
+    {
+        Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+        owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
+    }  
     return false;
 }
 

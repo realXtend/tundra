@@ -401,22 +401,6 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>ECEditor::ECEditorWindow</name>
-    <message>
-        <source>Properties &gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties &lt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ECEditor</source>
-        <comment>Entity-component Editor</comment>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Environment::EnvironmentEditor</name>
     <message>
         <source>Environment Editor</source>
@@ -1058,10 +1042,6 @@ QPushButton::pressed {
         <source>HoveringButtonsWidget</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Attach/Detach</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>HoveringName</name>
@@ -1082,6 +1062,14 @@ QPushButton::pressed {
     </message>
     <message>
         <source>John Doe</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Inventory::InventoryModule</name>
+    <message>
+        <source>Inventory::InventoryWindow</source>
+        <comment>Inventory</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1870,6 +1858,10 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
     <message>
         <source>Exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start location</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -67,7 +67,7 @@
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
-#include "EC_HoveringWidget.h"
+
 
 
 #include <OgreManualObject.h>
@@ -404,6 +404,7 @@ void RexLogicModule::Update(f64 frametime)
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
         
+        
 
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
@@ -432,7 +433,8 @@ void RexLogicModule::Update(f64 frametime)
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
             // Update overlays last, after camera update
-            UpdateAvatarOverlays();
+            //UpdateAvatarOverlays();
+            UpdateAvatarNameTags(avatar_->GetUserAvatar());
             input_handler_->Update(frametime);
         }
     }
@@ -773,17 +775,6 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
     }
 }
 
-void RexLogicModule::EntityClicked(Scene::Entity* entity)
-{
-    boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-    if (name_tag.get())
-    {
-        if (name_tag->IsVisible())
-            name_tag->AnimatedHide();
-        else
-            name_tag->Clicked();
-    }
-}
 
 void RexLogicModule::UpdateObjects(f64 frametime)
 {
@@ -1160,6 +1151,13 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
         Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
         Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
 
+        //expand to range -1 -> 1
+        scr_x = (scr_x*2)-1;
+        scr_y = (scr_y*2)-1;
+
+        //divert y because after view/projection transforms, y increses upwards
+        scr_y = -scr_y;
+
         OgreRenderer::EC_OgreCamera * camera;
         
 
@@ -1190,16 +1188,13 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
         {
             return false;
         }
-        OgreRenderer::EC_OgrePlaceable* cam_placeable = camera->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        Ogre::Ray original_ray = camera->GetCamera()->getCameraToViewportRay(scr_x, scr_y);
+  
         
-        Ogre::Vector3 campos = camera->GetCamera()->getDerivedPosition();
 
         for(int i=0; i< visible_widgets.size();i++)
         {
-            Ogre::Matrix4 mat;
-            Ogre::Vector3 campos_objspace;
-            Ogre::Ray ray = original_ray;
+            Ogre::Matrix4 worldmat;
+            
             EC_HoveringWidget* widget = visible_widgets.at(i);
             if(!widget)
                 continue;
@@ -1207,52 +1202,29 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             Ogre::Billboard* board = widget->GetButtonsBillboard();
             if(!bbset || !board)
                 continue;
-            Ogre::Vector3 vec = board->getPosition();
-            Ogre::Real buttonsbillboard_h = board->getOwnHeight();
-            Ogre::Real buttonsbillboard_w = board->getOwnWidth();
+            QSizeF scr_size = widget->GetButtonsBillboardScreenSpaceSize();
+            Ogre::Vector3 pos = board->getPosition();
             
+            
+            
+            bbset->getWorldTransforms(&worldmat);
+            pos = worldmat*pos;
+            pos = camera->GetCamera()->getViewMatrix()*pos;
+            pos = camera->GetCamera()->getProjectionMatrix()*pos;
+            
+            QRectF rect(pos.x - scr_size.width()*0.5, pos.y - scr_size.height()*0.5, scr_size.width(), scr_size.height());
 
-            OgreRenderer::EC_OgrePlaceable* placeable = widget->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-            if(!placeable)
-                continue;
-            
-            bbset->getWorldTransforms(&mat);
-            campos_objspace = mat.inverse()*campos;
-            //TO DO: take into account that in 1st. person mode we have to rotate around all axes
-            Vector3Df lookat(campos_objspace.x, campos_objspace.y, 0);
-            Quaternion quat;
-            quat.rotationFromTo(Vector3Df::NEGATIVE_UNIT_X, lookat);
-            quat.normalize();
-            // Should modify transformation matrix instead
-            Quaternion orig_ori = placeable->GetOrientation();
-            placeable->SetOrientation(quat*orig_ori);
-            placeable->GetSceneNode()->needUpdate();
-            
-            
-            
-            bbset->getWorldTransforms(&mat);
-            
-            placeable->SetOrientation(orig_ori);
-            placeable->GetSceneNode()->needUpdate();
-
-
-
-
-            Ogre::AxisAlignedBox box(vec.x, vec.y - buttonsbillboard_w/2, vec.z - buttonsbillboard_h/2, vec.x , vec.y + buttonsbillboard_w/2, vec.z + buttonsbillboard_h/2);
-            //Transform cameratoviewportray into the billboards local space
-            Ogre::Vector4 temp(ray.getDirection());
-            temp.w = 0;
-            temp = mat.inverseAffine() *temp;
-            ray.setDirection(Ogre::Vector3(temp.x, temp.y, temp.z));
-            ray.setOrigin(mat.inverseAffine() * ray.getOrigin());
-            std::pair<bool, Real> result = ray.intersects(box);
-            if(result.first)
+          
+            if(rect.contains(scr_x, scr_y))
             {
-                Ogre::Vector3 inters_point = ray.getPoint(result.second);
-                inters_point -= vec;
-                Real x = (inters_point.y + buttonsbillboard_w/2)/buttonsbillboard_w;
-                Real y = (inters_point.z + buttonsbillboard_h/2)/buttonsbillboard_h;
-                widget->WidgetClicked(1-x, 1-y);
+
+                scr_x -=rect.left();
+                scr_y -=rect.top();
+
+                scr_x /= rect.width();
+                scr_y /= rect.height();
+
+                widget->WidgetClicked(scr_x, 1-scr_y);
                 ret_val = true;
                 
             }
