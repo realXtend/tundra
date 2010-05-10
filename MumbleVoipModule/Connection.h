@@ -62,9 +62,11 @@ namespace MumbleVoip
         //! Joins to given channel if channels exist
         //! If authtorization is not completed yet the join request is queuesd
         //! and executed again after successfullu authorization
+        //! @todo HANDLE REJOIN
         virtual void Join(QString channel);
 
         //! Joins to given channel
+        //! @todo HANDLE REJOIN
         virtual void Join(const Channel* channel);
 
         //! @return first <user,audio frame> pair from playback queue

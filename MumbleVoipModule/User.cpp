@@ -57,7 +57,7 @@ namespace MumbleVoip
     
     Channel* User::Channel() const
     {
-        return 0; // \todo: implement
+        return channel_;
     }
     
     QString User::Comment() const

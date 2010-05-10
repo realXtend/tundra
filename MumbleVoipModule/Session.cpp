@@ -44,7 +44,6 @@ namespace MumbleVoip
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
 //            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
-
         }
 
         Session::~Session()
@@ -166,14 +165,16 @@ namespace MumbleVoip
                 return; 
             }
 
-            if (user->Channel()->Id() == self_user_->Channel()->Id())
+            if (user->Channel()->Id() != self_user_->Channel()->Id())
                 return; 
 
             Participant* p = new Participant(user);
             participants_.append(p);
-            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
+            connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
             connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
-            connect((Communications::InWorldVoice::ParticipantInterface*)p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
+            connect(p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
+            //(Communications::InWorldVoice::ParticipantInterface*)
+            //(Communications::InWorldVoice::ParticipantInterface*)
 
             emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
         }
