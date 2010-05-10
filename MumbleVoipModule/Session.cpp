@@ -35,6 +35,7 @@ namespace MumbleVoip
             connection_manager_(new ConnectionManager(framework)),
             server_info_(server_info)
         {
+            channel_name_ = server_info.channel;
             connection_manager_->OpenConnection(server_info);
             if (connection_manager_->GetState() != ConnectionManager::STATE_CONNECTION_OPEN)
             {
@@ -45,6 +46,7 @@ namespace MumbleVoip
             state_ = STATE_OPEN; // \todo get this information from connection_manager
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
+//            connect(connection_manager_, SIGNAL(StateChanged(Connection::State)), SLOT(UpdateParticipantList(User*)) );
 //            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
         }
@@ -168,7 +170,7 @@ namespace MumbleVoip
                 return; 
             }
 
-            if (user->Channel()->Id() != self_user_->Channel()->Id())
+            if (user->Channel()->FullName() != channel_name_)
                 return; 
 
             Participant* p = new Participant(user);
@@ -228,7 +230,7 @@ namespace MumbleVoip
                 return;
 
             short top = 0;
-            short max = 50; //! \todo Use more proper treshold value
+            const short max = 100; //! \todo Use more proper treshold value
             for(int i = 0; i < frame->SampleCount(); ++i)
             {
                 int sample = abs(frame->SampleAt(i));
@@ -268,6 +270,7 @@ namespace MumbleVoip
 
         QString Session::OwnAvatarId()
         {
+            //! @todo REMOVE RexLogicModule DEPENDENCY
             ProtocolUtilities::WorldStreamPtr world_stream = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection();
             return world_stream->GetInfo().agentID.ToQString();
         }

@@ -51,7 +51,7 @@ namespace MumbleVoip
     void ConnectionManager::OpenConnection(ServerInfo info)
     {
         Connection* connection = new Connection(info);
-        if (connection->GetState() != Connection::STATE_OPEN)
+        if (connection->GetState() == Connection::STATE_ERROR)
         {
             state_ = STATE_ERROR;
             reason_ = connection->GetReason();
