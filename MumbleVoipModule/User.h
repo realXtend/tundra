@@ -6,8 +6,8 @@
 #include <QObject>
 #include <QString>
 #include <QList>
-#include <Core.h>
 #include <QMutex>
+#include <Core.h>
 
 namespace MumbleClient
 {
