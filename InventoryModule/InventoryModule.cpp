@@ -176,12 +176,19 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 }
                 else
                 {
-                    // Create WebDAV inventory model.
-                    inventoryType_ = IDMT_WebDav;
-                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
-                    inventoryWindow_->InitInventoryTreeModel(inventory_);
-                    SAFE_DELETE(service_);
-                    service_ = new InventoryService(inventory_.get());
+                    if (!auth->webdav_host.empty())
+                    {
+                        // Create WebDAV inventory model.
+                        inventoryType_ = IDMT_WebDav;
+                        inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
+                        inventoryWindow_->InitInventoryTreeModel(inventory_);
+                        SAFE_DELETE(service_);
+                        service_ = new InventoryService(inventory_.get());
+                    }
+                    else
+                    {
+                        LogError("Login response did not contain a valid webdav inventory url! Disabling inventory.");
+                    }
                 }
                 break;
             }

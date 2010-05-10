@@ -63,6 +63,9 @@ namespace TaigaProtocol
         ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
 
+        const std::string GetUsername() const { return ""; }
+        const std::string GetPassword() const { return ""; }
+
     private:
         TaigaLoginThread(const TaigaLoginThread &);
         void operator=(const TaigaLoginThread &);
