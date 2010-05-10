@@ -30,7 +30,7 @@ namespace MumbleVoip
         //! @param channel The channel where the user are located
         User(const MumbleClient::User& user, MumbleVoip::Channel* channel);
 
-        //! Default deconstructor
+        //! Destructor
         virtual ~User();
 
         //! @return name of the user
