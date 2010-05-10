@@ -32,8 +32,8 @@ namespace MumbleVoip
         boost::shared_ptr<MumbleClient::Channel> c = channel_->parent.lock();
         while (c)
         {
-            full_name.append("/");
-            full_name.append(c->name.c_str());
+            full_name.push_front("/");
+            full_name.push_front(c->name.c_str());
             c = c->parent.lock();
         }
         return full_name;
