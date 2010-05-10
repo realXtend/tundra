@@ -76,16 +76,14 @@ namespace RexLogic
 
         Ogre::Billboard* const GetButtonsBillboard(){return buttonsbillboard_;}
         Ogre::BillboardSet* const GetButtonsBillboardSet(){return buttonsbillboardSet_;}
-<<<<<<< HEAD
         QSizeF GetButtonsBillboardScreenSpaceSize(){ return bb_buttons_size_view; }
-=======
->>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
+
 
 
     public slots:
         void InitializeBillboards();
 
-        void SetDisabled(bool val){disabled_ = val;}
+        void SetDisabled(bool val);
 
         bool IsDisabled(){return disabled_;}
 

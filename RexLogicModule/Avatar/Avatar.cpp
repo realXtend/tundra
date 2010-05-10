@@ -183,9 +183,8 @@ namespace RexLogic
                 overlay->SetText(presence->GetFullName().c_str());
                 if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
                 {
-                        //overlay->SetButtonsDisabled(true);
-                        //overlay->SetDisabled(true);
-                        //overlay->Hide();
+                        overlay->SetDisabled(true);
+
                 }
             }
 
@@ -498,10 +497,11 @@ namespace RexLogic
         if (overlay && presence)
         {
             overlay->SetText(presence->GetFullName().c_str());
-            overlay->AddButton(*(new QPushButton("Poke")));
+            /*overlay->AddButton(*(new QPushButton("Poke")));
             overlay->AddButton(*(new QPushButton("Chat")));
             overlay->AddButton(*(new QPushButton("Mute")));
-            overlay->AddButton(*(new QPushButton("Follow")));
+            overlay->AddButton(*(new QPushButton("Follow")));*/
+            overlay->ShowButtons(false);
             overlay->InitializeBillboards();
         }
 
