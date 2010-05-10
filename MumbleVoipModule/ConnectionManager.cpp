@@ -60,7 +60,7 @@ namespace MumbleVoip
         state_ = STATE_CONNECTION_OPEN;
 
         connect(connection, SIGNAL(UserJoined(User*)), SLOT(OnUserJoined(User*)));
-        connect(connection, SIGNAL(UserLeft(User*)), SLOT(OnUserJoined(User*)));
+        connect(connection, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)));
         connections_[info.server] = connection;
         connection->Join(info.channel);
         connection->SendAudio(true);
