@@ -121,6 +121,7 @@ add_subdirectory (EntityComponents/EC_OpenSimPrim)      # declared by RexLogicMo
 add_subdirectory (EntityComponents/EC_Touchable)      # declared by RexLogicModule
 
 
+
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.
 if (NOT EXISTS CMakeOptionalModules.txt)

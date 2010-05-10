@@ -436,6 +436,8 @@ void RexLogicModule::Update(f64 frametime)
             //UpdateAvatarOverlays();
             UpdateAvatarNameTags(avatar_->GetUserAvatar());
             input_handler_->Update(frametime);
+            UpdateAvatarNameTags(avatar_->GetUserAvatar());
+            
         }
     }
 
