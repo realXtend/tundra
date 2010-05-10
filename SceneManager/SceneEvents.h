@@ -6,7 +6,7 @@
 #include "EventDataInterface.h"
 #include "Vector3D.h"
 #include "ForwardDefines.h"
-#include <QString.h>
+
 namespace Scene
 {
     class Entity;
