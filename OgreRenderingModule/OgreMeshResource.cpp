@@ -96,7 +96,7 @@ namespace OgreRenderer
             return false;
         }
 
-        OgreRenderingModule::LogDebug("Ogre mesh " + id_ + " created");
+        OgreRenderingModule::LogDebug(" Ogre mesh " + id_ + " created");
         return true;
     }
 

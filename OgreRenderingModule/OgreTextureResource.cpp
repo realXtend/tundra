@@ -112,7 +112,7 @@ namespace OgreRenderer
             return false;
         }
 
-        OgreRenderingModule::LogDebug("Ogre texture " + id_ + " updated");
+        OgreRenderingModule::LogDebug(" Ogre texture " + id_ + " updated");
         level_ = source->GetLevel();
         return true;
     }
