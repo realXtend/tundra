@@ -50,21 +50,19 @@ event_category_ = framework_->GetEventManager()->RegisterEventCategory("Input");
 	   are not received very often.
 
 	2) Query and store the event category ID's for all categories you are interested of during 
-           your module's PostInitialize() function, using Foundation::EventManager::QueryEventCategory(). 
-	   This should not be done in Initialize() because during that different modules are still
-	   registering their own categories, and what is registered depends on module load order.
-	   This way is better for performance, as when receiving events you can then compare just the
-	   numeric category ID's to see into which category the event belongs to. 
+       your module's Initialize() or PostInitialize() function, using Foundation::EventManager::QueryEventCategory().
 
-	If querying by a category name that is unknown, the category ID 0 will be returned.
+	If querying by a category name that does not exist yet, there are two possibilities, according to the
+    'create' paremeter of QueryEventCategory(). If 'create' is true, which is the default, the category
+    will be registered. If 'create' is false, then the unknown/illegal category ID 0 will be returned.
 
-	Example of querying and storing event category, and checking for unknown:
+	Example of querying and storing event category, and checking for unknown (note that 'create' parameter is false here)
 
 \code
-assetcategory_id_ = event_manager->QueryEventCategory("Asset");
+assetcategory_id_ = event_manager->QueryEventCategory("Asset", false);
         
-if (assetcategory_id_ == 0 )
-    LogWarning("Unable to find event category for Asset events!");
+if (assetcategory_id_ == IllegalEventCategory )
+    LogWarning("Asset event category has not been registered yet!");
 \endcode
 
 	\subsection eventid_ES Event ID's

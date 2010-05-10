@@ -34,8 +34,6 @@ namespace Asset
 		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "http_timeout", 120.0);
         if (event_manager_)
             asset_event_category_ = event_manager_->QueryEventCategory("Asset");
-        if (!asset_event_category_)
-            AssetModule::LogWarning("QtHttpAssetProvider >> Could not get event category for Asset events");
 
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(TranferCompleted(QNetworkReply*)));
 

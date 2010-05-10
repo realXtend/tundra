@@ -70,31 +70,15 @@ namespace Environment
         event_manager_ = framework_->GetEventManager();
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
-        if (resource_event_category_ == 0)
-            LogError("Failed to query \"Resource\" event category");
-
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
-        if (scene_event_category_ == 0)
-            LogError("Failed to query \"Scene\" event category");
-
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
-        if (framework_event_category_ == 0)
-            LogError("Failed to query \"Framework\" event category");
-
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-        if (input_event_category_ == 0)
-            LogError("Failed to query \"Input\" event category");
     }
 
     void EnvironmentModule::SubscribeToNetworkEvents()
     {
         network_in_event_category_ = event_manager_->QueryEventCategory("NetworkIn");
-        if (network_in_event_category_ == 0)
-            LogError("Failed to query \"NetworkIn\" event category");
-
         network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
-        if (network_state_event_category_ == 0)
-            LogError("Failed to query \"NetworkState\" event category");
     }
 
     void EnvironmentModule::Uninitialize()
