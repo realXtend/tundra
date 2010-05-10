@@ -401,6 +401,22 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+    <name>ECEditor::ECEditorWindow</name>
+    <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ECEditor</source>
+        <comment>Entity-component Editor</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Environment::EnvironmentEditor</name>
     <message>
         <source>Environment Editor</source>
@@ -1037,43 +1053,6 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>HoveringButtonsWidget</name>
-    <message>
-        <source>HoveringButtonsWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-<<<<<<< HEAD
-=======
-    <message>
-        <source>Attach/Detach</source>
-        <translation type="unfinished"></translation>
-    </message>
->>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
-</context>
-<context>
-    <name>HoveringName</name>
-    <message>
-        <source>HoveringWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>John Doe</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>HoveringWidget</name>
-    <message>
-        <source>HoveringWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>John Doe</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-<<<<<<< HEAD
     <name>Inventory::InventoryModule</name>
     <message>
         <source>Inventory::InventoryWindow</source>
@@ -1082,8 +1061,6 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-=======
->>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
     <name>Inventory::InventoryWindow</name>
     <message>
         <source>&amp;Upload</source>
@@ -1888,10 +1865,6 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
     <message>
         <source>Exit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start location</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
