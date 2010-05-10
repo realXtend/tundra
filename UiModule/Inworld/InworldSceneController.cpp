@@ -209,9 +209,12 @@ namespace UiServices
 	{
 		QPointF left_distance;
 		QPointF right_distance;
+        qreal new_x;
+        qreal new_y;
+
 		foreach (UiProxyWidget *widget, all_proxy_widgets_in_scene_)
-        	{
-			if(widget->isVisible())
+        {
+			if (widget->isVisible())
 			{	
 				left_distance.setX(widget->x() / last_scene_rect.width() * new_rect.width());
 				left_distance.setY(widget->y() / last_scene_rect.height() * new_rect.height());
@@ -219,54 +222,40 @@ namespace UiServices
 				right_distance.setX((widget->x() + widget->size().width()) / last_scene_rect.width() * new_rect.width());
 				right_distance.setY((widget->y() + widget->size().height()) / last_scene_rect.height() * new_rect.height());			
 			}
-		
-			if(widget->size().width() < new_rect.width())
+
+			if (widget->size().width() < new_rect.width())
 			{
-				if(left_distance.x() > widget->size().width())
+				if (left_distance.x() > widget->size().width())
 				{
-					if(new_rect.width() > right_distance.x())
-					{
-						widget->setX(right_distance.x() - widget->size().width());
-					}
+					if (new_rect.width() > right_distance.x())
+						new_x = right_distance.x() - widget->size().width();
 					else
-					{
-						widget->setX(left_distance.x());
-					}
+						new_x = left_distance.x();
 				}
 				else
-				{
-					widget->setX(left_distance.x());
-				}
+					new_x = left_distance.x();
 			}
 			else
-			{
-				widget->setX(left_distance.x());
-			}
+				new_x = left_distance.x();
 
-
-			if(widget->size().height() < new_rect.height())
+			if (widget->size().height() < new_rect.height())
 			{
-				if(left_distance.y() > widget->size().height())
+				if (left_distance.y() > widget->size().height())
 				{
-					if(new_rect.height() > right_distance.y())
-					{
-						widget->setY(right_distance.y() - widget->size().height());
-					}
+					if (new_rect.height() > right_distance.y())
+						new_y = right_distance.y() - widget->size().height();
 					else
-					{
-						widget->setY(left_distance.y());
-					}
+						new_y = left_distance.y();
 				}
 				else
-				{
-					widget->setY(left_distance.y());
-				}
+					new_y = left_distance.y();
 			}
 			else
-			{
-				widget->setY(left_distance.y());
-			}
-        	}
+				new_y = left_distance.y();
+
+            widget->setPos(new_x, new_y);
+        }
+
 		last_scene_rect = new_rect;
 	}
 }
