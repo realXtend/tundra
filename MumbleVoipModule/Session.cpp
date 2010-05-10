@@ -8,10 +8,13 @@
 #include "Vector3D.h"
 #include "User.h"
 #include "EC_OgrePlaceable.h" // for avatar position
-#include "SceneManager.h"     // for avatar position
-#include "ModuleManager.h"    // for avatar position
+//#include "SceneManager.h"     // for avatar position
+#include "ModuleManager.h"    // for avatar info
 #include "RexLogicModule.h"   // for avatar position
-#include "Avatar/Avatar.h"    // for avatar position
+//#include "Avatar/Avatar.h"    // for avatar position
+#include "WorldLogicInterface.h" // for avatar position
+#include "Entity.h" // for avatar position
+
 #include "WorldStream.h"
 #include "Channel.h"
 
@@ -243,23 +246,19 @@ namespace MumbleVoip
 
         bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
         {
-            RexLogic::RexLogicModule *rex_logic_module = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-            if (!rex_logic_module)
+            using namespace Foundation;
+            boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+            if (!worldLogic)
                 return false;
 
-            RexLogic::AvatarPtr avatar = rex_logic_module->GetAvatarHandler();
-            if (!avatar)
+            Scene::EntityPtr user_avatar = worldLogic->GetUserAvatarEntity();
+            if (!user_avatar)
                 return false;
 
-            Scene::EntityPtr entity = avatar->GetUserAvatar();
-            if (!entity)
+            boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = user_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+            if (!ogre_placeable)
                 return false;
 
-            const Foundation::ComponentInterfacePtr &placeable_component = entity->GetComponent("EC_OgrePlaceable");
-            if (!placeable_component)
-                return false;
-
-            OgreRenderer::EC_OgrePlaceable *ogre_placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_component.get());
             Quaternion q = ogre_placeable->GetOrientation();
             position = ogre_placeable->GetPosition(); 
             direction = q*Vector3df::UNIT_Z;

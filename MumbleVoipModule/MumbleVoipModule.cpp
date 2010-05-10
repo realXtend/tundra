@@ -1,11 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-<<<<<<< HEAD
-#include "DebugOperatorNew.h"
-
-=======
->>>>>>> Hide Voice control when service not available. Fixed sequential voice connections. Refactored code. Started VoiceusersWidget.
+//#include "DebugOperatorNew.h"
 #include "MumbleVoipModule.h"
 #include "LinkPlugin.h"
 #include "ServerObserver.h"
@@ -23,16 +19,12 @@
 #include "ServerObserver.h"
 #include "Provider.h"
 #include "ConnectionManager.h"
-<<<<<<< HEAD
-#include "MemoryLeakCheck.h"
-=======
 #define BUILDING_DLL // for mumbleclient/client_lib.h
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 //#undef BUILDING_DLL // for mumbleclient/client_lib.h
 #include "DebugOperatorNew.h" // Doesn't work with mumbleclient library ???
 #include "MemoryLeakCheck.h" // Doesn't work with mumbleclient library ???
->>>>>>> Hide Voice control when service not available. Fixed sequential voice connections. Refactored code. Started VoiceusersWidget.
 
 namespace MumbleVoip
 {

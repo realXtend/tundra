@@ -70,7 +70,7 @@ use_package (OPENSSL) # NEEDED BY MUMBLECLIENT
 use_package (MUMBLECLIENT)
 use_package (CELT)
 
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager RexLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -79,7 +79,7 @@ link_package (POCO)
 link_package (QT4)
 link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule SceneManager RexLogicModule)
 link_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
 link_package (OPENSSL) # NEEDED BY MUMBLECLIENT
 link_package (MUMBLECLIENT)
