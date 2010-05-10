@@ -16,9 +16,10 @@
 #include "Entity.h"
 #include "CommunicationsService.h"
 #include "LinkPlugin.h"
-#include "ServerObserver.h"
+//#include "ServerObserver.h"
 #include "Provider.h"
-#include "ConnectionManager.h"
+//#include "ConnectionManager.h"
+#include "ApplicationManager.h"
 #define BUILDING_DLL // for mumbleclient/client_lib.h
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
@@ -33,6 +34,7 @@ namespace MumbleVoip
     MumbleVoipModule::MumbleVoipModule()
         : ModuleInterfaceImpl(module_name_),
           link_plugin_(0),
+          application_manager_(0),
           time_from_last_update_ms_(0),
           server_observer_(0),
 //          connection_manager_(0),
@@ -49,6 +51,7 @@ namespace MumbleVoip
         //    connection_manager_->KillMumbleClient();
         //}
 
+        SAFE_DELETE(application_manager_);
         SAFE_DELETE(link_plugin_);
         SAFE_DELETE(server_observer_);
         //    SAFE_DELETE(connection_manager_);
@@ -66,6 +69,7 @@ namespace MumbleVoip
         in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
 //        connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
+        application_manager_ = new ApplicationManager();
 //        server_observer_ = new ServerObserver(framework_);
 //        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
     }
@@ -271,7 +275,7 @@ namespace MumbleVoip
 
         try
         {
-            ConnectionManager::StartMumbleClient(server_url);
+            ApplicationManager::StartMumbleClient(server_url);
             return Console::ResultSuccess("Mumbe client started.");
         }
         catch(std::exception &e)
