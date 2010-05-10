@@ -73,7 +73,6 @@ namespace MumbleVoip
 
         virtual void ReceiveAudio(bool receive);
 
-
         //virtual void ReceiveAudio(bool receive);
 
         //virtual bool IsAudioSendingEnabled() const;
@@ -81,19 +80,6 @@ namespace MumbleVoip
         //virtual void EnableAudioSending();
 
         //virtual void DisableAudioSending();
-
-        //! Start mumble client application with given server url
-        //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
-        //!
-        //! There is no way to stop mumle client from this module it has to be closed by user.
-        //!
-        //! \todo MOVE TO ANOTHER CLASS
-        static void StartMumbleClient(const QString& server_url);
-
-        //! Kill mumble client process
-        //!
-        //! \todo MOVE TO ANOTHER CLASS
-        static void KillMumbleClient();
 
         virtual void Update(f64 frametime);
 

@@ -17,6 +17,7 @@ namespace MumbleVoip
     class ServerObserver;
     class ConnectionManager;
     class ServerInfo;
+    class ApplicationManager;
 
     namespace InWorldVoice
     {
@@ -83,6 +84,7 @@ namespace MumbleVoip
     private:
         LinkPlugin* link_plugin_;
         ServerObserver* server_observer_;
+        ApplicationManager* application_manager_;
 //        ConnectionManager* connection_manager_;
 
         static const int UPDATE_TIME_MS_ = 100;
