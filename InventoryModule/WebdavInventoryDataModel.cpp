@@ -73,7 +73,7 @@ namespace Inventory
     AbstractInventoryItem *WebDavInventoryDataModel::GetOrCreateNewFolder(const QString &id, AbstractInventoryItem &parentFolder,
             const QString &name, const bool &notify_server)
     {
-        if (name.toLower() == "new folder")
+        if (name.isEmpty())
             return 0;
 
         InventoryFolder *parent = dynamic_cast<InventoryFolder *>(&parentFolder);
@@ -86,6 +86,10 @@ namespace Inventory
             // RexUUID generated in data model, cant do nothing about this...
             QString parentPath = parent->GetID();
             QString newFolderName = name;
+
+            if (parentPath == "root")
+                return 0;
+
             QStringList result = webdavclient_.call("createDirectory", QVariantList() << parentPath << newFolderName).toStringList();
             if (result.count() >= 1)
             {
@@ -93,6 +97,7 @@ namespace Inventory
                 {
                     FetchInventoryDescendents(parent);
                     InventoryModule::LogDebug(QString("Webdav | Created folder named %1 to path %2\n").arg(newFolderName, parentPath).toStdString());
+                    return parent->GetFirstChildFolderByName(newFolderName);
                 }
                 else
                     InventoryModule::LogDebug(QString("Webdav | Could not create folder named %1 to path %2\n").arg(newFolderName, parentPath).toStdString());
@@ -172,8 +177,19 @@ namespace Inventory
             index++;
         }
 
+        // Get properties, we are interested in the custom property assetreferenceurl
+        QStringList child_properties = webdavclient_.call("findProperties", QVariantList() << itemPath).toStringList();
+
+        // Process propertylist
+        QMap<QString, QString> propertyMap;
+        for (int index=0; index<=child_properties.count(); index++)
+        {
+            propertyMap[child_properties.value(index)] = child_properties.value(index+1);
+            index++;
+        }
+
         AbstractInventoryItem *newItem = 0;
-        QString path, name, type;
+        QString path, name, type, asset_reference_url;
         for (QMap<QString, QString>::iterator iter = childMap.begin(); iter!=childMap.end(); ++iter)
         {
             path = RemovePrePath(iter.key());
@@ -182,8 +198,12 @@ namespace Inventory
 
             if (name != "")
             {
+                asset_reference_url = "Asset url for " + name + " not available";
+                if (propertyMap.contains(name))
+                    asset_reference_url = propertyMap[name];
+
                 if (type == "resource")
-                    newItem = new InventoryAsset(path, "", name, selected);
+                    newItem = new InventoryAsset(path, asset_reference_url, name, selected);
                 else
                     newItem = new InventoryFolder(path, name, selected, true);
                 selected->AddChild(newItem);
@@ -236,6 +256,9 @@ namespace Inventory
         QString parentPath = ValidateFolderPath(item->GetParent()->GetID());
         QString newName = item->GetName();
         QString oldName = old_name;
+
+        if (newName == oldName || newName.isEmpty())
+            return;
 
         QStringList result = webdavclient_.call("renameResource", QVariantList() << parentPath << newName << oldName).toStringList();
         if (result.count() >= 1)
@@ -437,7 +460,7 @@ namespace Inventory
             if (name != "")
             {
                 if (type.toLower() == "resource")
-                    newItem = new InventoryAsset(path, "", name, parentFolder);
+                    newItem = new InventoryAsset(path, "No url ref for folders.", name, parentFolder);
                 else
                     newItem = new InventoryFolder(path, name, parentFolder, true);
                 parentFolder->AddChild(newItem);

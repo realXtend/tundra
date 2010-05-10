@@ -221,39 +221,40 @@ namespace UiServices
 
 				right_distance.setX((widget->x() + widget->size().width()) / last_scene_rect.width() * new_rect.width());
 				right_distance.setY((widget->y() + widget->size().height()) / last_scene_rect.height() * new_rect.height());			
-			}
+			
 
-			if (widget->size().width() < new_rect.width())
-			{
-				if (left_distance.x() > widget->size().width())
-				{
-					if (new_rect.width() > right_distance.x())
-						new_x = right_distance.x() - widget->size().width();
-					else
-						new_x = left_distance.x();
-				}
-				else
-					new_x = left_distance.x();
-			}
-			else
-				new_x = left_distance.x();
+			    if (widget->size().width() < new_rect.width())
+			    {
+				    if (left_distance.x() > widget->size().width())
+				    {
+					    if (new_rect.width() > right_distance.x())
+						    new_x = right_distance.x() - widget->size().width();
+					    else
+						    new_x = left_distance.x();
+				    }
+				    else
+					    new_x = left_distance.x();
+			    }
+			    else
+				    new_x = left_distance.x();
 
-			if (widget->size().height() < new_rect.height())
-			{
-				if (left_distance.y() > widget->size().height())
-				{
-					if (new_rect.height() > right_distance.y())
-						new_y = right_distance.y() - widget->size().height();
-					else
-						new_y = left_distance.y();
-				}
-				else
-					new_y = left_distance.y();
-			}
-			else
-				new_y = left_distance.y();
+			    if (widget->size().height() < new_rect.height())
+			    {
+				    if (left_distance.y() > widget->size().height())
+				    {
+					    if (new_rect.height() > right_distance.y())
+						    new_y = right_distance.y() - widget->size().height();
+					    else
+						    new_y = left_distance.y();
+				    }
+				    else
+					    new_y = left_distance.y();
+			    }
+			    else
+				    new_y = left_distance.y();
 
-            widget->setPos(new_x, new_y);
+                widget->setPos(new_x, new_y);
+            }
         }
 
 		last_scene_rect = new_rect;
