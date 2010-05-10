@@ -75,6 +75,12 @@ namespace RexLogic
             namebillboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));*/
     }
 
+    void EC_HoveringWidget::SetDisabled(bool val)
+    {
+        disabled_ = val;
+        Hide();
+    }
+
 
     void EC_HoveringWidget::SetButtonsDisabled(bool val)
     {
@@ -92,7 +98,7 @@ namespace RexLogic
         buttons_visible_ = val;
         if(orig!=buttons_visible_)
         {
-            if(buttons_visible_)
+            if(buttons_visible_ && !buttons_disabled_)
             {
                 buttonsbillboardSet_->setVisible(true);
             }
@@ -194,7 +200,7 @@ namespace RexLogic
     {
         if (namebillboardSet_ && !disabled_)
             namebillboardSet_->setVisible(true);
-        if (buttonsbillboardSet_ && !disabled_ && buttons_visible_)
+        if (buttonsbillboardSet_ && !disabled_ && !buttons_disabled_)
             buttonsbillboardSet_->setVisible(true);
     }
 
@@ -331,15 +337,13 @@ namespace RexLogic
             buttonsbillboardSet_->setMaterialName(buttonsmaterialName_);
             buttonsbillboardSet_->setCastShadows(false);
 
-<<<<<<< HEAD
+
             namebillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
             buttonsbillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
 
             namebillboardSet_->setCommonUpVector(Ogre::Vector3::UNIT_Z);
             buttonsbillboardSet_->setCommonUpVector(Ogre::Vector3::UNIT_Z);
 
-=======
->>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
             namebillboard_ = namebillboardSet_->createBillboard(Ogre::Vector3(0, 0, bb_rel_posy));
             assert(namebillboard_);
             namebillboard_->setDimensions(bb_name_size_view.width(), bb_name_size_view.height());

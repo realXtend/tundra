@@ -70,6 +70,7 @@
 
 
 
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -409,6 +410,7 @@ void RexLogicModule::Update(f64 frametime)
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
 
+
         // update sound listener position/orientation
         UpdateSoundListener();
 
@@ -436,6 +438,9 @@ void RexLogicModule::Update(f64 frametime)
             //UpdateAvatarOverlays();
             UpdateAvatarNameTags(avatar_->GetUserAvatar());
             input_handler_->Update(frametime);
+
+            UpdateAvatarOverlays();
+
             UpdateAvatarNameTags(avatar_->GetUserAvatar());
             
         }
@@ -921,11 +926,13 @@ bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::Event
     return avatar_->HandleInventoryEvent(event_id, data);
 }
 
+
 bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
 }
+
 
 void RexLogicModule::AboutToDeleteWorld()
 {
@@ -1043,6 +1050,7 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if(info_icon.get())
         info_icon->EntityClicked();
 }
+
 
 
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const

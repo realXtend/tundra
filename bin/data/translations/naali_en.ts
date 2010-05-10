@@ -1042,6 +1042,13 @@ QPushButton::pressed {
         <source>HoveringButtonsWidget</source>
         <translation type="unfinished"></translation>
     </message>
+<<<<<<< HEAD
+=======
+    <message>
+        <source>Attach/Detach</source>
+        <translation type="unfinished"></translation>
+    </message>
+>>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
 </context>
 <context>
     <name>HoveringName</name>
@@ -1066,6 +1073,7 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+<<<<<<< HEAD
     <name>Inventory::InventoryModule</name>
     <message>
         <source>Inventory::InventoryWindow</source>
@@ -1074,6 +1082,8 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+=======
+>>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
     <name>Inventory::InventoryWindow</name>
     <message>
         <source>&amp;Upload</source>
