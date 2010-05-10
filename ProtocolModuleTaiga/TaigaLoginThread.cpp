@@ -156,6 +156,9 @@ namespace TaigaProtocol
             threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");
             threadState_->parameters.gridUrl = GridParser::ExtractGridAddressFromXMLRPCReply(call);
 
+            if (call.HasReply("webdav_inventory"))
+                threadState_->parameters.webdavInventoryUrl = call.GetReply<std::string>("webdav_inventory");
+
             if (threadState_->parameters.gridUrl.size() == 0)
                 throw XmlRpcException("Failed to extract sim_ip and sim_port from login_to_simulator reply!");
             if (threadState_->parameters.sessionID.ToString() == std::string("") ||

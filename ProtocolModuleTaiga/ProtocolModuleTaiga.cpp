@@ -173,11 +173,15 @@ namespace TaigaProtocol
 
             // Send event indicating a succesfull connection.
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
-            if (identityUrl_ != "" && hostUrl_ != "")
+            auth_data.inventorySkeleton = GetClientParameters().inventory;
+
+            // Fill in webdav information if exists
+            if (loginWorker_.GetClientParameters().webdavInventoryUrl != "")
             {
-                auth_data.SetIdentity(identityUrl_);
-                auth_data.SetHost(hostUrl_);
-                auth_data.inventorySkeleton = GetClientParameters().inventory;
+                auth_data.webdav_host = loginWorker_.GetClientParameters().webdavInventoryUrl;
+                auth_data.webdav_identity = loginWorker_.GetUsername();
+                auth_data.webdav_password = loginWorker_.GetPassword();
+                auth_data.type = ProtocolUtilities::AT_Taiga;
             }
             eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_SERVER_CONNECTED, &auth_data);
             

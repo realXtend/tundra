@@ -134,7 +134,9 @@ namespace CoreUi
             if (url.scheme() == "cablebeach")
             {
                 QString entry_point_url;
-                QString urlString = url.toString().replace("cablebeach://", "http://");
+                QString urlString = url.toString().replace("cablebeach://", "");
+                if (urlString.startsWith("http//"))
+                    urlString = urlString.replace("http//", "http://");
                 emit WebLoginUrlRecived(urlString);
             }
         }
