@@ -30,7 +30,10 @@ namespace RexLogic
         Real x_widgetspace = x*(Real)this->width();
         Real y_widgetspace = y*(Real)this->height();
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5aa6bd5698a8734b6fe9ce7cb684b848eb04a506
         QPoint pos(x_widgetspace,y_widgetspace);
 
         QMouseEvent e(QEvent::MouseButtonPress, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
