@@ -77,9 +77,6 @@ void InputEventHandler::Update(f64 frametime)
             data.u = result.u_;
             data.v = result.v_;
             event_category_id_t category = eventMgr->QueryEventCategory("Scene");
-            assert(category != 0);
-            if (!category)
-                return;
             eventMgr->SendEvent(category, Scene::Events::EVENT_ENTITY_MOUSE_HOVER, &data);
         }
     }

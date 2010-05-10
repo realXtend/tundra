@@ -91,16 +91,8 @@ void InventoryModule::Initialize()
 void InventoryModule::PostInitialize()
 {
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
-    if (frameworkEventCategory_ == 0)
-        LogError("Failed to query \"Framework\" event category");
-
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
-    if (assetEventCategory_ == 0)
-        LogError("Failed to query \"Asset\" event category");
-
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
-    if (resourceEventCategory_ == 0)
-        LogError("Failed to query \"Resource\" event category");
 }
 
 void InventoryModule::Uninitialize()
@@ -118,12 +110,7 @@ void InventoryModule::Uninitialize()
 void InventoryModule::SubscribeToNetworkEvents()
 {
     networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
-    if (networkStateEventCategory_ == 0)
-        LogError("Failed to query \"NetworkState\" event category");
-
     networkInEventCategory_ = eventManager_->QueryEventCategory("NetworkIn");
-    if (networkInEventCategory_ == 0)
-        LogError("Failed to query \"NetworkIn\" event category");
 }
 
 void InventoryModule::Update(f64 frametime)

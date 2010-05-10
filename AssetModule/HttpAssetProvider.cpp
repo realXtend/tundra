@@ -25,35 +25,30 @@ using namespace RexTypes;
 
 namespace Asset
 {
-	const Real HttpAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
+    const Real HttpAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
 
-	HttpAssetProvider::HttpAssetProvider(Foundation::Framework* framework) : framework_(framework)
-	{
-		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "http_timeout", DEFAULT_ASSET_TIMEOUT);            
+    HttpAssetProvider::HttpAssetProvider(Foundation::Framework* framework) : framework_(framework)
+    {
+        asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "http_timeout", DEFAULT_ASSET_TIMEOUT);            
 
-		Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         
-        // Assume that the asset manager has been instantiated at this point
         event_category_ = event_manager->QueryEventCategory("Asset");
-        if (!event_category_)
-        {
-            AssetModule::LogWarning("Could not get event category for Asset events");
-        }
-	}
+    }
 
-	HttpAssetProvider::~HttpAssetProvider()
-	{
-	}
-	
-	const std::string& HttpAssetProvider::Name()
-	{
+    HttpAssetProvider::~HttpAssetProvider()
+    {
+    }
+    
+    const std::string& HttpAssetProvider::Name()
+    {
         static const std::string name("Http asset provider");
         return name;
-	}
+    }
 
     bool HttpAssetProvider::IsValidId(const std::string& asset_url, const std::string& asset_type)
     {
-	    // Differentiate between UDP & URL based requests
+        // Differentiate between UDP & URL based requests
         //! \todo check URL validity in more sophisticated way, if desired
         if (asset_url.find("://") == std::string::npos)
             return false;
@@ -61,39 +56,39 @@ namespace Asset
             return true;
     }
 
-	bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
-	{
-	    if (!IsValidId(asset_id, asset_type))
-	        return false;
+    bool HttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
+    {
+        if (!IsValidId(asset_id, asset_type))
+            return false;
 
         asset_type_t asset_type_int = GetAssetTypeFromTypeName(asset_type);
         if (asset_type_int < 0)
             return false;
 
-		HttpAssetTransfer* transfer = GetTransfer(asset_id);
-		if (transfer)
-		{
-			transfer->InsertTag(tag);
-			return true;
-		}
+        HttpAssetTransfer* transfer = GetTransfer(asset_id);
+        if (transfer)
+        {
+            transfer->InsertTag(tag);
+            return true;
+        }
 
-		HttpAssetTransfer* t = new HttpAssetTransfer();
-		t->SetAssetId(asset_id);
-		t->SetAssetType(asset_type_int);
-		t->InsertTag(tag);
-		asset_transfers_[asset_id] = HttpAssetTransferPtr(t);
-		t->StartTransfer();
+        HttpAssetTransfer* t = new HttpAssetTransfer();
+        t->SetAssetId(asset_id);
+        t->SetAssetType(asset_type_int);
+        t->InsertTag(tag);
+        asset_transfers_[asset_id] = HttpAssetTransferPtr(t);
+        t->StartTransfer();
         return true;
-	}
+    }
 
     bool HttpAssetProvider::InProgress(const std::string& asset_id)
     {
         HttpAssetTransfer* transfer = GetTransfer(asset_id);
         return (transfer != 0);
-		return false;
+        return false;
     }
 
-	Foundation::AssetPtr HttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+    Foundation::AssetPtr HttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         HttpAssetTransfer* transfer = GetTransfer(asset_id);
             
@@ -129,54 +124,54 @@ namespace Asset
         return false;
     }
 
-	void HttpAssetProvider::Update(f64 frametime)
-	{
-		HttpAssetTransferMap::iterator i = asset_transfers_.begin();
-		while (i != asset_transfers_.end())
-		{
-			HttpAssetTransferPtr t = i->second;
+    void HttpAssetProvider::Update(f64 frametime)
+    {
+        HttpAssetTransferMap::iterator i = asset_transfers_.begin();
+        while (i != asset_transfers_.end())
+        {
+            HttpAssetTransferPtr t = i->second;
 
-			if (t->IsFailed())
-			{
-				std::stringstream buf;
-				buf << "HttpAssetTransfer is failed for: ";
-				buf << t->GetAssetId();
-				AssetModule::LogError(buf.str());
+            if (t->IsFailed())
+            {
+                std::stringstream buf;
+                buf << "HttpAssetTransfer is failed for: ";
+                buf << t->GetAssetId();
+                AssetModule::LogError(buf.str());
 
-				SendAssetCanceled(*t.get());
+                SendAssetCanceled(*t.get());
 
-		        asset_transfers_.erase(i);
-				return;
-			}
+                asset_transfers_.erase(i);
+                return;
+            }
 
-			t->Update(frametime);
-			SendAssetProgress(*t.get());
+            t->Update(frametime);
+            SendAssetProgress(*t.get());
 
-			if (t->Ready())
-			{
-				StoreAsset(*t.get());
-		        asset_transfers_.erase(i);
-				return;
-			}
-			else
-			{
-				t->AddTime(frametime);
-				if (t->GetTime() > asset_timeout_)
-				{
-					std::stringstream buf;
-					buf << "HttpAssetTransfer time out for: ";
-					buf << t->GetAssetId();
-					AssetModule::LogError(buf.str());
+            if (t->Ready())
+            {
+                StoreAsset(*t.get());
+                asset_transfers_.erase(i);
+                return;
+            }
+            else
+            {
+                t->AddTime(frametime);
+                if (t->GetTime() > asset_timeout_)
+                {
+                    std::stringstream buf;
+                    buf << "HttpAssetTransfer time out for: ";
+                    buf << t->GetAssetId();
+                    AssetModule::LogError(buf.str());
 
-					SendAssetCanceled(*t.get());
+                    SendAssetCanceled(*t.get());
 
-					asset_transfers_.erase(i);
-					return;
-				}
-			}
-			i++;
-		}
-	}
+                    asset_transfers_.erase(i);
+                    return;
+                }
+            }
+            i++;
+        }
+    }
 
     HttpAssetTransfer* HttpAssetProvider::GetTransfer(const std::string& asset_id)
     {
@@ -191,7 +186,7 @@ namespace Asset
         return 0;
     }       
 
-	void HttpAssetProvider::SendAssetProgress(HttpAssetTransfer& transfer)
+    void HttpAssetProvider::SendAssetProgress(HttpAssetTransfer& transfer)
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         Events::AssetProgress event_data(transfer.GetAssetId(), GetTypeNameFromAssetType(transfer.GetAssetType()), transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
@@ -219,14 +214,14 @@ namespace Asset
             data.resize(transfer.GetReceived());
             transfer.AssembleData(&data[0]);
 
-	   
+       
 #if defined(__GNUC__)
-	    RexAssetMetadata* m = dynamic_cast<RexAssetMetadata*>(new_asset->GetMetadata());
-#else	   
-	    Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
-	    RexAssetMetadata* m = static_cast<RexAssetMetadata*>(metadata);
-#endif	
-	    m->DesesrializeFromJSON(transfer.GetAssetMetadata());
+        RexAssetMetadata* m = dynamic_cast<RexAssetMetadata*>(new_asset->GetMetadata());
+#else       
+        Foundation::AssetMetadataInterface* metadata = new_asset->GetMetadata();
+        RexAssetMetadata* m = static_cast<RexAssetMetadata*>(metadata);
+#endif    
+        m->DesesrializeFromJSON(transfer.GetAssetMetadata());
       
             asset_service->StoreAsset(new_asset);
             
@@ -245,36 +240,36 @@ namespace Asset
         }
     }    
 
-	std::string HttpAssetProvider::SerializeToJSON(Foundation::AssetPtr asset) const
-	{
+    std::string HttpAssetProvider::SerializeToJSON(Foundation::AssetPtr asset) const
+    {
 #if defined(__GNUC__)
-		RexAssetMetadata* metadata = dynamic_cast<RexAssetMetadata*>(asset->GetMetadata());
+        RexAssetMetadata* metadata = dynamic_cast<RexAssetMetadata*>(asset->GetMetadata());
 #else
-		RexAssetMetadata* metadata = static_cast<RexAssetMetadata*>(asset->GetMetadata());
-#endif		
-		std::stringstream s;
+        RexAssetMetadata* metadata = static_cast<RexAssetMetadata*>(asset->GetMetadata());
+#endif        
+        std::stringstream s;
 
-		s << "{";
-		s << "\"id\":\"" << metadata->GetId() << "\",";
-		s << "\"name\":\"" << metadata->GetName() << "\",";
-		s << "\"description\":\"" << metadata->GetDescription() << "\",";
-		s << "\"type\":\"" << metadata->GetContentType() << "\",";
-		if (metadata->IsTemporary())
-			s << "\"temporary\":" << "true" << ",";
-		else
-			s << "\"temporary\":" << "false" << ",";
-		s << "\"data\":\"";
-		Poco::Base64Encoder encoder(s);
+        s << "{";
+        s << "\"id\":\"" << metadata->GetId() << "\",";
+        s << "\"name\":\"" << metadata->GetName() << "\",";
+        s << "\"description\":\"" << metadata->GetDescription() << "\",";
+        s << "\"type\":\"" << metadata->GetContentType() << "\",";
+        if (metadata->IsTemporary())
+            s << "\"temporary\":" << "true" << ",";
+        else
+            s << "\"temporary\":" << "false" << ",";
+        s << "\"data\":\"";
+        Poco::Base64Encoder encoder(s);
 
-		encoder.write((char*)asset->GetData(),asset->GetSize());
-		encoder.flush();
-		encoder.close();
-		s << "\"";
-		s << "}";
+        encoder.write((char*)asset->GetData(),asset->GetSize());
+        encoder.flush();
+        encoder.close();
+        s << "\"";
+        s << "}";
 
-		std::string t = s.str();
+        std::string t = s.str();
 
-		return s.str();
-	}
+        return s.str();
+    }
 
 } // end of namespace

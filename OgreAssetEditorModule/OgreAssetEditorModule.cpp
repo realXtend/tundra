@@ -58,21 +58,10 @@ void OgreAssetEditorModule::Initialize()
 void OgreAssetEditorModule::PostInitialize()
 {
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
-    if (frameworkEventCategory_ == 0)
-        LogError("Failed to query \"Framework\" event category");
-
     inventoryEventCategory_ = eventManager_->QueryEventCategory("Inventory");
-    if (inventoryEventCategory_ == 0)
-        LogError("Failed to query \"Inventory\" event category");
-
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
-    if (assetEventCategory_ == 0)
-        LogError("Failed to query \"Asset\" event category");
-
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
-    if (resourceEventCategory_ == 0)
-        LogError("Failed to query \"Resource\" event category");
-
+    
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
 
     materialWizard_ = new MaterialWizard;
@@ -119,8 +108,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
         if (event_id == Foundation::NETWORKING_REGISTERED)
         {
             networkStateEventCategory_ = eventManager_->QueryEventCategory("NetworkState");
-            if (networkStateEventCategory_ == 0)
-                LogError("Failed to query \"NetworkState\" event category");
             return false;
         }
     }

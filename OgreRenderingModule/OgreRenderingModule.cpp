@@ -101,9 +101,6 @@ namespace OgreRenderer
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
-        if (asset_event_category_ == 0 )
-            LogWarning("Unable to find event category for Asset events!");
-
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");

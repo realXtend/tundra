@@ -164,18 +164,11 @@ namespace PythonScript
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
         framework_category_id = em_->QueryEventCategory("Framework");
-        if (framework_category_id == 0)
-            LogWarning("Unable to find event category for incoming Framework events!");
 
         // Input (OIS)
         inputeventcategoryid = em_->QueryEventCategory("Input");
-        if (inputeventcategoryid == 0)
-            LogError("Unable to find event category for Input");
-
         // Scene (SceneManager)
         scene_event_category_ = em_->QueryEventCategory("Scene");
-        if (scene_event_category_ == 0)
-            LogWarning("Unable to find event category for Scene events!");
         
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
@@ -252,17 +245,9 @@ namespace PythonScript
         if (inboundCategoryID_ == 0)
         {
             inboundCategoryID_ = em_->QueryEventCategory("NetworkIn");
-            if (inboundCategoryID_ == 0)
-                LogWarning("Unable to find event category for incoming OpenSimNetwork events!");
-            else
-                LogInfo("Subscribed to [NetworkIn] events");
         }
         // Network State
         networkstate_category_id = em_->QueryEventCategory("NetworkState");
-        if (networkstate_category_id == 0)
-            LogError("Unable to find event category for Network");
-        else
-            LogInfo("Subscribed to [NetworkState] events");
     }
 
     bool PythonScriptModule::HandleEvent(

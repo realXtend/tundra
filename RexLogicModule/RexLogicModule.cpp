@@ -157,72 +157,52 @@ void RexLogicModule::PostInitialize()
 {
     // Input events.
     event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
-    if (eventcategoryid != 0)
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
-    } else
-        LogError("Unable to find event category for Input");
+
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
+
 
     // Action events.
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
-    if (eventcategoryid != 0)
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
-    } else
-        LogError("Unable to find event category for Action");
+    
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(
+        boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
 
     // Scene events.
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
-    if (eventcategoryid != 0)
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
-    } else
-        LogError("Unable to find event category for Scene");
+
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
 
     // Resource events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
-    else
-        LogError("Unable to find event category for Resource");
+    event_handlers_[eventcategoryid].push_back(
+        boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
 
     // Inventory events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
-    else
-        LogError("Unable to find event category for Inventory");
+    event_handlers_[eventcategoryid].push_back(
+        boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
 
     // Asset events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(
-            boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-    else
-        LogError("Unable to find event category for Asset");
+    event_handlers_[eventcategoryid].push_back(
+        boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
     
     // Framework events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
-    if (eventcategoryid != 0)
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
-    else
-        LogError("Unable to find event category for Framework");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
 
     send_input_state_ = true;
 
@@ -265,41 +245,31 @@ void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities:
     // NetworkState events
     LogicEventHandlerMap::iterator i;
     event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-    if (eventcategoryid != 0)
+    i = event_handlers_.find(eventcategoryid);
+    if (i == event_handlers_.end())
     {
-        i = event_handlers_.find(eventcategoryid);
-        if (i == event_handlers_.end())
-        {
-            event_handlers_[eventcategoryid].push_back(boost::bind(
-                &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-            LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
-        }
-        else
-        {
-            LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
-        }
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+        LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
     }
     else
-        LogError("Unable to find event category for NetworkState");
+    {
+        LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
+    }
 
     // NetworkIn events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-    if (eventcategoryid != 0)
+    i = event_handlers_.find(eventcategoryid);
+    if (i == event_handlers_.end())
     {
-        i = event_handlers_.find(eventcategoryid);
-        if (i == event_handlers_.end())
-        {
-            event_handlers_[eventcategoryid].push_back(boost::bind(
-                &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-            LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
-        }
-        else
-        {
-            LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
-        }
+        event_handlers_[eventcategoryid].push_back(boost::bind(
+            &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
+        LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
     }
     else
-        LogError("Unable to find event category for NetworkIn");
+    {
+        LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
+    }
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
@@ -338,8 +308,6 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     }
 
     event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
-    if (scene_event_category == 0)
-        LogError("Failed to query \"Scene\" event category");
 
     return GetCurrentActiveScene();
 }
