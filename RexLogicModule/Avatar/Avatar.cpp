@@ -500,6 +500,9 @@ namespace RexLogic
         {
             overlay->SetText(presence->GetFullName().c_str());
             overlay->AddButton(*(new QPushButton("Poke")));
+            overlay->AddButton(*(new QPushButton("Chat")));
+            overlay->AddButton(*(new QPushButton("Mute")));
+            overlay->AddButton(*(new QPushButton("Follow")));
             overlay->InitializeBillboards();
         }
 

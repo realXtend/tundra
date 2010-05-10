@@ -14,14 +14,16 @@
 #include "Vector3D.h"
 #include "RexLogicModuleApi.h"
 
-#include "HoveringWidgetController.h"
+#include "HoveringNameController.h"
+#include "HoveringButtonsController.h"
 
 #include <QFont>
 #include <QColor>
 #include <QLinearGradient>
+#include <QSizeF>
 
 
-
+//Needs refactor
 namespace Ogre
 {
     class SceneNode;
@@ -40,7 +42,7 @@ class QPushButton;
 QT_BEGIN_NAMESPACE
 class QTimeLine;
 QT_END_NAMESPACE
-
+class QWidget;
 namespace RexLogic
 {
 
@@ -72,8 +74,8 @@ namespace RexLogic
         /// @param color Color.
         void SetTextColor(const QColor &color);
 
-        Ogre::Billboard& GetBillboard(){return *billboard_;}
-        Ogre::BillboardSet& GetBillboardSet(){return *billboardSet_;}
+        Ogre::Billboard* const GetButtonsBillboard(){return buttonsbillboard_;}
+        Ogre::BillboardSet* const GetButtonsBillboardSet(){return buttonsbillboardSet_;}
 
 
     public slots:
@@ -116,7 +118,9 @@ namespace RexLogic
         void SetCameraDistance(Real dist);
         Real GetCameraDistance(){return cam_distance_;}
 
-        void AdjustWidget();
+        void AdjustWidgetinfo();
+
+        void ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, QSizeF& size,bool next_to_nametag=false);
 
     private slots:
         /// Updates the animation
@@ -132,19 +136,25 @@ namespace RexLogic
     private:
 
         /// Returns pixmap with widget rendered to it
-        QPixmap GetPixmap();
+        QPixmap GetPixmap(QWidget& w, QRect dimensions);
 
         /// Renderer pointer.
         boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
         /// Ogre billboard set.
-        Ogre::BillboardSet *billboardSet_;
+        Ogre::BillboardSet *namebillboardSet_;
+
+        Ogre::BillboardSet *buttonsbillboardSet_;
 
         /// Ogre billboard.
-        Ogre::Billboard *billboard_;
+        Ogre::Billboard *namebillboard_;
+
+        Ogre::Billboard *buttonsbillboard_;
 
         /// Name of the material used for the billboard set.
-        std::string materialName_;
+        std::string namematerialName_;
+
+        std::string buttonsmaterialName_;
 
 
         // Visibility animation timeline.
@@ -159,9 +169,16 @@ namespace RexLogic
 
         bool buttons_visible_;
 
-        HoveringWidgetController* widget_;
+        HoveringNameController* namewidget_;
+
+        HoveringButtonsController *buttonswidget_;
+
+        QSizeF bb_name_size_view;
+        QSizeF bb_buttons_size_view;
 
         Real cam_distance_;
+
+        Real bb_rel_posy;
     };
 }
 #endif

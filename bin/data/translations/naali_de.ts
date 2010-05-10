@@ -1053,6 +1053,28 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+    <name>HoveringButtonsWidget</name>
+    <message>
+        <source>HoveringButtonsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attach/Detach</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HoveringName</name>
+    <message>
+        <source>HoveringWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>John Doe</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>HoveringWidget</name>
     <message>
         <source>HoveringWidget</source>

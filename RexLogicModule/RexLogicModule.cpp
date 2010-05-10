@@ -403,7 +403,7 @@ void RexLogicModule::Update(f64 frametime)
 
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
-        UpdateAvatarNameTags(avatar_->GetUserAvatar());
+        
 
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
@@ -436,7 +436,6 @@ void RexLogicModule::Update(f64 frametime)
             input_handler_->Update(frametime);
         }
     }
-
 
 
     RESETPROFILER;
@@ -1012,7 +1011,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     {
         Scene::EntityPtr entity = (*iter);
         ++iter;
-        if (!entity.get() || entity.get() == users_avatar.get())
+        if (!entity.get() /*|| entity.get() == users_avatar.get()*/)
             continue;
         if (entity->GetComponent<EC_OpenSimPresence>().get())
             all_avatars.append(entity);
@@ -1033,7 +1032,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         if (!placable.get() || !widget.get())
             continue;
 
-        // Check distance, update name tag visibility
+
         f32 distance = camera_position.getDistanceFrom(placable->GetPosition());
         widget->SetCameraDistance(distance);
     }
@@ -1202,16 +1201,22 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             Ogre::Vector3 campos_objspace;
             Ogre::Ray ray = original_ray;
             EC_HoveringWidget* widget = visible_widgets.at(i);
-            Ogre::Billboard board = widget->GetBillboard();
-            Ogre::Vector3 vec = board.getPosition();
-            Ogre::Real billboard_h = widget->GetBillboardSet().getDefaultHeight();
-            Ogre::Real billboard_w = widget->GetBillboardSet().getDefaultWidth();
+            if(!widget)
+                continue;
+            Ogre::BillboardSet* bbset = widget->GetButtonsBillboardSet();
+            Ogre::Billboard* board = widget->GetButtonsBillboard();
+            if(!bbset || !board)
+                continue;
+            Ogre::Vector3 vec = board->getPosition();
+            Ogre::Real buttonsbillboard_h = board->getOwnHeight();
+            Ogre::Real buttonsbillboard_w = board->getOwnWidth();
+            
 
             OgreRenderer::EC_OgrePlaceable* placeable = widget->GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
             if(!placeable)
                 continue;
             
-            widget->GetBillboardSet().getWorldTransforms(&mat);
+            bbset->getWorldTransforms(&mat);
             campos_objspace = mat.inverse()*campos;
             //TO DO: take into account that in 1st. person mode we have to rotate around all axes
             Vector3Df lookat(campos_objspace.x, campos_objspace.y, 0);
@@ -1225,7 +1230,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             
             
             
-            widget->GetBillboardSet().getWorldTransforms(&mat);
+            bbset->getWorldTransforms(&mat);
             
             placeable->SetOrientation(orig_ori);
             placeable->GetSceneNode()->needUpdate();
@@ -1233,7 +1238,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
 
 
 
-            Ogre::AxisAlignedBox box(vec.x, vec.y - billboard_w/2, vec.z - billboard_h/2, vec.x , vec.y + billboard_w/2, vec.z + billboard_h/2);
+            Ogre::AxisAlignedBox box(vec.x, vec.y - buttonsbillboard_w/2, vec.z - buttonsbillboard_h/2, vec.x , vec.y + buttonsbillboard_w/2, vec.z + buttonsbillboard_h/2);
             //Transform cameratoviewportray into the billboards local space
             Ogre::Vector4 temp(ray.getDirection());
             temp.w = 0;
@@ -1245,8 +1250,8 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             {
                 Ogre::Vector3 inters_point = ray.getPoint(result.second);
                 inters_point -= vec;
-                Real x = (inters_point.y + billboard_w/2)/billboard_w;
-                Real y = (inters_point.z + billboard_h/2)/billboard_h;
+                Real x = (inters_point.y + buttonsbillboard_w/2)/buttonsbillboard_w;
+                Real y = (inters_point.z + buttonsbillboard_h/2)/buttonsbillboard_h;
                 widget->WidgetClicked(1-x, 1-y);
                 ret_val = true;
                 
