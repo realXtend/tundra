@@ -191,7 +191,9 @@ namespace MumbleVoip
         void StateChanged(State state);
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
+        //! emited when user left from server
         void UserLeft(User* user);
+        //! emited when user join to server
         void UserJoined(User* user);
         void ChannelAdded(Channel* channel); 
         void ChannelRemoved(Channel* channel);
