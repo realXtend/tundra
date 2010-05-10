@@ -4,7 +4,6 @@
  *  @file   DebugStats.h
  *  @brief  DebugStatsModule shows information about internal core data structures in separate windows.
  *          Useful for verifying and understanding the internal state of the application.
- *  @note   Depends on RexLogicModule so don't create dependency to this module.
  */
 
 #ifndef incl_DebugStats_h
@@ -17,11 +16,6 @@
 
 #include <QObject>
 #include <QPointer>
-
-namespace RexLogic
-{
-    class EC_OpenSimPrim;
-}
 
 namespace OgreRenderer
 {
