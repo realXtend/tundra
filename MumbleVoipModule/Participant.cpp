@@ -6,13 +6,15 @@ namespace MumbleVoip
 {
     namespace InWorldVoice
     {
-        Participant::Participant(User* user) :
+        Participant::Participant(QString name, User* user) :
             muted_(false),
             speaking_(false),
             position_known_(false),
             position_(0.0, 0.0, 0.0),
-            user_(user)
+            user_(user),
+            name_(name)
         {
+            avatar_uuid_ = user_->Name();
             connect(user_, SIGNAL(StartSpeaking()), SLOT(OnStartSpeaking()) );
             connect(user_, SIGNAL(StopSpeaking()), SLOT(OnStopSpeaking()) );
             connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
@@ -22,6 +24,16 @@ namespace MumbleVoip
         Participant::~Participant()
         {
 
+        }
+
+        QString Participant::Name() const
+        {
+            return name_;
+        }
+
+        QString Participant::AvatarUUID() const
+        {
+            return avatar_uuid_;
         }
 
         bool Participant::IsSpeaking() const
@@ -79,6 +91,8 @@ namespace MumbleVoip
         {
             emit Communications::InWorldVoice::ParticipantInterface::Left();
         }
+
+
 
     } // InWorldVoice
 

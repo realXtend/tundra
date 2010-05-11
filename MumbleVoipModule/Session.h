@@ -52,6 +52,7 @@ namespace MumbleVoip
         private:
             bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
             QString OwnAvatarId();
+            QString GetAvatarFullName(QString uuid) const;
     
             Foundation::Framework* framework_;
             State state_;
@@ -71,7 +72,7 @@ namespace MumbleVoip
 
 
         private slots:
-            void UpdateParticipantList(User*);
+            void CreateNewParticipant(User*);
             void UpdateParticipantList();
             void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
             void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus

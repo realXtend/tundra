@@ -16,8 +16,10 @@ namespace MumbleVoip
         {
             Q_OBJECT
         public:
-            Participant(User* user);
+            Participant(QString name, User* user);
             virtual ~Participant();
+            virtual QString Name() const;
+            virtual QString AvatarUUID() const;
             virtual bool IsSpeaking() const;
             virtual void Mute(bool mute);
             virtual bool IsMuted() const;
@@ -31,6 +33,8 @@ namespace MumbleVoip
             bool position_known_;
             Vector3df position_;
             User* user_;
+            QString name_;
+            QString avatar_uuid_;
 
         private slots:
             void OnStartSpeaking();

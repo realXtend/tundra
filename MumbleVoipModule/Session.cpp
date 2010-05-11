@@ -9,13 +9,10 @@
 #include "User.h"
 #include "EC_OgrePlaceable.h" // for avatar position
 #include "EC_OpenSimPresence.h" // for avatar position
-//#include "SceneManager.h"     // for avatar position
 #include "ModuleManager.h"    // for avatar info
-//#include "RexLogicModule.h"   // for avatar position
-//#include "Avatar/Avatar.h"    // for avatar position
 #include "WorldLogicInterface.h" // for avatar position
 #include "Entity.h" // for avatar position
-
+#include "SceneManager.h"
 #include "WorldStream.h"
 #include "Channel.h"
 
@@ -46,7 +43,7 @@ namespace MumbleVoip
             }
             state_ = STATE_OPEN; // \todo get this information from connection_manager
             connection_manager_->SendAudio(audio_sending_enabled_);
-            connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
+            connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(CreateNewParticipant(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
         }
 
@@ -161,7 +158,7 @@ namespace MumbleVoip
             }
         }
 
-        void Session::UpdateParticipantList(User* user)
+        void Session::CreateNewParticipant(User* user)
         {
             if (user->Name() == OwnAvatarId())
             {
@@ -172,13 +169,15 @@ namespace MumbleVoip
             if (user->Channel()->FullName() != channel_name_)
                 return; 
 
-            Participant* p = new Participant(user);
+            QString uuid = user->Name();
+            QString name = GetAvatarFullName(uuid);
+            if (name.size() == 0)
+                name = QString("(Unknow) %0").arg(user->Name());
+            Participant* p = new Participant(name, user);
             participants_.append(p);
             connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
             connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
             connect(p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
-            //(Communications::InWorldVoice::ParticipantInterface*)
-            //(Communications::InWorldVoice::ParticipantInterface*)
 
             emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
         }
@@ -283,6 +282,23 @@ namespace MumbleVoip
                 return "";
 
             return opensim_presence->agentId.ToQString();
+        }
+
+        QString Session::GetAvatarFullName(QString uuid) const
+        {
+            Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+            if (current_scene.get())
+            {
+                for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
+                {
+                    Scene::Entity &entity = **iter;
+                    EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
+                    if (presence_component)
+                        if (presence_component->agentId.ToQString() == uuid)
+                            return QString(presence_component->GetFullName().c_str());
+                }
+            }
+            return "";
         }
 
     } // InWorldVoice

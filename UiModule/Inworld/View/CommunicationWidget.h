@@ -93,6 +93,10 @@ namespace CoreUi
         Q_OBJECT
     public:
         VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant);
+        Communications::InWorldVoice::ParticipantInterface* Participant() const;
+    private slots:
+        void UpdateStyleSheet();
+        void ToggleMute();
     private:
         Communications::InWorldVoice::ParticipantInterface* participant_;
     };
@@ -103,6 +107,7 @@ namespace CoreUi
         Q_OBJECT
     public:
         VoiceUsersWidget(QWidget *parent = 0, Qt::WindowFlags wFlags = 0);
+        virtual ~VoiceUsersWidget();
         virtual void SetSession(Communications::InWorldVoice::SessionInterface* session);
     public slots:
         void UpdateList();
