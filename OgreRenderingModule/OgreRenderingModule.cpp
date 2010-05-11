@@ -19,6 +19,8 @@
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
+
+
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Entity.h"
@@ -29,6 +31,9 @@
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include <Ogre.h>
+
+
+#include "SceneManager.h"
 
 namespace OgreRenderer
 {
@@ -101,9 +106,6 @@ namespace OgreRenderer
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
-        if (asset_event_category_ == 0 )
-            LogWarning("Unable to find event category for Asset events!");
-
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
@@ -114,6 +116,8 @@ namespace OgreRenderer
                 "RenderStats", "Prints out render statistics.", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
+
+
 
     // virtual
     bool OgreRenderingModule::HandleEvent(

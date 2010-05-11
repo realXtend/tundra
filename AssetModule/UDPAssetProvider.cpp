@@ -30,10 +30,7 @@ namespace Asset
 
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
-        // Assume that the asset manager has been instantiated at this point
         event_category_ = event_manager->QueryEventCategory("Asset");
-        if (!event_category_)
-            AssetModule::LogWarning("Could not get event category for Asset events");
     }
 
     UDPAssetProvider::~UDPAssetProvider()

@@ -58,11 +58,12 @@ namespace Foundation
          */
         event_category_id_t RegisterEventCategory(const std::string& name);
         
-        //! Queries for an event category ID by name
+        //! Queries for an event category ID by name.
         /*! \param name Event category name
-            \return Non-zero id, or zero if event category not recognized
+            \param create Whether will create category if missing (default true)
+            \return Non-zero id to event category, or illegal category if missing and create = false
          */
-        event_category_id_t QueryEventCategory(const std::string& name) const;
+        event_category_id_t QueryEventCategory(const std::string& name, bool create = true);
         
        //! Queries for an event category name by ID
         /*! \param category_id event category ID

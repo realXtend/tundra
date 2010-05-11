@@ -51,6 +51,7 @@ namespace Scene
 
         EntityClickedData::~EntityClickedData() {}
 
+
         ///\todo Refactor these.
         void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
         {

@@ -78,8 +78,6 @@ void DebugStatsModule::PostInitialize()
         Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-    if (frameworkEventCategory_ == 0)
-        LogError("Failed to query \"Framework\" event category");
 }
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
@@ -172,12 +170,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
             networkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-            if (networkEventCategory_ == 0)
-                LogError("Failed to query \"NetworkIn\" event category");
-
             networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-            if (networkStateEventCategory_ == 0)
-                LogError("Failed to query \"NetworkState\" event category");
 
             return false;
         }

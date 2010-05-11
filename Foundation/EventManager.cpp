@@ -28,7 +28,7 @@ namespace Foundation
         main_thread_id_(QThread::currentThreadId())
     {
     }
-
+    
     EventManager::~EventManager()
     {
         event_subscriber_root_.reset();
@@ -50,12 +50,20 @@ namespace Foundation
         return event_category_map_[name];
     }
     
-    event_category_id_t EventManager::QueryEventCategory(const std::string& name) const
+    event_category_id_t EventManager::QueryEventCategory(const std::string& name, bool create)
     {
         EventCategoryMap::const_iterator i = event_category_map_.find(name);
         if (i != event_category_map_.end())
             return i->second;
-        else 
+        
+        if (create)
+        {
+            event_category_map_[name] = next_category_id_;
+            next_category_id_++;
+            Foundation::RootLogDebug("Registered event category " + name + " by query");
+            return event_category_map_[name];
+        }
+        else
             return IllegalEventCategory;
     }
     

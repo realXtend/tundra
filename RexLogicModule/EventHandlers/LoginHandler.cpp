@@ -275,7 +275,7 @@ namespace RexLogic
     void TaigaLoginHandler::ProcessCommandParameterLogin(QString &entry_point_url)
     {
         server_entry_point_url_ = ValidateServerUrl(entry_point_url);
-        dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl("NotNeeded");
+        dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl("");
         if (server_entry_point_url_.isValid())
         {
             emit LoginStarted();
@@ -309,7 +309,7 @@ namespace RexLogic
     void TaigaLoginHandler::ProcessWebLogin(QString url)
     {
         server_entry_point_url_ = ValidateServerUrl(url);
-        dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl("NotNeeded");
+        dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_)->SetIdentityUrl("");
         if (server_entry_point_url_.isValid())
         {
             emit LoginStarted();

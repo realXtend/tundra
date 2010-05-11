@@ -249,8 +249,6 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
     // Get event manager.
     EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-    if (event_category == 0)
-        return false;
 
     std::string asset_id = asset->GetAssetReference().toStdString();
     asset_type_t asset_type = asset->GetAssetType();
@@ -570,8 +568,6 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     // Send InventoryItemDownloaded event.
     Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-    if (event_category == 0)
-        return;
 
     AbstractInventoryItem *item = GetChildById(i.value());
     assert(item);
@@ -797,20 +793,18 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     // Note: sent as delayed, to be thread-safe
     Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
-    if (event_category != 0)
-    {
-        boost::shared_ptr<InventoryItemEventData> asset_data(new InventoryItemEventData(IIT_Asset));
-        asset_data->id = RexUUID(inventory_id);
-        asset_data->parentId = folder_id;
-        asset_data->assetId = RexUUID(asset_id);
-        asset_data->assetType = asset_type;
-        asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
-        asset_data->name = name;
-        asset_data->description = description;
-        asset_data->fileName = filename;
 
-        event_mgr->SendDelayedEvent<InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
-    }
+    boost::shared_ptr<InventoryItemEventData> asset_data(new InventoryItemEventData(IIT_Asset));
+    asset_data->id = RexUUID(inventory_id);
+    asset_data->parentId = folder_id;
+    asset_data->assetId = RexUUID(asset_id);
+    asset_data->assetType = asset_type;
+    asset_data->inventoryType = RexTypes::GetInventoryTypeFromAssetType(asset_type);
+    asset_data->name = name;
+    asset_data->description = description;
+    asset_data->fileName = filename;
+
+    event_mgr->SendDelayedEvent<InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
 
     InventoryModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
     return true;
