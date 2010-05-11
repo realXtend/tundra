@@ -6,6 +6,8 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
+#include <QObject>
+
 namespace ECEditor
 {
     //! EC Editor module
@@ -13,8 +15,10 @@ namespace ECEditor
      */
     class ECEditorWindow;
     
-    class ECEditorModule : public Foundation::ModuleInterfaceImpl
+    class ECEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
+
     public:
         //! Constructor.
         ECEditorModule();
@@ -22,41 +26,54 @@ namespace ECEditor
         //! Destructor 
         virtual ~ECEditorModule();
 
+        //! ModuleInterfaceImpl overrides.
         void Load();
         void Initialize();
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-        
+
+        //! Subscribes this module to network events.
         void SubscribeToNetworkEvents();
-        
+
+        //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
-        
+
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return name_static_; }
-        
+
+        //! Logging functions.
         MODULE_LOGGING_FUNCTIONS
-        
+
+    public slots:
+        //! Creates EC attribute XML editor widget for entity.
+        //! \param entity_id Entity ID.
+        void CreateXmlEditor(Scene::EntityPtr entity);
+
+        //! Creates EC attribute XML editor widget for component.
+        //! \param entity_id Entity ID.
+        void CreateXmlEditor(Foundation::ComponentPtr component);
+
     private:
         //! EC editor window
         ECEditorWindow* editor_window_;
-        
+
         //! Static name of the module
         static std::string name_static_;
-        
+
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;
-        
+
         //! Id for Framework event category
         event_category_id_t framework_event_category_;
-        
+
         //! Id for Scene event category
         event_category_id_t scene_event_category_;
-        
+
         //! Id for NetworkState event category
         event_category_id_t network_state_event_category_;
-        
+
         //! Id for Input event category
         event_category_id_t input_event_category_;
     };

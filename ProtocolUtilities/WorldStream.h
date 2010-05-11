@@ -70,11 +70,6 @@ namespace ProtocolUtilities
         Q_OBJECT
 
     public:
-        MODULE_LOGGING_FUNCTIONS;
-        //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return loggerName; }
-//        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
-
         /// Constructor.
         /// @param framework Pointer to framework.
         explicit WorldStream(Foundation::Framework *framework);
@@ -82,8 +77,8 @@ namespace ProtocolUtilities
         /// Destructor.
         virtual ~WorldStream();
 
-        /// Name used for logging.
-        static const std::string &loggerName;
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return loggerName_; }
 
     public slots:
         //------------------- Connection managing functions ------------------- //
@@ -366,13 +361,14 @@ namespace ProtocolUtilities
         void SendImprovedInstantMessagePacket(const RexUUID &target, const std::string &text);
 
         //! Sends a generic message
+        //! a qt overload version for pythonqt & qtscript
+        void SendGenericMessage(const QString &method, const QStringList& strings);
+
+        //! Sends a generic message
         /*! \param method Method name
             \param strings Vector of data strings to be sent
          */
         void SendGenericMessage(const std::string& method, const StringVector& strings);
-        
-        //a qt version for pythonqt & qtscript
-        void SendGenericMessage(QString method, QStringList& strings);
 
         //! Sends a generic message with binary data packed to the end
         /*! \param method Method name
@@ -515,6 +511,10 @@ namespace ProtocolUtilities
         void UnregisterCurrentProtocolModule();
 
     private:
+        Q_DISABLE_COPY(WorldStream);
+
+        MODULE_LOGGING_FUNCTIONS;
+
         /// Sends all the needed packets to server when connection successfull
         void SendLoginSuccessfullPackets();
 
@@ -526,6 +526,9 @@ namespace ProtocolUtilities
 
         /// WriteFloatToBytes
         void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
+
+        /// Name used for logging.
+        static const std::string &loggerName_;
 
         /// The framework we belong to.
         Foundation::Framework *framework_;

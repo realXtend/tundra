@@ -14,13 +14,14 @@
 
 #include <QString>
 #include <QUrl>
-#include <QStringList> //for pythonqt compat override of SendGenericMessage
+#include <QStringList>
+
 #include "MemoryLeakCheck.h"
 
 namespace ProtocolUtilities
 {
 
-const std::string &WorldStream::loggerName = "WorldStream";
+const std::string &WorldStream::loggerName_ = "WorldStream";
 
 WorldStream::WorldStream(Foundation::Framework *framework) :
     framework_(framework),
@@ -1164,18 +1165,11 @@ void WorldStream::SendTerminateFriendshipPacket(const RexUUID &other_id)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendGenericMessage(QString method, QStringList& strings)
+void WorldStream::SendGenericMessage(const QString &method, const QStringList& strings)
 {
     StringVector stringvec;
-    //QVector<QString> qstv = strings.toVector();
-    //stringvec = qstv.toStdVector(); //QString != std::string so this can't work, right?
-
-    for (QStringList::const_iterator const_iter = strings.constBegin();
-        const_iter != strings.constEnd(); ++const_iter)
-    {
-        QString qstr = *const_iter;
-        stringvec.push_back(qstr.toStdString());
-    }
+    for(QStringList::const_iterator it = strings.begin(); it != strings.end(); ++it)
+        stringvec.push_back(it->toStdString());
 
     SendGenericMessage(method.toStdString(), stringvec);
 }
@@ -1496,14 +1490,9 @@ void WorldStream::SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids
 
 void WorldStream::SendObjectLinkPacket(const QStringList& strings)
 {
-	std::vector<entity_id_t> vec;
-
-    for (QStringList::const_iterator const_iter = strings.constBegin();
-        const_iter != strings.constEnd(); ++const_iter)
-    {
-        QString qstr = *const_iter;
-		vec.push_back(qstr.toUInt());
-    }
+    std::vector<entity_id_t> vec;
+    for(QStringList::const_iterator it = strings.constBegin(); it != strings.constEnd(); ++it)
+        vec.push_back((*it).toUInt());
 
     SendObjectLinkPacket(vec);
 }
@@ -1530,14 +1519,9 @@ void WorldStream::SendObjectDelinkPacket(const std::vector<entity_id_t> &local_i
 
 void WorldStream::SendObjectDelinkPacket(const QStringList& strings)
 {
-	std::vector<entity_id_t> vec;
-
-    for (QStringList::const_iterator const_iter = strings.constBegin();
-        const_iter != strings.constEnd(); ++const_iter)
-    {
-        QString qstr = *const_iter;
-		vec.push_back(qstr.toUInt());
-    }
+    std::vector<entity_id_t> vec;
+    for(QStringList::const_iterator it = strings.constBegin(); it != strings.constEnd(); ++it)
+        vec.push_back((*it).toUInt());
 
     SendObjectDelinkPacket(vec);
 }
