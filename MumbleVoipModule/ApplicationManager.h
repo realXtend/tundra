@@ -12,25 +12,22 @@ namespace MumbleClient
 
 namespace MumbleVoip
 {
-    //! Channel on Mumble server
+    //! Mumble client application startup
     //!
-    //! @todo Add signals: UserJoined, UserLeft ???
-    //! @todo Add Users() method ???
     class ApplicationManager
     {
-    public:
         //! Default constructor
-        //! @param channel mumbleclient library Channel object 
         ApplicationManager();
+    public:
 
         //! Start mumble client application with given server url
         //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
         static void StartMumbleClient(const QString& server_url);
 
-        //! Kill mumble client process
-        static void KillMumbleClient();
-
+        //! @return number of StartMumbleClient calls made
+        static int StartCount();
     private:
+        static int start_count_;
     };
 
 }// namespace MumbleVoip

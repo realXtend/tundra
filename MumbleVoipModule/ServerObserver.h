@@ -43,16 +43,15 @@ namespace MumbleVoip
         //! Emited when server info was successfully found
         void MumbleServerInfoReceived(ServerInfo info);
 
-    private:
+    private slots:
+        void OnMumbleServerInfoHttpResponse(QNetworkReply* reply);
         void RequestMumbleServerInfo(const QString &grid_url, const QString &agent_id);
 
+    private:
         Foundation::Framework* framework_;
         QNetworkAccessManager* server_info_request_manager_;
         event_category_id_t framework_event_category_; 
         event_category_id_t networkstate_event_category_;
-
-    private slots:
-        void OnMumbleServerInfoHttpResponse(QNetworkReply* reply);
     };
 
 } // end of namespace: MumbleVoip

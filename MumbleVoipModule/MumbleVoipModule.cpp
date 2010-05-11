@@ -1,18 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
 #include "MumbleVoipModule.h"
 #include "LinkPlugin.h"
 #include "ServerObserver.h"
-#include "ConnectionManager.h"
-#include "ServerInfo.h"
 #include "ModuleManager.h"
 #include "EC_OgrePlaceable.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "EventManager.h"
 #include "WorldLogicInterface.h"
 #include "Entity.h"
-#include "CommunicationsService.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "EventManager.h"
 #include "LinkPlugin.h"
 #include "Provider.h"
 #include "ApplicationManager.h"
@@ -30,32 +28,47 @@ namespace MumbleVoip
     MumbleVoipModule::MumbleVoipModule()
         : ModuleInterfaceImpl(module_name_),
           link_plugin_(0),
-          application_manager_(0),
+          server_observer_(0),
+          in_world_voice_provider_(0),
           time_from_last_update_ms_(0),
           use_camera_position_(false),
-          mumble_client_started_(false)
-//          mumble_use_library_(false)
+          use_native_mumble_client_(false)
     {
+        QStringList arguments = QCoreApplication::arguments();
+        foreach(QString arg, arguments)
+        {
+            if (arg == "--use_native_mumble_client")
+                use_native_mumble_client_ = true;
+        }
     }
 
     MumbleVoipModule::~MumbleVoipModule()
     {
-        SAFE_DELETE(application_manager_);
         SAFE_DELETE(link_plugin_);
+        SAFE_DELETE(server_observer_);
+        SAFE_DELETE(in_world_voice_provider_);
     }
 
     void MumbleVoipModule::Load()
     {
-        MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-        if (!mumble_lib)
+        if (use_native_mumble_client_)
         {
-            MumbleVoipModule::LogError("Cannot found Mumble library intance.");
-            return;
+            server_observer_ = new ServerObserver(framework_);
+            connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
+        }
+        else
+        {
+            MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
+            if (!mumble_lib)
+            {
+                MumbleVoipModule::LogError("Cannot found Mumble library intance.");
+                return;
+            }
+
+            in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
         }
 
-        in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
         link_plugin_ = new LinkPlugin();
-        application_manager_ = new ApplicationManager();
     }
 
     void MumbleVoipModule::Unload()
@@ -76,13 +89,28 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Uninitialize()
     {
-        MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-        if (!mumble_lib)
+        SAFE_DELETE(link_plugin_);
+        SAFE_DELETE(server_observer_);
+        SAFE_DELETE(in_world_voice_provider_);
+
+        if (use_native_mumble_client_)
         {
-            MumbleVoipModule::LogError("Cannot shutdown Mumble library: No library instance available.");
-            return;
+            if (ApplicationManager::StartCount() > 0)
+            {
+                // Hack will disconnect from server and trying to connect new one
+                ApplicationManager::StartMumbleClient("mumble://user@0.0.0.0?version=1.2.2"); 
+            }
         }
-        mumble_lib->Shutdown();
+        else
+        {
+            MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
+            if (!mumble_lib)
+            {
+                MumbleVoipModule::LogError("Cannot shutdown Mumble library: No library instance available.");
+                return;
+            }
+            mumble_lib->Shutdown();
+        }
     }
 
     void MumbleVoipModule::Update(f64 frametime)
@@ -96,20 +124,11 @@ namespace MumbleVoip
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        //if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
-        //{
-        //    Foundation::ProgramOptionsEvent *po_event = checked_static_cast<Foundation::ProgramOptionsEvent*>(data);
-        //    assert(po_event);
-        //    for(int count = 0; count < po_event->argc; ++count )
-        //    {
-        //        QString arg = QString(po_event->argv[count]);
-        //        if (arg == "--usemumblelibrary")
-        //            mumble_use_library_ = true;
-        //    }
-        //}
-
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);
+
+        if (server_observer_)
+            server_observer_->HandleEvent(category_id, event_id, data);
 
         return false;
     }
@@ -120,7 +139,7 @@ namespace MumbleVoip
             return;
 
         time_from_last_update_ms_ += 1000*frametime;
-        if (time_from_last_update_ms_ < UPDATE_TIME_MS_)
+        if (time_from_last_update_ms_ < LINK_PLUGIN_UPDATE_INTERVAL_MS_)
             return;
         time_from_last_update_ms_ = 0;
 
@@ -145,18 +164,17 @@ namespace MumbleVoip
         if (!worldLogic)
             return false;
 
-        Scene::EntityPtr entity = worldLogic->GetUserAvatarEntity();
-        if (!entity)
+        Scene::EntityPtr avatar = worldLogic->GetUserAvatarEntity();
+        if (!avatar)
             return false;
 
-        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         if (!ogre_placeable)
             return false;
 
         Quaternion q = ogre_placeable->GetOrientation();
         position = ogre_placeable->GetPosition(); 
-        direction = q*Vector3df::UNIT_Z;
-
+        direction = q*Vector3df::UNIT_X;
         return true;
     }
 
@@ -189,14 +207,16 @@ namespace MumbleVoip
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
         RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
+        //RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
+        //    Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
+        //RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
+        //    Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
     }
 
     Console::CommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
     {
+        if (!link_plugin_)
+            return Console::ResultFailure("Link plugin is not initialized.");
         if (params.size() != 2)
         {
             return Console::ResultFailure("Wrong number of arguments: usage 'mumble link(id, context)'");
@@ -223,6 +243,8 @@ namespace MumbleVoip
 
     Console::CommandResult MumbleVoipModule::OnConsoleMumbleUnlink(const StringVector &params)
     {
+        if (!link_plugin_)
+            return Console::ResultFailure("Link plugin is not initialized.");
         if (params.size() != 0)
         {
             return Console::ResultFailure("Wrong number of arguments: usage 'mumble unlink'");
@@ -257,58 +279,38 @@ namespace MumbleVoip
         }
     }
 
-    //void MumbleVoipModule::OnMumbleServerInfoReceived(ServerInfo info)
-    //{
-    //    // begin: Test service API
-    //    if (framework_ &&  framework_->GetServiceManager())
-    //    {
-    //        boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-    //        if (comm.get())
-    //        {
-    //            comm->Register(*in_world_voice_provider_);
-    //        }
-    //        return;
-    //    }
-    //    // end: Test service API
+    void MumbleVoipModule::StartMumbleClient(ServerInfo info)
+    {
+        QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
+        murmur_url.setUserName(info.user_name);
+        murmur_url.setPassword(info.password);
+        murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
 
-    //    QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel)); // setScheme method does not add '//' between scheme and host.
-    //    murmur_url.setUserName(info.user_name);
-    //    murmur_url.setPassword(info.password);
-    //    murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
+        try
+        {
+            LogInfo("Starting mumble client.");
+            ApplicationManager::StartMumbleClient(murmur_url.toString());
 
-    //    try
-    //    {
-    //        //if (mumble_use_library_)
-    //        //{
-    //        //    connection_manager_->OpenConnection(info);
-    //        //    LogInfo("Mumble connection established.");
-    //        //    connection_manager_->SendAudio(true);
-    //        //    LogDebug("Start sending audio.");
-    //        //}
-    //        //else
-    //        {
-    //            LogInfo("Starting mumble client.");
-    //            ConnectionManager::StartMumbleClient(murmur_url.toString());
-
-    //            // it takes some time for a mumble client to setup shared memory for link plugins
-    //            // so we have to wait some time before we can start our link plugin.
-    //            user_id_for_link_plugin_ = info.avatar_id;
-    //            context_id_for_link_plugin_ = info.context_id;
-    //            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
-    //            mumble_client_started_ = true;
-    //        }
-    //    }
-    //    catch(std::exception &e)
-    //    {
-    //        QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
-    //        LogError(messge.toStdString());
-    //        return;
-    //    }
-    //}
+            // it takes some time for a mumble client to setup shared memory for link plugins
+            // so we have to wait some time before we can start our link plugin.
+            avatar_id_for_link_plugin_ = info.avatar_id;
+            context_id_for_link_plugin_ = info.context_id;
+            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
+        }
+        catch(std::exception &e)
+        {
+            QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
+            LogError(messge.toStdString());
+            return;
+        }
+    }
 
     void MumbleVoipModule::StartLinkPlugin()
     {
-        link_plugin_->SetUserIdentity(user_id_for_link_plugin_);
+        if (!link_plugin_)
+            return;
+
+        link_plugin_->SetUserIdentity(avatar_id_for_link_plugin_);
         link_plugin_->SetContextId(context_id_for_link_plugin_);
         link_plugin_->SetApplicationName("Naali viewer");
         link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
@@ -316,7 +318,7 @@ namespace MumbleVoip
 
         if (link_plugin_->IsRunning())
         {
-            QString message = QString("Mumbe link plugin started: id '%1' context '%2'").arg(user_id_for_link_plugin_).arg(context_id_for_link_plugin_);
+            QString message = QString("Mumbe link plugin started: id '%1' context '%2'").arg(avatar_id_for_link_plugin_).arg(context_id_for_link_plugin_);
             LogInfo(message.toStdString());
         }
         else
@@ -326,19 +328,19 @@ namespace MumbleVoip
         }
     }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
-    {
-//        connection_manager_->EnableVAD(true);
-        QString message = QString("Voice activity detector enabled.");
-        return Console::ResultSuccess(message.toStdString());
-    }
+//    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
+//    {
+////        connection_manager_->EnableVAD(true);
+//        QString message = QString("Voice activity detector enabled.");
+//        return Console::ResultSuccess(message.toStdString());
+//    }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
-    {
-  //      connection_manager_->EnableVAD(false);
-        QString message = QString("Voice activity detector disabled.");
-        return Console::ResultSuccess(message.toStdString());
-    }
+  //  Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
+  //  {
+  ////      connection_manager_->EnableVAD(false);
+  //      QString message = QString("Voice activity detector disabled.");
+  //      return Console::ResultSuccess(message.toStdString());
+  //  }
 
 } // end of namespace: MumbleVoip
 

@@ -9,6 +9,8 @@
 
 namespace MumbleVoip
 {
+    int ApplicationManager::start_count_ = 0;
+
     ApplicationManager::ApplicationManager()
     {
     }
@@ -28,14 +30,13 @@ namespace MumbleVoip
             QString error_message = QString("Cannot find handler application for url: %1").arg(server_url);
             throw std::exception(error_message.toStdString().c_str());
         }
+        ApplicationManager::start_count_++;
     }
 
     //static
-    void ApplicationManager::KillMumbleClient()
+    int ApplicationManager::StartCount()
     {
-        // Evil hack to ensure that voip connection is not remaining open when using native mumble client
-        QProcess kill_mumble;
-        kill_mumble.start("taskkill /F /FI \"IMAGENAME eq mumble.exe"); // Works only for Windows
+        return ApplicationManager::start_count_;
     }
 
 } // namespace MumbleVoip
