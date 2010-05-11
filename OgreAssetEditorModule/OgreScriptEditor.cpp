@@ -111,11 +111,6 @@ void OgreScriptEditor::SaveAs()
 {
     Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
     event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
-    if (event_cat == 0)
-    {
-        OgreAssetEditorModule::LogError("Could not query event category \"Inventory\".");
-        return;
-    }
 
     // Get the script.
     QString script;

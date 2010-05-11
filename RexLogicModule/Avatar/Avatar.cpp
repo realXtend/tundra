@@ -14,6 +14,7 @@
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_Controllable.h"
+#include "EntityComponent/EC_HoveringWidget.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -24,11 +25,14 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_HoveringText.h"
+
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
 
 #include "EC_OpenSimPresence.h"
+
+#include <QPushButton>
 
 namespace RexLogic
 {
@@ -101,8 +105,9 @@ namespace RexLogic
         defaultcomponents.push_back(EC_AvatarAppearance::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-        defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
+        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
+        //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
+        defaultcomponents.push_back(EC_HoveringWidget::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
@@ -113,7 +118,8 @@ namespace RexLogic
         if (placeable)
         {
             //CreateNameOverlay(placeable, entityid);
-            ShowAvatarNameOverlay(entityid);
+            //ShowAvatarNameOverlay(entityid);
+            CreateWidgetOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
         }
 
@@ -171,10 +177,16 @@ namespace RexLogic
             ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
             // Hide own name overlay
-            if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
-                ShowAvatarNameOverlay(presence->localId, false);
-            else
-                ShowAvatarNameOverlay(presence->localId);
+            EC_HoveringWidget *overlay= entity->GetComponent<EC_HoveringWidget>().get();
+            if(overlay)
+            {
+                overlay->SetText(presence->GetFullName().c_str());
+                if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
+                {
+                        overlay->SetDisabled(true);
+
+                }
+            }
 
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
@@ -469,6 +481,32 @@ namespace RexLogic
         avatar_appearance_.Update(frametime);
     }
 
+    void Avatar::CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
+    {
+        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        if (!scene)
+            return;
+
+        Scene::EntityPtr entity = scene->GetEntity(entity_id);
+        if (!entity)
+            return;
+
+
+        EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (overlay && presence)
+        {
+            overlay->SetText(presence->GetFullName().c_str());
+            /*overlay->AddButton(*(new QPushButton("Poke")));
+            overlay->AddButton(*(new QPushButton("Chat")));
+            overlay->AddButton(*(new QPushButton("Mute")));
+            overlay->AddButton(*(new QPushButton("Follow")));*/
+            overlay->ShowButtons(false);
+            overlay->InitializeBillboards();
+        }
+
+
+    }
 /*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
@@ -493,6 +531,8 @@ namespace RexLogic
             //overlay->SetBackgroundColor(QColor(0,0,0,200));
             overlay->ShowMessage(presence->GetFullName().c_str());
         }
+
+       
     }
 */
 

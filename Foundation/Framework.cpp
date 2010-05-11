@@ -440,8 +440,8 @@ namespace Foundation
     {
         if (params.size() != 2)
             return Console::ResultInvalidParameters();
-
-        event_category_id_t event_category = event_manager_->QueryEventCategory(params[0]);
+        
+        event_category_id_t event_category = event_manager_->QueryEventCategory(params[0], false);
         if (event_category == IllegalEventCategory)
             return Console::ResultFailure("Event category not found.");
         else

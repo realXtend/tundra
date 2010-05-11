@@ -15,12 +15,13 @@
 #include "QOgreWorldView.h"
 
 #include "SceneEvents.h"
-#include "SceneManager.h"
+
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
+
 
 #include <Ogre.h>
 
@@ -694,6 +695,8 @@ namespace OgreRenderer
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;
+
+
 
             Scene::Entity *entity = 0;
             try

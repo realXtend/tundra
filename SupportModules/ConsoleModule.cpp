@@ -39,12 +39,7 @@ namespace Console
     void ConsoleModule::PostInitialize()
     {
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
-        if (consoleEventCategory_ == 0)
-            LogError("Failed to query \"Console\" event category");
-
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
-        if (inputEventCategory_ == 0)
-            LogError("Failed to query \"Input\" event category");
     }
 
     void ConsoleModule::Update(f64 frametime)

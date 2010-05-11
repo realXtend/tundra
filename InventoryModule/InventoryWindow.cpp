@@ -165,9 +165,13 @@ void InventoryWindow::changeEvent(QEvent* e)
 void InventoryWindow::OpenItem()
 {
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-
-    inventoryItemModel_->Open(index);
-
+    if (AbstractInventoryItem::Type_Folder == inventoryItemModel_->GetItemType(index))
+    {   
+        if (!treeView_->isExpanded(index))
+            inventoryItemModel_->Open(index);
+    }
+    else
+        inventoryItemModel_->Open(index);
     treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     UpdateActions();
 }

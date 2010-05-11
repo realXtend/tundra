@@ -20,9 +20,10 @@ init_target (RexLogicModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
+file (GLOB UI_FILES EntityComponent/*.ui)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES RexLogicModule.h Avatar/AvatarEditor.h EventHandlers/LoginHandler.h
-    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Communications/*.h Environment/Primitive.h)
+    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h EntityComponent/HoveringNameController.h EntityComponent/HoveringButtonsController.h Environment/Primitive.h Communications/*.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
@@ -59,7 +60,7 @@ use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderin
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule

@@ -60,8 +60,6 @@ void InWorldChatModule::Load()
 void InWorldChatModule::PostInitialize()
 {
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-    if (frameworkEventCategory_ == 0)
-        LogError("Failed to query \"Framework\" event category");
 
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
 
@@ -91,12 +89,7 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
             if (event_data)
             {
                 networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-                if (networkStateEventCategory_ == 0)
-                    LogError("Failed to query \"NetworkState\" event category");
-
                 networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-                if (networkInEventCategory_ == 0)
-                    LogError("Failed to query \"NetworkIn\" event category");
 
                 return false;
             }
@@ -109,8 +102,6 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
                 currentWorldStream_ = event_data->WorldStream;
 
             networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-            if (networkInEventCategory_ == 0)
-                LogError("Failed to query \"NetworkIn\" event category");
 
             return false;
         }

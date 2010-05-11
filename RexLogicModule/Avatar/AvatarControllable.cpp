@@ -72,10 +72,6 @@ namespace RexLogic
     {
         action_event_category_ = event_manager_->QueryEventCategory("Action");
 
-        if (action_event_category_ == IllegalEventCategory)
-            RexLogicModule::LogError("AvatarControllable: failed to acquire action event category, controller disabled.");
-
-
         control_flags_[RA::MoveForward] = RexTypes::AGENT_CONTROL_AT_POS;
         control_flags_[RA::MoveBackward] = RexTypes::AGENT_CONTROL_AT_NEG;
         control_flags_[RA::MoveLeft] = RexTypes::AGENT_CONTROL_LEFT_POS;

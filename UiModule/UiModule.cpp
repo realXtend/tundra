@@ -247,7 +247,7 @@ namespace UiServices
                 {
                     QString sim = QString::fromStdString(current_world_stream_->GetSimName());
                     QString username = QString::fromStdString(current_world_stream_->GetUsername());
-                    if (!sim.isEmpty() && !username.isEmpty())
+                    if (!sim.isEmpty())
                         GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
                 }
                 break;
