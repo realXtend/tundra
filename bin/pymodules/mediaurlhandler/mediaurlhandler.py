@@ -3,24 +3,18 @@ import PythonQt
 
 from circuits import Component
 
-INTERNAL = 1
-
-class WebviewCanvas:
+class MediaurlView:
     def __init__(self, urlstring, refreshrate):
-        self.canvas = r.createCanvas(INTERNAL)
         self.webview = PythonQt.QtWebKit.QWebView()
-        self.canvas.AddWidget(self.webview)
-        
         url = PythonQt.QtCore.QUrl(urlstring)
         self.webview.load(url)
-
         self.refreshrate = refreshrate #XXX refreshing not implemented yet. or is it automatic with webviews and uicanvases?-o
 
 class MediaURLHandler(Component):
     def __init__(self):
         Component.__init__(self)
-        #which texture uuids with mediaurl are in which canvas impl
-        self.texture2canvas = {}
+        #which texture uuids with mediaurl are in which webview wrapper
+        self.texture2webview = {}
 
         """
         the code below was to test webviews first as 2d widgets. 
@@ -42,25 +36,26 @@ class MediaURLHandler(Component):
             print "MediaURLHandler got data:", data
             textureuuid, urlstring, refreshrate = data
 
-            wc = WebviewCanvas(urlstring, refreshrate)
+            #could check whether a webview for this url already existed
+            mv = MediaurlView(urlstring, refreshrate)
             
             #for objects we already had in the scene
-            r.applyUICanvasToSubmeshesWithTexture(wc.canvas, textureuuid)
+            r.applyUICanvasToSubmeshesWithTexture(mv.webview, textureuuid) #mv.refreshrate
             
             #for when get visuals_modified events later, 
             #e.g. for newly downloaded objects
-            self.texture2canvas[textureuuid] = wc
+            self.texture2webview[textureuuid] = mv
                           
     def on_entity_visuals_modified(self, entid):
         #print "MediaURLHandler got Visual Modified for:", entid
         #XXX add checks to not re-apply blindly when is already up-to-date!
-        for tx, wc in self.texture2canvas.iteritems():
+        for tx, wc in self.texture2webview.iteritems():
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
                 print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
-                r.applyUICanvasToSubmeshes(entid, submeshes, wc.canvas)
+                r.applyUICanvasToSubmeshes(entid, submeshes, wc.webview) #mv.refreshrate
         
     def on_keydown(self, key, mods):
         if key == 46: #C #XXX was OIS input dependent, broken now
-            for tx, wc in self.texture2canvas.iteritems():
-                r.applyUICanvasToSubmeshesWithTexture(wc.canvas, tx)
+            for tx, wc in self.texture2webview.iteritems():
+                r.applyUICanvasToSubmeshesWithTexture(wc.webview, tx)
