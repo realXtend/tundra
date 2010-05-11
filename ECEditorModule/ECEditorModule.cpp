@@ -6,6 +6,7 @@
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
 #include "EC_SerializationTest.h"
+#include "EcXmlEditorWidget.h"
 
 #include "EventManager.h"
 #include "SceneEvents.h"
@@ -91,16 +92,17 @@ namespace ECEditor
         ui_module->GetInworldSceneController()->AddWidgetToScene(editor_window_, widget_properties);
         ui_module->GetInworldSceneController()->ShowProxyForWidget(editor_window_);
 
+        connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
+        connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
+
         return Console::ResultSuccess();
     }
     
     bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (category_id == framework_event_category_ && event_id == Foundation::NETWORKING_REGISTERED)
-        {
             SubscribeToNetworkEvents();
-        }
-        
+
         if (category_id == scene_event_category_ && event_id == Scene::Events::EVENT_ENTITY_CLICKED)
         {
             //! \todo support multiple entity selection
@@ -108,15 +110,45 @@ namespace ECEditor
             if (editor_window_)
                 editor_window_->AddEntity(entity_clicked_data->entity->GetId());
         }
-        
+
         if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
-        {
             if (editor_window_)
                 editor_window_->ClearEntities();
-        }
+
         return false;
     }
 
+    void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
+    {
+        assert(entity.get());
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!entity || !ui_module)
+            return;
+
+        EcXmlEditorWidget *editor = new EcXmlEditorWidget(framework_);
+        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(editor,
+            UiServices::UiWidgetProperties(editor->windowTitle(), UiServices::SceneWidget));
+        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+        connect(proxy, SIGNAL(Closed()), editor, SLOT(deleteLater()));
+
+        editor->SetEntity(entity);
+    }
+
+    void ECEditorModule::CreateXmlEditor(Foundation::ComponentPtr component)
+    {
+        assert(component.get());
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!component || !ui_module)
+            return;
+
+        EcXmlEditorWidget *editor = new EcXmlEditorWidget(framework_);
+        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(editor,
+            UiServices::UiWidgetProperties(editor->windowTitle(), UiServices::SceneWidget));
+        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+        connect(proxy, SIGNAL(Closed()), editor, SLOT(deleteLater()));
+
+        editor->SetComponent(component);
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

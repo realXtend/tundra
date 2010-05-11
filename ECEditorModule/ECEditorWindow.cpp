@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ECEditorWindow.cpp
+ *  @brief  Entity-component editor window.
+ */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -14,19 +19,7 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 
-#include <QApplication>
-#include <QDomDocument>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QUiLoader>
-#include <QFile>
-#include <QPushButton>
-#include <QTextEdit>
-#include <QComboBox>
-#include <QListWidget>
-#include <QGraphicsProxyWidget>
-#include <QTreeWidget>
-#include <QHeaderView>
 
 #include "MemoryLeakCheck.h"
 
@@ -98,259 +91,39 @@ namespace ECEditor
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
         QWidget(),
         framework_(framework),
-        contents_(0),
-        save_button_(0),
-        revert_button_(0),
-        create_button_(0),
-        delete_button_(0),
         toggle_browser_button_(0),
         entity_list_(0),
         component_list_(0),
-        create_combo_(0),
-        data_edit_(0),
-        attribute_browser_(0),
-        delete_shortcut_(0)
+        attribute_browser_(0)
     {
         Initialize();
     }
 
     ECEditorWindow::~ECEditorWindow()
     {
-
         // Explicitily delete component list widget because it's parent of dynamically allocated items.
         SAFE_DELETE(component_list_);
     }
-    
-    void ECEditorWindow::Initialize()
+
+    void ECEditorWindow::AddEntity(entity_id_t entity_id)
     {
-        QUiLoader loader;
-        loader.setLanguageChangeEnabled(true);
-        QFile file("./data/ui/eceditor.ui");
-        file.open(QFile::ReadOnly);
-        contents_ = loader.load(&file, this);
-        if (!contents_)
+        if ((isVisible()) && (entity_list_))
         {
-            ECEditorModule::LogError("Could not load editor layout");
-            return;
+            QString entity_id_str;
+            entity_id_str.setNum((int)entity_id);
+            
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
         }
-        file.close();
+    }
 
-        QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(contents_);
-        layout->setContentsMargins(0,0,0,0);
-        setLayout(layout);
-        setWindowTitle(contents_->windowTitle());
-        resize(contents_->size());
-
-        save_button_ = findChild<QPushButton*>("but_save");
-        revert_button_ = findChild<QPushButton*>("but_revert");
-        create_button_ = findChild<QPushButton*>("but_create");
-        delete_button_ = findChild<QPushButton*>("but_delete");
-        toggle_browser_button_ = findChild<QPushButton *>("but_show_properties");
-        entity_list_ = findChild<QListWidget*>("list_entities");
-        component_list_ = findChild<QTreeWidget*>("list_components");
-        data_edit_ = findChild<QTextEdit*>("text_attredit");
-        create_combo_ = findChild<QComboBox*>("combo_create");
-
-        attribute_browser_ = new AttributeBrowser(this);
-        QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
-        if(property_layout)
-            property_layout->addWidget(attribute_browser_);
-        attribute_browser_->hide();
-        if (component_list_ && attribute_browser_)
-        {
-            QObject::connect(attribute_browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentData()));
-        }
-
-        
+    void ECEditorWindow::ClearEntities()
+    {
         if (entity_list_)
-        {
-            entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-            delete_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
-            QObject::connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
-            QObject::connect(delete_shortcut_, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
-        }
+            entity_list_->clear();
         if (component_list_)
-        {
-            component_list_->header()->setResizeMode(QHeaderView::ResizeToContents);
-            component_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-            QObject::connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshComponentData()));
-            QObject::connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
-        }
-        if (delete_button_)
-            QObject::connect(delete_button_, SIGNAL(pressed()), this, SLOT(DeleteComponent()));
-        if (create_button_)
-            QObject::connect(create_button_, SIGNAL(pressed()), this, SLOT(CreateComponent()));
-        if (save_button_)
-            QObject::connect(save_button_, SIGNAL(pressed()), this, SLOT(SaveData()));
-        if (revert_button_)
-            QObject::connect(revert_button_, SIGNAL(pressed()), this, SLOT(RevertData()));
-        if (toggle_browser_button_)
-            QObject::connect(toggle_browser_button_, SIGNAL(pressed()), this, SLOT(TogglePropertiesBrowser()));
-
-        RefreshAvailableComponents();
+            component_list_->clear();
     }
 
-    void ECEditorWindow::RefreshAvailableComponents()
-    {
-        // Fill the create component combo box with the types of EC's the ComponentManager can create
-        Foundation::ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
-        const Foundation::ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
-        if (create_combo_)
-        {
-            create_combo_->clear();
-            Foundation::ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
-            while (i != factories.end())
-            {
-                create_combo_->addItem(QString::fromStdString(i->first));
-                ++i;
-            }
-        }
-    }
-    
-    void ECEditorWindow::DeleteComponent()
-    {
-        if (!component_list_)
-            return;
-
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        StringVector components;
-        //for (uint i = 0; i < component_list_->count(); ++i)
-        for(uint i = 0; i < component_list_->topLevelItemCount(); ++i)
-        {
-            //QListWidgetItem* item = component_list_->item(i);
-            QTreeWidgetItem *item = component_list_->topLevelItem(i);
-            if (item->isSelected())
-                components.push_back(item->text(0).toStdString());
-        }
-
-        for (uint i = 0; i < entities.size(); ++i)
-            for (uint j = 0; j < components.size(); ++j)
-                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
-
-        RefreshEntityComponents();
-    }
-    
-    void ECEditorWindow::CreateComponent()
-    {
-        if (!create_combo_)
-            return;
-
-        std::string name = create_combo_->currentText().toStdString();
-
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        for (uint i = 0; i < entities.size(); ++i)
-        {
-            // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
-            // is problematic with current API
-            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name, Foundation::Local);
-            if (comp)
-            {
-                // Trigger change notification in the component so that it updates its initial internal state, if necessary
-                comp->ComponentChanged(Foundation::Local);
-            }
-        }
-
-        RefreshEntityComponents();
-    }
-    
-    void ECEditorWindow::RevertData()
-    {
-        RefreshComponentData();
-    }
-    
-    void ECEditorWindow::SaveData()
-    {
-        if (!data_edit_)
-            return;
-        
-        QDomDocument edited_doc;
-        
-        QString text = data_edit_->toPlainText();
-        if (!text.length())
-        {
-            ECEditorModule::LogWarning("Empty XML data");
-            return;
-        }
-        
-        if (edited_doc.setContent(text))
-        {
-            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-            if (!scene)
-                return;
-            bool entity_found = false;
-            
-            // Check if multi-entity or single-entity
-            QDomElement entities_elem = edited_doc.firstChildElement("entities");
-            
-            // Deserialize all entities/components contained in the data, provided we still find them from the scene
-            QDomElement entity_elem;
-            if (!entities_elem.isNull())
-                entity_elem = entities_elem.firstChildElement("entity");
-            else
-                entity_elem = edited_doc.firstChildElement("entity");
-            
-            while (!entity_elem.isNull())
-            {
-                entity_found = true;
-                entity_id_t id = (entity_id_t)ParseInt(entity_elem.attribute("id").toStdString());
-                Scene::EntityPtr entity = scene->GetEntity(id);
-                if (entity)
-                {
-                    QDomElement comp_elem = entity_elem.firstChildElement("component");
-                    while (!comp_elem.isNull())
-                    {
-                        Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString());
-                        if (comp)
-                        {
-                            comp->DeserializeFrom(comp_elem, Foundation::Local);
-                            // Trigger sync to network
-                            comp->ComponentChanged(Foundation::Local);
-                        }
-                        comp_elem = comp_elem.nextSiblingElement("component");
-                    }
-                }
-                else
-                {
-                    ECEditorModule::LogWarning("Could not find entity " + ToString<int>(id) + " in scene!");
-                }
-                
-                entity_elem = entity_elem.nextSiblingElement("entity");
-            }
-            
-            // Refresh immediately after, so that any extra stuff is stripped out, and illegal parameters are (hopefully) straightened
-            if (entity_found)
-                RefreshComponentData();
-            else
-                ECEditorModule::LogWarning("No entity elements in XML data");
-        }
-        else
-            ECEditorModule::LogWarning("Could not parse XML data");
-    }
-    
-    void ECEditorWindow::hideEvent(QHideEvent* hide_event)
-    {
-        ClearEntities();
-        QWidget::hideEvent(hide_event);
-    }
-    
-    void ECEditorWindow::showEvent(QShowEvent* show_event)
-    {
-        RefreshAvailableComponents();
-        QWidget::showEvent(show_event);
-    }
-    
-    void ECEditorWindow::changeEvent(QEvent *e)
-    {
-        if (e->type() == QEvent::LanguageChange)
-        {
-            QString title = TR("ECEditor", "Entity-component Editor");
-            graphicsProxyWidget()->setWindowTitle(title);
-        }
-        else
-           QWidget::changeEvent(e);
-    }
-    
     void ECEditorWindow::DeleteEntitiesFromList()
     {
         if ((entity_list_) && (entity_list_->hasFocus()))
@@ -366,15 +139,59 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::AddEntity(entity_id_t entity_id)
+    void ECEditorWindow::DeleteComponent()
     {
-        if ((isVisible()) && (entity_list_))
+        if (!component_list_)
+            return;
+
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        StringVector components;
+        for(uint i = 0; i < component_list_->topLevelItemCount(); ++i)
         {
-            QString entity_id_str;
-            entity_id_str.setNum((int)entity_id);
-            
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
+            QTreeWidgetItem *item = component_list_->topLevelItem(i);
+            if (item->isSelected())
+                components.push_back(item->text(0).toStdString());
         }
+
+        for(uint i = 0; i < entities.size(); ++i)
+            for(uint j = 0; j < components.size(); ++j)
+                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
+
+        RefreshEntityComponents();
+    }
+    
+    void ECEditorWindow::CreateComponent()
+    {
+        bool ok;
+        QString name = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
+        if (!ok || name.isEmpty())
+            return;
+
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        for (uint i = 0; i < entities.size(); ++i)
+        {
+            // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
+            // is problematic with current API
+            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), Foundation::Local);
+            if (comp)
+            {
+                // Trigger change notification in the component so that it updates its initial internal state, if necessary
+                comp->ComponentChanged(Foundation::Local);
+            }
+        }
+
+        RefreshEntityComponents();
+    }
+
+    void ECEditorWindow::DeleteEntity()
+    {
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+            return;
+
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        for(uint i = 0; i < entities.size(); ++i)
+            scene->RemoveEntity(entities[i]->GetId(), Foundation::Local);
     }
 
     void ECEditorWindow::RefreshEntityComponents()
@@ -389,12 +206,7 @@ namespace ECEditor
         // If no entities selected, just clear the list and we're done
         if (!entities.size())
             return;
-/*
-        {
-            //component_list_->clear();
-            return;
-        }
-*/
+
         std::vector<QString> added_components;
         for (uint i = 0; i < entities.size(); ++i)
         {
@@ -406,93 +218,6 @@ namespace ECEditor
                 AddTreeItem(component_list_, components[j]->TypeName().c_str(), components[j]->Name().c_str(), entities[i]->GetId());
             }
         }
-
-        // Now delete components that should not be in the component list
-        // Note: the whole reason for going to this trouble (instead of just nuking and refilling the list)
-        // is to retain the user's selection, if several entities share a set of components, as often is the case
-        //for (int i = component_list_->count() - 1; i >= 0; --i)
-/*
-        for (uint i = 0; i < component_list_->topLevelItemCount(); ++i)
-        {
-            bool found = false;
-            //QListWidgetItem* item = component_list_->item(i);
-            QTreeWidgetItem* item = component_list_->topLevelItem(i);
-            for (uint j = 0; j < added_components.size(); ++j)
-            {
-                //if (item->text() == added_components[j])
-                if (item->text(0) == added_components[j])
-                {
-                    found = true;
-                    break;
-                }
-            }
-            
-            if (!found)
-            {
-                //QListWidgetItem* item = component_list_->takeItem(i);
-                QTreeWidgetItem* item = component_list_->takeTopLevelItem(i);
-                for(uint k = 0; k < item->childCount(); ++k)
-                {
-                    QTreeWidgetItem *child = (item->takeChild(k));
-                    SAFE_DELETE(child);
-                }
-                SAFE_DELETE(item);
-            }
-        }
-*/
-        RefreshComponentData();
-    }
-
-    void ECEditorWindow::RefreshComponentData()
-    {
-        if (!data_edit_)
-            return;
-        
-        data_edit_->clear();
-        
-        std::vector<EntityComponentSelection> selection = GetSelectedComponents();
-        if (!selection.size())
-            return;
-            
-        QDomDocument temp_doc;
-        if (selection.size() > 1)
-        {
-            // Multi-entity: create a root element to hold entities
-            QDomElement entities_elem = temp_doc.createElement("entities");
-            temp_doc.appendChild(entities_elem);
-            
-            for (uint i = 0; i < selection.size(); ++i)
-            {
-                QDomElement entity_elem = temp_doc.createElement("entity");
-                QString id_str;
-                id_str.setNum((int)selection[i].entity_->GetId());
-                entity_elem.setAttribute("id", id_str);
-                for (uint j = 0; j < selection[i].components_.size(); ++j)
-                {
-                    if (selection[i].components_[j]->IsSerializable())
-                        selection[i].components_[j]->SerializeTo(temp_doc, entity_elem);
-                }
-                entities_elem.appendChild(entity_elem);
-            }
-        }
-        else
-        {
-            // Single entity
-            QDomElement entity_elem = temp_doc.createElement("entity");
-            temp_doc.appendChild(entity_elem);
-            
-            QString id_str;
-            id_str.setNum((int)selection[0].entity_->GetId());
-            entity_elem.setAttribute("id", id_str);
-            for (uint j = 0; j < selection[0].components_.size(); ++j)
-            {
-                if (selection[0].components_[j]->IsSerializable())
-                    selection[0].components_[j]->SerializeTo(temp_doc, entity_elem);
-            }
-            temp_doc.appendChild(entity_elem);
-        }
-        
-        data_edit_->setText(temp_doc.toString());
     }
 
     void ECEditorWindow::RefreshPropertyBrowser()
@@ -504,7 +229,7 @@ namespace ECEditor
         attribute_browser_->ClearBrowser();
         for(uint i = 0; i < selection.size(); i++)
         {
-            std::vector<Foundation::ComponentInterfacePtr> components = selection[i].components_;
+            std::vector<Foundation::ComponentInterfacePtr> components = selection[i].components;
             for(uint j = 0; j < components.size(); j++)
                 attribute_browser_->AddEntityComponent(components[j]);
         }
@@ -530,18 +255,189 @@ namespace ECEditor
             }
         }
     }
-    
+
+    void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
+    {
+        assert(entity_list_);
+        if (!entity_list_)
+            return;
+
+        QListWidgetItem *item = entity_list_->itemAt(pos);
+        if (!item)
+            return;
+
+        QMenu *menu = new QMenu(this);
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *editXml = new QAction(tr("Edit XML..."), menu);
+        QAction *deleteEntity= new QAction(tr("Delete"), menu);
+        QAction *addComponent = new QAction(tr("Add new component..."), menu);
+
+        connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
+        connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
+        connect(addComponent, SIGNAL(triggered()), this, SLOT(CreateComponent()));
+
+        menu->addAction(editXml);
+        menu->addAction(deleteEntity);
+        menu->addAction(addComponent);
+
+        menu->popup(entity_list_->mapToGlobal(pos));
+    }
+
+    void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
+    {
+        assert(component_list_);
+        if (!component_list_)
+            return;
+
+        QTreeWidgetItem *item = component_list_->itemAt(pos);
+        if (!item)
+            return;
+
+        QMenu *menu = new QMenu(this);
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *editXml= new QAction(tr("Edit XML..."), menu);
+        QAction *deleteComponent= new QAction(tr("Delete"), menu);
+        QAction *cutEntity = new QAction(tr("Cut"), menu);
+        QAction *copyEntity = new QAction(tr("Copy"), menu);
+        QAction *pasteEntity = new QAction(tr("Paste"), menu);
+
+        ///\todo Cut, copy & paste functionality.
+        cutEntity->setEnabled(false);
+        copyEntity->setEnabled(false);
+        pasteEntity->setEnabled(false);
+
+        connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForComponent()));
+        connect(deleteComponent, SIGNAL(triggered()), this, SLOT(DeleteComponent()));
+
+        menu->addAction(editXml);
+        menu->addAction(deleteComponent);
+        menu->addAction(cutEntity);
+        menu->addAction(copyEntity);
+        menu->addAction(pasteEntity);
+
+        menu->popup(component_list_->mapToGlobal(pos));
+    }
+
+    void ECEditorWindow::ShowXmlEditorForEntity()
+    {
+        std::vector<EntityComponentSelection> selection = GetSelectedComponents();
+        if (!selection.size())
+            return;
+
+        foreach(EntityComponentSelection ecs, selection)
+            emit EditEntityXml(ecs.entity);
+    }
+
+    void ECEditorWindow::ShowXmlEditorForComponent()
+    {
+        std::vector<EntityComponentSelection> selection = GetSelectedComponents();
+        if (!selection.size())
+            return;
+
+        foreach(EntityComponentSelection ecs, selection)
+            foreach(Foundation::ComponentInterfacePtr component, ecs.components)
+                emit EditComponentXml(component);
+    }
+
+    void ECEditorWindow::hideEvent(QHideEvent* hide_event)
+    {
+        ClearEntities();
+        QWidget::hideEvent(hide_event);
+    }
+
+    void ECEditorWindow::changeEvent(QEvent *e)
+    {
+        if (e->type() == QEvent::LanguageChange)
+        {
+            QString title = TR("ECEditor", "Entity-component Editor");
+            graphicsProxyWidget()->setWindowTitle(title);
+        }
+        else
+           QWidget::changeEvent(e);
+    }
+
+    void ECEditorWindow::Initialize()
+    {
+        QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
+        QFile file("./data/ui/eceditor.ui");
+        file.open(QFile::ReadOnly);
+        QWidget *contents = loader.load(&file, this);
+        if (!contents)
+        {
+            ECEditorModule::LogError("Could not load editor layout");
+            return;
+        }
+        file.close();
+
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(contents);
+        layout->setContentsMargins(0,0,0,0);
+        setLayout(layout);
+        setWindowTitle(contents->windowTitle());
+        resize(contents->size());
+
+        toggle_browser_button_ = findChild<QPushButton *>("but_show_properties");
+        entity_list_ = findChild<QListWidget*>("list_entities");
+        component_list_ = findChild<QTreeWidget*>("list_components");
+
+        attribute_browser_ = new AttributeBrowser(this);
+        QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
+        if (property_layout)
+            property_layout->addWidget(attribute_browser_);
+        attribute_browser_->hide();
+/*
+        if (component_list_ && attribute_browser_)
+            connect(attribute_browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentXmlData()));
+*/
+        if (entity_list_)
+        {
+            entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
+            connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
+            connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
+            connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
+        }
+
+        if (component_list_)
+        {
+            component_list_->header()->setResizeMode(QHeaderView::ResizeToContents);
+            component_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//            connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshComponentXmlData()));
+            connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
+            connect(component_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
+        }
+
+        if (toggle_browser_button_)
+            connect(toggle_browser_button_, SIGNAL(pressed()), this, SLOT(TogglePropertiesBrowser()));
+    }
+
+    QStringList ECEditorWindow::GetAvailableComponents() const
+    {
+        QStringList components;
+        Foundation::ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
+        const Foundation::ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
+        Foundation::ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
+        while (i != factories.end())
+        {
+            components << i->first.c_str();
+            ++i;
+        }
+
+        return components;
+    }
+
     std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities()
     {
         std::vector<Scene::EntityPtr> ret;
-        
+
         if (!entity_list_)
             return ret;
-        
+
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
             return ret;
-        
+
         for (uint i = 0; i < entity_list_->count(); ++i)
         {
             QListWidgetItem* item = entity_list_->item(i);
@@ -577,26 +473,18 @@ namespace ECEditor
         for (uint i = 0; i < entities.size(); ++i)
         {
             EntityComponentSelection selection;
-            selection.entity_ = entities[i];
+            selection.entity = entities[i];
             for (uint j = 0; j < components.size(); ++j)
             {
-                Foundation::ComponentInterfacePtr comp = selection.entity_->GetComponent(components[j]);
+                Foundation::ComponentInterfacePtr comp = selection.entity->GetComponent(components[j]);
                 if (comp)
-                    selection.components_.push_back(comp);
+                    selection.components.push_back(comp);
             }
             
             ret.push_back(selection);
         }
         
         return ret;
-    }
-    
-    void ECEditorWindow::ClearEntities()
-    {
-        if (entity_list_)
-            entity_list_->clear();
-        if (component_list_)
-            component_list_->clear();
     }
 }
 

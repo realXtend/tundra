@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_ECAttributeEditor_h
-#define incl_Interfaces_ECAttributeEditor_h
+#ifndef incl_ECEditorModule_ECAttributeEditor_h
+#define incl_ECEditorModule_ECAttributeEditor_h
 
 #include <QObject>
 

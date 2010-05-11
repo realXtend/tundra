@@ -5,7 +5,8 @@ init_target (ECEditorModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h AttributeBrowser.h)
+file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h
+    AttributeBrowser.h EcXmlEditorWidget.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
