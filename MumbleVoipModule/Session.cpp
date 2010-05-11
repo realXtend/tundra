@@ -11,7 +11,7 @@
 #include "EC_OpenSimPresence.h" // for avatar position
 //#include "SceneManager.h"     // for avatar position
 #include "ModuleManager.h"    // for avatar info
-#include "RexLogicModule.h"   // for avatar position
+//#include "RexLogicModule.h"   // for avatar position
 //#include "Avatar/Avatar.h"    // for avatar position
 #include "WorldLogicInterface.h" // for avatar position
 #include "Entity.h" // for avatar position
@@ -47,8 +47,6 @@ namespace MumbleVoip
             state_ = STATE_OPEN; // \todo get this information from connection_manager
             connection_manager_->SendAudio(audio_sending_enabled_);
             connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(UpdateParticipantList(User*)) );
-//            connect(connection_manager_, SIGNAL(StateChanged(Connection::State)), SLOT(UpdateParticipantList(User*)) );
-//            connect(connection_manager_, SIGNAL(UserLeft(User*)), SLOT(OnUserLeft(User*)) );
             connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
         }
 

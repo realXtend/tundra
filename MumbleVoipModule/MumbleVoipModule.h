@@ -83,9 +83,8 @@ namespace MumbleVoip
 
     private:
         LinkPlugin* link_plugin_;
-        ServerObserver* server_observer_;
+//        ServerObserver* server_observer_;
         ApplicationManager* application_manager_;
-//        ConnectionManager* connection_manager_;
 
         static const int UPDATE_TIME_MS_ = 100;
         int time_from_last_update_ms_;
@@ -93,12 +92,11 @@ namespace MumbleVoip
         QString context_id_for_link_plugin_;
         bool use_camera_position_; 
         bool mumble_client_started_;
-        bool mumble_use_library_;
+//        bool mumble_use_library_;
         event_category_id_t event_category_framework_;
         InWorldVoice::Provider* in_world_voice_provider_;
 
     private slots:
-        //void OnMumbleServerInfoReceived(ServerInfo info);
         void StartLinkPlugin();
     };
 

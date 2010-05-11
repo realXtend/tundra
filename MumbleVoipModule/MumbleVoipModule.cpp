@@ -1,13 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-//#include "DebugOperatorNew.h"
 #include "MumbleVoipModule.h"
 #include "LinkPlugin.h"
 #include "ServerObserver.h"
 #include "ConnectionManager.h"
 #include "ServerInfo.h"
-
 #include "ModuleManager.h"
 #include "EC_OgrePlaceable.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -16,16 +14,14 @@
 #include "Entity.h"
 #include "CommunicationsService.h"
 #include "LinkPlugin.h"
-//#include "ServerObserver.h"
 #include "Provider.h"
-//#include "ConnectionManager.h"
 #include "ApplicationManager.h"
-#define BUILDING_DLL // for mumbleclient/client_lib.h
+//#define BUILDING_DLL // for mumbleclient/client_lib.h
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 //#undef BUILDING_DLL // for mumbleclient/client_lib.h
-#include "DebugOperatorNew.h" // Doesn't work with mumbleclient library ???
-#include "MemoryLeakCheck.h" // Doesn't work with mumbleclient library ???
+#include "DebugOperatorNew.h" 
+#include "MemoryLeakCheck.h" 
 
 namespace MumbleVoip
 {
@@ -36,25 +32,16 @@ namespace MumbleVoip
           link_plugin_(0),
           application_manager_(0),
           time_from_last_update_ms_(0),
-          server_observer_(0),
-//          connection_manager_(0),
           use_camera_position_(false),
-          mumble_client_started_(false),
-          mumble_use_library_(false)
+          mumble_client_started_(false)
+//          mumble_use_library_(false)
     {
     }
 
     MumbleVoipModule::~MumbleVoipModule()
     {
-        //if (mumble_client_started_ && connection_manager_)
-        //{
-        //    connection_manager_->KillMumbleClient();
-        //}
-
         SAFE_DELETE(application_manager_);
         SAFE_DELETE(link_plugin_);
-        SAFE_DELETE(server_observer_);
-        //    SAFE_DELETE(connection_manager_);
     }
 
     void MumbleVoipModule::Load()
@@ -67,11 +54,8 @@ namespace MumbleVoip
         }
 
         in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
-//        connection_manager_ = new ConnectionManager(framework_);
         link_plugin_ = new LinkPlugin();
         application_manager_ = new ApplicationManager();
-//        server_observer_ = new ServerObserver(framework_);
-//        connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
     }
 
     void MumbleVoipModule::Unload()
@@ -106,35 +90,23 @@ namespace MumbleVoip
         if (link_plugin_ && link_plugin_->IsRunning())
             UpdateLinkPlugin(frametime);
         
-        //if (connection_manager_)
-        //{
-        //    Vector3df position;
-        //    Vector3df direction;
-        //    if (GetAvatarPosition(position, direction))
-        //        connection_manager_->SetAudioSourcePosition(position);
-        //    connection_manager_->Update(frametime);
-        //}
-
         if (in_world_voice_provider_)
             in_world_voice_provider_->Update(frametime);
     }
 
     bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (server_observer_)
-            server_observer_->HandleEvent(category_id, event_id, data);
-
-        if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
-        {
-            Foundation::ProgramOptionsEvent *po_event = checked_static_cast<Foundation::ProgramOptionsEvent*>(data);
-            assert(po_event);
-            for(int count = 0; count < po_event->argc; ++count )
-            {
-                QString arg = QString(po_event->argv[count]);
-                if (arg == "--usemumblelibrary")
-                    mumble_use_library_ = true;
-            }
-        }
+        //if (category_id == event_category_framework_ && event_id == Foundation::PROGRAM_OPTIONS)
+        //{
+        //    Foundation::ProgramOptionsEvent *po_event = checked_static_cast<Foundation::ProgramOptionsEvent*>(data);
+        //    assert(po_event);
+        //    for(int count = 0; count < po_event->argc; ++count )
+        //    {
+        //        QString arg = QString(po_event->argv[count]);
+        //        if (arg == "--usemumblelibrary")
+        //            mumble_use_library_ = true;
+        //    }
+        //}
 
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);

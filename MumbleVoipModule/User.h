@@ -70,6 +70,8 @@ namespace MumbleVoip
         //! @return true if the user has left the channel
         virtual bool IsLeft() const { return left_; }
 
+        virtual double VoicePacketDropRatio() const;
+
     public slots:
         //! Put audio frame to end of playback buffer 
         //! If playback buffer is full it is cleared first.
@@ -94,6 +96,8 @@ namespace MumbleVoip
         QList<PCMAudioFrame*> playback_queue_;
         bool left_;
         MumbleVoip::Channel* channel_;
+        int received_voice_packet_count_;
+        int voice_packet_drop_count_;
 
     signals:
         //! Emited when user has left from server
