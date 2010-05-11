@@ -21,7 +21,7 @@
 #include <QSizeF>
 #include <QPushButton>
 #include <QPainter>
-#include <QTimer>
+
 #include <QTimeLine>
 #include <QDebug>
 
@@ -40,14 +40,17 @@ namespace RexLogic
         visibility_timer_(new QTimer(this)),
         namewidget_(new HoveringNameController()),
         buttonswidget_(new HoveringButtonsController()),
+        hovering_time_(4000),
         disabled_(false),
         buttons_disabled_(false),
         buttons_visible_(false),
-        bb_name_size_view(0.25f ,0.15f),
+        bb_name_size_view(0.25f ,0.12f),
         bb_buttons_size_view(0.1f ,0.4f),
         bb_rel_posy(1.3f),
         cam_distance_(0.0f)
     {
+        hovering_timer_ = new QTimer(this);
+        hovering_timer_->setSingleShot(true);
         renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
         visibility_animation_timeline_->setFrameRange(0,100);
         visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
@@ -69,12 +72,7 @@ namespace RexLogic
         SAFE_DELETE(buttonswidget_);
     }
 
-    void EC_HoveringWidget::SetPosition(const Vector3df& position)
-    {
-       /* if (namebillboard_)
-            namebillboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));*/
-    }
-
+  
     void EC_HoveringWidget::SetDisabled(bool val)
     {
         disabled_ = val;
@@ -94,19 +92,14 @@ namespace RexLogic
 
     void EC_HoveringWidget::ShowButtons(bool val)
     {
-        bool orig = buttons_visible_;
         buttons_visible_ = val;
-        if(orig!=buttons_visible_)
+        if(buttons_visible_ && buttonsbillboardSet_)
         {
-            if(buttons_visible_ && !buttons_disabled_)
-            {
                 buttonsbillboardSet_->setVisible(true);
-            }
-            else
-            {
+        }else{
                 buttonsbillboardSet_->setVisible(false);
-            }
         }
+        
 
     }
 
@@ -171,22 +164,39 @@ namespace RexLogic
 
     void EC_HoveringWidget::AdjustWidgetinfo()
     {
-   
-
+        qreal distance_factor=0;
+        qreal hover_factor=0;
+        qreal overall_rate=0;
         if(cam_distance_<10)
         {
-            ShowButtons(true);
+            distance_factor=100;
+        }else if(cam_distance_<30)
+        {
+            distance_factor = 50;
+        }else if(cam_distance_>=25)
+        {
+            distance_factor = 0;
+        }
+        if(hovering_timer_->isActive())
+        {
+            hover_factor = 80;
+        }
+        overall_rate += hover_factor;
+        overall_rate += distance_factor;
 
+        if(overall_rate >=100)
+        {
             if(!IsVisible())
                 Show();
-        }else if(cam_distance_<30)
+            ShowButtons(true);
+        }else if(overall_rate >=50)
         {
             ShowButtons(false);
 
             if(!IsVisible())
                 Show();
 
-        }else if(cam_distance_>=30)
+        }else if(overall_rate<50)
         {
 
             if(IsVisible())
@@ -236,10 +246,11 @@ namespace RexLogic
             visibility_timer_->start(msec_to_show);
         }*/
 
-        if(IsVisible())
-            Hide();
-        else
+        /*disabled_ = !disabled_;
+        if(!disabled_)
             Show();
+        else
+            Hide();*/
     }
 
 
@@ -290,6 +301,16 @@ namespace RexLogic
             return namebillboardSet_->isVisible();
         else
             return false;
+    }
+
+    void EC_HoveringWidget::HoveredOver()
+    {
+        if(hovering_timer_->isActive())
+        {
+            hovering_timer_->stop();
+            
+        }
+        hovering_timer_->start(hovering_time_);
     }
 
     void EC_HoveringWidget::InitializeBillboards()
@@ -382,7 +403,7 @@ namespace RexLogic
             return;
 
         // Get pixmap with text rendered to it.
-        QPixmap pixmap1 = GetPixmap(*namewidget_, QRect(0,0,400,200));
+        QPixmap pixmap1 = GetPixmap(*namewidget_, QRect(0,0,400,80));
         QPixmap pixmap2 = GetPixmap(*buttonswidget_, QRect(0,0,200,400));
         if (pixmap1.isNull()||pixmap2.isNull())
             return;

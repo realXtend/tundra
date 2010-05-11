@@ -23,16 +23,9 @@ QWidget#ContainerFrame {
 	
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0.204545 rgba(0, 0, 0, 200), stop:1 rgba(75, 75, 75, 200));
 	border: 1px solid grey;
-	border-radius: 50px;
+	border-radius: 30px;
 }
 
-QPushButton {
-	
-	color: rgb(255, 255, 255);
-	border: 1px solid grey;
-	border-radius: 20px;
-	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0.204545 rgba(0, 0, 0, 50), stop:1 rgba(75, 75, 75, 50));
-}
 
 QLabel {
 	color: rgba(255,255,255,255);

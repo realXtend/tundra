@@ -103,7 +103,8 @@ namespace RexLogic
         WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
                 //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
-        /*! \param Ray ray ray to test intersection with
+        /*! \param x screen coordinate
+            \param y screen coordinate
             \return returns true if infoicon was hit, false otherwise
         */
         bool CheckInfoIconIntersection(int x, int y);
@@ -200,6 +201,9 @@ namespace RexLogic
     public slots:
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
+
+        //! called when entity is hovered over with mouse
+        void EntityHovered(Scene::Entity* entity);
 
         /// Sends RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
