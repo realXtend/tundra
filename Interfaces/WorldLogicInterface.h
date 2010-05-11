@@ -33,6 +33,8 @@ namespace Foundation
         /// @param entity_id Entity ID.
         /// @param component Type name of the component.
         virtual Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const = 0;
+
+        // 
     };
 }
 

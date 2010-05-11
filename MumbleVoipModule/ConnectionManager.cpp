@@ -85,7 +85,10 @@ namespace MumbleVoip
     void ConnectionManager::StartMumbleLibrary()
     {
         if (!lib_mumble_thread_)
+        {
             lib_mumble_thread_ = new LibMumbleThread();
+            lib_mumble_thread_->moveToThread(QThread::currentThread()); // for cross thread signaling
+        }
 
         if (lib_mumble_thread_->isRunning())
             return;

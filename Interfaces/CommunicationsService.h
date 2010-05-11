@@ -184,8 +184,8 @@ namespace Communications
             Q_OBJECT
         public:
             virtual ~ParticipantInterface() {};
-         //   virtual QString AvatarUUID() const = 0; // do we get this always ?
-            //virtual QString Name() const = 0;
+            virtual QString Name() const = 0;
+            virtual QString AvatarUUID() const = 0;
             virtual bool IsSpeaking() const = 0;
             virtual void Mute(bool mute) = 0;
             virtual bool IsMuted() const = 0;
@@ -197,7 +197,7 @@ namespace Communications
         signals:
             void StartSpeaking(); 
             void StopSpeaking();
-            void Left();
+            void Left(); //! @todo remove
 //            void PositionUpdated();
         };
         typedef QList<ParticipantInterface*> ParticipantList;
