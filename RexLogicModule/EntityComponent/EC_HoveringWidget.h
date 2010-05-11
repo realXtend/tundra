@@ -21,6 +21,7 @@
 #include <QColor>
 #include <QLinearGradient>
 #include <QSizeF>
+#include <QTimer>
 
 
 //Needs refactor
@@ -46,7 +47,7 @@ class QWidget;
 namespace RexLogic
 {
 
-
+    //this class is component used to display text and buttons with an entity
     class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
     {
         Q_OBJECT
@@ -61,44 +62,47 @@ namespace RexLogic
         /// Destructor.
         ~EC_HoveringWidget();
 
-        /// Sets postion for the chat bubble.
-        /// @param position Position.
-        /// @note The position is relative to the entity to which the hovering text is attached.
-        void SetPosition(const Vector3df &position);
-
-        /// Sets the font used for the hovering text.
-        /// @param font Font.
-        void SetFont(const QFont &font);
-
-        /// Sets the color of the chat bubble text.
-        /// @param color Color.
-        void SetTextColor(const QColor &color);
-
+        
+        //! @return billboard that shows buttons
         Ogre::Billboard* const GetButtonsBillboard(){return buttonsbillboard_;}
+        //! @return billboardset that owns the buttons billboard
         Ogre::BillboardSet* const GetButtonsBillboardSet(){return buttonsbillboardSet_;}
+        //! @return get size of the button billboard in screenspace
         QSizeF GetButtonsBillboardScreenSpaceSize(){ return bb_buttons_size_view; }
 
 
 
     public slots:
+
+        //!called when widget is hovered
+        void HoveredOver();
+        //!Initializes billboards, must be called before use
         void InitializeBillboards();
-
+        
+        //Disables/enables widget
         void SetDisabled(bool val);
-
+        //! @ return true if widget is disabled
         bool IsDisabled(){return disabled_;}
 
+        //! set buttons disabled, will still show the text
         void SetButtonsDisabled(bool val);
 
+        //! @return true if buttons ase disabled
         bool IsButtonsDisabled(){return buttons_disabled_;}
-
+        
+        //! show/hide buttons
         void ShowButtons(bool val);
-        /// Shows the hovering text.
+        /// Shows the widget
         void Show();
 
-        /// Shows the hovering text with animation.
+        /// Shows the widget with animation (not currently working properly)
         void AnimatedShow();
+        //! notifies that entity was clicked
         void EntityClicked(int msec_to_show = 5000);
 
+        //! called when the widget is clicked in 3D scene
+        //! @param x coordinate (clamped in 0-1) 
+        //! @param y coordinate (clamped in 0-1)
         void WidgetClicked(Real x, Real y);
 
         /// Hides the hovering text
@@ -115,13 +119,24 @@ namespace RexLogic
         /// @param text Text to be shown.
         void SetText(const QString &text);
 
+        // Add button to the widget
+        //! @button button to add
         void AddButton(QPushButton &button);
 
+        //! set widgets distance from the camera
         void SetCameraDistance(Real dist);
+
+        //! get widgets distance from the camera
         Real GetCameraDistance(){return cam_distance_;}
 
+        //! Adjust what to show, might disable button or set the widget invisible.
         void AdjustWidgetinfo();
 
+        //! scale widget to have static screenspace size
+        //@param bset billboardset, used to get worldtransforms
+        //@param b billboard that we scale
+        //@param size size in screenspace
+        //@param next_to_nametag, if true, will try to place the billboard next to the namebillboard
         void ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, QSizeF& size,bool next_to_nametag=false);
 
     private slots:
@@ -145,17 +160,18 @@ namespace RexLogic
 
         /// Ogre billboard set.
         Ogre::BillboardSet *namebillboardSet_;
-
+        /// Ogre billboard set.
         Ogre::BillboardSet *buttonsbillboardSet_;
 
         /// Ogre billboard.
         Ogre::Billboard *namebillboard_;
 
+        /// Ogre billboard.
         Ogre::Billboard *buttonsbillboard_;
 
-        /// Name of the material used for the billboard set.
+        /// Name of the material used for the name billboard set.
         std::string namematerialName_;
-
+        /// Name of the material used for the buttons billboard set.
         std::string buttonsmaterialName_;
 
 
@@ -164,6 +180,10 @@ namespace RexLogic
 
         // Timed visibility timer
         QTimer *visibility_timer_;
+
+        QTimer *hovering_timer_;
+
+        qreal hovering_time_;
 
         bool disabled_;
 
