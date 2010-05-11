@@ -93,7 +93,7 @@ namespace RexLogic
     void EC_HoveringWidget::ShowButtons(bool val)
     {
         buttons_visible_ = val;
-        if(buttons_visible_ && buttonsbillboardSet_)
+        if(buttons_visible_ && buttonsbillboardSet_ && !disabled_)
         {
                 buttonsbillboardSet_->setVisible(true);
         }else{
@@ -191,11 +191,9 @@ namespace RexLogic
             ShowButtons(true);
         }else if(overall_rate >=50)
         {
-            ShowButtons(false);
-
             if(!IsVisible())
                 Show();
-
+            ShowButtons(false);
         }else if(overall_rate<50)
         {
 

@@ -12,7 +12,7 @@ material HoveringText
 		 texture_unit
          {
             texture TextureMissing.png
-            alpha_op_ex blend_manual src_texture src_manual 1.0 0.0 1.0
+            alpha_op_ex blend_manual src_texture src_manual 1.0 1.0 1.0
          }
       }
    }
