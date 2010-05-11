@@ -8,7 +8,7 @@ class MediaurlView:
         self.webview = PythonQt.QtWebKit.QWebView()
         url = PythonQt.QtCore.QUrl(urlstring)
         self.webview.load(url)
-        self.refreshrate = refreshrate #XXX refreshing not implemented yet. or is it automatic with webviews and uicanvases?-o
+        self.refreshrate = refreshrate
 
 class MediaURLHandler(Component):
     def __init__(self):
@@ -40,7 +40,7 @@ class MediaURLHandler(Component):
             mv = MediaurlView(urlstring, refreshrate)
             
             #for objects we already had in the scene
-            r.applyUICanvasToSubmeshesWithTexture(mv.webview, textureuuid) #mv.refreshrate
+            r.applyUICanvasToSubmeshesWithTexture(mv.webview, textureuuid, mv.refreshrate)
             
             #for when get visuals_modified events later, 
             #e.g. for newly downloaded objects
@@ -53,7 +53,7 @@ class MediaURLHandler(Component):
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
                 print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
-                r.applyUICanvasToSubmeshes(entid, submeshes, wc.webview) #mv.refreshrate
+                r.applyUICanvasToSubmeshes(entid, submeshes, wc.webview, wc.refreshrate)
         
     def on_keydown(self, key, mods):
         if key == 46: #C #XXX was OIS input dependent, broken now

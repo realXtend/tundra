@@ -109,8 +109,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include "propertyeditor.h"
 
-//now that binding uicanvases (from mediahandler webviews) to 3d objects is here
-//#include "EC_UICanvas.h"
+#include "EC_3DCanvas.h"
 
 #include "QEC_Prim.h"
 #include "RexUUID.h"
@@ -860,126 +859,202 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
     }
 }
 
-//PyObject* GetEntityMatindicesWithTexture(PyObject* self, PyObject* args)
-//qt module is gone, this waits for uimodule to bring ec_canvases back
-//PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
+PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
+{
+    PyObject* qwidget;
+    char* uuidstr;
+    char* refresh_rate_str;
+
+    if(!PyArg_ParseTuple(args, "Oss", &qwidget, &uuidstr, &refresh_rate_str))
+        return NULL;
+    if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
+        return NULL;
+
+    // Parse the refresh rate to a number
+    bool ok;
+    int refresh_rate = QString(refresh_rate_str).toInt(&ok);
+    if (!ok)
+        refresh_rate = 0;
+
+    // Prepare QWidget and texture UUID
+    PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
+    QObject* qobject_ptr = wrapped_qwidget->_obj;
+    QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
+    
+    if (!qwidget_ptr)
+        return NULL;
+
+    RexUUID texture_uuid = RexUUID();
+    texture_uuid.FromString(std::string(uuidstr));
+    
+    // Get RexLogic and Scene
+    RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
+
+    if (!scene) 
+    { 
+        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
+        return NULL;   
+    }
+
+    // Iterate the scene to find all submeshes that use this texture uuid
+    QList<uint> submeshes_;
+    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        submeshes_.clear();
+
+        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        if (!primentity) 
+            continue;
+        
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
+        
+        // We are only interested in meshes
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+        {
+            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            if (!mesh) 
+                continue;
+            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            if (!meshptr->GetEntity()) 
+                continue;
+            
+            // Iterate materials
+            MaterialMap::const_iterator i = prim.Materials.begin();
+            while (i != prim.Materials.end())
+            {
+                uint submesh_id = i->first;
+
+                // Store sumbeshes to list where we want to apply the new widget as texture
+                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                {
+                    submeshes_.append(submesh_id);
+
+                    // DEBUG
+                    std::stringstream ss;
+                    ss << "Entity with given texture id found: ";
+                    ss << texture_uuid.ToString();
+                    ss << " - ";
+                    ss << primentity->GetId();
+                    ss << " / ";
+                    ss << submesh_id;
+                    PythonScript::self()->LogInfo(ss.str());
+                    // DEBUG END
+                }
+                ++i;
+            }
+
+            if (submeshes_.size() > 0)
+            {
+                EC_3DCanvas *ec_canvas = entity.GetComponent<EC_3DCanvas>().get();
+                if (ec_canvas)
+                    entity.RemoveComponent(entity.GetComponent<EC_3DCanvas>());
+
+                // Add the component
+                entity.AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
+                ec_canvas = entity.GetComponent<EC_3DCanvas>().get();
+
+                if (ec_canvas)
+                {
+                    ec_canvas->SetWidget(qwidget_ptr);
+                    ec_canvas->SetRefreshRate(refresh_rate);
+                    ec_canvas->SetEntity(&entity);
+                    ec_canvas->SetSubmeshes(submeshes_);
+                    ec_canvas->Start();
+                }
+            }
+        }
+    }
+
+    Py_RETURN_NONE;
+}
+
+//void _ApplyUICanvasToSubmeshesWithTexture(boost::shared_ptr<QtUI::UICanvas> canvas, RexUUID textureuuid)
 //{
-//    PyObject* pyuicanvas;
-//    char* uuidstr;
-//
-//    if(!PyArg_ParseTuple(args, "Os", &pyuicanvas, &uuidstr))
-//    {
-//        //PyErr_SetString(PyExc_ValueError, "Setting uicanvas to textures failed,.");
-//        return NULL;
-//    }
-//
-//    if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
-//    {
-//        return NULL;
-//    }
-//
-//    PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
-//
-//    QObject* qobject_ptr = wrapped_uicanvas->_obj;
-//    QtUI::UICanvas* canvas_ptr = (QtUI::UICanvas*) qobject_ptr; //XXX can this be checked, in case some other qobject was given in error?
-//    
-//    RexUUID textureuuid = RexUUID();
-//    textureuuid.FromString(std::string(uuidstr));
-//
-//    // Get QtModule
-//    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
-//    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-//
-//    //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
-//    //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
-//    boost::shared_ptr<QtUI::UICanvas> canvas;
-//    QList<boost::shared_ptr<QtUI::UICanvas> > canvases;
-//    canvases = qt_ui->GetCanvases();
-//    QList<boost::shared_ptr<QtUI::UICanvas> >::const_iterator i;
-//    for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
-//    {
-//        boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
-//        if (thiscanv.get() == canvas_ptr)
-//        {
-//            canvas = thiscanv;
-//            break;
-//        }
-//    }
-//
-//    //_ApplyUICanvasToSubmeshesWithTexture(uicanvas_ptr, textureuuid);
-//
-////    Py_RETURN_NONE;
-////}
-//
-////the impl for above - not py specific, should be in rexlogic or qtmodule or somewhere.
-////void _ApplyUICanvasToSubmeshesWithTexture(boost::shared_ptr<QtUI::UICanvas> canvas, RexUUID textureuuid)
-////{
-//    
-//    // Get RexLogic module
-//    RexLogic::RexLogicModule *rexlogicmodule_;
-//    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-//
-//    Scene::ScenePtr scene = PythonScript::GetScene();        
-//    if (!scene) { //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
-//        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-//        return NULL;   
-//    }
-//
-//    //which -- if any -- submeshes / mat indices should get the 3duicanvas applied.
-//    std::vector<uint> submeshes_;
-//
-//    for(Scene::SceneManager::iterator iter = scene->begin();
-//        iter != scene->end(); ++iter)
-//    {
-//        Scene::Entity &entity = **iter;
-//        submeshes_.clear();
-//
-//        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
-//        if (!primentity) continue;
-//        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
-//        
-//        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
-//        {
-//            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-//            if (!mesh) continue;
-//            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
-//            // If don't have the actual mesh entity yet, no use trying to set texture
-//            if (!meshptr->GetEntity()) continue;
-//            
-//            RexLogic::MaterialMap::const_iterator i = prim.Materials.begin();
-//            while (i != prim.Materials.end())
-//            {
-//                uint idx = i->first;
-//                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(textureuuid.ToString()) == 0))
-//                {
-//                    // Use a legacy material with the same name as the texture, created automatically by renderer
-//                    //meshptr->SetMaterial(idx, res->GetId());
-//
-//                    submeshes_.push_back(idx);
-//
-//                    std::stringstream ss;
-//                    ss << "Entity with given texture id found: ";
-//                    ss << textureuuid.ToString();
-//                    ss << " - ";
-//                    ss << primentity->GetId();
-//                    ss << " / ";
-//                    ss << idx;
-//                    PythonScript::self()->LogInfo(ss.str());
-//                }
-//                ++i;
-//            }
-//
-//            if (submeshes_.size() > 0)
-//            {
-//                QtUI::EC_UICanvas* ec = dynamic_cast<QtUI::EC_UICanvas*>(qt_ui->CreateEC_UICanvasToEntity(&entity, canvas).get());
-//                if (ec)
-//                    ec->SetSubmeshes(submeshes_);
-//            }
-//        }
-//    }
-//
-//    Py_RETURN_NONE;
+    // code moved to above
 //}
+
+PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
+{
+    unsigned int ent_id_int;
+    PyObject* py_submeshes;
+    PyObject* py_qwidget;
+    char* refresh_rate_str;
+
+    if(!PyArg_ParseTuple(args, "IOOs", &ent_id_int, &py_submeshes, &py_qwidget, &refresh_rate_str))
+        return NULL;
+
+    // Parse the refresh rate to a number
+    bool ok;
+    int refresh_rate = QString(refresh_rate_str).toInt(&ok);
+    if (!ok)
+        refresh_rate = 0;
+
+    // Get entity pointer
+    RexLogic::RexLogicModule *rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity((entity_id_t)ent_id_int);
+    
+    if (!primentity) 
+        Py_RETURN_NONE;
+    if (!PyList_Check(py_submeshes))
+        return NULL;
+    if (!PyObject_TypeCheck(py_qwidget, &PythonQtInstanceWrapper_Type))
+        return NULL;
+
+    PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)py_qwidget;
+    QObject* qobject_ptr = wrapped_qwidget->_obj;
+    QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
+
+    if (!qwidget_ptr)
+        return NULL;
+
+    // Convert a python list to a std::vector.
+    // TODO: Make a util function for this? - Jonne Nauha
+    QList<uint> submeshes_;
+    PyObject* py_iter;
+    PyObject* item;
+    py_iter = PyObject_GetIter(py_submeshes);
+    while (item = PyIter_Next(py_iter))
+    {
+        PyObject* py_int;
+        py_int = PyNumber_Int(item);
+        if (!item)
+        {
+            Py_DECREF(py_iter);
+            Py_DECREF(item);
+            PyErr_SetString(PyExc_ValueError, "Submesh indexes for applying uicanvases must be integers.");
+            return NULL;
+        }
+        submeshes_.append((uint)PyInt_AsLong(py_int));
+        Py_DECREF(item);
+    }
+    Py_DECREF(py_iter);
+
+    if (submeshes_.count() > 0)
+    {
+        EC_3DCanvas *ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
+        if (ec_canvas)
+            primentity->RemoveComponent(primentity->GetComponent<EC_3DCanvas>());    
+
+        // Add the component
+        primentity->AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
+        ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
+
+        if (ec_canvas)
+        {
+            // Setup the component
+            ec_canvas->SetWidget(qwidget_ptr);
+            ec_canvas->SetRefreshRate(refresh_rate);
+            ec_canvas->SetEntity(primentity.get());
+            ec_canvas->SetSubmeshes(submeshes_);
+            ec_canvas->Start();
+        }
+    }
+
+    Py_RETURN_NONE;
+}
 
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
@@ -1054,87 +1129,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     Py_RETURN_NONE;
 }
-
-//PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
-//{
-//    unsigned int ent_id_int;
-//    PyObject* py_submeshes;
-//    PyObject* pyuicanvas;
-//    entity_id_t ent_id;
-//
-//    // Read params from py: entid as uint, a canvas qobject wrapped by pythonqt
-//    if(!PyArg_ParseTuple(args, "IOO", &ent_id_int, &py_submeshes, &pyuicanvas))
-//    {
-//        //PyErr_SetString(PyExc_ValueError, "Setting uicanvas to textures failed,.");
-//        return NULL;
-//    }
-//
-//    ent_id = (entity_id_t) ent_id_int;
-//    RexLogic::RexLogicModule *rexlogicmodule_;
-//    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-//    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
-//    if (!primentity) Py_RETURN_NONE; //XXX exception would be better?
-//
-//    if (!PyList_Check(py_submeshes))
-//        return NULL;
-//
-//    if (!PyObject_TypeCheck(pyuicanvas, &PythonQtInstanceWrapper_Type))
-//        return NULL;
-//
-//    PythonQtInstanceWrapper* wrapped_uicanvas = (PythonQtInstanceWrapper*)pyuicanvas;
-//
-//    QObject* qobject_ptr = wrapped_uicanvas->_obj;
-//    QtUI::UICanvas* canvas_ptr = (QtUI::UICanvas*) qobject_ptr; //XXX can this be checked, in case some other qobject was given in error?
-//    
-//    // Get QtModule
-//    Foundation::ModuleSharedPtr qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("QtModule").lock();
-//    QtUI::QtModule *qt_ui = dynamic_cast<QtUI::QtModule*>(qt_module.get());
-//
-//    //we have a raw canvas pointer (from PythonQt), but need the shared_ptr in Naali
-//    //this is not allowed: boost::shared_ptr<QtUI::UICanvas> canvas = boost::shared_ptr<QtUI::UICanvas>(canvas_ptr);
-//    boost::shared_ptr<QtUI::UICanvas> canvas;
-//    QList<boost::shared_ptr<QtUI::UICanvas> > canvases;
-//    canvases = qt_ui->GetCanvases();
-//    QList<boost::shared_ptr<QtUI::UICanvas> >::const_iterator i;
-//    for (i = canvases.constBegin(); i != canvases.constEnd(); ++i)
-//    {
-//        boost::shared_ptr<QtUI::UICanvas> thiscanv = *i;
-//        if (thiscanv.get() == canvas_ptr)
-//        {
-//            canvas = thiscanv;
-//            break;
-//        }
-//    }
-//
-//    //bleh, should really make this a qt slot somewhere and use a QList
-//    //that is: all this is just to convert a python list to a std::vector.
-//    std::vector<uint> submeshes_;
-//    PyObject* py_iter;
-//    PyObject* item;
-//    py_iter = PyObject_GetIter(py_submeshes);
-//    while(item=PyIter_Next(py_iter))
-//    {
-//        PyObject* py_int;
-//        py_int = PyNumber_Int(item);
-//        if (!item)
-//        {
-//            Py_DECREF(py_iter);
-//            Py_DECREF(item);
-//            PyErr_SetString(PyExc_ValueError, "Submesh indexes for applying uicanvases must be integers.");
-//            return NULL;
-//        }
-//        submeshes_.push_back((uint)PyInt_AsLong(py_int));
-//        Py_DECREF(item);
-//    }
-//    Py_DECREF(py_iter);
-//
-//    QtUI::EC_UICanvas* ec = dynamic_cast<QtUI::EC_UICanvas*>(qt_ui->CreateEC_UICanvasToEntity(primentity.get(), canvas).get());
-//    if (ec)
-//        ec->SetSubmeshes(submeshes_);
-//
-//    Py_RETURN_NONE;
-//}
-
 
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
@@ -1943,11 +1937,11 @@ static PyMethodDef EmbMethods[] = {
 //    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
 //    "Finds all entities with material indices which are using the given texture"},
 
-    //{"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
-    //"Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
+    {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
+    "Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
 
-    //{"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
-    //"Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
+    {"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
+    "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
     
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
