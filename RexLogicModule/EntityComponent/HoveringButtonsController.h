@@ -14,18 +14,25 @@ class QPushButton;
 
 namespace RexLogic
 {
+    //class controlling the hovering buttons
     class HoveringButtonsController: public QWidget, private Ui::HoveringButtonsWidget
     {
         Q_OBJECT
 
     public:
+        //Ctor
         HoveringButtonsController();
+        //Dtor
         virtual ~HoveringButtonsController();
 
+        //Adds button to this widget
         void AddButton(QPushButton *button);
+
+        //notifies the widget that is clicked (if any)
         void ForwardMouseClickEvent(Real x, Real y);
 
     public slots:
+
         void ButtonPressed();
 
     private:

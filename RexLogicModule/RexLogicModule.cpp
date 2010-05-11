@@ -575,6 +575,13 @@ Vector3df RexLogicModule::GetCameraRight() const
         return Vector3df();
 }
 
+void RexLogicModule::EntityHovered(Scene::Entity* entity)
+{
+    EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+    if(widget)
+        widget->HoveredOver();
+}
+
 Vector3df RexLogicModule::GetCameraPosition() const
 {
     if (camera_entity_.expired())
