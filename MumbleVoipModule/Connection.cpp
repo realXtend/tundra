@@ -19,10 +19,8 @@
 #include "User.h"
 #include "PCMAudioFrame.h"
 #include <QUrl>
-
 #include <celt/celt_types.h>
 #include <celt/celt.h>
-
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
@@ -436,7 +434,6 @@ namespace MumbleVoip
         }
         mutex_raw_udp_tunnel_.unlock();
 
-        //return; // test
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
 
@@ -448,15 +445,15 @@ namespace MumbleVoip
         case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
             break;
         case MumbleClient::UdpMessageType::UDPPing:
-            MumbleVoipModule::LogDebug("MUMBLE-UDP: PING");
+            MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP PING");
             return;
             break;
         case MumbleClient::UdpMessageType::UDPVoiceSpeex:
-            MumbleVoipModule::LogDebug("MUMBLE-UDP: Speex");
+            MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP Speex audio frame");
             return;
             break;
         case MumbleClient::UdpMessageType::UDPVoiceCELTBeta:
-            MumbleVoipModule::LogDebug("MUMBLE-UDP: CELT B");
+            MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP CELT B audio frame");
             return;
             break;
         }
@@ -582,7 +579,7 @@ namespace MumbleVoip
         User* user = users_[session];
         if (!user)
         {
-            QString message = QString("Audio packet from unknown user: %1").arg(session);
+            QString message = QString("Audio frame from unknown user: %1").arg(session);
             MumbleVoipModule::LogWarning(message.toStdString());
             return;
         }
@@ -605,6 +602,7 @@ namespace MumbleVoip
                     }
                     else
                     {
+//                        user->NotifyAudioPacketDroped();
                         MumbleVoipModule::LogWarning("Audio packet dropped: user locket");
                     }
                 }

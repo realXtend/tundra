@@ -22,7 +22,9 @@ namespace MumbleVoip
           position_known_(false),
           position_(0,0,0),
           left_(false),
-          channel_(channel)
+          channel_(channel),
+          received_voice_packet_count_(0),
+          voice_packet_drop_count_(0)
     {
     }
 
@@ -71,11 +73,13 @@ namespace MumbleVoip
 
     void User::AddToPlaybackBuffer(PCMAudioFrame* frame)
     {
+        received_voice_packet_count_++;
         if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
         {
             foreach(PCMAudioFrame* frame, playback_queue_)
             {
                 delete frame;
+                voice_packet_drop_count_++;
             }
             playback_queue_.clear();
         }
@@ -123,6 +127,13 @@ namespace MumbleVoip
             return 0;
 
         return playback_queue_.takeFirst();
+    }
+
+    double User::VoicePacketDropRatio() const
+    {
+        if (received_voice_packet_count_ == 0)
+            return 0;
+        return static_cast<double>(voice_packet_drop_count_)/received_voice_packet_count_;
     }
 
 } // namespace MumbleVoip
