@@ -69,7 +69,7 @@ namespace Scene
         //Sent when mouse is hovering above entity.
         static const event_id_t EVENT_ENTITY_MOUSE_HOVER =    0x0c;
 
-        static const event_id_t EVENT_HOVERING_ICON_CLICKED = 0x0c;
+        
 
         // Component-related event id's:
 

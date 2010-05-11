@@ -53,6 +53,7 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
         owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
     }  
+
     return false;
 }
 
@@ -80,6 +81,7 @@ void InputEventHandler::Update(f64 frametime)
             data.v = result.v_;
             event_category_id_t category = eventMgr->QueryEventCategory("Scene");
             eventMgr->SendEvent(category, Scene::Events::EVENT_ENTITY_MOUSE_HOVER, &data);
+            owner_->EntityHovered(result.entity_);
         }
     }
 }
