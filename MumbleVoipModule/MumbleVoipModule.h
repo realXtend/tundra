@@ -42,9 +42,9 @@ namespace MumbleVoip
      *
      *  In future this module will implement InWorldVoiceProvider interface and is controlled by user interface and 
      *  mumbleclient library is used to make connections.
-     * 
-     * \todo REMOVE DIRECT MUMBLE OLD IMPLEMENTATION 
-     * \todo MOVE MUMBLE APPLIACTION LAUNCH CODE TO SEPARATE FILES and MAKE AVAILABLE THROUGH CONSOLE AND '--usemumbleapplication' ARGUMENT
+     *
+     *  command line argument '--use_native_mumble_client' disabled mumbleclient library and will use native mumble
+     *  client application with link plugin.
      */
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
@@ -67,37 +67,33 @@ namespace MumbleVoip
         MODULE_LOGGING_FUNCTIONS
         static const std::string &NameStatic() { return module_name_; } //! returns name of this module. Needed for logging.
 
-    protected:
+    private slots:
+        void StartLinkPlugin();
+        void StartMumbleClient(ServerInfo info);
+
+    private:
         static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
         virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
         virtual Console::CommandResult OnConsoleMumbleUnlink(const StringVector &params);
         virtual Console::CommandResult OnConsoleMumbleStart(const StringVector &params);
-        virtual Console::CommandResult OnConsoleEnableVoiceActivityDetector(const StringVector &params);
-        virtual Console::CommandResult OnConsoleDisableVoiceActivityDetector(const StringVector &params);
 
         virtual void UpdateLinkPlugin(f64 frametime);
         virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
         virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
-
-    private:
+        
         LinkPlugin* link_plugin_;
-//        ServerObserver* server_observer_;
-        ApplicationManager* application_manager_;
-
-        static const int UPDATE_TIME_MS_ = 100;
-        int time_from_last_update_ms_;
-        QString user_id_for_link_plugin_;
-        QString context_id_for_link_plugin_;
-        bool use_camera_position_; 
-        bool mumble_client_started_;
-//        bool mumble_use_library_;
-        event_category_id_t event_category_framework_;
+        ServerObserver* server_observer_;
         InWorldVoice::Provider* in_world_voice_provider_;
 
-    private slots:
-        void StartLinkPlugin();
+        static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
+        int time_from_last_update_ms_;
+        bool use_camera_position_; 
+        bool use_native_mumble_client_;
+        event_category_id_t event_category_framework_;
+        QString avatar_id_for_link_plugin_;
+        QString context_id_for_link_plugin_;
     };
 
 } // end of namespace: MumbleVoip
