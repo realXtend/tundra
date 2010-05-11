@@ -19,7 +19,7 @@ modulenames = [
     #("usr.chathandler", ChatHandler),
     ("usr.keycommands", "KeyCommander"),
     ("loadurlhandler", "LoadURLHandler"),
-    #("mediaurlhandler.mediaurlhandler", "MediaURLHandler"),
+    ("mediaurlhandler.mediaurlhandler", "MediaURLHandler"),
     #("apitest.testrunner", "TestLoginLogoutExit",
     #("webserver.webcontroller", "WebServer"),
     ("localscene.localscene", "LocalScene"),

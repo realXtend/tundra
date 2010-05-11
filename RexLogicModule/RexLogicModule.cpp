@@ -58,7 +58,6 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
-
 // External EC's
 #include "EC_Highlight.h"
 #include "EC_HoveringText.h"
@@ -67,9 +66,7 @@
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
-
-
-
+#include "EC_3DCanvas.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -79,8 +76,6 @@
 #include <OgreBillboardSet.h>
 
 #include "MemoryLeakCheck.h"
-
-
 
 namespace RexLogic
 {
@@ -125,6 +120,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_OpenSimPresence);
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_Touchable);
+    DECLARE_MODULE_EC(EC_3DCanvas);
 }
 
 // virtual
@@ -404,12 +400,9 @@ void RexLogicModule::Update(f64 frametime)
 
         // update avatar stuff (download requests etc.)
         avatar_->Update(frametime);
-        
-        
 
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
-
 
         // update sound listener position/orientation
         UpdateSoundListener();
