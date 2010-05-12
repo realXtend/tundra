@@ -15,11 +15,12 @@
 #include "Provider.h"
 #include "ApplicationManager.h"
 //#define BUILDING_DLL // for mumbleclient/client_lib.h
-#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
-#include <mumbleclient/client_lib.h>
+//#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
+//#include <mumbleclient/client_lib.h>
 //#undef BUILDING_DLL // for mumbleclient/client_lib.h
 #include "DebugOperatorNew.h" 
 #include "MemoryLeakCheck.h" 
+#include "MumbleLibrary.h"
 
 namespace MumbleVoip
 {
@@ -58,13 +59,6 @@ namespace MumbleVoip
         }
         else
         {
-            MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-            if (!mumble_lib)
-            {
-                MumbleVoipModule::LogError("Cannot found Mumble library intance.");
-                return;
-            }
-
             in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
         }
 
@@ -103,13 +97,14 @@ namespace MumbleVoip
         }
         else
         {
-            MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-            if (!mumble_lib)
-            {
-                MumbleVoipModule::LogError("Cannot shutdown Mumble library: No library instance available.");
-                return;
-            }
-            mumble_lib->Shutdown();
+            //MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
+            //if (!mumble_lib)
+            //{
+            //    MumbleVoipModule::LogError("Cannot shutdown Mumble library: No library instance available.");
+            //    return;
+            //}
+            MumbleLibrary::Stop();
+//            mumble_lib->Shutdown();
         }
     }
 

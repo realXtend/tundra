@@ -3,7 +3,7 @@
 #ifndef incl_MumbleVoipModule_Channel_h
 #define incl_MumbleVoipModule_Channel_h
 
-//#include <mumbleclient/channel.h>
+#include <QString>
 
 namespace MumbleClient
 {

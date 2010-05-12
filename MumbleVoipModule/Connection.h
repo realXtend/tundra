@@ -9,9 +9,9 @@
 #include <QMap>
 #include <QPair>
 #include "Core.h"
-#include "CoreTypes.h"
-#include "ServerInfo.h"
-#include "stdint.h"
+//#include "CoreTypes.h"
+//#include "ServerInfo.h"
+//#include "stdint.h"
 #include "MumbleDefines.h"
 
 class QNetworkReply;
@@ -31,6 +31,7 @@ namespace MumbleVoip
     class Channel;
     class User;
     class PCMAudioFrame;
+    class ServerInfo;
 
     typedef QPair<User*, PCMAudioFrame*> AudioPacket;
 
@@ -133,7 +134,7 @@ namespace MumbleVoip
 
         //! @param length the length of packet in bytes
         //! @param the packet data
-        void HandleIncomingRawUdpTunnelPacket(int32_t length, void* buffer);
+        void HandleIncomingRawUdpTunnelPacket(int length, void* buffer);
 
 //        void OnRelayTunnel(std::string &s);
 

@@ -1,12 +1,9 @@
 #include "StableHeaders.h"
 #include "Session.h"
-#include "MemoryLeakCheck.h"
-#include "Participant.h"
-#include "ConnectionManager.h"
+//#include "MemoryLeakCheck.h"
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
-#include "User.h"
 #include "EC_OgrePlaceable.h" // for avatar position
 #include "EC_OpenSimPresence.h" // for avatar position
 #include "ModuleManager.h"    // for avatar info
@@ -14,7 +11,18 @@
 #include "Entity.h" // for avatar position
 #include "SceneManager.h"
 #include "WorldStream.h"
+#include "User.h"
 #include "Channel.h"
+#include "Connection.h"
+#include "Participant.h"
+#include "MumbleLibrary.h"
+#include "MumbleVoipModule.h"
+
+//#define BUILDING_DLL // for dll import/export declarations
+//#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
+////#include <mumbleclient/client_lib.h>
+//#undef BUILDING_DLL // for dll import/export declarations
+////#include "LibMumbleThread.h"
 
 namespace MumbleVoip
 {
@@ -30,26 +38,25 @@ namespace MumbleVoip
             audio_sending_enabled_(false),
             audio_receiving_enabled_(false),
             speaker_voice_activity_(0),
-            connection_manager_(new ConnectionManager(framework)),
-            server_info_(server_info)
+//            connection_manager_(new ConnectionManager(framework)),
+            server_info_(server_info),
+            connection_(0)
         {
             channel_name_ = server_info.channel;
-            connection_manager_->OpenConnection(server_info);
-            if (connection_manager_->GetState() != ConnectionManager::STATE_CONNECTION_OPEN)
-            {
-                state_ = STATE_ERROR;
-                reason_ = connection_manager_->GetReason();
-                return;
-            }
-            state_ = STATE_OPEN; // \todo get this information from connection_manager
-            connection_manager_->SendAudio(audio_sending_enabled_);
-            connect(connection_manager_, SIGNAL(UserJoined(User*)), SLOT(CreateNewParticipant(User*)) );
-            connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
+            OpenConnection(server_info);
+            
+
+            //connection_manager_->OpenConnection(server_info);
+            //if (connection_manager_->GetState() != ConnectionManager::STATE_CONNECTION_OPEN)
+            //{
+            //    state_ = STATE_ERROR;
+            //    reason_ = connection_manager_->GetReason();
+            //    return;
+            //}
         }
 
         Session::~Session()
         {
-            SAFE_DELETE(connection_manager_);
             foreach(Participant* p, participants_)
             {
                 SAFE_DELETE(p);
@@ -60,11 +67,38 @@ namespace MumbleVoip
                 SAFE_DELETE(p);
             }
             left_participants_.clear();
+            if (connection_)
+                SAFE_DELETE(connection_);
+        }
+
+        void Session::OpenConnection(ServerInfo server_info)
+        {
+            connection_ = new Connection(server_info);
+            if (connection_->GetState() == Connection::STATE_ERROR)
+            {
+                state_ = STATE_ERROR;
+                reason_ = connection_->GetReason();
+                return;
+            }
+            state_ = STATE_OPEN;
+
+            connect(connection_, SIGNAL(UserJoined(User*)), SLOT(CreateNewParticipant(User*)) );
+            connect(connection_, SIGNAL(UserLeft(User*)), SLOT(UpdateUserList()) );
+//            connections_[info.server] = connection;
+            connection_->Join(server_info.channel);
+            connection_->SendAudio(sending_audio_);
+            connection_->SetEncodingQuality(0.5);
+            connection_->SendPosition(true); 
+            MumbleLibrary::Start();
+            MumbleLibrary::Stop();
+            //connect(MumbleLibrary::Instance(), SIGNAL(InteralError()), SLOT(HandleMumbleLibraryError()) );
+//            connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
         }
 
         void Session::Close()
         {
-            connection_manager_->CloseConnection(server_info_);
+            connection_->Close();
+            SAFE_DELETE(connection_);
             state_ = STATE_CLOSED;
             emit StateChanged(state_);
         }
@@ -97,14 +131,12 @@ namespace MumbleVoip
         void Session::EnableAudioSending()
         {
             audio_sending_enabled_ = true;
-            connection_manager_->SendAudio(true);
             emit StartSendingAudio();
         }
 
         void Session::DisableAudioSending()
         {
             audio_sending_enabled_ = false;
-            connection_manager_->SendAudio(false);
             emit StopSendingAudio();
         }
 
@@ -116,13 +148,11 @@ namespace MumbleVoip
         void Session::EnableAudioReceiving()
         {
             audio_receiving_enabled_ = true;
-            connection_manager_->ReceiveAudio(true);
         }
 
         void Session::DisableAudioReceiving()
         {
             audio_receiving_enabled_ = false;
-            connection_manager_->ReceiveAudio(false);
         }
 
         bool Session::IsAudioReceivingEnabled() const
@@ -148,14 +178,9 @@ namespace MumbleVoip
 
         void Session::Update(f64 frametime)
         {
-            if (connection_manager_)
-            {
-                Vector3df avatar_position;
-                Vector3df avatar_direction;
-                if (GetOwnAvatarPosition(avatar_position, avatar_direction))
-                    connection_manager_->SetAudioSourcePosition(avatar_position);
-                connection_manager_->Update(frametime);
-            }
+//                connection_manager_->Update(frametime);
+            PlaybackReceivedAudio();
+            SendRecordedAudio();
         }
 
         void Session::CreateNewParticipant(User* user)
@@ -299,6 +324,109 @@ namespace MumbleVoip
                 }
             }
             return "";
+        }
+
+        void Session::SendRecordedAudio()
+        {
+            if (!audio_sending_enabled_)
+                return;
+
+            Vector3df avatar_position;
+            Vector3df avatar_direction;
+
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+            if (!sound_service)
+            {
+                MumbleVoipModule::LogDebug("Cannot record audio: Soundservice cannot be found.");
+                return;
+            }
+
+            while (sound_service->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
+            {
+                int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
+                PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
+                int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+                assert(bytes_to_read == bytes);
+
+                //if (voice_indicator_)
+                //{
+                //    voice_indicator_->AnalyzeAudioFrame(frame);
+                //    if (!voice_indicator_->IsSpeaking())
+                //    {
+                //        delete frame;
+                //        continue;
+                //    }
+                //}
+                connection_->SendAudioFrame(frame, avatar_position);
+//                emit AudioFrameSent(frame);
+                delete frame;
+            }
+        }
+
+        void Session::PlaybackReceivedAudio()
+        {
+            for(;;)
+            {
+                AudioPacket packet = connection_->GetAudioPacket();
+                if (packet.second == 0)
+                    break; // nothing to play anymore
+                PlaybackAudioFrame(packet.first, packet.second);
+            }
+        }
+
+        void Session::PlaybackAudioFrame(User* user, PCMAudioFrame* frame)
+        {
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+            if (!sound_service.get())
+                return;    
+
+            Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+            
+            sound_buffer.data_.resize(frame->DataSize());
+            memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
+
+            sound_buffer.frequency_ = frame->SampleRate();
+            if (frame->SampleWidth() == 16)
+                sound_buffer.sixteenbit_ = true;
+            else
+                sound_buffer.sixteenbit_ = false;
+            
+            if (frame->Channels() == 2)
+                sound_buffer.stereo_ = true;
+            else
+                sound_buffer.stereo_ = false;
+
+            QMutexLocker user_locker(user);
+            if (audio_playback_channels_.contains(user->Session()))
+                if (user->PositionKnown())
+                    sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+                else
+                    sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
+            else
+                if (user->PositionKnown())
+                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+                else
+                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+
+            delete frame;
+        }
+
+        boost::shared_ptr<Foundation::SoundServiceInterface> Session::SoundService()
+        {
+            if (!framework_)
+                return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+            Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+
+            if (!service_manager.get())
+                return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+
+            if (!sound_service.get())
+                return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+            return sound_service;
         }
 
     } // InWorldVoice

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_LibMumbleMainLoopThread_h
-#define incl_MumbleVoipModule_LibMumbleMainLoopThread_h
+#ifndef incl_MumbleVoipModule_MumbleMainLoopThread_h
+#define incl_MumbleVoipModule_MumbleMainLoopThread_h
 
 #include <QObject>
 #include <QThread>
@@ -12,9 +12,9 @@ namespace MumbleVoip
 {
     /**
      * Thread for running the lib mumble mainloop
-     *
+     * 
      */
-    class LibMumbleThread : public QThread 
+    class MumbleMainLoopThread : public QThread 
     {
     public:
         virtual void run();
@@ -26,4 +26,4 @@ namespace MumbleVoip
     };
 } // end of namespace: MumbleVoip
 
-#endif // incl_MumbleVoipModule_LibMumbleMainLoopThread_h
+#endif // incl_MumbleVoipModule_MumbleMainLoopThread_h

@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
+//#include "DebugOperatorNew.h"
 
-#include "LibMumbleThread.h"
+#include "MumbleMainLoopThread.h"
 #include "MumbleVoipModule.h"
 
 #define BUILDING_DLL // for dll import/export declarations
@@ -15,7 +15,7 @@
 
 namespace MumbleVoip
 {
-    void LibMumbleThread::run()
+    void MumbleMainLoopThread::run()
     {
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
@@ -41,7 +41,7 @@ namespace MumbleVoip
         MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
 
-    QString LibMumbleThread::Reason() const
+    QString MumbleMainLoopThread::Reason() const
     {
         return reason_;
     }
