@@ -105,14 +105,12 @@ namespace MumbleVoip
         if (!lib_mumble_thread_)
             return;
 
-        //lib_mumble_thread_->shutdown();
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
         {
             MumbleVoipModule::LogError("Cannot stop Mumble library: No library instance available.");
             return;
         }
-//        mumble_lib->Shutdown();
 
         lib_mumble_thread_->wait();
         SAFE_DELETE(lib_mumble_thread_);

@@ -183,7 +183,7 @@ namespace MumbleVoip
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
-        QMutex mutex_encode_audio_;
+        QMutex mutex_send_audio_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;

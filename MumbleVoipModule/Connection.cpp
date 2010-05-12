@@ -121,7 +121,10 @@ namespace MumbleVoip
 
     Connection::~Connection()
     {
-        QMutexLocker locker(&mutex_raw_udp_tunnel_);
+        QMutexLocker locker1(&mutex_raw_udp_tunnel_);
+        QMutexLocker locker2(&mutex_send_audio_);
+        QMutexLocker locker3(&mutex_channels_);
+        QMutexLocker locker4(&mutex_users_);
 
         Close();
         UninitializeCELT();
@@ -157,7 +160,7 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
-        if (state_ != STATE_OPEN) //! @todo Check if we should not filter this state out!
+        if (state_ != STATE_CLOSED)
         {
             client_->Disconnect();
             state_ = STATE_CLOSED;
@@ -297,17 +300,18 @@ namespace MumbleVoip
 
     void Connection::SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position)
     {
-        QMutexLocker locker(&mutex_encode_audio_);
+        QMutexLocker locker(&mutex_send_audio_);
+
+        if (state_ != STATE_OPEN)
+            return;
 
         PCMAudioFrame* f = new PCMAudioFrame(frame);
         encode_queue_.push_back(f);
         
         if (encode_queue_.size() < FRAMES_PER_PACKET)
-        {
             return;
-        }
 
-        std::deque<std::string> packet_list;
+        std::deque<std::string> packet_list; //! @todo SPEED OPTIMIZATION: reuse memory
 
         for (int i = 0; i < FRAMES_PER_PACKET; ++i)
         {
@@ -320,12 +324,12 @@ namespace MumbleVoip
 
             delete audio_frame;
         }
-        int session = 0;
-	    static char data[1024];
+        const int PACKET_DATA_SIZE_MAX = 1024;
+	    static char data[PACKET_DATA_SIZE_MAX];
 	    int flags = 0; // target = 0
 	    flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
 	    data[0] = static_cast<unsigned char>(flags);
-        PacketDataStream data_stream(data + 1, 1023);
+        PacketDataStream data_stream(data + 1, PACKET_DATA_SIZE_MAX - 1);
         data_stream << frame_sequence_;
 
 	    for (int i = 0; i < FRAMES_PER_PACKET; ++i)
