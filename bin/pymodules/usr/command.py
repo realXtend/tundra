@@ -517,12 +517,12 @@ if 0:
         
     r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
 
-if 0: 
+if 0: #getUserAvatar 
     id = r.getUserAvatarId()
     ent = r.getEntity(id)
     print "User's avatar_id:", id
-    print "Avatar's mesh_name:", ent.mesh
-    ent.mesh = "cruncah1.mesh"
+    #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
+    #ent.mesh = "cruncah1.mesh"
     
 if 0:
     print r.getCameraUp()
@@ -1212,3 +1212,24 @@ if 0: #loadurl handler import test
     loadurlhandler = reload(loadurlhandler)
     l = loadurlhandler.LoadURLHandler()
     print l
+
+if 0: #webview as 3dcanvas
+    import PythonQt
+
+    try:
+        webview = r.webview
+    except:
+        webview = PythonQt.QtWebKit.QWebView()
+        r.webview = webview #is GCd otherwise immediately
+
+    #urlstring = "http://an.org/"    
+    urlstring = "http://www.fmi.fi/saa/sadejapi.html"
+    url = PythonQt.QtCore.QUrl(urlstring)
+    webview.load(url)
+    refreshrate = 10
+    #webview.show()
+
+    avid = r.getUserAvatarId()
+    r.applyUICanvasToSubmeshes(avid, [0], webview, refreshrate)
+
+    print webview
