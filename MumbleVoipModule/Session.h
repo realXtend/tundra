@@ -4,18 +4,25 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
+#include "SoundServiceInterface.h"
+#include <QMap>
 
 namespace Foundation
 {
     class Framework;
 }
 
+namespace MumbleClient
+{
+    class MumbleClientLib;
+}
+
 namespace MumbleVoip
 {
-    class ConnectionManager;
     class ServerInfo;
     class User;
     class PCMAudioFrame;
+    class Connection;
 
     namespace InWorldVoice
     {
@@ -50,9 +57,14 @@ namespace MumbleVoip
             virtual void Update(f64 frametime);
 
         private:
+            virtual void OpenConnection(ServerInfo info);
             bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
             QString OwnAvatarId();
             QString GetAvatarFullName(QString uuid) const;
+            void SendRecordedAudio();
+            void PlaybackReceivedAudio();
+            void PlaybackAudioFrame(User* user, PCMAudioFrame* frame);
+            boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
     
             Foundation::Framework* framework_;
             State state_;
@@ -64,12 +76,12 @@ namespace MumbleVoip
             bool audio_receiving_enabled_;
             ParticipantList participants_;
             ParticipantList left_participants_;
-            ConnectionManager* connection_manager_;  // In future session could have multiple connections
+            Connection* connection_; // // In future session could have multiple connections
             double speaker_voice_activity_;
             const ServerInfo &server_info_;
             User* self_user_;
             QString channel_name_;
-
+            QMap<int, sound_id_t> audio_playback_channels_;
 
         private slots:
             void CreateNewParticipant(User*);

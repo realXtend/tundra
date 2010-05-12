@@ -425,7 +425,7 @@ namespace MumbleVoip
         }
     }
 
-    void Connection::HandleIncomingRawUdpTunnelPacket(int32_t length, void* buffer)
+    void Connection::HandleIncomingRawUdpTunnelPacket(int length, void* buffer)
     {
         if (!receiving_audio_)
             return;
