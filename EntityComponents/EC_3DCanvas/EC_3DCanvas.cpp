@@ -20,16 +20,19 @@
 #include <QMap>
 #include <QTimer>
 
-#include <QDebug>
-
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     framework_(module->GetFramework()),
     entity_(0),
     widget_(0),
     update_internals_(false),
+    paint(false),
     refresh_timer_(0),
-    update_interval_msec_(0)
+    update_interval_msec_(0),
+    material_name_(""),
+    texture_name_(""),
+    material_manager_(Ogre::MaterialManager::getSingleton()),
+    texture_manager_(Ogre::TextureManager::getSingleton())
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -37,18 +40,37 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     if (renderer)
     {
         // Create material
-        material_ = OgreRenderer::GetOrCreateLitTexturedMaterial(renderer->GetUniqueObjectName());
-        
+        material_name_ = "EC3DCanvasMaterial" + renderer->GetUniqueObjectName();
+        Ogre::MaterialPtr material = OgreRenderer::GetOrCreateLitTexturedMaterial(material_name_);
+        if (material.isNull())
+            material_name_ = "";
+
         // Create texture
-        Ogre::TextureManager &texture_manager = Ogre::TextureManager::getSingleton();
-        texture_ = texture_manager.create(renderer->GetUniqueObjectName(),
-            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        texture_name_ = "EC3DCanvasTexture" + renderer->GetUniqueObjectName();
+        Ogre::TexturePtr texture = texture_manager_.createManual(texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                                 Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
+                                                                 Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        if (texture.isNull())
+            texture_name_ = "";
+
+        paint = true;
     }
 }
 
 EC_3DCanvas::~EC_3DCanvas()
 {
-    OgreRenderer::RemoveMaterial(material_);
+    paint = false;
+    widget_ = 0;
+
+    if (refresh_timer_)
+        refresh_timer_->stop();
+    SAFE_DELETE(refresh_timer_);
+
+    if (!material_name_.empty())
+    {
+        Ogre::MaterialPtr material = material_manager_.getByName(material_name_);
+        OgreRenderer::RemoveMaterial(material);
+    }
 }
 
 void EC_3DCanvas::Start()
@@ -103,37 +125,51 @@ void EC_3DCanvas::SetEntity(Scene::Entity *entity)
 
 void EC_3DCanvas::Update()
 {
-    if (!widget_ || texture_.isNull())
+    if (!paint)
+        return; 
+
+    if (!widget_ || texture_name_.empty())
         return;
 
-    // Uncomment to see the actual page that we take screenshots from
-    //widget_->show()
-    //qDebug() << endl << ">> Updating mediaurl texture";
-
-    QImage buffer(widget_->size(), QImage::Format_ARGB32_Premultiplied);
-    QPainter painter(&buffer);
-    widget_->render(&painter);
-
-    Ogre::DataStreamPtr image_data(new Ogre::MemoryDataStream((void*)buffer.bits(), buffer.byteCount()));
-    texture_->loadRawData(image_data, buffer.width(), buffer.height(), Ogre::PF_A8R8G8B8);
-
-    // Set texture to material
-    if (update_internals_)
+    Ogre::TexturePtr texture = texture_manager_.getByName(texture_name_);
+    if (!texture.isNull())
     {
-        OgreRenderer::SetTextureUnitOnMaterial(material_, texture_->getName());
-        UpdateSubmeshes();
-        update_internals_ = false;
-        qDebug() << endl << ">> EC_3DCanvas: Internals updated";
-    }    
+
+        QImage buffer(widget_->size(), QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&buffer);
+        widget_->render(&painter);
+
+        // Set texture to material
+        if (update_internals_ && !material_name_.empty())
+        {
+            Ogre::MaterialPtr material = material_manager_.getByName(material_name_);
+            if (material.isNull())
+                return;
+            OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
+            UpdateSubmeshes();
+            update_internals_ = false;
+        }
+
+        if (texture->getWidth() != buffer.width() || texture->getHeight() != buffer.height())
+        {
+            texture->freeInternalResources();
+            texture->setWidth(buffer.width());
+            texture->setHeight(buffer.height());
+            texture->createInternalResources();
+        }
+
+        Ogre::Box update_box(0,0, buffer.width(), buffer.height());
+        Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer.bits());
+        texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+    }
 }
 
 void EC_3DCanvas::UpdateSubmeshes()
 {
-    if (material_.isNull() || !entity_ || submeshes_.count() == 0)
+    if (material_name_.empty() || !entity_ || submeshes_.count() == 0)
         return;
 
     QMap<uint, std::string> restore_materials;
-    std::string material_name = material_->getName();
     bool apply_material;
 
     OgreRenderer::EC_OgreMesh* ec_mesh = entity_->GetComponent<OgreRenderer::EC_OgreMesh>().get();
@@ -147,7 +183,7 @@ void EC_3DCanvas::UpdateSubmeshes()
         {
             // Store original materials
             std::string submesh_material_name = ec_mesh->GetMaterialName(index);
-            if (submesh_material_name != material_name)
+            if (submesh_material_name != material_name_)
                 restore_materials[index] = submesh_material_name;
 
             apply_material = false;
@@ -156,18 +192,10 @@ void EC_3DCanvas::UpdateSubmeshes()
                     apply_material = true;
 
             if (apply_material)
-            {
-                ec_mesh->SetMaterial(index, material_name);
-                qDebug() << "Setting material " << QString::fromStdString(material_name) << " to submesh " << index;
-            }
-            else if (ec_mesh->GetMaterialName(index) == material_name)
-            {
+                ec_mesh->SetMaterial(index, material_name_);
+            else if (ec_mesh->GetMaterialName(index) == material_name_)
                 if (restore_materials.contains(index))
-                {
                      ec_mesh->SetMaterial(index, restore_materials[index]);
-                     qDebug() << "Restoring original material " << QString::fromStdString(restore_materials[index]) << " to submesh " << index;
-                }
-            }
         }
     }
 }

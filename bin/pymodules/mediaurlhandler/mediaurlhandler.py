@@ -29,11 +29,23 @@ class MediaURLHandler(Component):
         ##print widget, dir(widget)
         #uism.AddProxyWidget(self.proxywidget)
         #self.wv.show()
+        
+    def on_logout(self, id):
+        r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open webviews")
+        for textureid, mediaurlview in self.texture2webview.iteritems():
+            mediaurlview.webview.delete()
+        self.texture2webview.clear()
 
+    def on_exit(self):
+        r.logInfo("Uninitializing MediaURLHandler")
+        for textureid, mediaurlview in self.texture2webview.iteritems():
+            mediaurlview.webview.delete()
+        self.texture2webview = None
+        
     def on_genericmessage(self, name, data):
         #print "MediaURLHandler got Generic Message:", name, data
         if name == "RexMediaUrl":
-            print "MediaURLHandler got data:", data
+            #print "MediaURLHandler got data:", data
             textureuuid, urlstring, refreshrate = data
 
             #could check whether a webview for this url already existed
@@ -52,7 +64,7 @@ class MediaURLHandler(Component):
         for tx, wc in self.texture2webview.iteritems():
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
-                print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
+                #print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
                 r.applyUICanvasToSubmeshes(entid, submeshes, wc.webview, wc.refreshrate)
         
     def on_keydown(self, key, mods):
