@@ -4,7 +4,7 @@
 
 #include "MumbleVoipModule.h"
 #include "LinkPlugin.h"
-#include "ServerObserver.h"
+#include "ServerInfoProvider.h"
 #include "ModuleManager.h"
 #include "EC_OgrePlaceable.h"
 #include "WorldLogicInterface.h"
@@ -28,7 +28,7 @@ namespace MumbleVoip
     MumbleVoipModule::MumbleVoipModule()
         : ModuleInterfaceImpl(module_name_),
           link_plugin_(0),
-          server_observer_(0),
+          server_info_provider_(0),
           in_world_voice_provider_(0),
           time_from_last_update_ms_(0),
           use_camera_position_(false),
@@ -45,7 +45,7 @@ namespace MumbleVoip
     MumbleVoipModule::~MumbleVoipModule()
     {
         SAFE_DELETE(link_plugin_);
-        SAFE_DELETE(server_observer_);
+        SAFE_DELETE(server_info_provider_);
         SAFE_DELETE(in_world_voice_provider_);
     }
 
@@ -53,8 +53,8 @@ namespace MumbleVoip
     {
         if (use_native_mumble_client_)
         {
-            server_observer_ = new ServerObserver(framework_);
-            connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
+            server_info_provider_ = new ServerInfoProvider(framework_);
+            connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
         }
         else
         {
@@ -90,7 +90,7 @@ namespace MumbleVoip
     void MumbleVoipModule::Uninitialize()
     {
         SAFE_DELETE(link_plugin_);
-        SAFE_DELETE(server_observer_);
+        SAFE_DELETE(server_info_provider_);
         SAFE_DELETE(in_world_voice_provider_);
 
         if (use_native_mumble_client_)
@@ -127,8 +127,8 @@ namespace MumbleVoip
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);
 
-        if (server_observer_)
-            server_observer_->HandleEvent(category_id, event_id, data);
+        if (server_info_provider_)
+            server_info_provider_->HandleEvent(category_id, event_id, data);
 
         return false;
     }

@@ -2,7 +2,7 @@
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
-#include "ServerObserver.h"
+#include "ServerInfoProvider.h"
 #include "EventManager.h"
 #include "NetworkEvents.h" // For network events
 
@@ -14,16 +14,17 @@ namespace MumbleVoip
             framework_(framework),
             description_("Mumble in-world voice"),
             session_(0),
-            server_info_(0)
+            server_info_(0),
+            server_info_provider_(0)
         {
-            server_observer_ = new ServerObserver(framework);
-            connect(server_observer_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
+            server_info_provider_ = new ServerInfoProvider(framework);
+            connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
         }
 
         Provider::~Provider()
         {
             SAFE_DELETE(session_);
-            SAFE_DELETE(server_observer_);
+            SAFE_DELETE(server_info_provider_);
             SAFE_DELETE(server_info_);
         }
 
@@ -35,8 +36,8 @@ namespace MumbleVoip
         
         bool Provider::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
         {
-            if (server_observer_)
-                server_observer_->HandleEvent(category_id, event_id, data);
+            if (server_info_provider_)
+                server_info_provider_->HandleEvent(category_id, event_id, data);
 
             if (category_id == networkstate_event_category_)
             {

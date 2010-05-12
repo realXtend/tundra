@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "ServerObserver.h"
+#include "ServerInfoProvider.h"
 
 #include "WorldStream.h"
 #include "MumbleVoipModule.h"
@@ -18,7 +18,7 @@
 namespace MumbleVoip
 {
 
-    ServerObserver::ServerObserver(Foundation::Framework* framework) :
+    ServerInfoProvider::ServerInfoProvider(Foundation::Framework* framework) :
         framework_event_category_(0),
         networkstate_event_category_(0),
         framework_(framework),
@@ -27,12 +27,12 @@ namespace MumbleVoip
         connect(server_info_request_manager_, SIGNAL(finished(QNetworkReply*)), this, SLOT(OnMumbleServerInfoHttpResponse(QNetworkReply*)));
     }
 
-    ServerObserver::~ServerObserver()
+    ServerInfoProvider::~ServerInfoProvider()
     {
         SAFE_DELETE(server_info_request_manager_);
     }
 
-    bool ServerObserver::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ServerInfoProvider::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         if (!framework_event_category_ && framework_)
            framework_event_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -79,7 +79,7 @@ namespace MumbleVoip
         return false;
     }
 
-    void ServerObserver::RequestMumbleServerInfo(const QString &grid_url, const QString &agent_id)
+    void ServerInfoProvider::RequestMumbleServerInfo(const QString &grid_url, const QString &agent_id)
     {
         QString path = "mumble_server_info";
         QUrl url(grid_url);
@@ -92,7 +92,7 @@ namespace MumbleVoip
         server_info_request_manager_->get(request);
     }
 
-    void ServerObserver::OnMumbleServerInfoHttpResponse(QNetworkReply* reply)
+    void ServerInfoProvider::OnMumbleServerInfoHttpResponse(QNetworkReply* reply)
     {
         if (reply->error() != QNetworkReply::NoError)
         {
