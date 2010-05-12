@@ -3,11 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "ComponentRegistrarInterface.h"
-#include "ServiceManager.h"
 #include "ResourceHandler.h"
-#include "OgreMeshResource.h"
-#include "OgreTextureResource.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreLight.h"
@@ -20,24 +16,19 @@
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
 
-
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
-#include "ConsoleCommand.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "RendererSettings.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
-#include <Ogre.h>
-
-
-#include "SceneManager.h"
 
 namespace OgreRenderer
 {
-    OgreRenderingModule::OgreRenderingModule() : ModuleInterfaceImpl(type_static_),
+    OgreRenderingModule::OgreRenderingModule() :
+        ModuleInterfaceImpl(type_static_),
         asset_event_category_(0),
         resource_event_category_(0),
         input_event_category_(0),
@@ -52,8 +43,6 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Load()
     {
-        using namespace OgreRenderer;
-
         DECLARE_MODULE_EC(EC_OgrePlaceable);
         DECLARE_MODULE_EC(EC_OgreMesh);
         DECLARE_MODULE_EC(EC_OgreLight);
@@ -96,7 +85,7 @@ namespace OgreRenderer
         renderer_->Initialize();
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
-        
+
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
@@ -117,18 +106,12 @@ namespace OgreRenderer
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
     }
 
-
-
     // virtual
-    bool OgreRenderingModule::HandleEvent(
-        event_category_id_t category_id,
-        event_id_t event_id, 
-        Foundation::EventDataInterface* data)
+    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
             return false;
-        
 
         if (category_id == asset_event_category_)
         {
@@ -144,29 +127,27 @@ namespace OgreRenderer
         {
             // do raycast into the world when user clicks mouse button
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            assert(movement);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 
             Scene::Entity *entity = result.entity_;
-
             if (entity)
             {
-                //std::cout << "Raycast hit entity " << entity << " pos " << result.pos_.x << " " << result.pos_.y << " " << result.pos_.z
-                //          << " submesh " << result.submesh_ << " uv " << result.u_ << " " << result.v_ << std::endl;
-                
                 Scene::Events::RaycastEventData event_data(entity->GetId());
-         
                 event_data.pos = result.pos_, event_data.submesh = result.submesh_, event_data.u = result.u_, event_data.v = result.v_; 
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
-            
+
                 //Semantically same as above but sends the entity pointer
                 Scene::Events::EntityClickedData clicked_event_data(entity);
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CLICKED, &clicked_event_data);
             }
         }
 
+/*
         if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK_BUILD)
         {
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            assert(movement);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 
             Scene::Entity *entity = result.entity_;
@@ -176,6 +157,7 @@ namespace OgreRenderer
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CREATE, &event_data);
             }
         }
+*/
 
         if (category_id == input_event_category_ && event_id == Input::Events::NAALI_BINDINGS_CHANGED)
         {

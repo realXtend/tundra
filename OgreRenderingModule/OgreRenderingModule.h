@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingModule_h
-#define incl_OgreRenderingModule_h
+#ifndef incl_OgreRenderingModule_OgreRenderingModule_h
+#define incl_OgreRenderingModule_OgreRenderingModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
@@ -41,15 +41,11 @@ namespace OgreRenderer
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        
-        virtual bool HandleEvent(
-            event_category_id_t category_id,
-            event_id_t event_id, 
-            Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
-        
+
         MODULE_LOGGING_FUNCTIONS;
 
         //! returns name of this module. Needed for logging.
@@ -61,9 +57,6 @@ namespace OgreRenderer
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
 
     private:
-
-
-
         //! renderer
         RendererPtr renderer_;
 
