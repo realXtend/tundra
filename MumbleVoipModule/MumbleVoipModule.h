@@ -14,7 +14,7 @@
 namespace MumbleVoip
 {
     class LinkPlugin;
-    class ServerObserver;
+    class ServerInfoProvider;
     class ConnectionManager;
     class ServerInfo;
     class ApplicationManager;
@@ -84,7 +84,7 @@ namespace MumbleVoip
         virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
         
         LinkPlugin* link_plugin_;
-        ServerObserver* server_observer_;
+        ServerInfoProvider* server_info_provider_;
         InWorldVoice::Provider* in_world_voice_provider_;
 
         static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;

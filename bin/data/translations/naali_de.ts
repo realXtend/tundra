@@ -384,26 +384,6 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Create</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Component attribute raw edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Revert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Properties &gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1041,6 +1021,24 @@ QPushButton::pressed {
      min-height: 30px;
  }
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HoveringButtonsWidget</name>
+    <message>
+        <source>HoveringButtonsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HoveringName</name>
+    <message>
+        <source>HoveringWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>John Doe</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1839,6 +1837,10 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Start location</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>UICanvasTestEdit</name>
@@ -2132,6 +2134,21 @@ QLabel {
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>voiceUserWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Avatar Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

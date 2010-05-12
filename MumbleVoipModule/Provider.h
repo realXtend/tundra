@@ -15,7 +15,7 @@ namespace Foundation
 
 namespace MumbleVoip
 {
-    class ServerObserver;
+    class ServerInfoProvider;
 
     namespace InWorldVoice
     {
@@ -40,7 +40,7 @@ namespace MumbleVoip
             //! \todo Use shared ptr ...
             //Session* session_;
             
-            ServerObserver* server_observer_;
+            ServerInfoProvider* server_info_provider_;
             ServerInfo* server_info_;
             event_category_id_t networkstate_event_category_;
 

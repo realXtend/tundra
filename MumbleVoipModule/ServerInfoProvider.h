@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_ServerObserver_h
-#define incl_MumbleVoipModule_ServerObserver_h
+#ifndef incl_MumbleVoipModule_ServerInfoProvider_h
+#define incl_MumbleVoipModule_ServerInfoProvider_h
 
 
 #include <QObject>
@@ -29,13 +29,13 @@ namespace MumbleVoip
      *
      * \todo Rename to 'ServerInfoProvider'
      */
-    class ServerObserver : public QObject
+    class ServerInfoProvider : public QObject
     {
         Q_OBJECT
 
     public:
-        ServerObserver(Foundation::Framework* framework);
-        virtual ~ServerObserver();
+        ServerInfoProvider(Foundation::Framework* framework);
+        virtual ~ServerInfoProvider();
 
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
@@ -56,4 +56,4 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-#endif // incl_MumbleVoipModule_ServerObserver_h
+#endif // incl_MumbleVoipModule_ServerInfoProvider_h
