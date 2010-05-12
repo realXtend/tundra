@@ -981,11 +981,22 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
         return NULL;
 
     // Get entity pointer
+
     RexLogic::RexLogicModule *rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity((entity_id_t)ent_id_int);
-    
+
+    /* is this check needed here? prevents this from working for avatars.
+    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity((entity_id_t)ent_id_int); 
     if (!primentity) 
-        Py_RETURN_NONE;
+        Py_RETURN_NONE;*/
+
+    Scene::ScenePtr scene = PythonScriptModule::GetInstance()->GetScene();
+    Scene::EntityPtr entity = scene->GetEntity(ent_id_int);
+    if (!entity)
+    {
+        PyErr_SetString(PyExc_ValueError, "No entity with the ent_id found.");
+        return NULL;
+    }
+
     if (!PyList_Check(py_submeshes))
         return NULL;
     if (!PyObject_TypeCheck(py_qwidget, &PythonQtInstanceWrapper_Type))
@@ -1022,20 +1033,20 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 
     if (submeshes_.count() > 0)
     {
-        EC_3DCanvas *ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
+        EC_3DCanvas *ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
         if (ec_canvas)
-            primentity->RemoveComponent(primentity->GetComponent<EC_3DCanvas>());    
+            entity->RemoveComponent(entity->GetComponent<EC_3DCanvas>());    
 
         // Add the component
-        primentity->AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
-        ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
+        entity->AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
+        ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
 
         if (ec_canvas)
         {
             // Setup the component
             ec_canvas->SetWidget(qwidget_ptr);
             ec_canvas->SetRefreshRate(refresh_rate);
-            ec_canvas->SetEntity(primentity.get());
+            ec_canvas->SetEntity(entity.get());
             ec_canvas->SetSubmeshes(submeshes_);
             ec_canvas->Start();
         }
