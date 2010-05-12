@@ -6,17 +6,24 @@
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 
-#include <OgreMaterial.h>
-#include <OgreTexture.h>
+namespace Scene
+{
+    class Entity;
+}
 
-#include <QObject>
-#include <QList>
+namespace Foundation
+{
+    class Framework;
+}
+
+namespace Ogre
+{
+    class TextureManager;
+    class MaterialManager;
+}
 
 class QWidget;
 class QTimer;
-
-namespace Scene      { class Entity; }
-namespace Foundation { class Framework; }
 
 class EC_3DCanvas : public Foundation::ComponentInterface
 {
@@ -41,6 +48,7 @@ private:
 
 private slots:
     void Update();
+
 private:
     QWidget *widget_;
     QList<uint> submeshes_;

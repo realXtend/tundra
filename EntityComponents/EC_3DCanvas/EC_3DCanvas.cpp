@@ -11,14 +11,8 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 
-#include <Ogre.h>
-#include <OgreTextureManager.h>
-
 #include <QWidget>
-#include <QImage>
 #include <QPainter>
-#include <QMap>
-#include <QTimer>
 
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
