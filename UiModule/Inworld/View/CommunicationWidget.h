@@ -5,8 +5,6 @@
 
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
-#include "ui_VoiceUsers.h"
-#include "ui_VoiceUser.h"
 
 #include <QLabel>
 #include <QTimer>
@@ -27,6 +25,11 @@ namespace Communications
         class SessionInterface;
         class ParticipantInterface;
     }
+}
+
+namespace CommUI
+{
+    class VoiceUsersWidget;
 }
 
 namespace Foundation
@@ -85,35 +88,6 @@ namespace CoreUi
         double voice_activity_;
         QLabel count_label_;
 
-    };
-
-    //! Presents InWorldVoice::Participant object
-    class VoiceUserWidget : public QWidget, private Ui::voiceUserWidget
-    {
-        Q_OBJECT
-    public:
-        VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant);
-        Communications::InWorldVoice::ParticipantInterface* Participant() const;
-    private slots:
-        void UpdateStyleSheet();
-        void ToggleMute();
-    private:
-        Communications::InWorldVoice::ParticipantInterface* participant_;
-    };
-
-    //! VoiceUserListWidget
-    class VoiceUsersWidget : public QWidget, private Ui::VoiceUsersWidget
-    {
-        Q_OBJECT
-    public:
-        VoiceUsersWidget(QWidget *parent = 0, Qt::WindowFlags wFlags = 0);
-        virtual ~VoiceUsersWidget();
-        virtual void SetSession(Communications::InWorldVoice::SessionInterface* session);
-    public slots:
-        void UpdateList();
-    private:
-        Communications::InWorldVoice::SessionInterface* session_;
-        QList<VoiceUserWidget *> user_widgets_;
     };
 
     //! Provide communications functionalities to end user
@@ -176,7 +150,7 @@ namespace CoreUi
         // in-world voice
         VoiceStateWidget* voice_state_widget_;
         VoiceUsersInfoWidget* voice_users_info_widget_;
-        VoiceUsersWidget* voice_users_widget_;
+        CommUI::VoiceUsersWidget* voice_users_widget_;
         UiServices::UiProxyWidget* voice_users_proxy_widget_;
 
     signals:
