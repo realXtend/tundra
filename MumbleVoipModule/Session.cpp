@@ -130,18 +130,40 @@ namespace MumbleVoip
 
         void Session::EnableAudioSending()
         {
+            if (connection_)
+                connection_->SendAudio(true);
             bool audio_sending_was_enabled = audio_sending_enabled_;
             audio_sending_enabled_ = true;
             if (!audio_sending_was_enabled)
+            {
+                boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+                if (sound_service.get())
+                {
+                    int frequency = SAMPLE_RATE;
+                    bool sixteenbit = true;
+                    bool stereo = false;
+                    int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
+                    sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
+                }
+
                 emit StartSendingAudio();
+            }
         }
 
         void Session::DisableAudioSending()
         {
+            if (connection_)
+                connection_->SendAudio(false);
             bool audio_sending_was_enabled = audio_sending_enabled_;
             audio_sending_enabled_ = false;
             if (audio_sending_was_enabled)
+            {
+                boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+                if (sound_service.get())
+                    sound_service->StopRecording();
+
                 emit StopSendingAudio();
+            }
         }
 
         bool Session::IsAudioSendingEnabled() const
@@ -151,11 +173,15 @@ namespace MumbleVoip
 
         void Session::EnableAudioReceiving()
         {
+            if (connection_)
+                connection_->ReceiveAudio(true);
             audio_receiving_enabled_ = true;
         }
 
         void Session::DisableAudioReceiving()
         {
+            if (connection_)
+                connection_->ReceiveAudio(false);
             audio_receiving_enabled_ = false;
         }
 

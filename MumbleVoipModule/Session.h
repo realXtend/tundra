@@ -57,6 +57,8 @@ namespace MumbleVoip
             virtual void Update(f64 frametime);
 
         private:
+            static const int AUDIO_RECORDING_BUFFER_MS = 200;
+
             virtual void OpenConnection(ServerInfo info);
             bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
             QString OwnAvatarId();
@@ -82,6 +84,7 @@ namespace MumbleVoip
             User* self_user_;
             QString channel_name_;
             QMap<int, sound_id_t> audio_playback_channels_;
+            std::string recording_device_;
 
         private slots:
             void CreateNewParticipant(User*);
