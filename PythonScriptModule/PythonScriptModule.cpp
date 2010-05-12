@@ -863,18 +863,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     PyObject* qwidget;
     char* uuidstr;
-    char* refresh_rate_str;
+    uint refresh_rate;
 
-    if(!PyArg_ParseTuple(args, "Oss", &qwidget, &uuidstr, &refresh_rate_str))
+    if(!PyArg_ParseTuple(args, "OsI", &qwidget, &uuidstr, &refresh_rate))
         return NULL;
     if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
         return NULL;
-
-    // Parse the refresh rate to a number
-    bool ok;
-    int refresh_rate = QString(refresh_rate_str).toInt(&ok);
-    if (!ok)
-        refresh_rate = 0;
 
     // Prepare QWidget and texture UUID
     PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
@@ -978,19 +972,13 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
 PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 {
-    unsigned int ent_id_int;
+    uint ent_id_int;
     PyObject* py_submeshes;
     PyObject* py_qwidget;
-    char* refresh_rate_str;
+    uint refresh_rate;
 
-    if(!PyArg_ParseTuple(args, "IOOs", &ent_id_int, &py_submeshes, &py_qwidget, &refresh_rate_str))
+    if(!PyArg_ParseTuple(args, "IOOI", &ent_id_int, &py_submeshes, &py_qwidget, &refresh_rate))
         return NULL;
-
-    // Parse the refresh rate to a number
-    bool ok;
-    int refresh_rate = QString(refresh_rate_str).toInt(&ok);
-    if (!ok)
-        refresh_rate = 0;
 
     // Get entity pointer
     RexLogic::RexLogicModule *rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());

@@ -9,6 +9,7 @@ class MediaurlView:
         url = PythonQt.QtCore.QUrl(urlstring)
         self.webview.load(url)
         self.refreshrate = refreshrate
+        #self.webview.show()
 
 class MediaURLHandler(Component):
     def __init__(self):
@@ -47,6 +48,7 @@ class MediaURLHandler(Component):
         if name == "RexMediaUrl":
             #print "MediaURLHandler got data:", data
             textureuuid, urlstring, refreshrate = data
+            refreshrate = int(refreshrate)
 
             #could check whether a webview for this url already existed
             mv = MediaurlView(urlstring, refreshrate)
@@ -67,7 +69,8 @@ class MediaURLHandler(Component):
                 #print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, wc
                 r.applyUICanvasToSubmeshes(entid, submeshes, wc.webview, wc.refreshrate)
         
-    def on_keydown(self, key, mods):
-        if key == 46: #C #XXX was OIS input dependent, broken now
+    def on_input(self, evid):
+        if evid == r.Undo: #WorldInputModule doesn't send all keys, just naali events, so am just reusing ctrl-z for testing herew
             for tx, wc in self.texture2webview.iteritems():
-                r.applyUICanvasToSubmeshesWithTexture(wc.webview, tx)
+                print tx, wc.webview.url.toString()
+                r.applyUICanvasToSubmeshesWithTexture(wc.webview, tx, wc.refreshrate)
