@@ -379,7 +379,7 @@ namespace RexTypes
     }
 
     //! List of click actions for primitives.
-    namespace ClickActions
+    namespace ClickAction
     {
         //! Touch/grab (default).
         const uint None = 0;
@@ -397,6 +397,23 @@ namespace RexTypes
         const uint Play = 5;
         //! Open media.
         const uint OpenMedia = 6;
+    }
+
+    //! Enumeration of in-world action states
+    namespace InWorldActionState
+    {
+        //! Normal click
+        const uint Click = 0;
+        //! Camera focus control
+        const uint Focus = 1;
+        //! Object move/drag
+        const uint Move = 2;
+        //! Object edit & selection
+        const uint Edit = 3; 
+        //! Object creation
+        const uint Create = 4;
+        //! Land modification
+        const uint Land = 5;
     }
 
     //! \return true if asset id is null (empty).
