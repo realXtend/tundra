@@ -360,6 +360,9 @@ namespace MumbleVoip
 
         void Session::SendRecordedAudio()
         {
+			if (!connection_)
+				return;
+
             if (!audio_sending_enabled_)
                 return;
 
@@ -397,6 +400,12 @@ namespace MumbleVoip
 
         void Session::PlaybackReceivedAudio()
         {
+			if (!connection_)
+				return;
+
+			if (!audio_sending_enabled_)
+				return;
+
             for(;;)
             {
                 AudioPacket packet = connection_->GetAudioPacket();
