@@ -10,6 +10,12 @@
     <height>300</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
@@ -35,6 +41,12 @@
    </item>
    <item>
     <widget class="QScrollArea" name="userListScrollArea">
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>20</height>
+      </size>
+     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -46,9 +58,15 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>177</width>
+        <width>198</width>
         <height>279</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget
+{
+background-color: rgba(255,0,0,20);
+}</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="margin">
@@ -56,11 +74,14 @@
        </property>
        <item>
         <layout class="QVBoxLayout" name="userListLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <property name="topMargin">
-          <number>10</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>10</number>
+          <number>0</number>
          </property>
          <item>
           <spacer name="verticalSpacer_2">

@@ -7,9 +7,11 @@
 namespace CommUI
 {
     VoiceUserWidget::VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant)
-        : participant_(participant)
+        : QWidget(), participant_(participant) 
     {
+//        setObjectName("VoiceUserWidget");
         setupUi(this);
+		setWindowTitle("Voice Users");
         avatarNameLabel->setText(participant->Name());
         connect(participant_, SIGNAL(StartSpeaking()), SLOT(UpdateStyleSheet()));
         connect(participant_, SIGNAL(StopSpeaking()), SLOT(UpdateStyleSheet()));
@@ -32,20 +34,20 @@ namespace CommUI
 
     void VoiceUserWidget::UpdateStyleSheet()
     {
-        //setStyleSheet("QWidget#voiceUserWidget { background-color: rgba(34,34,34,191); }");
-        //setStyleSheet("{ background-color: rgba(34,34,34,191); }");
-        //if (participant_->IsSpeaking())
-        //    avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,0,0);}");
-        //else
-        //    avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,255,255);}");
+		QString t = styleSheet();
+        if (participant_->IsSpeaking())
+            avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,0,0);}");
+        else
+            avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,255,255);}");
     }
+
 
     VoiceUsersWidget::VoiceUsersWidget(QWidget *parent, Qt::WindowFlags wFlags)
         : QWidget(parent, wFlags),
           session_(0)
     {
         setupUi(this);
-        setObjectName("Voice users");
+//        setObjectName("Voice users");
 
 //        userListLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
     }
@@ -73,11 +75,8 @@ namespace CommUI
 
     void VoiceUsersWidget::UpdateList()
     {
-        //return; // for antti
-
         if (!session_)
             return;
-//        if (session_->State
 
         QList<Communications::InWorldVoice::ParticipantInterface*> list = session_->Participants();
         foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
