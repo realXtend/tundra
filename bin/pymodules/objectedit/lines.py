@@ -107,7 +107,7 @@ class UUIDEditLine(DragDroppableEditline):
     def applyAction(self):
         ent = self.mainedit.active
         if self.combobox is not None and ent is not None:
-            qprim = ent.id.prim
+            qprim = ent.prim
             mats = qprim.Materials
             asset_type_text = self.combobox.currentText
             
