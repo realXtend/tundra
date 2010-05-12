@@ -130,14 +130,18 @@ namespace MumbleVoip
 
         void Session::EnableAudioSending()
         {
+            bool audio_sending_was_enabled = audio_sending_enabled_;
             audio_sending_enabled_ = true;
-            emit StartSendingAudio();
+            if (!audio_sending_was_enabled)
+                emit StartSendingAudio();
         }
 
         void Session::DisableAudioSending()
         {
+            bool audio_sending_was_enabled = audio_sending_enabled_;
             audio_sending_enabled_ = false;
-            emit StopSendingAudio();
+            if (audio_sending_was_enabled)
+                emit StopSendingAudio();
         }
 
         bool Session::IsAudioSendingEnabled() const
@@ -265,8 +269,10 @@ namespace MumbleVoip
             if (activity > 1.0)
                 activity = 1.0;
 
+            double old_activity = speaker_voice_activity_;
             speaker_voice_activity_ = activity;
-            emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
+            if (old_activity != activity)
+                emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
         }
 
         bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
