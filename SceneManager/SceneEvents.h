@@ -62,17 +62,11 @@ namespace Scene
         ///\todo Distinguish which clicks need to cause a select and which need to cause a grab.
         static const event_id_t EVENT_ENTITY_GRAB =       0x0a;
 
-        //Sent when object clicked. Same as EVENT_ENTITY_GRAB but sends a entity pointer, not just id
+        /// Sent when object clicked. Same as EVENT_ENTITY_GRAB but sends a entity pointer, not just id
         static const event_id_t EVENT_ENTITY_CLICKED =    0x0b;
 
-
-        //Sent when mouse is hovering above entity.
-        static const event_id_t EVENT_ENTITY_MOUSE_HOVER =    0x0c;
-
-        
-
-        // Component-related event id's:
-
+        /// Sent when mouse is hovering above entity.
+        static const event_id_t EVENT_ENTITY_MOUSE_HOVER =  0x0c;
 
         // Component-related event id's:
     /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
@@ -192,7 +186,6 @@ namespace Scene
             //! V coord in entity. 0 if no texture mapping
             Real v;
         };
-
 
         class EntityClickedData : public SceneEventData
         {

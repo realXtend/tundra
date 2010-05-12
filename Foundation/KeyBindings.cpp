@@ -54,7 +54,7 @@ namespace Foundation
              << "python.duplicate.drag" << "python.object.toggle.move" << "python.object.toggle.scale" << "python.restart" << "python.run"
              << "toggle.camera" << "toggle.console" << "toggle.fly" 
              << "rotate.left" << "rotate.right"
-             << "zoom.in" << "zoom.out";
+             << "zoom.in" << "zoom.out" << "naali.unfocus.ui";
     }
 
     void KeyBindings::BindKey(Binding binding)
@@ -207,6 +207,9 @@ namespace Foundation
             case Input::Events::NAALI_TOGGLE_WORLDCHAT:
                 name = "naali.toggle.worldchat";
                 break;
+            case Input::Events::UNFOCUS_UI:
+                name = "naali.unfocus.ui";
+                break;
 
             // Python
             case Input::Events::PY_RUN_COMMAND:
@@ -330,6 +333,11 @@ namespace Foundation
         else if (name == "naali.toggle.worldchat")
         {
             id_pair.first = Input::Events::NAALI_TOGGLE_WORLDCHAT;
+            id_pair.second = 0;
+        }
+        else if (name == "naali.unfocus.ui")
+        {
+            id_pair.first = Input::Events::UNFOCUS_UI;
             id_pair.second = 0;
         }
         else if (name == "python.run")
