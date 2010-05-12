@@ -7,9 +7,11 @@
 #include "ModuleInterface.h"
 #include "OgreMaterialUtils.h"
 #include "Entity.h"
+#include "RexTypes.h"
 
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
+#include "EC_OpenSimPrim.h"
 
 #include <Ogre.h>
 #include <OgreTextureManager.h>
@@ -19,6 +21,8 @@
 #include <QPainter>
 #include <QMap>
 #include <QTimer>
+
+#include <QDebug>
 
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -172,30 +176,74 @@ void EC_3DCanvas::UpdateSubmeshes()
     QMap<uint, std::string> restore_materials;
     bool apply_material;
 
+    int draw_type = -1;
+    uint submesh_count = 0;
     OgreRenderer::EC_OgreMesh* ec_mesh = entity_->GetComponent<OgreRenderer::EC_OgreMesh>().get();
     OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity_->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
     
+    //qDebug() << "EC_3DCanvas::UpdateSubmeshes() =====================";
+
     if (ec_mesh)
     {
-        // Iterate trough sub meshes
-        uint submesh_count = ec_mesh->GetNumMaterials();
-        for (uint index = 0; index < submesh_count; ++index)
+        //qDebug() << "Type MESH";
+        draw_type = RexTypes::DRAWTYPE_MESH;
+        submesh_count = ec_mesh->GetNumMaterials();
+    }
+    else if (ec_custom_object)
+    {
+        //qDebug() << "Type CUSTOM OBJECT";
+        draw_type = RexTypes::DRAWTYPE_PRIM;
+        submesh_count = ec_custom_object->GetNumMaterials();
+    }
+    if (draw_type == -1)
+        return;
+
+    //qDebug() << "Submesh count      : " << submesh_count;
+    //qDebug() << "Apply to submeshes : " << submeshes_;
+
+    // Iterate trough sub meshes
+    for (uint index = 0; index < submesh_count; ++index)
+    {
+        //qDebug() << ">> Checking index " << index;
+
+        // Store original materials
+        std::string submesh_material_name;
+        if (draw_type == RexTypes::DRAWTYPE_MESH)
+            submesh_material_name = ec_mesh->GetMaterialName(index);
+        else if (draw_type == RexTypes::DRAWTYPE_PRIM)
+            submesh_material_name = ec_custom_object->GetMaterialName(index);
+        else
+            return;
+
+        if (submesh_material_name != material_name_)
+            restore_materials[index] = submesh_material_name;
+
+        if (submeshes_.contains(index))
         {
-            // Store original materials
-            std::string submesh_material_name = ec_mesh->GetMaterialName(index);
-            if (submesh_material_name != material_name_)
-                restore_materials[index] = submesh_material_name;
+            //qDebug() << ">> Applying to index " << index << " - " << QString::fromStdString(material_name_);
 
-            apply_material = false;
-            foreach(uint apply_index, submeshes_)
-                if (apply_index == index)
-                    apply_material = true;
-
-            if (apply_material)
+            if (draw_type == RexTypes::DRAWTYPE_MESH)
                 ec_mesh->SetMaterial(index, material_name_);
-            else if (ec_mesh->GetMaterialName(index) == material_name_)
-                if (restore_materials.contains(index))
-                     ec_mesh->SetMaterial(index, restore_materials[index]);
+            else if (draw_type == RexTypes::DRAWTYPE_PRIM)
+                ec_custom_object->SetMaterial(index, material_name_);
+            else
+                return;
+        }
+        else 
+        {
+            if (draw_type == RexTypes::DRAWTYPE_MESH)
+            {
+                if (ec_mesh->GetMaterialName(index) == material_name_)
+                    if (restore_materials.contains(index))
+                        ec_mesh->SetMaterial(index, restore_materials[index]);
+            }
+            else if(draw_type == RexTypes::DRAWTYPE_PRIM)
+            {
+                if (ec_custom_object->GetMaterialName(index) == material_name_)
+                    if (restore_materials.contains(index))
+                        ec_custom_object->SetMaterial(index, restore_materials[index]);
+            }
+            else return;
         }
     }
 }
