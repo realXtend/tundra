@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
+    <width>461</width>
     <height>44</height>
    </rect>
   </property>
@@ -20,10 +20,21 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#voiceUserWidget { color: rgb(255,255,255); background-color: rgba(34,34,34,191); }
-QHBoxLayout#horizontalLayout { background-color: rgba(34,34,34,191); }
-QCheckBox#muteCheckBox {color: rgb(255,255,255);}
-QCheckBox#muteCheckBox {background-color: rgba(34,34,34,191);}</string>
+   <string notr="true">QWidget#box
+{
+  color: rgb(255,255,255);
+  background-color: rgba(34,34,34,100);
+  border: 1px solid rgb(0,0,0);
+  border-radius: 5px;
+}
+
+#avatarNameLabel {color: rgb(255,255,255); background-color: rgba(0,0,0,0);}
+QCheckBox#muteCheckBox
+{
+color: rgb(255,255,255);
+background-color: rgba(0,0,0,0);
+}
+</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <property name="spacing">
@@ -38,36 +49,60 @@ QCheckBox#muteCheckBox {background-color: rgba(34,34,34,191);}</string>
       <number>0</number>
      </property>
      <item>
-      <widget class="QLabel" name="avatarNameLabel">
-       <property name="minimumSize">
-        <size>
-         <width>50</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Avatar Name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="muteCheckBox">
-       <property name="text">
-        <string>Mute</string>
-       </property>
+      <widget class="QWidget" name="box" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <property name="leftMargin">
+         <number>10</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>10</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="avatarNameLabel">
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Avatar Name</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="muteCheckBox">
+          <property name="text">
+           <string>Mute</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
