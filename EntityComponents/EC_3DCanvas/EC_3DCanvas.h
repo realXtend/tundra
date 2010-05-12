@@ -49,12 +49,14 @@ private:
     Scene::Entity* entity_;
     Foundation::Framework *framework_;
 
-    Ogre::MaterialPtr material_;
-    Ogre::TexturePtr texture_;
+    Ogre::TextureManager &texture_manager_;
+    Ogre::MaterialManager &material_manager_;
+    std::string material_name_;
+    std::string texture_name_;
 
     int update_interval_msec_;
     bool update_internals_;
-    
+    bool paint;
 };
 
 #endif

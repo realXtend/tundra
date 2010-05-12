@@ -19,10 +19,7 @@ namespace OpensimIM
         QObject(),
         client_parameters_(client_parameters)
     {
-        if (InitCommunicationConnections())
-            qDebug() << "OpenSimIM::ChatController >> Initialised";
-        else
-            qDebug() << "OpenSimIM::ChatController >> Failed to initialise";
+        InitCommunicationConnections();
     }
 
     ChatController::~ChatController()
