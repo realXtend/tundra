@@ -370,22 +370,21 @@ macro (configure_mumbleclient)
 endmacro (configure_mumbleclient)
 
 macro (configure_openssl)
-	# NOTE: This doesn't work with CMake 2.8 Windows version
-	#       CMake 2.6 must be used
     sagase_configure_package(OPENSSL
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenSSL)
-    # remove 'NOTFOUND' entry which makes to linking impossible		 
+    # remove 'NOTFOUND' entry which makes to linking impossible	
     if (MSVC)
-        list(REMOVE_ITEM OPENSSL_LIBRARIES NOTFOUND)
+        list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
+    message(----------)
+    message(${OPENSSL_LIBRARIES})
+    message(----------)
     endif ()		
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
 macro (configure_protobuf)
-	message(PROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR})
-	message(PROTOBUF_LIBRARY=${PROTOBUF_LIBRARY})
     sagase_configure_package(PROTOBUF
         NAMES google protobuf
         COMPONENTS libprotobuf
