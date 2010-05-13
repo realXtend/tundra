@@ -25,7 +25,7 @@
   color: rgb(255,255,255);
   background-color: rgba(34,34,34,100);
   border: 1px solid rgb(0,0,0);
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
 #avatarNameLabel {color: rgb(255,255,255); background-color: rgba(0,0,0,0);}
@@ -41,7 +41,7 @@ background-color: rgba(0,0,0,0);
     <number>0</number>
    </property>
    <property name="margin">
-    <number>5</number>
+    <number>0</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -55,7 +55,7 @@ background-color: rgba(0,0,0,0);
          <number>10</number>
         </property>
         <property name="leftMargin">
-         <number>10</number>
+         <number>0</number>
         </property>
         <property name="topMargin">
          <number>0</number>
@@ -67,6 +67,16 @@ background-color: rgba(0,0,0,0);
          <number>0</number>
         </property>
         <item>
+         <widget class="QWidget" name="thumbnailWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="avatarNameLabel">
           <property name="minimumSize">
            <size>
@@ -74,11 +84,23 @@ background-color: rgba(0,0,0,0);
             <height>32</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <family>Fixedsys</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>Avatar Name</string>
           </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
           </property>
          </widget>
         </item>

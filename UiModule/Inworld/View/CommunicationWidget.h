@@ -100,7 +100,8 @@ namespace CoreUi
         CommUI::VoiceStateWidget* voice_state_widget_;
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
         CommUI::VoiceUsersWidget* voice_users_widget_;
-        UiServices::UiProxyWidget* voice_users_proxy_widget_;
+        QGraphicsProxyWidget* voice_users_proxy_widget_;
+//        UiServices::UiProxyWidget* voice_users_proxy_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);

@@ -20,6 +20,7 @@ namespace Communications
 namespace CommUI
 {
     //! Presents InWorldVoice::Participant object
+    //! 
     class VoiceUserWidget : public QWidget, private Ui::voiceUserWidget
     {
         Q_OBJECT
@@ -41,11 +42,18 @@ namespace CommUI
         VoiceUsersWidget(QWidget *parent = 0, Qt::WindowFlags wFlags = 0);
         virtual ~VoiceUsersWidget();
         virtual void SetSession(Communications::InWorldVoice::SessionInterface* session);
+    protected:
+        virtual void mouseMoveEvent(QMouseEvent *);
+        virtual void mousePressEvent(QMouseEvent *);
+        virtual void mouseReleaseEvent(QMouseEvent *);
     public slots:
         void UpdateList();
     private:
+        static const int PARTICIPANTS_SHOWN_MAX_ = 5;
         Communications::InWorldVoice::SessionInterface* session_;
         QList<VoiceUserWidget *> user_widgets_;
+        QPoint mouse_last_pos_;
+        bool mouse_dragging_;
     };
 
 } // CommUI
