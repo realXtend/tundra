@@ -19,6 +19,7 @@ namespace MumbleVoip
 
     void MumbleLibrary::Stop()
     {
+        StopMumbleThread();
 //        emit Stoped();
     }
 
@@ -60,13 +61,9 @@ namespace MumbleVoip
 
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
-        {
-        //    MumbleVoipModule::LogError("Cannot stop Mumble library: No library instance available.");
             return;
-        }
 
         mumble_lib->Shutdown();
-
         mumble_main_loop_->wait();
         SAFE_DELETE(mumble_main_loop_);
     }
