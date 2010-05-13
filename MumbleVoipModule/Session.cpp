@@ -28,6 +28,9 @@ namespace MumbleVoip
 {
     namespace InWorldVoice
     {
+
+        double Session::AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
+
         Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
             state_(STATE_INITIALIZING),
             reason_(""),
@@ -87,10 +90,11 @@ namespace MumbleVoip
 //            connections_[info.server] = connection;
             connection_->Join(server_info.channel);
             connection_->SendAudio(sending_audio_);
-            connection_->SetEncodingQuality(0.5);
+            connection_->SetEncodingQuality(AUDIO_QUALITY_);
             connection_->SendPosition(true); 
+            connection_->SendAudio(audio_sending_enabled_);
+            connection_->ReceiveAudio(audio_receiving_enabled_);
             MumbleLibrary::Start();
-            MumbleLibrary::Stop();
             //connect(MumbleLibrary::Instance(), SIGNAL(InteralError()), SLOT(HandleMumbleLibraryError()) );
 //            connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
         }
