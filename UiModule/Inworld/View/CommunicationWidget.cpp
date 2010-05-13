@@ -358,6 +358,7 @@ namespace CoreUi
 
         if (in_world_voice_session_)
         {
+            SAFE_DELETE(voice_users_widget_);
             voice_users_widget_ = new CommUI::VoiceUsersWidget(0);
             voice_users_widget_->SetSession(in_world_voice_session_);
 
@@ -365,8 +366,10 @@ namespace CoreUi
             if (ui_module.get())
             {
                 //UiServices::UiWidgetProperties widget_properties("IM", UiServices::SceneWidget);
-                voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(voice_users_widget_);
-                //if (im_ui_proxy_widget_)
+                voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_users_widget_);
+                voice_users_proxy_widget_->hide();
+                
+
                 //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }

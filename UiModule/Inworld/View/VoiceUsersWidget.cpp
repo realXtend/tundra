@@ -9,9 +9,7 @@ namespace CommUI
     VoiceUserWidget::VoiceUserWidget(Communications::InWorldVoice::ParticipantInterface* participant)
         : QWidget(), participant_(participant) 
     {
-//        setObjectName("VoiceUserWidget");
         setupUi(this);
-		setWindowTitle("Voice Users");
         avatarNameLabel->setText(participant->Name());
         connect(participant_, SIGNAL(StartSpeaking()), SLOT(UpdateStyleSheet()));
         connect(participant_, SIGNAL(StopSpeaking()), SLOT(UpdateStyleSheet()));
@@ -36,20 +34,21 @@ namespace CommUI
     {
 		QString t = styleSheet();
         if (participant_->IsSpeaking())
-            avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,0,0);}");
+        {
+            thumbnailWidget->setStyleSheet("#thumbnailWidget {border: 0px; background-color: rgbs(0,0,0,0); background-image: url('./data/ui/images/comm/user_green.png'); background-position: top left; background-repeat: no-repeat;}");
+        }
         else
-            avatarNameLabel->setStyleSheet("QLabel#avatarNameLabel { color: rgb(255,255,255);}");
+        {
+            thumbnailWidget->setStyleSheet("#thumbnailWidget {border: 0px; background-color: rgbs(0,0,0,0); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat;}");
+        }
     }
-
 
     VoiceUsersWidget::VoiceUsersWidget(QWidget *parent, Qt::WindowFlags wFlags)
         : QWidget(parent, wFlags),
           session_(0)
     {
         setupUi(this);
-//        setObjectName("Voice users");
-
-//        userListLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+        connect(hideButton, SIGNAL(clicked()), SLOT(hide()) );
     }
 
     VoiceUsersWidget::~VoiceUsersWidget()
@@ -114,9 +113,42 @@ namespace CommUI
                 user_widgets_.removeOne(widget);
                 userListLayout->removeWidget(widget);
                 SAFE_DELETE(widget);
-                return;
+                break;
             }
         }
+        int area_height = 0;
+        int number = user_widgets_.size();
+        if (number > PARTICIPANTS_SHOWN_MAX_)
+            number = PARTICIPANTS_SHOWN_MAX_;
+        if (number == 0)
+            area_height = 0;
+        else
+            area_height = number*user_widgets_[0]->height() + verticalLayoutArea->spacing()*(number-1) + verticalLayoutArea->contentsMargins().bottom() + verticalLayoutArea->contentsMargins().top();
+
+        const QRect& geometry = userListScrollArea->geometry();
+        userListScrollArea->setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
+
+        titleLabel->setText( QString("Voice Users (%1)").arg(session_->Participants().size()) );
+    }
+
+    void VoiceUsersWidget::mouseMoveEvent(QMouseEvent *e)
+    {
+        QPoint pos = e->globalPos();
+        QPoint move = pos - mouse_last_pos_;
+        this->move(this->pos() +  move);
+        mouse_last_pos_ = pos;
+        QWidget::mouseMoveEvent(e);
+    }
+
+    void VoiceUsersWidget::mousePressEvent(QMouseEvent *e)
+    {
+        mouse_last_pos_ = e->globalPos();
+        mouse_dragging_ = true;
+    }
+
+    void VoiceUsersWidget::mouseReleaseEvent(QMouseEvent *e)
+    {
+        mouse_dragging_ = false;
     }
 
 } // CommUI
