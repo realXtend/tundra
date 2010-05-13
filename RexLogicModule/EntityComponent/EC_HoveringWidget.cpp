@@ -14,6 +14,11 @@
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 
+#include "HoveringNameController.h"
+#include "HoveringButtonsController.h"
+#include "DetachedWidgetController.h"
+
+#include <QPointF>
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
@@ -21,9 +26,14 @@
 #include <QSizeF>
 #include <QPushButton>
 #include <QPainter>
-
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "ModuleManager.h"
+#include "UiModule.h"
 #include <QTimeLine>
 #include <QDebug>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsScene>
 
 
 //#include "MemoryLeakCheck.h"
@@ -39,13 +49,15 @@ namespace RexLogic
         visibility_animation_timeline_(new QTimeLine(1000, this)),
         visibility_timer_(new QTimer(this)),
         namewidget_(new HoveringNameController()),
+        detachedwidget_(new DetachedWidgetController()),
         buttonswidget_(new HoveringButtonsController()),
         hovering_time_(4000),
         disabled_(false),
         buttons_disabled_(false),
         buttons_visible_(false),
-        bb_name_size_view(0.25f ,0.12f),
-        bb_buttons_size_view(0.1f ,0.4f),
+        detached_(false),
+        bb_name_size_view(0.25f ,0.08f),
+        bb_buttons_size_view(0.1f ,0.25f),
         bb_rel_posy(1.3f),
         cam_distance_(0.0f)
     {
@@ -64,12 +76,27 @@ namespace RexLogic
                 SLOT(UpdateAnimationStep(int)));
         connect(visibility_animation_timeline_, SIGNAL(finished()),
                 SLOT(AnimationFinished()));
+
+        
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
+            Foundation::Module::MT_UiServices).lock();
+        if (!ui_module.get())
+            return;
+
+        proxy_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(detachedwidget_);
+        proxy_->hide();
+
+        QPushButton *b = new QPushButton("Attach");
+        detachedwidget_->AddButton(b);
+        QObject::connect(b, SIGNAL(pressed()), this, SLOT(Attach()));
+
     }
 
     EC_HoveringWidget::~EC_HoveringWidget()
     {
         SAFE_DELETE(namewidget_);
         SAFE_DELETE(buttonswidget_);
+        //SAFE_DELETE(detachedwidget_);
     }
 
   
@@ -86,6 +113,7 @@ namespace RexLogic
         if(buttons_disabled_)
         {
             ShowButtons(false);
+            detachedwidget_->DisableButtons(true);
         }
         
     }
@@ -93,7 +121,7 @@ namespace RexLogic
     void EC_HoveringWidget::ShowButtons(bool val)
     {
         buttons_visible_ = val;
-        if(buttons_visible_ && buttonsbillboardSet_ && !disabled_)
+        if(buttons_visible_ && buttonsbillboardSet_ && !disabled_ && !buttons_disabled_)
         {
                 buttonsbillboardSet_->setVisible(true);
         }else{
@@ -105,12 +133,15 @@ namespace RexLogic
 
     void EC_HoveringWidget::SetCameraDistance(Real dist)
     {
-        cam_distance_ = dist;
-        AdjustWidgetinfo();
-        if(IsVisible())
+        if(!detached_)
         {
-            ScaleWidget(*namebillboardSet_, *namebillboard_, bb_name_size_view);
-            ScaleWidget(*buttonsbillboardSet_, *buttonsbillboard_, bb_buttons_size_view,true);
+            cam_distance_ = dist;
+            AdjustWidgetinfo();
+            if(IsVisible())
+            {
+                ScaleWidget(*namebillboardSet_, *namebillboard_, bb_name_size_view);
+                ScaleWidget(*buttonsbillboardSet_, *buttonsbillboard_, bb_buttons_size_view,true);
+            }
         }
     }
 
@@ -128,8 +159,11 @@ namespace RexLogic
 
         mid_pos = viewproj * worldmat * mid_pos;
         
-        Ogre::Vector3 pos1(mid_pos.x,mid_pos.y, mid_pos.z);
-        Ogre::Vector3 pos2(mid_pos.x + size.width(), mid_pos.y+size.height(), mid_pos.z);
+        Ogre::Vector3 pos1(mid_pos.x - size.width()/2,mid_pos.y-size.height()/2, mid_pos.z);
+        Ogre::Vector3 pos2(mid_pos.x + size.width()/2, mid_pos.y+size.height()/2, mid_pos.z);
+        //save for later
+        name_scr_pos_ = QPointF((pos1.x+1)*0.5, (pos1.y+1)*0.5);
+
 
         pos1 = viewproj.inverse() * pos1;
         pos2 = viewproj.inverse() * pos2;
@@ -153,8 +187,8 @@ namespace RexLogic
         if(next_to_name_tag)
         {
             Ogre::Vector3 pos(namebillboard_->getPosition());
-            pos.y += ((-namebillboard_->getOwnWidth()*0.5) + (-b.getOwnWidth()*0.5));
-            pos.z -= b.getOwnHeight()*0.5;
+            pos.y += ((-namebillboard_->getOwnWidth()*0.5)  /*+(-b.getOwnWidth()*0.5)*/);
+            pos.z -= (namebillboard_->getOwnHeight()*0.5) + b.getOwnHeight()*0.5;
             b.setPosition(pos.x ,pos.y ,pos.z);
         }
         else
@@ -243,12 +277,18 @@ namespace RexLogic
             AnimatedShow();
             visibility_timer_->start(msec_to_show);
         }*/
-
-        /*disabled_ = !disabled_;
         if(!disabled_)
-            Show();
-        else
-            Hide();*/
+        {
+            detached_ = !detached_;
+            if(!detached_)
+            {
+                Attach();
+            }
+            else
+            {
+                Detach();
+            }
+        }
     }
 
 
@@ -258,6 +298,23 @@ namespace RexLogic
             namebillboardSet_->setVisible(false);
         if(buttonsbillboardSet_)
             buttonsbillboardSet_->setVisible(false);
+    }
+
+    void EC_HoveringWidget::Detach()
+    {
+        Hide();
+        qreal scene_h = proxy_->scene()->width();
+        qreal scene_w = proxy_->scene()->height();
+        proxy_->setGeometry(QRectF(name_scr_pos_.x()*scene_w, name_scr_pos_.y()* scene_h,proxy_->preferredWidth(),proxy_->preferredHeight()));
+       // proxy_->setPos(name_scr_pos_.x()*scene_w, name_scr_pos_.y()* scene_h);
+        proxy_->show();
+        
+    }
+    void EC_HoveringWidget::Attach()
+    {
+        proxy_->hide();
+        Show();
+
     }
 
     void EC_HoveringWidget::AnimatedHide()
@@ -385,14 +442,20 @@ namespace RexLogic
         if (text.isNull() || text.isEmpty())
             return;
         namewidget_->SetText(text);
+        detachedwidget_->SetText(text);
         Redraw();
 
     }
 
     void EC_HoveringWidget::AddButton(QPushButton &button)
     {
-            buttonswidget_->AddButton(&button);
-            Redraw();
+        QPushButton* copy = new QPushButton(button.text());
+        copy->setStyleSheet(button.styleSheet());
+        QObject::connect(copy, SIGNAL(pressed()), &button, SLOT(click()));
+        detachedwidget_->AddButton(copy);
+        buttonswidget_->AddButton(&button);
+        Redraw();
+
     }
 
     void EC_HoveringWidget::Redraw()
@@ -401,8 +464,8 @@ namespace RexLogic
             return;
 
         // Get pixmap with text rendered to it.
-        QPixmap pixmap1 = GetPixmap(*namewidget_, QRect(0,0,400,80));
-        QPixmap pixmap2 = GetPixmap(*buttonswidget_, QRect(0,0,200,400));
+        QPixmap pixmap1 = GetPixmap(*namewidget_, QRect(0,0,300,60));
+        QPixmap pixmap2 = GetPixmap(*buttonswidget_, QRect(0,0,80,120));
         if (pixmap1.isNull()||pixmap2.isNull())
             return;
 

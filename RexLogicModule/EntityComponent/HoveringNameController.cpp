@@ -9,7 +9,7 @@ namespace RexLogic
 {
 
     HoveringNameController::HoveringNameController()
-    :text_padding_(10.0f)
+    :text_padding_(30.0f)
     {
         Ui::HoveringName::setupUi(this);
     }
