@@ -97,14 +97,7 @@ namespace MumbleVoip
         }
         else
         {
-            //MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
-            //if (!mumble_lib)
-            //{
-            //    MumbleVoipModule::LogError("Cannot shutdown Mumble library: No library instance available.");
-            //    return;
-            //}
             MumbleLibrary::Stop();
-//            mumble_lib->Shutdown();
         }
     }
 
