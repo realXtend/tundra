@@ -42,7 +42,6 @@ namespace CoreUi
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
 
-   
         // Binding widget as settings tab
         binding_widget_ = new BindingWidget(settings_widget_);
         settings_widget_->AddWidget(binding_widget_, "Controls");

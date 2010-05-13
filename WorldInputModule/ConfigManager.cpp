@@ -103,7 +103,10 @@ namespace Input
                 custom_settings.setValue(identifier, sequence_list);
             }
             else
-                custom_settings.setValue(identifier, bindings_list.front().sequence);
+            {
+                if (bindings_list.size() != 0)
+                    custom_settings.setValue(identifier, bindings_list.front().sequence);
+            }
         }
 
         custom_settings.endGroup();

@@ -55,8 +55,8 @@ namespace UiServices
         // Connect settings widget
         connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
 		
-	//apply new positions to active widgets when the inworld_scene_ is resized
-	connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
+	    //apply new positions to active widgets when the inworld_scene_ is resized
+	    connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
     }
 
     InworldSceneController::~InworldSceneController()
