@@ -111,7 +111,7 @@ namespace CommUI
     void VoiceUsersInfoWidget::UpdateStyleSheet()
     {
        setStyleSheet("QPushButton#voiceUsersInfoWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat; }");
-       count_label_.setStyleSheet("QLabel#voiceUserCount { border: 0px; background-color:  rgba(34,34,34,191); background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }");
+       count_label_.setStyleSheet("QLabel#voiceUserCount { border: 0px; background-color: transparent; background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }");
 
        if (user_count_ == 0)
            count_label_.setText("0");
