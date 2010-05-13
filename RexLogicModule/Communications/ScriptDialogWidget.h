@@ -66,14 +66,16 @@ namespace RexLogic
     private:
         QWidget *widget_;
         ScriptDialogRequest request_;
+        QString text_value_;
         //UiServices::UiProxyWidget *proxyWidget_;
 
     private slots:
+        void OnTextChanged(QString value);
         void OnButtonPressed(QString id);
         void OnIgnorePressed();
 
     signals:
-        void OnClosed(s32 channel, QString answer);
+        void OnClosed(int channel, QString answer);
     };
 }
 
