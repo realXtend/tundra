@@ -5,6 +5,7 @@
 
 //#include <QGraphicsProxyWidget>
 #include <QWidget>
+#include <QMouseEvent>
 #include "ui_VoiceUsers.h"
 #include "ui_VoiceUser.h"
 
