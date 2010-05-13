@@ -49,14 +49,14 @@ namespace RexLogic
         QString widget_name = "Message from object";
         ScriptDialogWidget* widget = new ScriptDialogWidget(request);
         dialogs_.append(widget);
-        connect(widget, SIGNAL(OnClosed(s32, QString)), this, SLOT(OnDialogClosed(s32, QString)));
+        connect(widget, SIGNAL(OnClosed(int, QString)), this, SLOT(OnDialogClosed(int, QString)));
 
         UiServices::UiWidgetProperties widget_properties(widget_name, UiServices::SceneWidget);
         ui_module->GetInworldSceneController()->AddWidgetToScene(widget, widget_properties);
         ui_module->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
 
-    void ScriptDialogHandler::OnDialogClosed(s32 channel, const QString &answer)
+    void ScriptDialogHandler::OnDialogClosed(int channel, const QString &answer)
     {
         // If user want't to ignore request we do not sent anything to server
         if (answer.length() > 0 && owner_->GetServerConnection()->IsConnected())

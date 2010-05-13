@@ -16,6 +16,7 @@
 #include <QVBoxLayout>
 #include <QPlainTextEdit>
 #include <QLabel>
+#include <QLineEdit>
 #include <QTableWidget>
 #include <QGridLayout>
 
@@ -89,33 +90,61 @@ namespace RexLogic
         //button_container->setColumnCount(3);
         //button_container->setRowCount((labels.size()-1) / 3 + 1);
         
-        int index = 0;
-        for (ButtonLabels::iterator i = labels.begin(); i != labels.end(); ++i)
-        {
-            QString label = QString((*i).c_str());
-            SelectionButton* button = new SelectionButton(0, label.toStdString().c_str(), label);
-            
-            int column = index % 3;
-            int row = index / 3;
+        bool isTextBox = false;
 
-            button_container->addWidget(button, row, column);
-            connect(button, SIGNAL( Clicked(QString)), this, SLOT( OnButtonPressed(QString)));
-            index++;
+        if (labels.size() == 1)
+        {
+            std::string label = labels[0];
+            if(label.compare("!!llTextBox!!") == 0) //this is not regular llDialog. this is llTextBox
+            {
+                isTextBox = true;
+                QLineEdit* lineEdit = new QLineEdit(0);
+                button_container->addWidget(lineEdit, 0, 0);
+                connect(lineEdit, SIGNAL( textChanged(QString)), this, SLOT( OnTextChanged(QString)));
+
+                SelectionButton* button = new SelectionButton(0, "Ok", "!!llTextBox!!");
+                button_container->addWidget(button, 0, 1);
+                connect(button, SIGNAL( Clicked(QString)), this, SLOT( OnButtonPressed(QString)));
+
+                QPushButton* default_button = widget_->findChild<QPushButton*>("defaultButton");
+                if (default_button)
+                {
+                    default_button->setText("Ignore");
+                    connect(default_button, SIGNAL( clicked()), this, SLOT( OnIgnorePressed()) );
+                }
+            }
         }
 
-        QPushButton* default_button = widget_->findChild<QPushButton*>("defaultButton");
-        if (default_button)
+        if(!isTextBox)
         {
-            if (labels.size() == 0)
+            int index = 0;
+            for (ButtonLabels::iterator i = labels.begin(); i != labels.end(); ++i)
             {
-                SelectionButton* button = new SelectionButton(0, "Ok", "Ok");
-                button_container->addWidget(button, 0, 0);
+                QString label = QString((*i).c_str());
+                SelectionButton* button = new SelectionButton(0, label.toStdString().c_str(), label);
+                
+                int column = index % 3;
+                int row = index / 3;
+
+                button_container->addWidget(button, row, column);
                 connect(button, SIGNAL( Clicked(QString)), this, SLOT( OnButtonPressed(QString)));
+                index++;
             }
-            else
+
+            QPushButton* default_button = widget_->findChild<QPushButton*>("defaultButton");
+            if (default_button)
             {
-                default_button->setText("Ignore");
-                connect(default_button, SIGNAL( clicked()), this, SLOT( OnIgnorePressed()) );
+                if (labels.size() == 0)
+                {
+                    SelectionButton* button = new SelectionButton(0, "Ok", "Ok");
+                    button_container->addWidget(button, 0, 0);
+                    connect(button, SIGNAL( Clicked(QString)), this, SLOT( OnButtonPressed(QString)));
+                }
+                else
+                {
+                    default_button->setText("Ignore");
+                    connect(default_button, SIGNAL( clicked()), this, SLOT( OnIgnorePressed()) );
+                }
             }
         }
     }
@@ -126,8 +155,18 @@ namespace RexLogic
         OnIgnorePressed();
     }
 
+    void ScriptDialogWidget::OnTextChanged(QString value)
+    {
+        text_value_ = value;
+    }
+
     void ScriptDialogWidget::OnButtonPressed(QString id)
     {
+        if(id.compare("!!llTextBox!!")==0)
+        {
+            id = text_value_;
+        }
+
         close();
         emit OnClosed(request_.GetChannel(), id);
     }
