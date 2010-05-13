@@ -276,9 +276,9 @@ namespace MumbleVoip
 
         void Session::UpdateSpeakerActivity(PCMAudioFrame* frame)
         {
-            static int counter;
+            static int counter = 0;
             counter++;
-            counter = counter % 10;
+            counter = counter % 10; // 10 ms audio frames -> 10 fps speaker activity updates
             if (counter != 0)
                 return;
 
@@ -377,8 +377,8 @@ namespace MumbleVoip
             {
                 int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
                 PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
-                UpdateSpeakerActivity(frame);
                 int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+                UpdateSpeakerActivity(frame);
                 assert(bytes_to_read == bytes);
 
                 //if (voice_indicator_)
