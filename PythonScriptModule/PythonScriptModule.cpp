@@ -81,6 +81,8 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "GenericMessageUtils.h"
 
 #include "Environment/Primitive.h"
+#include "Environment/PrimGeometryUtils.h"
+
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
@@ -115,6 +117,8 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "RexUUID.h"
 
 #include "MemoryLeakCheck.h"
+
+#include <QDebug>
 
 namespace PythonScript
 {
@@ -904,43 +908,67 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             continue;
         
         EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
-        
-        // We are only interested in meshes
-        if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
             Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-            if (!mesh) 
-                continue;
-            OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
-            if (!meshptr->GetEntity()) 
+            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            
+            OgreRenderer::EC_OgreMesh *meshptr = 0;
+            OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
+
+            if (mesh) 
+            {
+                meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+                if (!meshptr)
+                    continue;
+                if (!meshptr->GetEntity())
+                    continue;
+            }
+            else if (custom_object)
+            {
+                custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
+                if (!custom_object_ptr)
+                    continue;
+                if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())
+                    continue;
+                RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
+                custom_object_ptr->CommitChanges();
+            }
+            else
                 continue;
             
-            // Iterate materials
-            MaterialMap::const_iterator i = prim.Materials.begin();
-            while (i != prim.Materials.end())
+            // Iterate mesh materials map
+            if (meshptr)
             {
-                uint submesh_id = i->first;
-
-                // Store sumbeshes to list where we want to apply the new widget as texture
-                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                MaterialMap material_map = prim.Materials;
+                MaterialMap::const_iterator i = material_map.begin();
+                while (i != material_map.end())
                 {
-                    submeshes_.append(submesh_id);
-
-                    // DEBUG
-                    std::stringstream ss;
-                    ss << "Entity with given texture id found: ";
-                    ss << texture_uuid.ToString();
-                    ss << " - ";
-                    ss << primentity->GetId();
-                    ss << " / ";
-                    ss << submesh_id;
-                    PythonScript::self()->LogInfo(ss.str());
-                    // DEBUG END
+                    // Store sumbeshes to list where we want to apply the new widget as texture
+                    uint submesh_id = i->first;
+                    if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                        submeshes_.append(submesh_id);
+                    ++i;
                 }
-                ++i;
             }
+            // Iterate custom object texture map
+            else if (custom_object_ptr)
+            {
+                TextureMap texture_map = prim.PrimTextures;
+                TextureMap::const_iterator i = texture_map.begin();
+                while (i != texture_map.end())
+                {
+                    uint submesh_id = i->first;
+                    if (i->second == texture_uuid.ToString())
+                        submeshes_.append(submesh_id);
+                    ++i;
+                }
+            }
+            else
+                continue;
 
-            if (submeshes_.size() > 0)
+            if (submeshes_.count() > 0)
             {
                 EC_3DCanvas *ec_canvas = entity.GetComponent<EC_3DCanvas>().get();
                 if (ec_canvas)
@@ -1032,6 +1060,9 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 
         if (ec_canvas)
         {
+            //qDebug() << "Setting up EC_3DCanvas: " << endl
+            //         << "Submeshes: " << submeshes_ << endl;
+
             // Setup the component
             ec_canvas->SetWidget(qwidget_ptr);
             ec_canvas->SetRefreshRate(refresh_rate);
@@ -1054,63 +1085,92 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     if(!PyArg_ParseTuple(args, "Is", &ent_id_int, &uuidstr))
         return NULL;   
 
-    ent_id = (entity_id_t) ent_id_int;
-    
-    RexUUID textureuuid = RexUUID();
-    textureuuid.FromString(std::string(uuidstr));
+    ent_id = (entity_id_t)ent_id_int;
+    RexUUID texture_uuid = RexUUID();
+    texture_uuid.FromString(std::string(uuidstr));
 
-    // Get RexLogic module
-    ///\todo Remove RexLogic dependency by iterating the scene and checking if the entity has EC_OpenSimPrim component available.
     RexLogic::RexLogicModule *rexlogicmodule_;
     rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
 
     Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
-    if (!primentity) Py_RETURN_NONE;
+    if (!primentity) 
+        Py_RETURN_NONE;
+
     EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(primentity->GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
     
-    if (prim.DrawType == RexTypes::DRAWTYPE_MESH)
+    if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
+        QList<uint> submeshes_;
         Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        if (!mesh) Py_RETURN_NONE;
-        OgreRenderer::EC_OgreMesh* meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
-        // If don't have the actual mesh entity yet, no use trying to set texture
-        if (!meshptr->GetEntity()) Py_RETURN_NONE;
+        Foundation::ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        
+        OgreRenderer::EC_OgreMesh *meshptr = 0;
+        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;            
 
-        MaterialMap::const_iterator i = prim.Materials.begin();
-
-        //which -- if any -- submeshes / mat indices use the given textureuuid in this mesh
-        std::vector<uint> submeshes_;
-
-        while (i != prim.Materials.end())
+        if (mesh)
         {
-            uint idx = i->first;
-            if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(textureuuid.ToString()) == 0))
-            {
-                // Use a legacy material with the same name as the texture, created automatically by renderer
-                //meshptr->SetMaterial(idx, res->GetId());
-
-                submeshes_.push_back(idx);
-
-                std::stringstream ss;
-                ss << "Subface in the entity with given texture id found: ";
-                ss << idx;
-                ss << " / ";
-                ss << textureuuid.ToString();
-                PythonScript::self()->LogInfo(ss.str());
-            }
-            ++i;
+            meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            if (!meshptr)
+                Py_RETURN_NONE;
+            if (!meshptr->GetEntity())
+                Py_RETURN_NONE;
         }
+        else if (custom_object)
+        {
+            custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
+            if (!custom_object_ptr)
+                Py_RETURN_NONE;
+            if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())                
+                Py_RETURN_NONE;
+            RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
+            custom_object_ptr->CommitChanges();
+        }
+        else
+            Py_RETURN_NONE;
+        
+        // Iterate mesh materials map
+        if (meshptr)
+        {
+            MaterialMap material_map = prim.Materials;
+            MaterialMap::const_iterator i = material_map.begin();
+            while (i != material_map.end())
+            {
+                // Store sumbeshes to list where we want to apply the new widget as texture
+                uint submesh_id = i->first;
+                if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                    submeshes_.append(submesh_id);
+                ++i;
+            }
+        }
+        // Iterate custom object texture map
+        else if (custom_object_ptr)
+        {
+            TextureMap texture_map = prim.PrimTextures;
+            TextureMap::const_iterator i = texture_map.begin();
+            while (i != texture_map.end())
+            {
+                uint submesh_id = i->first;
+                if (i->second.compare(texture_uuid.ToString()) == 0)
+                {
+                    //qDebug() << "Prim submesh " << submesh_id << " has texture " << QString::fromStdString(texture_uuid.ToString());
+                    submeshes_.append(submesh_id);
+                }
+                ++i;
+            }
+        }
+        else
+            Py_RETURN_NONE;
 
-        if (submeshes_.size() > 0)
+        if (submeshes_.count() > 0)
         {
             PyObject* py_submeshes = PyList_New(submeshes_.size());
-            
-            for (int i = 0; i < submeshes_.size(); i++) //std::vector<uint>::iterator iter = submeshes_.begin(); iter != submeshes_.end(); ++iter)
+            int i = 0;
+            foreach(uint submesh, submeshes_)
             {
-                uint submesh = submeshes_[i]; //*iter;
+                //qDebug() << "Sending to py, submesh: " << submesh;
                 PyList_SET_ITEM(py_submeshes, i, Py_BuildValue("I", submesh));
+                ++i;
             }
-
             return py_submeshes;            
         }
     }

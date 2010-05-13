@@ -34,13 +34,13 @@ public:
     ~EC_3DCanvas();
 
 public slots:
+    void Start();
     void SetWidget(QWidget *widget);
     void SetRefreshRate(int refresh_per_second);
     void SetSubmesh(uint submesh);
     void SetSubmeshes(const QList<uint> &submeshes);
     void SetEntity(Scene::Entity *entity);
-    
-    void Start();
+    void WidgetDestroyed(QObject *obj);
 
 private:
     explicit EC_3DCanvas(Foundation::ModuleInterface *module);

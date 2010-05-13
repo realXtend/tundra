@@ -83,7 +83,10 @@ void EC_3DCanvas::Start()
 void EC_3DCanvas::SetWidget(QWidget *widget)
 {
     if (widget_ != widget)
+    {
         widget_ = widget;
+        connect(widget_, SIGNAL(destroyed(QObject*)), SLOT(WidgetDestroyed(QObject *)));
+    }
 }
 
 void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
@@ -118,6 +121,14 @@ void EC_3DCanvas::SetEntity(Scene::Entity *entity)
 {
     entity_ = entity;
     update_internals_ = true;
+}
+
+void EC_3DCanvas::WidgetDestroyed(QObject *obj)
+{
+    widget_ = 0;
+    if (refresh_timer_)
+        refresh_timer_->stop();
+    SAFE_DELETE(refresh_timer_);
 }
 
 void EC_3DCanvas::Update()
@@ -163,7 +174,6 @@ void EC_3DCanvas::UpdateSubmeshes()
         return;
 
     QMap<uint, std::string> restore_materials;
-//    bool apply_material;
 
     int draw_type = -1;
     uint submesh_count = 0;
@@ -232,7 +242,8 @@ void EC_3DCanvas::UpdateSubmeshes()
                     if (restore_materials.contains(index))
                         ec_custom_object->SetMaterial(index, restore_materials[index]);
             }
-            else return;
+            else 
+                return;
         }
     }
 }
