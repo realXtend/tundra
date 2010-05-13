@@ -302,11 +302,12 @@ namespace RexLogic
 
     void EC_HoveringWidget::Detach()
     {
+        if(renderer_.expired())
+            return;
         Hide();
-        qreal scene_h = proxy_->scene()->width();
-        qreal scene_w = proxy_->scene()->height();
-        proxy_->setGeometry(QRectF(name_scr_pos_.x()*scene_w, name_scr_pos_.y()* scene_h,proxy_->preferredWidth(),proxy_->preferredHeight()));
-       // proxy_->setPos(name_scr_pos_.x()*scene_w, name_scr_pos_.y()* scene_h);
+        qreal scene_w = renderer_.lock()->GetWindowWidth();
+        qreal scene_h = renderer_.lock()->GetWindowHeight();
+        proxy_->setGeometry(QRectF(name_scr_pos_.x()*scene_w, (1-name_scr_pos_.y())* scene_h,proxy_->preferredWidth(),proxy_->preferredHeight()));
         proxy_->show();
         
     }

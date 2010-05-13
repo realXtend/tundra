@@ -183,7 +183,7 @@ namespace RexLogic
                 overlay->SetText(presence->GetFullName().c_str());
                 if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
                 {
-                        //overlay->SetDisabled(true);
+                        overlay->SetDisabled(true);
 
                 }
             }
