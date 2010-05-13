@@ -82,6 +82,7 @@ namespace MumbleVoip
             celt_encoder_(0),
             celt_decoder_(0),
             sending_audio_(false),
+            receiving_audio_(true),
             frame_sequence_(0),
             encoding_quality_(0),
             state_(STATE_CONNECTING),
@@ -162,6 +163,14 @@ namespace MumbleVoip
     {
         if (state_ != STATE_CLOSED)
         {
+            client_->SetRawUdpTunnelCallback(0);
+            client_->SetChannelAddCallback(0);
+            client_->SetChannelRemoveCallback(0);
+            client_->SetTextMessageCallback(0);
+            client_->SetAuthCallback(0);
+            client_->SetUserJoinedCallback(0);
+            client_->SetUserLeftCallback(0);
+
             client_->Disconnect();
             state_ = STATE_CLOSED;
             emit StateChanged(state_);
