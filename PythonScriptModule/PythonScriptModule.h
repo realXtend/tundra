@@ -23,6 +23,8 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
+class EC_OpenSimPrim;
+
 namespace Foundation
 {
     class Framework;
@@ -31,7 +33,6 @@ namespace Foundation
 namespace RexLogic
 {
     class RexLogicModule;
-    class EC_OpenSimPrim;
     class CameraControllable;
     class AvatarControllable;
 }

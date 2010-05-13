@@ -32,6 +32,7 @@
  */
 
 #include "StableHeaders.h"
+#include "Environment/PrimGeometryUtils.h"
 #include "Environment/PrimMesher.h"
 #include "RexTypes.h"
 #include "RexLogicModule.h"
@@ -80,7 +81,7 @@ namespace RexLogic
         return true;
     }
 
-    void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive)
+    void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive, bool optimisations_enabled)
     {
         PROFILE(Primitive_CreateGeometry)
         
@@ -241,17 +242,28 @@ namespace RexLogic
                         rot = primitive.PrimUVRotation[facenum];     
                     float rot_sin = sin(-rot);
                     float rot_cos = cos(-rot);     
-                    
-                    if ((first_face) || (texture_id != prev_texture_id))
-                    {
-                        if (indices)
-                            object->end();
 
-                        indices = 0;
-                        
-                        object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-                        prev_texture_id = texture_id;
-                        first_face = false;
+                    if (optimisations_enabled || primitive.DrawType == RexTypes::DRAWTYPE_MESH)
+                    {
+                        if ((first_face) || (texture_id != prev_texture_id))
+                        {
+                            if (indices)
+                                object->end();
+                            indices = 0;
+                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                            prev_texture_id = texture_id;
+                            first_face = false;
+                        }
+                    }
+                    else
+                    {
+                        if (facenum != 0 && i % 2 == 0)
+                        {
+                            if (indices)
+                                object->end();
+                            indices = 0;
+                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                        }
                     }
                     
                     Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);

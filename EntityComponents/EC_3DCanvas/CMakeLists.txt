@@ -18,7 +18,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule UiModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
@@ -26,7 +26,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_package (OGRE)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule)
+link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule UiModule)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)
