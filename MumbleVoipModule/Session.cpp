@@ -369,6 +369,7 @@ namespace MumbleVoip
 
             Vector3df avatar_position;
             Vector3df avatar_direction;
+            GetOwnAvatarPosition(avatar_position, avatar_direction);
 
             boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
             if (!sound_service)
