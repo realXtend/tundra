@@ -14,11 +14,12 @@ class QNetworkAccessManager;
 namespace Foundation
 {
     class Framework;
+    class EventDataInterface;
 }
 
-namespace Foundation
+namespace ProtocolUtilities
 {
-    class EventDataInterface;
+    class WorldStream;
 }
 
 namespace MumbleVoip
@@ -50,6 +51,7 @@ namespace MumbleVoip
     private:
         Foundation::Framework* framework_;
         QNetworkAccessManager* server_info_request_manager_;
+        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
         event_category_id_t framework_event_category_; 
         event_category_id_t networkstate_event_category_;
     };

@@ -280,6 +280,7 @@ namespace OpenSimProtocol
             "<string>UntrustedSimulatorMessage</string>"
             "<string>ViewerStats</string>"
             "<string>GetTexture</string>"
+            "<string>mumble_server_info</string>"
             "</array></llsd>";
 
         HttpUtilities::HttpRequest request;

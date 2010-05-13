@@ -36,7 +36,7 @@ namespace MumbleVoip
             sending_audio_(false),
             receiving_audio_(false),
             audio_sending_enabled_(false),
-            audio_receiving_enabled_(false),
+            audio_receiving_enabled_(true),
             speaker_voice_activity_(0),
 //            connection_manager_(new ConnectionManager(framework)),
             server_info_(server_info),
@@ -363,9 +363,6 @@ namespace MumbleVoip
 			if (!connection_)
 				return;
 
-            if (!audio_sending_enabled_)
-                return;
-
             Vector3df avatar_position;
             Vector3df avatar_direction;
 
@@ -380,6 +377,7 @@ namespace MumbleVoip
             {
                 int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
                 PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
+                UpdateSpeakerActivity(frame);
                 int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
                 assert(bytes_to_read == bytes);
 
@@ -392,7 +390,8 @@ namespace MumbleVoip
                 //        continue;
                 //    }
                 //}
-                connection_->SendAudioFrame(frame, avatar_position);
+                if (audio_sending_enabled_)
+                    connection_->SendAudioFrame(frame, avatar_position);
 //                emit AudioFrameSent(frame);
                 delete frame;
             }

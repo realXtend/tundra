@@ -40,7 +40,6 @@ namespace MumbleVoip
         if (!networkstate_event_category_ && framework_)
            networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
-
         if (category_id == framework_event_category_)
         {
             switch (event_id)
@@ -50,18 +49,33 @@ namespace MumbleVoip
                     ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
                     if (event_data)
                     {
-                        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_ = event_data->WorldStream;
-
-                        QString cap_mumble_server_info = current_world_stream_->GetCapability("mumble_server_info").c_str();
-                        ProtocolUtilities::ClientParameters client_info = current_world_stream_->GetInfo();
-                        QString agent_id = QString(client_info.agentID.ToString().c_str());
-                        QString region_udp_url = QString(client_info.gridUrl.c_str());
-                        RequestMumbleServerInfo(region_udp_url, agent_id);
+                        current_world_stream_ = event_data->WorldStream;
                     }
                     break;
                 }
                 default:
                     break;
+            }
+        }
+
+        if (category_id == networkstate_event_category_)
+        {
+            switch (event_id)
+            {
+            case ProtocolUtilities::Events::EVENT_CAPS_FETCHED:
+                {
+                    if (current_world_stream_)
+                    {
+                        QString cap_mumble_server_info_url = current_world_stream_->GetCapability("mumble_server_info").c_str();
+                        if (cap_mumble_server_info_url.size() > 0)
+                        {
+                            ProtocolUtilities::ClientParameters client_info = current_world_stream_->GetInfo();
+                            QString agent_id = QString(client_info.agentID.ToString().c_str());
+                            RequestMumbleServerInfo(cap_mumble_server_info_url, agent_id);
+                        }
+                    }
+                }
+                break;
             }
         }
 
@@ -79,13 +93,13 @@ namespace MumbleVoip
         return false;
     }
 
-    void ServerInfoProvider::RequestMumbleServerInfo(const QString &grid_url, const QString &agent_id)
+    void ServerInfoProvider::RequestMumbleServerInfo(const QString &url, const QString &agent_id)
     {
-        QString path = "mumble_server_info";
-        QUrl url(grid_url);
-        if (url.scheme().length() == 0)
-            url.setUrl(QString("http://%1").arg(grid_url));
-        url.setPath(path);
+        //QString path = "mumble_server_info";
+        //QUrl url(grid_url);
+        //if (url.scheme().length() == 0)
+        //    url.setUrl(QString("http://%1").arg(grid_url));
+        //url.setPath(path);
 
         QNetworkRequest request(url);
         request.setRawHeader("avatar_uuid",agent_id.toAscii());
