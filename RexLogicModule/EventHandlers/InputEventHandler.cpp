@@ -12,6 +12,7 @@
 #include "EventManager.h"
 #include "SceneEvents.h"
 #include "EC_Touchable.h"
+#include "Renderer.h"
 
 namespace RexLogic
 {
@@ -51,7 +52,8 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
     if(event_id == Input::Events::INWORLD_CLICK)
     {
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-        owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_);
+        Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
+        owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
     }  
 
     return false;

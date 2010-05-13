@@ -9,7 +9,7 @@ namespace RexLogic
 {
 
     HoveringButtonsController::HoveringButtonsController()
-    :text_padding_(20.0f)
+    :text_padding_(10.0f)
     {
         Ui::HoveringButtonsWidget::setupUi(this);
     }
@@ -35,10 +35,10 @@ namespace RexLogic
         QMouseEvent e(QEvent::MouseButtonPress, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         QApplication::sendEvent(this, &e);
         //Iterate through buttons and check if they are pressed 
-        for(int i = 0; i< buttongroup->layout()->count();i++)
+        for(int i = 0; i< layout()->count();i++)
         {
             
-            QLayoutItem* item = buttongroup->layout()->itemAt(i);
+            QLayoutItem* item = layout()->itemAt(i);
             QAbstractButton *button = dynamic_cast<QAbstractButton*>(item->widget());
             if(button)
             {
@@ -54,13 +54,16 @@ namespace RexLogic
         
     }
 
+ 
+
+  
 
     void HoveringButtonsController::AddButton(QPushButton *button)
     {
        button->setParent(this);
        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-       button->setMaximumHeight(70);
-       button->setMaximumWidth(140);
+       button->setMaximumHeight(30);
+       button->setMaximumWidth(60);
        QFont font(button->font());
        QRect rect = button->fontMetrics().tightBoundingRect(button->text());
 
@@ -68,11 +71,11 @@ namespace RexLogic
 
        font.setPointSize(font.pointSizeF() * scale);
        button->setFont(font);
-       QBoxLayout* layout = dynamic_cast<QBoxLayout*>(this->buttongroup->layout());
+       QBoxLayout* layout = dynamic_cast<QBoxLayout*>(this->layout());
        if(!layout)
            return;
        layout->insertWidget(0,button);
-       QObject::connect(button, SIGNAL(pressed()), this, SLOT(ButtonPressed()));
+       QObject::connect(button, SIGNAL(pressed()), this, SLOT(ButtonPressed())); 
        button->show();
     }
 }

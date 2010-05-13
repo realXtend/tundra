@@ -24,6 +24,11 @@
 class QString;
 class RexUUID;
 
+namespace Foundation
+{
+    struct RaycastResult;
+}
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -105,9 +110,10 @@ namespace RexLogic
                 //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
         /*! \param x screen coordinate
             \param y screen coordinate
+            \param entity this is the entity that was hit with normal raycast. 
             \return returns true if infoicon was hit, false otherwise
         */
-        bool CheckInfoIconIntersection(int x, int y);
+        bool CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result);
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
@@ -209,6 +215,9 @@ namespace RexLogic
         ///\todo Move to WorldStream?
         void SendRexPrimData(uint entityid);
 
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
+
     private:
         Q_DISABLE_COPY(RexLogicModule);
 
@@ -247,9 +256,6 @@ namespace RexLogic
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
-
-        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
-        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
         //! login through console
         Console::CommandResult ConsoleLogin(const StringVector &params);

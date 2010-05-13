@@ -14,8 +14,7 @@
 #include "Vector3D.h"
 #include "RexLogicModuleApi.h"
 
-#include "HoveringNameController.h"
-#include "HoveringButtonsController.h"
+
 
 #include <QFont>
 #include <QColor>
@@ -23,6 +22,7 @@
 #include <QSizeF>
 #include <QTimer>
 
+class QGraphicsProxyWidget;
 
 //Needs refactor
 namespace Ogre
@@ -46,6 +46,10 @@ QT_END_NAMESPACE
 class QWidget;
 namespace RexLogic
 {
+    class HoveringButtonsController;
+    class HoveringNameController;
+    class DetachedWidgetController;
+
 
     //this class is component used to display text and buttons with an entity
     class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
@@ -99,6 +103,9 @@ namespace RexLogic
         void AnimatedShow();
         //! notifies that entity was clicked
         void EntityClicked(int msec_to_show = 5000);
+
+        void Detach();
+        void Attach();
 
         //! called when the widget is clicked in 3D scene
         //! @param x coordinate (clamped in 0-1) 
@@ -183,6 +190,8 @@ namespace RexLogic
 
         QTimer *hovering_timer_;
 
+        QGraphicsProxyWidget *proxy_;
+
         qreal hovering_time_;
 
         bool disabled_;
@@ -191,12 +200,18 @@ namespace RexLogic
 
         bool buttons_visible_;
 
+        bool detached_;
+
         HoveringNameController* namewidget_;
+
+        DetachedWidgetController* detachedwidget_;
 
         HoveringButtonsController *buttonswidget_;
 
         QSizeF bb_name_size_view;
         QSizeF bb_buttons_size_view;
+
+        QPointF name_scr_pos_;
 
         Real cam_distance_;
 

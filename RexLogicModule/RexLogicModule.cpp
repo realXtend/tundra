@@ -74,6 +74,7 @@
 #include <OgreEntity.h>
 #include <OgreBillboard.h>
 #include <OgreBillboardSet.h>
+#include "RenderServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -1046,9 +1047,9 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();*/
 
-    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+    /*boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
-        info_icon->EntityClicked();
+        info_icon->EntityClicked();*/
 }
 
 
@@ -1153,7 +1154,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     return Console::ResultSuccess();
 }
 
-bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
+bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
     {
         bool ret_val = false;
         QList<EC_HoveringWidget*> visible_widgets;
@@ -1199,12 +1200,14 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             return false;
         }
   
-        
-
+        Ogre::Vector3 nearest_world_pos(Ogre::Vector3::ZERO);
+        QRectF nearest_rect;
+        Ogre::Vector3 cam_pos = camera->GetCamera()->getDerivedPosition();
+        EC_HoveringWidget* nearest_widget = 0;
         for(int i=0; i< visible_widgets.size();i++)
         {
             Ogre::Matrix4 worldmat;
-            
+            Ogre::Vector3 world_pos;
             EC_HoveringWidget* widget = visible_widgets.at(i);
             if(!widget)
                 continue;
@@ -1219,6 +1222,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
             
             bbset->getWorldTransforms(&worldmat);
             pos = worldmat*pos;
+            world_pos = pos;
             pos = camera->GetCamera()->getViewMatrix()*pos;
             pos = camera->GetCamera()->getProjectionMatrix()*pos;
             
@@ -1227,17 +1231,43 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y)
           
             if(rect.contains(scr_x, scr_y))
             {
-
-                scr_x -=rect.left();
-                scr_y -=rect.top();
-
-                scr_x /= rect.width();
-                scr_y /= rect.height();
-
-                widget->WidgetClicked(scr_x, 1-scr_y);
-                ret_val = true;
-                
+                if(nearest_widget!=0)
+                {
+                    if((world_pos-cam_pos).length() > (nearest_world_pos-cam_pos).length())
+                    {
+                        continue;
+                    }
+                }
+                nearest_world_pos = world_pos;
+                nearest_rect = rect;
+                nearest_widget = widget;
             }
+        }
+
+        //check if entity is between the board and mouse
+        if(result->entity_)
+        {
+            Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+            //if true, the entity is closer to camera
+            if(Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
+            {
+                EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
+                if(widget)
+                    widget->EntityClicked();
+                return ret_val;
+            }
+        }
+        if(nearest_widget)
+        {
+
+            scr_x -=nearest_rect.left();
+            scr_y -=nearest_rect.top();
+
+            scr_x /= nearest_rect.width();
+            scr_y /= nearest_rect.height();
+
+            nearest_widget->WidgetClicked(scr_x, 1-scr_y);
+            ret_val = true;
         }
 
         return ret_val;
