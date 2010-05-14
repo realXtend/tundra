@@ -67,6 +67,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
 #include "EC_3DCanvas.h"
+#include "EC_3DCanvasSource.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -122,6 +123,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_Touchable);
     DECLARE_MODULE_EC(EC_3DCanvas);
+    DECLARE_MODULE_EC(EC_3DCanvasSource);
 }
 
 // virtual
@@ -1050,6 +1052,10 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     /*boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
+        
+    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+    if (canvas_source)
+        canvas_source->Clicked();
 }
 
 

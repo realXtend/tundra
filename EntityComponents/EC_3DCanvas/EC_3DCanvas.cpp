@@ -19,17 +19,13 @@
 
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
-    framework_(module->GetFramework()),
-    entity_(0),
     widget_(0),
     update_internals_(false),
     paint(false),
     refresh_timer_(0),
     update_interval_msec_(0),
     material_name_(""),
-    texture_name_(""),
-    material_manager_(Ogre::MaterialManager::getSingleton()),
-    texture_manager_(Ogre::TextureManager::getSingleton())
+    texture_name_("")
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -44,9 +40,10 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
 
         // Create texture
         texture_name_ = "EC3DCanvasTexture" + renderer->GetUniqueObjectName();
-        Ogre::TexturePtr texture = texture_manager_.createManual(texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                                 Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
-                                                                 Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
+            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
+            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (texture.isNull())
             texture_name_ = "";
 
@@ -56,6 +53,9 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
 
 EC_3DCanvas::~EC_3DCanvas()
 {
+    submeshes_.clear();
+    UpdateSubmeshes();
+    
     paint = false;
     widget_ = 0;
 
@@ -65,8 +65,19 @@ EC_3DCanvas::~EC_3DCanvas()
 
     if (!material_name_.empty())
     {
-        Ogre::MaterialPtr material = material_manager_.getByName(material_name_);
-        OgreRenderer::RemoveMaterial(material);
+        try
+        {
+            Ogre::MaterialManager::getSingleton().remove(material_name_);
+        }
+        catch (...) {}
+    }
+    if (!texture_name_.empty())
+    {
+        try
+        {
+            Ogre::TextureManager::getSingleton().remove(texture_name_);
+        }
+        catch (...) {}
     }
 }
 
@@ -74,8 +85,10 @@ void EC_3DCanvas::Start()
 {
     update_internals_ = true;
     if (update_interval_msec_ != 0 && refresh_timer_)
+    {
         if (!refresh_timer_->isActive())
             refresh_timer_->start(update_interval_msec_);
+    }
     else
         Update();
 }
@@ -85,7 +98,8 @@ void EC_3DCanvas::SetWidget(QWidget *widget)
     if (widget_ != widget)
     {
         widget_ = widget;
-        connect(widget_, SIGNAL(destroyed(QObject*)), SLOT(WidgetDestroyed(QObject *)));
+        if (widget_)
+            connect(widget_, SIGNAL(destroyed(QObject*)), SLOT(WidgetDestroyed(QObject *)));
     }
 }
 
@@ -119,7 +133,7 @@ void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
 
 void EC_3DCanvas::SetEntity(Scene::Entity *entity)
 {
-    entity_ = entity;
+    //entity_ = entity;
     update_internals_ = true;
 }
 
@@ -136,7 +150,7 @@ void EC_3DCanvas::Update()
     if (!paint || !widget_ || texture_name_.empty())
         return;
 
-    Ogre::TexturePtr texture = texture_manager_.getByName(texture_name_);
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
     if (texture.isNull())
         return;
 
@@ -147,7 +161,7 @@ void EC_3DCanvas::Update()
     // Set texture to material
     if (update_internals_ && !material_name_.empty())
     {
-        Ogre::MaterialPtr material = material_manager_.getByName(material_name_);
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
         if (material.isNull())
             return;
         OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
@@ -170,15 +184,15 @@ void EC_3DCanvas::Update()
 
 void EC_3DCanvas::UpdateSubmeshes()
 {
-    if (material_name_.empty() || !entity_ || submeshes_.count() == 0)
+    Scene::Entity* entity = GetParentEntity();
+    
+    if (material_name_.empty() || !entity)
         return;
-
-    QMap<uint, std::string> restore_materials;
 
     int draw_type = -1;
     uint submesh_count = 0;
-    OgreRenderer::EC_OgreMesh* ec_mesh = entity_->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-    OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity_->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+    OgreRenderer::EC_OgreMesh* ec_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
     
     //qDebug() << "EC_3DCanvas::UpdateSubmeshes() =====================";
 
@@ -215,7 +229,7 @@ void EC_3DCanvas::UpdateSubmeshes()
             return;
 
         if (submesh_material_name != material_name_)
-            restore_materials[index] = submesh_material_name;
+            restore_materials_[index] = submesh_material_name;
 
         if (submeshes_.contains(index))
         {
@@ -230,17 +244,18 @@ void EC_3DCanvas::UpdateSubmeshes()
         }
         else 
         {
+            // If submesh not contained, restore the original material
             if (draw_type == RexTypes::DRAWTYPE_MESH)
             {
                 if (ec_mesh->GetMaterialName(index) == material_name_)
-                    if (restore_materials.contains(index))
-                        ec_mesh->SetMaterial(index, restore_materials[index]);
+                    if (restore_materials_.contains(index))
+                        ec_mesh->SetMaterial(index, restore_materials_[index]);
             }
             else if(draw_type == RexTypes::DRAWTYPE_PRIM)
             {
                 if (ec_custom_object->GetMaterialName(index) == material_name_)
-                    if (restore_materials.contains(index))
-                        ec_custom_object->SetMaterial(index, restore_materials[index]);
+                    if (restore_materials_.contains(index))
+                        ec_custom_object->SetMaterial(index, restore_materials_[index]);
             }
             else 
                 return;

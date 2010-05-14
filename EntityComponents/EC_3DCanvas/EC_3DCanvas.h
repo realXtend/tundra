@@ -6,6 +6,8 @@
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 
+#include <QMap>
+
 namespace Scene
 {
     class Entity;
@@ -39,7 +41,7 @@ public slots:
     void SetRefreshRate(int refresh_per_second);
     void SetSubmesh(uint submesh);
     void SetSubmeshes(const QList<uint> &submeshes);
-    void SetEntity(Scene::Entity *entity);
+    void SetEntity(Scene::Entity *entity); // No-op, always uses parent entity
     void WidgetDestroyed(QObject *obj);
 
 private:
@@ -54,11 +56,7 @@ private:
     QList<uint> submeshes_;
     QTimer *refresh_timer_;
 
-    Scene::Entity* entity_;
-    Foundation::Framework *framework_;
-
-    Ogre::TextureManager &texture_manager_;
-    Ogre::MaterialManager &material_manager_;
+    QMap<uint, std::string> restore_materials_;
     std::string material_name_;
     std::string texture_name_;
 
