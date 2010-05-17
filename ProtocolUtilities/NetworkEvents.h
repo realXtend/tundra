@@ -50,6 +50,8 @@ namespace ProtocolUtilities
         std::string webdavInventoryUrl;
         boost::shared_ptr<InventorySkeleton> inventory;
         boost::shared_ptr<BuddyList> buddy_list;
+        uint16_t regionX;
+        uint16_t regionY;
     };
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.

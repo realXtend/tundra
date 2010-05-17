@@ -437,6 +437,9 @@ namespace ProtocolUtilities
         ///@param local_ids List of local entity ID's.
         void SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids);
         void SendObjectDelinkPacket(const QStringList& strings);
+       
+        //Send MapBlockRequest
+        void SendMapBlockRequest();
 
         //------------------- Utility functions ------------------- //
 
@@ -517,6 +520,9 @@ namespace ProtocolUtilities
 
         /// Sends all the needed packets to server when connection successfull
         void SendLoginSuccessfullPackets();
+
+        /// Sends map request packet when udp connection has been created successfully
+        void SendMapBlockPacket();
 
         /// Convenience function to get the weak pointer when building messages.
         NetOutMessage *StartMessageBuilding(const NetMsgID &message_id);

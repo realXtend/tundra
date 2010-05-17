@@ -93,6 +93,7 @@ bool WorldStream::CreateUdpConnection()
     {
         connected_ = true;
         SendLoginSuccessfullPackets();
+        SendMapBlockPacket();
         LogInfo("Connected to server " + serverAddress_);
         return true;
     }
@@ -1526,6 +1527,26 @@ void WorldStream::SendObjectDelinkPacket(const QStringList& strings)
     SendObjectDelinkPacket(vec);
 }
 
+void WorldStream::SendMapBlockRequest()
+{
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgMapBlockRequest);
+    assert(m);
+    
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    //flags, estateID, godLike. Sending default values. Replace when needed
+    m->AddU32(0);
+    m->AddU32(0);
+    m->AddBool(false);    
+    m->AddU16(clientParameters_.regionX - 1); //minX
+    m->AddU16(clientParameters_.regionX + 1); //maxX
+    m->AddU16(clientParameters_.regionY - 1); //minY
+    m->AddU16(clientParameters_.regionY + 1); //maxY
+
+    FinishMessageBuilding(m);
+}
+
+
 std::string WorldStream::GetCapability(const std::string &name)
 {
     protocolModule_ = GetCurrentProtocolModule();
@@ -1663,6 +1684,12 @@ void WorldStream::SendLoginSuccessfullPackets()
     SendAgentThrottlePacket();
     SendAgentWearablesRequestPacket();
     SendRexStartupPacket("started"); 
+
+}
+
+void WorldStream::SendMapBlockPacket()
+{
+    SendMapBlockRequest();
 }
 
 NetOutMessage *WorldStream::StartMessageBuilding(const NetMsgID &message_id)

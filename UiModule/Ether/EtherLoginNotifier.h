@@ -9,6 +9,11 @@
 #include <QString>
 #include <QWebFrame>
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace Ether
 {
     namespace Data
@@ -26,7 +31,7 @@ namespace Ether
             Q_OBJECT
 
         public:
-            EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller);
+            EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
@@ -35,9 +40,12 @@ namespace Ether
             void EmitTaigaLogin(QWebFrame *web_frame);
             void EmitTaigaLogin(QString url);
             void ExitApplication();
+            void Teleport(QString start_location);
 
         private:
             EtherSceneController *scene_controller_;
+            Foundation::Framework *framework_;
+            QMap<QString, QString> last_info_map_;
 
         signals:
             void StartOsLogin(QMap<QString, QString> info_map);

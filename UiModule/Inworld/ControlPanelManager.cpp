@@ -16,6 +16,7 @@
 #include "Inworld/ControlPanel/BindingWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
+#include "Inworld/ControlPanel/TeleportWidget.h"
 
 #include <QAction>
 #include "MemoryLeakCheck.h"
@@ -28,7 +29,9 @@ namespace CoreUi
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
         binding_widget_(0),
-        language_widget_(0)
+        language_widget_(0),
+        teleport_widget_(0)
+
     {
         // Controls panel
         layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
@@ -53,6 +56,16 @@ namespace CoreUi
         // Personal widget
         personal_widget_ = new PersonalWidget();
         layout_manager_->AddCornerAnchor(personal_widget_, Qt::BottomRightCorner, Qt::BottomRightCorner);
+
+        // Teleport widget
+        teleport_widget_ = new TeleportWidget(layout_manager_->GetScene(), this);
+        ControlButtonAction *teleport_action = new ControlButtonAction(GetButtonForType(UiDefines::Teleport), teleport_widget_, this);
+        
+        SetHandler(UiDefines::Teleport, teleport_action);
+        connect(teleport_action, SIGNAL(toggled(bool)), SLOT(ToggleTeleportVisibility(bool)));
+        connect(teleport_widget_, SIGNAL(Hidden()), SLOT(CheckTeleportButtonStyle()));
+
+
     }
 
     ControlPanelManager::~ControlPanelManager()
@@ -65,7 +78,7 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiDefines::ControlButtonType> buttons;
-        buttons << UiDefines::Notifications << UiDefines::Settings << UiDefines::Quit << UiDefines::Ether;
+        buttons << UiDefines::Notifications << UiDefines::Teleport << UiDefines::Settings << UiDefines::Quit << UiDefines::Ether;
 
         ControlPanelButton *button = 0;
         ControlPanelButton *previous_button = 0;
@@ -80,7 +93,7 @@ namespace CoreUi
 
             // Add to internal lists
             control_buttons_.append(button);
-            if (button_type == UiDefines::Notifications || button_type == UiDefines::Settings)
+            if (button_type == UiDefines::Notifications || button_type == UiDefines::Settings || button_type == UiDefines::Teleport)
                 backdrop_area_buttons_map_[button_type] = button;
 
             connect(button, SIGNAL(ControlButtonClicked(UiDefines::ControlButtonType)), SLOT(ControlButtonClicked(UiDefines::ControlButtonType)));
@@ -116,6 +129,14 @@ namespace CoreUi
                     action->RequestHide();
                 break;
             }
+            case UiDefines::Teleport:
+            {
+                ControlButtonAction *action = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
+                if (action)
+                    action->RequestHide();
+                break;
+
+            }
             default:
                 break;
         }
@@ -134,9 +155,25 @@ namespace CoreUi
         }
     }
 
+    void ControlPanelManager::ToggleTeleportVisibility(bool visible)
+    {
+        if (visible)
+            teleport_widget_->show();
+        else
+        {
+            teleport_widget_->AnimatedHide();
+        }
+    }
+
+
     void ControlPanelManager::CheckSettingsButtonStyle()
     {
         backdrop_area_buttons_map_[UiDefines::Settings]->CheckStyle(false);
+    }
+
+    void ControlPanelManager::CheckTeleportButtonStyle()
+    {
+        backdrop_area_buttons_map_[UiDefines::Teleport]->CheckStyle(false);
     }
 
     // Public

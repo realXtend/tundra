@@ -14,7 +14,9 @@ namespace ProtocolUtilities
         sessionHash(""),
         gridUrl(""),
         avatarStorageUrl(""),
-        seedCapabilities("") {}
+        seedCapabilities(""),
+        regionX(1000),
+        regionY(1000) {}
 
     /// Resets parameters.
     void ClientParameters::Reset()
@@ -26,7 +28,9 @@ namespace ProtocolUtilities
         std::string sessionHash = "";
         std::string gridUrl = "";
         std::string avatarStorageUrl = "";
-        std::string seedCapabilities = "";
+        std::string seedCapabilities = "";        
+        uint16_t regionX = 1000;
+        uint16_t regionY = 1000;
         //inventory.reset();
         if (buddy_list)
             buddy_list->Clear();

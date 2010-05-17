@@ -17,6 +17,7 @@
 
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
+#include "Inworld/ControlPanel/TeleportWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>
@@ -57,6 +58,7 @@ namespace UiServices
 		
 	    //apply new positions to active widgets when the inworld_scene_ is resized
 	    connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
+
     }
 
     InworldSceneController::~InworldSceneController()
@@ -71,6 +73,15 @@ namespace UiServices
         control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
         return true;
     }
+
+    void InworldSceneController::SetTeleportWidget (const std::vector<std::string> &region_names)
+    {
+        if (region_names.size() > 0)
+        {
+            control_panel_manager_->GetTeleportWidget()->SetRegionNames(region_names);
+        }
+    }
+
 
     UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget)
     {
