@@ -17,6 +17,10 @@ namespace Ogre
     class Light;
 }
 
+class QLineEdit;
+class QWidget;
+class QUrl;
+
 //! A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 /*! Also makes it possible to display the canvas contents as a 2D widget, and edit the source
  */
@@ -46,12 +50,22 @@ public:
 
 public slots:
     void Clicked();
+    //! Source text editor modified
+    void SourceEdited();
+    //! Link clicked in the 2D webview UI
+    void WebViewLinkClicked(const QUrl& url);
+    
+    void StartPressed();
+    void PrevPressed();
+    void NextPressed();
+    void EndPressed();
     
 private slots:
     void UpdateWidgetAndCanvas();
     void UpdateWidget();
     void UpdateCanvas();
     void RepaintCanvas();
+    void ChangeLanguage();
     
 private:
     //! Constuctor.
@@ -59,8 +73,21 @@ private:
      */
     explicit EC_3DCanvasSource(Foundation::ModuleInterface *module);
 
+    //! Create the 2D UI widget, but do not show it yet
+    void CreateWidget();
+    
+    //! 2D UI widget
     QWidget* widget_;
-
+    
+    //! Content widget that is set to the 3DCanvas
+    QWidget* content_widget_;
+    
+    //! Content placeholder widget
+    QWidget* placeholder_widget_;
+    
+    //! Source line editor
+    QLineEdit* source_edit_;
+    
     //! Last set source
     std::string last_source_;
 };
