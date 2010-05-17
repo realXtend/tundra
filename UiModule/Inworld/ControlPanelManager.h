@@ -23,6 +23,7 @@ namespace CoreUi
     class BindingWidget;
     class PersonalWidget;
     class LanguageWidget;
+    class TeleportWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -43,6 +44,7 @@ namespace CoreUi
         void SetServiceGetter(QObject *service_getter);
         SettingsWidget *GetSettingsWidget() { return settings_widget_; }
         PersonalWidget *GetPersonalWidget() { return personal_widget_; }
+        TeleportWidget *GetTeleportWidget() { return teleport_widget_; }
 
     private slots:
         void CreateBasicControls();
@@ -52,7 +54,9 @@ namespace CoreUi
 
         // Internal handling of settings widget
         void ToggleSettingsVisibility(bool visible);
+        void ToggleTeleportVisibility(bool visible);
         void CheckSettingsButtonStyle();
+        void CheckTeleportButtonStyle();
 
     private:
         AnchorLayoutManager *layout_manager_;
@@ -68,6 +72,7 @@ namespace CoreUi
         BindingWidget *binding_widget_;
         PersonalWidget *personal_widget_;
         LanguageWidget* language_widget_;
+        TeleportWidget* teleport_widget_;
     };
 }
 

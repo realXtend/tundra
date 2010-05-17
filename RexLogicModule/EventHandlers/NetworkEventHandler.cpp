@@ -20,6 +20,8 @@
 #include "WorldStream.h"
 #include "Communications/ScriptDialogHandler.h"
 #include "Communications/ScriptDialogRequest.h"
+#include <UiModule.h>
+#include <Inworld/InworldSceneController.h>
 
 #include <OgreMaterialManager.h>
 
@@ -127,6 +129,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgLoadURL:
         return HandleOSNE_LoadURL(netdata);
+
+    case RexNetMsgMapBlockReply:
+        return HandleOSNE_MapBlock(netdata);
 
     default:
         break;
@@ -478,6 +483,39 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInbo
     {
         pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + url + "');");
     }
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    std::string agent_id = msg.ReadUUID().ToString(); // ObjectID
+    uint32_t flags_ = msg.ReadU32();
+
+    std::vector<std::string> region_names;
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+
+    for(size_t i = 0; i < instance_count; ++i)
+    {
+        msg.ReadU16();
+        msg.ReadU16();        
+        std::string region_name = msg.ReadString(); // ButtonLabel
+        msg.SkipToNextVariable(); //Access
+        msg.SkipToNextVariable(); //RegionFlags
+        msg.SkipToNextVariable(); //WaterHeight
+        msg.SkipToNextVariable(); //Agents
+        msg.SkipToNextVariable(); //MapNameID
+        region_names.push_back(region_name);
+    }
+
+    boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module)
+    {
+        ui_module->GetInworldSceneController()->SetTeleportWidget(region_names);
+    }
+
     return false;
 }
 

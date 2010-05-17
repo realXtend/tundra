@@ -21,7 +21,8 @@ namespace UiDefines
         Ether,
         Quit,
         Settings,
-        Notifications
+        Notifications,
+        Teleport
     };
 
     enum MenuNodeStyle

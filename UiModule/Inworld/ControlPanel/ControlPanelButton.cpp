@@ -48,6 +48,13 @@ namespace CoreUi
                     normal_image += "uibutton_SET_normal.png";
                 break;
 
+            case UiDefines::Teleport:
+                if (item_visible)
+                    normal_image += "uibutton_TEL_click.png";
+                else
+                    normal_image += "uibutton_TEL_normal.png";
+                break;
+
             default:
                 return;
         }
@@ -104,6 +111,16 @@ namespace CoreUi
                 fixed_size = QSize(52,23);
                 internal_widget_->setContentsMargins(3,5,3,0);
                 internal_widget_->setMaximumSize(52+6,23+5);
+                break;
+            }
+            case UiDefines::Teleport:
+            {
+                normal_image += "uibutton_TEL_normal.png";
+                hover_image += "uibutton_TEL_hover.png";
+                clicked_image += "uibutton_TEL_click.png";
+                fixed_size = QSize(62,23);
+                internal_widget_->setContentsMargins(3,5,3,0);
+                internal_widget_->setMaximumSize(62+6,23+5);
                 break;
             }
             default:
