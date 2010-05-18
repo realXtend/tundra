@@ -109,6 +109,8 @@ namespace Input
 
     void KeyState::onEntry (QEvent *e)
     {
+        if (!e) return;
+        
         std::pair <int,int> eid = get_event_ids ();
 
         if (bindings && eid.first)
@@ -119,6 +121,8 @@ namespace Input
 
     void KeyState::onExit (QEvent *e)
     {
+        if (!e) return;
+        
         std::pair <int,int> eid = get_event_ids ();
 
         if (bindings && eid.second)
@@ -150,6 +154,7 @@ namespace Input
 
     void InputActiveState::onEntry (QEvent *e)
     {
+        if (!e) return;
         State::onEntry (e);
 #ifdef Q_WS_X11
         if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
@@ -159,6 +164,7 @@ namespace Input
 
     void InputActiveState::onExit (QEvent *e)
     {
+        if (!e) return;
 #ifdef Q_WS_X11
         //if (x11_key_state.global_auto_repeat == AutoRepeatModeOn)
         XAutoRepeatOn (view-> x11Info().display());
@@ -180,11 +186,13 @@ namespace Input
 
     void KeyboardActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
     }
     
     void KeyboardActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         // cancel any active key presses
         KeyStateList::iterator i = active.begin();
         KeyStateList::iterator e = active.end();
@@ -212,6 +220,7 @@ namespace Input
 
     void WheelActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         QWheelEvent *e = static_cast <QWheelEvent *> (event);
@@ -224,6 +233,7 @@ namespace Input
     
     void WheelActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         State::onExit (event);
     }
 
@@ -237,6 +247,7 @@ namespace Input
 
     void MoveActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
@@ -253,6 +264,7 @@ namespace Input
     
     void MoveActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         State::onExit (event);
     }
 
@@ -266,6 +278,7 @@ namespace Input
 
     void LeftButtonActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
@@ -288,6 +301,7 @@ namespace Input
     
     void LeftButtonActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
         movement.x_.rel_ = 0;
         movement.y_.rel_ = 0;
@@ -311,6 +325,7 @@ namespace Input
 
     void RightButtonActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
@@ -326,6 +341,7 @@ namespace Input
 
     void RightButtonActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         eventmgr-> SendEvent (catid, Input::Events::RIGHT_MOUSECLICK_RELEASED, &movement);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
@@ -349,11 +365,13 @@ namespace Input
 
     void MidButtonActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
     }
 
     void MidButtonActiveState::onExit (QEvent *event)
     {
+        if (!event) return;
         State::onExit (event);
     }
 
@@ -367,6 +385,7 @@ namespace Input
 
     void GestureActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         //MouseInfo info (static_cast <QMouseEvent *> (event));
@@ -400,6 +419,7 @@ namespace Input
 
     void GestureMotionState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
 
         QMouseEvent *e = static_cast <QMouseEvent *> (event);
@@ -430,6 +450,7 @@ namespace Input
 
     void GestureCompleteState::onEntry (QEvent *event)
     {
+        if (!event) return;
         //MouseInfo info (static_cast <QMouseEvent *> (event));
         //gesture.drag.push_back (info);
 
@@ -456,6 +477,7 @@ namespace Input
 
     void FirstPersonActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
         //*map = &(bindings.map);
         map = bindings;
@@ -471,6 +493,7 @@ namespace Input
 
     void ThirdPersonActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
         //*map = &(bindings.map);
         map = bindings;
@@ -486,6 +509,7 @@ namespace Input
 
     void FreeCameraActiveState::onEntry (QEvent *event)
     {
+        if (!event) return;
         State::onEntry (event);
         //*map = &(bindings.map);
         map = bindings;
@@ -503,6 +527,7 @@ namespace Input
 
     bool KeyListener::eventTest (QEvent *event)
     {
+        if (!event) return false;
         // this is preferrable to 3 states + 2 transitions for each key
         // plus a look-up tree if you want to discover the current state any way 
         
@@ -839,6 +864,7 @@ namespace Input
 
     QEvent *WorldInputLogic::clone_event_ (QEvent *event)
     {
+        if (!event) return 0;
         // state machine will take ownership of cloned events
         switch (event-> type())
         {
