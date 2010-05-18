@@ -12,6 +12,7 @@
 #include <QTimer>
 #include "Channel.h"
 #include <mumbleclient/user.h>
+#include <mumbleclient/channel.h>
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
@@ -26,6 +27,9 @@ namespace MumbleVoip
           received_voice_packet_count_(0),
           voice_packet_drop_count_(0)
     {
+        connect(&channel_update_timer_, SIGNAL(timeout()), SLOT(CheckChannel()) );
+        channel_update_timer_.start(1000);
+        last_audio_frame_time_.start(); // initialize time state so that restart is possible later
     }
 
     User::~User()
@@ -85,11 +89,12 @@ namespace MumbleVoip
         }
 
         playback_queue_.push_back(frame);
+        last_audio_frame_time_.restart(); // = QTime::currentTime();
 
         if (!speaking_)
         {
             speaking_ = true;
-            emit StartSpeaking();
+            emit StartReceivingAudio();
             QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()) );
         }
     }
@@ -98,8 +103,14 @@ namespace MumbleVoip
     {
         if (speaking_)
         {
+            if (last_audio_frame_time_.elapsed() < SPEAKING_TIMEOUT_MS)
+            {
+                int time_ms = std::max(10, SPEAKING_TIMEOUT_MS - last_audio_frame_time_.elapsed());
+                QTimer::singleShot(time_ms, this, SLOT(OnSpeakingTimeout()) );
+                return;
+            }
             speaking_ = false;
-            emit StopSpeaking();
+            emit StopReceivingAudio();
         }
     }
 
@@ -134,6 +145,15 @@ namespace MumbleVoip
         if (received_voice_packet_count_ == 0)
             return 0;
         return static_cast<double>(voice_packet_drop_count_)/received_voice_packet_count_;
+    }
+
+    void User::CheckChannel()
+    {
+        if (user_.channel.lock()->id != channel_->Id())
+        {
+            emit ChangedChannel();
+        }
+
     }
 
 } // namespace MumbleVoip

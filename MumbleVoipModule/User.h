@@ -8,6 +8,8 @@
 #include <QList>
 #include <QMutex>
 #include <Core.h>
+#include <QTimer>
+#include <QTime>
 
 namespace MumbleClient
 {
@@ -85,31 +87,35 @@ namespace MumbleVoip
 
     private slots:
         void OnSpeakingTimeout();
+        void CheckChannel();
 
     private:
         const MumbleClient::User& user_;
         bool speaking_;
         Vector3df position_;
         bool position_known_;
-        static const int SPEAKING_TIMEOUT_MS = 1000;
+        static const int SPEAKING_TIMEOUT_MS = 100; // time to emit StopSpeaking after las audio packet is received
         static const int PLAYBACK_BUFFER_MAX_LENGTH_MS_= 200;
         QList<PCMAudioFrame*> playback_queue_;
         bool left_;
         MumbleVoip::Channel* channel_;
         int received_voice_packet_count_;
         int voice_packet_drop_count_;
+        QTimer channel_update_timer_;
+        QTime last_audio_frame_time_;
 
     signals:
         //! Emited when user has left from server
         void Left();
 
-        //! Emited when user starts to speak
-        void StartSpeaking();
+        void StartReceivingAudio();
 
-        //! Emited when user stops speaking
-        void StopSpeaking();
+        void StopReceivingAudio();
 
         void PositionUpdated();
+
+        //! DOES NOT WORK !!!
+        void ChangedChannel();
     };
 
 } // namespace MumbleVoip
