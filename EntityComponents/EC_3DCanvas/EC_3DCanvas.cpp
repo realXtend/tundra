@@ -21,7 +21,6 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
     update_internals_(false),
-    paint(false),
     refresh_timer_(0),
     update_interval_msec_(0),
     material_name_(""),
@@ -46,8 +45,6 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
             Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (texture.isNull())
             texture_name_ = "";
-
-        paint = true;
     }
 }
 
@@ -55,8 +52,7 @@ EC_3DCanvas::~EC_3DCanvas()
 {
     submeshes_.clear();
     UpdateSubmeshes();
-    
-    paint = false;
+
     widget_ = 0;
 
     if (refresh_timer_)
@@ -71,6 +67,7 @@ EC_3DCanvas::~EC_3DCanvas()
         }
         catch (...) {}
     }
+
     if (!texture_name_.empty())
     {
         try
@@ -86,11 +83,19 @@ void EC_3DCanvas::Start()
     update_internals_ = true;
     if (update_interval_msec_ != 0 && refresh_timer_)
     {
-        if (!refresh_timer_->isActive())
-            refresh_timer_->start(update_interval_msec_);
+        if (refresh_timer_->isActive())
+            refresh_timer_->stop();
+        refresh_timer_->start(update_interval_msec_);
     }
     else
         Update();
+}
+
+void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
+{
+    SetWidget(widget);
+    SetSubmeshes(submeshes);
+    SetRefreshRate(refresh_per_second);
 }
 
 void EC_3DCanvas::SetWidget(QWidget *widget)
@@ -105,6 +110,9 @@ void EC_3DCanvas::SetWidget(QWidget *widget)
 
 void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
 {
+    if (refresh_per_second < 0)
+        refresh_per_second = 0;
+
     SAFE_DELETE(refresh_timer_);
 
     if (refresh_per_second != 0)
@@ -131,12 +139,6 @@ void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
     update_internals_ = true;
 }
 
-void EC_3DCanvas::SetEntity(Scene::Entity *entity)
-{
-    //entity_ = entity;
-    update_internals_ = true;
-}
-
 void EC_3DCanvas::WidgetDestroyed(QObject *obj)
 {
     widget_ = 0;
@@ -147,7 +149,7 @@ void EC_3DCanvas::WidgetDestroyed(QObject *obj)
 
 void EC_3DCanvas::Update()
 {
-    if (!paint || !widget_ || texture_name_.empty())
+    if (!widget_ || texture_name_.empty())
         return;
 
     Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
@@ -193,32 +195,24 @@ void EC_3DCanvas::UpdateSubmeshes()
     uint submesh_count = 0;
     OgreRenderer::EC_OgreMesh* ec_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
     OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
-    
-    //qDebug() << "EC_3DCanvas::UpdateSubmeshes() =====================";
 
     if (ec_mesh)
     {
-        //qDebug() << "Type MESH";
         draw_type = RexTypes::DRAWTYPE_MESH;
         submesh_count = ec_mesh->GetNumMaterials();
     }
     else if (ec_custom_object)
     {
-        //qDebug() << "Type CUSTOM OBJECT";
         draw_type = RexTypes::DRAWTYPE_PRIM;
         submesh_count = ec_custom_object->GetNumMaterials();
     }
+
     if (draw_type == -1)
         return;
-
-    //qDebug() << "Submesh count      : " << submesh_count;
-    //qDebug() << "Apply to submeshes : " << submeshes_;
 
     // Iterate trough sub meshes
     for (uint index = 0; index < submesh_count; ++index)
     {
-        //qDebug() << ">> Checking index " << index;
-
         // Store original materials
         std::string submesh_material_name;
         if (draw_type == RexTypes::DRAWTYPE_MESH)
@@ -233,8 +227,6 @@ void EC_3DCanvas::UpdateSubmeshes()
 
         if (submeshes_.contains(index))
         {
-            //qDebug() << ">> Applying to index " << index << " - " << QString::fromStdString(material_name_);
-
             if (draw_type == RexTypes::DRAWTYPE_MESH)
                 ec_mesh->SetMaterial(index, material_name_);
             else if (draw_type == RexTypes::DRAWTYPE_PRIM)

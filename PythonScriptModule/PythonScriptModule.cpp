@@ -112,6 +112,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "propertyeditor.h"
 
 #include "EC_3DCanvas.h"
+#include "EC_3DCanvasSource.h"
 
 #include "QEC_Prim.h"
 #include "RexUUID.h"
@@ -968,35 +969,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             else
                 continue;
 
-            if (submeshes_.count() > 0)
-            {
-                EC_3DCanvas *ec_canvas = entity.GetComponent<EC_3DCanvas>().get();
-                if (ec_canvas)
-                    entity.RemoveComponent(entity.GetComponent<EC_3DCanvas>());
-
-                // Add the component
-                entity.AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
-                ec_canvas = entity.GetComponent<EC_3DCanvas>().get();
-
-                if (ec_canvas)
-                {
-                    ec_canvas->SetWidget(qwidget_ptr);
-                    ec_canvas->SetRefreshRate(refresh_rate);
-                    ec_canvas->SetEntity(&entity);
-                    ec_canvas->SetSubmeshes(submeshes_);
-                    ec_canvas->Start();
-                }
-            }
+            PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
         }
     }
 
     Py_RETURN_NONE;
 }
-
-//void _ApplyUICanvasToSubmeshesWithTexture(boost::shared_ptr<QtUI::UICanvas> canvas, RexUUID textureuuid)
-//{
-    // code moved to above
-//}
 
 PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 {
@@ -1048,31 +1026,36 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     }
     Py_DECREF(py_iter);
 
-    if (submeshes_.count() > 0)
-    {
-        EC_3DCanvas *ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
-        if (ec_canvas)
-            primentity->RemoveComponent(primentity->GetComponent<EC_3DCanvas>());    
-
-        // Add the component
-        primentity->AddComponent(rexlogicmodule_->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
-        ec_canvas = primentity->GetComponent<EC_3DCanvas>().get();
-
-        if (ec_canvas)
-        {
-            //qDebug() << "Setting up EC_3DCanvas: " << endl
-            //         << "Submeshes: " << submeshes_ << endl;
-
-            // Setup the component
-            ec_canvas->SetWidget(qwidget_ptr);
-            ec_canvas->SetRefreshRate(refresh_rate);
-            ec_canvas->SetEntity(primentity.get());
-            ec_canvas->SetSubmeshes(submeshes_);
-            ec_canvas->Start();
-        }
-    }
+    PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
 
     Py_RETURN_NONE;
+}
+
+void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, QList<uint> submeshes, int refresh_rate)
+{
+    // Always create new EC_3DCanvas component
+    if (submeshes.isEmpty())
+        return;
+
+    EC_3DCanvas *ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
+    if (ec_canvas)
+        entity->RemoveComponent(entity->GetComponent<EC_3DCanvas>());    
+
+    // Add the component
+    entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvas::TypeNameStatic()));
+    ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
+
+    if (ec_canvas)
+    {
+        // Setup the component
+        ec_canvas->Setup(widget, submeshes, refresh_rate);
+        ec_canvas->Start();
+    }
+
+    // Only create EC_3DCanvasSource if it doesent exist laready 
+    EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
+    if (!ec_canvas_source)
+        entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::Network); 
 }
 
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)

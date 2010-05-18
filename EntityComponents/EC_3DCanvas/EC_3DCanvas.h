@@ -37,18 +37,21 @@ public:
 
 public slots:
     void Start();
+    void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
+
     void SetWidget(QWidget *widget);
     void SetRefreshRate(int refresh_per_second);
     void SetSubmesh(uint submesh);
     void SetSubmeshes(const QList<uint> &submeshes);
-    void SetEntity(Scene::Entity *entity); // No-op, always uses parent entity
-    void WidgetDestroyed(QObject *obj);
+
+    QWidget *GetWidget() { return widget_; }
 
 private:
     explicit EC_3DCanvas(Foundation::ModuleInterface *module);
     void UpdateSubmeshes();
 
 private slots:
+    void WidgetDestroyed(QObject *obj);
     void Update();
 
 private:
@@ -62,7 +65,6 @@ private:
 
     int update_interval_msec_;
     bool update_internals_;
-    bool paint;
 };
 
 #endif

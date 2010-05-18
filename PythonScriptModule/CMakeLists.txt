@@ -33,13 +33,13 @@ use_package (XMLRPC)
 use_package (PROPERTYEDITOR)
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
     ProtocolUtilities UiModule ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight
-    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas)
+    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight
-    ProtocolUtilities UiModule EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas) # OgreRenderingModule)
+    ProtocolUtilities UiModule EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource) # OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
