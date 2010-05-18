@@ -93,7 +93,7 @@ namespace MumbleVoip
         {
             speaking_ = true;
             emit StartReceivingAudio();
-            QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()) );
+//            QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()) );
         }
     }
 
