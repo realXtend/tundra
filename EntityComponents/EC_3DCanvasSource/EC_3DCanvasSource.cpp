@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QUiLoader>
+#include <QVBoxLayout>
 
 #define LogError(msg) Poco::Logger::get("EC_3DCanvasSource").error(std::string("Error: ") + msg);
 #define LogInfo(msg) Poco::Logger::get("EC_3DCanvasSource").information(msg);
@@ -33,7 +34,9 @@ EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),
-    source_edit_(0)
+    proxy_(0),
+    source_edit_(0),
+    manipulate_ec_3dcanvas(true)
 {
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
     CreateWidget();
@@ -45,7 +48,7 @@ EC_3DCanvasSource::~EC_3DCanvasSource()
     if (entity)
     {
         Foundation::ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
-        if (comp)
+        if (comp && manipulate_ec_3dcanvas)
         {
             EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
             canvas->SetWidget(0);
@@ -66,8 +69,13 @@ EC_3DCanvasSource::~EC_3DCanvasSource()
 
 void EC_3DCanvasSource::Clicked()
 {
-    if ((show2d_.Get() == true) && (widget_))
-        widget_->show();
+    if ((show2d_.Get() == true) && (widget_) && (proxy_))
+    {
+        if (proxy_->isVisible())
+            proxy_->AnimatedHide();
+        else
+            proxy_->show();
+    }
 }
 
 void EC_3DCanvasSource::SourceEdited()
@@ -131,6 +139,9 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
 
 void EC_3DCanvasSource::RepaintCanvas()
 {
+    if (!manipulate_ec_3dcanvas)
+        return;
+
     Scene::Entity* entity = GetParentEntity();
     if (!entity)
         return;
@@ -146,6 +157,12 @@ void EC_3DCanvasSource::RepaintCanvas()
 void EC_3DCanvasSource::UpdateWidget()
 {
     std::string source = source_.Get();
+    if (source.empty())
+    {
+        QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
+        return;
+    }
+
     if (source != last_source_)
     {
         if (source_edit_)
@@ -172,6 +189,10 @@ void EC_3DCanvasSource::UpdateWidget()
                 }
                 
                 webwidget = new QWebView(placeholder_widget_);
+                QVBoxLayout *layout = placeholder_widget_->findChild<QVBoxLayout*>("widget_placeholder_layout");
+                if (layout)
+                    layout->addWidget(webwidget);
+
                 webwidget->setUrl(QUrl(QString::fromStdString(source)));
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
                 
@@ -194,7 +215,7 @@ void EC_3DCanvasSource::UpdateWidget()
 
 void EC_3DCanvasSource::UpdateCanvas()
 {
-    if (!content_widget_)
+    if (!content_widget_ || !manipulate_ec_3dcanvas)
         return;
     
     Scene::Entity* entity = GetParentEntity();
@@ -229,6 +250,42 @@ void EC_3DCanvasSource::UpdateCanvas()
     canvas->Start();
 }
 
+void EC_3DCanvasSource::FetchWebViewUrl()
+{   
+    // Workaround on the bug that ec_3canvas->webview()->url() is not valid when this component is created/updated.
+    // Somehow its doesent have time to set it before we already come here. So this polls untill the url is valid.
+
+    Scene::Entity* entity = GetParentEntity();
+    if (!entity)
+    {
+        LogError("No parent entity, cannot create/update 3DCanvas");
+        return;
+    }
+    
+    Foundation::ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    if (!comp)
+    {
+        LogError("Could not create/get 3DCanvas component");
+        return;
+    }
+
+    EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
+    QWidget *canvas_widget = canvas->GetWidget();
+    if (!canvas_widget)
+        return;
+    QWebView *canvas_webview = dynamic_cast<QWebView*>(canvas_widget);
+    if (!canvas_webview)
+        return;
+    QString url = canvas_webview->url().toString();
+    if (!url.isEmpty())
+    {
+        source_.Set(url.toStdString(), Foundation::LocalOnly);
+        ComponentChanged(Foundation::LocalOnly);
+    }
+    else
+        QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
+}
+
 void EC_3DCanvasSource::ChangeLanguage()
 {
     if (widget_)
@@ -260,9 +317,9 @@ void EC_3DCanvasSource::CreateWidget()
         LogError("Failed to create 3D canvas controls widget");
         return;
     }
-    
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(widget_,
-        UiServices::UiWidgetProperties(widget_->windowTitle(), UiServices::SceneWidget));
+
+    proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(widget_,
+        UiServices::UiWidgetProperties("MediaURL browser", UiServices::SceneWidget));
     
     QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
     

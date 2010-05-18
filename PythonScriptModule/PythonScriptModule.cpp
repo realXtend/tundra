@@ -98,6 +98,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
 #include <QGraphicsView>
+#include <QWebView>
 
 //the new qt integration, the previous stuff (above) still used for 3d inworld things
 #include <UiModule.h>
@@ -1052,10 +1053,22 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
         ec_canvas->Start();
     }
 
-    // Only create EC_3DCanvasSource if it doesent exist laready 
-    EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
-    if (!ec_canvas_source)
-        entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::Network); 
+    // Only create EC_3DCanvasSource if it doesent exist laready
+    QWebView *webview = dynamic_cast<QWebView*>(widget);
+    if (webview)
+    {
+        EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
+        if (!ec_canvas_source)
+            entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::LocalOnly);
+        ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
+        if (ec_canvas_source)
+        {
+            QString url = webview->url().toString();
+            ec_canvas_source->source_.Set(url.toStdString(), Foundation::LocalOnly);
+            ec_canvas_source->manipulate_ec_3dcanvas = false;
+            ec_canvas_source->ComponentChanged(Foundation::LocalOnly);
+        }
+    }
 }
 
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)

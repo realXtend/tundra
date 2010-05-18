@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>267</height>
+    <width>463</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,6 +40,17 @@ QLabel {
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="widget_placeholder_layout"/>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
