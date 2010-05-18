@@ -42,14 +42,15 @@ namespace CoreUi
 
     // Public
 
-    void TeleportWidget::SetRegionNames(const std::vector<std::string> &region_names)
+    void TeleportWidget::SetMapBlocks(const QList<MapBlock> &map_blocks)
     {
         regionComboBox->clear();
-        if (region_names.size() > 0)
-        {
-            for(uint i = 0; i < region_names.size(); i++)
+        if (map_blocks.size() > 0)
+        {            
+            for(uint i = 0; i < map_blocks.size(); i++)
             {                
-                regionComboBox->addItem(QString::fromStdString(region_names[i]));
+                MapBlock block = map_blocks.at(i);
+                regionComboBox->addItem(QString::fromStdString(block.regionName));
             }
         }
         else
@@ -102,12 +103,11 @@ namespace CoreUi
 
     void TeleportWidget::Teleport()
     {  
-        QString start_location = regionComboBox->currentText();
-        if (start_location.isNull())
-            start_location = regionLineEdit->text();
+        QString start_location = regionLineEdit->text();
+        if (start_location.isEmpty())
+            start_location = regionComboBox->currentText();
 
-
-        if (start_location.isNull())
+        if (start_location.isEmpty())
         {
             return;
         }

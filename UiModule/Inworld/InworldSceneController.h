@@ -10,6 +10,7 @@
 #include <QList>
 #include <QRectF>
 
+#include "Inworld/ControlPanel/TeleportWidget.h"
 #include "ui_TeleportWidget.h"
 
 class QRectF;
@@ -43,8 +44,8 @@ namespace UiServices
         bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
 
         //! Adds received region names to TeleportWidget
-        //! \param region_names Region names to be added to widget
-        void SetTeleportWidget(const std::vector<std::string> &region_names);
+        //! \param map_blocks Requested map blocks to be added to widget
+        void SetTeleportWidget(const QList<CoreUi::MapBlock> &map_blocks);
 
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! Conviniance function if you dont want to bother and define your UiWidgetProperties.

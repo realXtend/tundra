@@ -17,7 +17,6 @@
 
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
-#include "Inworld/ControlPanel/TeleportWidget.h"
 
 #include <QRectF>
 #include <QGraphicsItem>
@@ -74,11 +73,11 @@ namespace UiServices
         return true;
     }
 
-    void InworldSceneController::SetTeleportWidget (const std::vector<std::string> &region_names)
+    void InworldSceneController::SetTeleportWidget (const QList<CoreUi::MapBlock> &map_blocks)
     {
-        if (region_names.size() > 0)
+        if (map_blocks.size() > 0)
         {
-            control_panel_manager_->GetTeleportWidget()->SetRegionNames(region_names);
+            control_panel_manager_->GetTeleportWidget()->SetMapBlocks(map_blocks);
         }
     }
 

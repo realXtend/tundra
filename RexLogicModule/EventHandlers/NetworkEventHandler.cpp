@@ -22,6 +22,7 @@
 #include "Communications/ScriptDialogRequest.h"
 #include <UiModule.h>
 #include <Inworld/InworldSceneController.h>
+#include <Inworld/ControlPanel/TeleportWidget.h>
 
 #include <OgreMaterialManager.h>
 
@@ -491,29 +492,33 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
-    std::string agent_id = msg.ReadUUID().ToString(); // ObjectID
+    RexUUID agent_id = msg.ReadUUID();
     uint32_t flags_ = msg.ReadU32();
 
-    std::vector<std::string> region_names;
+    QList<CoreUi::MapBlock> mapBlocks_;
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
 
     for(size_t i = 0; i < instance_count; ++i)
     {
-        msg.ReadU16();
-        msg.ReadU16();        
-        std::string region_name = msg.ReadString(); // ButtonLabel
-        msg.SkipToNextVariable(); //Access
-        msg.SkipToNextVariable(); //RegionFlags
-        msg.SkipToNextVariable(); //WaterHeight
-        msg.SkipToNextVariable(); //Agents
-        msg.SkipToNextVariable(); //MapNameID
-        region_names.push_back(region_name);
+
+        CoreUi::MapBlock block_;
+        block_.agentID = agent_id;
+        block_.flags = flags_;
+        block_.regionX = msg.ReadU16();
+        block_.regionY = msg.ReadU16();        
+        block_.regionName = msg.ReadString();
+        block_.access = msg.ReadU8();
+        block_.regionFlags = msg.ReadU32();
+        block_.waterHeight = msg.ReadU8();
+        block_.agents = msg.ReadU8();
+        block_.mapImageID = msg.ReadUUID();
+        mapBlocks_.append(block_);        
     }
 
     boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
     {
-        ui_module->GetInworldSceneController()->SetTeleportWidget(region_names);
+        ui_module->GetInworldSceneController()->SetTeleportWidget(mapBlocks_);
     }
 
     return false;

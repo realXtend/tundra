@@ -129,14 +129,6 @@ namespace CoreUi
                     action->RequestHide();
                 break;
             }
-            case UiDefines::Teleport:
-            {
-                ControlButtonAction *action = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
-                if (action)
-                    action->RequestHide();
-                break;
-
-            }
             default:
                 break;
         }
