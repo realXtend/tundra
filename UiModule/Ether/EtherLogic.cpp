@@ -86,7 +86,7 @@ namespace Ether
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_);
             // Create login handler
-            login_notifier_ = new EtherLoginNotifier(this, scene_controller_); 
+            login_notifier_ = new EtherLoginNotifier(this, scene_controller_, framework); 
             connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
                 login_notifier_, SLOT( ExitApplication() ));
 #endif
