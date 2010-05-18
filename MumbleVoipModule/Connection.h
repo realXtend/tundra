@@ -193,6 +193,7 @@ namespace MumbleVoip
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
         QMutex mutex_state_;
+//        QMutex mutex_celt_decoder_;
         
     signals:
         void StateChanged(State state);

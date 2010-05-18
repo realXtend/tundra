@@ -91,7 +91,7 @@ namespace MumbleVoip
     {
         // BlockingQueuedConnection for cross thread signaling
         QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::ConnectionType::BlockingQueuedConnection);
-        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::BlockingQueuedConnection);
+        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::QueuedConnection);
 
         InitializeCELT();
 
@@ -131,6 +131,8 @@ namespace MumbleVoip
         QMutexLocker locker2(&mutex_send_audio_);
         QMutexLocker locker3(&mutex_channels_);
         QMutexLocker locker4(&mutex_users_);
+
+        this->disconnect();
 
         Close();
         UninitializeCELT();
@@ -444,14 +446,14 @@ namespace MumbleVoip
         if (!receiving_audio_)
             return;
 
-        mutex_raw_udp_tunnel_.lock();
+        
+        if (!mutex_raw_udp_tunnel_.tryLock(10))
+            return;
         if (state_ != STATE_OPEN)
         {
             mutex_raw_udp_tunnel_.unlock();
             return;
         }
-        mutex_raw_udp_tunnel_.unlock();
-
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
 
@@ -510,11 +512,23 @@ namespace MumbleVoip
             data_stream >> position.x;
             position.x *= -1;
 
-            User* user = users_[session];
-            if (user)
-                QMutexLocker user_locker(user);
-                user->UpdatePosition(position);
+            QMutexLocker user_locker(&mutex_users_);
+            if (mutex_users_.tryLock(10))
+            {
+                User* user = users_[session];
+                if (user)
+                {
+                    if (!user->tryLock(100))
+                    {
+                        int ytest = 1;
+                    }
+                    QMutexLocker user_locker(user);
+                    user->UpdatePosition(position);
+                }
+                mutex_users_.unlock();
+            }
         }
+        mutex_raw_udp_tunnel_.unlock();
     }
 
     void Connection::CreateUserObject(const MumbleClient::User& mumble_user)
@@ -602,6 +616,7 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
+        QMutexLocker locker(&mutex_users_);
         if (state_ != STATE_OPEN)
             return;
         User* user = users_[session];
