@@ -85,6 +85,8 @@ namespace MumbleVoip
         //! @param pos the curren position of this user
         void UpdatePosition(Vector3df pos);
 
+        void StartUpdateTimer();
+
     private slots:
         void OnSpeakingTimeout();
         void CheckChannel();
@@ -115,7 +117,7 @@ namespace MumbleVoip
         void PositionUpdated();
 
         //! DOES NOT WORK !!!
-        void ChangedChannel();
+        void ChangedChannel(User* user);
     };
 
 } // namespace MumbleVoip

@@ -529,6 +529,7 @@ namespace MumbleVoip
         }
         User* user = new User(mumble_user, channel);
         user->moveToThread(this->thread());
+        
         emit UserObjectCreated(user);
     }
 
@@ -539,6 +540,7 @@ namespace MumbleVoip
         users_[user->Session()] = user;
         QString message = QString("User '%1' joined.").arg(user->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
+        user->StartUpdateTimer();
         emit UserJoinedToServer(user);
     }
 
@@ -600,6 +602,8 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
+        if (state_ != STATE_OPEN)
+            return;
         User* user = users_[session];
         if (!user)
         {
