@@ -91,7 +91,7 @@ namespace MumbleVoip
     {
         // BlockingQueuedConnection for cross thread signaling
         QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::ConnectionType::BlockingQueuedConnection);
-        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::QueuedConnection);
+//        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::QueuedConnection);
 
         InitializeCELT();
 
@@ -168,6 +168,7 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
+		QMutexLocker locker(&mutex_state_);
         if (state_ != STATE_CLOSED)
         {
             client_->SetRawUdpTunnelCallback(0);
@@ -186,6 +187,7 @@ namespace MumbleVoip
 
     void Connection::InitializeCELT()
     {
+		QMutexLocker locker(&mutex_state_);
         int error = 0;
         celt_mode_ = celt_mode_create(SAMPLE_RATE, SAMPLES_IN_FRAME, &error );
         if (error != 0)
@@ -445,13 +447,10 @@ namespace MumbleVoip
     {
         if (!receiving_audio_)
             return;
-
         
-        if (!mutex_raw_udp_tunnel_.tryLock(10))
-            return;
+		QMutexLocker locker(&mutex_raw_udp_tunnel_);
         if (state_ != STATE_OPEN)
         {
-            mutex_raw_udp_tunnel_.unlock();
             return;
         }
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
@@ -493,7 +492,7 @@ namespace MumbleVoip
             data_stream.skip(frame_size);
 
             if (frame_size > 0)
-                emit CELTFrameReceived(session, (unsigned char*)frame_data, frame_size);
+				HandleIncomingCELTFrame(session, (unsigned char*)frame_data, frame_size);
 	    }
         while (!last_frame && data_stream.isValid());
         if (!data_stream.isValid())
@@ -512,23 +511,18 @@ namespace MumbleVoip
             data_stream >> position.x;
             position.x *= -1;
 
-            QMutexLocker user_locker(&mutex_users_);
-            if (mutex_users_.tryLock(10))
+            //QMutexLocker user_locker(&mutex_users_);
+            if (mutex_users_.tryLock())
             {
                 User* user = users_[session];
                 if (user)
                 {
-                    if (!user->tryLock(100))
-                    {
-                        int ytest = 1;
-                    }
                     QMutexLocker user_locker(user);
                     user->UpdatePosition(position);
                 }
                 mutex_users_.unlock();
             }
         }
-        mutex_raw_udp_tunnel_.unlock();
     }
 
     void Connection::CreateUserObject(const MumbleClient::User& mumble_user)
@@ -616,10 +610,9 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
-        QMutexLocker locker(&mutex_users_);
-        if (state_ != STATE_OPEN)
-            return;
+		mutex_users_.lock();
         User* user = users_[session];
+		mutex_users_.unlock();
         if (!user)
         {
             QString message = QString("Audio frame from unknown user: %1").arg(session);
@@ -634,20 +627,17 @@ namespace MumbleVoip
         {
         case CELT_OK:
             {
-                User* user = users_[session];
-                if (user)
+                if (user->tryLock(5)) // 5 ms
                 {
-                    if (user->tryLock(5)) // 5 ms
-                    {
-                        user->AddToPlaybackBuffer(audio_frame);
-                        user->unlock();
-                        return;
-                    }
-                    else
-                    {
+                    user->AddToPlaybackBuffer(audio_frame);
+					QTimer::singleShot(User::SPEAKING_TIMEOUT_MS, user, SLOT(OnSpeakingTimeout()) );
+                    user->unlock();
+                    return;
+                }
+                else
+                {
 //                        user->NotifyAudioPacketDroped();
-                        MumbleVoipModule::LogWarning("Audio packet dropped: user locket");
-                    }
+                    MumbleVoipModule::LogWarning("Audio packet dropped: user locket");
                 }
             }
             break;
