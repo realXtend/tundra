@@ -229,6 +229,10 @@ namespace CoreUi
 
     void CommunicationWidget::mousePressEvent(QGraphicsSceneMouseEvent *mouse_press_event)
     {   
+        QWidget *w = widget()->childAt(mouse_press_event->pos().toPoint());
+        if (w != chatContentWidget)
+            scene()->clearFocus();
+
         resizing_horizontal_ = false;
         resizing_vertical_ = false;
         if (stacked_layout_->currentWidget() == history_view_text_edit_)
