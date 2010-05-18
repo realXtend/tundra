@@ -85,8 +85,8 @@ namespace MumbleVoip
             }
             state_ = STATE_OPEN;
 
-            connect(connection_, SIGNAL(UserJoined(User*)), SLOT(CreateNewParticipant(User*)) );
-            connect(connection_, SIGNAL(UserLeft(User*)), SLOT(UpdateUserList()) );
+            connect(connection_, SIGNAL(UserJoinedToServer(User*)), SLOT(CreateNewParticipant(User*)) );
+            connect(connection_, SIGNAL(UserLeftFromServer(User*)), SLOT(UpdateParticipantList()) );
 //            connections_[info.server] = connection;
             connection_->Join(server_info.channel);
             connection_->SendAudio(sending_audio_);
@@ -215,6 +215,7 @@ namespace MumbleVoip
 //                connection_manager_->Update(frametime);
             PlaybackReceivedAudio();
             SendRecordedAudio();
+
         }
 
         void Session::CreateNewParticipant(User* user)
@@ -231,7 +232,7 @@ namespace MumbleVoip
             QString uuid = user->Name();
             QString name = GetAvatarFullName(uuid);
             if (name.size() == 0)
-                name = QString("(Unknow) %0").arg(user->Name());
+                name = QString("%0 (no avatar)").arg(user->Name());
             Participant* p = new Participant(name, user);
             participants_.append(p);
             connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
@@ -265,17 +266,20 @@ namespace MumbleVoip
         void Session::OnUserStopSpeaking()
         {
             bool was_receiving_audio = receiving_audio_;
+            bool someone_speaking = false;
             foreach(Participant* p, participants_)
             {
                 if (p->IsSpeaking())
                 {
-                    receiving_audio_ = true;
+                    someone_speaking = true;
                     return;
                 }
             }
-            receiving_audio_ = false;
-            if (was_receiving_audio)
+            if (was_receiving_audio && !someone_speaking)
+            {
+                receiving_audio_ = false;
                 emit StopReceivingAudio();
+            }
         }
 
         void Session::UpdateSpeakerActivity(PCMAudioFrame* frame)

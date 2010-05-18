@@ -22,6 +22,7 @@
 #include <celt/celt_types.h>
 #include <celt/celt.h>
 #include "MemoryLeakCheck.h"
+#include <QMetaType>
 
 namespace MumbleVoip
 {
@@ -67,12 +68,12 @@ namespace MumbleVoip
 
     void UserJoinedCallback(const MumbleClient::User& user, Connection* connection)
     {
-        connection->Adduser(user);
+        connection->CreateUserObject(user);
     }
 
     void UserLeftCallback(const MumbleClient::User& user, Connection* connection)
     {
-        connection->RemoveUser(user);
+        connection->MarkUserLeft(user);
     }
 
     Connection::Connection(ServerInfo &info) :
@@ -88,6 +89,10 @@ namespace MumbleVoip
             state_(STATE_CONNECTING),
             send_position_(false)
     {
+        // BlockingQueuedConnection for cross thread signaling
+        QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::ConnectionType::BlockingQueuedConnection);
+        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::BlockingQueuedConnection);
+
         InitializeCELT();
 
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
@@ -486,7 +491,7 @@ namespace MumbleVoip
             data_stream.skip(frame_size);
 
             if (frame_size > 0)
-                HandleIncomingCELTFrame(session, (unsigned char*)frame_data, frame_size);
+                emit CELTFrameReceived(session, (unsigned char*)frame_data, frame_size);
 	    }
         while (!last_frame && data_stream.isValid());
         if (!data_stream.isValid())
@@ -512,43 +517,49 @@ namespace MumbleVoip
         }
     }
 
-    void Connection::Adduser(const MumbleClient::User& user)
+    void Connection::CreateUserObject(const MumbleClient::User& mumble_user)
     {
-        QMutexLocker locker(&mutex_users_);
-
-        AddChannel(*user.channel.lock().get());
-        Channel* channel = ChannelById(user.channel.lock()->id);
+        AddChannel(*mumble_user.channel.lock().get());
+        Channel* channel = ChannelById(mumble_user.channel.lock()->id);
         if (!channel)
         {
-            QString message = QString("Cannot create user '%1': Channel doesn't exist.").arg(QString(user.name.c_str()));
+            QString message = QString("Cannot create user '%1': Channel doesn't exist.").arg(QString(mumble_user.name.c_str()));
             MumbleVoipModule::LogWarning(message.toStdString());
             return;
         }
-        User* u = new User(user, channel);
-        users_[u->Session()] = u;
-        QString message = QString("User '%1' joined.").arg(u->Name());
-        MumbleVoipModule::LogDebug(message.toStdString());
-        emit UserJoined(u);
+        User* user = new User(mumble_user, channel);
+        user->moveToThread(this->thread());
+        emit UserObjectCreated(user);
     }
 
-    void Connection::RemoveUser(const MumbleClient::User& user)
+    void Connection::AddToUserList(User* user)
     {
         QMutexLocker locker(&mutex_users_);
 
-        if (!users_.contains(user.session))
+        users_[user->Session()] = user;
+        QString message = QString("User '%1' joined.").arg(user->Name());
+        MumbleVoipModule::LogDebug(message.toStdString());
+        emit UserJoinedToServer(user);
+    }
+
+    void Connection::MarkUserLeft(const MumbleClient::User& mumble_user)
+    {
+        QMutexLocker locker(&mutex_users_);
+
+        if (!users_.contains(mumble_user.session))
         {
-            QString message = QString("Unknow user '%1' Left.").arg(QString(user.name.c_str()));
+            QString message = QString("Unknow user '%1' Left.").arg(QString(mumble_user.name.c_str()));
             MumbleVoipModule::LogWarning(message.toStdString());
             return;
         }
 
-        User* u = users_[user.session];
-        QMutexLocker user_locker(u);
+        User* user = users_[mumble_user.session];
+        QMutexLocker user_locker(user);
 
-        QString message = QString("User '%1' Left.").arg(u->Name());
+        QString message = QString("User '%1' Left.").arg(user->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
-        u->SetLeft();
-        emit UserLeft(u);
+        user->SetLeft();
+        emit UserLeftFromServer(user);
     }
 
     QList<Channel*> Connection::ChannelList() 
@@ -666,4 +677,10 @@ namespace MumbleVoip
         }
         return false;
     }
+
+    void Connection::CheckChannels()
+    {
+
+    }
+
 } // namespace MumbleVoip 

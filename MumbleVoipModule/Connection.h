@@ -9,9 +9,6 @@
 #include <QMap>
 #include <QPair>
 #include "Core.h"
-//#include "CoreTypes.h"
-//#include "ServerInfo.h"
-//#include "stdint.h"
 #include "MumbleDefines.h"
 
 class QNetworkReply;
@@ -22,6 +19,7 @@ namespace MumbleClient
     class Channel;
     class User;
 }
+
 struct CELTMode;
 struct CELTEncoder;
 struct CELTDecoder;
@@ -125,6 +123,8 @@ namespace MumbleVoip
         //! @see GetState() to get state
         virtual QString GetReason() const;
 
+        virtual void CheckChannels();
+
     public slots:
 
         void SetAuthenticated();
@@ -145,10 +145,14 @@ namespace MumbleVoip
         void RemoveChannel(const MumbleClient::Channel& channel);
 
         //! Add user if it doesn't already exit
-        void Adduser(const MumbleClient::User& user);
+        void CreateUserObject(const MumbleClient::User& user);
 
         //! Remove user from user list if it exist
-        void RemoveUser(const MumbleClient::User& user);
+        void MarkUserLeft(const MumbleClient::User& user);
+
+    private slots:
+        void AddToUserList(User* user);
+        void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
 
     private:
         static const int AUDIO_QUALITY_MAX_ = 90000; 
@@ -159,7 +163,7 @@ namespace MumbleVoip
         void UninitializeCELT();
         CELTDecoder* CreateCELTDecoder();
         int AudioQuality();
-        void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
+
         bool CheckState(QList<State> allowed_states); // testing
 
         State state_;
@@ -195,13 +199,20 @@ namespace MumbleVoip
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
         //! emited when user left from server
-        void UserLeft(User* user);
+        void UserLeftFromServer(User* user);
         //! emited when user join to server
-        void UserJoined(User* user);
+        void UserJoinedToServer(User* user);
         void ChannelAdded(Channel* channel); 
         void ChannelRemoved(Channel* channel);
+
+        // private
+        void UserObjectCreated(User*);
+        void CELTFrameReceived(int session, unsigned char*data, int size);
+//        void UserPositionUpdated(User* user, Vector3df position)
     };
 
 } // namespace MumbleVoip
+
+//Q_DECLARE_METATYPE(MumbleClient::User)
 
 #endif // incl_MumbleVoipModule_Connection_h

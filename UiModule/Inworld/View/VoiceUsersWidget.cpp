@@ -32,7 +32,6 @@ namespace CommUI
 
     void VoiceUserWidget::UpdateStyleSheet()
     {
-		QString t = styleSheet();
         if (participant_->IsSpeaking())
         {
             thumbnailWidget->setStyleSheet("#thumbnailWidget {border: 0px; background-color: rgbs(0,0,0,0); background-image: url('./data/ui/images/comm/user_green.png'); background-position: top left; background-repeat: no-repeat;}");
