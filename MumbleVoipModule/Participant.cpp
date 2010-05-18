@@ -19,6 +19,7 @@ namespace MumbleVoip
             connect(user_, SIGNAL(StopReceivingAudio()), SLOT(OnStopSpeaking()) );
             connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
             connect(user_, SIGNAL(Left()), SLOT(OnUserLeft()) );
+//            connect(user_, SIGNAL(ChangedChannel()), SLOT((User)) );
         }
 
         Participant::~Participant()

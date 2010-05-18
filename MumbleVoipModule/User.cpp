@@ -27,8 +27,6 @@ namespace MumbleVoip
           received_voice_packet_count_(0),
           voice_packet_drop_count_(0)
     {
-        connect(&channel_update_timer_, SIGNAL(timeout()), SLOT(CheckChannel()) );
-        channel_update_timer_.start(1000);
         last_audio_frame_time_.start(); // initialize time state so that restart is possible later
     }
 
@@ -89,7 +87,7 @@ namespace MumbleVoip
         }
 
         playback_queue_.push_back(frame);
-        last_audio_frame_time_.restart(); // = QTime::currentTime();
+        last_audio_frame_time_.restart();
 
         if (!speaking_)
         {
@@ -151,9 +149,15 @@ namespace MumbleVoip
     {
         if (user_.channel.lock()->id != channel_->Id())
         {
-            emit ChangedChannel();
+            emit ChangedChannel(this);
         }
 
+    }
+
+    void User::StartUpdateTimer()
+    {
+        connect(&channel_update_timer_, SIGNAL(timeout()), SLOT(CheckChannel()) );
+        channel_update_timer_.start(1000);
     }
 
 } // namespace MumbleVoip
