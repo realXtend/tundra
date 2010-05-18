@@ -20,7 +20,7 @@ add_subdirectory (DebugStatsModule)
 add_subdirectory (PythonScriptModule)
 add_subdirectory (CommunicationModule) #will be splitted to several modules
 add_subdirectory (OpenALAudioModule)
-#add_subdirectory (ECEditorModule)
+add_subdirectory (ECEditorModule)
 #add_subdirectory (NoteCardModule)
 
 #add_subdirectory (JavascriptScriptModule)
