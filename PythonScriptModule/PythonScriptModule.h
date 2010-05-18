@@ -23,6 +23,8 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
+#include <QList>
+
 class EC_OpenSimPrim;
 
 namespace Foundation
@@ -84,6 +86,8 @@ namespace PythonScript
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
 
+        static void Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, QList<uint> submeshes, int refresh_rate);
+
         //Foundation::Framework* GetFramework() { return frameworkptr;  };//this still returns null or 0... WHY?
         //static Foundation::ScriptEventInterface* engineAccess;
 
@@ -108,8 +112,7 @@ namespace PythonScript
         InventoryPtr inventory;
 
     private:
-
-//        void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
+        //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
 
         PythonEnginePtr engine_;
         bool pythonqt_inited;
@@ -117,6 +120,7 @@ namespace PythonScript
         //basic feats
         void RunString(const char* codestr);
         void RunFile(const std::string &modulename);
+
         //void Reset();
 
         //a testing place
