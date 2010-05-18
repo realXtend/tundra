@@ -17,6 +17,11 @@ namespace Ogre
     class Light;
 }
 
+namespace UiServices
+{
+    class UiProxyWidget;
+}
+
 class QLineEdit;
 class QWidget;
 class QUrl;
@@ -48,6 +53,8 @@ public:
     //! Show as 2D when clicked
     Foundation::Attribute<bool> show2d_;
 
+    bool manipulate_ec_3dcanvas;
+
 public slots:
     void Clicked();
     //! Source text editor modified
@@ -66,6 +73,7 @@ private slots:
     void UpdateCanvas();
     void RepaintCanvas();
     void ChangeLanguage();
+    void FetchWebViewUrl();
     
 private:
     //! Constuctor.
@@ -84,6 +92,9 @@ private:
     
     //! Content placeholder widget
     QWidget* placeholder_widget_;
+
+    //! Content proxy for ui scene
+    UiServices::UiProxyWidget *proxy_;
     
     //! Source line editor
     QLineEdit* source_edit_;
