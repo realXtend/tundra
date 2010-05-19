@@ -314,19 +314,14 @@ if 0: #QVector3D
     print pointa.distanceToLine(pointb, direction)
     
 if 0: #QQuaterinion
-    #Works...
     import PythonQt.QtGui
     q1 = PythonQt.QtGui.QQuaternion(1, 0, 0, 1)
     q2 = PythonQt.QtGui.QQuaternion(0.707, 0, 0.707, 0)
-    print q1.toString(), q2.toString()
+    print q1, q2
     
-    #doesn't work
-    #q3 = q1*q2
-    #q1 *= q2
-    #but this does! (is the same thing, different syntax)
-    q1.__imul__(q2)
-    print q1.toString()
-    #~ print dir(q)
+    q3 = q1*q2
+    q1 *= q2
+    print q3, q1
 
 if 0:
     import PythonQt.QtCore
@@ -544,12 +539,9 @@ if 0: #test changing the mesh asset a prim is using
     r.sendRexPrimData(ent.id) #arkku
     print "..done", ent.mesh
     
-if 0: #testing vector3/quat wrapping 
-    #import PythonQt
-    #print PythonQt.__dict__.has_key("Core::Vector3df")
-    #Vector3 = PythonQt.__dict__["Core::Vector3df"]
+if 0: #old deprecated wrapper - testing vector3/quat wrapping 
     from PythonQt import *
-    from editgui.conversions import *
+    from objectedit.conversions import *
     
     print "Creating Vectors:"
     vec = Vector3df(0, 0, 0)
@@ -1138,15 +1130,15 @@ if 0:
     worldstream.SendObjectLinkPacket(ids)
     #~ worldstream.SendObjectDelinkPacket(ids)
 
-if 0:
+if 0: #position has a qvec3d prop of placeable component
     import PythonQt.QtGui
-    id = 2302910681
+    id = 2703563778
     ent = r.getEntity(id)
-    pos = PythonQt.QtGui.QVector3D(0, 0, 1)
-    print ent.placeable.Position.toString(), ent.placeable.Orientation.toString(), pos.toString()
-    ent.placeable.Position = ent.placeable.Position.__add__(pos)
+    changevec = PythonQt.QtGui.QVector3D(0, 0, 1)
+    print ent.placeable.Position, ent.placeable.Orientation, changevec
+    ent.placeable.Position = ent.placeable.Position + changevec
     
-    print ent.placeable.Position.toString(), ent.placeable.Orientation.toString(), pos.toString()
+    print ent.placeable.Position, ent.placeable.Orientation, changevec
     r.networkUpdate(id)
 
 if 0:
