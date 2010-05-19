@@ -162,7 +162,8 @@ else
     qmake
     make
     cp lib/lib* $prefix/lib/
-    cp src/qt*.h src/QtProperty $prefix/include/
+    # luckily only extensionless headers under src match Qt*:
+    cp src/qt*.h src/Qt* $prefix/include/
     touch $tags/$what-done
 fi
 
