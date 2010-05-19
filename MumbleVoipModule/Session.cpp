@@ -28,7 +28,6 @@ namespace MumbleVoip
 {
     namespace InWorldVoice
     {
-
         double Session::AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
 
         Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
@@ -41,21 +40,11 @@ namespace MumbleVoip
             audio_sending_enabled_(false),
             audio_receiving_enabled_(true),
             speaker_voice_activity_(0),
-//            connection_manager_(new ConnectionManager(framework)),
             server_info_(server_info),
             connection_(0)
         {
             channel_name_ = server_info.channel;
             OpenConnection(server_info);
-            
-
-            //connection_manager_->OpenConnection(server_info);
-            //if (connection_manager_->GetState() != ConnectionManager::STATE_CONNECTION_OPEN)
-            //{
-            //    state_ = STATE_ERROR;
-            //    reason_ = connection_manager_->GetReason();
-            //    return;
-            //}
         }
 
         Session::~Session()
@@ -87,7 +76,6 @@ namespace MumbleVoip
 
             connect(connection_, SIGNAL(UserJoinedToServer(User*)), SLOT(CreateNewParticipant(User*)) );
             connect(connection_, SIGNAL(UserLeftFromServer(User*)), SLOT(UpdateParticipantList()) );
-//            connections_[info.server] = connection;
             connection_->Join(server_info.channel);
             connection_->SendAudio(sending_audio_);
             connection_->SetEncodingQuality(AUDIO_QUALITY_);
@@ -212,14 +200,21 @@ namespace MumbleVoip
 
         void Session::Update(f64 frametime)
         {
-//                connection_manager_->Update(frametime);
             PlaybackReceivedAudio();
             SendRecordedAudio();
-
         }
 
         void Session::CreateNewParticipant(User* user)
         {
+            foreach(Participant* p, participants_)
+            {
+                if (p->UserPtr() == user)
+                    return;
+            }
+            
+            disconnect(user, SIGNAL(ChangedChannel(User*)),this, SLOT(CheckChannel(User*)));    
+            connect(user, SIGNAL(ChangedChannel(User*)), SLOT(CheckChannel(User*)));
+
             if (user->Name() == OwnAvatarId())
             {
                 self_user_ = user;
@@ -227,7 +222,10 @@ namespace MumbleVoip
             }
 
             if (user->Channel()->FullName() != channel_name_)
+            {
+                other_channel_users_.append(user);
                 return; 
+            }
 
             QString uuid = user->Name();
             QString name = GetAvatarFullName(uuid);
@@ -242,6 +240,32 @@ namespace MumbleVoip
             emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
         }
 
+        void Session::CheckChannel(User* user)
+        {
+            if (user->Channel()->FullName() == channel_name_)
+            {
+                foreach(User* u, other_channel_users_)
+                {
+                    if (u == user)
+                        other_channel_users_.removeOne(u);
+                }
+                CreateNewParticipant(user);
+                return;
+            }
+            else
+            {
+                foreach(Participant* p, participants_)
+                {
+                    if (p->UserPtr() == user)
+                    {
+                        participants_.removeOne(p);
+                        left_participants_.push_back(p);
+                        emit ParticipantLeft(p);
+                    }
+                }
+            }
+        }
+
         void Session::UpdateParticipantList()
         {
             foreach(Participant* p, participants_)
@@ -249,7 +273,7 @@ namespace MumbleVoip
                 if (p->UserPtr()->IsLeft())
                 {
                     participants_.removeOne(p);
-                    left_participants_.push_back(p);
+                    other_channel_users_.append(p->UserPtr());
                     emit ParticipantLeft(p);
                 }
             }

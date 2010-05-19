@@ -123,6 +123,9 @@ namespace MumbleVoip
         }
         state_ = STATE_AUTHENTICATING;
         emit StateChanged(state_);
+
+        connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
+        user_update_timer_.start(1000);
     }
 
     Connection::~Connection()
@@ -545,7 +548,7 @@ namespace MumbleVoip
             return;
         }
         User* user = new User(mumble_user, channel);
-        user->moveToThread(this->thread());
+        user->moveToThread(this->thread()); //! @todo Do we need this?
         
         emit UserObjectCreated(user);
     }
@@ -557,7 +560,6 @@ namespace MumbleVoip
         users_[user->Session()] = user;
         QString message = QString("User '%1' joined.").arg(user->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
-        user->StartUpdateTimer();
         emit UserJoinedToServer(user);
     }
 
@@ -639,7 +641,6 @@ namespace MumbleVoip
                 if (user->tryLock(5)) // 5 ms
                 {
                     user->AddToPlaybackBuffer(audio_frame);
-					QTimer::singleShot(User::SPEAKING_TIMEOUT_MS, user, SLOT(OnSpeakingTimeout()) );
                     user->unlock();
                     return;
                 }
@@ -696,9 +697,16 @@ namespace MumbleVoip
         return false;
     }
 
-    void Connection::CheckChannels()
+    void Connection::UpdateUserStates()
     {
-
+        QMutexLocker locker(&mutex_users_);
+        foreach(User* user, users_)
+        {
+            QMutexLocker user_locker(user);
+            user->CheckSpeakingState();
+            Channel* channel = ChannelById(user->CurrentChannelID());
+            user->SetChannel(channel);
+        }
     }
 
 } // namespace MumbleVoip 

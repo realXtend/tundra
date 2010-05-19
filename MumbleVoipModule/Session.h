@@ -79,6 +79,7 @@ namespace MumbleVoip
             bool audio_receiving_enabled_;
             ParticipantList participants_;
             ParticipantList left_participants_;
+            QList<User*> other_channel_users_;
             Connection* connection_; // // In future session could have multiple connections
             double speaker_voice_activity_;
             const ServerInfo &server_info_;
@@ -93,6 +94,7 @@ namespace MumbleVoip
             void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
             void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus
             void UpdateSpeakerActivity(PCMAudioFrame*);
+            void CheckChannel(User*);
         };
 
     } // InWorldVoice
