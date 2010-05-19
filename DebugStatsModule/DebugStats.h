@@ -58,7 +58,7 @@ namespace DebugStats
         /// Name of this module.
         static const std::string ModuleName;
 
-public slots:
+    public slots:
         /// Creates and shows the profiling window.
         Console::CommandResult ShowProfilingWindow(const StringVector &params);
 
@@ -73,6 +73,12 @@ public slots:
 
         /// Sends random NetOutMessage packet
         Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
+
+        /// Sends packet requesting god powers.
+        Console::CommandResult RequestGodMode(const StringVector &params);
+
+        /// Sends packet requesting kicking user out from the server.
+        Console::CommandResult KickUser(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
@@ -99,6 +105,9 @@ public slots:
 
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr current_world_stream_;
+
+        /// Is god mode on.
+        bool godMode_;
     };
 }
 
