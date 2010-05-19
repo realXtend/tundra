@@ -9,6 +9,8 @@
 #include <QString>
 #include <QWebFrame>
 
+#include "UiModuleApi.h"
+
 namespace Foundation
 {
     class Framework;
@@ -40,7 +42,7 @@ namespace Ether
             void EmitTaigaLogin(QWebFrame *web_frame);
             void EmitTaigaLogin(QString url);
             void ExitApplication();
-            void Teleport(QString start_location);
+            UI_MODULE_API void Teleport(QString start_location);
 
         private:
             EtherSceneController *scene_controller_;
