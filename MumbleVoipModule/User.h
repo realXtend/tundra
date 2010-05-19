@@ -27,8 +27,6 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        static const int SPEAKING_TIMEOUT_MS = 100; // time to emit StopSpeaking after las audio packet is received
-
         //! Default constructor
         //! @param user
         //! @param channel The channel where the user are located
@@ -76,6 +74,10 @@ namespace MumbleVoip
 
         virtual double VoicePacketDropRatio() const;
 
+        //! @return actual channel id of this user. This can be different than channel id
+        //!         of channel object returned by Channel() method call.
+        virtual int CurrentChannelID() const; 
+
     public slots:
         //! Put audio frame to end of playback buffer 
         //! If playback buffer is full it is cleared first.
@@ -87,26 +89,26 @@ namespace MumbleVoip
         //! @param pos the curren position of this user
         void UpdatePosition(Vector3df pos);
 
-        void StartUpdateTimer();
+        void CheckSpeakingState();
 
-    private slots:
-        void OnSpeakingTimeout();
-        void CheckChannel();
+        void SetChannel(MumbleVoip::Channel* channel);
 
     private:
+        static const int SPEAKING_TIMEOUT_MS = 100; // time to emit StopSpeaking after las audio packet is received
+        static const int PLAYBACK_BUFFER_MAX_LENGTH_MS_= 200;
+
         const MumbleClient::User& user_;
         bool speaking_;
         Vector3df position_;
         bool position_known_;
 
-        static const int PLAYBACK_BUFFER_MAX_LENGTH_MS_= 200;
         QList<PCMAudioFrame*> playback_queue_;
         bool left_;
         MumbleVoip::Channel* channel_;
         int received_voice_packet_count_;
         int voice_packet_drop_count_;
-        QTimer channel_update_timer_;
-        QTimer timer_;
+        //QTimer channel_update_timer_;
+        //QTimer timer_;
         QTime last_audio_frame_time_;
 
     signals:
@@ -119,7 +121,6 @@ namespace MumbleVoip
 
         void PositionUpdated();
 
-        //! DOES NOT WORK !!!
         void ChangedChannel(User* user);
     };
 

@@ -93,22 +93,6 @@ namespace MumbleVoip
         {
             speaking_ = true;
             emit StartReceivingAudio();
-//            QTimer::singleShot(SPEAKING_TIMEOUT_MS, this, SLOT(OnSpeakingTimeout()) );
-        }
-    }
-
-    void User::OnSpeakingTimeout()
-    {
-        if (speaking_)
-        {
-            if (last_audio_frame_time_.elapsed() < SPEAKING_TIMEOUT_MS)
-            {
-                int time_ms = std::max(10, SPEAKING_TIMEOUT_MS - last_audio_frame_time_.elapsed());
-                QTimer::singleShot(time_ms, this, SLOT(OnSpeakingTimeout()) );
-                return;
-            }
-            speaking_ = false;
-            emit StopReceivingAudio();
         }
     }
 
@@ -145,19 +129,30 @@ namespace MumbleVoip
         return static_cast<double>(voice_packet_drop_count_)/received_voice_packet_count_;
     }
 
-    void User::CheckChannel()
+    void User::CheckSpeakingState()
     {
-        if (user_.channel.lock()->id != channel_->Id())
-        {
-            emit ChangedChannel(this);
-        }
+        bool was_speaking = speaking_;
 
+        if (speaking_ && last_audio_frame_time_.elapsed() > SPEAKING_TIMEOUT_MS)
+        {
+            speaking_ = false;
+            if (was_speaking && !speaking_)
+                emit StopReceivingAudio();
+        }
     }
 
-    void User::StartUpdateTimer()
+    void User::SetChannel(MumbleVoip::Channel* channel)
     {
-        connect(&channel_update_timer_, SIGNAL(timeout()), SLOT(CheckChannel()) );
-        channel_update_timer_.start(1000);
+        if (channel_ != channel)
+        {
+            channel_ = channel;
+            emit ChangedChannel(this);
+        }
+    }
+
+    int User::CurrentChannelID() const
+    {
+        return user_.channel.lock()->id;
     }
 
 } // namespace MumbleVoip

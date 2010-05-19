@@ -8,6 +8,7 @@
 #include <QMutex>
 #include <QMap>
 #include <QPair>
+#include <QTimer>
 #include "Core.h"
 #include "MumbleDefines.h"
 
@@ -123,8 +124,6 @@ namespace MumbleVoip
         //! @see GetState() to get state
         virtual QString GetReason() const;
 
-        virtual void CheckChannels();
-
     public slots:
 
         void SetAuthenticated();
@@ -153,6 +152,7 @@ namespace MumbleVoip
     private slots:
         void AddToUserList(User* user);
         void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
+        void UpdateUserStates();
 
     private:
         static const int AUDIO_QUALITY_MAX_ = 90000; 
@@ -178,13 +178,14 @@ namespace MumbleVoip
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
 
+        unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
         bool authenticated_;
         bool sending_audio_;
         bool receiving_audio_;
+        bool send_position_;
         double encoding_quality_;
         int frame_sequence_;
-        bool send_position_;
-        unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
+        QTimer user_update_timer_;
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
@@ -203,6 +204,7 @@ namespace MumbleVoip
         void UserLeftFromServer(User* user);
         //! emited when user join to server
         void UserJoinedToServer(User* user);
+//        void UserJoinedToChannel(User* user);
         void ChannelAdded(Channel* channel); 
         void ChannelRemoved(Channel* channel);
 
