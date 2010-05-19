@@ -54,6 +54,7 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
+
     template<> void ECAttributeEditor<Real>::UpdateEditorValue()
     {
         QtDoublePropertyManager *realPropertyManager = dynamic_cast<QtDoublePropertyManager *>(propertyMgr_);
@@ -63,7 +64,65 @@ namespace ECEditor
         }
     }
 
-    template<> virtual void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<bool>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *boolPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(property_ && attribute_)
+        {
+            boolPropertyManager->setValue(property_, attribute_->Get());
+        }
+    }
+
+    template<> void ECAttributeEditor<int>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *intPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(property_ && attribute_)
+        {
+            intPropertyManager->setValue(property_, attribute_->Get());
+        }
+    }
+
+    template<> void ECAttributeEditor<Vector3df>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(property_ && attribute_)
+        {
+            QList<QtProperty *> children = property_->subProperties();
+            if(children.size() >= 3)
+            {
+                Vector3df vectorValue = GetValue();
+                variantManager->setValue(children[0], vectorValue.x);
+                variantManager->setValue(children[1], vectorValue.y);
+                variantManager->setValue(children[2], vectorValue.z);
+            }
+        }
+    }
+
+    template<> void ECAttributeEditor<Color>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(property_ && attribute_)
+        {
+            QList<QtProperty *> children = property_->subProperties();
+            if(children.size() >= 4)
+            {
+                Color colorValue = GetValue();
+                variantManager->setValue(children[0], colorValue.r * 255);
+                variantManager->setValue(children[1], colorValue.g * 255);
+                variantManager->setValue(children[2], colorValue.b * 255);
+                variantManager->setValue(children[3], colorValue.a * 255);
+            }
+        }
+    }
+
+    template<> void ECAttributeEditor<std::string>::UpdateEditorValue()
+    {
+        QtVariantPropertyManager *qStringPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if (property_ && attribute_)
+            qStringPropertyManager->setValue(property_, attribute_->Get().c_str());
+    }
+
+    template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -88,16 +147,7 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
-    template<> void ECAttributeEditor<bool>::UpdateEditorValue()
-    {
-        QtVariantPropertyManager *boolPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if(property_ && attribute_)
-        {
-            boolPropertyManager->setValue(property_, attribute_->Get());
-        }
-    }
-
-    template<> virtual void ECAttributeEditor<bool>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<bool>::SendNewValueToAttribute(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -124,16 +174,8 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
-    template<> void ECAttributeEditor<int>::UpdateEditorValue()
-    {
-        QtVariantPropertyManager *intPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if(property_ && attribute_)
-        {
-            intPropertyManager->setValue(property_, attribute_->Get());
-        }
-    }
 
-    template<> virtual void ECAttributeEditor<int>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<int>::SendNewValueToAttribute(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -167,23 +209,7 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
-    template<> void ECAttributeEditor<Vector3df>::UpdateEditorValue()
-    {
-        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if(property_ && attribute_)
-        {
-            QList<QtProperty *> children = property_->subProperties();
-            if(children.size() >= 3)
-            {
-                Vector3df vectorValue = GetValue();
-                variantManager->setValue(children[0], vectorValue.x);
-                variantManager->setValue(children[1], vectorValue.y);
-                variantManager->setValue(children[2], vectorValue.z);
-            }
-        }
-    }
-
-    template<> virtual void ECAttributeEditor<Vector3df>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<Vector3df>::SendNewValueToAttribute(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -232,24 +258,7 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
-    template<> void ECAttributeEditor<Color>::UpdateEditorValue()
-    {
-        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if(property_ && attribute_)
-        {
-            QList<QtProperty *> children = property_->subProperties();
-            if(children.size() >= 4)
-            {
-                Color colorValue = GetValue();
-                variantManager->setValue(children[0], colorValue.r * 255);
-                variantManager->setValue(children[1], colorValue.g * 255);
-                variantManager->setValue(children[2], colorValue.b * 255);
-                variantManager->setValue(children[3], colorValue.a * 255);
-            }
-        }
-    }
-
-    template<> virtual void ECAttributeEditor<Color>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<Color>::SendNewValueToAttribute(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -288,14 +297,7 @@ namespace ECEditor
         owner_->addProperty(property_);
     }
 
-    template<> void ECAttributeEditor<std::string>::UpdateEditorValue()
-    {
-        QtVariantPropertyManager *qStringPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if (property_ && attribute_)
-            qStringPropertyManager->setValue(property_, attribute_->Get().c_str());
-    }
-
-    template<> virtual void ECAttributeEditor<std::string>::SendNewValueToAttribute(QtProperty *property)
+    template<> void ECAttributeEditor<std::string>::SendNewValueToAttribute(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
             SetValue(property->valueText().toStdString());
