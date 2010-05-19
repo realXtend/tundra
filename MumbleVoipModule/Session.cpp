@@ -242,6 +242,9 @@ namespace MumbleVoip
 
         void Session::CheckChannel(User* user)
         {
+            if (user->IsLeft())
+                return;
+
             if (user->Channel()->FullName() == channel_name_)
             {
                 foreach(User* u, other_channel_users_)

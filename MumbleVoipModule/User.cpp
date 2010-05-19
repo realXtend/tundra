@@ -152,7 +152,13 @@ namespace MumbleVoip
 
     int User::CurrentChannelID() const
     {
-        return user_.channel.lock()->id;
+        if (left_)
+            return -1;
+        boost::shared_ptr<MumbleClient::Channel> mumble_channel = user_.channel.lock();
+        if (mumble_channel)
+            return user_.channel.lock()->id;
+        else
+            return -1;
     }
 
 } // namespace MumbleVoip
