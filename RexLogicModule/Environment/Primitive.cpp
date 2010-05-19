@@ -817,9 +817,11 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
         /// client has selected?
 
         // Send the 'Entity Selected' event.
+        /*
         event_category_id_t event_category_id = rexlogicmodule_->GetFramework()->GetEventManager()->QueryEventCategory("Scene");
         Scene::Events::SceneEventData event_data(prim->LocalId);
         rexlogicmodule_->GetFramework()->GetEventManager()->SendEvent(event_category_id, Scene::Events::EVENT_ENTITY_SELECTED, &event_data);
+        */
     }
     else
         RexLogicModule::LogInfo("Received 'ObjectProperties' packet for unknown entity (" + full_id.ToString() + ").");
@@ -854,8 +856,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
         
         // Attach to animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim =
-            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)
             anim->SetMeshEntity(meshptr);
         
@@ -914,7 +915,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = 
+        OgreRenderer::EC_OgreAnimationController* anim =
             entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)
             anim->SetMeshEntity(Foundation::ComponentPtr());

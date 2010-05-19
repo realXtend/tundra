@@ -51,6 +51,9 @@ namespace ECEditor
         /// Adds new entity to the entity list.
         void AddEntity(entity_id_t entity_id);
 
+        /// Removes entity from the entity list.
+        void RemoveEntity(entity_id_t entity_id);
+
         /// Clears entity list.
         void ClearEntities();
 

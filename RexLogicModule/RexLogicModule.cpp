@@ -45,8 +45,6 @@
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "UiModule.h"
-
-// Ogre -specific
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
@@ -67,7 +65,6 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
 #include "EC_3DCanvas.h"
-#include "EC_3DCanvasSource.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -75,7 +72,6 @@
 #include <OgreEntity.h>
 #include <OgreBillboard.h>
 #include <OgreBillboardSet.h>
-#include "RenderServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -123,7 +119,6 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_Touchable);
     DECLARE_MODULE_EC(EC_3DCanvas);
-    DECLARE_MODULE_EC(EC_3DCanvasSource);
 }
 
 // virtual
@@ -172,7 +167,6 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
-
 
     // Action events.
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
@@ -441,8 +435,6 @@ void RexLogicModule::Update(f64 frametime)
             
         }
     }
-
-
     RESETPROFILER;
 }
 
@@ -460,7 +452,10 @@ bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t eve
 
 Scene::EntityPtr RexLogicModule::GetUserAvatarEntity() const
 {
-    return avatar_->GetUserAvatar();
+    if (!GetServerConnection()->IsConnected())
+        return Scene::EntityPtr();
+
+    return GetAvatarEntity(GetServerConnection()->GetInfo().agentID);
 }
 
 Scene::EntityPtr RexLogicModule::GetCameraEntity() const
@@ -929,13 +924,11 @@ bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::Event
     return avatar_->HandleInventoryEvent(event_id, data);
 }
 
-
 bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
 }
-
 
 void RexLogicModule::AboutToDeleteWorld()
 {
@@ -1006,41 +999,25 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     if (!current_scene.get() || !users_avatar.get())
         return;
 
-    // Iterate all avatars to a list
-    QList<Scene::EntityPtr> all_avatars;
-    Scene::SceneManager::iterator iter = current_scene->begin();
-    Scene::SceneManager::iterator end = current_scene->end();
-    while (iter != end)
-    {
-        Scene::EntityPtr entity = (*iter);
-        ++iter;
-        if (!entity.get() /*|| entity.get() == users_avatar.get()*/)
-            continue;
-        if (entity->GetComponent<EC_OpenSimPresence>().get())
-            all_avatars.append(entity);
-    }
+    Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
 
     // Get users position
     boost::shared_ptr<EC_HoveringWidget> widget;
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if (!placable.get())
+    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if (!placeable)
         return;
 
     Vector3Df camera_position = this->GetCameraPosition();
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
-        placable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         widget = avatar->GetComponent<EC_HoveringWidget>();
-
-        if (!placable.get() || !widget.get())
+        if (!placeable || !widget)
             continue;
 
-
-        f32 distance = camera_position.getDistanceFrom(placable->GetPosition());
+        f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
     }
-
-
 }
 
 void RexLogicModule::EntityClicked(Scene::Entity* entity)
@@ -1049,16 +1026,116 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();*/
 
-    /*boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
-        info_icon->EntityClicked();*/
-        
-    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-    if (canvas_source)
-        canvas_source->Clicked();
+        info_icon->EntityClicked();
 }
 
+bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
+{
+    bool ret_val = false;
+    QList<EC_HoveringWidget*> visible_widgets;
 
+    Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
+    Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
+
+    //expand to range -1 -> 1
+    scr_x = (scr_x*2)-1;
+    scr_y = (scr_y*2)-1;
+
+    //divert y because after view/projection transforms, y increses upwards
+    scr_y = -scr_y;
+
+    OgreRenderer::EC_OgreCamera * camera;
+
+    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+    if (!current_scene.get())
+        return ret_val;
+
+    Scene::SceneManager::iterator iter = current_scene->begin();
+    Scene::SceneManager::iterator end = current_scene->end();
+    while (iter != end)
+    {
+        Scene::EntityPtr entity = (*iter);
+        EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+        OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        if (c)
+            camera = c;
+
+        if (widget && widget->IsVisible())
+            visible_widgets.append(widget);
+
+        ++iter;
+    }
+
+    if (!camera)
+        return false;
+
+    Ogre::Vector3 nearest_world_pos(Ogre::Vector3::ZERO);
+    QRectF nearest_rect;
+    Ogre::Vector3 cam_pos = camera->GetCamera()->getDerivedPosition();
+    EC_HoveringWidget* nearest_widget = 0;
+    for(int i=0; i< visible_widgets.size();i++)
+    {
+        Ogre::Matrix4 worldmat;
+        Ogre::Vector3 world_pos;
+        EC_HoveringWidget* widget = visible_widgets.at(i);
+        if(!widget)
+            continue;
+        Ogre::BillboardSet* bbset = widget->GetButtonsBillboardSet();
+        Ogre::Billboard* board = widget->GetButtonsBillboard();
+        if(!bbset || !board)
+            continue;
+        QSizeF scr_size = widget->GetButtonsBillboardScreenSpaceSize();
+        Ogre::Vector3 pos = board->getPosition();
+
+        bbset->getWorldTransforms(&worldmat);
+        pos = worldmat*pos;
+        world_pos = pos;
+        pos = camera->GetCamera()->getViewMatrix()*pos;
+        pos = camera->GetCamera()->getProjectionMatrix()*pos;
+
+        QRectF rect(pos.x - scr_size.width()*0.5, pos.y - scr_size.height()*0.5, scr_size.width(), scr_size.height());
+        if (rect.contains(scr_x, scr_y))
+        {
+            if (nearest_widget!=0)
+                if ((world_pos-cam_pos).length() > (nearest_world_pos-cam_pos).length())
+                    continue;
+
+            nearest_world_pos = world_pos;
+            nearest_rect = rect;
+            nearest_widget = widget;
+        }
+    }
+
+    //check if entity is between the board and mouse
+    if (result->entity_)
+    {
+        Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+        //if true, the entity is closer to camera
+        if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
+        {
+            EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
+            if (widget)
+                widget->EntityClicked();
+            return ret_val;
+        }
+    }
+
+    if (nearest_widget)
+    {
+        scr_x -=nearest_rect.left();
+        scr_y -=nearest_rect.top();
+
+        scr_x /= nearest_rect.width();
+        scr_y /= nearest_rect.height();
+
+        nearest_widget->WidgetClicked(scr_x, 1-scr_y);
+        ret_val = true;
+    }
+
+    return ret_val;
+}
 
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
 {
@@ -1103,7 +1180,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
     {
         LogoutAndDeleteWorld();
         return Console::ResultSuccess();
-    } 
+    }
     else
     {
         return Console::ResultFailure("Not connected to server.");
@@ -1160,126 +1237,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     return Console::ResultSuccess();
 }
 
-bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
-    {
-        bool ret_val = false;
-        QList<EC_HoveringWidget*> visible_widgets;
-
-        Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
-        Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
-
-        //expand to range -1 -> 1
-        scr_x = (scr_x*2)-1;
-        scr_y = (scr_y*2)-1;
-
-        //divert y because after view/projection transforms, y increses upwards
-        scr_y = -scr_y;
-
-        OgreRenderer::EC_OgreCamera * camera;
-        
-
-        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (!current_scene.get())
-            return ret_val;
-
-        Scene::SceneManager::iterator iter = current_scene->begin();
-        Scene::SceneManager::iterator end = current_scene->end();
-
-        while (iter != end)
-        {
-            Scene::EntityPtr entity = (*iter);
-            ++iter;
-            if (!entity.get())
-                continue;
-
-            EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-            OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-            if(c)
-            {
-                camera = c;
-            }
-            if(widget && widget->IsVisible())
-                visible_widgets.append(widget);
-        }
-        if(!camera)
-        {
-            return false;
-        }
-  
-        Ogre::Vector3 nearest_world_pos(Ogre::Vector3::ZERO);
-        QRectF nearest_rect;
-        Ogre::Vector3 cam_pos = camera->GetCamera()->getDerivedPosition();
-        EC_HoveringWidget* nearest_widget = 0;
-        for(int i=0; i< visible_widgets.size();i++)
-        {
-            Ogre::Matrix4 worldmat;
-            Ogre::Vector3 world_pos;
-            EC_HoveringWidget* widget = visible_widgets.at(i);
-            if(!widget)
-                continue;
-            Ogre::BillboardSet* bbset = widget->GetButtonsBillboardSet();
-            Ogre::Billboard* board = widget->GetButtonsBillboard();
-            if(!bbset || !board)
-                continue;
-            QSizeF scr_size = widget->GetButtonsBillboardScreenSpaceSize();
-            Ogre::Vector3 pos = board->getPosition();
-            
-            
-            
-            bbset->getWorldTransforms(&worldmat);
-            pos = worldmat*pos;
-            world_pos = pos;
-            pos = camera->GetCamera()->getViewMatrix()*pos;
-            pos = camera->GetCamera()->getProjectionMatrix()*pos;
-            
-            QRectF rect(pos.x - scr_size.width()*0.5, pos.y - scr_size.height()*0.5, scr_size.width(), scr_size.height());
-
-          
-            if(rect.contains(scr_x, scr_y))
-            {
-                if(nearest_widget!=0)
-                {
-                    if((world_pos-cam_pos).length() > (nearest_world_pos-cam_pos).length())
-                    {
-                        continue;
-                    }
-                }
-                nearest_world_pos = world_pos;
-                nearest_rect = rect;
-                nearest_widget = widget;
-            }
-        }
-
-        //check if entity is between the board and mouse
-        if(result->entity_)
-        {
-            Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
-            //if true, the entity is closer to camera
-            if(Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
-            {
-                EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
-                if(widget)
-                    widget->EntityClicked();
-                return ret_val;
-            }
-        }
-        if(nearest_widget)
-        {
-
-            scr_x -=nearest_rect.left();
-            scr_y -=nearest_rect.top();
-
-            scr_x /= nearest_rect.width();
-            scr_y /= nearest_rect.height();
-
-            nearest_widget->WidgetClicked(scr_x, 1-scr_y);
-            ret_val = true;
-        }
-
-        return ret_val;
-    }
-
-} // namespace RexLogic
+}
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

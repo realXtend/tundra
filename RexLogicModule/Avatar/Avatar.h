@@ -26,6 +26,7 @@ namespace RexLogic
 {
     class RexLogicModule;
 
+    ///\todo Remove REXLOGIC_MODULE_API
     class REXLOGIC_MODULE_API Avatar
     {
     public:
@@ -83,7 +84,7 @@ namespace RexLogic
         void HandleLogout();
 
         //! Returns user's avatar
-        Scene::EntityPtr GetUserAvatar();
+        Scene::EntityPtr GetUserAvatar() const;
 
         //! Returns whether export avatar currently supported
         bool AvatarExportSupported();
@@ -98,9 +99,6 @@ namespace RexLogic
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
 
     private:
-        //! Owner module.
-        RexLogicModule *owner_;
-
         /*! Returns entity pointer to an avatar entity. If the entity doesn't exist,
             an entity with the given entityid and fullid is created and returned.
             The entity is guaranteed to have EC_OpenSimAvatar and EC_OpenSimPresence components.
@@ -139,6 +137,9 @@ namespace RexLogic
 
         //! Sets avatar state
         void SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state);
+
+        //! Owner module.
+        RexLogicModule *owner_;
 
         //! Avatar state map
         typedef std::map<RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;

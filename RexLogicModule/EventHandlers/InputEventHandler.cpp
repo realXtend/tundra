@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EventHandlers/InputEventHandler.h"
+#include "InputEventHandler.h"
 #include "InputEvents.h"
 #include "RexLogicModule.h"
 #include "InputServiceInterface.h"
@@ -32,29 +32,37 @@ InputEventHandler::~InputEventHandler()
 
 bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    if (event_id == Input::Events::SWITCH_CAMERA_STATE)
+    using namespace Input;
+
+    switch(event_id)
+    {
+    case Events::SWITCH_CAMERA_STATE:
     {
         if (owner_->GetServerConnection()->IsConnected())
             owner_->SwitchCameraState();
-        return false;
+        break;
     }
-
-    if (event_id == Input::Events::MOUSEMOVE)
+    case Events::MOUSEMOVE:
     {
         if (owner_->GetServerConnection()->IsConnected())
         {
-            Input::Events::Movement *move= checked_static_cast<Input::Events::Movement*>(data);
+            Events::Movement *move= checked_static_cast<Events::Movement*>(data);
             assert(move);
             lastMousePosition_.first = move->x_.abs_;
             lastMousePosition_.second = move->y_.abs_;
         }
+        break;
     }
-    if(event_id == Input::Events::INWORLD_CLICK)
+    case Events::INWORLD_CLICK:
     {
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
         Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
         owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
-    }  
+        break;
+    }
+    default:
+        break;
+    }
 
     return false;
 }

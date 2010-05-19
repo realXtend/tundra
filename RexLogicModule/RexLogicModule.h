@@ -107,14 +107,6 @@ namespace RexLogic
         //! Returns world stream pointer.
         WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
-                //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
-        /*! \param x screen coordinate
-            \param y screen coordinate
-            \param entity this is the entity that was hit with normal raycast. 
-            \return returns true if infoicon was hit, false otherwise
-        */
-        bool CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result);
-
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
 
@@ -204,6 +196,14 @@ namespace RexLogic
         //! Handles a click event for entity, namely showing the name tag
         void EntityClicked(Scene::Entity* entity);
 
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        /*! \param x screen coordinate
+            \param y screen coordinate
+            \param entity this is the entity that was hit with normal raycast. 
+            \return returns true if infoicon was hit, false otherwise
+        */
+        bool CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result);
+
     public slots:
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
@@ -246,7 +246,6 @@ namespace RexLogic
 
         //! Handle an asset event.
         bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
 
         //! Does preparations before logout/delete of scene
         //! For example: Takes ui screenshots of world/avatar with rendering service.
