@@ -67,7 +67,7 @@ class Manipulator:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE#0.2, 0.2, 0.2
             self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
-    
+            
     def getPivotPos(self, ents):        
         xs = [e.placeable.Position.x() for e in ents]
         ys = [e.placeable.Position.y() for e in ents]
@@ -77,7 +77,7 @@ class Manipulator:
         maxpos = Vec(max(xs), max(ys), max(zs))
         #median = (minpos + maxpos) / 2
         #there is some type prob with pythonqt and operator overloads, so this workaround is needed:
-        median = minpos.__add__(maxpos).__div__(2) 
+        median = (minpos + maxpos) / 2 
         #print "Min:", minpos
         #print "Max:", minpos
         #print "Median:", median
@@ -356,7 +356,7 @@ class RotationManipulator(Manipulator):
                 
             rotationQuat = list(euler_to_quat(euler))
 
-            ort.__imul__(Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
+            ort *= Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2])
             
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
