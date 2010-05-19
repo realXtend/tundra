@@ -712,7 +712,7 @@ static PyObject* GetQRenderer(PyObject *self)
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (renderer){
         //std::cout << "Screenshot in PYSM ... " << std::endl;
-        return PythonQt::self()->wrapQObject(renderer.get());
+        return PythonScriptModule::GetInstance()->WrapQObject(renderer.get());
     }
     else
         std::cout << "Failed ..." << std::endl;
@@ -1457,7 +1457,7 @@ PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
     }
 
     UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("", type);
-    return PythonQt::self()->wrapQObject(prop);;
+    return PythonScriptModule::GetInstance()->WrapQObject(prop);;
 }
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
@@ -1522,14 +1522,14 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     }
 
     UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
-    return PythonQt::self()->wrapQObject(uiproxywidget);
+    return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);
 }
 
 PyObject* GetPropertyEditor(PyObject *self)
 {
     QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
     PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    return PythonQt::self()->wrapQObject(pe); 
+    return PythonScriptModule::GetInstance()->WrapQObject(pe); 
 }
 
 //PyObject* GetQtModule(PyObject *self)
@@ -1548,12 +1548,12 @@ PyObject* GetUiSceneManager(PyObject *self)
         return NULL;
     }
 
-    return PythonQt::self()->wrapQObject(ui_module->GetInworldSceneController());
+    return PythonScriptModule::GetInstance()->WrapQObject(ui_module->GetInworldSceneController());
 }
 
 PyObject* GetUIView(PyObject *self)
 {
-    return PythonQt::self()->wrapQObject(PythonScript::self()->GetFramework()->GetUIView());
+    return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->GetFramework()->GetUIView());
 }
 
 PyObject* GetRexLogic(PyObject *self)
@@ -1561,7 +1561,7 @@ PyObject* GetRexLogic(PyObject *self)
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
-        return PythonQt::self()->wrapQObject(rexlogic_);
+        return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_);
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
     return NULL;
 }
@@ -1572,7 +1572,7 @@ PyObject* GetServerConnection(PyObject *self)
     RexLogic::RexLogicModule *rexlogic_;
     rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
     if (rexlogic_)
-        return PythonQt::self()->wrapQObject(rexlogic_->GetServerConnection().get());
+        return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_->GetServerConnection().get());
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
     return NULL;
 }
@@ -1849,7 +1849,7 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
     pe->show();
     */
     
-    return PythonQt::self()->wrapQObject(prim);
+    return PythonScriptModule::GetInstance()->WrapQObject(prim);
     //Py_RETURN_NONE;
 }
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 

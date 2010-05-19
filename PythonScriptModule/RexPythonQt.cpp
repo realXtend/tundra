@@ -23,7 +23,7 @@ namespace PythonScript
     {
         //XXX add shutdown too!
         // init PythonQt, but not Python 'cause PythonScriptModule has already done that.
-        PythonQt::init(PythonQt::DoNotInitializePython);
+        PythonQt::init(PythonQt::PythonAlreadyInitialized);
         PythonQt_QtAll::init();
         //PythonQt::self()->registerClass(&UiServices::UiProxyWidget::staticMetaObject);
         PythonQt::self()->registerClass(&UiServices::UiWidgetProperties::staticMetaObject);
@@ -73,7 +73,7 @@ namespace PythonScript
         canvas_->AddWidget(widget);
         canvas_->Show();
 
-        return PythonQt::self()->wrapQObject(widget); //box); //qcanvas
+        return PythonScriptModule::GetInstance()->WrapQObject(widget); //box); //qcanvas
     }
     //*/
     /*PyObject* CreateCanvas(PyObject *self, PyObject *args)
