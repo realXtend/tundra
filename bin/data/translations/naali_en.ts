@@ -428,6 +428,54 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+    <name>ECEditor::ECEditorWindow</name>
+    <message>
+        <source>Create Component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit XML...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add new component...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ECEditor</source>
+        <comment>Entity-component Editor</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ECEditor::EcXmlEditorWidget</name>
     <message>
         <source>EC Attribute XML Editor</source>

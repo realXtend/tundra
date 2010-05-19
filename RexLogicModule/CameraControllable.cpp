@@ -147,6 +147,12 @@ namespace RexLogic
             movement_.y_.abs_ = m->y_.abs_;
         }
 
+		if (event_id == Input::Events::INPUTSTATE_CAMERATRIPOD)
+		{
+			current_state_ = Tripod;
+			firstperson_pitch_ = 0.0f;
+		}
+
         return false;
     }
 
@@ -300,6 +306,19 @@ namespace RexLogic
                     camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
                     camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
                 }
+
+				if (current_state_ == Tripod)
+				{
+					const float trans_dt = (float)frametime * sensitivity_;
+
+					RexTypes::Vector3 pos = camera_placeable->GetPosition();
+					pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
+					ClampPosition(pos);
+					camera_placeable->SetPosition(pos);
+
+					camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
+					camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
+				}
             }
         }
         

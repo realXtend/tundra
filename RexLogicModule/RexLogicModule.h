@@ -77,7 +77,9 @@ namespace RexLogic
         //! Camera follows the avatar (third or first person)
         CS_Follow,
         //! Camera moves around freely
-        CS_Free
+        CS_Free,
+		//! Camera tripod
+		CS_Tripod
     };
 
     class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl, public Foundation::WorldLogicInterface
@@ -113,6 +115,9 @@ namespace RexLogic
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
+
+		//! camera tripod
+		void CameraTripod();
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler() const;
