@@ -83,16 +83,23 @@ namespace MumbleVoip
             connection_->SendAudio(audio_sending_enabled_);
             connection_->ReceiveAudio(audio_receiving_enabled_);
             MumbleLibrary::Start();
-            //connect(MumbleLibrary::Instance(), SIGNAL(InteralError()), SLOT(HandleMumbleLibraryError()) );
-//            connect(connection_manager_, SIGNAL(AudioFrameSent(PCMAudioFrame*)), SLOT(UpdateSpeakerActivity(PCMAudioFrame*)) );
+
+            DisableAudioSending();
+            EnableAudioReceiving();
         }
 
         void Session::Close()
         {
-            connection_->Close();
-            SAFE_DELETE(connection_);
-            state_ = STATE_CLOSED;
-            emit StateChanged(state_);
+            if (connection_)
+            {
+                connection_->Close();
+                SAFE_DELETE(connection_);
+            }
+            if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
+            {
+                state_ = STATE_CLOSED;
+                emit StateChanged(state_);
+            }
         }
 
         Communications::InWorldVoice::SessionInterface::State Session::GetState() const
@@ -438,7 +445,7 @@ namespace MumbleVoip
 			if (!connection_)
 				return;
 
-			if (!audio_sending_enabled_)
+            if (!audio_receiving_enabled_)
 				return;
 
             for(;;)
