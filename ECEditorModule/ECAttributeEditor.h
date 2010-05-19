@@ -3,7 +3,11 @@
 #ifndef incl_ECEditorModule_ECAttributeEditor_h
 #define incl_ECEditorModule_ECAttributeEditor_h
 
+#include "StableHeaders.h"
 #include <QObject>
+#include <QtDoublePropertyManager>
+#include <QtVariantPropertyManager>
+#include "AttributeInterface.h"
 
 class QtDoublePropertyManager;
 class QtVariantPropertyManager;
@@ -136,6 +140,10 @@ namespace ECEditor
 
         Foundation::Attribute<T> *attribute_;
     };
+
+    template<> void ECAttributeEditor<Real>::UpdateEditorValue();
+
 }
+
 
 #endif
