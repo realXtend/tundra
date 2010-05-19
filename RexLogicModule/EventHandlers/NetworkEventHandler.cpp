@@ -23,6 +23,9 @@
 #include <UiModule.h>
 #include <Inworld/InworldSceneController.h>
 #include <Inworld/ControlPanel/TeleportWidget.h>
+#include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/MessageNotification.h"
+#include "Ether/EtherLoginNotifier.h"
 
 #include <OgreMaterialManager.h>
 
@@ -133,6 +136,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgMapBlockReply:
         return HandleOSNE_MapBlock(netdata);
+
+    case RexNetMsgScriptTeleportRequest:
+        return HandleOSNE_ScriptTeleport(netdata);
 
     default:
         break;
@@ -520,6 +526,38 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
     {
         ui_module->GetInworldSceneController()->SetTeleportWidget(mapBlocks_);
     }
+
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    std::string object_name = msg.ReadString(); // Sender name
+    std::string region_name = msg.ReadString(); // Sim name
+    Vector3df position = msg.ReadVector3(); // Sim position
+    Vector3df lookAt = msg.ReadVector3(); // LookAt
+
+    if (region_name.empty())
+        return false;
+
+    boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (ui_module)
+    {
+        ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("Teleporting to %1.").arg(region_name.c_str())));
+        QObject *object = ui_module->GetEtherLoginNotifier();
+        if (object)
+        {
+            Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
+            if (notifier)
+            {
+                notifier->Teleport(QString(region_name.c_str()));
+            }
+        }
+    }
+
 
     return false;
 }
