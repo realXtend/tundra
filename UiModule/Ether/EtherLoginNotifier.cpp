@@ -15,6 +15,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
+#include "UiNotificationServices.h"
 
 namespace Ether
 {
@@ -27,19 +28,15 @@ namespace Ether
         {
             boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
-            {                                
                 connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));                
-            }
-
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
         {
-            QMap<QString, QString> info_map;
-            
             // Set last info card to default. Used for in world Teleporting
             last_info_map_.clear();
 
+            QMap<QString, QString> info_map;
             switch (data_cards.second->worldType())
             {
                 case WorldTypes::OpenSim:
@@ -109,7 +106,6 @@ namespace Ether
 
         void EtherLoginNotifier::Teleport(QString start_location)
         {
-
             if (!start_location.isNull())
             {
                 last_info_map_.remove("StartLocation");
@@ -117,17 +113,17 @@ namespace Ether
                 
                 QString avatarType = last_info_map_.value("AvatarType");
                 if (avatarType.compare("OpenSim") == 1)
-                {
                     emit StartOsLogin(last_info_map_);
-                }
+                else if (avatarType.compare("RealXtend") == 1)
+                    emit StartRexLogin(last_info_map_);
                 else
                 {
-                    emit StartRexLogin(last_info_map_);
+                    UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
+                    boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                    if (ui_module)
+                        ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
                 }
-
             }
-
         }
-        
     }
 }
