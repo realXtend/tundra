@@ -430,6 +430,14 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Edit XML...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -442,11 +450,15 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show entities</source>
+        <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Hide entities</source>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -36,7 +36,8 @@ namespace RexLogic
         {
             FirstPerson,
             ThirdPerson,
-            FreeLook
+            FreeLook,
+			Tripod
         };
 
         //! default constructor

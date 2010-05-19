@@ -139,6 +139,11 @@ namespace Input
         //! UI unfocused, set focus on in-world scene
         static const event_id_t UNFOCUS_UI = 103;
 
+		//! Input event for switching to camera tripod
+		static const event_id_t CAMERA_TRIPOD = 104;
+		static const event_id_t CAMERA_TRIPOD_REL = 105;
+		static const event_id_t INPUTSTATE_CAMERATRIPOD = 106;
+
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.

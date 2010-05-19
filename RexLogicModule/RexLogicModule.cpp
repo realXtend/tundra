@@ -479,6 +479,23 @@ void RexLogicModule::SwitchCameraState()
     }
 }
 
+void RexLogicModule::CameraTripod()
+{
+	if (camera_state_ == CS_Follow)
+	{
+		camera_state_ = CS_Tripod;
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+	}
+	else
+	{
+		camera_state_ = CS_Follow;
+
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+	}
+}
+
 AvatarPtr RexLogicModule::GetAvatarHandler() const
 {
     return avatar_;

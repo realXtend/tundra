@@ -12,6 +12,8 @@ namespace Input
 
         map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Tab),
                     make_pair (Events::SWITCH_CAMERA_STATE, 0)));
+		map.insert (make_pair (QKeySequence (Qt::Key_T),
+                    make_pair (Events::CAMERA_TRIPOD, 0)));
 
         map.insert (make_pair (QKeySequence (Qt::ALT + Qt::Key_Period),
                     make_pair (Events::PY_RUN_COMMAND, 0)));
