@@ -158,8 +158,8 @@ namespace Communications
         {
             Q_OBJECT
         public:
-            virtual void SendTextMessage(const QString &text);
-            virtual ParticipantList Participants() const;
+            virtual void SendTextMessage(const QString &text) = 0;
+            virtual ParticipantList Participants() const = 0;
 
         signals:
             void TextMessageReceived(const TextMessageInterface &message);
