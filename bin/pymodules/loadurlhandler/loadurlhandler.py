@@ -2,11 +2,16 @@ import rexviewer as r
 from circuits import Component
 import PythonQt
 
+instance = None
+
 class LoadURLHandler(Component):
     def __init__(self):
         Component.__init__(self)
         self.proxywidget = None
         self.webview = None
+        
+        global instance
+        instance = self
 
     def loadurl(self, url):
         uism = r.getUiSceneManager()
@@ -32,5 +37,5 @@ def loadurl(urlstring):
     url = PythonQt.QtCore.QUrl(urlstring)
     if instance is not None:
         instance.loadurl(url)
-    return None
-
+    else:
+        print "ERROR: loadurl handler wasn't there!"
