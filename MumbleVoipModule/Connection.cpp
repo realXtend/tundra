@@ -153,7 +153,8 @@ namespace MumbleVoip
             SAFE_DELETE(u);
         }
         users_.clear();
-        SAFE_DELETE(client_);
+        if (state_ != STATE_ERROR)
+            SAFE_DELETE(client_);
     }
 
     Connection::State Connection::GetState() const
@@ -169,7 +170,7 @@ namespace MumbleVoip
     void Connection::Close()
     {
 		QMutexLocker locker(&mutex_state_);
-        if (state_ != STATE_CLOSED)
+        if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
             client_->SetRawUdpTunnelCallback(0);
             client_->SetChannelAddCallback(0);
@@ -179,7 +180,15 @@ namespace MumbleVoip
             client_->SetUserJoinedCallback(0);
             client_->SetUserLeftCallback(0);
 
-            client_->Disconnect();
+            try
+            {
+                client_->Disconnect();
+            }
+            catch(std::exception &e)
+            {
+                state_ = STATE_ERROR;
+                reason_ = QString(e.what());
+            }
             state_ = STATE_CLOSED;
             emit StateChanged(state_);
         }
