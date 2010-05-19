@@ -125,7 +125,7 @@ namespace MumbleVoip
         emit StateChanged(state_);
 
         connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
-        user_update_timer_.start(1000);
+        user_update_timer_.start(USER_STATE_CHECK_TIME_MS);
     }
 
     Connection::~Connection()
