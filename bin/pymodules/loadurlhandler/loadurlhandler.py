@@ -15,14 +15,16 @@ class LoadURLHandler(Component):
 
     def loadurl(self, url):
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(2)
+        uiprops = r.createUiWidgetProperty(2) #2 == scene(?) widget or so
         uiprops.widget_name_ = 'LoadURL'
+        
         self.webview = PythonQt.QtWebKit.QWebView()
         self.proxywidget = r.createUiProxyWidget(self.webview, uiprops)
+        
         if not uism.AddProxyWidget(self.proxywidget):
-            uism.AddProxyWidget(self.proxywidget)
             r.logError('LoadURLHandler: Adding the ProxyWidget to the scene failed.')
-        uism.AddProxyWidget(self.proxywidget)
+            return
+            
         self.proxywidget.show()
         self.webview.load(url)
 
@@ -39,3 +41,4 @@ def loadurl(urlstring):
         instance.loadurl(url)
     else:
         print "ERROR: loadurl handler wasn't there!"
+
