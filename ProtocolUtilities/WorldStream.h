@@ -180,7 +180,7 @@ namespace ProtocolUtilities
         void SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list);
 
         /// Sends handshake reply packet
-        void SendRegionHandshakeReplyPacket(RexUUID agent_id, RexUUID session_id, uint32_t flags);
+        void SendRegionHandshakeReplyPacket(const RexUUID &agent_id, const RexUUID &session_id, uint32_t flags);
 
         /// Sends hardcoded agentappearance packet
         void SendAgentSetAppearancePacket();
@@ -433,13 +433,23 @@ namespace ProtocolUtilities
         ///@param local_ids List of local entity ID's.
         void SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids);
         void SendObjectLinkPacket(const QStringList& strings);
+
         /// Sends an ObjectDelink packet.
         ///@param local_ids List of local entity ID's.
         void SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids);
         void SendObjectDelinkPacket(const QStringList& strings);
-       
-        //Send MapBlockRequest
+
+        /// Send MapBlockRequest
         void SendMapBlockRequest();
+
+        /// Sends RequestGodlikePowers packet.
+        /// @param godlike Do we want to be requesting enablind or disabling god-like powers.
+        void SendRequestGodlikePowersPacket(const bool godlike);
+
+        /// Sends GodKickUser packet to kick out user from the server.
+        /// @param user_id ID of the user we wan't to kick.
+        /// @param reason Reason of the kicking.
+        void SendGodKickUserPacket(const RexUUID &user_id, const std::string &reason);
 
         //------------------- Utility functions ------------------- //
 

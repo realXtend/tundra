@@ -622,7 +622,7 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
     }
 }
 
-void WorldStream::SendRegionHandshakeReplyPacket(RexUUID agent_id, RexUUID session_id, uint32_t flags)
+void WorldStream::SendRegionHandshakeReplyPacket(const RexUUID &agent_id, const RexUUID &session_id, uint32_t flags)
 {
     if (!connected_)
         return;
@@ -1529,6 +1529,9 @@ void WorldStream::SendObjectDelinkPacket(const QStringList& strings)
 
 void WorldStream::SendMapBlockRequest()
 {
+    if (!connected_)
+        return;
+
     NetOutMessage *m = StartMessageBuilding(RexNetMsgMapBlockRequest);
     assert(m);
     
@@ -1546,6 +1549,42 @@ void WorldStream::SendMapBlockRequest()
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendRequestGodlikePowersPacket(const bool godlike)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgRequestGodlikePowers);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+
+    // RequestBlock
+    m->AddBool(godlike);
+    m->AddUUID(RexUUID());
+
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendGodKickUserPacket(const RexUUID &user_id, const std::string &reason)
+{
+    if (!connected_)
+        return;
+
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgGodKickUser);
+    assert(m);
+
+    // UserInfo
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    m->AddUUID(user_id);
+    m->AddU32(0); // seems that KickFlags aren't used for anything for real
+    m->AddString(reason);
+
+    FinishMessageBuilding(m);
+}
 
 std::string WorldStream::GetCapability(const std::string &name)
 {

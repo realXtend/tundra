@@ -45,7 +45,8 @@ DebugStatsModule::DebugStatsModule() :
     networkEventCategory_(0),
     networkStateEventCategory_(0),
     profilerWindow_(0),
-    participantWindow_(0)
+    participantWindow_(0),
+    godMode_(false)
 {
 }
 
@@ -76,6 +77,14 @@ void DebugStatsModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("Participant", 
         "Shows the participant window.",
         Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
+
+    RegisterConsoleCommand(Console::CreateCommand("iddqd",
+        "Requests god-mode on from the server.",
+        Console::Bind(this, &DebugStatsModule::RequestGodMode)));
+
+    RegisterConsoleCommand(Console::CreateCommand("kick",
+        "Kicks user out from the server. Usage: \"kick(fullname)\"",
+        Console::Bind(this, &DebugStatsModule::KickUser)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
@@ -230,6 +239,24 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (profilerWindow_)
                 profilerWindow_->RefreshSimStatsData(netdata->message);
         }
+        else if (event_id == RexNetMsgGrantGodlikePowers)
+        {
+            ProtocolUtilities::NetworkEventInboundData *net = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+            assert(net);
+            if (!net)
+                return false;
+
+            ProtocolUtilities::NetInMessage &msg = *net->message;
+            RexUUID agent_id = msg.ReadUUID();
+            RexUUID sessiont_id = msg.ReadUUID();
+            uint8_t god_level = msg.ReadU8();
+            if (god_level >= 200)
+            {
+                LogInfo("God powers granted, level: " + QString::number(god_level).toStdString());
+            }
+            else
+                LogInfo("God powers denied");
+        }
     }
 
     return false;
@@ -295,6 +322,48 @@ Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringV
 
 Console::CommandResult DebugStatsModule::SendRandomNetworkOutPacket(const StringVector &params)
 {
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult DebugStatsModule::RequestGodMode(const StringVector &params)
+{
+    if (!current_world_stream_)
+        return Console::ResultFailure("Not connected to server.");
+
+    current_world_stream_->SendRequestGodlikePowersPacket(true);
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
+{
+    if (!current_world_stream_)
+        return Console::ResultFailure("Not connected to server.");
+
+    if (params.empty())
+        return Console::ResultFailure("Not enough parameters. Usage: \"kick(fullname)\"");
+
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+
+    boost::shared_ptr<EC_OpenSimPresence> user_presence;
+    Scene::EntityList users = scene->GetEntitiesWithComponent("EC_OpenSimPresence");
+    foreach(Scene::EntityPtr entity, users)
+    {
+        boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity->GetComponent<EC_OpenSimPresence>();
+        assert(ec_presence.get());
+        if (ec_presence->GetFullName() == params[0])
+        {
+            user_presence = ec_presence;
+            break;
+        }
+    }
+
+    if (!user_presence)
+        return Console::ResultFailure("No user found with the given name.");;
+
+    current_world_stream_->SendGodKickUserPacket(user_presence->agentId, "God doesn't want you here.");
+
     return Console::ResultSuccess();
 }
 
