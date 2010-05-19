@@ -49,14 +49,18 @@ SceneEventHandler::~SceneEventHandler()
 bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     using namespace Scene;
+
+    ///\todo Shouldn't we be able to do static_cast here? Seems to crash if we do so.
     Events::SceneEventData *event_data = dynamic_cast<Events::SceneEventData *>(data);
-    //assert(event_data);
+
     switch(event_id)
     {
     case Events::EVENT_ENTITY_SELECT:
+        ///\todo Utilize this for real with somekind of SelectionManager
         owner_->GetServerConnection()->SendObjectSelectPacket(event_data->localID);
         break;
     case Events::EVENT_ENTITY_DESELECT:
+        ///\todo Utilize this for real with somekind of SelectionManager
         owner_->GetServerConnection()->SendObjectDeselectPacket(event_data->localID);
         break;
     case Events::EVENT_ENTITY_UPDATED:

@@ -14,7 +14,7 @@ namespace ECEditor
     /*! EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
      */
     class ECEditorWindow;
-    
+
     class ECEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
         Q_OBJECT
@@ -34,9 +34,6 @@ namespace ECEditor
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-        //! Subscribes this module to network events.
-        void SubscribeToNetworkEvents();
-
         //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
 
@@ -48,11 +45,11 @@ namespace ECEditor
 
     public slots:
         //! Creates EC attribute XML editor widget for entity.
-        //! \param entity_id Entity ID.
+        //! \param entity Entity pointer.
         void CreateXmlEditor(Scene::EntityPtr entity);
 
         //! Creates EC attribute XML editor widget for component.
-        //! \param entity_id Entity ID.
+        //! \param component Component pointer.
         void CreateXmlEditor(Foundation::ComponentPtr component);
 
     private:

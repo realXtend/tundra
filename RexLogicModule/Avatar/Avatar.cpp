@@ -20,16 +20,14 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "WorldStream.h"
+#include "RexNetworkUtils.h"
+#include "GenericMessageUtils.h"
+#include "NetworkEvents.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_HoveringText.h"
-
-#include "RexNetworkUtils.h"
-#include "GenericMessageUtils.h"
-#include "NetworkEvents.h"
-
 #include "EC_OpenSimPresence.h"
 
 #include <QPushButton>
@@ -182,10 +180,7 @@ namespace RexLogic
             {
                 overlay->SetText(presence->GetFullName().c_str());
                 if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
-                {
-                        overlay->SetDisabled(true);
-
-                }
+                    overlay->SetDisabled(true);
             }
 
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
@@ -491,22 +486,18 @@ namespace RexLogic
         if (!entity)
             return;
 
-
         EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
             overlay->InitializeBillboards();
             overlay->SetText(presence->GetFullName().c_str());
-            overlay->AddButton(*(new QPushButton("Poke!")));
-            /*overlay->AddButton(*(new QPushButton("Chat")));
+            /*overlay->AddButton(*(new QPushButton("Poke")));
+            overlay->AddButton(*(new QPushButton("Chat")));
             overlay->AddButton(*(new QPushButton("Mute")));
-            overlay->AddButton(*(new QPushButton("Follow")));
-            overlay->SetButtonsDisabled(true);*/
-            
+            overlay->AddButton(*(new QPushButton("Follow")));*/
+            overlay->SetButtonsDisabled(true);
         }
-
-
     }
 /*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
@@ -706,14 +697,12 @@ namespace RexLogic
     {
         return avatar_appearance_.HandleAssetEvent(event_id, data);
     }
-    
-    Scene::EntityPtr Avatar::GetUserAvatar()
+
+    Scene::EntityPtr Avatar::GetUserAvatar() const
     {
-        RexUUID agent_id = owner_->GetServerConnection()->GetInfo().agentID;
-        Scene::EntityPtr entity = owner_->GetAvatarEntity(agent_id);
-        return entity;
+        return owner_->GetUserAvatarEntity();
     }
-    
+
     bool Avatar::AvatarExportSupported()
     {
         Scene::EntityPtr entity = GetUserAvatar();

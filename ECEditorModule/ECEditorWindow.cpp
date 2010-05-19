@@ -116,6 +116,21 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::RemoveEntity(entity_id_t entity_id)
+    {
+        if (!entity_list_)
+            return;
+
+        for(int i = 0; i < entity_list_->count(); ++i)
+        {
+            if (entity_list_->item(i)->text() == QString::number(entity_id))
+            {
+                QListWidgetItem* item = entity_list_->takeItem(i);
+                SAFE_DELETE(item);
+            }
+        }
+    }
+
     void ECEditorWindow::ClearEntities()
     {
         if (entity_list_)
