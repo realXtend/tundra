@@ -215,7 +215,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
         //RexLogic::EC_OpenSimPrim* prim = checked_static_cast<RexLogic::EC_OpenSimPrim*>(primentity->GetComponent(RexLogic::EC_OpenSimPrim::TypeNameStatic()).get());
 
-        return PythonQt::self()->wrapQObject(prim);
+        return PythonScriptModule::GetInstance()->WrapQObject(prim);
     }
 
     else if (s_name.compare("mesh") == 0)
@@ -228,17 +228,17 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         }
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
-        return PythonQt::self()->wrapQObject(ogremesh);
+        return PythonScriptModule::GetInstance()->WrapQObject(ogremesh);
     }
     
     else if (s_name.compare("placeable") == 0)
     {    
-        return PythonQt::self()->wrapQObject(placeable);
+        return PythonScriptModule::GetInstance()->WrapQObject(placeable);
     }
     
     else if (s_name.compare("network") == 0)
     {
-        return PythonQt::self()->wrapQObject(networkpos);
+        return PythonScriptModule::GetInstance()->WrapQObject(networkpos);
     }
 
     else if(s_name.compare("editable") == 0)
@@ -353,7 +353,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         if (highlight_componentptr)
         {
             highlight = checked_static_cast<EC_Highlight *>(highlight_componentptr.get());
-            return PythonQt::self()->wrapQObject(highlight);
+            return PythonScriptModule::GetInstance()->WrapQObject(highlight);
         }
         else
         {

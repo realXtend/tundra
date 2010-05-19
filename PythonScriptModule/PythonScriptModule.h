@@ -23,6 +23,7 @@
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
 
+#include <PythonQt.h>
 #include <QList>
 
 class EC_OpenSimPrim;
@@ -103,6 +104,7 @@ namespace PythonScript
         static PythonScriptModule *GetInstance();
 
         Scene::ScenePtr GetScene() { return framework_->GetScene("World"); }
+        PyObject* WrapQObject(QObject* qobj) { return PythonQt::self()->priv()->wrapQObject(qobj); }
 
         PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);
 
