@@ -90,7 +90,7 @@ namespace MumbleVoip
             send_position_(false)
     {
         // BlockingQueuedConnection for cross thread signaling
-        QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::ConnectionType::BlockingQueuedConnection);
+        QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::BlockingQueuedConnection);
 
         InitializeCELT();
 
@@ -98,10 +98,9 @@ namespace MumbleVoip
         QMutexLocker client_locker(&mutex_client_);
         client_ = mumble_lib->NewClient();
 
-
         QUrl server_url(QString("mumble://%1").arg(info.server));
 
-        QString port = QString::number(server_url.port(64738)); // default port name
+        QString port = QString::number(server_url.port(MUMBLE_DEFAULT_PORT_)); // default port name
         QString server = server_url.host();
 
         // \todo Handle connection error
@@ -651,7 +650,6 @@ namespace MumbleVoip
                 }
                 else
                 {
-//                        user->NotifyAudioPacketDroped();
                     MumbleVoipModule::LogWarning("Audio packet dropped: user locket");
                 }
             }
