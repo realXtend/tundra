@@ -24,19 +24,16 @@ namespace Ether
         EtherLoginNotifier::EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework)
             : QObject(parent),
               scene_controller_(scene_controller),
-              framework_(framework)
+              framework_(framework),
+              teleporting_(false)
         {
             boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
-                connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));                
-            teleporting = false;
+                connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
         {
-            // Set last info card to default. Used for in world Teleporting
-            last_info_map_.clear();
-
             QMap<QString, QString> info_map;
             switch (data_cards.second->worldType())
             {
@@ -45,8 +42,6 @@ namespace Ether
                     Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld*>(data_cards.second);
                     info_map["WorldAddress"] = ow->loginUrl().toString();
                     info_map["StartLocation"] = ow->startLocation();
-                    last_info_map_.insert("WorldAddress", ow->loginUrl().toString());
-                    last_info_map_.insert("StartLocation", ow->startLocation());
                     break;
                 }
             }
@@ -58,9 +53,8 @@ namespace Ether
                     Data::OpenSimAvatar *oa = dynamic_cast<Data::OpenSimAvatar*>(data_cards.first);
                     info_map["Username"] = oa->userName();
                     info_map["Password"] = oa->password();
-                    last_info_map_.insert("Username", oa->userName());
-                    last_info_map_.insert("Password", oa->password());
-                    last_info_map_.insert("AvatarType", "OpenSim");
+                    last_info_map_ = info_map;
+                    last_info_map_["AvatarType"] = "OpenSim";
                     emit StartOsLogin(info_map);
                     break;
                 }
@@ -70,10 +64,8 @@ namespace Ether
                     info_map["Username"] = ra->account();
                     info_map["Password"] = ra->password();
                     info_map["AuthenticationAddress"] = ra->authUrl().toString();
-                    last_info_map_.insert("Username", ra->account());
-                    last_info_map_.insert("Password", ra->password());
-                    last_info_map_.insert("AuthenticationAddress", ra->authUrl().toString());
-                    last_info_map_.insert("AvatarType", "RealXtend");
+                    last_info_map_ = info_map;
+                    last_info_map_["AvatarType"] = "RealXtend";
                     emit StartRexLogin(info_map);
                     break;
                 }
@@ -105,49 +97,47 @@ namespace Ether
             emit Quit();
         }
 
-        void EtherLoginNotifier::Teleport(QString start_location)
-        {
-            if (!start_location.isEmpty())
-            {
-                last_info_map_.remove("StartLocation");
-                last_info_map_.insert("StartLocation", start_location);
-                
-                QString avatarType = last_info_map_.value("AvatarType");
-                if (avatarType.compare("OpenSim") == 0)
-                    emit StartOsLogin(last_info_map_);
-                else if (avatarType.compare("RealXtend") == 0)
-                    emit StartRexLogin(last_info_map_);
-                else
-                {
-                    UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
-                    boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-                    if (ui_module)
-                        ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
-                }                
-            }
-
-        }
-
         void EtherLoginNotifier::ScriptTeleportAnswer(QString answer, QString region_name)
-        {            
-            if (answer.isEmpty())
-                return;
-
-            if (answer.compare("Yes") == 0)
+        {
+            answer = answer.toLower();
+            if (answer == "yes")
             {                
                 QTimer::singleShot(1000, this, SLOT(ScriptTeleport()));
                 region_name_ = region_name;
             }
-            else if (answer.compare("No") == 0)
+            else if (answer == "no")
             {
-                teleporting = false;
+                teleporting_ = false;
+                region_name_ = "";
             }
         }
 
         void EtherLoginNotifier::ScriptTeleport()
         {
-            teleporting = false;
-            Teleport(region_name_);
+            if (!region_name_.isEmpty())
+                Teleport(region_name_);
+            teleporting_ = false;
+        }
+
+        void EtherLoginNotifier::Teleport(QString start_location)
+        {
+            if (start_location.isEmpty())
+                return;
+
+            last_info_map_["StartLocation"] = start_location;
+            QString avatar_type = last_info_map_["AvatarType"].toLower();
+
+            if (avatar_type == "opensim")
+                emit StartOsLogin(last_info_map_);
+            else if (avatar_type == "realxtend")
+                emit StartRexLogin(last_info_map_);
+            else
+            {
+                UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
+                boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                if (ui_module)
+                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
+            }
         }
     }
 }
