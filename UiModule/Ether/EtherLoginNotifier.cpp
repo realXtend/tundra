@@ -115,20 +115,15 @@ namespace Ether
                 QString avatarType = last_info_map_.value("AvatarType");
                 if (avatarType.compare("OpenSim") == 0)
                     emit StartOsLogin(last_info_map_);
-                else if (avatarType.compare("RealXtend") == 1)
-                    emit StartRexLogin(last_info_map_);
                 else if (avatarType.compare("RealXtend") == 0)
+                    emit StartRexLogin(last_info_map_);
+                else
                 {
                     UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
                     boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                     if (ui_module)
                         ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
-                }
-                else
-                {
-                    UiServices::UiModule::LogInfo("Teleport failed. Unknown avatar type: "+avatarType.toStdString());
-                }
-                
+                }                
             }
 
         }
