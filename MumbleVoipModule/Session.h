@@ -55,6 +55,7 @@ namespace MumbleVoip
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
 
             virtual void Update(f64 frametime);
+            virtual QList<QString> Statistics();
 
         private:
             static const int AUDIO_RECORDING_BUFFER_MS = 200;

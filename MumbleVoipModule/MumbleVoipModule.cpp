@@ -191,6 +191,8 @@ namespace MumbleVoip
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
         RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+        RegisterConsoleCommand(Console::CreateCommand("mumble stats", "Show mumble statistics", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
+
         //RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
         //    Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
         //RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
@@ -310,6 +312,21 @@ namespace MumbleVoip
             QString error_message = QString("Link plugin connection cannot be established. %1 ").arg(link_plugin_->GetReason());
             LogError(error_message.toStdString());
         }
+    }
+
+    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStats(const StringVector &params)
+    {
+        
+        if (in_world_voice_provider_)
+        {
+            QList<QString> stats = in_world_voice_provider_->Statistics();
+            foreach(QString line, stats)
+            {
+                LogInfo(line.toStdString());
+            }
+        }
+        QString message = QString("");
+        return Console::ResultSuccess(message.toStdString());
     }
 
 //    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)

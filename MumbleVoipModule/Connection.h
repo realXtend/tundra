@@ -155,6 +155,7 @@ namespace MumbleVoip
         void UpdateUserStates();
 
     private:
+        static const int MUMBLE_DEFAULT_PORT_ = 64738;
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
