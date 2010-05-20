@@ -24,7 +24,8 @@
 #include <Inworld/InworldSceneController.h>
 #include <Inworld/ControlPanel/TeleportWidget.h>
 #include "Inworld/NotificationManager.h"
-#include "Inworld/Notifications/MessageNotification.h"
+#include "Inworld/ControlPanelManager.h"
+#include "Inworld/Notifications/QuestionNotification.h"
 #include "Ether/EtherLoginNotifier.h"
 
 #include <OgreMaterialManager.h>
@@ -76,6 +77,8 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
     }
 
     script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_));
+
+    ongoing_script_teleport = false;
 }
 
 NetworkEventHandler::~NetworkEventHandler()
@@ -532,6 +535,7 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
 
 bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data)
 {
+
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -545,15 +549,28 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
 
     boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
-    {
-        ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(QString("Teleporting to %1.").arg(region_name.c_str())));
+    {        
         QObject *object = ui_module->GetEtherLoginNotifier();
         if (object)
         {
             Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
             if (notifier)
-            {
-                notifier->Teleport(QString(region_name.c_str()));
+            {   
+
+                if (!notifier->IsTeleporting())
+                    ongoing_script_teleport = false;
+                
+                if (!ongoing_script_teleport)
+                {
+                    UiServices::QuestionNotification *question_notification = new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 5000);
+                    ui_module->GetNotificationManager()->ShowNotification(question_notification);
+
+                    QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));                    
+
+                    ongoing_script_teleport = true;
+                    notifier->SetIsTeleporting(true);
+
+                }
             }
         }
     }
