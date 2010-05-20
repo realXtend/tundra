@@ -1143,15 +1143,21 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         {
             TextureMap texture_map = prim.PrimTextures;
             TextureMap::const_iterator i = texture_map.begin();
-            while (i != texture_map.end())
+            if (i == texture_map.end())
             {
-                uint submesh_id = i->first;
-                if (i->second.compare(texture_uuid.ToString()) == 0)
+                if (prim.getPrimDefaultTextureID() == QString(texture_uuid.ToString().c_str()))
+                    for (uint submesh = 0; submesh < 6; ++submesh)
+                        submeshes_.append(submesh);
+            }
+            else
+            {
+                while (i != texture_map.end())
                 {
-                    //qDebug() << "Prim submesh " << submesh_id << " has texture " << QString::fromStdString(texture_uuid.ToString());
-                    submeshes_.append(submesh_id);
+                    uint submesh_id = i->first;
+                    if (i->second.compare(texture_uuid.ToString()) == 0)
+                        submeshes_.append(submesh_id);
+                    ++i;
                 }
-                ++i;
             }
         }
         else
@@ -1163,7 +1169,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
             int i = 0;
             foreach(uint submesh, submeshes_)
             {
-                //qDebug() << "Sending to py, submesh: " << submesh;
                 PyList_SET_ITEM(py_submeshes, i, Py_BuildValue("I", submesh));
                 ++i;
             }
