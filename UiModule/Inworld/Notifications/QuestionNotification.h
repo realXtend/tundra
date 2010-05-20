@@ -19,22 +19,23 @@ namespace UiServices
 
     public:
         QuestionNotification(QString question, QString first_button_title = "Yes", QString second_button_title = "No", 
-                             QString third_button_title = "", int hide_in_msec = 5000);
+                             QString third_button_title = "", QString hidden_value = "", int hide_in_msec = 5000);
 
     signals:
-        void QuestionAnswered(QString clicked_button_title);
+        void QuestionAnswered(QString clicked_button_title, QString hidden_value);
 
     private slots:
         void FirstButtonClicked();
         void SecondButtonClicked();
         void ThirdButtonClicked();
-        void EmitAnswer(QString clicked_button_title);
+        void EmitAnswer(QString clicked_button_title, QString hidden_value);
 
     private:
         QPlainTextEdit *question_box_;
         QPushButton *first_button_;
         QPushButton *second_button_;
         QPushButton *third_button_;
+        QString *hidden_value_;
 
     };
 }
