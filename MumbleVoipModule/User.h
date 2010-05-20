@@ -107,8 +107,6 @@ namespace MumbleVoip
         MumbleVoip::Channel* channel_;
         int received_voice_packet_count_;
         int voice_packet_drop_count_;
-        //QTimer channel_update_timer_;
-        //QTimer timer_;
         QTime last_audio_frame_time_;
 
     signals:

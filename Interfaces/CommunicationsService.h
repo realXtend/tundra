@@ -198,6 +198,7 @@ namespace Communications
             void StartSpeaking(); 
             void StopSpeaking();
             void Left(); //! @todo remove
+            void StateChanged();
 //            void PositionUpdated();
         };
         typedef QList<ParticipantInterface*> ParticipantList;
