@@ -18,12 +18,6 @@
 #include "MumbleLibrary.h"
 #include "MumbleVoipModule.h"
 
-//#define BUILDING_DLL // for dll import/export declarations
-//#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
-////#include <mumbleclient/client_lib.h>
-//#undef BUILDING_DLL // for dll import/export declarations
-////#include "LibMumbleThread.h"
-
 namespace MumbleVoip
 {
     namespace InWorldVoice
@@ -59,8 +53,7 @@ namespace MumbleVoip
                 SAFE_DELETE(p);
             }
             left_participants_.clear();
-            if (connection_)
-                SAFE_DELETE(connection_);
+            SAFE_DELETE(connection_);
         }
 
         void Session::OpenConnection(ServerInfo server_info)
@@ -82,6 +75,7 @@ namespace MumbleVoip
             connection_->SendPosition(true); 
             connection_->SendAudio(audio_sending_enabled_);
             connection_->ReceiveAudio(audio_receiving_enabled_);
+            
             MumbleLibrary::Start();
 
             DisableAudioSending();
@@ -93,7 +87,6 @@ namespace MumbleVoip
             if (connection_)
             {
                 connection_->Close();
-                SAFE_DELETE(connection_);
             }
             if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
             {
@@ -209,6 +202,7 @@ namespace MumbleVoip
         {
             PlaybackReceivedAudio();
             SendRecordedAudio();
+            UpdateParticipantList();
         }
 
         void Session::CreateNewParticipant(User* user)
@@ -285,6 +279,22 @@ namespace MumbleVoip
                     participants_.removeOne(p);
                     other_channel_users_.append(p->UserPtr());
                     emit ParticipantLeft(p);
+                    continue;
+                }
+                QString own_avatar_id_ = OwnAvatarId();
+                if (p->AvatarUUID() == own_avatar_id_)
+                {
+                    // for some reason we have own avatar as participant here!
+                    participants_.removeOne(p);
+                    other_channel_users_.append(p->UserPtr());
+                    emit ParticipantLeft(p);
+                    continue;
+                }
+                if (p->AvatarUUID() == p->Name())
+                {
+                    // For some reason do not have real name for this participant here!
+                    p->SetName( GetAvatarFullName(p->AvatarUUID()) );
+                    continue;
                 }
             }
         }
@@ -435,7 +445,7 @@ namespace MumbleVoip
                 //}
                 if (audio_sending_enabled_)
                     connection_->SendAudioFrame(frame, avatar_position);
-//                emit AudioFrameSent(frame);
+
                 delete frame;
             }
         }

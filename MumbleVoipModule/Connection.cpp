@@ -91,12 +91,13 @@ namespace MumbleVoip
     {
         // BlockingQueuedConnection for cross thread signaling
         QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::ConnectionType::BlockingQueuedConnection);
-//        QObject::connect(this, SIGNAL(CELTFrameReceived(int, unsigned char*, int)), SLOT(HandleIncomingCELTFrame(int, unsigned char*, int)), Qt::ConnectionType::QueuedConnection);
 
         InitializeCELT();
 
         MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
+        QMutexLocker client_locker(&mutex_client_);
         client_ = mumble_lib->NewClient();
+
 
         QUrl server_url(QString("mumble://%1").arg(info.server));
 
@@ -130,34 +131,38 @@ namespace MumbleVoip
 
     Connection::~Connection()
     {
-        QMutexLocker locker1(&mutex_raw_udp_tunnel_);
-        QMutexLocker locker2(&mutex_send_audio_);
-        QMutexLocker locker3(&mutex_channels_);
-        QMutexLocker locker4(&mutex_users_);
-
+        Close();
         this->disconnect();
 
-        Close();
+        QMutexLocker locker1(&mutex_raw_udp_tunnel_);
+
         UninitializeCELT();
-        
+
+        QMutexLocker locker2(&mutex_encode_queue_);
         while (encode_queue_.size() > 0)
         {
             PCMAudioFrame* frame = encode_queue_.takeFirst();
             SAFE_DELETE(frame);
         }
+
+        QMutexLocker locker3(&mutex_channels_);
         while (channels_.size() > 0)
         {
             Channel* c = channels_.takeFirst();
             SAFE_DELETE(c);
         }
 
+        QMutexLocker locker4(&mutex_users_);
         foreach(User* u, users_)
         {
             SAFE_DELETE(u);
         }
-        users_.clear();
+
         if (state_ != STATE_ERROR)
+        {
+            QMutexLocker client_locker(&mutex_client_);
             SAFE_DELETE(client_);
+        }
     }
 
     Connection::State Connection::GetState() const
@@ -172,17 +177,12 @@ namespace MumbleVoip
 
     void Connection::Close()
     {
-		QMutexLocker locker(&mutex_state_);
+        user_update_timer_.stop();
+        QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
+		QMutexLocker state_locker(&mutex_state_);
+        QMutexLocker client_locker(&mutex_client_);
         if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
-            client_->SetRawUdpTunnelCallback(0);
-            client_->SetChannelAddCallback(0);
-            client_->SetChannelRemoveCallback(0);
-            client_->SetTextMessageCallback(0);
-            client_->SetAuthCallback(0);
-            client_->SetUserJoinedCallback(0);
-            client_->SetUserLeftCallback(0);
-
             try
             {
                 client_->Disconnect();
@@ -288,6 +288,7 @@ namespace MumbleVoip
 
     void Connection::Join(const Channel* channel)
     {
+        QMutexLocker client_locker(&mutex_client_);
         client_->JoinChannel(channel->Id());
     }
 
@@ -330,8 +331,8 @@ namespace MumbleVoip
 
     void Connection::SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position)
     {
-        QMutexLocker locker(&mutex_send_audio_);
-
+        QMutexLocker locker(&mutex_encode_queue_);
+        QMutexLocker state_locker(&mutex_state_);
         if (state_ != STATE_OPEN)
             return;
 
@@ -345,8 +346,7 @@ namespace MumbleVoip
 
         for (int i = 0; i < FRAMES_PER_PACKET; ++i)
         {
-            PCMAudioFrame* audio_frame = encode_queue_.first();
-            encode_queue_.pop_front();
+            PCMAudioFrame* audio_frame = encode_queue_.takeFirst();
 
             int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(AudioQuality() / (100 * 8), 127));
             packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
@@ -387,8 +387,9 @@ namespace MumbleVoip
             data_stream << static_cast<float>(users_position.z);
             data_stream << static_cast<float>(-users_position.x);
         }
-
+        mutex_client_.lock();
         client_->SendRawUdpTunnel(data, data_stream.size() + 1 );
+        mutex_client_.unlock();
     }
 
     void Connection::SetAuthenticated()
@@ -460,11 +461,15 @@ namespace MumbleVoip
         if (!receiving_audio_)
             return;
         
-		QMutexLocker locker(&mutex_raw_udp_tunnel_);
-        if (state_ != STATE_OPEN)
-        {
+        if (!mutex_raw_udp_tunnel_.tryLock())
             return;
-        }
+        mutex_state_.lock();
+        mutex_raw_udp_tunnel_.unlock();
+		QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
+        mutex_state_.unlock();
+        if (state_ != STATE_OPEN)
+            return;
+
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
 

@@ -28,6 +28,8 @@ namespace MumbleVoip
         //! Return reason for current state
         static QString Reason();
 
+        static QThread* MainLoopThread();
+
     //signals:
     //    static void Started();
     //    static void Stoped(); 

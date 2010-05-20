@@ -190,11 +190,12 @@ namespace MumbleVoip
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
-        QMutex mutex_send_audio_;
+        QMutex mutex_encode_queue_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
         QMutex mutex_state_;
+        QMutex mutex_client_;
 //        QMutex mutex_celt_decoder_;
         
     signals:
