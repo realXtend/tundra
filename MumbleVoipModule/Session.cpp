@@ -533,6 +533,24 @@ namespace MumbleVoip
             return sound_service;
         }
 
+        QList<QString> Session::Statistics()
+        {
+            QList<QString> lines;
+            QString line = QString("  Total %1 participants:").arg(participants_.size());
+            lines.append(line);
+            foreach(Participant* p, participants_)
+            {
+                User* user = p->UserPtr();
+                if (!user)
+                    continue;
+                int buffer_len = user->PlaybackBufferLengthMs();
+                int drop = static_cast<int>( 100*user->VoicePacketDropRatio() );
+                QString line = QString("    participant %1:   audio buffer=%2 ms   frame loss=%3 %").arg(p->Name()).arg(buffer_len).arg(drop);
+                lines.append(line);
+            }
+            return lines;
+        }
+
     } // InWorldVoice
 
 } // MumbleVoip
