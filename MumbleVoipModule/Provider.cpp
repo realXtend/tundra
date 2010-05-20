@@ -96,6 +96,17 @@ namespace MumbleVoip
             emit SessionUnavailable();
         }
 
+        QList<QString> Provider::Statistics()
+        {
+            if (!session_)
+            {
+                QList<QString> lines;
+                return lines;
+            }
+            else
+                return session_->Statistics();
+        }
+
     } // InWorldVoice
 
 } // MumbleVoip
