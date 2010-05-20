@@ -34,8 +34,8 @@ namespace Ether
 
         public:
             EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);            
-            bool IsTeleporting() { return teleporting; };
-            void SetIsTeleporting(bool isteleporting) { teleporting = isteleporting; };
+            bool IsTeleporting() { return teleporting_; }
+            void SetIsTeleporting (bool teleporting) { teleporting_ = teleporting; }
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
@@ -52,7 +52,7 @@ namespace Ether
             EtherSceneController *scene_controller_;
             Foundation::Framework *framework_;
             QMap<QString, QString> last_info_map_;                        
-            bool teleporting;
+            bool teleporting_;
             QString region_name_;
 
 
