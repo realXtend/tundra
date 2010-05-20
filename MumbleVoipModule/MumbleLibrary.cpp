@@ -40,7 +40,6 @@ namespace MumbleVoip
         if (!mumble_main_loop_)
         {
             mumble_main_loop_ = new MumbleMainLoopThread();
-//            lib_mumble_thread_->moveToThread(QThread::currentThread()); // for cross thread signaling
         }
 
         if (mumble_main_loop_->isRunning())
@@ -66,6 +65,11 @@ namespace MumbleVoip
         mumble_lib->Shutdown();
         mumble_main_loop_->wait();
         SAFE_DELETE(mumble_main_loop_);
+    }
+
+    QThread* MumbleLibrary::MainLoopThread()
+    {
+        return mumble_main_loop_;
     }
 
 } // MumbleVoip
