@@ -58,9 +58,9 @@ namespace RexLogic
 {
 
 NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
-    rexlogicmodule_(rexlogicmodule)
+    rexlogicmodule_(rexlogicmodule),
+    ongoing_script_teleport_(false)
 {
-
     // Get the pointe to the current protocol module
     protocolModule_ = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
     
@@ -77,8 +77,6 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
     }
 
     script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_));
-
-    ongoing_script_teleport = false;
 }
 
 NetworkEventHandler::~NetworkEventHandler()
@@ -535,7 +533,6 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
 
 bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data)
 {
-
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -547,35 +544,38 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
     if (region_name.empty())
         return false;
 
-    boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module)
-    {        
-        QObject *object = ui_module->GetEtherLoginNotifier();
-        if (object)
+    // Ui module
+    boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module)
+        return false;
+            
+    // Notifier qobject ptr
+    QObject *object = ui_module->GetEtherLoginNotifier();
+    if (!object)
+        return false;
+
+    // Cast to actual class from qobject ptr
+    Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
+    if (notifier)
+    {   
+        if (!notifier->IsTeleporting())
+            ongoing_script_teleport_ = false;
+        
+        if (!ongoing_script_teleport_)
         {
-            Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
-            if (notifier)
-            {   
+            // Create question notification
+            UiServices::QuestionNotification *question_notification = 
+                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 7000);
+            // Connect notifier to recieve the answer signal
+            QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
+            // Send notification
+            ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
-                if (!notifier->IsTeleporting())
-                    ongoing_script_teleport = false;
-                
-                if (!ongoing_script_teleport)
-                {
-                    UiServices::QuestionNotification *question_notification = new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 5000);
-                    ui_module->GetNotificationManager()->ShowNotification(question_notification);
-
-                    QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));                    
-
-                    ongoing_script_teleport = true;
-                    notifier->SetIsTeleporting(true);
-
-                }
-            }
+            // Set bools that we dont get spam notification if you are standing in the script zone
+            ongoing_script_teleport_ = true;
+            notifier->SetIsTeleporting(true);
         }
     }
-
-
     return false;
 }
 
