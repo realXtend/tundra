@@ -59,6 +59,10 @@ namespace RexLogic
     class TaigaLoginHandler;
     class MainPanelHandler;
     class WorldInputLogic;
+    //namespace InWorldChat
+    //{
+    //    class Provider;
+    //}
 
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
@@ -356,6 +360,8 @@ namespace RexLogic
 
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
+
+//        InWorldChat::Provider* in_world_chat_provider_;
     };
 }
 

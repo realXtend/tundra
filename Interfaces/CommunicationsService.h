@@ -53,9 +53,9 @@ namespace Communications
     class ContactInterface;             // \todo: Define       telepathy, opensim
     class ContactListInterface;         // \todo: Define       telepathy, opensim
     // namespace: InWorldVoice
-    class InWorldVoiceInterface;        //                     mumble
+  //  class InWorldVoiceInterface;        //                     mumble
     // namespace: InWorldChat
-    class InWorldTextChat;              //                     opensim
+//    class InWorldTextChat;              //                     opensim
 
     //!
     class TextMessageInterface
@@ -64,7 +64,7 @@ namespace Communications
         virtual const QString& Author() const = 0;
         virtual const QString& Text() const = 0;
         virtual const QDateTime& TimeStamp() const = 0;
-        virtual QList<QByteArray> Attachments() const = 0;
+//        virtual QList<QByteArray> Attachments() const = 0;
     };
 
     namespace IM
@@ -140,39 +140,53 @@ namespace Communications
         //! Participant of in-world chat session. Participant list must be request from
         //! session object 
         //!
-        //!
         class ParticipantInterface
         {
         public:
             virtual const QString &Name() const = 0;
+            virtual QString AvatarUUID() const = 0;
+            virtual Vector3df Position() const = 0;
         };
         typedef QList<ParticipantInterface*> ParticipantList;
 
         class TextMessageInterface : public Communications::TextMessageInterface
         {
         public:
-            virtual const ParticipantInterface& AuthorParticipant() const = 0;
+//            virtual const ParticipantInterface& AuthorParticipant() const = 0;
         };
 
+
+        /// @todo : ??? ChatEvent { TextMessageReceived, TextMessageSent, ParticipantLeft, ParticipantJoined, ... }
         class SessionInterface : public QObject
         {
             Q_OBJECT
         public:
+            virtual ~SessionInterface() {};
             virtual void SendTextMessage(const QString &text) = 0;
-            virtual ParticipantList Participants() const = 0;
+//            virtual ParticipantList Participants() const = 0;
 
         signals:
             void TextMessageReceived(const TextMessageInterface &message);
-            void ParticipantJoined(ParticipantInterface* participant);
-            void ParticipantLeft(ParticipantInterface* participant);
+            //void ParticipantJoined(ParticipantInterface* participant);
+            //void ParticipantLeft(ParticipantInterface* participant);
         };
 
-        //! Provider in-world chat sessions
-        class ProviderInterface
+        /// Provider in-world chat sessions
+        class ProviderInterface : public QObject
         {
+            Q_OBJECT
         public:
-            virtual SessionInterface* Session() = 0;
+            /// destructor
+            virtual ~ProviderInterface() {};
+
+            /// @return session object, return 0 if the session doesn't exist
+            virtual Communications::InWorldChat::SessionInterface* Session() = 0;
+
+            /// Provider description
             virtual QString& Description() = 0;
+        signals:
+            void SessionAvailable();
+            void SessionUnavailable();
         };
 
     } // InWorldChat
