@@ -54,6 +54,8 @@ namespace RexLogic
 
         ScriptDialogHandlerPtr script_dialog_handler_;
 
+        bool ongoing_script_teleport;
+
     };
 }
 

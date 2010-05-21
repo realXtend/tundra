@@ -11,11 +11,12 @@ namespace UiServices
 {
 
     QuestionNotification::QuestionNotification(QString question, QString first_button_title, QString second_button_title,
-                                               QString third_button_title, int hide_in_msec) :
+                                               QString third_button_title, QString hidden_value, int hide_in_msec) :
         CoreUi::NotificationBaseWidget(hide_in_msec, question),
         question_box_(new QPlainTextEdit(question)),
         first_button_(new QPushButton(first_button_title)),
         second_button_(new QPushButton(second_button_title)),
+        hidden_value_(new QString(hidden_value)),
         third_button_(0)
     {
         SetActive(true);
@@ -78,22 +79,22 @@ namespace UiServices
 
     void QuestionNotification::FirstButtonClicked()
     {
-        EmitAnswer(first_button_->text());
+        EmitAnswer(first_button_->text(), *hidden_value_);
     }
 
     void QuestionNotification::SecondButtonClicked()
     {
-        EmitAnswer(second_button_->text());
+        EmitAnswer(second_button_->text(), *hidden_value_);
     }
 
     void QuestionNotification::ThirdButtonClicked()
     {
-        EmitAnswer(third_button_->text());
+        EmitAnswer(third_button_->text(), *hidden_value_);
     }
 
-    void QuestionNotification::EmitAnswer(QString clicked_button_title)
+    void QuestionNotification::EmitAnswer(QString clicked_button_title, QString hidden_value)
     {
-        emit QuestionAnswered(clicked_button_title);
+        emit QuestionAnswered(clicked_button_title, hidden_value);
         SetResult("Answered", clicked_button_title);
         TimedOut();
         SetActive(false);
