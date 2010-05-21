@@ -1,14 +1,14 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
 #include "MultiEditPropertyManager.h"
 
 #include "MemoryLeakCheck.h"
 
+
 namespace ECEditor
 {
-    QString MultiEditPropertyManager::Value(QtProperty *property) const
+    QString MultiEditPropertyManager::Value(const QtProperty *property) const
     {
         if(!values_.contains(property))
             return "";
@@ -17,7 +17,7 @@ namespace ECEditor
         return values;
     }
 
-    QStringList MultiEditPropertyManager::AttributeValue(QtProperty *property) const
+    QStringList MultiEditPropertyManager::AttributeValue(const QtProperty *property) const
     {
         QStringList attributes;
         if(!values_.contains(property))
@@ -35,6 +35,7 @@ namespace ECEditor
 
         values_[property].value = value;
         emit ValueChanged(property, value);
+        property->setModified(true);
     }
 
     void MultiEditPropertyManager::SetAttributeValues(QtProperty *property, const QStringList &attributes)
@@ -46,13 +47,15 @@ namespace ECEditor
 
         values_[property].attributeValues_ = attributes;
         emit AttributeValuesUpdated(property, attributes);
+        property->setModified(true);
     }
 
-    QString MultiEditPropertyManager::valueText(QtProperty *property) const
+    QString MultiEditPropertyManager::valueText(const QtProperty *property) const
     {
         if(!values_.contains(property))
             return "";
 
+        const_cast<QtProperty *>(property)->setModified(false);
         if(values_[property].value != "")
             return values_[property].value;
         else if(values_[property].attributeValues_.size() > 0)
@@ -64,20 +67,24 @@ namespace ECEditor
             }
             return value;
         }
-        return "Testing";
+        return "";
     }
 
     void MultiEditPropertyManager::initializeProperty(QtProperty *property)
     {
         Data data = Data();
-        data.value = QString();
+        data.value = QString("");
         data.attributeValues_ = QStringList();
         values_[property] = data;
+        
+        //QtProperty *item = addProperty("Hei");
+        //property->addSubProperty(item);
     }
     
     void MultiEditPropertyManager::uninitializeProperty(QtProperty *property)
     {
         values_.remove(property);
+        QtAbstractPropertyManager::uninitializeProperty(property);
     }
 
     //Remove below.

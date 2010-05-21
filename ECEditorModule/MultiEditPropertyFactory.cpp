@@ -22,24 +22,22 @@ namespace ECEditor
 
     void MultiEditPropertyFact::connectPropertyManager(MultiEditPropertyManager *manager)
     {
-        QObject::connect(manager, SIGNAL(ValueChanged(QtProperty *, const QString &)),
-                            this, SLOT(Updatevalue(QtProperty *, const QString &)));
-        QObject::connect(manager, SIGNAL(AttributeValuesUpdated(QtProperty *, const QStringList &)),
-                            this, SLOT(UpdateAttributeValues(QtProperty *, const QStringList &)));
+        QObject::connect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
+                            this, SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));
     }
 
     QWidget *MultiEditPropertyFact::createEditor(MultiEditPropertyManager *manager, QtProperty *property, QWidget *parent)
     {
-        /*if(createdEditors_.contains(property))
-           delete createdEditors_[property];*/
-
         MultiEditWidget *multiEditWidget = new MultiEditWidget(parent);
         multiEditWidget->SetAttributeValues(manager->AttributeValue(property));
         createdEditors_[property] = multiEditWidget;
         editorToProperty_[multiEditWidget] = property;
-        //QObject::connect(multiEditWidget, SIGNAL(ValueSelected(const QString&)), this, SLOT());
-        QObject::connect(multiEditWidget, SIGNAL(destroyed(QObject *)), this, SLOT(EditorDestroyed(QObject *)));
-        
+        QObject::connect(multiEditWidget, SIGNAL(ValueSelected(const QString &)), 
+                         this, SLOT(DialogValueSelected(const QString &)));
+        QObject::connect(this, SIGNAL(ValueSelected(QtProperty *, const QString &)), 
+                         manager, SLOT(SetValue(QtProperty *, const QString &)));
+        QObject::connect(multiEditWidget, SIGNAL(destroyed(QObject *)),
+                         this, SLOT(EditorDestroyed(QObject *)));
         UpdateAttributeValues(property, manager->AttributeValue(property));
 
         return multiEditWidget;
@@ -47,27 +45,28 @@ namespace ECEditor
 
     void MultiEditPropertyFact::disconnectPropertyManager(MultiEditPropertyManager *manager)
     {
-        QObject::disconnect(manager, SIGNAL(ValueChanged(QtProperty *, const QString &)),
-                               this, SLOT(Updatevalue(QtProperty *, const QString &)));
-        QObject::disconnect(manager, SIGNAL(AttributeValuesUpdated(QtProperty *, const QStringList &)),
-                               this, SLOT(UpdateAttributeValues(QtProperty *, const QStringList &)));
+        QObject::disconnect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
+                               this, SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));
     }
 
-    void MultiEditPropertyFact::Updatevalue(QtProperty *property, const QString &value)
+    void MultiEditPropertyFact::DialogValueSelected(const QString &value)
     {
-        
-    }
-
-    void MultiEditPropertyFact::Updatevalue(const QString &value)
-    {
-        MultiEditWidget *editor = dynamic_cast<MultiEditWidget*>(QObject::sender());
+        MultiEditWidget *editor = dynamic_cast<MultiEditWidget *>(QObject::sender());
         if(!editor)
             return;
+        if(!editorToProperty_.contains(editor))
+            return;
 
-        QString result = editor->GetFinalResult();
+        QtProperty *property = const_cast<QtProperty *>(editorToProperty_[editor]);
+        
+        //When the final pick is done there is no use for that attribute to be in this factory's map.
+        editorToProperty_.remove(editor);
+        createdEditors_.remove(editorToProperty_[editor]);
+
+        emit ValueSelected(property, value);
     }
 
-    void MultiEditPropertyFact::UpdateAttributeValues(QtProperty *property, const QStringList &attributes)
+    void MultiEditPropertyFact::UpdateAttributeValues(const QtProperty *property, const QStringList &attributes)
     {
         if(!createdEditors_.contains(property))
             return;

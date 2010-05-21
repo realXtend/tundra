@@ -137,6 +137,9 @@ ECAttributeEditorInterface::ECAttributeEditorInterface(const QString &attributeN
 
     template<> void ECAttributeEditor<Real>::InitializeEditor()
     {
+        //if(propertyMgr_ || factory_)
+        //    UninitializeEditor();
+
         if(!useMultiEditor_)
         {
             QtVariantPropertyManager *realPropertyManager = new QtVariantPropertyManager();
@@ -166,6 +169,7 @@ ECAttributeEditorInterface::ECAttributeEditorInterface(const QString &attributeN
             owner_->setFactoryForManager(testManager, testFactory);
             owner_->addProperty(property_);
             UpdateEditorValue();
+            QObject::connect(testManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiSelectValueSelected(const QtProperty *, const QString &)));
         }
     }
 
@@ -201,6 +205,25 @@ ECAttributeEditorInterface::ECAttributeEditorInterface(const QString &attributeN
                 iter++;
             }
             testPropertyManager->SetAttributeValues(property_, stringList);
+        }
+    }
+
+    //Todo! this code is leaking memory atm, remember to clean this one.
+    template<> void ECAttributeEditor<Real>::ValueSelected(const QtProperty *property, const QString &value)
+    {
+        if(useMultiEditor_)
+        {
+            if(property_ == property)
+            {
+                Real newValue = ParseString<Real>(value.toStdString(), Real(0));
+                propertyMgr_->deleteLater();
+                factory_->deleteLater();
+                //SAFE_DELETE(property_)
+                useMultiEditor_ = false;
+
+                InitializeEditor();
+                SetValue(newValue);
+            }
         }
     }
 

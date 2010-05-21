@@ -25,14 +25,16 @@ namespace ECEditor
         virtual void disconnectPropertyManager(MultiEditPropertyManager *manager);
 
     private slots:
-        void Updatevalue(QtProperty *property, const QString &value);
-        void Updatevalue(const QString &value);
-        void UpdateAttributeValues(QtProperty *property, const QStringList &attributes);
+        void DialogValueSelected(const QString &value);
+        void UpdateAttributeValues(const QtProperty *property, const QStringList &attributes);
         void EditorDestroyed(QObject *object);
+
+    signals:
+        void ValueSelected(QtProperty *property, const QString &value);
 
     private:
         QMap<const QtProperty *, MultiEditWidget *> createdEditors_;
-        QMap<MultiEditWidget *, const QtProperty *> editorToProperty_;
+        QMap<MultiEditWidget *,const QtProperty *> editorToProperty_;
     };
 
     class MultiEditPropertyFactory : public QtVariantEditorFactory
