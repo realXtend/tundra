@@ -182,12 +182,6 @@ namespace UiServices
 
     // Don't touch, please
 
-    void InworldSceneController::SetWorldChatController(QObject *controller) const
-    {
-        if (communication_widget_)
-            communication_widget_->UpdateController(controller);
-    }
-
     void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy) const
     {
         if (communication_widget_)
