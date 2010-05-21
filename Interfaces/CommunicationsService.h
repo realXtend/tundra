@@ -166,6 +166,7 @@ namespace Communications
             virtual ~SessionInterface() {};
             virtual void SendTextMessage(const QString &text) = 0;
 //            virtual ParticipantList Participants() const = 0;
+            virtual QList<TextMessageInterface*> MessageHistory() = 0;
 
         signals:
             void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
