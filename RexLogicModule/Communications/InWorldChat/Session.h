@@ -18,9 +18,9 @@ namespace RexLogic
             virtual ~Session();
             virtual void SendTextMessage(const QString &text);
 //            virtual ParticipantList Participants() const;
+            virtual QList<Communications::InWorldChat::TextMessageInterface*> MessageHistory();
 
             virtual void HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text);
-
         signals:
             void UserEnteredText(const QString& text);
 //            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);

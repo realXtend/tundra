@@ -24,6 +24,13 @@ namespace RexLogic
             emit UserEnteredText(text);
         }
 
+        QList<Communications::InWorldChat::TextMessageInterface*> Session::MessageHistory()
+        {
+            QList<Communications::InWorldChat::TextMessageInterface*> list;
+            /// @todo: IMPLEMENT
+            return list;
+        }
+
         void Session::HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text)
         {
             TextMessage message(AvatarName(from_uuid), text, IsSelfAvatarUUID(from_uuid));
