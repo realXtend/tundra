@@ -17,6 +17,12 @@ namespace RexLogic
     class RexLogicModule;
     class ScriptDialogHandler;
     typedef boost::shared_ptr<ScriptDialogHandler> ScriptDialogHandlerPtr;
+
+    namespace InWorldChat
+    {
+        class Provider;
+    }
+    typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
  
     /// Handles incoming SLUDP network events in a reX-specific way. \todo Break down into more logical functions.
     class NetworkEventHandler
@@ -41,7 +47,12 @@ namespace RexLogic
         bool HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data);
-
+        bool HandleOSNE_ChatFromSimulator(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_ImprovedInstantMessage(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_OnlineNotification(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_OfflineNotification(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_TerminateFriendship(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_DeclineFriendship(ProtocolUtilities::NetworkEventInboundData *data);
         
         //! Handler functions for GenericMessages
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
@@ -53,6 +64,7 @@ namespace RexLogic
         RexLogicModule *rexlogicmodule_;
 
         ScriptDialogHandlerPtr script_dialog_handler_;
+        InWorldChatProviderPtr in_world_chat_provider_;
 
         bool ongoing_script_teleport_;
 
