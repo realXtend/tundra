@@ -23,6 +23,10 @@
 #include <UiModule.h>
 #include <Inworld/InworldSceneController.h>
 #include <Inworld/ControlPanel/TeleportWidget.h>
+#include "Inworld/NotificationManager.h"
+#include "Inworld/ControlPanelManager.h"
+#include "Inworld/Notifications/QuestionNotification.h"
+#include "Ether/EtherLoginNotifier.h"
 
 #include <OgreMaterialManager.h>
 
@@ -54,9 +58,9 @@ namespace RexLogic
 {
 
 NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
-    rexlogicmodule_(rexlogicmodule)
+    rexlogicmodule_(rexlogicmodule),
+    ongoing_script_teleport_(false)
 {
-
     // Get the pointe to the current protocol module
     protocolModule_ = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
     
@@ -133,6 +137,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgMapBlockReply:
         return HandleOSNE_MapBlock(netdata);
+
+    case RexNetMsgScriptTeleportRequest:
+        return HandleOSNE_ScriptTeleport(netdata);
 
     default:
         break;
@@ -494,33 +501,76 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
 
     RexUUID agent_id = msg.ReadUUID();
     uint32_t flags_ = msg.ReadU32();
-
-    QList<CoreUi::MapBlock> mapBlocks_;
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
 
-    for(size_t i = 0; i < instance_count; ++i)
+    QList<ProtocolUtilities::MapBlock> mapBlocks;
+    for (size_t i = 0; i < instance_count; ++i)
     {
-
-        CoreUi::MapBlock block_;
-        block_.agentID = agent_id;
-        block_.flags = flags_;
-        block_.regionX = msg.ReadU16();
-        block_.regionY = msg.ReadU16();        
-        block_.regionName = msg.ReadString();
-        block_.access = msg.ReadU8();
-        block_.regionFlags = msg.ReadU32();
-        block_.waterHeight = msg.ReadU8();
-        block_.agents = msg.ReadU8();
-        block_.mapImageID = msg.ReadUUID();
-        mapBlocks_.append(block_);        
+        ProtocolUtilities::MapBlock block;
+        block.agentID = agent_id;
+        block.flags = flags_;
+        block.regionX = msg.ReadU16();
+        block.regionY = msg.ReadU16();        
+        block.regionName = msg.ReadString();
+        block.access = msg.ReadU8();
+        block.regionFlags = msg.ReadU32();
+        block.waterHeight = msg.ReadU8();
+        block.agents = msg.ReadU8();
+        block.mapImageID = msg.ReadUUID();
+        mapBlocks.append(block);        
     }
 
     boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
-    {
-        ui_module->GetInworldSceneController()->SetTeleportWidget(mapBlocks_);
-    }
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
+    return false;
+}
 
+bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    std::string object_name = msg.ReadString(); // Sender name
+    std::string region_name = msg.ReadString(); // Sim name
+    Vector3df position = msg.ReadVector3(); // Sim position
+    Vector3df lookAt = msg.ReadVector3(); // LookAt
+
+    if (region_name.empty())
+        return false;
+
+    // Ui module
+    boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    if (!ui_module)
+        return false;
+            
+    // Notifier qobject ptr
+    QObject *object = ui_module->GetEtherLoginNotifier();
+    if (!object)
+        return false;
+
+    // Cast to actual class from qobject ptr
+    Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
+    if (notifier)
+    {   
+        if (!notifier->IsTeleporting())
+            ongoing_script_teleport_ = false;
+        
+        if (!ongoing_script_teleport_)
+        {
+            // Create question notification
+            UiServices::QuestionNotification *question_notification = 
+                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 7000);
+            // Connect notifier to recieve the answer signal
+            QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
+            // Send notification
+            ui_module->GetNotificationManager()->ShowNotification(question_notification);
+
+            // Set bools that we dont get spam notification if you are standing in the script zone
+            ongoing_script_teleport_ = true;
+            notifier->SetIsTeleporting(true);
+        }
+    }
     return false;
 }
 

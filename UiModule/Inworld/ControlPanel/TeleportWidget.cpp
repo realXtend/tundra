@@ -32,31 +32,22 @@ namespace CoreUi
         connect(cancelPushButton, SIGNAL(clicked()), this, SLOT(Cancel()));
         connect(visibility_animation_, SIGNAL(finished()), SLOT(AnimationsFinished()));
         
-
         hide();
         scene->addItem(this);
             
         connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(SceneRectChanged(const QRectF&)));
-
     }
 
     // Public
 
-    void TeleportWidget::SetMapBlocks(const QList<MapBlock> &map_blocks)
+    void TeleportWidget::SetMapBlocks(const QList<ProtocolUtilities::MapBlock> &map_blocks)
     {
         regionComboBox->clear();
         if (map_blocks.size() > 0)
-        {            
-            for(uint i = 0; i < map_blocks.size(); i++)
-            {                
-                MapBlock block = map_blocks.at(i);
+            foreach (ProtocolUtilities::MapBlock block, map_blocks)
                 regionComboBox->addItem(QString::fromStdString(block.regionName));
-            }
-        }
         else
-        {
             regionComboBox->setDisabled(true);
-        }
     }
 
     void TeleportWidget::AnimatedHide()
@@ -102,7 +93,7 @@ namespace CoreUi
     }
 
     void TeleportWidget::Teleport()
-    {  
+    {          
         QString start_location = regionLineEdit->text();
         if (start_location.isEmpty())
             start_location = regionComboBox->currentText();

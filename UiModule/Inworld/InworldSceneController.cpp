@@ -73,15 +73,6 @@ namespace UiServices
         return true;
     }
 
-    void InworldSceneController::SetTeleportWidget (const QList<CoreUi::MapBlock> &map_blocks)
-    {
-        if (map_blocks.size() > 0)
-        {
-            control_panel_manager_->GetTeleportWidget()->SetMapBlocks(map_blocks);
-        }
-    }
-
-
     UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget)
     {
         return AddWidgetToScene(widget, UiWidgetProperties("Unnamed Widget", ModuleWidget));

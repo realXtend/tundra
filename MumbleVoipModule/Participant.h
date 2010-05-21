@@ -27,6 +27,8 @@ namespace MumbleVoip
             virtual void Add(User* user);
             virtual User* UserPtr() const;
 
+            virtual void SetName(QString name);
+
         private:
             bool muted_;
             bool speaking_;
