@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_ProtocolUtilities_NetMessageManager_h
 #define incl_ProtocolUtilities_NetMessageManager_h
 
@@ -6,15 +7,18 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-#include "NetworkConnection.h"
-#include "NetInMessage.h"
-#include "NetOutMessage.h"
 #include "NetMessage.h"
-#include "Interfaces/INetMessageListener.h"
 #include "EventHistory.h"
+
+#include "RexTypes.h"
 
 namespace ProtocolUtilities
 {
+    class NetOutMessage;
+    class NetInMessage;
+    class NetMessageList;
+    class NetworkConnection;
+    class INetMessageListener;
 
     /// Manages both in- and outbound UDP communication. Implements a packet queue, packet sequence numbering, ACKing,
     /// pinging, and reliable communications. reX-protocol specific. Used internally by OpenSimProtocolModule, external
@@ -74,9 +78,12 @@ namespace ProtocolUtilities
 #endif
 
     private:
+        NetMessageManager(const NetMessageManager &);
+        void operator=(const NetMessageManager &);
+
         /// Deallocates all memory used for outbound message structs.
         void ClearMessagePoolMemory();
-    
+
         /// @return A new sequence number for outbound UDP messages.
         size_t GetNewSequenceNumber() { return sequenceNumber++; }
 
@@ -113,9 +120,6 @@ namespace ProtocolUtilities
         /// Checks each reliable message in outbound queue and resends any of the if an Ack was not received within a time-out period.
         void ProcessResendQueue();
 
-        NetMessageManager(const NetMessageManager &);
-        void operator=(const NetMessageManager &);
-
         /// All incoming UDP packets are routed to this handler.
         INetMessageListener *messageListener;
 
@@ -148,7 +152,6 @@ namespace ProtocolUtilities
         /// A set of received messages' sequence numbers.
         std::set<uint32_t> receivedSequenceNumbers;
     };
-
 }
 
 #endif // incl_ProtocolUtilities_NetMessageManager_h

@@ -5,12 +5,15 @@
 
 #include "WorldStream.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
+#include "NetworkMessages/NetOutMessage.h"
+
 #include "ProtocolModuleOpenSim.h"
 #include "ProtocolModuleTaiga.h"
 #include "QuatUtils.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
+#include "RexTypes.h"
 
 #include <QString>
 #include <QUrl>
@@ -285,7 +288,7 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
     NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
     assert(m);
 
-    Vector3 scale(0.5f, 0.5f, 0.5f);
+    RexTypes::Vector3 scale(0.5f, 0.5f, 0.5f);
     Quaternion rotation(0, 0, 0, 1);
 
     // AgentData
@@ -513,12 +516,12 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(13);
 
         // Position
-        memcpy(&data[offset], &update_info_list[i].position_, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        memcpy(&data[offset], &update_info_list[i].position_, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
 
         // Scale
-        memcpy(&data[offset], &update_info_list[i].scale_, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        memcpy(&data[offset], &update_info_list[i].scale_, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
     }
 
     // Add the data.
@@ -544,9 +547,9 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(2);
         
         // Rotation
-        Vector3 val = PackQuaternionToFloat3(update_info_list[i].orientation_);
-        memcpy(&data[offset], &val, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        RexTypes::Vector3 val = PackQuaternionToFloat3(update_info_list[i].orientation_);
+        memcpy(&data[offset], &val, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
     }
 
     // Add the data.
@@ -593,7 +596,7 @@ void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
     // ObjectData
     m->AddU32(object_id);
     //! \todo Touch offset is not send / calculated currently since it is not really used by the server anyway. -cm
-    m->AddVector3(Vector3::ZERO);
+    m->AddVector3(RexTypes::Vector3::ZERO);
 
     FinishMessageBuilding(m);
 }
