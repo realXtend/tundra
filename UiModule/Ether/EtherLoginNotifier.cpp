@@ -2,13 +2,11 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "EtherLoginNotifier.h"
 
+#include "EtherLoginNotifier.h"
 #include "Data/RealXtendAvatar.h"
 #include "Data/OpenSimAvatar.h"
 #include "Data/OpenSimWorld.h"
-
-#include "MemoryLeakCheck.h"
 
 #include "ModuleManager.h"
 #include "UiModule.h"
@@ -16,6 +14,11 @@
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
 #include "UiNotificationServices.h"
+
+#include <QWebFrame>
+#include <QTimer>
+
+#include "MemoryLeakCheck.h"
 
 namespace Ether
 {
@@ -39,7 +42,8 @@ namespace Ether
             {
                 case WorldTypes::OpenSim:
                 {
-                    Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld*>(data_cards.second);
+                    Data::OpenSimWorld *ow = checked_static_cast<Data::OpenSimWorld*>(data_cards.second);
+                    assert(ow);
                     info_map["WorldAddress"] = ow->loginUrl().toString();
                     info_map["StartLocation"] = ow->startLocation();
                     break;
@@ -50,7 +54,8 @@ namespace Ether
             {
                 case AvatarTypes::OpenSim:
                 {
-                    Data::OpenSimAvatar *oa = dynamic_cast<Data::OpenSimAvatar*>(data_cards.first);
+                    Data::OpenSimAvatar *oa = checked_static_cast<Data::OpenSimAvatar*>(data_cards.first);
+                    assert(oa);
                     info_map["Username"] = oa->userName();
                     info_map["Password"] = oa->password();
                     last_info_map_ = info_map;
@@ -60,7 +65,8 @@ namespace Ether
                 }
                 case AvatarTypes::RealXtend:
                 {
-                    Data::RealXtendAvatar *ra = dynamic_cast<Data::RealXtendAvatar*>(data_cards.first);
+                    Data::RealXtendAvatar *ra = checked_static_cast<Data::RealXtendAvatar*>(data_cards.first);
+                    assert(ra);
                     info_map["Username"] = ra->account();
                     info_map["Password"] = ra->password();
                     info_map["AuthenticationAddress"] = ra->authUrl().toString();
@@ -101,7 +107,7 @@ namespace Ether
         {
             answer = answer.toLower();
             if (answer == "yes")
-            {                
+            {
                 QTimer::singleShot(1000, this, SLOT(ScriptTeleport()));
                 region_name_ = region_name;
             }
