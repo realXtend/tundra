@@ -34,7 +34,8 @@ namespace CoreUi
         voice_state_widget_(0),
         voice_users_info_widget_(0),
         voice_users_widget_(0),
-        voice_users_proxy_widget_(0)
+        voice_users_proxy_widget_(0),
+        in_world_chat_session_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -190,7 +191,10 @@ namespace CoreUi
 
         QString message = chatLineEdit->text();
         chatLineEdit->clear();
-        emit SendMessageToServer(message);
+        if (in_world_chat_session_)
+            in_world_chat_session_->SendTextMessage(message);
+
+        //emit SendMessageToServer(message); // OLD WAY USING TELEPATHY MODULE
     }
 
     // Protected
@@ -312,6 +316,9 @@ namespace CoreUi
             if (comm.get())
             {
                 connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+                in_world_chat_session_ = comm->InWorldChatSession();
+                connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
+                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) ); /// @todo: Uninitialize...
             }
         }
     }
@@ -319,6 +326,22 @@ namespace CoreUi
     void CommunicationWidget::SetFocusToChat()
     {
         chatLineEdit->setFocus(Qt::MouseFocusReason);
+    }
+
+    void CommunicationWidget::InitializeInWorldChat()
+    {
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                in_world_chat_session_ = comm->InWorldChatSession();
+                if (!in_world_chat_session_)
+                    return;
+
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const TextMessageInterface &message)), SLOT(UpdateInWorldChatView(const TextMessageInterface &message)) );
+            }
+        }
     }
 
     void CommunicationWidget::InitializeInWorldVoice()
@@ -369,12 +392,8 @@ namespace CoreUi
             boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module.get())
             {
-                //UiServices::UiWidgetProperties widget_properties("IM", UiServices::SceneWidget);
                 voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_users_widget_);
                 voice_users_proxy_widget_->hide();
-                
-
-                //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }
         UpdateInWorldVoiceIndicator();
@@ -408,6 +427,12 @@ namespace CoreUi
 
         if (voice_users_info_widget_)
             voice_users_info_widget_->SetUsersCount(in_world_voice_session_->Participants().count());
+    }
+
+    void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
+    {
+        QString time_stamp = "xx:xx";
+        ShowIncomingMessage(false, message.Author(), time_stamp, message.Text());
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()
@@ -468,7 +493,5 @@ namespace CoreUi
     {
         emit DestroyMe(this);
     }
-
-
 
 }
