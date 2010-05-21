@@ -8,6 +8,7 @@
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
 #include "Ether/EtherLogic.h"
+#include "Ether/EtherLoginNotifier.h"
 #include "Ether/View/EtherScene.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
@@ -167,8 +168,25 @@ namespace UiServices
                 {
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
                     // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
+
+                    // School project
+                    // hack for teleport, parse the base robust address from here for next login
+                    ProtocolUtilities::AuthenticationEventData *auth_data = dynamic_cast<ProtocolUtilities::AuthenticationEventData*>(data);
+                    if (auth_data)
+                    {
+                        //auth_data->webdav_host
+                    }
                     break;
                 }
+                case ProtocolUtilities::Events::EVENT_LOGIN_INFO_AQQUIRED:
+                {
+                    ProtocolUtilities::LoginDataEvent *login_data = dynamic_cast<ProtocolUtilities::LoginDataEvent*>(data);
+                    Ether::Logic::EtherLoginNotifier *notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(ether_logic_->GetLoginNotifier());
+                    if (notifier && login_data)
+                        notifier->SetLoginData(login_data->base_address_.c_str(), login_data->port_);
+                    break;
+                }
+
                 default:
                     break;
             }

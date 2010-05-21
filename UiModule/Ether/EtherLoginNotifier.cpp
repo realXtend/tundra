@@ -17,6 +17,9 @@
 #include "Inworld/ControlPanel/TeleportWidget.h"
 #include "UiNotificationServices.h"
 
+#include "WorldStream.h"
+#include <QSettings> // school
+
 namespace Ether
 {
     namespace Logic
@@ -119,6 +122,12 @@ namespace Ether
             teleporting_ = false;
         }
 
+        void EtherLoginNotifier::SetLoginData(QString address, int port)
+        {
+            QUrl url(address);
+            web_auth_login_address_ = url.authority();
+        }
+
         void EtherLoginNotifier::Teleport(QString start_location)
         {
             if (start_location.isEmpty())
@@ -133,10 +142,40 @@ namespace Ether
                 emit StartRexLogin(last_info_map_);
             else
             {
-                UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
-                boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                if (web_auth_login_address_.isEmpty())
+                    return;
+
+                // HACK HACK SCHOOL PROJECT
+                boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
                 if (ui_module)
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
+                {
+                    ProtocolUtilities::WorldStream *ws = ui_module->GetCurrentWorldStream().get();
+                    
+                    QString first, last, pwd;
+                    QString agent_id = ws->GetInfo().agentID.ToQString();
+                    QString world_address = QString(ws->GetInfo().gridUrl.c_str());
+
+                    // GET USER SERVER IP:PORT!!!  world_address == sim ip!
+
+                    QSettings liveidcreds(QSettings::IniFormat, QSettings::UserScope, "realXtend", "credentials/liveid");
+                    first = liveidcreds.value(agent_id + "/FirstName").toString();
+                    last = liveidcreds.value(agent_id + "/LastName").toString();
+                    pwd = liveidcreds.value(agent_id + "/Password").toString();
+
+                    last_info_map_.clear();
+                    last_info_map_["StartLocation"] = start_location;
+                    last_info_map_["AvatarType"] = "OpenSim";
+                    last_info_map_["Username"] = first + " " + last;
+                    last_info_map_["Password"] = pwd;
+                    last_info_map_["WorldAddress"] = web_auth_login_address_;
+
+                    emit StartOsLogin(last_info_map_);
+                }
+
+                //UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
+                //boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                //if (ui_module)
+                //    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
             }
         }
     }

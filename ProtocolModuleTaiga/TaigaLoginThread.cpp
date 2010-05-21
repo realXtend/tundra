@@ -150,7 +150,12 @@ namespace TaigaProtocol
         try
         {
             // Grid url, Session ID, Agent ID, Cirtuit Code, Seed Caps
-            threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
+            if (call.HasReply("session_id"))
+                threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
+            else
+                ProtocolModuleTaiga::LogError("Login response didnt contain session_id");
+            //threadState_->parameters.sessionID.FromString(call.GetReply<std::string>("session_id"));
+            
             threadState_->parameters.agentID.FromString(call.GetReply<std::string>("agent_id"));
             threadState_->parameters.circuitCode = call.GetReply<int>("circuit_code");
             threadState_->parameters.seedCapabilities = call.GetReply<std::string>("seed_capability");

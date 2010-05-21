@@ -39,6 +39,7 @@ namespace Inventory
         static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_COMPLETE = 0x07;
         static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST = 0x08;
         static const event_id_t EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_COMPLETE = 0x09;
+        static const event_id_t EVENT_INVENTORY_WEBDAV_AUTH_RECIEVED = 0x10;
     }
 
     /// Inventory item type enumeration.
@@ -148,6 +149,19 @@ namespace Inventory
         WebDavInventoryUploadedData(QStringList uploaded_file_list) : file_list(uploaded_file_list) {}
         virtual ~WebDavInventoryUploadedData() {}
         QStringList file_list;
+    };
+
+    // school project hax :) - Jonne
+    class WebDavCredentials : public Foundation::EventDataInterface
+    {
+    public:
+        WebDavCredentials(QString agent_id, QString first_name, QString last_name) :
+          agent_id_(agent_id), first_name_(first_name), last_name_(last_name) {}
+        virtual ~WebDavCredentials() {}
+        
+        QString agent_id_;
+        QString first_name_;
+        QString last_name_;
     };
 }
 

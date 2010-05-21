@@ -111,6 +111,8 @@ namespace ProtocolUtilities
          *  Notifies that caps fetch is done. You can query caps from world stream after this is sent.
          */
         static const event_id_t EVENT_CAPS_FETCHED = 0x07;
+
+        static const event_id_t EVENT_LOGIN_INFO_AQQUIRED = 0x08;
     }
 
     /// Enumeration of the network connection states.
@@ -238,6 +240,15 @@ namespace ProtocolUtilities
         int32_t localId;
         /// Name.
         std::string fullName;
+    };
+
+    class LoginDataEvent : public Foundation::EventDataInterface
+    {
+    public:
+        explicit LoginDataEvent(std::string base_address, int port) : base_address_(base_address), port_(port) {}
+        virtual ~LoginDataEvent() {}
+        std::string base_address_;
+        int port_;
     };
 }
 

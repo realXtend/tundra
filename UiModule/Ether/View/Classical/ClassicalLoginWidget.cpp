@@ -17,21 +17,21 @@ namespace CoreUi
             QMap<QString,QString> stored_login_data) :
             QWidget(),
             login_notifier_(login_notifier),
-            traditional_widget_(new TraditionalLoginWidget(this, stored_login_data)),
+            traditional_widget_(new TraditionalLoginWidget(0/*this*/, stored_login_data)),
             web_login_(new WebLoginWidget(this))
         {
             setupUi(this);
-            tabWidget->addTab(traditional_widget_, " Login");
+            //tabWidget->addTab(traditional_widget_, " Login");
             tabWidget->addTab(web_login_, " Weblogin");
 
             connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ),
                     login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
             connect(web_login_, SIGNAL( WebLoginUrlRecived(QString) ),
                     login_notifier, SLOT( EmitTaigaLogin(QString) ));
-            connect(traditional_widget_, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ),
-                    login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
-            connect(traditional_widget_, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ),
-                    login_notifier, SLOT( EmitRealXtendLogin(QMap<QString, QString>) ));
+            //connect(traditional_widget_, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ),
+            //        login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
+            //connect(traditional_widget_, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ),
+            //        login_notifier, SLOT( EmitRealXtendLogin(QMap<QString, QString>) ));
         }
 
         ClassicalLoginWidget::~ClassicalLoginWidget()

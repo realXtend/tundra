@@ -107,11 +107,14 @@ namespace CoreUi
                 pushButton_Stop->setEnabled(false);
                 address_ = webView->url().toString();
                 comboBox_Address->lineEdit()->setText(address_);
-                //setWindowTitle(webView_->page()->mainFrame()->title().append(" - realXtend Naali web browser"));
                 if (comboBox_Address->findText(address_, Qt::MatchFixedString) == -1)
                     comboBox_Address->addItem(address_);
                 label_Status->setText("Done");
                 progressBar_Status->hide();
+
+                /*
+                
+                SKIP THIS FOR OUKA PROJECT AT LEAST, prolly can be disabled permanently hence we have the cablebeach:// handler not
 
                 // Do actual HTML page processing if this was a login success page...
                 if (webView->page()->mainFrame()->title() == "LoginSuccess")
@@ -126,6 +129,7 @@ namespace CoreUi
                     //emit WebLoginInfoRecieved(webView->page()->mainFrame());
                     emit WebLoginUrlRecived(entry_point_url);
                 }
+                */
             }
         }
 
