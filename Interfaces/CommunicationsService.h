@@ -309,4 +309,4 @@ namespace Communications
 
 } // Communications
 
-#endif incl_Interfaces_CommunicationsService_h
+#endif // incl_Interfaces_CommunicationsService_h
