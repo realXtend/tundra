@@ -1,22 +1,30 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
+#include "NetMessageManager.h"
+#include "NetInMessage.h"
+#include "NetOutMessage.h"
+#include "NetworkConnection.h"
+#include "ZeroCode.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "Interfaces/INetMessageListener.h"
+
+#include "Profiler.h"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <cstring>
+
 #include <boost/timer.hpp>
 
-#include "DebugOperatorNew.h"
+#include <Poco/Net/NetException.h>
+#include <Poco/Net/DatagramSocket.h> // To get htons etc.
 
-#include "Poco/Net/NetException.h"
-#include "Poco/Net/DatagramSocket.h" // To get htons etc.
-
-#include "NetMessageManager.h"
-#include "ZeroCode.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "Profiler.h"
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 
