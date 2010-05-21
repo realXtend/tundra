@@ -24,23 +24,15 @@ namespace ECEditor
     {
     }
 
-    void AttributeBrowser::AddEntityComponent(Foundation::ComponentInterfacePtr entityComponent)
+    void AttributeBrowser::AddEntityComponents(std::vector<Foundation::ComponentInterfacePtr> entityComponents)
     {
-        QString name = QString(entityComponent.get()->TypeName().c_str());
-        EntityComponentMap::iterator iter = SelectedEntityComponents_.find(name);
-        if(iter == SelectedEntityComponents_.end())
-        {
-            SelectedEntityComponents_[name] = Foundation::ComponentWeakPtr(entityComponent);
-            RefreshAttributeComponents();
-        }
-    }
+        if(!entityComponents.size())
+            return;
 
-    void AttributeBrowser::RemoveEntityComponent(Foundation::ComponentInterfacePtr entityComponent)
-    {
-        QString name = QString(entityComponent.get()->Name().c_str());
-        EntityComponentMap::iterator iter = SelectedEntityComponents_.find(name);
-        if(iter != SelectedEntityComponents_.end())
-            SelectedEntityComponents_.erase(iter);
+        QString name = QString(entityComponents[0]->TypeName().c_str());
+        for(uint i = 0; i < entityComponents.size(); i++)
+            SelectedEntityComponents_[name].push_back(Foundation::ComponentWeakPtr(entityComponents[i]));
+        RefreshAttributeComponents();
     }
 
     void AttributeBrowser::RefreshAttributeComponents()
@@ -48,14 +40,17 @@ namespace ECEditor
         EntityComponentMap::iterator iter = SelectedEntityComponents_.begin();
         while(iter != SelectedEntityComponents_.end())
         {
-            if(iter->second.expired())
-                continue;
-            
-            Foundation::ComponentInterfacePtr componentPtr = iter->second.lock();
-            Foundation::AttributeVector attributes = componentPtr->GetAttributes();
-            for(uint i = 0; i < attributes.size(); i++)
+            for(uint i = 0; i < iter->second.size(); i++)
             {
-                AddNewAttribute(attributes[i]);
+                if(iter->second[i].expired())
+                    continue;
+                
+                Foundation::ComponentInterfacePtr componentPtr = iter->second[i].lock();
+                Foundation::AttributeVector attributes = componentPtr->GetAttributes();
+                for(uint j = 0; j < attributes.size(); j++)
+                {
+                    AddNewAttribute(*attributes[j], componentPtr);
+                }
             }
             iter++;
         }
@@ -85,38 +80,37 @@ namespace ECEditor
         layout->addWidget(propertyBrowser_);
     }
 
-    void AttributeBrowser::AddNewAttribute(Foundation::AttributeInterface *attribute)
+    void AttributeBrowser::AddNewAttribute(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
     {
-        AttributeEditorMap::iterator iter = attributes_.find(attribute->GetName());
+        AttributeEditorMap::iterator iter = attributes_.find(attribute.GetName());
         if(iter == attributes_.end())
         {
-            ECAttributeEditorInterface *newEditor = CreateAttributeEditor(*attribute);
+            ECAttributeEditorInterface *newEditor = CreateAttributeEditor(attribute, component);
             if(newEditor)
                 attributes_[newEditor->GetAttributeName()] = newEditor;
         }
         else
         {
-
-            //todo! Set this attribute to multiedit mode cause more than one entity component has the same attribute type in use.
+            iter->second->AddNewComponent(component);
         }
     }
 
-    ECAttributeEditorInterface *AttributeBrowser::CreateAttributeEditor(Foundation::AttributeInterface &attribute)
+    ECAttributeEditorInterface *AttributeBrowser::CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
     {
         ECAttributeEditorInterface *attributeEditor = 0;
         // Todo! Organize those dynamic casts in a such order that we first check those attribute types that are most commonly used.
         if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), propertyBrowser_, &attribute, this);
-        else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), propertyBrowser_, &attribute, this);
+            attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), propertyBrowser_, component, this);
+        /*else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), propertyBrowser_, component, this);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), propertyBrowser_, &attribute, this);
-        else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, &attribute, this);
+            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), propertyBrowser_, component, this);
+        //else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
+        //    attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, &attribute, this);
         else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), propertyBrowser_, &attribute, this);
+            attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), propertyBrowser_, component, this);
         else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), propertyBrowser_, &attribute, this);
+            attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), propertyBrowser_, component, this);*/
 
         if(attributeEditor)
             QObject::connect(attributeEditor, SIGNAL(AttributeChanged()), this, SIGNAL(AttributesChanged()));

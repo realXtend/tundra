@@ -3,11 +3,12 @@
 #ifndef incl_ECEditorModule_ECAttributeEditor_h
 #define incl_ECEditorModule_ECAttributeEditor_h
 
-#include "StableHeaders.h"
+#include "ForwardDefines.h"
 #include <QObject>
-#include <QtDoublePropertyManager>
-#include <QtVariantPropertyManager>
+//#include <QtDoublePropertyManager>
+//#include <QtVariantPropertyManager>
 #include "AttributeInterface.h"
+#include <map>
 
 class QtDoublePropertyManager;
 class QtVariantPropertyManager;
@@ -30,6 +31,12 @@ namespace ECEditor
     public:
         ECAttributeEditorInterface(const QString &attributeName,
                                    QtAbstractPropertyBrowser *owner,
+                                   Foundation::ComponentPtr component,
+                                   QObject *parent = 0);
+
+        ECAttributeEditorInterface(const QString &attributeName,
+                                   QtAbstractPropertyBrowser *owner,
+                                   std::vector<Foundation::ComponentPtr> components,
                                    QObject *parent = 0);
 
         virtual ~ECAttributeEditorInterface();
@@ -40,11 +47,17 @@ namespace ECEditor
 
         //! Get editor's root property.
         //! @return editor's root property pointer.
-        QtProperty *GetProperty() const { return property_; }
+        const QtProperty *GetProperty() const { return property_; }
+
+        //! Return number of entity componets have been attached to this editor.
+        //! @return Number of entity components in this editor.
+        int NumberOfComponents() const { return attributeMap_.size();}
 
         //! Get property manager ptr.
         //! @return property manager pointer.
         QtAbstractPropertyManager *GetPropertyManager()  const { return propertyMgr_; }
+
+        void AddNewComponent(Foundation::ComponentPtr component);
 
         //! Get new attribute values and update them in browser window.
         virtual void UpdateEditorValue() = 0;
@@ -67,6 +80,13 @@ namespace ECEditor
 
         //! Initialize attribute editor's components.
         virtual void InitializeEditor() = 0;
+        virtual void UninitializeEditor();
+
+        virtual Foundation::AttributeInterface *FindAttribute(Foundation::AttributeVector attributes);
+
+        //! Check if all attributes contain the same value.
+        //! @return return true if all attributes have a same value and false when not.
+        virtual bool AttributesValueCheck() const;
 
         QtAbstractPropertyBrowser *owner_;
         QtAbstractPropertyManager *propertyMgr_;
@@ -74,6 +94,9 @@ namespace ECEditor
         QtProperty *property_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
+        typedef std::map<Foundation::ComponentWeakPtr, Foundation::AttributeInterface *> ECAttributeMap;
+        ECAttributeMap attributeMap_;
+        bool useMultiEditor_;
     };
 
     template<typename T> class ECAttributeEditor : public ECAttributeEditorInterface
@@ -81,68 +104,73 @@ namespace ECEditor
     public:
         ECAttributeEditor(const QString &attributeName,
                           QtAbstractPropertyBrowser *owner,
-                          Foundation::AttributeInterface *attribute,
+                          Foundation::ComponentPtr component,
                           QObject *parent = 0):
-            ECAttributeEditorInterface(attributeName, owner, parent)
+            ECAttributeEditorInterface(attributeName, owner, component, parent)
         {
-            attribute_ = dynamic_cast<Foundation::Attribute<T> *>(attribute);
-            if(attribute)
-            {
-                Foundation::ComponentInterface *component = attribute->GetOwner();
-                if(component)
-                    QObject::connect(component, SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
-                InitializeEditor();
-                listenEditorChangedSignal_ = true;
-            }
+            InitializeEditor();
+            listenEditorChangedSignal_ = true;
+        }
+
+        ECAttributeEditor(const QString &attributeName,
+                          QtAbstractPropertyBrowser *owner,
+                          std::vector<Foundation::ComponentPtr> components,
+                          QObject *parent = 0):
+            ECAttributeEditorInterface(attributeName, owner, components, parent)
+        {
+            InitializeEditor();
+            listenEditorChangedSignal_ = true;
         }
 
         ~ECAttributeEditor()
         {
+            
         }
 
-        //! Send a new value to each component and emit AttributeChanged signal.
-        //! @param value_ new value that is sended to component's attribute.
-        void SetValue(T value)
-        {
-            if(attribute_)
-            {
-                if(attribute_->GetOwner()->IsSerializable())
-                {
-                    attribute_->Set(value, Foundation::Local);
-                    listenEditorChangedSignal_ = false;
-                    attribute_->GetOwner()->ComponentChanged(Foundation::Local);
-                    listenEditorChangedSignal_ = true;
-                }
-                else
-                {
-                    attribute_->Set(value, Foundation::LocalOnly);
-                    listenEditorChangedSignal_ = false;
-                    attribute_->GetOwner()->ComponentChanged(Foundation::LocalOnly);
-                    listenEditorChangedSignal_ = true;
-                }
-                emit AttributeChanged();
-            }
-        }
-
-        //! Get component attribute value.
-        //! @return attribute value.
-        T GetValue() const
-        {
-            return attribute_->Get();
-        }
-
-        //! 
+        //! Get new entity components attribute value and change it on the editor widget.
         virtual void UpdateEditorValue();
 
     private:
         virtual void SendNewValueToAttribute(QtProperty *property);
         virtual void InitializeEditor();
 
-        Foundation::Attribute<T> *attribute_;
+        //! Send a new value to each component and emit a AttributeChanged signal.
+        //! @param value_ new value that is sended to component's attribute.
+        void SetValue(const T &value)
+        {
+            ECAttributeMap::iterator iter = attributeMap_.begin();
+            while(iter != attributeMap_.end())
+            {
+                Foundation::ComponentWeakPtr component = iter->first;
+                if(component.expired())
+                    continue;
+                Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
+                if(attribute)
+                {
+                    if(component.lock()->IsSerializable())
+                    {
+                        attribute->Set(value, Foundation::Local);
+                        listenEditorChangedSignal_ = false;
+                        attribute->GetOwner()->ComponentChanged(Foundation::Local);
+                        listenEditorChangedSignal_ = true;
+                    }
+                    else
+                    {
+                        attribute->Set(value, Foundation::LocalOnly);
+                        listenEditorChangedSignal_ = false;
+                        attribute->GetOwner()->ComponentChanged(Foundation::LocalOnly);
+                        listenEditorChangedSignal_ = true;
+                    }
+                }
+                iter++;
+            }
+            emit AttributeChanged();
+        }
     };
 
     template<> void ECAttributeEditor<Real>::UpdateEditorValue();
-
+    template<> void ECAttributeEditor<Real>::InitializeEditor();
+    template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property);
 }
 
 

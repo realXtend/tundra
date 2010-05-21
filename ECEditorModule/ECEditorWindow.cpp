@@ -237,16 +237,16 @@ namespace ECEditor
 
     void ECEditorWindow::RefreshPropertyBrowser()
     {
+        attribute_browser_->ClearBrowser();
         std::vector<EntityComponentSelection> selection = GetSelectedComponents();
         if (!selection.size() && attribute_browser_)
             return;
 
-        attribute_browser_->ClearBrowser();
         for(uint i = 0; i < selection.size(); i++)
         {
             std::vector<Foundation::ComponentInterfacePtr> components = selection[i].components;
             for(uint j = 0; j < components.size(); j++)
-                attribute_browser_->AddEntityComponent(components[j]);
+                attribute_browser_->AddEntityComponents(components);
         }
     }
 
