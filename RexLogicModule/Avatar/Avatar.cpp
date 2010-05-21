@@ -32,6 +32,8 @@
 
 #include "EC_OpenSimPresence.h"
 
+#include "Inventory/InventoryEvents.h" // school project hax :) - Jonne
+
 #include <QPushButton>
 
 namespace RexLogic
@@ -183,8 +185,22 @@ namespace RexLogic
                 overlay->SetText(presence->GetFullName().c_str());
                 if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
                 {
-                        overlay->SetDisabled(true);
+                    overlay->SetDisabled(true);
 
+                    // Store creds into config for webdav!
+                    QSettings liveidcreds(QSettings::IniFormat, QSettings::UserScope, "realXtend", "credentials/liveid");
+                    liveidcreds.beginGroup(fullid.ToQString());
+                    liveidcreds.setValue("FirstName", QString(map["FirstName"].c_str()));
+                    liveidcreds.setValue("LastName", QString(map["LastName"].c_str()));
+                    liveidcreds.endGroup();
+                    liveidcreds.sync();
+
+                    Foundation::EventManagerPtr eventmanager = owner_->GetFramework()->GetEventManager();
+                    if (eventmanager)
+                    {
+                        Inventory::WebDavCredentials event_data(fullid.ToQString(), QString(map["FirstName"].c_str()), QString(map["LastName"].c_str()));
+                        eventmanager->SendEvent(eventmanager->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AUTH_RECIEVED, &event_data);
+                    }
                 }
             }
 

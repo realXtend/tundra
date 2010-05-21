@@ -62,6 +62,8 @@ namespace UiServices
 
         QPair<QString, QString> GetScreenshotPaths();
 
+        boost::shared_ptr<ProtocolUtilities::WorldStream> GetCurrentWorldStream() { return current_world_stream_; }
+
         /*************** Logging ***************/
 
         MODULE_LOGGING_FUNCTIONS;

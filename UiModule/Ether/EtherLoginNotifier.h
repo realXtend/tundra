@@ -36,6 +36,7 @@ namespace Ether
             EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);            
             bool IsTeleporting() { return teleporting_; }
             void SetIsTeleporting (bool teleporting) { teleporting_ = teleporting; }
+            
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
@@ -47,6 +48,7 @@ namespace Ether
             UI_MODULE_API void Teleport(QString start_location);
             UI_MODULE_API void ScriptTeleportAnswer(QString answer, QString region_name);            
             void ScriptTeleport();
+            void SetLoginData(QString address, int port);
 
         private:
             EtherSceneController *scene_controller_;
@@ -54,7 +56,7 @@ namespace Ether
             QMap<QString, QString> last_info_map_;                        
             bool teleporting_;
             QString region_name_;
-
+            QString web_auth_login_address_;
 
         signals:
             void StartOsLogin(QMap<QString, QString> info_map);

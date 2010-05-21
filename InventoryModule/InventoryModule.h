@@ -169,6 +169,9 @@ namespace Inventory
 
         /// Inventory service pointer.
         InventoryService *service_;
+
+        bool webdav_inv_creds_recieved_;
+        QString webdav_host_;
     };
 }
 

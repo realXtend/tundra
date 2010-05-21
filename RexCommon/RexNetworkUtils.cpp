@@ -278,8 +278,11 @@ namespace RexTypes
         else if (fullname.count('@') == 2)
         {
             QStringList names = fullname.split(" ");
-            map["FirstName"] = names[0].toStdString();
-            map["LastName"] = "";
+            if (names.count() >= 2)
+            {
+                map["FirstName"] = names[0].toStdString();
+                map["LastName"] = names[1].toStdString();
+            }
         }
 
         return map;

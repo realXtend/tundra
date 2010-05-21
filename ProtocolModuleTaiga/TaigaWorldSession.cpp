@@ -7,6 +7,9 @@
 #include "Framework.h"
 #include "ModuleManager.h"
 
+#include "NetworkEvents.h"
+#include "EventManager.h" // shool hack for teleport live id
+
 namespace TaigaProtocol
 {
 
@@ -62,6 +65,9 @@ namespace TaigaProtocol
             spTaiga->SetHostUrl(address + port);
 			// Start the thread.
 			boost::thread(boost::ref( *spTaiga->GetLoginWorker() ));
+
+            ProtocolUtilities::LoginDataEvent login_data(address.toStdString(), port.toInt());
+            framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_LOGIN_INFO_AQQUIRED, &login_data);
 		}
 		else
 		{

@@ -55,7 +55,8 @@ InventoryModule::InventoryModule() :
     inventoryWindow_(0),
 //    uploadProgressWindow_(0),
     inventoryType_(IDMT_Unknown),
-    service_(0)
+    service_(0),
+    webdav_inv_creds_recieved_(false) // school
 {
 }
 
@@ -123,6 +124,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     // NetworkState
     if (category_id == networkStateEventCategory_)
     {
+
         // Connected to server. Initialize inventory_ tree model.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
         {
@@ -165,16 +167,24 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 {
                     if (!auth->webdav_host.empty())
                     {
+                        webdav_host_ = QString(auth->webdav_host.c_str());
+
+                        // SCHOOL
+
+                        /*
                         bool credentials_ok = true;
                         if (auth->webdav_identity.empty())
                         {
-                            QString inv_identity = QInputDialog::getText(0, "Inventory Identity", "Please provide your inventory identity", QLineEdit::Normal, "", &credentials_ok);
+                            QString inv_identity = QInputDialog::getText(0, "Inventory credentials", "<b>Please give your LiveID display name</b>\nSet your liveid email if you dont have a displayname.", QLineEdit::Normal, "", &credentials_ok);
                             if (credentials_ok && !inv_identity.isEmpty())
                             {
                                 if (inv_identity.contains("@") && inv_identity.count(" ") == 0)
                                     auth->webdav_identity = inv_identity.toStdString() + " " + inv_identity.toStdString();
                                 else
-                                    auth->webdav_identity = inv_identity.toStdString();
+                                {
+                                    QString live_id_email = QInputDialog::getText(0, "Inventory credentials", "Please provide your liveID email", QLineEdit::Normal, "", &credentials_ok);
+                                    auth->webdav_identity = inv_identity.toStdString() + " " + live_id_email.toStdString();
+                                }
                             }
                             else
                             {
@@ -206,6 +216,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                         }
                         else
                             LogError("Could not get valid credentials to access webdav inventory! Disabling inventory.");
+                        */
                     }
                     else
                     {
@@ -243,6 +254,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
+            webdav_inv_creds_recieved_ = false;
             UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>("UiServices").lock();
             if (ui_module)
             {
@@ -315,6 +327,46 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             if (!upload_data)
                 return false;
             inventory_->UploadFilesFromBuffer(upload_data->filenames, upload_data->buffers, 0);
+        }
+
+        if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AUTH_RECIEVED)
+        {
+            if (webdav_inv_creds_recieved_)
+                return false;
+
+            Inventory::WebDavCredentials *creds = dynamic_cast<Inventory::WebDavCredentials*>(data);
+            if (creds)
+            {
+                bool credentials_ok = true;
+                QString identity = creds->first_name_ + " " + creds->last_name_;
+
+                // check conf for pwd
+                QSettings liveidcreds(QSettings::IniFormat, QSettings::UserScope, "realXtend", "credentials/liveid");
+                QString inv_password = liveidcreds.value(creds->agent_id_ + "/Password").toString();
+
+                // ... ask if not present
+                if (inv_password.isEmpty() || inv_password.isNull())
+                {
+                    inv_password = QInputDialog::getText(0, "Inventory password", QString("Please provide your inventory password<br>for <b>%1</b>").arg(identity), QLineEdit::Password, "", &credentials_ok);
+                     // Store pwd
+                    if (credentials_ok)
+                        liveidcreds.setValue(creds->agent_id_ + "/Password", inv_password);
+                }
+
+                if (credentials_ok)
+                {
+                    // Create WebDAV inventory model.
+                    inventoryType_ = IDMT_WebDav;
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(identity, webdav_host_, inv_password));
+                    inventoryWindow_->InitInventoryTreeModel(inventory_);
+                    SAFE_DELETE(service_);
+                    service_ = new InventoryService(inventory_.get());
+                }
+                else
+                    LogError("Could not complete getting webdav inv credentials!");
+
+                webdav_inv_creds_recieved_ = true;
+            }
         }
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST ||
