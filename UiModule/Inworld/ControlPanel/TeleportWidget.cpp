@@ -102,7 +102,7 @@ namespace CoreUi
     }
 
     void TeleportWidget::Teleport()
-    {  
+    {          
         QString start_location = regionLineEdit->text();
         if (start_location.isEmpty())
             start_location = regionComboBox->currentText();

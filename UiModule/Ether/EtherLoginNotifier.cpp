@@ -15,6 +15,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
+#include "UiNotificationServices.h"
 
 namespace Ether
 {
@@ -27,19 +28,16 @@ namespace Ether
         {
             boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
-            {                                
                 connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));                
-            }
-
+            teleporting = false;
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
         {
-            QMap<QString, QString> info_map;
-            
             // Set last info card to default. Used for in world Teleporting
             last_info_map_.clear();
 
+            QMap<QString, QString> info_map;
             switch (data_cards.second->worldType())
             {
                 case WorldTypes::OpenSim:
@@ -109,25 +107,52 @@ namespace Ether
 
         void EtherLoginNotifier::Teleport(QString start_location)
         {
-
-            if (!start_location.isNull())
+            if (!start_location.isEmpty())
             {
                 last_info_map_.remove("StartLocation");
                 last_info_map_.insert("StartLocation", start_location);
                 
                 QString avatarType = last_info_map_.value("AvatarType");
-                if (avatarType.compare("OpenSim") == 1)
-                {
+                if (avatarType.compare("OpenSim") == 0)
                     emit StartOsLogin(last_info_map_);
+                else if (avatarType.compare("RealXtend") == 1)
+                    emit StartRexLogin(last_info_map_);
+                else if (avatarType.compare("RealXtend") == 0)
+                {
+                    UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
+                    boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+                    if (ui_module)
+                        ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
                 }
                 else
                 {
-                    emit StartRexLogin(last_info_map_);
+                    UiServices::UiModule::LogInfo("Teleport failed. Unknown avatar type: "+avatarType.toStdString());
                 }
-
+                
             }
 
         }
-        
+
+        void EtherLoginNotifier::ScriptTeleportAnswer(QString answer, QString region_name)
+        {            
+            if (answer.isEmpty())
+                return;
+
+            if (answer.compare("Yes") == 0)
+            {                
+                QTimer::singleShot(1000, this, SLOT(ScriptTeleport()));
+                region_name_ = region_name;
+            }
+            else if (answer.compare("No") == 0)
+            {
+                teleporting = false;
+            }
+        }
+
+        void EtherLoginNotifier::ScriptTeleport()
+        {
+            teleporting = false;
+            Teleport(region_name_);
+        }
     }
 }
