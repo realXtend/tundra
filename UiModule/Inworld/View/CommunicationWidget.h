@@ -57,7 +57,6 @@ namespace CoreUi
         enum ViewMode { Normal, History };      
 
     public slots:
-        void UpdateController(QObject *controller);
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
         void SetFocusToChat();
         
@@ -91,7 +90,6 @@ namespace CoreUi
         ViewMode viewmode_;
 
         QWidget *internal_widget_;
-        QObject *current_controller_;
         QStackedLayout *stacked_layout_;
         QPlainTextEdit *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
@@ -111,7 +109,6 @@ namespace CoreUi
         QGraphicsProxyWidget* voice_users_proxy_widget_;
 
         Communications::InWorldChat::SessionInterface* in_world_chat_session_;
-//        UiServices::UiProxyWidget* voice_users_proxy_widget_;
 
     signals:
         void SendMessageToServer(const QString &message);

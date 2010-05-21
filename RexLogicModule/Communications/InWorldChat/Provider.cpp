@@ -17,6 +17,10 @@ namespace RexLogic
             session_ = new InWorldChat::Session();
             connect(session_, SIGNAL(UserEnteredText(const QString&)), SLOT(SendChatMessgeToServer(const QString&)) );
             Register();
+
+            /// @todo: HANDLER FOR THESE EVENTS
+            ///        - EVENT_SERVER_CONNECTED
+            ///        - EVENT_SERVER_DISCONNECTED
         }
 
         Provider::~Provider()

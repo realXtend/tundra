@@ -113,7 +113,6 @@ namespace Communication
 
     private:
         void AddWidgetToUi(const QString &name);
-        void UpdateChatControllerToUiModule();
         void RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget);
 
     private slots:

@@ -123,7 +123,6 @@ namespace Communication
                 {
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
                     os_chat_controller_ = new OpensimIM::ChatController(client_params);
-                    UpdateChatControllerToUiModule();
                 }
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
@@ -177,13 +176,6 @@ namespace Communication
                     ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }
-    }
-
-    void CommunicationModule::UpdateChatControllerToUiModule()
-    {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-        if (ui_module.get())
-            ui_module->GetInworldSceneController()->SetWorldChatController(os_chat_controller_);
     }
 
     void CommunicationModule::RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget)

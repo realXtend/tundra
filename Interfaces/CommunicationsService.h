@@ -143,6 +143,7 @@ namespace Communications
         class ParticipantInterface
         {
         public:
+            virtual ~ParticipantInterface() {};
             virtual const QString &Name() const = 0;
             virtual QString AvatarUUID() const = 0;
             virtual Vector3df Position() const = 0;
@@ -156,7 +157,7 @@ namespace Communications
         };
 
 
-        /// @todo : ??? ChatEvent { TextMessageReceived, TextMessageSent, ParticipantLeft, ParticipantJoined, ... }
+        /// @todo : ??? enum ChatEvent { TextMessageReceived, TextMessageSent, ParticipantLeft, ParticipantJoined, ... }
         class SessionInterface : public QObject
         {
             Q_OBJECT
@@ -166,7 +167,10 @@ namespace Communications
 //            virtual ParticipantList Participants() const = 0;
 
         signals:
-            void TextMessageReceived(const TextMessageInterface &message);
+            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
+            void TextMessageReceived(Communications::TextMessageInterface*);
+            void TextMessageReceived();
+            void Test();
             //void ParticipantJoined(ParticipantInterface* participant);
             //void ParticipantLeft(ParticipantInterface* participant);
         };

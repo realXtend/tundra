@@ -34,12 +34,14 @@ namespace RexLogic
             /// Provider description
             virtual QString& Description();
 
+            /// Notify provider about chat message received from OpenSim server
             virtual void HandleIncomingChatMessage(const QString& from_uuid, const QString& from_name, const QString& text);
 
 //            virtual void Reset(); // ???
 
         private slots:
             virtual void SendChatMessgeToServer(const QString& text);
+
         private:
             virtual void Register();
 

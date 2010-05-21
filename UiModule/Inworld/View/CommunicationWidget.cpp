@@ -11,7 +11,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
 #include <QGraphicsScene>
-#include <CommunicationsService.h>
 #include "UiModule.h"                       // For 'UI service'
 #include "ModuleManager.h"                  // For 'UI service'
 #include <Inworld/InworldSceneController.h> // For 'UI service'
@@ -25,7 +24,6 @@ namespace CoreUi
         framework_(framework),
         QGraphicsProxyWidget(),
         internal_widget_(new QWidget()),
-        current_controller_(0),
         im_proxy_(0),
         viewmode_(Normal),
         resizing_horizontal_(false),
@@ -193,8 +191,6 @@ namespace CoreUi
         chatLineEdit->clear();
         if (in_world_chat_session_)
             in_world_chat_session_->SendTextMessage(message);
-
-        //emit SendMessageToServer(message); // OLD WAY USING TELEPATHY MODULE
     }
 
     // Protected
@@ -281,29 +277,6 @@ namespace CoreUi
         QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
     }
 
-    // Public
-
-    void CommunicationWidget::UpdateController(QObject *controller)
-    {
-        // Disconnect previous
-        if (current_controller_)
-        {
-            this->disconnect(SIGNAL( SendMessageToServer(const QString&) ));
-            this->disconnect(current_controller_);
-        }
-
-        // Connect present controller
-        current_controller_ = controller;
-        connect(current_controller_, SIGNAL( MessageReceived(bool, QString, QString, QString) ),
-                this, SLOT( ShowIncomingMessage(bool, QString, QString, QString) ));
-        connect(this, SIGNAL( SendMessageToServer(const QString&) ), 
-                current_controller_, SLOT( SendChatMessageToServer(const QString&) ));
-
-        // Clear old ui messages from history view
-        if (history_view_text_edit_)
-            history_view_text_edit_->clear();
-    }
-
     void CommunicationWidget::UpdateImWidget(UiServices::UiProxyWidget *im_proxy)
     {
         im_proxy_ = im_proxy;
@@ -316,9 +289,13 @@ namespace CoreUi
             if (comm.get())
             {
                 connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+                
                 in_world_chat_session_ = comm->InWorldChatSession();
+                if (in_world_chat_session_)
+                    InitializeInWorldChat();
                 connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
                 connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) ); /// @todo: Uninitialize...
+                // TODO        history_view_text_edit_->clear();
             }
         }
     }
@@ -338,8 +315,9 @@ namespace CoreUi
                 in_world_chat_session_ = comm->InWorldChatSession();
                 if (!in_world_chat_session_)
                     return;
-
-                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const TextMessageInterface &message)), SLOT(UpdateInWorldChatView(const TextMessageInterface &message)) );
+                
+                //Communications::InWorldChat::SessionInterface::
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&)), SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&)) );
             }
         }
     }
