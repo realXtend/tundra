@@ -10,7 +10,7 @@
 class QDomDocument;
 class QDomElement;
 
-#include <QTimer>
+#include <qvariant.h>
 
 //! A 
 /*! 
@@ -30,9 +30,9 @@ public:
     //! Position within source (for example scrollbar value, page number)
     Foundation::Attribute<int> position_;
 
-    //public slots:
-    //void Clicked();
-    
+public slots:
+    void AddAttribute();
+    QVariant GetAttribute();
     //private slots:
     
 private:

@@ -6,6 +6,8 @@
 #include "ModuleManager.h"
 #include "Entity.h"
 
+#include <qvariant.h>
+
 #define LogError(msg) Poco::Logger::get("EC_DynamicComponent").error(std::string("Error: ") + msg);
 #define LogInfo(msg) Poco::Logger::get("EC_DynamicComponent").information(msg);
 
@@ -20,5 +22,14 @@ EC_DynamicComponent::~EC_DynamicComponent()
 {
 }
 
-//void EC_3DCanvasSource::UpdateWidgetAndCanvas()
+void EC_DynamicComponent::AddAttribute()
+{
+    LogInfo("AddAttribute");
+}
 
+QVariant EC_DynamicComponent::GetAttribute()
+{
+    LogInfo("GetAttribute");
+    QVariant v(position_.Get());
+    return v;
+}
