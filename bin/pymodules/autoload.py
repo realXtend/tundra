@@ -23,7 +23,10 @@ modulenames = [
     #("apitest.testrunner", "TestLoginLogoutExit",
     #("webserver.webcontroller", "WebServer"),
     ("localscene.localscene", "LocalScene"),
-    ("objectedit.objectedit", "ObjectEdit")
+    ("objectedit.objectedit", "ObjectEdit"),
+    ("picturecreator", "PictureCreator"),
+    ("textcreator", "TextCreator"),
+    ("regionframe.regionframe", "RegionFrame")
     ]
 
 modules = []
