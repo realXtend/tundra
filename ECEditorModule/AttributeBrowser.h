@@ -30,8 +30,7 @@ namespace ECEditor
         AttributeBrowser(QWidget *parent = 0);
         ~AttributeBrowser();
 
-        void AddEntityComponent(Foundation::ComponentInterfacePtr entityComponent);
-        void RemoveEntityComponent(Foundation::ComponentInterfacePtr entityComponent);
+        void AddEntityComponents(std::vector<Foundation::ComponentInterfacePtr> entityComponents);
         QtTreePropertyBrowser *GetPropertyBrowser() const { return propertyBrowser_; }
 
     public slots:
@@ -43,10 +42,10 @@ namespace ECEditor
 
     private:
         void InitializeEditor();
-        void AddNewAttribute(Foundation::AttributeInterface *attribute);
-        ECAttributeEditorInterface *CreateAttributeEditor(Foundation::AttributeInterface &attribute);
+        void AddNewAttribute(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
+        ECAttributeEditorInterface *CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
 
-        typedef std::map<QString, Foundation::ComponentWeakPtr> EntityComponentMap;
+        typedef std::map<QString, std::vector<Foundation::ComponentWeakPtr>> EntityComponentMap;
         EntityComponentMap SelectedEntityComponents_;
         typedef std::map<QString, ECAttributeEditorInterface*> AttributeEditorMap;
         AttributeEditorMap attributes_;
