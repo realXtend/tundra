@@ -13,7 +13,7 @@ using namespace RexTypes;
 namespace ProtocolUtilities
 {
     /// Convenience util for writing error messages.
-    std::string VariableTypeToStr(NetVariableType type)
+    std::string VariableTypeToString(NetVariableType type)
     {
         const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d", "LLVector4",
             "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
@@ -47,8 +47,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarU8)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarU8) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarU8) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -60,8 +60,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarU16) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarU16) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarU16) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -73,8 +73,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarU32) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarU32) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarU32) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -86,8 +86,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarU64)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarU64) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarU64) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -99,8 +99,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarS8) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarS8) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarS8) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -112,8 +112,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarS16) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarS16) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarS16) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -125,8 +125,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarS32) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarS32) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarS32) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -138,8 +138,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarS64)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarS64) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarS64) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -151,8 +151,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarF32)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarF32) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarF32) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -164,8 +164,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarF64)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarF64) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarF64) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -177,8 +177,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarVector3)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarVector3) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarVector3) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -193,8 +193,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarVector3d) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarVector3d) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarVector3d) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -209,8 +209,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarVector4)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarVector4) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarVector4) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -227,8 +227,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarQuaternion)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarQuaternion) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarQuaternion) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
         
@@ -245,8 +245,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarUUID) 
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarUUID) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarUUID) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
@@ -258,8 +258,8 @@ namespace ProtocolUtilities
     {
         if (CheckNextVariable() != NetVarBOOL)
         {
-            LogError("Tried to write wrong type of variable " + VariableTypeToStr(NetVarBOOL) +
-                " when expecting " + VariableTypeToStr(CheckNextVariable()));
+            LogError("Tried to write wrong type of variable " + VariableTypeToString(NetVarBOOL) +
+                " when expecting " + VariableTypeToString(CheckNextVariable()));
             return;
         }
 
