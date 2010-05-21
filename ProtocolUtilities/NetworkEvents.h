@@ -54,6 +54,21 @@ namespace ProtocolUtilities
         uint16_t regionY;
     };
 
+    // MapBlock structs for teleport and map related packets
+    struct MapBlock
+    {
+        RexUUID agentID;
+        uint32_t flags;
+        uint16_t regionX;
+        uint16_t regionY;
+        std::string regionName;
+        uint8_t access;
+        uint32_t regionFlags;
+        uint8_t waterHeight;
+        uint8_t agents;
+        RexUUID mapImageID;
+    };
+
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
     /// \ingroup OpenSimProtocolClient 
     namespace Events

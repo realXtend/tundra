@@ -10,9 +10,6 @@
 #include <QList>
 #include <QRectF>
 
-#include "Inworld/ControlPanel/TeleportWidget.h"
-#include "ui_TeleportWidget.h"
-
 class QRectF;
 class QGraphicsLinearLayout;
 
@@ -25,7 +22,8 @@ namespace UiServices
 {
     class UI_MODULE_API InworldSceneController : public QObject
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
         //! Constructor.
@@ -42,10 +40,6 @@ namespace UiServices
         //! \param tab_name QString name of the tab shown in widget
         //! \return trued if add succesfull, false otherwise
         bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
-
-        //! Adds received region names to TeleportWidget
-        //! \param map_blocks Requested map blocks to be added to widget
-        void SetTeleportWidget(const QList<CoreUi::MapBlock> &map_blocks);
 
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         //! Conviniance function if you dont want to bother and define your UiWidgetProperties.

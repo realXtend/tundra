@@ -3,8 +3,9 @@
 #ifndef incl_UiModule_TeleportWidget_h
 #define incl_UiModule_TeleportWidget_h
 
+#include "NetworkEvents.h"
+#include "UiModuleApi.h"
 #include "ui_TeleportWidget.h"
-#include "RexUUID.h"
 
 #include <QGraphicsProxyWidget>
 #include <QShowEvent>
@@ -16,20 +17,6 @@ namespace CoreUi
 {
     class ControlPanelManager;
 
-    struct MapBlock
-    {
-        RexUUID agentID;
-        uint32_t flags;
-        uint16_t regionX;
-        uint16_t regionY;
-        std::string regionName;
-        uint8_t access;
-        uint32_t regionFlags;
-        uint8_t waterHeight;
-        uint8_t agents;
-        RexUUID mapImageID;
-    };
-
     class TeleportWidget : public QGraphicsProxyWidget, private Ui::TeleportWidget
     {
         
@@ -37,9 +24,9 @@ namespace CoreUi
 
     public:        
         TeleportWidget(QGraphicsScene *scene, ControlPanelManager *conrol_panel_manager);
-        void SetMapBlocks(const QList<CoreUi::MapBlock> &map_blocks);
 
     public slots:
+        UI_MODULE_API void SetMapBlocks(const QList<ProtocolUtilities::MapBlock> &map_blocks);
         void AnimatedHide();
 
     protected:

@@ -501,33 +501,28 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
 
     RexUUID agent_id = msg.ReadUUID();
     uint32_t flags_ = msg.ReadU32();
-
-    QList<CoreUi::MapBlock> mapBlocks_;
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
 
-    for(size_t i = 0; i < instance_count; ++i)
+    QList<ProtocolUtilities::MapBlock> mapBlocks;
+    for (size_t i = 0; i < instance_count; ++i)
     {
-
-        CoreUi::MapBlock block_;
-        block_.agentID = agent_id;
-        block_.flags = flags_;
-        block_.regionX = msg.ReadU16();
-        block_.regionY = msg.ReadU16();        
-        block_.regionName = msg.ReadString();
-        block_.access = msg.ReadU8();
-        block_.regionFlags = msg.ReadU32();
-        block_.waterHeight = msg.ReadU8();
-        block_.agents = msg.ReadU8();
-        block_.mapImageID = msg.ReadUUID();
-        mapBlocks_.append(block_);        
+        ProtocolUtilities::MapBlock block;
+        block.agentID = agent_id;
+        block.flags = flags_;
+        block.regionX = msg.ReadU16();
+        block.regionY = msg.ReadU16();        
+        block.regionName = msg.ReadString();
+        block.access = msg.ReadU8();
+        block.regionFlags = msg.ReadU32();
+        block.waterHeight = msg.ReadU8();
+        block.agents = msg.ReadU8();
+        block.mapImageID = msg.ReadUUID();
+        mapBlocks.append(block);        
     }
 
     boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
-    {
-        ui_module->GetInworldSceneController()->SetTeleportWidget(mapBlocks_);
-    }
-
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
     return false;
 }
 
