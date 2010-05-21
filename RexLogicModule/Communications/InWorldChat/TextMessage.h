@@ -14,17 +14,19 @@ namespace RexLogic
         class TextMessage : public Communications::InWorldChat::TextMessageInterface
         {
         public:
-            TextMessage(const QString& author, const QString& text);
+            TextMessage(const QString& author, const QString& text, bool own_message);
             virtual ~TextMessage();
             virtual const QString& Author() const;
             virtual const QString& Text() const;
             virtual const QDateTime& TimeStamp() const;
+            virtual bool IsOwnMessage() const;
 //            virtual QList<QByteArray> Attachments() const;
 //            virtual const ParticipantInterface& AuthorParticipant() const;
         private:
             QString author_;
             QString text_;
             QDateTime time_stamp_;
+            bool own_message_;
         };
 
     } // InWorldChat
