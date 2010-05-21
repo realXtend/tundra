@@ -21,7 +21,7 @@ namespace RexLogic
             TextMessage message("", text);
             messages_.append(message);
 
-            /// @todo IMPLEMENT: Send message packet
+            emit UserEnteredText(text);
         }
 
         void Session::HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text)

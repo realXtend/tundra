@@ -38,8 +38,10 @@ namespace RexLogic
 
 //            virtual void Reset(); // ???
 
+        private slots:
+            virtual void SendChatMessgeToServer(const QString& text);
         private:
-            void Register();
+            virtual void Register();
 
             Foundation::Framework* framework_;
             QString description_;

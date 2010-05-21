@@ -22,7 +22,8 @@ namespace RexLogic
             virtual void HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text);
 
         signals:
-            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
+            void UserEnteredText(const QString& text);
+//            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
             //void ParticipantJoined(ParticipantInterface* participant);
             //void ParticipantLeft(ParticipantInterface* participant);
         private:

@@ -22,6 +22,12 @@ namespace Communications
         class SessionInterface;
         class ParticipantInterface;
     }
+
+    namespace InWorldChat
+    {
+        class SessionInterface;
+        class TextMessageInterface;
+    }
 }
 
 namespace CommUI
@@ -73,10 +79,12 @@ namespace CoreUi
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
         void InitializeInWorldVoice();
+        void InitializeInWorldChat();
         void UninitializeInWorldVoice();
         void UpdateInWorldVoiceIndicator();
         void ShowVoiceControls();
         void HideVoiceControls();
+        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
 
     private:
         Foundation::Framework* framework_;
@@ -101,6 +109,8 @@ namespace CoreUi
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
         CommUI::VoiceUsersWidget* voice_users_widget_;
         QGraphicsProxyWidget* voice_users_proxy_widget_;
+
+        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
 //        UiServices::UiProxyWidget* voice_users_proxy_widget_;
 
     signals:
