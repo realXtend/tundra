@@ -1154,7 +1154,8 @@ if 0:
         print "swoot"
 
 if 0: #create a new component, hilight
-    e = r.getEntity(1876645543)
+    avid = r.getUserAvatarId()
+    e = r.getEntity(avid)
     try:
         e.highlight
     except AttributeError:
@@ -1172,6 +1173,12 @@ if 0: #create a new component, hilight
         print "vis"
     else:
         print "not"
+
+if 1: #test adding a dynamiccomponent
+    avid = r.getUserAvatarId()
+    ent = r.getEntity(avid)
+    print ent
+    ent.createComponent("EC_DynamicComponent")
         
 if 0: #log level visibility
     r.logDebug("Debug")

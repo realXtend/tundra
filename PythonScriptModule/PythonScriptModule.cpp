@@ -122,6 +122,9 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include <QDebug>
 
+//ECs declared here
+#include "EC_DynamicComponent.h"
+
 namespace PythonScript
 {
     class PythonScriptModule;
@@ -153,7 +156,7 @@ namespace PythonScript
     {
         using namespace PythonScript;
 
-        //DECLARE_MODULE_EC(EC_OgreEntity);
+        DECLARE_MODULE_EC(EC_DynamicComponent);
     }
 
     // virtual
