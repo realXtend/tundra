@@ -5,8 +5,6 @@
 
 #include "ForwardDefines.h"
 #include <QObject>
-//#include <QtDoublePropertyManager>
-//#include <QtVariantPropertyManager>
 #include "AttributeInterface.h"
 #include <map>
 
@@ -69,12 +67,16 @@ namespace ECEditor
         //! Listens if any of editor's values has been changed and changed and component's attributes need to be updated.
         void SendNewAttributeValue(QtProperty *property) { SendNewValueToAttribute(property); }
 
+    private slots:
+        void MultiSelectValueSelected(const QtProperty *property, const QString &value) {ValueSelected(property, value);}
+
     signals:
         //! Signals when attribute values has been updated. This is used to inform the editor window
         //! when the xml line-editor need to be updated.
         void AttributeChanged();
 
     protected:
+        virtual void ValueSelected(const QtProperty *property, const QString &value) = 0;
         //! Sends a new value to each component attribute.
         virtual void SendNewValueToAttribute(QtProperty *property) = 0;
 
@@ -131,6 +133,7 @@ namespace ECEditor
         virtual void UpdateEditorValue();
 
     private:
+        virtual void ValueSelected(const QtProperty *property, const QString &value);
         virtual void SendNewValueToAttribute(QtProperty *property);
         virtual void InitializeEditor();
 

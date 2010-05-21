@@ -114,8 +114,8 @@ namespace ECEditor
             dialog_->setComboBoxEditable(true);
             dialog_->setComboBoxItems(items);
             dialog_->setOption(QInputDialog::UseListViewForComboBoxItems);
-            dialog_->exec();
             QObject::connect(dialog_, SIGNAL(textValueSelected(const QString&)), this, SLOT(GetFinalResultFromDialog(const QString&)));
+            dialog_->exec();
         }
     }
 

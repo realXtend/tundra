@@ -18,21 +18,21 @@ namespace ECEditor
         MultiEditPropertyManager(QObject *parent = 0): QtAbstractPropertyManager(parent){}
         ~MultiEditPropertyManager(){}
 
-        QString Value(QtProperty *property) const;
-        QStringList AttributeValue(QtProperty *property) const;
+        QString Value(const QtProperty *property) const;
+        QStringList AttributeValue(const QtProperty *property) const;
 
     public slots:
         void SetValue(QtProperty *property, const QString &value);
         void SetAttributeValues(QtProperty *property, const QStringList &attributes);
 
     signals:
-        void ValueChanged(QtProperty *property, const QString &value);
-        void AttributeValuesUpdated(QtProperty *property, const QStringList &attributes);
+        void ValueChanged(const QtProperty *property, const QString &value);
+        void AttributeValuesUpdated(const QtProperty *property, const QStringList &attributes);
 
     protected:
-        QString valueText(QtProperty *property) const;
-        void initializeProperty(QtProperty *property);
-        void uninitializeProperty(QtProperty *property);
+        virtual QString valueText(const QtProperty *property) const;
+        virtual void initializeProperty(QtProperty *property);
+        virtual void uninitializeProperty(QtProperty *property);
 
     private:
         struct Data

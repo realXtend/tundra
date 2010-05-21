@@ -91,6 +91,30 @@ namespace Foundation
         //! Attribute value
         T value_;
     };
+
+    // Commented out to improve compilation times, as these are not used outside AttributeInterface.cpp
+    // currently. Can be added back if needed.
+
+    /*template<> std::string Attribute<std::string>::ToString() const;
+    template<> std::string Attribute<bool>::ToString() const;
+    template<> std::string Attribute<int>::ToString() const;
+    template<> std::string Attribute<uint>::ToString() const;
+    template<> std::string Attribute<Real>::ToString() const;
+    template<> std::string Attribute<Vector3df>::ToString() const;
+    template<> std::string Attribute<Quaternion>::ToString() const;
+    template<> std::string Attribute<Color>::ToString() const;
+    template<> std::string Attribute<AssetReference>::ToString() const;
+
+    template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<int>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<uint>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<Real>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);*/
+
 }
 
 #endif
