@@ -5,11 +5,12 @@ namespace RexLogic
 {
     namespace InWorldChat
     {
-        TextMessage::TextMessage(const QString& author, const QString& text)
+        TextMessage::TextMessage(const QString& author, const QString& text, bool own_message)
         {
             author_ = author;
             text_ = text;
             time_stamp_ = QDateTime::currentDateTime();
+            own_message_ = own_message;
         }
 
         TextMessage::~TextMessage()
@@ -30,6 +31,11 @@ namespace RexLogic
         const QDateTime& TextMessage::TimeStamp() const
         {
             return time_stamp_;
+        }
+
+        bool TextMessage::IsOwnMessage() const
+        {
+            return own_message_;
         }
 
     } // InWorldChat

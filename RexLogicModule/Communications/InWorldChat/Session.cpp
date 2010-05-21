@@ -18,17 +18,29 @@ namespace RexLogic
 
         void Session::SendTextMessage(const QString &text)
         {
-            TextMessage message("", text);
-            messages_.append(message);
+            //TextMessage message("", text, true);
+            //messages_.append(message);
 
             emit UserEnteredText(text);
         }
 
         void Session::HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text)
         {
-            TextMessage message(from_name, text);
+            TextMessage message(AvatarName(from_uuid), text, IsSelfAvatarUUID(from_uuid));
             messages_.append(message);
             emit Communications::InWorldChat::SessionInterface::TextMessageReceived(message);
+        }
+
+        bool Session::IsSelfAvatarUUID(QString uuid)
+        {
+            /// @todo CHECK
+            return false;
+        }
+
+        QString Session::AvatarName(QString uuid)
+        {
+            /// @todo FETCH REAL NAME 
+            return uuid;
         }
 
         //ParticipantList Session::Participants() const

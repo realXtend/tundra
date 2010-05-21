@@ -410,7 +410,7 @@ namespace CoreUi
     void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
     {
         QString time_stamp = QString("%1:%2").arg(message.TimeStamp().time().hour(),2,10).arg(message.TimeStamp().time().minute(),2,10);
-        ShowIncomingMessage(false, message.Author(), time_stamp, message.Text());
+        ShowIncomingMessage(message.IsOwnMessage(), message.Author(), time_stamp, message.Text());
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()

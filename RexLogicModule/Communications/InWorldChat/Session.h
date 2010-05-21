@@ -27,6 +27,9 @@ namespace RexLogic
             //void ParticipantJoined(ParticipantInterface* participant);
             //void ParticipantLeft(ParticipantInterface* participant);
         private:
+            bool IsSelfAvatarUUID(QString uuid);
+            QString AvatarName(QString uuid);
+
             QList<TextMessage> messages_;
         };
 

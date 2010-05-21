@@ -64,6 +64,7 @@ namespace Communications
         virtual const QString& Author() const = 0;
         virtual const QString& Text() const = 0;
         virtual const QDateTime& TimeStamp() const = 0;
+        virtual bool IsOwnMessage() const = 0;
 //        virtual QList<QByteArray> Attachments() const = 0;
     };
 
