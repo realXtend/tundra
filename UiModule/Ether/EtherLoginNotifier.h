@@ -9,6 +9,8 @@
 #include <QString>
 #include <QWebFrame>
 
+#include "UiModuleApi.h"
+
 namespace Foundation
 {
     class Framework;
@@ -31,7 +33,9 @@ namespace Ether
             Q_OBJECT
 
         public:
-            EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);
+            EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);            
+            bool IsTeleporting() { return teleporting_; }
+            void SetIsTeleporting (bool teleporting) { teleporting_ = teleporting; }
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
@@ -40,12 +44,17 @@ namespace Ether
             void EmitTaigaLogin(QWebFrame *web_frame);
             void EmitTaigaLogin(QString url);
             void ExitApplication();
-            void Teleport(QString start_location);
+            UI_MODULE_API void Teleport(QString start_location);
+            UI_MODULE_API void ScriptTeleportAnswer(QString answer, QString region_name);            
+            void ScriptTeleport();
 
         private:
             EtherSceneController *scene_controller_;
             Foundation::Framework *framework_;
-            QMap<QString, QString> last_info_map_;
+            QMap<QString, QString> last_info_map_;                        
+            bool teleporting_;
+            QString region_name_;
+
 
         signals:
             void StartOsLogin(QMap<QString, QString> info_map);

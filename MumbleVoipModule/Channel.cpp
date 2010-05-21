@@ -17,7 +17,6 @@
 namespace MumbleVoip
 {
     Channel::Channel(const MumbleClient::Channel* channel) : channel_(channel)
-//    Channel::Channel(const MumbleClient::Channel& c) : channel_(c)
     {
     }
 

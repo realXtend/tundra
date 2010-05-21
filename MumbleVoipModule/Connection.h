@@ -155,6 +155,7 @@ namespace MumbleVoip
         void UpdateUserStates();
 
     private:
+        static const int MUMBLE_DEFAULT_PORT_ = 64738;
         static const int AUDIO_QUALITY_MAX_ = 90000; 
         static const int AUDIO_QUALITY_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
@@ -190,11 +191,12 @@ namespace MumbleVoip
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;
-        QMutex mutex_send_audio_;
+        QMutex mutex_encode_queue_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
         QMutex mutex_state_;
+        QMutex mutex_client_;
 //        QMutex mutex_celt_decoder_;
         
     signals:

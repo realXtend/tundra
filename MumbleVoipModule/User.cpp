@@ -60,6 +60,8 @@ namespace MumbleVoip
     
     Channel* User::Channel() const
     {
+        if (left_)
+            return 0;
         return channel_;
     }
     
@@ -143,6 +145,8 @@ namespace MumbleVoip
 
     void User::SetChannel(MumbleVoip::Channel* channel)
     {
+        if (left_)
+            return;
         if (channel_ != channel)
         {
             channel_ = channel;

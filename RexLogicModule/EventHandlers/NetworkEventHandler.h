@@ -40,6 +40,8 @@ namespace RexLogic
         bool HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEventInboundData *data);       
         bool HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data);
+
         
         //! Handler functions for GenericMessages
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
@@ -51,6 +53,8 @@ namespace RexLogic
         RexLogicModule *rexlogicmodule_;
 
         ScriptDialogHandlerPtr script_dialog_handler_;
+
+        bool ongoing_script_teleport_;
 
     };
 }

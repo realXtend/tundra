@@ -31,6 +31,7 @@ namespace MumbleVoip
             virtual QString& Description();
             virtual void Update(f64 frametime);
             virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+            virtual QList<QString> Statistics();
         private:
             void CloseSession();
             Foundation::Framework* framework_;
