@@ -71,6 +71,8 @@ namespace TextureDecoder
         //! Sets asset request status
         void SetRequested(bool requested) { requested_ = requested; }
 
+        void SetCanceled(bool canceled) { canceled_ = canceled; }
+
         //! Sets decode request status
         void SetDecodeRequested(bool requested) { decode_requested_ = requested; }
 
@@ -106,6 +108,8 @@ namespace TextureDecoder
 
         //! Returns asset request status
         bool IsRequested() const { return requested_; }
+
+        bool IsCanceled() const { return canceled_; }
         
         //! Returns decode request status
         bool IsDecodeRequested() const { return decode_requested_; }
@@ -151,6 +155,8 @@ namespace TextureDecoder
 
         //! whether decode request has been queued
         bool decode_requested_;
+
+        bool canceled_;
 
         //! Total data size, 0 if unknown
         uint size_;

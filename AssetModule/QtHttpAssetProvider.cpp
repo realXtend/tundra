@@ -16,6 +16,8 @@
 #include <QByteArray>
 
 #include <QDebug>
+#include <QImage>
+#include <QPixmap>
 #include <QStringList>
 
 #define MAX_HTTP_CONNECTIONS 10000 // Basically means no limit to parallel connections
@@ -230,7 +232,7 @@ namespace Asset
             QString url_path = tranfer_info.url.path();
             if (url_path.endsWith("/data") || url_path.endsWith("/data/"))
             {
-                // Generate metada url
+                // Generate metadata url
                 int clip_count;
                 if (url_path.endsWith("/data"))
                     clip_count = 5;
@@ -255,13 +257,13 @@ namespace Asset
                 data_pair.first = tranfer_info;
                 data_pair.second = asset_ptr;
                 metadata_to_assetptr_[metada_request->url()] = data_pair;
-                
+
                 // Send metadata network request
-                //network_manager_->get(*metada_request);
+                network_manager_->get(*metada_request);
                 
                 // HACK to avoid metadata fetch for now
-                fake_metadata_url_ = metada_request->url();
-                fake_metadata_fetch_ = true;
+                //fake_metadata_url_ = metada_request->url();
+                //fake_metadata_fetch_ = true;
             }
             // Asset data feched, lets store
             else
@@ -286,15 +288,16 @@ namespace Asset
 
         // Complete /data and /metadata sequence, fake is here as long as we dont have xml parser for metadata
         // or actually we dont use metadata in naali so thats the main reason its not fetched
-        if (fake_metadata_fetch_)
-        {
+        //if (fake_metadata_fetch_)
+        //{
             /**** THIS IS A /metadata REQUEST REPLY ****/
-            if (metadata_to_assetptr_.contains(fake_metadata_url_))
+            if (metadata_to_assetptr_.contains(reply->url()))
             {
                 // Pull out transfer data and asset pointer assosiated with this reply url
-                QUrl metadata_transfer_url = fake_metadata_url_;
+                QUrl metadata_transfer_url = reply->url();
                 HttpAssetTransferInfo transfer_data = metadata_to_assetptr_[metadata_transfer_url].first;
                 Foundation::AssetPtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
+                
                 if (!ready_asset_ptr)
                 {
                     reply->deleteLater();
@@ -302,7 +305,6 @@ namespace Asset
                 }
 
                 // Fill metadata
-                /*
                 const QByteArray &inbound_metadata = reply->readAll();
                 QString decoded_metadata = QString::fromUtf8(inbound_metadata.data());
                 #if defined(__GNUC__)
@@ -314,7 +316,15 @@ namespace Asset
                 std::string std_md(decoded_metadata.toStdString());
                 
                 m->DesesrializeFromJSON(std_md); // TODO: implement a xml based metadata parser.
-                */
+
+                if (m->GetContentType() == "image/jpeg" || m->GetContentType() == "image/jpg")
+                {
+                    Foundation::AssetPtr new_asset_ptr = Foundation::AssetPtr(new RexAsset(ready_asset_ptr->GetId(), RexTypes::ASSETTYPENAME_IMAGE));
+                    RexAsset::AssetDataVector& data_vector = checked_static_cast<RexAsset*>(new_asset_ptr.get())->GetDataInternal();
+                    data_vector = checked_static_cast<RexAsset*>(ready_asset_ptr.get())->GetDataInternal();
+
+                    ready_asset_ptr = new_asset_ptr;
+                }
 
                 // Store asset
                 boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
@@ -332,7 +342,7 @@ namespace Asset
                 StartTransferFromQueue();
                 AssetModule::LogDebug("HTTP asset " + transfer_data.id.toStdString() + " completed with metadata");
             }
-        }
+        //}
         reply->deleteLater();
     }
 
