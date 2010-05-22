@@ -20,7 +20,6 @@
 #include "ServiceManager.h"
 
 #include "ResourceMetadataGetter.h"
-#include <QDebug>
 
 namespace OgreRenderer
 {
@@ -110,8 +109,6 @@ namespace OgreRenderer
             {
                 request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
                 metadata_getter_->GetMetadata(id.c_str(), type.c_str(), tag);
-                
-                qDebug() << endl << "HTTP TEXTURE, REAL SENDBACK TAG = " << tag << " FETCHING METADATA" << endl;
                 return tag;
             }
             else
@@ -129,9 +126,17 @@ namespace OgreRenderer
     void ResourceHandler::MetadataFetched(std::string id, std::string type, request_tag_t tag)
     {
         request_tag_t expected_data_tag = RequestResource(id, type);
-        qDebug() << endl << "Texture id: " << id.c_str();
-        qDebug() << "HTTP TEXTURE, REAL SENDBACK TAG = " << tag << " IS A JPG TEXUTRE : ogre expects tag " << expected_data_tag << endl;
-        expected_to_previous_req_tag_[expected_data_tag] = tag;
+
+        if (metadata_id_to_real_texture_tags_.find(id) == metadata_id_to_real_texture_tags_.end())
+        {
+            std::vector<request_tag_t> tag_vector;
+            tag_vector.push_back(tag);
+            metadata_id_to_real_texture_tags_[id] = tag_vector;
+        }
+        else
+        {
+            metadata_id_to_real_texture_tags_[id].push_back(tag);
+        }
     }
     
     void ResourceHandler::RemoveResource(const std::string& id, const std::string& type)
@@ -176,10 +181,7 @@ namespace OgreRenderer
                     UpdateParticles(event_data->asset_, event_data->tag_);
 
                 if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_IMAGE)
-                {
-                    qDebug() << endl << "IMAGE TEXTURE READY: " << event_data->asset_->GetId().c_str() << " TAG = " << event_data->tag_ << endl;
                     UpdateImageTexture(event_data->asset_, event_data->tag_);
-                }
             }
             break;
             
@@ -234,6 +236,43 @@ namespace OgreRenderer
                     if (expected_request_tags_.find(event_data->tag_) != expected_request_tags_.end())
                         UpdateTexture(event_data->resource_, event_data->tag_);
                 }
+
+                if (event_data->resource_->GetType() == "OgreImageTexture")
+                {
+                    if (metadata_id_to_real_texture_tags_.find(event_data->id_) != metadata_id_to_real_texture_tags_.end())
+                    {
+                        std::vector<request_tag_t> append_tags = metadata_id_to_real_texture_tags_[event_data->id_];
+                        std::vector<request_tag_t>::const_iterator iter = append_tags.begin();
+                        while (iter != append_tags.end())
+                        {
+                            request_tag_t tag = *iter;
+                            request_tags_[event_data->id_].push_back(tag);
+                            iter++;
+                        }
+
+                        RemoveResource(event_data->id_, OgreImageTextureResource::GetTypeStatic());
+                        Foundation::ResourcePtr tex = GetResourceInternal(event_data->id_, OgreTextureResource::GetTypeStatic());
+                        if (!tex)
+                            tex = Foundation::ResourcePtr(new OgreTextureResource(event_data->id_));
+
+                        OgreImageTextureResource *res = dynamic_cast<OgreImageTextureResource*>(event_data->resource_.get());
+                        checked_static_cast<OgreTextureResource*>(tex.get())->SetData(res);
+
+                        resources_[event_data->id_] = tex;
+
+                        // Create legacy material(s) based on the texture
+                        CreateLegacyMaterials(event_data->id_, true);
+                        
+                        const RequestTagVector& tags = request_tags_[event_data->id_];
+                        for (uint i = 0; i < tags.size(); ++i)
+                        {
+                            Resource::Events::ResourceReady event_data(tex->GetId(), tex, tags[i]);
+                            framework_->GetEventManager()->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);
+                        }
+
+                        metadata_id_to_real_texture_tags_.erase(event_data->id_);
+                    }
+                }
             }
         }
 
@@ -268,7 +307,7 @@ namespace OgreRenderer
                 if (source_tag)
                 {
                     expected_request_tags_.insert(source_tag);
-                    request_tags_[id].push_back(tag); 
+                    request_tags_[id].push_back(tag);
                     return tag;
                 }
             }
@@ -410,12 +449,6 @@ namespace OgreRenderer
         // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
         if ((tex_res->IsValid()) || (tex_res->SetData(source)))
         {
-            qDebug() << "Expexted to real tag:" << endl << expected_to_previous_req_tag_;
-            if (expected_to_previous_req_tag_.contains(tag))
-            {
-                request_tags_[tex->GetId()].push_back(expected_to_previous_req_tag_[tag]);
-            }
-
             resources_[source->GetId()] = tex;
             ProcessResourceReferences(tex);
             

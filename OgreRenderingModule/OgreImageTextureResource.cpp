@@ -43,8 +43,18 @@ namespace OgreRenderer
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
             Ogre::Image image;
             image.load(stream);
+            image.save("test.jpg");
             ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
             
+            //ogre_texture_->freeInternalResources();
+            //ogre_texture_->setWidth(image.getWidth());
+            //ogre_texture_->setHeight(image.getHeight());
+            //ogre_texture_->createInternalResources();
+            //image.getData();
+            //Ogre::Box update_box(0,0, image.getWidth(), image.getHeight());
+            //Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)image.getData());
+            //ogre_texture_->getBuffer()->blitFromMemory(pixel_box, update_box);
+
         }
         catch (Ogre::Exception &e)
         {

@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "OgreTextureResource.h"
+#include "OgreImageTextureResource.h"
 #include "OgreRenderingModule.h"
 
 #include <Ogre.h>
@@ -112,9 +113,15 @@ namespace OgreRenderer
             return false;
         }
 
-        OgreRenderingModule::LogDebug(" Ogre texture " + id_ + " updated");
+        OgreRenderingModule::LogDebug("Ogre texture " + id_ + " updated");
         level_ = source->GetLevel();
         return true;
+    }
+
+    void OgreTextureResource::SetData(OgreImageTextureResource *ogre_image_texture)
+    {
+        ogre_texture_ = ogre_image_texture->GetTexture();
+        OgreRenderingModule::LogDebug("Ogre texture " + id_ + " updated from OgreImageTextureResource");
     }
 
     bool OgreTextureResource::HasAlpha() const
