@@ -7,8 +7,6 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-#include <QDebug>
-
 #include "OgreImageTextureResource.h"
 
 namespace OgreRenderer
@@ -40,9 +38,6 @@ namespace OgreRenderer
 
             const QByteArray &inbound_metadata = reply->readAll();
             QString decoded_metadata = QString::fromUtf8(inbound_metadata.data());
-
-            qDebug() << decoded_metadata;
-
             QString content_type("\"content_type\":");
             int index = decoded_metadata.indexOf(content_type);
             int start = decoded_metadata.indexOf("\"", index + content_type.length());

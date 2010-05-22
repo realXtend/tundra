@@ -11,6 +11,7 @@
 namespace OgreRenderer
 {
     class OgreTextureResource;
+    class OgreImageTextureResource;
     typedef boost::shared_ptr<OgreTextureResource> OgreTextureResourcePtr;
 
     //! An Ogre-specific texture resource
@@ -55,6 +56,8 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetData(Foundation::TexturePtr source);
+
+        void SetData(OgreImageTextureResource *ogre_image_texture);
         
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();

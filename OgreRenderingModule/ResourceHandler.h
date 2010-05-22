@@ -151,7 +151,7 @@ namespace OgreRenderer
 
         ResourceMetadataGetter *metadata_getter_;
 
-        QMap<request_tag_t, request_tag_t> expected_to_previous_req_tag_;
+        std::map<std::string, std::vector<request_tag_t> > metadata_id_to_real_texture_tags_;
     };
 }
 #endif
