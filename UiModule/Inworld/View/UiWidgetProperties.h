@@ -106,6 +106,12 @@ namespace UiServices
         void SetPosition(const QPointF &position) {position_ = position; }
         void SetWidgetName(const QString &newname) { widget_name_ = newname; }
         void SetMenuNodeStyleMap(UiDefines::MenuNodeStyleMap menu_style_to_image_path) { menu_image_map_ = menu_style_to_image_path; }
+        
+    public slots:
+        // for python, cant call the with the whole map
+        void SetMenuNodeIconNormal(QString path) { menu_image_map_[UiDefines::IconNormal] = path; }
+        void SetMenuNodeIconHover(QString path) { menu_image_map_[UiDefines::IconHover] = path; }
+        void SetMenuNodeIconPressed(QString path) { menu_image_map_[UiDefines::IconPressed] = path; }
 
     private:
         WidgetType widget_type_;

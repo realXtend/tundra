@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_MenuManager_h
 #define incl_UiModule_MenuManager_h
 
+#include "UiDefines.h"
+
 #include <QObject>
 #include <QMap>
 #include <QPair>
@@ -31,14 +33,14 @@ namespace CoreUi
         MenuManager(QObject *parent, CoreUi::AnchorLayoutManager *layout_manager);
         ~MenuManager();
 
-        enum Category { Root, Personal, Building };
+        enum Category { Root, Personal, Building, Advanced };
 
     public slots:
         void AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties);
         void RemoveMenuItem(Category category, QGraphicsProxyWidget *controlled_widget);
 
     private slots:
-        void AddMenuGroup(QString name, qreal hgap, qreal vgap);
+        void AddMenuGroup(QString name, qreal hgap, qreal vgap, UiDefines::MenuNodeStyleMap style_map = UiDefines::MenuNodeStyleMap());
 
         void ActionNodeClicked(QUuid id);
         void GroupNodeClicked(GroupNode *clicked_node, QParallelAnimationGroup *move_animations, QParallelAnimationGroup *size_animations);

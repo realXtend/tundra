@@ -17,8 +17,8 @@
 
 namespace CoreUi
 {
-    GroupNode::GroupNode(bool root, const QString& name, qreal hgap, qreal vgap) :
-        MenuNode(name, QIcon(), UiDefines::MenuNodeStyleMap()),
+    GroupNode::GroupNode(bool root, const QString& name, qreal hgap, qreal vgap, UiDefines::MenuNodeStyleMap style_map) :
+        MenuNode(name, QIcon(), style_map),
         move_animations_(new QParallelAnimationGroup(this)),
         resize_animations_(new QParallelAnimationGroup(this)),
         adjust_position_animations_(new QParallelAnimationGroup(this)),
@@ -72,9 +72,10 @@ namespace CoreUi
     void GroupNode::NodeClicked()
     {
         // Check if animations are already running
-        if (move_animations_->state() == QAbstractAnimation::Running ||
-            resize_animations_->state() == QAbstractAnimation::Running)
-            return;
+        if (GetTreeDepth() == 0)
+            if (move_animations_->state() == QAbstractAnimation::Running ||
+                resize_animations_->state() == QAbstractAnimation::Running)
+                return;
 
         setOpacity(1);
 
@@ -241,7 +242,7 @@ namespace CoreUi
     }
 
     void GroupNode::MoveAnimationsFinished()
-    {
+    { 
         if (move_animations_->direction() == QAbstractAnimation::Forward)
         {
             is_expanded_ = true;

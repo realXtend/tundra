@@ -43,11 +43,17 @@ namespace CoreUi
         layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+
+        UiDefines::MenuNodeStyleMap style_map;
+        style_map[UiDefines::IconNormal] = "./data/ui/images/menus/edbutton_POSTPR_normal.png";
+        style_map[UiDefines::IconHover] = "./data/ui/images/menus/edbutton_POSTPR_hover.png";
+        style_map[UiDefines::IconPressed] = "./data/ui/images/menus/edbutton_POSTPR_click.png";
+        AddMenuGroup("Advanced", 0, 0, style_map);
     }
 
-    void MenuManager::AddMenuGroup(QString name, qreal hgap, qreal vgap)
+    void MenuManager::AddMenuGroup(QString name, qreal hgap, qreal vgap, UiDefines::MenuNodeStyleMap style_map)
     {
-        GroupNode *group_node = new GroupNode(false, name, hgap, vgap);
+        GroupNode *group_node = new GroupNode(false, name, hgap, vgap, style_map);
         root_menu_->AddChildNode(group_node);
         category_map_[name] = group_node;
         layout_manager_->AddItemToScene(group_node);
@@ -59,21 +65,35 @@ namespace CoreUi
     void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties)
     {
         ActionNode *child_node = new ActionNode(properties.GetWidgetName(), properties.GetWidgetIcon(), properties.GetMenuNodeStyleMap());
-        switch (category)
+
+        // school sub menu hack
+        QString widget_name = properties.GetWidgetName().toLower();
+        if (widget_name == "region frame" ||
+            widget_name == "environment editor" ||
+            widget_name == "post-processing" ||
+            widget_name == "material wizard" ||
+            widget_name == "local scene")
         {
-            case Root:
-                category_map_["Root"]->AddChildNode(child_node);
-                break;
-            case Personal:
-                // Personal no longer exists at this point in time, use Root
-                SAFE_DELETE(child_node); 
-                return;
-            case Building:
-                // Building no longer exists at this point in time, use Root
-                SAFE_DELETE(child_node);
-                return;
-            default:
-                return;
+            category_map_["Advanced"]->AddChildNode(child_node);
+        }
+        else
+        {
+            switch (category)
+            {
+                case Root:
+                    category_map_["Root"]->AddChildNode(child_node);
+                    break;
+                case Personal:
+                    // Personal no longer exists at this point in time, use Root
+                    SAFE_DELETE(child_node); 
+                    return;
+                case Building:
+                    // Building no longer exists at this point in time, use Root
+                    SAFE_DELETE(child_node);
+                    return;
+                default:
+                    return;
+            }
         }
         controller_map_[child_node->GetID()] = controlled_widget;
         connect(child_node, SIGNAL(ActionButtonClicked(QUuid)), SLOT(ActionNodeClicked(QUuid)));
@@ -87,17 +107,35 @@ namespace CoreUi
             return;
 
         MenuNode *recovered_node = 0;
-        switch (category)
+
+        // school sub menu hack
+        UiServices::UiProxyWidget *proxy = dynamic_cast<UiServices::UiProxyWidget*>(controlled_widget);
+        QString widget_name = "";
+        if (proxy)
+            widget_name = proxy->GetWidgetProperties().GetWidgetName().toLower();
+
+        if (widget_name == "region frame" ||
+            widget_name == "environment editor" ||
+            widget_name == "post-processing" ||
+            widget_name == "material wizard" ||
+            widget_name == "local scene")
         {
-            case Root: // should not happen, can be removed, wont hurt either, item will not be found
-               recovered_node = category_map_["Root"]->RemoveChildNode(remove_id);
-               break;
-            case Personal:
-               return;
-            case Building:
-               return;
-            default:
-               return;
+            recovered_node = category_map_["Advanced"]->RemoveChildNode(remove_id);
+        }
+        else
+        {
+            switch (category)
+            {
+                case Root: // should not happen, can be removed, wont hurt either, item will not be found
+                   recovered_node = category_map_["Root"]->RemoveChildNode(remove_id);
+                   break;
+                case Personal:
+                   return;
+                case Building:
+                   return;
+                default:
+                   return;
+            }
         }
 
         if (recovered_node)
@@ -178,7 +216,6 @@ namespace CoreUi
             expanded_nodes_.removeOne(clicked_node);
             last_resize_animations_ = 0;
             GroupNode* node = dynamic_cast<GroupNode*>(clicked_node->parent());
-
             if (node)
             {
                 node->AdjustNode(QAbstractAnimation::Forward);

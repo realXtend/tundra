@@ -103,7 +103,7 @@ namespace Asset
 				//\todo parse date
 			}
 
-			if (name == "type")
+			if (name == "type" || name == "content_type")
 			{
 				if (it->second->type() != typeid(std::string))
 					continue;

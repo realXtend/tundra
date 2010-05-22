@@ -20,7 +20,13 @@ class PictureCreator(Component):
 
         self.dialog = QUiLoader().load(QFile(self.uifile_path))
         props = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolb
-        props.widget_name_ = "Create frame"
+        props.widget_name_ = "Create Frame"
+        
+        base_url = "./data/ui/images/menus/"
+        props.SetMenuNodeIconNormal(base_url + "edbutton_OBJED_normal.png")
+        props.SetMenuNodeIconHover(base_url + "edbutton_OBJED_hover.png")
+        props.SetMenuNodeIconPressed(base_url + "edbutton_OBJED_click.png")
+        
         self.proxy = r.createUiProxyWidget(self.dialog, props)
         uism = r.getUiSceneManager()
         if not uism.AddProxyWidget(self.proxy):

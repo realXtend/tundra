@@ -22,11 +22,9 @@ class RegionFrameWindow:
         uiprops.widget_name_ = "Region Frame"
 
         base_url = "./data/ui/images/menus/"
-        menuIcons = {}
-        menuIcons[3] = base_url + "edbutton_OBJED_normal.png"
-        menuIcons[4] = base_url + "edbutton_OBJED_hover.png"
-        menuIcons[5] = base_url + "edbutton_OBJED_click.png"
-        #uiprops.setMenuNodeStyleMap(menuIcons)
+        uiprops.SetMenuNodeIconNormal(base_url + "edbutton_OBJED_normal.png")
+        uiprops.SetMenuNodeIconHover(base_url + "edbutton_OBJED_hover.png")
+        uiprops.SetMenuNodeIconPressed(base_url + "edbutton_OBJED_click.png")
         
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)        
 

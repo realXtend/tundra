@@ -370,6 +370,13 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+    <name>DetachedWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ECEditor</name>
     <message>
         <source>Entity-component Editor</source>
@@ -405,6 +412,69 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ECEditor::ECEditorWindow</name>
+    <message>
+        <source>Create Component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit XML...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Poista</translation>
+    </message>
+    <message>
+        <source>Add new component...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ECEditor</source>
+        <comment>Entity-component Editor</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ECEditor::EcXmlEditorWidget</name>
+    <message>
+        <source>EC Attribute XML Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Tallenna</translation>
+    </message>
+    <message>
+        <source>Revert</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1480,6 +1550,26 @@ Pituus: %1 sec</translation>
         <source>Notecard</source>
         <translation>Muistio</translation>
     </message>
+    <message>
+        <source>3DCanvas Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;&lt;&lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&gt;&gt;&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NoteCardManager</name>
@@ -1814,6 +1904,21 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>TeleportWidget</name>
+    <message>
+        <source>Settings Widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Teleport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TraditionalLoginWidget</name>
     <message>
         <source>realXtend Naali Login</source>
@@ -2083,6 +2188,10 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Voice users</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>hide</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

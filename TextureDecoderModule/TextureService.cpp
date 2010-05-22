@@ -9,12 +9,18 @@
 #include "TextureResource.h"
 #include "TextureService.h"
 #include "RexTypes.h"
+#include "RexAsset.h"
 #include "AssetServiceInterface.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ThreadTaskManager.h"
 #include "ConfigurationManager.h"
+
+#include <QImage>
+#include <QPixmap>
+
+#include <openjpeg.h>
 
 namespace TextureDecoder
 {
@@ -80,11 +86,25 @@ namespace TextureDecoder
             return;
 
         // Check if assets have enough data to queue decode requests
+        std::list<TextureRequestMap::iterator> canceled_requests;
         TextureRequestMap::iterator i = requests_.begin();
         while (i != requests_.end())
         {
             UpdateRequest(i->second, asset_service.get());
+            if (i->second.IsCanceled())
+                canceled_requests.push_back(i);
             ++i;
+        }
+
+        if (canceled_requests.size() == 0)
+            return;
+
+        std::list<TextureRequestMap::iterator>::const_iterator iter = canceled_requests.begin();
+        while (iter != canceled_requests.end())
+        {
+            TextureRequestMap::iterator removable = *iter;
+            requests_.erase(removable);
+            ++iter;
         }
     }
     
@@ -116,13 +136,27 @@ namespace TextureDecoder
             Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
             if (asset)
             {
-                DecodeRequestPtr new_decode_request(new DecodeRequest());
-                new_decode_request->id_ = request.GetId();
-                new_decode_request->level_ = request.GetNextLevel();
-                new_decode_request->source_ = asset;
-                framework_->GetThreadTaskManager()->AddRequest<DecodeRequest>("TextureDecoder", new_decode_request);
-                
-                request.SetDecodeRequested(true);
+                // Check if assetype was changes in asset module when proping the metadata
+                // prevents jpg/jpeg url assets going into decode phase and crashing
+                if (asset->GetType() != RexTypes::ASSETTYPENAME_IMAGE)
+                {
+                    DecodeRequestPtr new_decode_request(new DecodeRequest());
+                    new_decode_request->id_ = request.GetId();
+                    new_decode_request->level_ = request.GetNextLevel();
+                    new_decode_request->source_ = asset;
+                    framework_->GetThreadTaskManager()->AddRequest<DecodeRequest>("TextureDecoder", new_decode_request);
+                    
+                    request.SetDecodeRequested(true);
+                }
+                else
+                {
+                    TextureRequestMap::iterator i = requests_.find(asset->GetId());
+                    if (i != requests_.end())
+                    {
+                        TextureDecoderModule::LogDebug("Texture decode request " + i->second.GetId() + " canceled, asset type changed while fetching http asset metadata");
+                        request.SetCanceled(true);
+                    }
+                }
             }
         }
     }  

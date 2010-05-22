@@ -19,11 +19,14 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 
+#include "ResourceMetadataGetter.h"
+#include <QDebug>
 
 namespace OgreRenderer
 {
     ResourceHandler::ResourceHandler(Foundation::Framework* framework) :
-        framework_(framework)
+        framework_(framework),
+        metadata_getter_(new ResourceMetadataGetter(framework))
     {
         source_types_[OgreTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_TEXTURE;
         source_types_[OgreMeshResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MESH;
@@ -31,6 +34,9 @@ namespace OgreRenderer
         source_types_[OgreMaterialResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT;
         source_types_[OgreParticleResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT;
         source_types_[OgreImageTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_IMAGE;
+
+        connect(metadata_getter_, SIGNAL(Metadata(std::string, std::string, request_tag_t)), 
+            SLOT(MetadataFetched(std::string, std::string, request_tag_t)));
     }
 
     ResourceHandler::~ResourceHandler()
@@ -48,6 +54,8 @@ namespace OgreRenderer
         }
                 
         resources_.clear();
+
+        SAFE_DELETE(metadata_getter_);
     }
     
     void ResourceHandler::PostInitialize()
@@ -96,7 +104,19 @@ namespace OgreRenderer
     request_tag_t ResourceHandler::RequestResource(const std::string& id, const std::string& type)
     {
         if (type == OgreTextureResource::GetTypeStatic())
-            return RequestTexture(id);
+        {
+            QString q_id(id.c_str());
+            if (q_id.startsWith("http"))
+            {
+                request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
+                metadata_getter_->GetMetadata(id.c_str(), type.c_str(), tag);
+                
+                qDebug() << endl << "HTTP TEXTURE, REAL SENDBACK TAG = " << tag << " FETCHING METADATA" << endl;
+                return tag;
+            }
+            else
+                return RequestTexture(id);
+        }
         if (type == OgreMeshResource::GetTypeStatic() || type == OgreMaterialResource::GetTypeStatic() ||
             type == OgreParticleResource::GetTypeStatic() || type == OgreImageTextureResource::GetTypeStatic() ||
             type == OgreSkeletonResource::GetTypeStatic())
@@ -104,6 +124,14 @@ namespace OgreRenderer
             
         OgreRenderingModule::LogWarning("Requested unknown renderer resource type " + type);
         return 0;
+    }
+
+    void ResourceHandler::MetadataFetched(std::string id, std::string type, request_tag_t tag)
+    {
+        request_tag_t expected_data_tag = RequestResource(id, type);
+        qDebug() << endl << "Texture id: " << id.c_str();
+        qDebug() << "HTTP TEXTURE, REAL SENDBACK TAG = " << tag << " IS A JPG TEXUTRE : ogre expects tag " << expected_data_tag << endl;
+        expected_to_previous_req_tag_[expected_data_tag] = tag;
     }
     
     void ResourceHandler::RemoveResource(const std::string& id, const std::string& type)
@@ -148,7 +176,10 @@ namespace OgreRenderer
                     UpdateParticles(event_data->asset_, event_data->tag_);
 
                 if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_IMAGE)
+                {
+                    qDebug() << endl << "IMAGE TEXTURE READY: " << event_data->asset_->GetId().c_str() << " TAG = " << event_data->tag_ << endl;
                     UpdateImageTexture(event_data->asset_, event_data->tag_);
+                }
             }
             break;
             
@@ -379,6 +410,12 @@ namespace OgreRenderer
         // If data successfully set, or already have valid data, success (send RESOURCE_READY_EVENT)
         if ((tex_res->IsValid()) || (tex_res->SetData(source)))
         {
+            qDebug() << "Expexted to real tag:" << endl << expected_to_previous_req_tag_;
+            if (expected_to_previous_req_tag_.contains(tag))
+            {
+                request_tags_[tex->GetId()].push_back(expected_to_previous_req_tag_[tag]);
+            }
+
             resources_[source->GetId()] = tex;
             ProcessResourceReferences(tex);
             
