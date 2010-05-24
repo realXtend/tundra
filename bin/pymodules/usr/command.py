@@ -1174,11 +1174,33 @@ if 0: #create a new component, hilight
     else:
         print "not"
 
-if 1: #test adding a dynamiccomponent
+if 0: #test adding a dynamiccomponent
     avid = r.getUserAvatarId()
     ent = r.getEntity(avid)
-    print ent
-    ent.createComponent("EC_DynamicComponent")
+    try:
+        ent.dynamic
+    except AttributeError:
+        ent.createComponent("EC_DynamicComponent")
+    print ent.dynamic
+
+    d = ent.dynamic
+    print dir(d)
+    d.AddAttribute()
+    print d.GetAttribute()
+
+if 1: #animation control
+    avid = r.getUserAvatarId()
+    ent = r.getEntity(avid)
+    try:
+        ent.animationcontroller
+    except AttributeError:
+        #ent.createComponent("EC_DynamicComponent")
+        print ent, "has no animation controller component"
+    
+    a = ent.animationcontroller
+    print a, dir(a)
+    a.EnableAnimation("Walk")
+    
         
 if 0: #log level visibility
     r.logDebug("Debug")
