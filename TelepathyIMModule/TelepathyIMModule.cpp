@@ -7,8 +7,8 @@
 #include "CommunicationUI/MasterWidget.h"
 #include "CommunicationUI/OpenSimChatWidget.h"
 #include "Test.h"
-#include "OpensimIM/ConnectionProvider.h"
-#include "OpensimIM/ChatController.h"
+//#include "OpensimIM/ConnectionProvider.h"
+//#include "OpensimIM/ChatController.h"
 #include "TelepathyIM/ConnectionProvider.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
@@ -73,8 +73,8 @@ namespace Communication
         connect(communication_service_, SIGNAL( ConnectionClosed(Communication::ConnectionInterface*) ),
                 SLOT( OnConnectionClosed(Communication::ConnectionInterface*) ));
 
-        OpensimIM::ConnectionProvider* opensim = new OpensimIM::ConnectionProvider(framework_);
-        communication_service_->RegisterConnectionProvider(opensim);
+        //OpensimIM::ConnectionProvider* opensim = new OpensimIM::ConnectionProvider(framework_);
+        //communication_service_->RegisterConnectionProvider(opensim);
 
         TelepathyIM::ConnectionProvider* telepathy = new TelepathyIM::ConnectionProvider(framework_);
         communication_service_->RegisterConnectionProvider(telepathy);
@@ -122,7 +122,7 @@ namespace Communication
                 if (current_protocol_module.lock().get())
                 {
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
-                    os_chat_controller_ = new OpensimIM::ChatController(client_params);
+//                    os_chat_controller_ = new OpensimIM::ChatController(client_params);
                 }
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
