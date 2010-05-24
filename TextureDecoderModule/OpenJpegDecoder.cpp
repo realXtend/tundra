@@ -114,17 +114,7 @@ namespace TextureDecoder
         if (!request)
             return;
 
-        QImage raw_image;
-        bool qt_loaded_image = false;
-
-        // Texture ID is url
-        if (QString(request->id_.c_str()).startsWith("http"))
-        {
-            // Try to load image with qt
-            raw_image = QImage::fromData((const uchar *)request->source_->GetData(), request->source_->GetSize());
-            if (!raw_image.isNull())
-                qt_loaded_image = true;
-        }
+        bool texture_id_is_url = QString(request->id_.c_str()).startsWith("http");
 
         DecodeResultPtr result(new DecodeResult());
 
@@ -136,7 +126,7 @@ namespace TextureDecoder
         result->components_ = 0;
         result->tag_ = request->tag_;
 
-        if (!qt_loaded_image)
+        if (!texture_id_is_url)
         {
             // Guard against OpenJpeg crash on illegal data at an early phase
             unsigned char *data = (unsigned char *)request->source_->GetData();
@@ -206,47 +196,68 @@ namespace TextureDecoder
                 result->texture_ = resource;
             }
 
-
             if (image)
                 opj_image_destroy(image);
         }
         else
         {
-            int width = raw_image.width();
-            int height = raw_image.height();
+            // Try to load image with qt, see supported image types from
+            // http://doc.trolltech.com/4.6/qimagereader.html#supportedImageFormats
 
-            uint comps = 0;
-            switch (raw_image.format())
+            QImage raw_image = QImage::fromData((const uchar *)request->source_->GetData(), request->source_->GetSize());
+            if (!raw_image.isNull())
             {
-                case QImage::Format_RGB16:
-                    comps = 5;
-                    break;
+                int width = raw_image.width();
+                int height = raw_image.height();
+                uint comps = 0;
 
-                case QImage::Format_RGB32:
-                    comps = 6;
-                    break;
+                // Check image format, support the ones 
+                // we can map to ogres image formats later
+                switch (raw_image.format())
+                {
+                    case QImage::Format_RGB16:
+                        comps = 5;
+                        break;
 
-                case QImage::Format_ARGB32:
-                case QImage::Format_ARGB32_Premultiplied:
-                    comps = 7;
-                    break;
+                    case QImage::Format_RGB32:
+                        comps = 6;
+                        break;
+
+                    case QImage::Format_ARGB32:
+                    case QImage::Format_ARGB32_Premultiplied:
+                        comps = 7;
+                        break;
+
+                    default:
+                        comps = 0;
+                        break;
+                }
+
+                if (comps != 0)
+                {
+                    result->original_width_ = width;
+                    result->original_height_ = height;
+                    result->components_ = comps;
+                    result->level_ = 0;
+
+                    Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), width, height, comps));
+                    TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
+                    texture->SetLevel(0); // final level == ready for use
+                    u8* data = texture->GetData();
+                    
+                    memcpy(data, raw_image.bits(), raw_image.byteCount());
+                    result->texture_ = resource;
+                }
+                else
+                {
+                    TextureDecoderModule::LogError(QString("Your image was loaded as but QImage::Format = %1 is not supported. Canceling texture usage.").arg(raw_image.format()).toStdString());
+                }
+            }
+            else
+            {
+                TextureDecoderModule::LogError("Could load texture image with qt. Are you sure you have all qt plugins loaded? Canceling texture usage.");
             }
 
-            result->original_width_ = width;
-            result->original_height_ = height;
-            result->components_ = comps;
-            result->level_ = 0;
-
-            // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
-            Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), width, height, comps));
-            
-            TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
-            texture->SetLevel(0);
-            u8* data = texture->GetData();
-            
-            memcpy(data, raw_image.bits(), raw_image.byteCount());
-
-            result->texture_ = resource;
         }
 
         QueueResult<DecodeResult>(result);
