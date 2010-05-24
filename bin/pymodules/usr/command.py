@@ -1188,7 +1188,7 @@ if 0: #test adding a dynamiccomponent
     d.AddAttribute()
     print d.GetAttribute()
 
-if 1: #animation control
+if 0: #animation control
     avid = r.getUserAvatarId()
     ent = r.getEntity(avid)
     try:
@@ -1199,7 +1199,18 @@ if 1: #animation control
     
     a = ent.animationcontroller
     print a, dir(a)
-    a.EnableAnimation("Walk")
+    #animname = "Fly"
+    animname = "Walk"
+    a.EnableAnimation(animname)
+    #print a.SetAnimationTimePosition("Walk", 0.2)
+
+    #step with consequent calls
+    try:
+        r.t
+    except: #first run
+        r.t = 0
+    r.t += 0.1
+    print a.SetAnimationTimePosition(animname, r.t % 1)
     
         
 if 0: #log level visibility

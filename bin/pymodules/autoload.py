@@ -15,6 +15,7 @@ from core.freshimport import freshimport
 modulenames = [
     #("usr.sleeper", "Sleeper"),
     #("apitest.circuits_testmodule", "TestModule"),
+    ("apitest.attrsync", "DynamiccomponentHandler"),
     #("apitest.thread_test", "TestThread"),
     #("usr.chathandler", ChatHandler),
     ("usr.keycommands", "KeyCommander"),

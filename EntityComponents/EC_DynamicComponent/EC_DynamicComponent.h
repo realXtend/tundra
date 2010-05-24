@@ -27,13 +27,14 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    //! Position within source (for example scrollbar value, page number)
-    Foundation::Attribute<int> position_;
+    //! a test attribute - now a float to suite animation state
+    Foundation::Attribute<float> x_;
 
 public slots:
     void AddAttribute();
     QVariant GetAttribute();
     //private slots:
+    void SetAttribute(float new_x);
     
 private:
     //! Constuctor.

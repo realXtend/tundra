@@ -27,8 +27,9 @@ namespace OgreRenderer
         DECLARE_EC(EC_OgreAnimationController);
 
     public slots:
-	//! Qt wrapper for py&js access
+	//! Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
         bool EnableAnimation(const QString &name) { EnableAnimation(name.toStdString(), false); }
+        bool SetAnimationTimePosition(const QString name, float new_position) { SetAnimationTimePosition(name.toStdString(), (Real)new_position); }
 
     public:
         
@@ -38,7 +39,8 @@ namespace OgreRenderer
             PHASE_FADEIN,
             PHASE_PLAY,
             PHASE_FADEOUT,
-            PHASE_STOP
+            PHASE_STOP,
+            PHASE_FREE //in external control. for dynamiccomponent testing now
         };
 
         //! Structure for an ongoing animation
