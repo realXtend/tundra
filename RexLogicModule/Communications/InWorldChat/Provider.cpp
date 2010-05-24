@@ -14,29 +14,44 @@ namespace RexLogic
             description_("RexLogic module opensim chat provider"),
             session_(0)
         {
-            session_ = new InWorldChat::Session();
-            connect(session_, SIGNAL(UserEnteredText(const QString&)), SLOT(SendChatMessgeToServer(const QString&)) );
-            Register();
-
-            /// @todo: HANDLER FOR THESE EVENTS
-            ///        - EVENT_SERVER_CONNECTED
-            ///        - EVENT_SERVER_DISCONNECTED
+            RegisterToCommunicationsService();
         }
 
         Provider::~Provider()
         {
             SAFE_DELETE(session_);
+            foreach(InWorldChat::Session* s, closed_sessions_)
+            {
+                SAFE_DELETE(s);
+            }
+            closed_sessions_.clear();
+        }
+
+        bool Provider::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+        {
+            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
+            {
+                session_ = new InWorldChat::Session();
+                connect(session_, SIGNAL(UserEnteredText(const QString&)), SLOT(SendChatMessgeToServer(const QString&)) );
+                emit SessionAvailable();
+            }
+
+            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+            {
+                if (session_)
+                {
+                    disconnect(session_);
+                    session_->Close();
+                    closed_sessions_.append(session_);
+                    session_ = 0;
+                }
+                emit SessionUnavailable();
+            }
+            return false;
         }
 
         Communications::InWorldChat::SessionInterface* Provider::Session()
         {
-            //if (session_ && session_->GetState() == Session::STATE_CLOSED)
-            //    SAFE_DELETE(session_) //! \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
-
-            if (!session_)
-            {
-                session_ = new InWorldChat::Session();
-            }
             return session_;
         }
 
@@ -45,7 +60,7 @@ namespace RexLogic
             return description_;
         }
 
-        void Provider::Register()
+        void Provider::RegisterToCommunicationsService()
         {
             boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
             if (comm.get())

@@ -79,7 +79,6 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
     }
 
     script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_));
-    in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(rexlogicmodule->GetFramework()));
 }
 
 NetworkEventHandler::~NetworkEventHandler()
@@ -609,10 +608,6 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
     try
     {              
         msg->ResetReading();
-        //QString from_name = ""
-        //QString source_uuid = "";
-        //QString object_owner = "";
-        //QString message = "";
 
         std::size_t size = 0;
         const boost::uint8_t* buffer = msg->ReadBuffer(&size);
@@ -635,7 +630,7 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
             case SOURCE_TYPE_SYSTEM:
             case SOURCE_TYPE_AGENT:
             case SOURCE_TYPE_OBJECT:
-                in_world_chat_provider_->HandleIncomingChatMessage(source_uuid, source_name, message_text); 
+                rexlogicmodule_->GetInWorldChatProvider()->HandleIncomingChatMessage(source_uuid, source_name, message_text); 
                 break;
             }
         }

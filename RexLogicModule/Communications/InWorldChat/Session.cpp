@@ -6,12 +6,17 @@ namespace RexLogic
 {
     namespace InWorldChat
     {
-        Session::Session()
+        Session::Session() : is_closed_(false)
         {
 
         }
 
         Session::~Session()
+        {
+            ClearHistory();
+        }
+
+        void Session::ClearHistory()
         {
             foreach(TextMessage* m, messages_)
             {
@@ -22,11 +27,14 @@ namespace RexLogic
 
         void Session::SendTextMessage(const QString &text)
         {
+            if (is_closed_)
+                return;
+
             // We do not update message history here, we get all messages from network
             emit UserEnteredText(text);
         }
 
-        QList<Communications::InWorldChat::TextMessageInterface*> Session::MessageHistory()
+        QList<Communications::InWorldChat::TextMessageInterface*> Session::MessageHistory() const
         {
             QList<Communications::InWorldChat::TextMessageInterface*> list;
             foreach(TextMessage* m, messages_)
@@ -54,6 +62,17 @@ namespace RexLogic
         {
             /// @todo FETCH REAL NAME 
             return uuid;
+        }
+
+        void Session::Close()
+        {
+            is_closed_ = true;
+            emit Closed();
+        }
+
+        bool Session::IsClosed() const
+        {
+            return is_closed_;
         }
 
         //ParticipantList Session::Participants() const

@@ -56,12 +56,6 @@ bool FrameworkEventHandler::HandleFrameworkEvent(event_id_t event_id, Foundation
             }
         }
     }
-    else if (event_id == Foundation::NETWORKING_REGISTERED)
-    {
-        ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
-        if (event_data)
-            rexLogic_->SubscribeToNetworkEvents(event_data->currentProtocolModule);
-    }
 
     return false;
 }
