@@ -43,6 +43,7 @@ namespace CommunicationTest
     class Test;
 }
 
+/// @todo: Rename to TelepathyIM
 namespace Communication
 {
     /**

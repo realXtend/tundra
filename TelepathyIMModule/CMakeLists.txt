@@ -50,7 +50,7 @@ file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES CommunicationUI/ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
-AddSourceFolder(OpensimIM)
+# AddSourceFolder(OpensimIM) # OBSOLETE CODE, TODO: Move IM functionality to RexLogic/Communications/IM
 AddSourceFolder(TelepathyIM)
 AddSourceFolder(CommunicationUI)
 
