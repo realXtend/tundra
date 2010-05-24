@@ -147,7 +147,7 @@ namespace Communications
             virtual ~ParticipantInterface() {};
             virtual const QString &Name() const = 0;
             virtual QString AvatarUUID() const = 0;
-            virtual Vector3df Position() const = 0;
+            virtual Vector3df Position() const = 0; // needed ???
         };
         typedef QList<ParticipantInterface*> ParticipantList;
 
@@ -163,16 +163,22 @@ namespace Communications
         {
             Q_OBJECT
         public:
+            /// Default destructor
             virtual ~SessionInterface() {};
+
+            /// Send given text to in-world chat
             virtual void SendTextMessage(const QString &text) = 0;
-//            virtual ParticipantList Participants() const = 0;
+
+            /// @return List of pointers to text messages received in this session.
+            ///         The list items do not change only new messages are appended during
+            ///         the session.
             virtual QList<TextMessageInterface*> MessageHistory() = 0;
 
+//            virtual ParticipantList Participants() const = 0;
         signals:
+            /// When text message is received from in-world chat. The origin of the message 
+            /// can be self or other participant
             void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
-            void TextMessageReceived(Communications::TextMessageInterface*);
-            void TextMessageReceived();
-            void Test();
             //void ParticipantJoined(ParticipantInterface* participant);
             //void ParticipantLeft(ParticipantInterface* participant);
         };

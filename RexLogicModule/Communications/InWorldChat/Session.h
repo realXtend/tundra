@@ -30,7 +30,7 @@ namespace RexLogic
             bool IsSelfAvatarUUID(QString uuid);
             QString AvatarName(QString uuid);
 
-            QList<TextMessage> messages_;
+            QList<TextMessage*> messages_;
         };
 
     } // InWorldChat
