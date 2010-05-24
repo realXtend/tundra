@@ -7,19 +7,13 @@
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
 
-#include <QObject>
-#include <QString>
-#include <QMap>
-
 namespace OgreRenderer
 {
     class ResourceMetadataGetter;
 
     //! Manages Ogre resources & requests for their data from the asset system. Used internally by Renderer.
-    class ResourceHandler : public QObject
+    class ResourceHandler
     {
-
-    Q_OBJECT
 
     public:
         //! Constructor
@@ -48,9 +42,6 @@ namespace OgreRenderer
         
         //! Internal method to parse braces from an Ogre script. Returns true if line contained open/close brace
         static bool ProcessBraces(const std::string& line, int& brace_level);
-
-    public slots:
-        void MetadataFetched(std::string id, std::string type, request_tag_t tag);
         
     private:
         //! Get a renderer-specific resource, without caring if it is valid
@@ -148,10 +139,6 @@ namespace OgreRenderer
         
         //! Framework we belong to
         Foundation::Framework* framework_;
-
-        ResourceMetadataGetter *metadata_getter_;
-
-        std::map<std::string, std::vector<request_tag_t> > metadata_id_to_real_texture_tags_;
     };
 }
 #endif

@@ -44,6 +44,8 @@
 
 #include <openjpeg.h>
 
+#include <QImage>
+
 namespace TextureDecoder
 {
     OpenJpegDecoder::OpenJpegDecoder() :
@@ -112,6 +114,18 @@ namespace TextureDecoder
         if (!request)
             return;
 
+        QImage raw_image;
+        bool qt_loaded_image = false;
+
+        // Texture ID is url
+        if (QString(request->id_.c_str()).startsWith("http"))
+        {
+            // Try to load image with qt
+            raw_image = QImage::fromData((const uchar *)request->source_->GetData(), request->source_->GetSize());
+            if (!raw_image.isNull())
+                qt_loaded_image = true;
+        }
+
         DecodeResultPtr result(new DecodeResult());
 
         result->id_ = request->id_;
@@ -122,76 +136,118 @@ namespace TextureDecoder
         result->components_ = 0;
         result->tag_ = request->tag_;
 
-        // Guard against OpenJpeg crash on illegal data at an early phase
-        unsigned char *data = (unsigned char *)request->source_->GetData();
-        if (data[0] != 0xFF)
+        if (!qt_loaded_image)
         {
-            TextureDecoderModule::LogError("Invalid data passed to PerformDecode!");
-            QueueResult<DecodeResult>(result);
-            return;
-        }
-
-        opj_dinfo_t* dinfo = 0; // decoder
-        opj_image_t *image = 0; // decoded image
-        opj_dparameters_t parameters; // decoder parameters
-        opj_cio_t *cio = 0; // decode stream
-        opj_codestream_info_t cstr_info;  // codestream info
-        memset(&cstr_info, 0, sizeof(opj_codestream_info_t));
-       
-        opj_event_mgr_t event_mgr; // decode event manager
-        memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
-        event_mgr.error_handler = HandleError;
-        //event_mgr.warning_handler = HandleWarning;
-        //event_mgr.info_handler = HandleInfo;
-        
-        opj_set_default_decoder_parameters(&parameters);
-        parameters.cp_reduce = request->level_;
-        
-        dinfo = opj_create_decompress(CODEC_J2K);
-        opj_setup_decoder(dinfo, &parameters);
-        opj_set_event_mgr((opj_common_ptr)dinfo, &event_mgr, this);
-        
-        cio = opj_cio_open((opj_common_ptr)dinfo, (unsigned char *)request->source_->GetData(), request->source_->GetSize());
-        
-        image = opj_decode_with_info(dinfo, cio, &cstr_info);
-        result->max_levels_ = cstr_info.numlayers;
-
-        opj_cio_close(cio);
-        opj_destroy_decompress(dinfo);
-        
-        if ((image) && (image->numcomps))
-        {
-            result->original_width_ = image->x1 - image->x0;
-            result->original_height_ = image->y1 - image->y0;
-            result->components_ = image->numcomps;
-            result->level_ = request->level_;
-
-            // Assume all components are same size
-            int actual_width = image->comps[0].w;
-            int actual_height = image->comps[0].h;
-
-            // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
-            Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), actual_width, actual_height, image->numcomps));
-            TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
-            u8* data = texture->GetData();
-            texture->SetLevel(request->level_);
-            for (int y = 0; y < actual_height; ++y)
+            // Guard against OpenJpeg crash on illegal data at an early phase
+            unsigned char *data = (unsigned char *)request->source_->GetData();
+            if (data[0] != 0xFF)
             {
-                for (int x = 0; x < actual_width; ++x)
+                TextureDecoderModule::LogError("Invalid data passed to PerformDecode!");
+                QueueResult<DecodeResult>(result);
+                return;
+            }
+
+            opj_dinfo_t* dinfo = 0; // decoder
+            opj_image_t *image = 0; // decoded image
+            opj_dparameters_t parameters; // decoder parameters
+            opj_cio_t *cio = 0; // decode stream
+            opj_codestream_info_t cstr_info;  // codestream info
+            memset(&cstr_info, 0, sizeof(opj_codestream_info_t));
+           
+            opj_event_mgr_t event_mgr; // decode event manager
+            memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
+            event_mgr.error_handler = HandleError;
+            //event_mgr.warning_handler = HandleWarning;
+            //event_mgr.info_handler = HandleInfo;
+            
+            opj_set_default_decoder_parameters(&parameters);
+            parameters.cp_reduce = request->level_;
+            
+            dinfo = opj_create_decompress(CODEC_J2K);
+            opj_setup_decoder(dinfo, &parameters);
+            opj_set_event_mgr((opj_common_ptr)dinfo, &event_mgr, this);
+            
+            cio = opj_cio_open((opj_common_ptr)dinfo, (unsigned char *)request->source_->GetData(), request->source_->GetSize());
+            
+            image = opj_decode_with_info(dinfo, cio, &cstr_info);
+            result->max_levels_ = cstr_info.numlayers;
+
+            opj_cio_close(cio);
+            opj_destroy_decompress(dinfo);
+            
+            if ((image) && (image->numcomps))
+            {
+                result->original_width_ = image->x1 - image->x0;
+                result->original_height_ = image->y1 - image->y0;
+                result->components_ = image->numcomps;
+                result->level_ = request->level_;
+
+                // Assume all components are same size
+                int actual_width = image->comps[0].w;
+                int actual_height = image->comps[0].h;
+
+                // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
+                Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), actual_width, actual_height, image->numcomps));
+                TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
+                u8* data = texture->GetData();
+                texture->SetLevel(request->level_);
+                for (int y = 0; y < actual_height; ++y)
                 {
-                    for (int c = 0; c < image->numcomps; ++c)
+                    for (int x = 0; x < actual_width; ++x)
                     {
-                        *data = image->comps[c].data[y * actual_width + x];
-                        data++;
+                        for (int c = 0; c < image->numcomps; ++c)
+                        {
+                            *data = image->comps[c].data[y * actual_width + x];
+                            data++;
+                        }
                     }
                 }
+         
+                result->texture_ = resource;
             }
-     
+
+
+            if (image)
+                opj_image_destroy(image);
+        }
+        else
+        {
+            int width = raw_image.width();
+            int height = raw_image.height();
+
+            uint comps = 0;
+            switch (raw_image.format())
+            {
+                case QImage::Format_RGB16:
+                    comps = 5;
+                    break;
+
+                case QImage::Format_RGB32:
+                    comps = 6;
+                    break;
+
+                case QImage::Format_ARGB32:
+                case QImage::Format_ARGB32_Premultiplied:
+                    comps = 7;
+                    break;
+            }
+
+            result->original_width_ = width;
+            result->original_height_ = height;
+            result->components_ = comps;
+            result->level_ = 0;
+
+            // Create a (possibly temporary, if no-one stores the pointer) raw texture resource
+            Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), width, height, comps));
+            
+            TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
+            texture->SetLevel(0);
+            u8* data = texture->GetData();
+            
+            memcpy(data, raw_image.bits(), raw_image.byteCount());
+
             result->texture_ = resource;
         }
-
-        if (image)
-            opj_image_destroy(image);
 
         QueueResult<DecodeResult>(result);
     }

@@ -17,9 +17,6 @@
 #include "ThreadTaskManager.h"
 #include "ConfigurationManager.h"
 
-#include <QImage>
-#include <QPixmap>
-
 #include <openjpeg.h>
 
 namespace TextureDecoder
@@ -136,27 +133,13 @@ namespace TextureDecoder
             Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
             if (asset)
             {
-                // Check if assetype was changes in asset module when proping the metadata
-                // prevents jpg/jpeg url assets going into decode phase and crashing
-                if (asset->GetType() != RexTypes::ASSETTYPENAME_IMAGE)
-                {
-                    DecodeRequestPtr new_decode_request(new DecodeRequest());
-                    new_decode_request->id_ = request.GetId();
-                    new_decode_request->level_ = request.GetNextLevel();
-                    new_decode_request->source_ = asset;
-                    framework_->GetThreadTaskManager()->AddRequest<DecodeRequest>("TextureDecoder", new_decode_request);
-                    
-                    request.SetDecodeRequested(true);
-                }
-                else
-                {
-                    TextureRequestMap::iterator i = requests_.find(asset->GetId());
-                    if (i != requests_.end())
-                    {
-                        TextureDecoderModule::LogDebug("Texture decode request " + i->second.GetId() + " canceled, asset type changed while fetching http asset metadata");
-                        request.SetCanceled(true);
-                    }
-                }
+                DecodeRequestPtr new_decode_request(new DecodeRequest());
+                new_decode_request->id_ = request.GetId();
+                new_decode_request->level_ = request.GetNextLevel();
+                new_decode_request->source_ = asset;
+                framework_->GetThreadTaskManager()->AddRequest<DecodeRequest>("TextureDecoder", new_decode_request);
+                
+                request.SetDecodeRequested(true);
             }
         }
     }  
