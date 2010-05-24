@@ -172,13 +172,18 @@ namespace Communications
             /// @return List of pointers to text messages received in this session.
             ///         The list items do not change only new messages are appended during
             ///         the session.
-            virtual QList<TextMessageInterface*> MessageHistory() = 0;
+            virtual QList<TextMessageInterface*> MessageHistory() const = 0;
+
+            virtual bool IsClosed() const = 0;
 
 //            virtual ParticipantList Participants() const = 0;
         signals:
             /// When text message is received from in-world chat. The origin of the message 
             /// can be self or other participant
             void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
+
+            /// When user closes world connections
+            void Closed();
             //void ParticipantJoined(ParticipantInterface* participant);
             //void ParticipantLeft(ParticipantInterface* participant);
         };
@@ -305,10 +310,10 @@ namespace Communications
         virtual ~ServiceInterface() {};
         static ServiceInterface* Instance();
 
-        //! \todo use WeakPtr instead ?
+        ///! \todo use WeakPtr instead ?
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
 
-        //! \todo use WeakPtr instead ?
+        ///! \todo use WeakPtr instead ?
         virtual InWorldChat::SessionInterface* InWorldChatSession() const = 0;
 //        virtual IM::ContactList* ContactList(QString type) const = 0;
 

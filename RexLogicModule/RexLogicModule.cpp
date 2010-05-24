@@ -30,6 +30,7 @@
 #include "Avatar/AvatarControllable.h"
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
+#include "Communications/InWorldChat/Provider.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -139,6 +140,7 @@ void RexLogicModule::Initialize()
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
+    in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -158,6 +160,7 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
+
     // Input events.
     event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
 
@@ -206,6 +209,20 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
 
+    // NetworkState events
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+       &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+    LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
+
+    // NetworkIn events
+    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
+    LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
+
     send_input_state_ = true;
 
     // Create login handlers, get login notifier from ether and pass
@@ -240,38 +257,6 @@ void RexLogicModule::PostInitialize()
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
-}
-
-void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
-{
-    // NetworkState events
-    LogicEventHandlerMap::iterator i;
-    event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-    i = event_handlers_.find(eventcategoryid);
-    if (i == event_handlers_.end())
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-        LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
-    }
-    else
-    {
-        LogInfo("System " + Name() + " had already added [NetworkState] event to LogicEventHandlerMap");
-    }
-
-    // NetworkIn events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-    i = event_handlers_.find(eventcategoryid);
-    if (i == event_handlers_.end())
-    {
-        event_handlers_[eventcategoryid].push_back(boost::bind(
-            &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-        LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
-    }
-    else
-    {
-        LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
-    }
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
@@ -1029,6 +1014,11 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();
+}
+
+InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
+{
+    return in_world_chat_provider_;
 }
 
 bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)

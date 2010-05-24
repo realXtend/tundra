@@ -9,6 +9,7 @@
 namespace Foundation
 {
     class Framework;
+    class EventDataInterface;
 }
 
 namespace RexLogic
@@ -17,6 +18,7 @@ namespace RexLogic
     {
         class Session;
 
+        /// @todo rename to Manager ?
         class Provider : public Communications::InWorldChat::ProviderInterface
         {
             Q_OBJECT
@@ -37,17 +39,19 @@ namespace RexLogic
             /// Notify provider about chat message received from OpenSim server
             virtual void HandleIncomingChatMessage(const QString& from_uuid, const QString& from_name, const QString& text);
 
-//            virtual void Reset(); // ???
+            /// Creates and deletes sessions
+            virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
         private slots:
             virtual void SendChatMessgeToServer(const QString& text);
 
         private:
-            virtual void Register();
+            virtual void RegisterToCommunicationsService();
 
             Foundation::Framework* framework_;
             QString description_;
             InWorldChat::Session* session_;
+            QList<InWorldChat::Session*> closed_sessions_;
         };
 
     } // InWorldChat

@@ -18,18 +18,25 @@ namespace RexLogic
             virtual ~Session();
             virtual void SendTextMessage(const QString &text);
 //            virtual ParticipantList Participants() const;
-            virtual QList<Communications::InWorldChat::TextMessageInterface*> MessageHistory();
+            virtual QList<Communications::InWorldChat::TextMessageInterface*> MessageHistory() const;
 
+            virtual bool IsClosed() const;
+
+            /// Update message hinstory and emit 'TextMessageReceived' signal
             virtual void HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text);
+
+            /// Change session status to close and emits 'Closed' signal
+            virtual void Close();
+
         signals:
             void UserEnteredText(const QString& text);
-//            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
-            //void ParticipantJoined(ParticipantInterface* participant);
-            //void ParticipantLeft(ParticipantInterface* participant);
-        private:
-            bool IsSelfAvatarUUID(QString uuid);
-            QString AvatarName(QString uuid);
 
+        private:
+            virtual bool IsSelfAvatarUUID(QString uuid);
+            virtual QString AvatarName(QString uuid);
+            virtual void ClearHistory();
+
+            bool is_closed_;
             QList<TextMessage*> messages_;
         };
 

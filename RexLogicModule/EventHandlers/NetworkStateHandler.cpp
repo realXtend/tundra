@@ -16,6 +16,7 @@
 #include "UiModule.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
+#include "Communications/InWorldChat/Provider.h"
 
 namespace RexLogic
 {

@@ -63,9 +63,7 @@ namespace RexLogic
 
         RexLogicModule *rexlogicmodule_;
 
-        ScriptDialogHandlerPtr script_dialog_handler_;
-        InWorldChatProviderPtr in_world_chat_provider_;
-
+        ScriptDialogHandlerPtr script_dialog_handler_; /// @todo: Move to RexLogic module
         bool ongoing_script_teleport_;
 
     };

@@ -289,13 +289,8 @@ namespace CoreUi
             if (comm.get())
             {
                 connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
-                
-                in_world_chat_session_ = comm->InWorldChatSession();
-                if (in_world_chat_session_)
-                    InitializeInWorldChat();
                 connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
-                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) ); /// @todo: Uninitialize...
-                // TODO        history_view_text_edit_->clear();
+                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
             }
         }
     }
@@ -312,11 +307,17 @@ namespace CoreUi
             boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
             if (comm.get())
             {
+                if (in_world_chat_session_)
+                {
+                    disconnect(in_world_chat_session_);
+                    in_world_chat_session_ = 0;
+                    history_view_text_edit_->clear();
+                }
+
                 in_world_chat_session_ = comm->InWorldChatSession();
                 if (!in_world_chat_session_)
                     return;
                 
-                //Communications::InWorldChat::SessionInterface::
                 connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&)), SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&)) );
             }
         }
