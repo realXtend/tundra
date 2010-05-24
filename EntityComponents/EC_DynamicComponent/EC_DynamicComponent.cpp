@@ -13,7 +13,7 @@
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module) :
   Foundation::ComponentInterface(module->GetFramework()),
-    position_(this, "position", 0)
+    x_(this, "x", 0)
 {
   //QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
 }
@@ -30,6 +30,13 @@ void EC_DynamicComponent::AddAttribute()
 QVariant EC_DynamicComponent::GetAttribute()
 {
     LogInfo("GetAttribute");
-    QVariant v(position_.Get());
+    QVariant v(x_.Get());
     return v;
+}
+
+void EC_DynamicComponent::SetAttribute(float new_x)
+{
+    LogInfo("SetAttribute");
+    x_.Set(new_x, Foundation::Local);
+    ComponentChanged(Foundation::Local);
 }
