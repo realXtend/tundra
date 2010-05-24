@@ -254,27 +254,32 @@ namespace RexTypes
         // Parse auth server address out from the NameValue if it exists
         QString fullname = QString(map["FirstName"].c_str()) + " " + QString(map["LastName"].c_str());
 
-        // Rex auth has: <First Last> <rex auth url>
+        // Rex auth has:        <First Last> <rex auth url>
+        // Webayth might have:  <callingname> <url>
+        //                      <calling name> <url>
         if (fullname.count('@') == 1)
         {
             QStringList names;
             if (fullname.contains('@'))
             {
                 names = fullname.split(" ");
-                foreach(QString name, names)
+                if (names.count() > 2)
                 {
-                    if (name.contains('@'))
+                    foreach(QString name, names)
                     {
-                        map["RexAuth"] = name.toStdString();
-                        names.removeOne(name);
+                        if (name.contains('@'))
+                        {
+                            map["RexAuth"] = name.toStdString();
+                            names.removeOne(name);
+                        }
                     }
                 }
             }
-            assert(names[0].size() >= 2);
+            assert(names[0].count() >= 2);
             map["FirstName"] = names[0].toStdString();
             map["LastName"] = names[1].toStdString();
         }
-        // Web auth has: <url> <url>
+        // Web might have: <url> <url>
         else if (fullname.count('@') == 2)
         {
             QStringList names = fullname.split(" ");
