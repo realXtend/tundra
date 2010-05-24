@@ -68,6 +68,18 @@ namespace OgreRenderer
             pixel_format = Ogre::PF_A8B8G8R8;
             break;
 
+        case 5:
+            pixel_format = Ogre::PF_R5G6B5;
+            break;
+
+        case 6:
+            pixel_format = Ogre::PF_X8R8G8B8;
+            break;
+
+        case 7:
+            pixel_format = Ogre::PF_A8R8G8B8;
+            break;
+
         default:
             OgreRenderingModule::LogError("Illegal number of components in texture: " + ToString<uint>(source->GetComponents()));
             return false; 
@@ -112,7 +124,7 @@ namespace OgreRenderer
             return false;
         }
 
-        OgreRenderingModule::LogDebug(" Ogre texture " + id_ + " updated");
+        OgreRenderingModule::LogDebug("Ogre texture " + id_ + " updated");
         level_ = source->GetLevel();
         return true;
     }
