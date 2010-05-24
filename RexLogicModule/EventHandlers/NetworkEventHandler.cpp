@@ -601,7 +601,7 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
     enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
     enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
     enum ChatSourceType { SOURCE_TYPE_SYSTEM = 0, SOURCE_TYPE_AGENT = 1, SOURCE_TYPE_OBJECT = 2 };
-    enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
+//    enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
 
     const ProtocolUtilities::NetMsgID msgID = data->messageID;
     ProtocolUtilities::NetInMessage *msg = data->message;

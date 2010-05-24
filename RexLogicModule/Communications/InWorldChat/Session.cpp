@@ -13,29 +13,35 @@ namespace RexLogic
 
         Session::~Session()
         {
-
+            foreach(TextMessage* m, messages_)
+            {
+                SAFE_DELETE(m);
+            }
+            messages_.clear();
         }
 
         void Session::SendTextMessage(const QString &text)
         {
-            //TextMessage message("", text, true);
-            //messages_.append(message);
-
+            // We do not update message history here, we get all messages from network
             emit UserEnteredText(text);
         }
 
         QList<Communications::InWorldChat::TextMessageInterface*> Session::MessageHistory()
         {
             QList<Communications::InWorldChat::TextMessageInterface*> list;
-            /// @todo: IMPLEMENT
+            foreach(TextMessage* m, messages_)
+            {
+                list.append(m);
+            }
             return list;
         }
 
         void Session::HandleIncomingTextMessage(const QString& from_uuid, const QString& from_name, const QString& text)
         {
-            TextMessage message(AvatarName(from_uuid), text, IsSelfAvatarUUID(from_uuid));
+            //TextMessage message(AvatarName(from_uuid), text, IsSelfAvatarUUID(from_uuid));
+            TextMessage* message = new TextMessage(from_name, text, IsSelfAvatarUUID(from_uuid));
             messages_.append(message);
-            emit Communications::InWorldChat::SessionInterface::TextMessageReceived(message);
+            emit Communications::InWorldChat::SessionInterface::TextMessageReceived(*message);
         }
 
         bool Session::IsSelfAvatarUUID(QString uuid)
