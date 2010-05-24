@@ -94,13 +94,8 @@ namespace Asset
         }
         else
         {
-            if (asset_type == "Image")
-                int i = 1;
             asset_type_t asset_type_int = RexTypes::GetAssetTypeFromTypeName(asset_type);
-            if (asset_type_int == RexTypes::RexAT_Image)
-                int i = 2;// jpeg decode it boy 
             QtHttpAssetTransfer *transfer = 0;
-    
             if (IsAcceptableAssetType(asset_type) && RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
             {
                 // Http texture/meshes via cap url
