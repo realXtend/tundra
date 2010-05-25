@@ -6,12 +6,9 @@
 
 #include "CommunicationsModule.h"
 #include "Service.h"
-//#include "ConsoleCommandServiceInterface.h"
 
 namespace CommunicationsService
 {
-    std::string CommunicationsModule::module_name_ = "Communications"; // static member
-
     CommunicationsModule::CommunicationsModule()
         : ModuleInterfaceImpl(type_static_)
     {
