@@ -4,7 +4,6 @@
 #define incl_ProtocolUtilities_WorldStream_h
 
 #include "Interfaces/ProtocolModuleInterface.h"
-#include "ModuleLoggingFunctions.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "NetworkEvents.h"
@@ -77,9 +76,6 @@ namespace ProtocolUtilities
         /// Destructor.
         virtual ~WorldStream();
 
-        //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return loggerName_; }
-
     public slots:
         //------------------- Connection managing functions ------------------- //
 
@@ -127,12 +123,12 @@ namespace ProtocolUtilities
         /// Sends a message which requests object removal.
         /// @param local_id Local ID.
         /// @param force God trying to force delete.
-        void SendObjectDeletePacket(const uint32_t &local_id, const bool &force = false);
+        void SendObjectDeletePacket(const uint32_t &local_id, const bool force = false);
 
         /// Sends a message which requests object removal.
         /// @param local_id_list List of Local ID's.
         /// @param force God trying to force delete.
-        void SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force = false);
+        void SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool force = false);
 
         // Sends the basic movement message
         void SendAgentUpdatePacket(
@@ -481,9 +477,10 @@ namespace ProtocolUtilities
         /// @return A structure of connection spesific information, e.g. AgentID and SessionID.
         ClientParameters GetInfo() const { return clientParameters_; }
 
-        /// @return A capability by name
+        /// Returns capability URL by name.
         /// @param name Name of the capability.
-        QString GetCapability(const QString &name);
+        /// @return Capability URL or empty string if capability doesn't exist network interface not available.
+        QString GetCapability(const QString &name) const;
 
         /// @return Last used password
         const std::string& GetPassword() const { return password_; }
@@ -510,11 +507,11 @@ namespace ProtocolUtilities
         void SetCurrentProtocolType(ProtocolType newType);
 
         /// @return The current Protocol Module type
-        boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule();
+        boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule() const;
 
         /// Get boost::weak_ptr to current Protocol Module
         /// @return boost::weak_ptr to current Protocol Module
-        boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer();
+        boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer() const;
 
         /// Prepares the network events of current module
         /// @return True if preparations succeeded
@@ -525,8 +522,6 @@ namespace ProtocolUtilities
 
     private:
         Q_DISABLE_COPY(WorldStream);
-
-        MODULE_LOGGING_FUNCTIONS;
 
         /// Sends all the needed packets to server when connection successfull
         void SendLoginSuccessfullPackets();
@@ -542,9 +537,6 @@ namespace ProtocolUtilities
 
         /// WriteFloatToBytes
         void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
-
-        /// Name used for logging.
-        static const std::string &loggerName_;
 
         /// The framework we belong to.
         Foundation::Framework *framework_;
