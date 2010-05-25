@@ -127,6 +127,8 @@ namespace Scene
             \param change Type of change (local, from network...)
          */
         void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+
+        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, Foundation::ChangeType change);
         
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
@@ -174,6 +176,12 @@ namespace Scene
         /*! Network synchronization managers should connect to this
          */
         void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+
+        //! Signal when a component is initialized.
+        /*! Python and Javascript handlers use this instead of subclassing and overriding the component constructor
+         *! -- not used now 'cause ComponentAdded is also emitted upon initialization (loading from server ) 
+         void ComponentInitialized(Foundation::ComponentInterface* comp);*/
+
         //! Signal when an entity created
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */

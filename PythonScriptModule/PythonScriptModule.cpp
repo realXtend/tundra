@@ -620,9 +620,12 @@ namespace PythonScript
 
     OgreRenderer::Renderer* PythonScriptModule::GetRenderer()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (renderer){
-          return renderer.get();
+        boost::shared_ptr<OgreRenderer::Renderer> rendererptr= framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (rendererptr)
+        {
+            OgreRenderer::Renderer* renderer = rendererptr.get(); 
+            PythonQt::self()->registerClass(renderer->metaObject());
+            return renderer;
         }
         else
             std::cout << "Renderer module not there?" << std::endl;
@@ -636,7 +639,9 @@ namespace PythonScript
 
         if (sptr)
         {
-          return (Scene::SceneManager*)sptr.get();
+            Scene::SceneManager* scene = sptr.get();
+            PythonQt::self()->registerClass(scene->metaObject());
+            return scene;
         }
 
         return 0;
@@ -746,10 +751,12 @@ static PyObject* GetQRenderer(PyObject *self)
 {
     OgreRenderer::Renderer* renderer; 
     renderer = dynamic_cast<OgreRenderer::Renderer*>(PythonScript::self()->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock().get());
+
     if (renderer)
     {
         return PythonScriptModule::GetInstance()->WrapQObject(renderer);
     }
+
     PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
     return NULL;
 }
@@ -2070,8 +2077,10 @@ namespace PythonScript
             PythonScript::initRexQtPy(apiModule);
             PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
             mainModule.addObject("_naali", this);
-            PyObject* pymain = mainModule.object();
-            PyObject_Print(pymain, stdout, 0);
+            
+            PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            PythonQt::self()->registerClass(&Foundation::ComponentInterface::staticMetaObject);
+
             pythonqt_inited = true;
             
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
