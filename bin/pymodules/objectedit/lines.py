@@ -36,7 +36,7 @@ class DragDroppableEditline(QLineEdit):
             return
 
         mimedata = ev.mimeData()
-        invitem = mimedata.data("application/vnd.inventory.item")
+        invitem = str(mimedata.data("application/vnd.inventory.item"))
 
         #some_qbytearray_thing = invitem[:4] #struct.unpack('i', 
         data = invitem[4:].decode('utf-16-be') #XXX how it happens to be an win: should be explicitly encoded to latin-1 or preferrably utf-8 in the c++ inventory code
