@@ -57,7 +57,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 
-use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon )
+use_modules ( Core Foundation Interfaces RexCommon )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
