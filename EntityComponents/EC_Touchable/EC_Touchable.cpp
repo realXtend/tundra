@@ -13,7 +13,9 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_Touchable.h"
+
 #include "ModuleInterface.h"
 #include "Entity.h"
 #include "Renderer.h"
@@ -21,15 +23,13 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include <QTimer>
 
-#include <Poco/Logger.h>
-
 #include "MemoryLeakCheck.h"
-
-#define LogInfo(msg) Poco::Logger::get("EC_Touchable").error("Error: " + msg);
-#define LogError(msg) Poco::Logger::get("EC_Touchable").information(msg);
 
 EC_Touchable::~EC_Touchable()
 {
