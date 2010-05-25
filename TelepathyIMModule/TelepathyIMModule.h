@@ -79,7 +79,7 @@ namespace Communication
         //! Logging
         MODULE_LOGGING_FUNCTIONS
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } //! returns name of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communication;
+        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_TelepathyIM;
 
     protected:
         // Run given test

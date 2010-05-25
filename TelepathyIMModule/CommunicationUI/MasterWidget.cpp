@@ -67,7 +67,7 @@ namespace CommunicationUI
         session_manager_->SetupUi(session_manager_ui_);
 
         // Read main style sheet from file
-        QFile style_sheet_file("../CommunicationModule/CommunicationUI/ui/StyleSheet.css");
+        QFile style_sheet_file("../TelepathyIMModule/CommunicationUI/ui/StyleSheet.css");
         if (style_sheet_file.open(QIODevice::ReadOnly | QIODevice::Text))
             setStyleSheet(QString(style_sheet_file.readAll()));
         else

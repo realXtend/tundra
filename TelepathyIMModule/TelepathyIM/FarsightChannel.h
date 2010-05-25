@@ -29,7 +29,7 @@ namespace TelepathyIM
         Q_ENUMS(Status)
 
         MODULE_LOGGING_FUNCTIONS
-        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        static const std::string NameStatic() { return "TelepathyIM"; } // for logging functionality
 
         //! Max size for audio buffer for received raw audio data in bytes
         //! The whole buffer will be used as a ring buffer.

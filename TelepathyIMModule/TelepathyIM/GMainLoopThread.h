@@ -26,7 +26,7 @@ namespace TelepathyIM
     class GMainLoopThread : public QThread
     {
         MODULE_LOGGING_FUNCTIONS
-        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        static const std::string NameStatic() { return "TelepathyIM"; } // for logging functionality
     public:
         GMainLoopThread();
         virtual void run();

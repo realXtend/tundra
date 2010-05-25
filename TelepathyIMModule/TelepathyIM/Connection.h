@@ -33,7 +33,7 @@ namespace TelepathyIM
     {
         Q_OBJECT
         MODULE_LOGGING_FUNCTIONS
-        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        static const std::string NameStatic() { return "TelepathyIM"; } // for logging functionality
 
     public:
         Connection(Tp::ConnectionManagerPtr tp_connection_manager, const Communication::CredentialsInterface &credentials);

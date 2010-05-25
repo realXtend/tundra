@@ -31,7 +31,7 @@ namespace Communication
     class Credentials;
     class NetworkEventHandlerInterface;
     class CommunicationService;
-    class CommunicationModule;
+//    class CommunicationModule;
 
     typedef std::vector<ContactInterface*> ContactVector;
     typedef std::vector<ContactGroupInterface*> ContactGroupVector;
