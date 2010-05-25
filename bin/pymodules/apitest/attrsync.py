@@ -4,6 +4,7 @@ A test / draft for defining Naali Entity-Components with Naali Attribute data.
 
 import circuits
 import rexviewer as r
+import naali
 
 class DynamiccomponentHandler(circuits.Component):
     def __init__(self):
@@ -14,17 +15,25 @@ class DynamiccomponentHandler(circuits.Component):
             ent = r.getEntity(obid)
             self.add_component(ent)
 
+    def on_sceneadded(self, name):
+        print "Scene added:", name,
+        s = naali.getScene(name)
+        print s
+        print dir(s)
+
     def add_component(self, ent):
-        #try:
-        #    ent.dynamic
-        #except AttributeError:
-        #    ent.createComponent("EC_DynamicComponent")
-        #print ent.dynamic
+        try:
+            ent.dynamic
+        except AttributeError:
+            ent.createComponent("EC_DynamicComponent")
+        print ent.dynamic
             
         d = ent.dynamic
         print dir(d)
         d.AddAttribute()
         print d.GetAttribute()
+
+        d.connect("OnChanged()", self.onChanged)
         
         self.d = d
 

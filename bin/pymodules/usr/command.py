@@ -713,12 +713,12 @@ if 0: #getserver test
     #~ ent = r.getEntity(2208825114)
     #~ print ent
 
-if 0: #getrexlogic test
+if 1: #getrexlogic test
     l = r.getRexLogic()
-    print dir(l)
-    class entity_id_t(int): pass
-    entid = entity_id_t(2)
-    l.SendRexPrimData(entid)
+    print l, dir(l)
+    #class entity_id_t(int): pass
+    #entid = entity_id_t(2)
+    #l.SendRexPrimData(entid)
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
@@ -816,13 +816,31 @@ if 0: #a c++ side test func for api dev
     #~ pe.setObject(r.c.proxywidget)
     #~ pe.show()
 
-if 0: #QRenderer
+if 1: #QRenderer
     rend = r.getQRenderer()
     print rend
+    print dir(rend)
+    #print rend.
 
-if 0:
+    #import PythonQt
+    #import __main__
+    #print dir(__main__)
+    #from __main__ import _naali
+    #print dir(PythonQt)
+    #PythonQt.__main__
+    #print _naali.GetRenderer()
+
+    import naali
+    print naali.renderer
+
+if 0: #worldstream
     worldstream = r.getServerConnection()
     print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])
+
+if 1: #scene, aka. SceneManager
+    import naali
+    s = naali.getScene("World")
+    print s
 
 if 0: 
     print r.c, dir(r.c)

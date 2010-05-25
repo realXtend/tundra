@@ -86,7 +86,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
-#include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
+
 #include "Avatar/AvatarControllable.h"
 
 #include "PyEntity.h"
@@ -124,6 +124,9 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 //ECs declared here
 #include "EC_DynamicComponent.h"
+
+//for py_print
+#include <stdio.h>
 
 namespace PythonScript
 {
@@ -306,21 +309,27 @@ namespace PythonScript
                 PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", event_id, 0, 0, 0, 0);   
             }
             */
-            else//XXX change to if-else...
+            else //XXX change to if-else...
             {
                 value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
             }
         }
         else if (category_id == scene_event_category_)
         {
+            if (event_id == Scene::Events::EVENT_SCENE_ADDED)
+            {
+                Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+                value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
+            }
+
             /*
              only handles local modifications so far, needs a network refactorin of entity update events
              to get inbound network entity updates workin
             */
             if (event_id == Scene::Events::EVENT_ENTITY_UPDATED) //XXX remove this and handle with the new generic thing below?
             {
-                //LogInfo("Entity updated.");
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+                //LogInfo("Entity updated.");
                 unsigned int ent_id = edata->localID;
                 if (ent_id != 0)
                     value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
@@ -603,10 +612,34 @@ namespace PythonScript
    //     }
     }
 
-    PythonScriptModule *PythonScriptModule::GetInstance()
+    PythonScriptModule* PythonScriptModule::GetInstance()
     {
         assert(pythonScriptModuleInstance_);
         return pythonScriptModuleInstance_;
+    }
+
+    OgreRenderer::Renderer* PythonScriptModule::GetRenderer()
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (renderer){
+          return renderer.get();
+        }
+        else
+            std::cout << "Renderer module not there?" << std::endl;
+
+        return 0;
+    }
+
+    Scene::SceneManager* PythonScriptModule::GetScene(QString name)
+    {
+        Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
+
+        if (sptr)
+        {
+          return (Scene::SceneManager*)sptr.get();
+        }
+
+        return 0;
     }
 }
 
@@ -711,15 +744,13 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQRenderer(PyObject *self)
 {
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (renderer){
-        //std::cout << "Screenshot in PYSM ... " << std::endl;
-        return PythonScriptModule::GetInstance()->WrapQObject(renderer.get());
+    OgreRenderer::Renderer* renderer; 
+    renderer = dynamic_cast<OgreRenderer::Renderer*>(PythonScript::self()->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock().get());
+    if (renderer)
+    {
+        return PythonScriptModule::GetInstance()->WrapQObject(renderer);
     }
-    else
-        std::cout << "Failed ..." << std::endl;
-
+    PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
     return NULL;
 }
 
@@ -804,7 +835,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
 
     if (scene == 0)
     {
@@ -1201,7 +1232,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     ent_id = (entity_id_t) ent_id_int;
 
-    Scene::ScenePtr scene = PythonScript::GetScene();
+    Scene::ScenePtr scene = PythonScript::GetScenePtr();
 
     if (scene == 0)
     {
@@ -1231,7 +1262,7 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
         return NULL;
     }
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in RemoveEntity.");
         return NULL;   
@@ -1258,7 +1289,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     meshname = std::string(c_text);
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
         return NULL;   
@@ -1574,6 +1605,7 @@ PyObject* GetRexLogic(PyObject *self)
     return NULL;
 }
 
+
 PyObject* GetServerConnection(PyObject *self)
 {
     ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
@@ -1741,7 +1773,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     ent_id = (entity_id_t) ent_id_int;
     
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -2028,7 +2060,7 @@ namespace PythonScript
 
         entity_init(apiModule); 
         /* this is planned to be vice versa: 
-           the implementing modules, like here scene§ for Entity,
+           the implementing modules, like here scene for Entity,
            would call something here to get a ref to the module, or something?
         */
 
@@ -2036,13 +2068,14 @@ namespace PythonScript
         if (!pythonqt_inited)
         {
             PythonScript::initRexQtPy(apiModule);
-            //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            //mainModule.addObject("qtmodule", wrappedModule); 
+            PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+            mainModule.addObject("_naali", this);
+            PyObject* pymain = mainModule.object();
+            PyObject_Print(pymain, stdout, 0);
             pythonqt_inited = true;
             
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
+            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
         }
 
         //load the py written module manager using the py c api directly

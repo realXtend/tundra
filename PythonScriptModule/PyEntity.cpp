@@ -36,7 +36,7 @@ namespace PythonScript
         }
         
         PythonScriptModule *owner = PythonScriptModule::GetInstance();
-        Scene::ScenePtr scene = owner->GetScene();
+        Scene::ScenePtr scene = owner->GetScenePtr();
         if (!scene)
         {
             PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -183,7 +183,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -428,7 +428,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");

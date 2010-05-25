@@ -22,6 +22,7 @@ class Chat(Event): pass
 class Input(Event): pass
 class MouseMove(Event): pass
 class MouseClick(Event): pass
+class SceneAdded(Event): pass
 class EntityUpdate(Event): pass
 class Exit(Event): pass
 class LoginInfo(Event): pass
@@ -133,8 +134,11 @@ class ComponentRunner(Component):
         else:
             return self.send_event(MouseClick(event, self.mouseinfo), "on_mouseclick")
 
-    def SCENE_EVENT(self, evid, entid):
-        return self.send_event(EntityUpdate(evid, entid), "on_scene")
+##    def SCENE_EVENT(self, evid, entid):
+##        return self.send_event(EntityUpdate(evid, entid), "on_scene")
+
+    def SCENE_ADDED(self, name):
+        return self.send_event(SceneAdded(name), "on_sceneadded")
         
     def ENTITY_UPDATED(self, entid):
         #print "Entity updated!", entid
