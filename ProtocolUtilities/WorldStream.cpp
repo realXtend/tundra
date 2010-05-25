@@ -14,6 +14,9 @@
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
 #include "RexTypes.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("WorldStream");
 
 #include <QString>
 #include <QUrl>
@@ -23,8 +26,6 @@
 
 namespace ProtocolUtilities
 {
-
-const std::string &WorldStream::loggerName_ = "WorldStream";
 
 WorldStream::WorldStream(Foundation::Framework *framework) :
     framework_(framework),
@@ -331,7 +332,7 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &force)
+void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool force)
 {
     if (!connected_)
         return;
@@ -351,7 +352,7 @@ void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &f
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force)
+void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool force)
 {
     if (!connected_)
         return;
@@ -1589,18 +1590,15 @@ void WorldStream::SendGodKickUserPacket(const RexUUID &user_id, const std::strin
     FinishMessageBuilding(m);
 }
 
-QString WorldStream::GetCapability(const QString &name)
+QString WorldStream::GetCapability(const QString &name) const
 {
-    protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!GetCurrentProtocolModule())
     {
         LogError("Getting network interface did not succeed.");
         return "";
     }
-    std::string stdName = name.toStdString();
-    std::string capability = protocolModule_->GetCapability(stdName);
-    QString qcap(capability.c_str());
-    return qcap;
+
+    return GetCurrentProtocolModule()->GetCapability(name.toStdString()).c_str();
 }
 
 volatile Connection::State WorldStream::GetConnectionState()
@@ -1661,7 +1659,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
     }
 }
 
-boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule()
+boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule() const
 {
     switch(currentProtocolType_)
     {
@@ -1675,7 +1673,7 @@ boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule
     }
 }
 
-boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer()
+boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer() const
 {
     switch(currentProtocolType_)
     {
