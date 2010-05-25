@@ -511,14 +511,14 @@ namespace TelepathyIM
         {
             if(self->tf_channel_ == NULL) 
             {
-                LogWarning("CommunicationModule: receiving bus message when tf_channel_ is NULL");
+                LogWarning("TelepathyIM: receiving bus message when tf_channel_ is NULL");
                 return FALSE;
             }
             tf_channel_bus_message(self->tf_channel_, message);
             return TRUE;
         } catch(...)
         {
-            LogWarning("CommunicationModule: passing gstreamer bus message to telepathy-farsight failed");
+            LogWarning("TelepathyIM: passing gstreamer bus message to telepathy-farsight failed");
             return FALSE;
         }
     }

@@ -31,7 +31,7 @@ namespace TelepathyIM
     {
         Q_OBJECT
         MODULE_LOGGING_FUNCTIONS
-        static const std::string NameStatic() { return "CommunicationModule"; } // for logging functionality
+        static const std::string NameStatic() { return "TelepathyIM"; } // for logging functionality
         static const int AUDIO_BUFFER_SIZE = 8192;
         static const int AUDIO_BUFFER_PLAYBACK_MIN_SIZE = 4096;
 
