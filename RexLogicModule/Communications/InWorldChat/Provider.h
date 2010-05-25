@@ -25,7 +25,7 @@ namespace RexLogic
         public:
 
             /// Constructor
-            Provider::Provider(Foundation::Framework* framework);
+            Provider(Foundation::Framework* framework);
 
             /// destructor
             virtual ~Provider();
