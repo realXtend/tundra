@@ -5,7 +5,6 @@
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "CommunicationsModuleApi.h"
 #include <QObject>
 
 namespace Communications
@@ -25,9 +24,8 @@ namespace CommunicationsService
      *  @todo Console commands: 'communications' .. Information about available services
      *  @todo Move Communications UI implementation here ???
      */
-    class COMMUNICATIONS_MODULE_API CommunicationsModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class CommunicationsModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
-//        Q_OBJECT
     public:
         CommunicationsModule();
         virtual ~CommunicationsModule();
@@ -43,12 +41,10 @@ namespace CommunicationsService
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS
-        static const std::string &NameStatic() { return module_name_; } //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communications;
 
     private:
-		static std::string module_name_;
-
         void InitializeConsoleCommands();
         Console::CommandResult OnConsoleCommandCommunications(const StringVector &params);
 

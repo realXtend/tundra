@@ -1589,7 +1589,7 @@ void WorldStream::SendGodKickUserPacket(const RexUUID &user_id, const std::strin
     FinishMessageBuilding(m);
 }
 
-std::string WorldStream::GetCapability(const std::string &name)
+QString WorldStream::GetCapability(const QString &name)
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())
@@ -1597,8 +1597,10 @@ std::string WorldStream::GetCapability(const std::string &name)
         LogError("Getting network interface did not succeed.");
         return "";
     }
-
-    return protocolModule_->GetCapability(name);
+    std::string stdName = name.toStdString();
+    std::string capability = protocolModule_->GetCapability(stdName);
+    QString qcap(capability.c_str());
+    return qcap;
 }
 
 volatile Connection::State WorldStream::GetConnectionState()
