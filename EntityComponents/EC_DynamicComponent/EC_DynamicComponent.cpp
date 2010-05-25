@@ -5,6 +5,7 @@
 #include "ModuleInterface.h"
 #include "ModuleManager.h"
 #include "Entity.h"
+//#include "SceneManager.h" //to emit ComponentInitialized signal via scene
 
 #include <qvariant.h>
 
@@ -16,6 +17,23 @@ EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module) :
     x_(this, "x", 0)
 {
   //QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+  //emit On
+    LogInfo("Constructor");
+    /* the parent entity is not set here yet, so could not do this.
+       but discovered that rexlogic already emits ComponentAdded upon loading, so using that now
+    Scene::Entity* entity = GetParentEntity();
+    if (entity)
+    {
+        LogInfo("Parent Entity");
+
+        Scene::SceneManager* scene = entity->GetScene();
+        if (scene)
+        {
+            LogInfo("Scene");
+            scene->EmitComponentInitialized(this);
+            LogInfo("Emitted ComponentInitialized");
+        }
+        }*/
 }
 
 EC_DynamicComponent::~EC_DynamicComponent()

@@ -713,7 +713,7 @@ if 0: #getserver test
     #~ ent = r.getEntity(2208825114)
     #~ print ent
 
-if 1: #getrexlogic test
+if 0: #getrexlogic test
     l = r.getRexLogic()
     print l, dir(l)
     #class entity_id_t(int): pass
@@ -817,9 +817,10 @@ if 0: #a c++ side test func for api dev
     #~ pe.show()
 
 if 1: #QRenderer
-    rend = r.getQRenderer()
-    print rend
-    print dir(rend)
+    #rend = r.getQRenderer()
+    #print rend
+    #print rend.FrustumQuery
+    #print dir(rend)
     #print rend.
 
     #import PythonQt

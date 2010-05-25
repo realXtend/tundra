@@ -130,7 +130,12 @@ namespace Scene
     {
         emit ComponentRemoved(entity, comp, change);
     }
-    
+
+  /*void SceneManager::EmitComponentInitialized(Foundation::ComponentInterface* comp)
+    {
+        emit ComponentInitialized(comp);
+        }*/
+ 
     void SceneManager::EmitEntityCreated(Scene::Entity* entity, Foundation::ChangeType change)
     {
         emit EntityCreated(entity, change);
