@@ -59,7 +59,7 @@ class OgreNode:
         o.__imul__(Quat(1, 1, 0, 0))
         #o.__imul__(Quat(1, 0, 1, 0))
         p.Orientation = o
-        print p.Orientation.toString(), o.toString()
+        #print p.Orientation.toString(), o.toString()
 
         p.Scale = Vec(*self.scale)
 
