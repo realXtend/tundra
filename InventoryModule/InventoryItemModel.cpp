@@ -24,6 +24,9 @@
 #include <QItemSelection>
 #include <QApplication>
 #include <QClipboard>
+
+#include <QDebug>
+
 #include "MemoryLeakCheck.h"
 
 namespace Inventory
@@ -42,17 +45,14 @@ InventoryItemModel::~InventoryItemModel()
 
 bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
 {
-///\todo Return true only if the folder is "dirty" or it has children.
-    return true;
-
-/*
-    AbstractInventoryItem *item = GetItem(index);
+    AbstractInventoryItem *item = GetItem(parent);
     if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
-//    if (folder->IsDirty())
-        dataModel_->FetchInventoryDescendents(item);
-//    folder->SetDirty(false);
+    {
+        InventoryFolder *folder = dynamic_cast<InventoryFolder*>(item);
+        if (folder)
+            return folder->IsDirty();
+    }
     return false;
-*/
 }
 
 QVariant InventoryItemModel::data(const QModelIndex &index, int role) const
@@ -87,7 +87,6 @@ bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value
     InventoryFolder *folder = dynamic_cast<InventoryFolder *>(item);
     if (folder && !folder->IsEditable())
             return false;
-
     if (item->GetName() == value.toString())
         return false;
 
@@ -589,6 +588,34 @@ AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) con
         return static_cast<AbstractInventoryItem *>(index.internalPointer());
 
     return dataModel_->GetRoot();
+}
+
+void InventoryItemModel::CheckTreeForDirtys()
+{
+    InventoryFolder *root = dynamic_cast<InventoryFolder*>(dataModel_->GetRoot());
+    if (root)
+        CheckChildrenForDirtys(root->GetChildren());
+}
+
+void InventoryItemModel::CheckChildrenForDirtys(QList<AbstractInventoryItem*> children)
+{
+    foreach (AbstractInventoryItem *item, children)
+    {
+        if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+        {
+            InventoryFolder *folder = dynamic_cast<InventoryFolder*>(item);
+            if (!folder)
+                continue;
+            CheckChildrenForDirtys(folder->GetChildren());
+            if (!folder->IsDirty())
+                continue;
+            QModelIndexList all_items = persistentIndexList();
+            foreach (QModelIndex index, all_items)
+                if (item == static_cast<AbstractInventoryItem *>(index.internalPointer()))
+                    emit IndexModelIsDirty(index);
+            folder->SetDirty(false);
+        }
+    }
 }
 
 }

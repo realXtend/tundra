@@ -128,6 +128,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(
             RexUUID(parent->GetID().toStdString()), RexUUID(newFolder->GetID().toStdString()),
             255, newFolder->GetName().toStdString().c_str());
 
+    newFolder->SetDirty(true);
     return parent->AddChild(newFolder);
 }
 

@@ -107,6 +107,9 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     inventoryItemModel_ = new InventoryItemModel(inventory_model.get());
     treeView_->setModel(inventoryItemModel_);
 
+    connect(inventoryItemModel_, SIGNAL(IndexModelIsDirty(const QModelIndex &)), 
+        this, SLOT(IndexIsDirty(const QModelIndex &)));
+
     // Connect download progress signals.
     connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &, const QString &)),
         this, SLOT(OpenDownloadProgess(const QString &, const QString &)));
@@ -210,6 +213,8 @@ void InventoryWindow::AddFolder()
     UpdateActions();
 
     RenameItem();
+
+    inventoryItemModel_->CheckTreeForDirtys();
 }
 
 void InventoryWindow::DeleteItem()
@@ -220,12 +225,13 @@ void InventoryWindow::DeleteItem()
     if (selection.isEmpty())
         return;
 */
-
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     QAbstractItemModel *model = treeView_->model();
 
     if (model->removeRow(index.row(), index.parent()))
         UpdateActions();
+
+    inventoryItemModel_->CheckTreeForDirtys();
 }
 
 void InventoryWindow::RenameItem()
@@ -233,6 +239,8 @@ void InventoryWindow::RenameItem()
     QModelIndex index = treeView_->selectionModel()->currentIndex();
     if (treeView_->model()->flags(index) & Qt::ItemIsEditable)
         treeView_->edit(index);
+
+    inventoryItemModel_->CheckTreeForDirtys();
 }
 
 void InventoryWindow::Upload()
@@ -250,6 +258,8 @@ void InventoryWindow::Upload()
 
     QStringList itemNames;
     inventoryItemModel_->Upload(index, filenames, itemNames);
+
+    inventoryItemModel_->CheckTreeForDirtys();
 }
 
 void InventoryWindow::UploadFiles(QStringList &filenames)
@@ -260,6 +270,8 @@ void InventoryWindow::UploadFiles(QStringList &filenames)
 
     QStringList itemNames;
     inventoryItemModel_->Upload(index, filenames, itemNames);
+
+    inventoryItemModel_->CheckTreeForDirtys();
 }
 
 void InventoryWindow::Download()
@@ -496,6 +508,13 @@ void InventoryWindow::CreateActions()
 void InventoryWindow::CreateNotification(QString message, int hide_time)
 {
     emit Notification(new UiServices::MessageNotification(message, hide_time));
+}
+
+void InventoryWindow::IndexIsDirty(const QModelIndex &index_model)
+{
+    treeView_->collapse(index_model);
+    inventoryItemModel_->Open(index_model);
+    treeView_->expand(index_model);
 }
 
 } // namespace Inventory
