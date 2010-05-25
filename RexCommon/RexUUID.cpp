@@ -189,11 +189,7 @@ bool RexUUID::operator ==(const RexUUID &rhs) const
 
 bool RexUUID::operator !=(const RexUUID &rhs) const
 {
-    for(int i = 0; i < cSizeBytes; ++i)
-        if (data[i] != rhs.data[i])
-            return true;
-
-    return false;
+    return !(*this == rhs);
 }
 
 bool RexUUID::operator <(const RexUUID &rhs) const
