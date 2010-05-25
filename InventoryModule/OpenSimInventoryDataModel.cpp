@@ -338,7 +338,7 @@ void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInve
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        std::string upload_url = upload_url = ((QString)(currentWorldStream_->GetCapability("NewFileAgentInventory"))).toStdString();
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
@@ -359,7 +359,7 @@ void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, QStringList 
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        std::string upload_url = ((QString)(currentWorldStream_->GetCapability("NewFileAgentInventory"))).toStdString();
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
@@ -380,7 +380,7 @@ void OpenSimInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QV
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        std::string upload_url = ((QString)(currentWorldStream_->GetCapability("NewFileAgentInventory"))).toStdString();
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
@@ -634,7 +634,7 @@ bool OpenSimInventoryDataModel::UploadFile(
 {
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        std::string upload_url = upload_url = ((QString)(currentWorldStream_->GetCapability("NewFileAgentInventory"))).toStdString();
         if (upload_url == "")
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");

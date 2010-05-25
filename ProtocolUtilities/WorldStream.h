@@ -483,7 +483,7 @@ namespace ProtocolUtilities
 
         /// @return A capability by name
         /// @param name Name of the capability.
-        std::string GetCapability(const std::string &name);
+        QString GetCapability(const QString &name);
 
         /// @return Last used password
         const std::string& GetPassword() const { return password_; }
