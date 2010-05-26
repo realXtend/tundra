@@ -10,12 +10,15 @@
 #include "ModuleInterface.h"
 #include "SceneManager.h"
 
+#include <QTimer>
 #include <Poco/Logger.h>
 
 #define LogInfo(msg) Poco::Logger::get("EC_OpenSimPrim").information(msg);
 
 EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework())
+    Foundation::ComponentInterface(module->GetFramework()),
+    editor_(0),
+    property_changes_(false)
 {
     RegionHandle = 0;
     LocalId = 0;
@@ -99,6 +102,10 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     PrimDefaultOffsetU = 0.0;
     PrimDefaultOffsetV = 0.0;
     PrimDefaultUVRotation = 0.0;
+
+    network_update_timer_ = new QTimer(this);
+    network_update_timer_->setSingleShot(true);
+    connect(network_update_timer_, SIGNAL(timeout()), SLOT(SendProperyChanges()));
 }
 
 EC_OpenSimPrim::~EC_OpenSimPrim()
@@ -160,6 +167,34 @@ QStringList EC_OpenSimPrim::GetChildren()
     }
 
     return prim_children;
+}
+
+void EC_OpenSimPrim::SetEditor(QObject *editor)
+{
+    if (editor_ != editor)
+    {
+        connect(editor, SIGNAL(propertyChanged(QObject *, const QString &, const QVariant &, const QVariant &)),
+                SLOT(MyPropertyChanged(QObject *, const QString &, const QVariant &, const QVariant &)));
+        editor_ = editor;
+    }
+}
+
+void EC_OpenSimPrim::MyPropertyChanged(QObject *obj, const QString & propertyName, const QVariant & old_value, const QVariant & new_value)
+{
+    if (obj != this)
+        return;
+    property_changes_ = true;
+    network_update_timer_->start(1000);
+}
+
+void EC_OpenSimPrim::SendProperyChanges()
+{
+    network_update_timer_->stop();
+    if (property_changes_)
+    {
+        property_changes_ = false;
+        emit ProperyChanged(GetParentEntity());
+    }
 }
 
 #ifdef _DEBUG
