@@ -16,6 +16,7 @@ modulenames = [
     #("usr.sleeper", "Sleeper"),
     #("apitest.circuits_testmodule", "TestModule"),
     ("apitest.attrsync", "DynamiccomponentHandler"),
+    #("apitest.pythonqt_gui", "TestGui"),
     #("apitest.thread_test", "TestThread"),
     #("usr.chathandler", ChatHandler),
     ("usr.keycommands", "KeyCommander"),

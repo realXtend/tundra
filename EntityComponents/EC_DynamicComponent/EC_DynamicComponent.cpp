@@ -58,3 +58,8 @@ void EC_DynamicComponent::SetAttribute(float new_x)
     x_.Set(new_x, Foundation::Local);
     ComponentChanged(Foundation::Local);
 }
+
+uint EC_DynamicComponent::GetParentEntityId()
+{
+    return (uint)GetParentEntity()->GetId();
+}

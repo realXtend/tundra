@@ -287,7 +287,8 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    #print dir(PythonQt)
+    #print dir(PythonQt.Qt)
+    #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
     #import PythonQt.QtGui as gui
     #print dir(gui)
@@ -295,8 +296,8 @@ if 0: #pythonqt introspec
     #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
 
-    UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
-    print type(UiWidgetProperties), dir(UiWidgetProperties)
+    #UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
+    #print type(UiWidgetProperties), dir(UiWidgetProperties)
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
 if 0: #QVector3D
@@ -816,7 +817,7 @@ if 0: #a c++ side test func for api dev
     #~ pe.setObject(r.c.proxywidget)
     #~ pe.show()
 
-if 1: #QRenderer
+if 0: #QRenderer
     #rend = r.getQRenderer()
     #print rend
     #print rend.FrustumQuery
@@ -838,7 +839,7 @@ if 0: #worldstream
     worldstream = r.getServerConnection()
     print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])
 
-if 1: #scene, aka. SceneManager
+if 0: #scene, aka. SceneManager
     import naali
     s = naali.getScene("World")
     print s
@@ -1207,7 +1208,7 @@ if 0: #test adding a dynamiccomponent
     d.AddAttribute()
     print d.GetAttribute()
 
-if 0: #animation control
+if 1: #animation control
     avid = r.getUserAvatarId()
     ent = r.getEntity(avid)
     try:

@@ -35,6 +35,7 @@ public slots:
     QVariant GetAttribute();
     //private slots:
     void SetAttribute(float new_x);
+    uint GetParentEntityId(); //quick hack, should use GetParentEntity in ComponentInterface and add qt things to Entity (and eventualy get rid of PyEntity)
     
 private:
     //! Constuctor.
