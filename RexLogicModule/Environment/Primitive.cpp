@@ -1316,7 +1316,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
 
     OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
     if (!mesh) return;
-    
+
     // Use optionally skeleton if it's used and we already have the resource
     Foundation::ResourcePtr skel_res;
     if (!RexTypes::IsNull(prim->AnimationPackageID))
@@ -1334,6 +1334,18 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     {
         //! \todo what if multiple entities use the same mesh, but different skeleton?
         mesh->SetMeshWithSkeleton(res->GetId(), skel_res->GetId());
+    }
+
+    // Update material map if mesh has more materials than the existing prim
+    // This was added when setting mesh id (url based at least) left material count to 1 always
+    uint mesh_material_count = mesh->GetNumMaterials();
+    if (mesh_material_count > 0 && (mesh_material_count != prim->Materials.size()))
+    {
+        MaterialData mat_data;
+        mat_data.Type = 0;
+        mat_data.asset_id = RexUUID().ToString();
+        for (uint material = prim->Materials.size(); material<mesh_material_count; ++material)
+            prim->Materials[material] = mat_data;
     }
 
     // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
