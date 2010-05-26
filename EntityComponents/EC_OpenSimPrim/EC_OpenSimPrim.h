@@ -16,6 +16,8 @@
 #include <QVariant>
 #include <QStringList>
 
+class QTimer;
+
 //! Material data structure
 struct MaterialData
 {
@@ -380,8 +382,19 @@ public:
 public slots:
     QStringList GetChildren();
 
+    void SetEditor(QObject *editor);
+    void MyPropertyChanged(QObject * obj, const QString & propertyName, const QVariant & old_value, const QVariant & new_value);
+    void SendProperyChanges();
+
 private:
     EC_OpenSimPrim(Foundation::ModuleInterface* module);
+
+    QObject *editor_;
+    QTimer *network_update_timer_;
+    bool property_changes_;
+
+signals:
+    void ProperyChanged(Scene::Entity*);
 };
 
 #endif

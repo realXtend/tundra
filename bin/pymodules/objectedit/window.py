@@ -372,6 +372,7 @@ class ObjectEditWindow:
         qprim = ent.prim
         if qprim is not None:
             self.propedit.setObject(qprim)
+            qprim.SetEditor(self.propedit)
             self.tabwidget.setTabEnabled(2, True)
             
     def untoggleButtons(self):
@@ -413,3 +414,4 @@ class ObjectEditWindow:
         if self.mainTabList.has_key(ent_id):
             id, tWid = self.mainTabList.pop(ent_id)
             tWid.delete()
+            

@@ -75,6 +75,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
         rexlogicmodule_->RegisterFullId(fullid,entityid); 
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+        connect(prim, SIGNAL(ProperyChanged(Scene::Entity*)), SLOT(OnProperyChanged(Scene::Entity*)));
         prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
@@ -1956,6 +1957,11 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
         local_dirty_entities_.insert(entityid);
     if (change == Foundation::Network)
         network_dirty_entities_.insert(entityid);
+}
+
+void Primitive::OnProperyChanged(Scene::Entity* entity)
+{
+    SendRexPrimData(entity->GetId());
 }
 
 void Primitive::SerializeECsToNetwork()
