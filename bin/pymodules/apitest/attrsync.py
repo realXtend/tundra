@@ -2,6 +2,7 @@
 A test / draft for defining Naali Entity-Components with Naali Attribute data.
 """
 from __future__ import division
+import time
 
 import circuits
 import rexviewer as r
@@ -9,6 +10,8 @@ import naali
 
 import PythonQt
 from PythonQt import QtGui, QtCore
+
+INTERVAL = 0.2
 
 class DynamiccomponentHandler(circuits.Component):
     def __init__(self):
@@ -30,6 +33,9 @@ class DynamiccomponentHandler(circuits.Component):
         self.proxywidget = r.createUiProxyWidget(self.widget, uiprops)
         if not uism.AddProxyWidget(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
+
+        #to not flood the network
+        self.prev_sync = 0
 
     def on_sceneadded(self, name):
         print "Scene added:", name#,
@@ -71,7 +77,10 @@ class DynamiccomponentHandler(circuits.Component):
         print val
         d = self.d
         if d is not None:
-            d.SetAttribute(val / 100)
+            now = time.time()
+            if self.prev_sync + INTERVAL < now:
+                d.SetAttribute(val / 100)
+                self.prev_sync = now
 
     def onChanged(self):
         print "onChanged",
@@ -85,8 +94,10 @@ class DynamiccomponentHandler(circuits.Component):
                 print "ent with DynamicComponent doesn't have animation"
                 return
 
-            print a
-            a.SetAnimationTimePosition("Wave", d.GetAttribute())
+            #print a
+            v = d.GetAttribute()
+            a.SetAnimationTimePosition("Wave", v)
+            #self.widget.value = v * 100 #needs changetypes to work well, i guess
             
         else:
             print "- don't know what :o"
