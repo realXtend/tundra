@@ -35,7 +35,6 @@ namespace ECEditor
 
         values_[property].value = value;
         emit ValueChanged(property, value);
-        property->setModified(true);
     }
 
     void MultiEditPropertyManager::SetAttributeValues(QtProperty *property, const QStringList &attributes)
@@ -60,14 +59,14 @@ namespace ECEditor
             return values_[property].value;
         else if(values_[property].attributeValues_.size() > 0)
         {
-            QString value;
-            for(uint i = 0; i < values_[property].attributeValues_.size(); i++)
+            QString value = QString("(%1 values)").arg(values_[property].attributeValues_.size());
+            /*for(uint i = 0; i < values_[property].attributeValues_.size(); i++)
             {
                 value += values_[property].attributeValues_[i] + QString(" ");
-            }
+            }*/
             return value;
         }
-        return "";
+        return "(0 values)";
     }
 
     void MultiEditPropertyManager::initializeProperty(QtProperty *property)
@@ -76,9 +75,6 @@ namespace ECEditor
         data.value = QString("");
         data.attributeValues_ = QStringList();
         values_[property] = data;
-        
-        //QtProperty *item = addProperty("Hei");
-        //property->addSubProperty(item);
     }
     
     void MultiEditPropertyManager::uninitializeProperty(QtProperty *property)

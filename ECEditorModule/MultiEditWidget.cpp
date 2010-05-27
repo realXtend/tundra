@@ -19,73 +19,36 @@
 
 namespace ECEditor
 {
-    /*MultiEditDialog::MultiEditDialog(QWidget *parent, Qt::WindowFlags flag): QDialog(parent, flag)
+    void MultiSelectButton::mousePressEvent(QMouseEvent *event)
     {
-        verticalLayout_ = new QVBoxLayout(this);
-        list_ = new QListWidget();
-        lineEdit_ = new QLineEdit();
-        verticalLayout_->addWidget(list_);
-        verticalLayout_->addWidget(lineEdit_);
-        if(list_)
-            QObject::connect(list_, SIGNAL(itemSelectionChanged()), this, SLOT(updateLineEditText()));
-
-        QHBoxLayout *hLayout = new QHBoxLayout();
-        //verticalLayout_->addItem(hLayout);
-
-        okButton_ = new QPushButton();
-        if(okButton_)
+        if(event->button() == Qt::MouseButton::LeftButton)
         {
-            okButton_->setText("Ok");
-            QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(accept()));
-            hLayout->addWidget(okButton_);
+            emit ButtonClicked(); 
         }
-
-        cancelButton_ = new QPushButton();
-        if(cancelButton_)
-        {
-            cancelButton_->setText("Cancel");
-            QObject::connect(cancelButton_, SIGNAL(clicked()), this, SLOT(reject()));
-            hLayout->addWidget(cancelButton_);
-        }
+        QPushButton::mousePressEvent(event);
     }
-
-    MultiEditDialog::~MultiEditDialog()
-    {
-
-    }
-
-    void MultiEditDialog::AddAttributeValues(QVector<QString> attributeValues)
-    {
-        if(!list_)
-            return;
-
-        for(uint i = 0; i < attributeValues.size(); i++)
-            list_->addItem(attributeValues[i]);
-    }
-
-    QString MultiEditDialog::GetAttributeValue() const
-    {
-        if(lineEdit_)
-            return lineEdit_->text();
-        return "";
-    }
-
-    void MultiEditDialog::UpdateLineEditText()
-    {
-        if(list_ && lineEdit_)
-        {
-            QString selectedText = list_->currentItem()->text();
-            lineEdit_->setText(selectedText);
-        }
-    }*/
 
     MultiEditWidget::MultiEditWidget(QWidget *parent):
-        QPushButton(parent),
-        dialog_(0)
+        QWidget(parent)
     {
-        setText("Multiedit");
-        selectedValue_ = QString("");
-        QObject::connect(this, SIGNAL(clicked()), this, SLOT(CreateMultiSelectDialog()));
+        QHBoxLayout *layout = new QHBoxLayout(this);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
+        
+        text_label_ = new QLabel();
+        layout->addWidget(text_label_);
+        text_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        text_label_->setFocusPolicy(Qt::NoFocus);
+
+        button_ = new MultiSelectButton();
+        button_->setText("...");
+        layout->addWidget(button_);
+        button_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        button_->resize(20, 30);
+
+        QSpacerItem *spacer = new QSpacerItem(50, 20, QSizePolicy::Maximum, QSizePolicy::Maximum);
+        layout->insertSpacerItem(1, spacer);
+        QObject::connect(button_, SIGNAL(ButtonClicked()), this, SIGNAL(ButtonClicked()));
     }
 
     MultiEditWidget::~MultiEditWidget()
@@ -93,35 +56,8 @@ namespace ECEditor
 
     }
 
-    void MultiEditWidget::SetAttributeValues(QStringList attributeValues)
+    void MultiEditWidget::SetLabelText(const QString &text)
     {
-        attributeValues_ = attributeValues;
-    }
-
-    void MultiEditWidget::CreateMultiSelectDialog()
-    {
-        if(dialog_)
-            return;
-
-        QStringList items;
-        for(uint i = 0; i < attributeValues_.size(); i++)
-            items << attributeValues_[i];
-
-        dialog_ = new QInputDialog(this);
-        if(dialog_)
-        {
-            dialog_->setInputMode(QInputDialog::TextInput);
-            dialog_->setComboBoxEditable(true);
-            dialog_->setComboBoxItems(items);
-            dialog_->setOption(QInputDialog::UseListViewForComboBoxItems);
-            QObject::connect(dialog_, SIGNAL(textValueSelected(const QString&)), this, SLOT(GetFinalResultFromDialog(const QString&)));
-            dialog_->exec();
-        }
-    }
-
-    void MultiEditWidget::GetFinalResultFromDialog(const QString &select)
-    {
-        selectedValue_ = select;
-        emit ValueSelected(select);
+        text_label_->setText(text);
     }
 }
