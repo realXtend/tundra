@@ -25,6 +25,7 @@ namespace Foundation
     class Framework;
 }
 
+class EC_OpenSimPrim;
 class RexUUID;
 
 namespace ProtocolUtilities
@@ -47,7 +48,7 @@ namespace ProtocolUtilities
     };
 
     /// Struct for multipleobject update
-    struct ObjectUpdateInfo
+    struct MultiObjectUpdateInfo
     {
         entity_id_t local_id_;
         Vector3df position_;
@@ -155,13 +156,17 @@ namespace ProtocolUtilities
         /// @param Local ID of the object which is deselected.
         void SendObjectDeselectPacket(entity_id_t object_id);
 
+        /// Sends an object shape update
+        /// @param prim to update
+        void SendObjectShapeUpdate(const EC_OpenSimPrim &prim);
+
         /// Sends a packet which indicates deselection of a group of prims.
         /// @param List of local ID's of objects which are deselected.
         void SendObjectDeselectPacket(std::vector<entity_id_t> object_id_list);
 
         /// Sends a packet indicating change in Object's position, rotation and scale.
         /// @param List of updated entity id's/pos/rot/scale
-        void SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateInfo>& update_info_list);
+        void SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUpdateInfo>& update_info_list);
 
         /// Sends a packet indicating change in Object's name.
         /// @param List of updated entity ids/names

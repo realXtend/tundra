@@ -75,7 +75,11 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
         rexlogicmodule_->RegisterFullId(fullid,entityid); 
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        connect(prim, SIGNAL(ProperyChanged(Scene::Entity*)), SLOT(OnProperyChanged(Scene::Entity*)));
+        
+        // Connect to property changes to be sent to sim
+        connect(prim, SIGNAL(RexPrimDataChanged(Scene::Entity*)), SLOT(OnRexPrimDataChanged(Scene::Entity*)));
+        connect(prim, SIGNAL(PrimShapeChanged(const EC_OpenSimPrim&)), SLOT(OnPrimShapeChanged(const EC_OpenSimPrim&)));
+
         prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
@@ -1959,9 +1963,16 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
         network_dirty_entities_.insert(entityid);
 }
 
-void Primitive::OnProperyChanged(Scene::Entity* entity)
+void Primitive::OnRexPrimDataChanged(Scene::Entity* entity)
 {
     SendRexPrimData(entity->GetId());
+}
+
+void Primitive::OnPrimShapeChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+        connection->SendObjectShapeUpdate(prim);
 }
 
 void Primitive::SerializeECsToNetwork()
