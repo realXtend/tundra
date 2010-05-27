@@ -9,6 +9,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPropertyAnimation>
 #include <QDebug> 
+#include <QLabel>
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
