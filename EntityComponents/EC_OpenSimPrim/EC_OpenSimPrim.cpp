@@ -108,25 +108,9 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     rex_prim_data_timer_->setSingleShot(true);
     connect(rex_prim_data_timer_, SIGNAL(timeout()), SLOT(SendRexPrimDataUpdate()));
 
-    rex_prim_data_properties_ << "drawtype" <<
-                                 "isvisible" <<
-                                 "castshadows" <<
-                                 "lightcreatesshadows" <<
-                                 "descriptiontexture" <<
-                                 "scaletoprim" <<
-                                 "drawdistance" <<
-                                 "lod" <<
-                                 "meshid" <<
-                                 "collisionmeshid" <<
-                                 "particlescriptid" <<
-                                 "animationpackageid" <<
-                                 "animationname" <<
-                                 "animationrate" <<
-                                 "serverscriptclass" <<
-                                 "soundid" <<
-                                 "soundvolume" <<
-                                 "soundradius" <<
-                                 "selectpriority";
+    rex_prim_data_properties_ << "drawtype" << "isvisible" << "castshadows" << "lightcreatesshadows" << "descriptiontexture" << "scaletoprim" <<
+                                 "drawdistance" << "lod" << "meshid" << "collisionmeshid" << "particlescriptid" << "animationpackageid" <<
+                                 "animationname" << "animationrate" << "serverscriptclass" << "soundid" << "soundvolume" << "soundradius" << "selectpriority";
 
     // ObjectShape updater init
     object_shape_property_changes_ = false;
@@ -134,24 +118,9 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     object_shape_update_timer_->setSingleShot(true);
     connect(object_shape_update_timer_, SIGNAL(timeout()), SLOT(SendObjectShapeUpdate()));
 
-    object_shape_update_properties_ << "pathcurve" <<
-                                       "profilecurve" <<
-                                       "pathbegin" <<
-                                       "pathend" <<
-                                       "pathscalex" <<
-                                       "pathscaley" <<
-                                       "pathshearx" <<
-                                       "pathsheary" <<
-                                       "pathtwist" <<
-                                       "pathtwistbegin" <<
-                                       "pathradiusoffset" <<
-                                       "pathtaperx" <<
-                                       "pathtapery" <<
-                                       "pathrevolutions" <<
-                                       "pathskew" <<
-                                       "profilebegin" <<
-                                       "profileend" <<
-                                       "profilehollow";
+    object_shape_update_properties_ << "pathcurve" << "profilecurve" << "pathbegin" << "pathend" << "pathscalex" << "pathscaley" << "pathshearx" <<
+                                       "pathsheary" << "pathtwist" << "pathtwistbegin" << "pathradiusoffset" << "pathtaperx" << "pathtapery" <<
+                                       "pathrevolutions" << "pathskew" << "profilebegin" << "profileend" << "profilehollow";
 }
 
 EC_OpenSimPrim::~EC_OpenSimPrim()
@@ -233,12 +202,12 @@ void EC_OpenSimPrim::MyPropertyChanged(QObject *obj, const QString & property_na
     if (rex_prim_data_properties_.contains(prop_name_lower))
     {
         rex_property_changes_ = true;
-        rex_prim_data_timer_->start(1000);
+        rex_prim_data_timer_->start(500);
     }
     else if (object_shape_update_properties_.contains(prop_name_lower))
     {
         object_shape_property_changes_ = true;
-        object_shape_update_timer_->start(100);
+        object_shape_update_timer_->start(50);
     }
 }
 
