@@ -21,7 +21,7 @@ namespace Foundation
 
 namespace ECEditor
 {
-    class ECAttributeEditorInterface;
+    class ECAttributeEditorBase;
 
     class AttributeBrowser : public QWidget
     {
@@ -43,11 +43,11 @@ namespace ECEditor
     private:
         void InitializeEditor();
         void AddNewAttribute(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
-        ECAttributeEditorInterface *CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
+        ECAttributeEditorBase *CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
 
         typedef std::map<QString, std::vector<Foundation::ComponentWeakPtr>> EntityComponentMap;
         EntityComponentMap SelectedEntityComponents_;
-        typedef std::map<QString, ECAttributeEditorInterface*> AttributeEditorMap;
+        typedef std::map<QString, ECAttributeEditorBase*> AttributeEditorMap;
         AttributeEditorMap attributes_;
         QtTreePropertyBrowser *propertyBrowser_;
     };

@@ -5,7 +5,9 @@
 
 #include "ForwardDefines.h"
 #include <QObject>
+
 #include "AttributeInterface.h"
+#include "CoreStringUtils.h"
 #include <map>
 
 class QtDoublePropertyManager;
@@ -15,6 +17,8 @@ class QtAbstractPropertyManager;
 class QtAbstractEditorFactoryBase;
 class QtAbstractPropertyBrowser;
 
+class Color;
+
 namespace Foundation
 {
     class AttributeInterface;
@@ -23,21 +27,21 @@ namespace Foundation
 
 namespace ECEditor
 {
-    class ECAttributeEditorInterface : public QObject
+    class ECAttributeEditorBase: public QObject
     {
         Q_OBJECT
     public:
-        ECAttributeEditorInterface(const QString &attributeName,
+        ECAttributeEditorBase(const QString &attributeName,
                                    QtAbstractPropertyBrowser *owner,
                                    Foundation::ComponentPtr component,
                                    QObject *parent = 0);
 
-        ECAttributeEditorInterface(const QString &attributeName,
+        ECAttributeEditorBase(const QString &attributeName,
                                    QtAbstractPropertyBrowser *owner,
                                    std::vector<Foundation::ComponentPtr> components,
                                    QObject *parent = 0);
 
-        virtual ~ECAttributeEditorInterface();
+        virtual ~ECAttributeEditorBase();
 
         //! Get attribute name.
         //! @return attribute type name.
@@ -96,19 +100,20 @@ namespace ECEditor
         QtProperty *property_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
+        bool componentIsSerializable_;
         typedef std::map<Foundation::ComponentWeakPtr, Foundation::AttributeInterface *> ECAttributeMap;
         ECAttributeMap attributeMap_;
         bool useMultiEditor_;
     };
 
-    template<typename T> class ECAttributeEditor : public ECAttributeEditorInterface
+    template<typename T> class ECAttributeEditor : public ECAttributeEditorBase
     {
     public:
         ECAttributeEditor(const QString &attributeName,
                           QtAbstractPropertyBrowser *owner,
                           Foundation::ComponentPtr component,
                           QObject *parent = 0):
-            ECAttributeEditorInterface(attributeName, owner, component, parent)
+            ECAttributeEditorBase(attributeName, owner, component, parent)
         {
             InitializeEditor();
             listenEditorChangedSignal_ = true;
@@ -118,7 +123,7 @@ namespace ECEditor
                           QtAbstractPropertyBrowser *owner,
                           std::vector<Foundation::ComponentPtr> components,
                           QObject *parent = 0):
-            ECAttributeEditorInterface(attributeName, owner, components, parent)
+            ECAttributeEditorBase(attributeName, owner, components, parent)
         {
             InitializeEditor();
             listenEditorChangedSignal_ = true;
@@ -137,8 +142,20 @@ namespace ECEditor
         virtual void SendNewValueToAttribute(QtProperty *property);
         virtual void InitializeEditor();
 
-        //! Send a new value to each component and emit a AttributeChanged signal.
-        //! @param value_ new value that is sended to component's attribute.
+        void InitializeMultiEditor();
+        void UpdateMultiEditorValue();
+
+        //! In some cases this method need to be overrided when we are converting values that can't be lexical_casted.
+        //! More information about lexical_cast can be found at boost documentation.
+        //! @param value value that we want to convert with the lexical_cast.
+        T StringToValue(const QString &value)
+        {
+            T returnValue = ParseString<T>(value.toStdString());
+            return returnValue;
+        }
+
+        //! Sends a new value to each component and emit a AttributeChanged signal.
+        //! @param value_ new value that is sended into component's attribute.
         void SetValue(const T &value)
         {
             ECAttributeMap::iterator iter = attributeMap_.begin();
@@ -150,6 +167,7 @@ namespace ECEditor
                 Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
                 if(attribute)
                 {
+                    //! if attribute is serializable then replicate those changes.
                     if(component.lock()->IsSerializable())
                     {
                         attribute->Set(value, Foundation::Local);
@@ -171,9 +189,19 @@ namespace ECEditor
         }
     };
 
+    template<typename T> void ECAttributeEditor<T>::ValueSelected(const QtProperty *property, const QString &value);
+    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
+    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
+
     template<> void ECAttributeEditor<Real>::UpdateEditorValue();
     template<> void ECAttributeEditor<Real>::InitializeEditor();
     template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<Real>::ValueSelected(const QtProperty *property, const QString &value);
+
+    template<> void ECAttributeEditor<Color>::UpdateEditorValue();
+    template<> void ECAttributeEditor<Color>::InitializeEditor();
+    template<> void ECAttributeEditor<Color>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<Color>::ValueSelected(const QtProperty *property, const QString &value);
 }
 
 

@@ -85,29 +85,31 @@ namespace ECEditor
         AttributeEditorMap::iterator iter = attributes_.find(attribute.GetName());
         if(iter == attributes_.end())
         {
-            ECAttributeEditorInterface *newEditor = CreateAttributeEditor(attribute, component);
+            // if attribute editor is not created for that spesific attribute interface do so.
+            ECAttributeEditorBase *newEditor = CreateAttributeEditor(attribute, component);
             if(newEditor)
                 attributes_[newEditor->GetAttributeName()] = newEditor;
         }
         else
         {
+            // If component contains attribute that has been already created. Add that component to attribute editor.
             iter->second->AddNewComponent(component);
         }
     }
 
-    ECAttributeEditorInterface *AttributeBrowser::CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
+    ECAttributeEditorBase *AttributeBrowser::CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
     {
-        ECAttributeEditorInterface *attributeEditor = 0;
+        ECAttributeEditorBase *attributeEditor = 0;
         // Todo! Organize those dynamic casts in a such order that we first check those attribute types that are most commonly used.
         if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), propertyBrowser_, component, this);
         /*else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
             attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), propertyBrowser_, component, this);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), propertyBrowser_, component, this);
-        //else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
-        //    attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, &attribute, this);
-        else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), propertyBrowser_, component, this);*/
+        else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, component, this);
+        /*else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), propertyBrowser_, component, this);
         else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
             attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), propertyBrowser_, component, this);*/
