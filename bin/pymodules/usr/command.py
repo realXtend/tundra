@@ -1194,9 +1194,10 @@ if 0: #create a new component, hilight
     else:
         print "not"
 
-if 0: #test adding a dynamiccomponent
-    avid = r.getUserAvatarId()
-    ent = r.getEntity(avid)
+if 1: #test adding a dynamiccomponent
+    #entid = r.getUserAvatarId()
+    entid = 1369486610
+    ent = r.getEntity(entid)
     try:
         ent.dynamic
     except AttributeError:
@@ -1208,7 +1209,10 @@ if 0: #test adding a dynamiccomponent
     d.AddAttribute()
     print d.GetAttribute()
 
-if 1: #animation control
+    d.SetAttribute(1)
+    print d.GetAttribute()
+
+if 0: #animation control
     avid = r.getUserAvatarId()
     ent = r.getEntity(avid)
     try:
