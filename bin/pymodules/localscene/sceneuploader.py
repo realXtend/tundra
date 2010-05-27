@@ -148,6 +148,7 @@ class SceneUploader:
         else:
             #os.remove(TEMP_UPLOAD_FOLDER+os.sep+"*.*")
             shutil.rmtree("./" + TEMP_UPLOAD_FOLDER)
+            time.sleep(5)
             os.mkdir(TEMP_UPLOAD_FOLDER)
         relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
         
@@ -183,12 +184,13 @@ class SceneUploader:
 
     def copyTextures(self, matfile, folder):
         list = self.getTexturesFromMaterialFile(matfile)
-        print list
+        #print list
         for name in list:
             #pathToFile = folder.replace('/', os.sep) + os.sep + name
             pathToFile = TEXTURE_FOLDER.replace('/', os.sep) + os.sep + name
             dstFile = TEMP_UPLOAD_FOLDER + os.sep + name
             shutil.copyfile(pathToFile, dstFile)
+            
     
     def getTexturesFromMaterialFile(self, matfile):
         txtList = []
@@ -196,26 +198,53 @@ class SceneUploader:
         line = " "
         while(line!=None and line!=""):
             line = f.readline()
+            
+            if(line.startswith("import")):
+                self.handleMaterialImportLine(line, txtList)
+                
             if(line.startswith("material")):
-                # parse material section, need to parse { and }'s
-                # assume that last } is in beginning of line
-                # so read all lines untill we find line starting with }
-                # parse texture name from lines that end with .jpg, .dds, .png, .tga
-                while(line.startswith('}')==False):
-                    line = f.readline()
-                    if (line==None):
-                        break
-                    #dir(line).__contains__('endswith')
-                    #print "line ", line
-                    if(line.endswith('.jpg\r\n') or line.endswith('.dds\r\n') or line.endswith('.png\r\n') or line.endswith('.tga\r\n')):
-                        print "0"
-                        print line.split(' ')[-1]
-                        txtList.append( line.split(' ')[-1][:-2])
-                    if(line.endswith('.jpg\n') or line.endswith('.dds\n') or line.endswith('.png\n') or line.endswith('.tga\n')):
-                        print "1"
-                        txtList.append( line.split(' ')[-1][:-1])
+                self.parseMaterialSection(f, line, txtList)
         f.close()
         return txtList
+                        
+    def handleMaterialImportLine(self, line, importTextList):
+        # just read what file is imported and get all textures from it
+        # might not be the best sollution in the long run
+        ind = line.find("from")
+        if(ind!=-1):
+            filename = line[ind+4:]
+            filename = filename.strip()
+            pathToFolder = MATERIAL_FOLDER.replace("/", os.sep)
+            pathToFile = pathToFolder + os.sep + filename
+            pathToFile = pathToFile.replace("\"","")
+            # read file and get .png's, .dds's, .tga's from it
+            print pathToFile
+            f = open(pathToFile, 'r')
+            line = " "
+            while(line!=None and line!=""):
+                line = f.readline()
+                if(line.startswith("material")):
+                    self.parseMaterialSection(f, line, importTextList)
+            f.close()
+                
+                
+    def parseMaterialSection(self, f, line, txtList):
+        # parse material section, need to parse { and }'s
+        # assume that last } is in beginning of line
+        # so read all lines untill we find line starting with }
+        # parse texture name from lines that end with .jpg, .dds, .png, .tga
+        while(line.startswith('}')==False):
+            line = f.readline()
+            if (line==None):
+                break
+            #dir(line).__contains__('endswith')
+            #print "line ", line
+            if(line.endswith('.jpg\r\n') or line.endswith('.dds\r\n') or line.endswith('.png\r\n') or line.endswith('.tga\r\n')):
+                txtList.append( line.split(' ')[-1][:-2])
+            if(line.endswith('.jpg\n') or line.endswith('.dds\n') or line.endswith('.png\n') or line.endswith('.tga\n')):
+                txtList.append( line.split(' ')[-1][:-1])
+        #return txtList
+            
                         
     def nameFromFilepath(self, path):
         split = path.split('/')
