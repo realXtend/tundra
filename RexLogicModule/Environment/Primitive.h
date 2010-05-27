@@ -83,8 +83,10 @@ namespace RexLogic
         void OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
         //! Trigger EC sync because of components added/removed to entity
         void OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
-        //! When the ec_opensimprim qproperties have changed, lets send rex prim update
-        void OnProperyChanged(Scene::Entity* entity);
+        //! When rex prim propeties have changed, send update to sim
+        void OnRexPrimDataChanged(Scene::Entity* entity);
+        //! When prim shape propeties have changed, send update to sim
+        void OnPrimShapeChanged(const EC_OpenSimPrim& prim);
 
     private:
         //! The owning module.

@@ -17,8 +17,7 @@
 
 EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
-    editor_(0),
-    property_changes_(false)
+    editor_(0)
 {
     RegionHandle = 0;
     LocalId = 0;
@@ -103,9 +102,56 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     PrimDefaultOffsetV = 0.0;
     PrimDefaultUVRotation = 0.0;
 
-    network_update_timer_ = new QTimer(this);
-    network_update_timer_->setSingleShot(true);
-    connect(network_update_timer_, SIGNAL(timeout()), SLOT(SendProperyChanges()));
+    // RexPrimData updater init
+    rex_property_changes_ = false;
+    rex_prim_data_timer_ = new QTimer(this);
+    rex_prim_data_timer_->setSingleShot(true);
+    connect(rex_prim_data_timer_, SIGNAL(timeout()), SLOT(SendRexPrimDataUpdate()));
+
+    rex_prim_data_properties_ << "drawtype" <<
+                                 "isvisible" <<
+                                 "castshadows" <<
+                                 "lightcreatesshadows" <<
+                                 "descriptiontexture" <<
+                                 "scaletoprim" <<
+                                 "drawdistance" <<
+                                 "lod" <<
+                                 "meshid" <<
+                                 "collisionmeshid" <<
+                                 "particlescriptid" <<
+                                 "animationpackageid" <<
+                                 "animationname" <<
+                                 "animationrate" <<
+                                 "serverscriptclass" <<
+                                 "soundid" <<
+                                 "soundvolume" <<
+                                 "soundradius" <<
+                                 "selectpriority";
+
+    // ObjectShape updater init
+    object_shape_property_changes_ = false;
+    object_shape_update_timer_ = new QTimer(this);
+    object_shape_update_timer_->setSingleShot(true);
+    connect(object_shape_update_timer_, SIGNAL(timeout()), SLOT(SendObjectShapeUpdate()));
+
+    object_shape_update_properties_ << "pathcurve" <<
+                                       "profilecurve" <<
+                                       "pathbegin" <<
+                                       "pathend" <<
+                                       "pathscalex" <<
+                                       "pathscaley" <<
+                                       "pathshearx" <<
+                                       "pathsheary" <<
+                                       "pathtwist" <<
+                                       "pathtwistbegin" <<
+                                       "pathradiusoffset" <<
+                                       "pathtaperx" <<
+                                       "pathtapery" <<
+                                       "pathrevolutions" <<
+                                       "pathskew" <<
+                                       "profilebegin" <<
+                                       "profileend" <<
+                                       "profilehollow";
 }
 
 EC_OpenSimPrim::~EC_OpenSimPrim()
@@ -179,21 +225,40 @@ void EC_OpenSimPrim::SetEditor(QObject *editor)
     }
 }
 
-void EC_OpenSimPrim::MyPropertyChanged(QObject *obj, const QString & propertyName, const QVariant & old_value, const QVariant & new_value)
+void EC_OpenSimPrim::MyPropertyChanged(QObject *obj, const QString & property_name, const QVariant & old_value, const QVariant & new_value)
 {
     if (obj != this)
         return;
-    property_changes_ = true;
-    network_update_timer_->start(1000);
+    QString prop_name_lower = property_name.toLower();
+    if (rex_prim_data_properties_.contains(prop_name_lower))
+    {
+        rex_property_changes_ = true;
+        rex_prim_data_timer_->start(1000);
+    }
+    else if (object_shape_update_properties_.contains(prop_name_lower))
+    {
+        object_shape_property_changes_ = true;
+        object_shape_update_timer_->start(100);
+    }
 }
 
-void EC_OpenSimPrim::SendProperyChanges()
+void EC_OpenSimPrim::SendRexPrimDataUpdate()
 {
-    network_update_timer_->stop();
-    if (property_changes_)
+    rex_prim_data_timer_->stop();
+    if (rex_property_changes_)
     {
-        property_changes_ = false;
-        emit ProperyChanged(GetParentEntity());
+        rex_property_changes_ = false;
+        emit RexPrimDataChanged(GetParentEntity());
+    }
+}
+
+void EC_OpenSimPrim::SendObjectShapeUpdate()
+{
+    object_shape_update_timer_->stop();
+    if (object_shape_property_changes_)
+    {
+        object_shape_property_changes_ = false;
+        emit PrimShapeChanged(*this);
     }
 }
 

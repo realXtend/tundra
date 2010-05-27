@@ -15,6 +15,7 @@
 #include "ModuleManager.h"
 #include "RexTypes.h"
 #include "LoggingFunctions.h"
+#include "EC_OpenSimPrim.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("WorldStream");
 
@@ -485,7 +486,54 @@ void WorldStream::SendObjectDeselectPacket(std::vector<entity_id_t> object_id_li
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateInfo>& update_info_list)
+void WorldStream::SendObjectShapeUpdate(const EC_OpenSimPrim &prim)
+{
+    if (!connected_)
+        return;
+
+    // Shape update
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectShape);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    
+    // Block count
+    m->SetVariableBlockCount(1);
+
+    // ObjectData
+    m->AddU32(prim.LocalId);
+    m->AddU8(prim.PathCurve);
+    m->AddU8(prim.ProfileCurve);
+
+    m->AddU16(prim.PathBegin / 0.00002f);
+    m->AddU16(prim.PathEnd / 0.00002f);
+
+    m->AddU8(prim.PathScaleX / 0.01f);
+    m->AddU8(prim.PathScaleY / 0.01f);
+    m->AddU8((int8_t)(prim.PathShearX / 0.01f));
+    m->AddU8((int8_t)(prim.PathShearY / 0.01f));
+
+    m->AddS8(prim.PathTwist / 0.01f);
+    m->AddS8(prim.PathTwistBegin / 0.01f);
+    m->AddS8(prim.PathRadiusOffset / 0.01f);
+    m->AddS8(prim.PathTaperX / 0.01f);
+    m->AddS8(prim.PathTaperY / 0.01f);
+
+    // prim.PathRevolutions - skip this, has to be 0.015 steps, no editing in ui either
+    m->AddU8(1 - 0.015f);
+    m->AddS8(prim.PathSkew / 0.01f);
+
+    m->AddU16(prim.ProfileBegin / 0.00002f);
+    m->AddU16(prim.ProfileEnd / 0.00002f);
+    m->AddU16(prim.ProfileHollow / 0.00002f);
+
+    // Send
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUpdateInfo>& update_info_list)
 {
     if (!connected_)
         return;
