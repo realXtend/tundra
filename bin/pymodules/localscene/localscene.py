@@ -22,7 +22,7 @@ from xml.dom.minidom import getDOMImplementation
 
 class LocalScene(Component):
     def __init__(self):
-        print "__init__"
+        #print "__init__"
         Component.__init__(self)
         self.window = LCwindow(self)
         self.xsift = 127
@@ -58,12 +58,12 @@ class LocalScene(Component):
         pass
         
     def publishScene(self, filename):
-        print "publishing scene"
+        #print "publishing scene"
         if(self.worldstream==None):
             self.worldstream = r.getServerConnection()
         # try to get capability UploadScene
         uploadcap_url = self.worldstream.GetCapability('UploadScene')
-        print str(uploadcap_url)
+        #print str(uploadcap_url)
         if(self.uploader==None):
             self.uploader=SUploader(uploadcap_url)
         self.uploader.uploadScene(filename, self.dotScene)
