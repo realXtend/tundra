@@ -1,25 +1,77 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "CommunicationWidget.h"
+
 #include "UiProxyWidget.h"
+#include "UiModule.h"
+#include "ModuleManager.h"
+#include "Inworld/InworldSceneController.h"
+#include "VoiceUsersWidget.h"
+#include "VoiceControl.h"
+
 #include <CommunicationsService.h>
 #include <QWidget>
 #include <QStackedLayout>
-#include <QPlainTextEdit>
 #include <QTimer>
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
 #include <QGraphicsScene>
-#include "UiModule.h"                       // For 'UI service'
-#include "ModuleManager.h"                  // For 'UI service'
-#include <Inworld/InworldSceneController.h> // For 'UI service'
-#include "VoiceUsersWidget.h"
-#include "VoiceControl.h"
+#include <QTextBrowser>
+
+#include "DebugOperatorNew.h"
+
+namespace
+{
+    /// HTTP schema indentifier
+    const QString &cHttpSchema = "http://";
+
+    /// HTTP schema indentifier
+    const QString &cHttpsSchema = "https://";
+
+    /// Hyperlink start tag
+    const QString &cLinkStartTag = "<a href=\"";
+
+    /// Hyperlink middle tag
+    const QString &cLinkMiddleTag= "\">";
+
+    /// Hyperlink end tag
+    const QString &cLinkEndTag= "</a>";
+
+    /// Finds valid hyperlinks in message and generates HTML tags for them
+    /// @param message Message to be parsed
+    /// @param indentifier Schema indentifier e.g. "http://"
+    void GenerateHyperlinks(QString &message, const QString &indentifier)
+    {
+        QString link;
+        int startIndex = 0, endIndex = 0;
+        int hyperlinkCount = message.count(indentifier);
+        while (hyperlinkCount > 0)
+        {
+            startIndex = message.indexOf(indentifier, endIndex);
+            assert(startIndex != -1);
+
+            endIndex = message.indexOf(' ', startIndex);
+            endIndex = endIndex > -1 ? endIndex : message.length();
+            assert(endIndex > startIndex);
+
+            link = message.mid(startIndex, endIndex - startIndex);
+
+            message.insert(endIndex, cLinkEndTag);
+            message.insert(startIndex, cLinkMiddleTag);
+            message.insert(startIndex, link);
+            message.insert(startIndex, cLinkStartTag);
+
+            endIndex += link.length();
+            --hyperlinkCount;
+        }
+    }
+}
 
 namespace CoreUi
 {
-
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
         framework_(framework),
         QGraphicsProxyWidget(),
@@ -53,10 +105,14 @@ namespace CoreUi
         contentContainerLayout->addLayout(stacked_layout_);
 
         // History view mode
-        history_view_text_edit_ = new QPlainTextEdit(chatContentWidget);
-        history_view_text_edit_->setReadOnly(true);
+        history_view_text_edit_ = new QTextBrowser(chatContentWidget);
+        history_view_text_edit_->setOpenExternalLinks(true);
         history_view_text_edit_->setObjectName("historyViewTextEdit");
-        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(34,34,34,191); border-radius: 7px; border: 1px solid rgba(255,255,255,50); }");
+        history_view_text_edit_->setStyleSheet(
+            "QTextBrowser#historyViewTextEdit {"
+                "background-color: rgba(34,34,34,191);"
+                "border-radius: 7px; border: 1px solid rgba(255,255,255,50);"
+            "}");
         history_view_text_edit_->setFont(QFont("Calibri", 11));
         stacked_layout_->addWidget(history_view_text_edit_);
 
@@ -171,9 +227,17 @@ namespace CoreUi
             htmlcontent.append("]</span> <span style='color:#FF3330;'>");
         htmlcontent.append(sender);
         htmlcontent.append(": </span><span style='color:#EFEFEF;'>");
+
+        // If the message contains hyperlinks, make HTML tags for them.
+        if (message.contains(cHttpSchema))
+            GenerateHyperlinks(message, cHttpSchema);
+        if (message.contains(cHttpsSchema))
+            GenerateHyperlinks(message, cHttpsSchema);
+
         htmlcontent.append(message);
         htmlcontent.append("</span>");
-        history_view_text_edit_->appendHtml(htmlcontent);
+
+        history_view_text_edit_->append(htmlcontent);
 
         // Normal view
         if (!self_sent_message)
@@ -192,8 +256,6 @@ namespace CoreUi
         if (in_world_chat_session_)
             in_world_chat_session_->SendTextMessage(message);
     }
-
-    // Protected
 
     void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
     {
@@ -474,5 +536,4 @@ namespace CoreUi
     {
         emit DestroyMe(this);
     }
-
 }

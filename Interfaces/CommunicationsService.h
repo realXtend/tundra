@@ -197,10 +197,10 @@ namespace Communications
             virtual ~ProviderInterface() {};
 
             /// @return session object, return 0 if the session doesn't exist
-            virtual Communications::InWorldChat::SessionInterface* Session() = 0;
+            virtual Communications::InWorldChat::SessionInterface* Session() const = 0;
 
             /// Provider description
-            virtual QString& Description() = 0;
+            virtual QString Description() const = 0;
         signals:
             void SessionAvailable();
             void SessionUnavailable();

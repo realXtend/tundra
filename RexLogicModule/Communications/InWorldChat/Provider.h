@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_Communications_Provider_h
-#define incl_RexLogic_Communications_Provider_h
+#ifndef incl_RexLogicModule_Communications_Provider_h
+#define incl_RexLogicModule_Communications_Provider_h
 
 #include "CommunicationsService.h"
 #include <QString>
@@ -23,18 +23,17 @@ namespace RexLogic
         {
             Q_OBJECT
         public:
-
             /// Constructor
-            Provider(Foundation::Framework* framework);
+            explicit Provider(Foundation::Framework* framework);
 
             /// destructor
             virtual ~Provider();
 
             /// @return session object, return 0 if the session doesn't exist
-            virtual Communications::InWorldChat::SessionInterface* Session();
+            virtual Communications::InWorldChat::SessionInterface* Session() const;
 
             /// Provider description
-            virtual QString& Description();
+            virtual QString Description()const;
 
             /// Notify provider about chat message received from OpenSim server
             virtual void HandleIncomingChatMessage(const QString& from_uuid, const QString& from_name, const QString& text);
@@ -53,9 +52,7 @@ namespace RexLogic
             InWorldChat::Session* session_;
             QList<InWorldChat::Session*> closed_sessions_;
         };
-
-    } // InWorldChat
-
-} // RexLogic
+    }
+}
 
 #endif // incl_RexLogic_Communications_Provider_h
