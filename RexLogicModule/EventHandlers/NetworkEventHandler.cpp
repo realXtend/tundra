@@ -579,8 +579,15 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
         if (!ongoing_script_teleport_)
         {
             // Create question notification
+            QString posx = "";            
+            QString posy = "";
+            QString posz = "";
+            posx.setNum(position.x);
+            posy.setNum(position.y);
+            posz.setNum(position.z);
+
             UiServices::QuestionNotification *question_notification = 
-                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 7000);
+                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
             // Connect notifier to recieve the answer signal
             QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
             // Send notification
