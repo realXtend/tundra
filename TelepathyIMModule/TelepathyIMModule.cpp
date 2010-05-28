@@ -97,8 +97,8 @@ namespace Communication
 
     void TelepathyIMModule::Uninitialize()
     {
-        SAFE_DELETE(im_ui_);
-        SAFE_DELETE(os_chat_controller_);
+//        SAFE_DELETE(im_ui_);
+//        SAFE_DELETE(os_chat_controller_);
         SAFE_DELETE(test_);
 
         CommunicationService::CleanUp();
@@ -127,12 +127,12 @@ namespace Communication
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
-                SAFE_DELETE(os_chat_controller_);
+//                SAFE_DELETE(os_chat_controller_);
             }
         }
 
         if (communication_service_)
-            return dynamic_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
+            return static_cast<CommunicationService*>( communication_service_ )->HandleEvent(category_id, event_id, data);
         return false;
     }
 
