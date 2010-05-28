@@ -7,7 +7,7 @@
 #include "ui_CommunicationWidget.h"
 
 class QStackedLayout;
-class QPlainTextEdit;
+class QTextBrowser;
 class QGraphicsSceneMouseEvent;
 
 namespace UiServices
@@ -52,9 +52,10 @@ namespace CoreUi
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
     {
         Q_OBJECT
+
     public:
         CommunicationWidget(Foundation::Framework* framework);
-        enum ViewMode { Normal, History };      
+        enum ViewMode { Normal, History };
 
     public slots:
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
@@ -91,7 +92,7 @@ namespace CoreUi
 
         QWidget *internal_widget_;
         QStackedLayout *stacked_layout_;
-        QPlainTextEdit *history_view_text_edit_;
+        QTextBrowser *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
@@ -116,8 +117,7 @@ namespace CoreUi
 
     class NormalChatViewWidget : public QWidget
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         NormalChatViewWidget(QWidget *parent);
@@ -127,14 +127,12 @@ namespace CoreUi
 
     private slots:
         void RemoveChatLabel(ChatLabel *label);
-
     };
 
     class ChatLabel : public QLabel
     {
-    
-    Q_OBJECT
-    
+        Q_OBJECT
+
     public:
         ChatLabel(bool own_message, QString message);
 

@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "Provider.h"
 #include "Session.h"
@@ -21,9 +23,8 @@ namespace RexLogic
         {
             SAFE_DELETE(session_);
             foreach(InWorldChat::Session* s, closed_sessions_)
-            {
                 SAFE_DELETE(s);
-            }
+
             closed_sessions_.clear();
         }
 
@@ -50,51 +51,45 @@ namespace RexLogic
             return false;
         }
 
-        Communications::InWorldChat::SessionInterface* Provider::Session()
+        Communications::InWorldChat::SessionInterface* Provider::Session() const
         {
             return session_;
         }
 
-        QString& Provider::Description()
+        QString Provider::Description()const
         {
             return description_;
         }
 
         void Provider::RegisterToCommunicationsService()
         {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-            if (comm.get())
-            {
+            boost::shared_ptr<Communications::ServiceInterface> comm =
+                framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm)
                 comm->Register(*this);
-            }
-            return;
         }
 
         void Provider::HandleIncomingChatMessage(const QString& from_uuid, const QString& from_name, const QString& text)
         {
-            if (!session_)
-                return;
-
-            session_->HandleIncomingTextMessage(from_uuid, from_name, text);
+            if (session_)
+                session_->HandleIncomingTextMessage(from_uuid, from_name, text);
         }
 
         void Provider::SendChatMessgeToServer(const QString& text)
         {
-            RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
-
-            if (rexlogic_ == NULL)
+            RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(
+                framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+            if (!rexlogic_)
                 throw Exception("Cannot send text message, RexLogicModule is not found");
-            WorldStreamPtr connection = rexlogic_->GetServerConnection();
 
-            if ( connection == NULL )
+            WorldStreamPtr connection = rexlogic_->GetServerConnection();
+            if (!connection)
                 throw Exception("Cannot send text message, rex server connection is not found");
 
-            if ( !connection->IsConnected() )
+            if (!connection->IsConnected() )
                 throw Exception("Cannot send text message, rex server connection is not established");
 
             connection->SendChatFromViewerPacket( std::string(text.toUtf8()) );
-    }
-
+        }
     } // InWorldChat
-
 } // RexLogic
