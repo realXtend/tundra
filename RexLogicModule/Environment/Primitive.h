@@ -87,6 +87,10 @@ namespace RexLogic
         void OnRexPrimDataChanged(Scene::Entity* entity);
         //! When prim shape propeties have changed, send update to sim
         void OnPrimShapeChanged(const EC_OpenSimPrim& prim);
+        //! When prim name has changed
+        void OnPrimNameChanged(const EC_OpenSimPrim& prim);
+        //! When prim description has changed
+        void OnPrimDescriptionChanged(const EC_OpenSimPrim& prim);
 
     private:
         //! The owning module.

@@ -79,6 +79,8 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         // Connect to property changes to be sent to sim
         connect(prim, SIGNAL(RexPrimDataChanged(Scene::Entity*)), SLOT(OnRexPrimDataChanged(Scene::Entity*)));
         connect(prim, SIGNAL(PrimShapeChanged(const EC_OpenSimPrim&)), SLOT(OnPrimShapeChanged(const EC_OpenSimPrim&)));
+        connect(prim, SIGNAL(PrimNameChanged(const EC_OpenSimPrim&)), SLOT(OnPrimNameChanged(const EC_OpenSimPrim&)));
+        connect(prim, SIGNAL(PrimDescriptionChanged(const EC_OpenSimPrim&)), SLOT(OnPrimDescriptionChanged(const EC_OpenSimPrim&)));
 
         prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
         prim->FullId = fullid;
@@ -813,7 +815,7 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     if (entity)
     {
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        prim->ObjectName = name;
+        prim->Name = name;
         prim->Description = desc;
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
@@ -1973,6 +1975,32 @@ void Primitive::OnPrimShapeChanged(const EC_OpenSimPrim& prim)
     WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
     if (connection)
         connection->SendObjectShapeUpdate(prim);
+}
+
+void Primitive::OnPrimNameChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+    {
+        ProtocolUtilities::ObjectNameInfo name_info;
+        name_info.local_id_ = prim.LocalId;
+        name_info.name_ = prim.Name;
+
+        connection->SendObjectNamePacket(name_info);
+    }
+}
+
+void Primitive::OnPrimDescriptionChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+    {
+        ProtocolUtilities::ObjectDescriptionInfo desc_info;
+        desc_info.local_id_ = prim.LocalId;
+        desc_info.description_ = prim.Description;
+
+        connection->SendObjectDescriptionPacket(desc_info);
+    }
 }
 
 void Primitive::SerializeECsToNetwork()
