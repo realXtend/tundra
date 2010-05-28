@@ -606,6 +606,13 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUp
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectNamePacket(const ObjectNameInfo& name_info)
+{
+    std::vector<ObjectNameInfo> vector;
+    vector.push_back(name_info);
+    SendObjectNamePacket(vector);
+}
+
 void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)
 {
     if (!connected_)
@@ -628,6 +635,8 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
         m->AddU32(name_info_list[i].local_id_);
         m->AddString(name_info_list[i].name_);
     }
+
+    FinishMessageBuilding(m);
 }
 
 void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
@@ -648,6 +657,13 @@ void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
     m->AddVector3(RexTypes::Vector3::ZERO);
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDescriptionPacket(const ObjectDescriptionInfo& description_info)
+{
+    std::vector<ObjectDescriptionInfo> vector;
+    vector.push_back(description_info);
+    SendObjectDescriptionPacket(vector);
 }
 
 void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list)
@@ -672,6 +688,8 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
         m->AddU32(description_info_list[i].local_id_);
         m->AddString(description_info_list[i].description_);
     }
+
+    FinishMessageBuilding(m);
 }
 
 void WorldStream::SendRegionHandshakeReplyPacket(const RexUUID &agent_id, const RexUUID &session_id, uint32_t flags)

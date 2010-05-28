@@ -48,7 +48,7 @@ class EC_OpenSimPrim : public Foundation::ComponentInterface
     DECLARE_EC(EC_OpenSimPrim);
 
     Q_OBJECT
-    Q_PROPERTY(QString ObjectName READ getObjectName WRITE setObjectName DESIGNABLE false)
+    Q_PROPERTY(QString Name READ getName WRITE setName)
     Q_PROPERTY(QString FullId READ getFullId DESIGNABLE false)
     Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
     Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
@@ -132,8 +132,8 @@ public:
     QString getAnimationName() const { return QString(AnimationName.c_str()); }
     void setAnimationName(QString value) { AnimationName = value.toStdString(); }
 
-    QString getObjectName() const { return QString(ObjectName.c_str()); }
-    void setObjectName(QString name) { ObjectName = name.toStdString(); }
+    QString getName() const { return QString(Name.c_str()); }
+    void setName(QString name) { Name = name.toStdString(); }
 
     QString getDescription() const { return QString(Description.c_str()); }
     void setDescription(QString value) { Description = value.toStdString(); }
@@ -297,8 +297,8 @@ public:
     uint32_t CRC;
     uint16_t TimeDilation;
     uint8_t PCode;
-    std::string ObjectName;
 
+    std::string Name;
     std::string Description;
     std::string HoveringText;
     std::string MediaUrl;
@@ -406,15 +406,18 @@ public slots:
     void MyPropertyChanged(QObject * obj, const QString & property_name, const QVariant & old_value, const QVariant & new_value);
     void SendRexPrimDataUpdate();
     void SendObjectShapeUpdate();
+    void SendObjectNameUpdate();
+    void SendObjectDescriptionUpdate();
 
 private:
     EC_OpenSimPrim(Foundation::ModuleInterface* module);
 
     QObject *editor_;
+
     QTimer *rex_prim_data_timer_;
     QTimer *object_shape_update_timer_;
-    bool rex_property_changes_;
-    bool object_shape_property_changes_;
+    QTimer *object_name_update_timer_;
+    QTimer *object_description_update_timer_;
 
     QStringList rex_prim_data_properties_;
     QStringList object_shape_update_properties_;
@@ -422,6 +425,8 @@ private:
 signals:
     void RexPrimDataChanged(Scene::Entity*);
     void PrimShapeChanged(const EC_OpenSimPrim&);
+    void PrimNameChanged(const EC_OpenSimPrim&);
+    void PrimDescriptionChanged(const EC_OpenSimPrim&);
 
 };
 

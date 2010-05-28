@@ -168,6 +168,10 @@ namespace ProtocolUtilities
         /// @param List of updated entity id's/pos/rot/scale
         void SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUpdateInfo>& update_info_list);
 
+        // Convienience function for sending only one instead of list
+        // @param name info struct
+        void SendObjectNamePacket(const ObjectNameInfo& name_info);
+
         /// Sends a packet indicating change in Object's name.
         /// @param List of updated entity ids/names
         void SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list);
@@ -175,6 +179,10 @@ namespace ProtocolUtilities
         /// Sends a packet which indicates object has been touched.
         /// @param Local ID of the object which has been touched.
         void SendObjectGrabPacket(entity_id_t object_id);
+        
+        // Convienience function for sending only one instead of list
+        // @param description info struct
+        void SendObjectDescriptionPacket(const ObjectDescriptionInfo& description_info);
 
         /// Sends a packet indicating change in Object's description
         /// @param List of updated entity pointers.

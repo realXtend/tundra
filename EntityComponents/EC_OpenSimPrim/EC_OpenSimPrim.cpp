@@ -24,7 +24,7 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     FullId.SetNull();
     ParentId = 0; 
 
-    ObjectName = "";
+    Name = "";
     Description = "";
     HoveringText = "";
     MediaUrl = "";
@@ -103,7 +103,6 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     PrimDefaultUVRotation = 0.0;
 
     // RexPrimData updater init
-    rex_property_changes_ = false;
     rex_prim_data_timer_ = new QTimer(this);
     rex_prim_data_timer_->setSingleShot(true);
     connect(rex_prim_data_timer_, SIGNAL(timeout()), SLOT(SendRexPrimDataUpdate()));
@@ -113,7 +112,6 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
                                  "animationname" << "animationrate" << "serverscriptclass" << "soundid" << "soundvolume" << "soundradius" << "selectpriority";
 
     // ObjectShape updater init
-    object_shape_property_changes_ = false;
     object_shape_update_timer_ = new QTimer(this);
     object_shape_update_timer_->setSingleShot(true);
     connect(object_shape_update_timer_, SIGNAL(timeout()), SLOT(SendObjectShapeUpdate()));
@@ -121,6 +119,16 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     object_shape_update_properties_ << "pathcurve" << "profilecurve" << "pathbegin" << "pathend" << "pathscalex" << "pathscaley" << "pathshearx" <<
                                        "pathsheary" << "pathtwist" << "pathtwistbegin" << "pathradiusoffset" << "pathtaperx" << "pathtapery" <<
                                        "pathrevolutions" << "pathskew" << "profilebegin" << "profileend" << "profilehollow";
+
+    // ObjectName update init
+    object_name_update_timer_ = new QTimer(this);
+    object_name_update_timer_->setSingleShot(true);
+    connect(object_name_update_timer_, SIGNAL(timeout()), SLOT(SendObjectNameUpdate()));
+
+    // ObjectName update init
+    object_description_update_timer_ = new QTimer(this);
+    object_description_update_timer_->setSingleShot(true);
+    connect(object_description_update_timer_, SIGNAL(timeout()), SLOT(SendObjectDescriptionUpdate()));
 }
 
 EC_OpenSimPrim::~EC_OpenSimPrim()
@@ -180,7 +188,6 @@ QStringList EC_OpenSimPrim::GetChildren()
             prim_children.append(id);
         }
     }
-
     return prim_children;
 }
 
@@ -200,35 +207,37 @@ void EC_OpenSimPrim::MyPropertyChanged(QObject *obj, const QString & property_na
         return;
     QString prop_name_lower = property_name.toLower();
     if (rex_prim_data_properties_.contains(prop_name_lower))
-    {
-        rex_property_changes_ = true;
         rex_prim_data_timer_->start(500);
-    }
     else if (object_shape_update_properties_.contains(prop_name_lower))
-    {
-        object_shape_property_changes_ = true;
         object_shape_update_timer_->start(50);
-    }
+    else if (prop_name_lower == "name")
+        object_name_update_timer_->start(1000);
+    else if (prop_name_lower == "description")
+        object_description_update_timer_->start(1000);
 }
 
 void EC_OpenSimPrim::SendRexPrimDataUpdate()
 {
     rex_prim_data_timer_->stop();
-    if (rex_property_changes_)
-    {
-        rex_property_changes_ = false;
-        emit RexPrimDataChanged(GetParentEntity());
-    }
+    emit RexPrimDataChanged(GetParentEntity());
 }
 
 void EC_OpenSimPrim::SendObjectShapeUpdate()
 {
     object_shape_update_timer_->stop();
-    if (object_shape_property_changes_)
-    {
-        object_shape_property_changes_ = false;
-        emit PrimShapeChanged(*this);
-    }
+    emit PrimShapeChanged(*this);
+}
+
+void EC_OpenSimPrim::SendObjectNameUpdate()
+{
+    object_name_update_timer_->stop();
+    emit PrimNameChanged(*this);
+}
+
+void EC_OpenSimPrim::SendObjectDescriptionUpdate()
+{
+    object_description_update_timer_->stop();
+    emit PrimDescriptionChanged(*this);
 }
 
 #ifdef _DEBUG
@@ -240,7 +249,7 @@ void EC_OpenSimPrim::PrintDebug()
     LogInfo("FullId:" + FullId.ToString());
     LogInfo("ParentId:" + ToString(ParentId));
 
-    LogInfo("ObjectName:" + ObjectName);
+    LogInfo("Name:" + Name);
     LogInfo("Description:" + Description);
     LogInfo("HoveringText:" + HoveringText);
     LogInfo("MediaUrl:" + MediaUrl);
