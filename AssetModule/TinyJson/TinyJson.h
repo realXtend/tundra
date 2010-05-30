@@ -28,7 +28,7 @@
 #include	<boost/shared_ptr.hpp>
 #include	<boost/any.hpp>
 // rex: Do not use deprecated headers.
-// Note boost::spirit::classic find-replaced with boost::spirit::classic::classic
+// Note "boost::spirit" find-replaced with "boost::spirit::classic"
 #include	<boost/spirit/include/classic_core.hpp>
 #include	<boost/spirit/include/classic_loops.hpp>
 //#include	<boost/spirit/core.hpp>
