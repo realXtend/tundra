@@ -8,20 +8,10 @@
 #ifndef incl_RexCommon_RexTypes_h
 #define incl_RexCommon_RexTypes_h
 
+#include "CoreTypes.h"
 #include "Vector3D.h"
 #include <map>
-#include <boost/cstdint.hpp>
 #include <QString>
-
-///\todo Move all these to core framework headers.
-using boost::uint8_t;
-using boost::uint16_t;
-using boost::uint32_t;
-using boost::uint64_t;
-using boost::int8_t;
-using boost::int16_t;
-using boost::int32_t;
-using boost::int64_t;
 
 typedef int asset_type_t;
 typedef int inventory_type_t;
@@ -34,7 +24,7 @@ namespace RexTypes
     ///\todo Is this needed? Only one message uses Vector4 (CameraConstraint).
     struct Vector4
     {
-        void Null() { x = y = z = w = 0.f; }
+        Vector4() { x = y = z = w = 0.f; }
         float x;
         float y;
         float z;
