@@ -15,7 +15,6 @@
 
 #include <QVariant>
 #include <QStringList>
-#include <QDebug>
 
 class QTimer;
 
@@ -41,8 +40,7 @@ typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 //! Map for holding prim face uv parameter info
 typedef std::map<uint8_t, Real> UVParamMap;
 
-//! Each scene entity representing a prim in OpenSim sense has
-//! this component.
+//! Each scene entity representing a prim in OpenSim sense has this component.
 class EC_OpenSimPrim : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_OpenSimPrim);
@@ -184,67 +182,67 @@ public:
 
     // 0 to 1, quanta = 0.01
     double getPathBegin() const { return (double)PathBegin; }
-    void setPathBegin(double value) { if(value>1) PathBegin=1; else if(value<0) PathBegin=0; else PathBegin = (float)value; }
+    void setPathBegin(double value) { clamp<double>(value, 0, 1); PathBegin = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathEnd()const  { return (double)PathEnd; }
-    void setPathEnd(double value) { if(value>1) PathEnd=1; else if(value<0) PathEnd=0; else PathEnd = (float)value; }
+    void setPathEnd(double value) { clamp<double>(value, 0, 1); PathEnd = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleX() const { return (double)PathScaleX; }
-    void setPathScaleX(double value) { if(value>1) PathScaleX=1; else if(value<0) PathScaleX=0; else PathScaleX = (float)value; }
+    void setPathScaleX(double value) { clamp<double>(value, 0, 1); PathScaleX = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleY() const { return (double)PathScaleY; }
-    void setPathScaleY(double value) { if(value>1) PathScaleY=1; else if(value<0) PathScaleY=0; else PathScaleY = (float)value; }
+    void setPathScaleY(double value) { clamp<double>(value, 0, 1); PathScaleY = (float)value; }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearX() const { return (double)PathShearX; }
-    void setPathShearX(double value) { if(value>0.5) PathShearX=0.5; else if(value<-0.5) PathShearX=-0.5; else PathShearX = (float)value; }
+    void setPathShearX(double value) { clamp<double>(value, -0.5, 0.5); PathShearX = (float)value; }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearY() const { return (double)PathShearY; }
-    void setPathShearY(double value) { if(value>0.5) PathShearY=0.5; else if(value<-0.5) PathShearY=-0.5; else PathShearY = (float)value; }
+    void setPathShearY(double value) { clamp<double>(value, -0.5, 0.5); PathShearY = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTwist() const { return (double)PathTwist; }
-    void setPathTwist(double value) { if(value>1) PathTwist=1; else if(value<-1) PathTwist=-1; else PathTwist = (float)value; }
+    void setPathTwist(double value) { clamp<double>(value, -1, 1); PathTwist = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTwistBegin() const { return (double)PathTwistBegin; }
-    void setPathTwistBegin(double value) { if(value>1) PathTwistBegin=1; else if(value<-1) PathTwistBegin=-1; else PathTwistBegin = (float)value; }
+    void setPathTwistBegin(double value) { clamp<double>(value, -1, 1); PathTwistBegin = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathRadiusOffset() const { return (double)PathRadiusOffset; }
-    void setPathRadiusOffset(double value) { if(value>1) PathRadiusOffset=1; else if(value<-1) PathRadiusOffset=-1; else PathRadiusOffset = (float)value; }
+    void setPathRadiusOffset(double value) { clamp<double>(value, -1, 1); PathRadiusOffset = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperX() const { return (double)PathTaperX; }
-    void setPathTaperX(double value) { if(value>1) PathTaperX=1; else if(value<-1) PathTaperX=-1; else PathTaperX = (float)value; }
+    void setPathTaperX(double value) { clamp<double>(value, -1, 1); PathTaperX = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperY() const { return (double)PathTaperY; }
-    void setPathTaperY(double value) { if(value>1) PathTaperY=1; else if(value<-1) PathTaperY=-1; else PathTaperY = (float)value; }
+    void setPathTaperY(double value) { clamp<double>(value, -1, 1); PathTaperY = (float)value; }
 
     // 0 to 3, quanta = 0.015 NOT EDITABLE IN PROP EDITOR, caused too much problems (corrupted prims with wrong values)
     double getPathRevolutions() const { return (double)PathRevolutions; }
-    void setPathRevolutions(double value) { if(value>3) PathRevolutions=3; else if(value<0) PathRevolutions=0; else PathRevolutions = (float)value; }
+    void setPathRevolutions(double value) { clamp<double>(value, 0, 3); PathRevolutions = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathSkew() const { return (double)PathSkew; }
-    void setPathSkew(double value) { if(value>1) PathSkew=1; else if(value<-1) PathSkew=-1; else PathSkew = (float)value; }
+    void setPathSkew(double value) { clamp<double>(value, -1, 1); (float)value; }
     
     // 0 to 1, quanta = 0.01
     double getProfileBegin() const { return (double)ProfileBegin; }
-    void setProfileBegin(double value) { if(value>1) ProfileBegin=1; else if(value<0) ProfileBegin=0; else ProfileBegin = (float)value; }
+    void setProfileBegin(double value) { clamp<double>(value, 0, 1); ProfileBegin = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getProfileEnd() const { return (double)ProfileEnd; }
-    void setProfileEnd(double value) { if(value>1) ProfileEnd=1; else if(value<0) ProfileEnd=0; else ProfileEnd = (float)value; }
+    void setProfileEnd(double value) { clamp<double>(value, 0, 1); ProfileEnd = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getProfileHollow() const { return (double)ProfileHollow; }
-    void setProfileHollow(double value) {if(value>1) ProfileHollow=1; else if(value<0) ProfileHollow=0; else ProfileHollow = (float)value; }
+    void setProfileHollow(double value) { clamp<double>(value, 0, 1); ProfileHollow = (float)value; }
 
     bool getHasPrimShapeData() const { return HasPrimShapeData; }
 
@@ -280,14 +278,14 @@ public:
     void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
     unsigned int getUpdateFlags() const { return UpdateFlags; }
 
-    QVariantMap getMaterials();
+    QVariantMap getMaterials() const;
     void setMaterials(QVariantMap &qvmap);
 
 #ifdef _DEBUG
     void PrintDebug();
 #endif
 
-    ///\todo Make the variables private
+    ///\todo Maybe make the variables private?
     // !ID related
     uint64_t RegionHandle;
     uint32_t LocalId;
@@ -409,6 +407,12 @@ public slots:
     void SendObjectNameUpdate();
     void SendObjectDescriptionUpdate();
 
+signals:
+    void RexPrimDataChanged(Scene::Entity*);
+    void PrimShapeChanged(const EC_OpenSimPrim&);
+    void PrimNameChanged(const EC_OpenSimPrim&);
+    void PrimDescriptionChanged(const EC_OpenSimPrim&);
+
 private:
     EC_OpenSimPrim(Foundation::ModuleInterface* module);
 
@@ -421,13 +425,6 @@ private:
 
     QStringList rex_prim_data_properties_;
     QStringList object_shape_update_properties_;
-
-signals:
-    void RexPrimDataChanged(Scene::Entity*);
-    void PrimShapeChanged(const EC_OpenSimPrim&);
-    void PrimNameChanged(const EC_OpenSimPrim&);
-    void PrimDescriptionChanged(const EC_OpenSimPrim&);
-
 };
 
 #endif
