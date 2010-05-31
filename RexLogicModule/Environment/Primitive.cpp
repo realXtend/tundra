@@ -1254,7 +1254,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
         assert(component.get());
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
-        hoveringText.ShowMessage(text.c_str());
+        hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
     }
 }
 
