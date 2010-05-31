@@ -2,9 +2,9 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "ECEditorModule.h"
 
 #include "ECAttributeEditor.h"
-#include "ECComponentEditor.h"
 #include "AttributeInterface.h"
 
 // QtPropertyBrowser headers.
@@ -21,23 +21,6 @@
 
 namespace ECEditor
 {
-    // static
-    ECAttributeEditorBase *ECAttributeEditorBase::GetAttributeEditor(QtAbstractPropertyBrowser *browser, 
-                                                                     ECComponentEditor *editor, 
-                                                                     const Foundation::AttributeInterface &attribute, 
-                                                                     Foundation::ComponentInterfacePtr component)
-    {
-        ECAttributeEditorBase *attributeEditor = 0;
-        if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), browser, component, editor);
-        else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), browser, component, editor);
-
-        if(attributeEditor)
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged()), editor, SIGNAL(AttributeChanged()));
-        return attributeEditor;
-    }
-
     ECAttributeEditorBase::ECAttributeEditorBase(const QString &attributeName,
             QtAbstractPropertyBrowser *owner,
             Foundation::ComponentPtr component,
@@ -46,7 +29,7 @@ namespace ECEditor
         owner_(owner),
         attributeName_(attributeName),
         rootProperty_(0),
-        parentProperty_(0),
+        //parentProperty_(0),
         factory_(0),
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
@@ -69,7 +52,7 @@ namespace ECEditor
         owner_(owner),
         attributeName_(attributeName),
         rootProperty_(0),
-        parentProperty_(0),
+        //parentProperty_(0),
         factory_(0),
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
@@ -120,9 +103,9 @@ namespace ECEditor
         {
             if(!AttributesValueCheck())
                 useMultiEditor_ = true;
-            UninitializeEditor();
             InitializeEditor();
         }
+        emit AttributeChanged(attributeName_.toStdString());
     }
 
     Foundation::AttributeInterface *ECAttributeEditorBase::FindAttribute(Foundation::AttributeVector attributes)
@@ -191,13 +174,13 @@ namespace ECEditor
             owner_->setFactoryForManager(multiEditManager, multiEditFactory);
             UpdateMultiEditorValue();
             QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiSelectValueSelected(const QtProperty *, const QString &)));
-            if(parentProperty_)
-                parentProperty_->addSubProperty(rootProperty_);
+            //if(parentProperty_)
+            //    parentProperty_->addSubProperty(rootProperty_);
         }
     }
 
     template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue()
-    {
+    {   
         if(useMultiEditor_ && componentIsSerializable_)
         {
             ECAttributeMap::iterator iter = attributeMap_.begin();
@@ -222,7 +205,16 @@ namespace ECEditor
         {
             if(rootProperty_ == property)
             {
-                T newValue = StringToValue(value);
+                T newValue;
+                try
+                {
+                    newValue = ParseString<Real>(value.toStdString());
+                }
+                catch (boost::bad_lexical_cast e)
+                {
+                    ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
+                    return;
+                }
                 useMultiEditor_ = false;
                 UpdateEditorUI();
                 SetValue(newValue);
@@ -249,9 +241,9 @@ namespace ECEditor
             owner_->setFactoryForManager(realPropertyManager, variantFactory);
             //owner_->addProperty(property_);
             QtVariantProperty *property = dynamic_cast<QtVariantProperty *>(rootProperty_);
-            property->setAttribute("decimals", 2);
-            if(parentProperty_)
-                parentProperty_->addSubProperty(rootProperty_);
+            //property->setAttribute("decimals", 2);
+            //if(parentProperty_)
+            //    parentProperty_->addSubProperty(rootProperty_);
         }
         else
         {
@@ -284,7 +276,16 @@ namespace ECEditor
         {
             if(rootProperty_ == property)
             {
-                Real newValue = StringToValue(value);
+                Real newValue;
+                try
+                {
+                    newValue = ParseString<Real>(value.toStdString());//StringToValue(value);
+                }
+                catch (boost::bad_lexical_cast e)
+                {
+                    ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
+                    return;
+                }
                 UninitializeEditor();
                 useMultiEditor_ = false;
                 InitializeEditor();
@@ -500,8 +501,8 @@ namespace ECEditor
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
             //owner_->addProperty(rootProperty_);
-            if(parentProperty_)
-                parentProperty_->addSubProperty(rootProperty_);
+            //if(parentProperty_)
+            //    parentProperty_->addSubProperty(rootProperty_);
         }
         else
         {
@@ -551,12 +552,22 @@ namespace ECEditor
 
                 Real color[4];
                 for(uint i = 0; i < 4; i++)
-                    color[i] = ParseString<Real>(values[i]);
+                {
+                    try
+                    {
+                        color[i] = ParseString<Real>(values[i]);
+                    }
+                    catch (boost::bad_lexical_cast e)
+                    {
+                        ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
+                        return;
+                    }
+                }
                 Color newValue = Color(color[0], color[1], color[2], color[3]);
 
                 useMultiEditor_ = false;
-                UpdateEditorUI();
                 SetValue(newValue);
+                UpdateEditorUI();
             }
         }
     }

@@ -245,6 +245,8 @@ namespace ECEditor
             const Scene::Entity::ComponentVector& components = entities[i]->GetComponentVector();
             attribute_browser_->AddEntityComponents(components);
         }
+        //tell the attribute browser that all components have been sended and it's time to create the ui elements.
+        attribute_browser_->RedrawBrowserUi();
     }
 
     void ECEditorWindow::TogglePropertiesBrowser()

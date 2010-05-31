@@ -6,9 +6,9 @@
 #include "AttributeInterface.h"
 #include "ECComponentEditor.h"
 
-#include <QtAbstractEditorFactoryBase>
+//#include <QtAbstractEditorFactoryBase>
 #include <QtTreePropertyBrowser>
-#include <QtGroupPropertyManager>
+//#include <QtGroupPropertyManager>
 #include <QLayout>
 
 #include "MemoryLeakCheck.h"
@@ -37,13 +37,12 @@ namespace ECEditor
                 entityComponents_[name];
             entityComponents_[name].push_back(Foundation::ComponentWeakPtr(entityComponents[i]));
         }
-        // Clear previous ui files from the propertyBrowser.
-        propertyBrowser_->clear();
-        RefreshAttributeComponents();
     }
 
-    void AttributeBrowser::RefreshAttributeComponents()
+    void AttributeBrowser::RedrawBrowserUi()
     {
+        // Clear tree property browser's ui.
+        propertyBrowser_->clear();
         EntityComponentMap::iterator iter = entityComponents_.begin();
         while(iter != entityComponents_.end())
         {
@@ -63,11 +62,11 @@ namespace ECEditor
             }
             componentEditors_[iter->first] = new ECComponentEditor(components, propertyBrowser_, this);
             QObject::connect(componentEditors_[iter->first], SIGNAL(destroyed(QObject*)), this, SLOT(ComponentEditorDestoryed(QObject *)));
-            QObject::connect(componentEditors_[iter->first], SIGNAL(AttributeChanged()), this, SIGNAL(AttributesChanged()));
+            QObject::connect(componentEditors_[iter->first], SIGNAL(AttributeChanged(const std::string &)), this, SIGNAL(AttributesChanged(const std::string &)));
             iter++;
         }
 
-        //Collapse all property tree's browseritems so that only root items are visible.
+        //Collapse all property tree's browseritems so that only the root items are visible.
         if(propertyBrowser_)
         {
             QList<QtProperty*> properties = propertyBrowser_->properties();
