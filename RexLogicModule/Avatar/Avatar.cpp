@@ -180,26 +180,34 @@ namespace RexLogic
 
             // Hide own name overlay
             EC_HoveringWidget *overlay= entity->GetComponent<EC_HoveringWidget>().get();
-            if(overlay)
+            if (overlay)
             {
-                overlay->SetText(presence->GetFullName().c_str());
-                if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
+                QString fname(presence->GetFullName().c_str());
+                if (fname.toLower() == "aula haamu")
                 {
                     overlay->SetDisabled(true);
-
-                    // Store creds into config for webdav!
-                    QSettings liveidcreds(QSettings::IniFormat, QSettings::UserScope, "realXtend", "credentials/liveid");
-                    liveidcreds.beginGroup(fullid.ToQString());
-                    liveidcreds.setValue("FirstName", QString(map["FirstName"].c_str()));
-                    liveidcreds.setValue("LastName", QString(map["LastName"].c_str()));
-                    liveidcreds.endGroup();
-                    liveidcreds.sync();
-
-                    Foundation::EventManagerPtr eventmanager = owner_->GetFramework()->GetEventManager();
-                    if (eventmanager)
+                }
+                else
+                {
+                    overlay->SetText(presence->GetFullName().c_str());
+                    if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
                     {
-                        Inventory::WebDavCredentials event_data(fullid.ToQString(), QString(map["FirstName"].c_str()), QString(map["LastName"].c_str()));
-                        eventmanager->SendEvent(eventmanager->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AUTH_RECIEVED, &event_data);
+                        overlay->SetDisabled(true);
+
+                        // Store creds into config for webdav!
+                        QSettings liveidcreds(QSettings::IniFormat, QSettings::UserScope, "realXtend", "credentials/liveid");
+                        liveidcreds.beginGroup(fullid.ToQString());
+                        liveidcreds.setValue("FirstName", QString(map["FirstName"].c_str()));
+                        liveidcreds.setValue("LastName", QString(map["LastName"].c_str()));
+                        liveidcreds.endGroup();
+                        liveidcreds.sync();
+
+                        Foundation::EventManagerPtr eventmanager = owner_->GetFramework()->GetEventManager();
+                        if (eventmanager)
+                        {
+                            Inventory::WebDavCredentials event_data(fullid.ToQString(), QString(map["FirstName"].c_str()), QString(map["LastName"].c_str()));
+                            eventmanager->SendEvent(eventmanager->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AUTH_RECIEVED, &event_data);
+                        }
                     }
                 }
             }
@@ -506,10 +514,9 @@ namespace RexLogic
         Scene::EntityPtr entity = scene->GetEntity(entity_id);
         if (!entity)
             return;
-
-
+       
+        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();        
         EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
-        EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
             overlay->InitializeBillboards();
@@ -519,10 +526,7 @@ namespace RexLogic
             overlay->AddButton(*(new QPushButton("Mute")));
             overlay->AddButton(*(new QPushButton("Follow")));
             overlay->SetButtonsDisabled(true);*/
-            
         }
-
-
     }
 /*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
