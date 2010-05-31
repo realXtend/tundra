@@ -9,11 +9,11 @@
 #include "EC_OpenSimPrim.h"
 #include "ModuleInterface.h"
 #include "SceneManager.h"
+#include "LoggingFunctions.h"
 
 #include <QTimer>
-#include <Poco/Logger.h>
 
-#define LogInfo(msg) Poco::Logger::get("EC_OpenSimPrim").information(msg);
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
 
 EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -107,18 +107,19 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     rex_prim_data_timer_->setSingleShot(true);
     connect(rex_prim_data_timer_, SIGNAL(timeout()), SLOT(SendRexPrimDataUpdate()));
 
-    rex_prim_data_properties_ << "drawtype" << "isvisible" << "castshadows" << "lightcreatesshadows" << "descriptiontexture" << "scaletoprim" <<
-                                 "drawdistance" << "lod" << "meshid" << "collisionmeshid" << "particlescriptid" << "animationpackageid" <<
-                                 "animationname" << "animationrate" << "serverscriptclass" << "soundid" << "soundvolume" << "soundradius" << "selectpriority";
+    rex_prim_data_properties_ << "drawtype" << "isvisible" << "castshadows" << "lightcreatesshadows" <<
+        "descriptiontexture" << "scaletoprim" << "drawdistance" << "lod" << "meshid" << "collisionmeshid" <<
+        "particlescriptid" << "animationpackageid" << "animationname" << "animationrate" << "serverscriptclass" <<
+        "soundid" << "soundvolume" << "soundradius" << "selectpriority";
 
     // ObjectShape updater init
     object_shape_update_timer_ = new QTimer(this);
     object_shape_update_timer_->setSingleShot(true);
     connect(object_shape_update_timer_, SIGNAL(timeout()), SLOT(SendObjectShapeUpdate()));
 
-    object_shape_update_properties_ << "pathcurve" << "profilecurve" << "pathbegin" << "pathend" << "pathscalex" << "pathscaley" << "pathshearx" <<
-                                       "pathsheary" << "pathtwist" << "pathtwistbegin" << "pathradiusoffset" << "pathtaperx" << "pathtapery" <<
-                                       "pathrevolutions" << "pathskew" << "profilebegin" << "profileend" << "profilehollow";
+    object_shape_update_properties_ << "pathcurve" << "profilecurve" << "pathbegin" << "pathend" << "pathscalex" <<
+        "pathscaley" << "pathshearx" << "pathsheary" << "pathtwist" << "pathtwistbegin" << "pathradiusoffset" <<
+        "pathtaperx" << "pathtapery" << "pathrevolutions" << "pathskew" << "profilebegin" << "profileend" << "profilehollow";
 
     // ObjectName update init
     object_name_update_timer_ = new QTimer(this);
@@ -135,7 +136,7 @@ EC_OpenSimPrim::~EC_OpenSimPrim()
 {
 }
 
-QVariantMap EC_OpenSimPrim::getMaterials()
+QVariantMap EC_OpenSimPrim::getMaterials() const
 {
     QVariantMap qvmap;
     MaterialMap::const_iterator i = Materials.begin();
@@ -176,12 +177,13 @@ void EC_OpenSimPrim::setMaterials(QVariantMap &qvmap)
 QStringList EC_OpenSimPrim::GetChildren()
 {
     QStringList prim_children;
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    assert(GetFramework()->GetDefaultWorldScene());
+    Scene::EntityList prims = GetFramework()->GetDefaultWorldScene()->GetEntitiesWithComponent("EC_OpenSimPrim");
+    foreach(Scene::EntityPtr entity, prims)
     {
-        Scene::Entity &entity = **iter;
-        EC_OpenSimPrim *prim = entity.GetComponent<EC_OpenSimPrim>().get();
-        if (prim && prim->getParentId() == getLocalId())
+        boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();
+        assert(prim.get());
+        if (prim->getParentId() == getLocalId())
         {
             QString id;
             id.setNum(prim->getLocalId());
