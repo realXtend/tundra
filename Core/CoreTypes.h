@@ -18,7 +18,6 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #endif 
 
 #include <boost/shared_ptr.hpp>
-#include <boost/cstdint.hpp>
 
 #include <vector>
 #include <list>
@@ -34,15 +33,6 @@ typedef int s32;
 typedef float Real;
 typedef Real f32;
 typedef double f64;
-
-using boost::uint8_t;
-using boost::uint16_t;
-using boost::uint32_t;
-using boost::uint64_t;
-using boost::int8_t;
-using boost::int16_t;
-using boost::int32_t;
-using boost::int64_t;
 
 // etc... add more
 
