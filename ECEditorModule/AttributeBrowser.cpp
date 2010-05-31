@@ -4,10 +4,11 @@
 #include "DebugOperatorNew.h"
 #include "AttributeBrowser.h"
 #include "AttributeInterface.h"
-#include "ECAttributeEditor.h"
+#include "ECComponentEditor.h"
 
 #include <QtAbstractEditorFactoryBase>
 #include <QtTreePropertyBrowser>
+#include <QtGroupPropertyManager>
 #include <QLayout>
 
 #include "MemoryLeakCheck.h"
@@ -29,43 +30,85 @@ namespace ECEditor
         if(!entityComponents.size())
             return;
 
-        QString name = QString(entityComponents[0]->TypeName().c_str());
         for(uint i = 0; i < entityComponents.size(); i++)
-            SelectedEntityComponents_[name].push_back(Foundation::ComponentWeakPtr(entityComponents[i]));
+        {
+            std::string name = entityComponents[i]->TypeName();
+            if(entityComponents_.find(name) == entityComponents_.end())
+                entityComponents_[name];
+            entityComponents_[name].push_back(Foundation::ComponentWeakPtr(entityComponents[i]));
+        }
+        // Clear previous ui files from the propertyBrowser.
+        propertyBrowser_->clear();
         RefreshAttributeComponents();
     }
 
     void AttributeBrowser::RefreshAttributeComponents()
     {
-        EntityComponentMap::iterator iter = SelectedEntityComponents_.begin();
-        while(iter != SelectedEntityComponents_.end())
+        EntityComponentMap::iterator iter = entityComponents_.begin();
+        while(iter != entityComponents_.end())
         {
-            for(uint i = 0; i < iter->second.size(); i++)
+            //The final component list that is passed to ECComponentEditor object.
+            std::vector<Foundation::ComponentInterfacePtr> components;
+            std::vector<Foundation::ComponentWeakPtr>::iterator compIter = iter->second.begin();
+            while(compIter != iter->second.end())
             {
-                if(iter->second[i].expired())
-                    continue;
-                
-                Foundation::ComponentInterfacePtr componentPtr = iter->second[i].lock();
-                Foundation::AttributeVector attributes = componentPtr->GetAttributes();
-                for(uint j = 0; j < attributes.size(); j++)
+                // If the component is expired no point to keep it in the vector.
+                if(compIter->expired())
                 {
-                    AddNewAttribute(*attributes[j], componentPtr);
+                    compIter = iter->second.erase(compIter);
+                    continue;
                 }
+                components.push_back(Foundation::ComponentInterfacePtr(*compIter));
+                compIter++;
             }
+            componentEditors_[iter->first] = new ECComponentEditor(components, propertyBrowser_, this);
+            QObject::connect(componentEditors_[iter->first], SIGNAL(destroyed(QObject*)), this, SLOT(ComponentEditorDestoryed(QObject *)));
+            QObject::connect(componentEditors_[iter->first], SIGNAL(AttributeChanged()), this, SIGNAL(AttributesChanged()));
             iter++;
+        }
+
+        //Collapse all property tree's browseritems so that only root items are visible.
+        if(propertyBrowser_)
+        {
+            QList<QtProperty*> properties = propertyBrowser_->properties();
+            for(uint i = 0; i < properties.size(); i++)
+            {
+                QList<QtBrowserItem*> items = propertyBrowser_->items(properties[i]);
+                for(uint j = 0; j < items.size(); j++)
+                    propertyBrowser_->setExpanded(items[j], false);
+            }
         }
     }
 
     void AttributeBrowser::ClearBrowser()
     {
         propertyBrowser_->clear();
-        while(!SelectedEntityComponents_.empty())
-            SelectedEntityComponents_.erase(SelectedEntityComponents_.begin());
+        while(!entityComponents_.empty())
+            entityComponents_.erase(entityComponents_.begin());
 
-        while(!attributes_.empty())
+        while(!componentEditors_.empty())
         {
-            SAFE_DELETE(attributes_.begin()->second)
-            attributes_.erase(attributes_.begin());
+            SAFE_DELETE(componentEditors_.begin()->second)
+            componentEditors_.erase(componentEditors_.begin());
+        }
+    }
+
+    void AttributeBrowser::ComponentEditorDestoryed(QObject * obj)
+    {
+        // No point to iterate throught the map if the object is wrong type.
+        ECComponentEditor *editor = dynamic_cast<ECComponentEditor*>(obj);
+        if(editor)
+        {
+            ComponentEditorMap::iterator iter = componentEditors_.begin();
+            while(iter != componentEditors_.end())
+            {
+                if(iter->second == editor)
+                {
+                    componentEditors_.erase(iter);
+                    break;
+                }
+                iter++;
+            }
         }
     }
 
@@ -78,44 +121,5 @@ namespace ECEditor
         propertyBrowser_ = new QtTreePropertyBrowser(this);
         propertyBrowser_->setResizeMode(QtTreePropertyBrowser::ResizeToContents);
         layout->addWidget(propertyBrowser_);
-    }
-
-    void AttributeBrowser::AddNewAttribute(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
-    {
-        AttributeEditorMap::iterator iter = attributes_.find(attribute.GetName());
-        if(iter == attributes_.end())
-        {
-            // if attribute editor is not created for that spesific attribute interface do so.
-            ECAttributeEditorBase *newEditor = CreateAttributeEditor(attribute, component);
-            if(newEditor)
-                attributes_[newEditor->GetAttributeName()] = newEditor;
-        }
-        else
-        {
-            // If component contains attribute that has been already created. Add that component to attribute editor.
-            iter->second->AddNewComponent(component);
-        }
-    }
-
-    ECAttributeEditorBase *AttributeBrowser::CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component)
-    {
-        ECAttributeEditorBase *attributeEditor = 0;
-        // Todo! Organize those dynamic casts in a such order that we first check those attribute types that are most commonly used.
-        if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), propertyBrowser_, component, this);
-        /*else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), propertyBrowser_, component, this);
-        else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), propertyBrowser_, component, this);*/
-        else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), propertyBrowser_, component, this);
-        /*else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), propertyBrowser_, component, this);
-        else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), propertyBrowser_, component, this);*/
-
-        if(attributeEditor)
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged()), this, SIGNAL(AttributesChanged()));
-        return attributeEditor;
     }
 }

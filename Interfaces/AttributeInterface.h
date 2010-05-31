@@ -114,7 +114,6 @@ namespace Foundation
     template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);*/
-
 }
 
 #endif

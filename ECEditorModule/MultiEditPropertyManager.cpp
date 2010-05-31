@@ -52,8 +52,9 @@ namespace ECEditor
     QString MultiEditPropertyManager::valueText(const QtProperty *property) const
     {
         if(!values_.contains(property))
-            return "";
+            return "(0 values)";
 
+        // Hackish way to get change shown on editor window.
         const_cast<QtProperty *>(property)->setModified(false);
         if(values_[property].value != "")
             return values_[property].value;

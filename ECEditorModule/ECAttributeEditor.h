@@ -22,11 +22,15 @@ class Color;
 namespace Foundation
 {
     class AttributeInterface;
+    class ComponentInterface;
+    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     template<typename T> class Attribute;
 }
 
 namespace ECEditor
 {
+    class ECComponentEditor;
+
     class ECAttributeEditorBase: public QObject
     {
         Q_OBJECT
@@ -43,13 +47,21 @@ namespace ECEditor
 
         virtual ~ECAttributeEditorBase();
 
+        //! Trying to find the right attribute type by doing a dynamic cast and if object is succefully casted 
+        //! it will create a new ECAttributeEditor object and return it's pointer to user.
+        //! @return return attribute pointer if attribute type is supported if not return null pointer.
+        static ECAttributeEditorBase *GetAttributeEditor( QtAbstractPropertyBrowser *browser, 
+                                                          ECComponentEditor *editor, 
+                                                          const Foundation::AttributeInterface &attribute,
+                                                          Foundation::ComponentInterfacePtr component );
+
         //! Get attribute name.
         //! @return attribute type name.
         QString GetAttributeName() const { return attributeName_; }
 
         //! Get editor's root property.
         //! @return editor's root property pointer.
-        const QtProperty *GetProperty() const { return property_; }
+        QtProperty *GetProperty() const { return rootProperty_; }
 
         //! Return number of entity componets have been attached to this editor.
         //! @return Number of entity components in this editor.
@@ -59,19 +71,37 @@ namespace ECEditor
         //! @return property manager pointer.
         QtAbstractPropertyManager *GetPropertyManager()  const { return propertyMgr_; }
 
+        //! Add new entity component into the map. Note! editor wont update the editor's ui until the user
+        //! has called updateEditor() method.
+        //! @param component new component that contains edited attribute.
         void AddNewComponent(Foundation::ComponentPtr component);
+
+        //! Add multiple components into the map. Note! editor wont update the editor's ui until the user
+        //! has called updateEditor() method.
+        //! @param components list of components that are included inside the map.
+        void AddNewComponents(std::vector<Foundation::ComponentPtr>  components);
+
+        //! Reintialize the editor's ui elements.
+        void UpdateEditorUI();
+
+        void SetParentProperty(QtProperty *parent){ parentProperty_ = parent; }
+        QtProperty *GetParentProperty() const { return parentProperty_; }
 
         //! Get new attribute values and update them in browser window.
         virtual void UpdateEditorValue() = 0;
 
     public slots:
-        //! Listens if any of component's attributes has changed.
-        void AttributeValueChanged() { UpdateEditorValue(); }
+        //! update edtior ui when attribute value is changed.
+        void AttributeValueChanged() 
+        {
+            UpdateEditorValue();
+        }
         
         //! Listens if any of editor's values has been changed and changed and component's attributes need to be updated.
         void SendNewAttributeValue(QtProperty *property) { SendNewValueToAttribute(property); }
 
     private slots:
+        //! If multiselect is in use and user have pick one of the value for all attributes this one is called.
         void MultiSelectValueSelected(const QtProperty *property, const QString &value) {ValueSelected(property, value);}
 
     signals:
@@ -86,18 +116,21 @@ namespace ECEditor
 
         //! Initialize attribute editor's components.
         virtual void InitializeEditor() = 0;
-        virtual void UninitializeEditor();
+        //! PreInitialize should be called before the InitializeEditor.
+        void PreInitializeEditor();
+        void UninitializeEditor();
 
         virtual Foundation::AttributeInterface *FindAttribute(Foundation::AttributeVector attributes);
 
-        //! Check if all attributes contain the same value.
+        //! Check if all components contain same attribute value.
         //! @return return true if all attributes have a same value and false when not.
         virtual bool AttributesValueCheck() const;
 
         QtAbstractPropertyBrowser *owner_;
         QtAbstractPropertyManager *propertyMgr_;
         QtAbstractEditorFactoryBase *factory_;
-        QtProperty *property_;
+        QtProperty *rootProperty_;
+        QtProperty *parentProperty_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
         bool componentIsSerializable_;
@@ -115,7 +148,7 @@ namespace ECEditor
                           QObject *parent = 0):
             ECAttributeEditorBase(attributeName, owner, component, parent)
         {
-            InitializeEditor();
+            //InitializeEditor();
             listenEditorChangedSignal_ = true;
         }
 
@@ -125,7 +158,7 @@ namespace ECEditor
                           QObject *parent = 0):
             ECAttributeEditorBase(attributeName, owner, components, parent)
         {
-            InitializeEditor();
+            //InitializeEditor();
             listenEditorChangedSignal_ = true;
         }
 
@@ -140,9 +173,9 @@ namespace ECEditor
     private:
         virtual void ValueSelected(const QtProperty *property, const QString &value);
         virtual void SendNewValueToAttribute(QtProperty *property);
-        virtual void InitializeEditor();
+        void InitializeEditor();
 
-        void InitializeMultiEditor();
+        virtual void InitializeMultiEditor();
         void UpdateMultiEditorValue();
 
         //! In some cases this method need to be overrided when we are converting values that can't be lexical_casted.
