@@ -10,6 +10,7 @@
 #include <boost/weak_ptr.hpp>
 
 class QtTreePropertyBrowser;
+class QtGroupPropertyManager;
 
 namespace Foundation
 {
@@ -22,6 +23,8 @@ namespace Foundation
 namespace ECEditor
 {
     class ECAttributeEditorBase;
+    class ECComponentEditor;
+    typedef std::vector<ECComponentEditor*> ComponentEditorVector;
 
     class AttributeBrowser : public QWidget
     {
@@ -40,15 +43,17 @@ namespace ECEditor
     signals:
         void AttributesChanged();
 
+    private slots:
+        //! Remove component editor from the map if it's emitted destoyed signal.
+        void ComponentEditorDestoryed(QObject * obj = 0);
+
     private:
         void InitializeEditor();
-        void AddNewAttribute(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
-        ECAttributeEditorBase *CreateAttributeEditor(const Foundation::AttributeInterface &attribute, Foundation::ComponentInterfacePtr component);
 
-        typedef std::map<QString, std::vector<Foundation::ComponentWeakPtr>> EntityComponentMap;
-        EntityComponentMap SelectedEntityComponents_;
-        typedef std::map<QString, ECAttributeEditorBase*> AttributeEditorMap;
-        AttributeEditorMap attributes_;
+        typedef std::map<std::string, std::vector<Foundation::ComponentWeakPtr>> EntityComponentMap;
+        EntityComponentMap entityComponents_;
+        typedef std::map<std::string, ECComponentEditor *> ComponentEditorMap;
+        ComponentEditorMap componentEditors_;
         QtTreePropertyBrowser *propertyBrowser_;
     };
 }
