@@ -29,8 +29,11 @@ namespace Foundation
 
 namespace ECEditor
 {
-    class ECComponentEditor;
-
+    //! Abstract base class for attribute editing. User can add editable components using a AddNewComponent interface and the component is inculded
+    //! inside the object's map. Note! ECAttributeEditor wont update the ui until UpdateEditorUI method is called.
+    //! If attribute is edited outside of the editor, user need to inform the editor by calling a AttributeValueChanged method, witch will get new attribute values from the
+    //! AttributeInterface and update it's ui. If you are planing to add new attribute editor types you should take a look at ECAttributeEditor template class to see
+    //! how the other attribute types are included into the editor.
     class ECAttributeEditorBase: public QObject
     {
         Q_OBJECT
@@ -46,14 +49,6 @@ namespace ECEditor
                                    QObject *parent = 0);
 
         virtual ~ECAttributeEditorBase();
-
-        //! Trying to find the right attribute type by doing a dynamic cast and if object is succefully casted 
-        //! it will create a new ECAttributeEditor object and return it's pointer to user.
-        //! @return return attribute pointer if attribute type is supported if not return null pointer.
-        static ECAttributeEditorBase *GetAttributeEditor( QtAbstractPropertyBrowser *browser, 
-                                                          ECComponentEditor *editor, 
-                                                          const Foundation::AttributeInterface &attribute,
-                                                          Foundation::ComponentInterfacePtr component );
 
         //! Get attribute name.
         //! @return attribute type name.
@@ -84,8 +79,10 @@ namespace ECEditor
         //! Reintialize the editor's ui elements.
         void UpdateEditorUI();
 
-        void SetParentProperty(QtProperty *parent){ parentProperty_ = parent; }
-        QtProperty *GetParentProperty() const { return parentProperty_; }
+        //! Add this editors root protety as other property's child.
+        //void SetParentProperty(QtProperty *parent){ parentProperty_ = parent; }
+        //! Get editor's root property (might contain other children).
+        //QtProperty *GetParentProperty() const { return parentProperty_; }
 
         //! Get new attribute values and update them in browser window.
         virtual void UpdateEditorValue() = 0;
@@ -105,11 +102,11 @@ namespace ECEditor
         void MultiSelectValueSelected(const QtProperty *property, const QString &value) {ValueSelected(property, value);}
 
     signals:
-        //! Signals when attribute values has been updated. This is used to inform the editor window
-        //! when the xml line-editor need to be updated.
-        void AttributeChanged();
+        //! Attribute value has been changed by the editor.
+        void AttributeChanged(const std::string &attributeName);
 
     protected:
+        //! Multiedit value has been selected and it need to be type casted from string to it's original form using lexical_cast.
         virtual void ValueSelected(const QtProperty *property, const QString &value) = 0;
         //! Sends a new value to each component attribute.
         virtual void SendNewValueToAttribute(QtProperty *property) = 0;
@@ -118,11 +115,14 @@ namespace ECEditor
         virtual void InitializeEditor() = 0;
         //! PreInitialize should be called before the InitializeEditor.
         void PreInitializeEditor();
+        //! Delete property manager and it's factory.
         void UninitializeEditor();
 
+        //! Find the right attribute by using it's name and return it's pointer to user.
+        //! @return If right attribute is found return it's pointer, if not return null.
         virtual Foundation::AttributeInterface *FindAttribute(Foundation::AttributeVector attributes);
 
-        //! Check if all components contain same attribute value.
+        //! Check if all components contain right attribute value.
         //! @return return true if all attributes have a same value and false when not.
         virtual bool AttributesValueCheck() const;
 
@@ -130,7 +130,7 @@ namespace ECEditor
         QtAbstractPropertyManager *propertyMgr_;
         QtAbstractEditorFactoryBase *factory_;
         QtProperty *rootProperty_;
-        QtProperty *parentProperty_;
+        //QtProperty *parentProperty_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
         bool componentIsSerializable_;
@@ -148,7 +148,6 @@ namespace ECEditor
                           QObject *parent = 0):
             ECAttributeEditorBase(attributeName, owner, component, parent)
         {
-            //InitializeEditor();
             listenEditorChangedSignal_ = true;
         }
 
@@ -158,7 +157,6 @@ namespace ECEditor
                           QObject *parent = 0):
             ECAttributeEditorBase(attributeName, owner, components, parent)
         {
-            //InitializeEditor();
             listenEditorChangedSignal_ = true;
         }
 
@@ -175,17 +173,20 @@ namespace ECEditor
         virtual void SendNewValueToAttribute(QtProperty *property);
         void InitializeEditor();
 
-        virtual void InitializeMultiEditor();
+        //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
+        void InitializeMultiEditor();
+        //! Get each components atttribute value and convert it to string and put it send the string vector to
+        //! multieditor manager.
         void UpdateMultiEditorValue();
 
         //! In some cases this method need to be overrided when we are converting values that can't be lexical_casted.
         //! More information about lexical_cast can be found at boost documentation.
         //! @param value value that we want to convert with the lexical_cast.
-        T StringToValue(const QString &value)
+        /*T StringToValue(const QString &value)
         {
             T returnValue = ParseString<T>(value.toStdString());
             return returnValue;
-        }
+        }*/
 
         //! Sends a new value to each component and emit a AttributeChanged signal.
         //! @param value_ new value that is sended into component's attribute.
@@ -218,7 +219,7 @@ namespace ECEditor
                 }
                 iter++;
             }
-            emit AttributeChanged();
+            emit AttributeChanged(attributeName_.toStdString());
         }
     };
 

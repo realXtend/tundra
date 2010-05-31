@@ -10,8 +10,6 @@
 
 namespace ECEditor
 {
-    class MultiEditWidget;
-
     class MultiEditPropertyFact: public QtAbstractEditorFactory<MultiEditPropertyManager>
     {
         Q_OBJECT
@@ -26,7 +24,6 @@ namespace ECEditor
 
     private slots:
         void DialogValueSelected(const QString &value);
-        //void UpdateAttributeValues(const QtProperty *property, const QStringList &attributes);
         void EditorDestroyed(QObject *object);
 
     signals:
@@ -36,18 +33,6 @@ namespace ECEditor
         QMap<const QtProperty *, QDialog *> createdEditors_;
         QMap<QDialog *,const QtProperty *> editorToProperty_;
     };
-
-    /*class MultiEditPropertyFactory : public QtVariantEditorFactory
-    {
-    public:
-        MultiEditPropertyFactory(QWidget *parent = 0);
-        ~MultiEditPropertyFactory();
-
-    protected:
-        virtual void connectPropertyManager(QtVariantPropertyManager *manager);
-        virtual QWidget *createEditor(QtVariantPropertyManager *manager, QtProperty *property, QWidget *parent);
-        virtual void disconnectPropertyManager(QtVariantPropertyManager *manager);
-    };*/
 }
 
 #endif

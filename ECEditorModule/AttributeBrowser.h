@@ -33,15 +33,26 @@ namespace ECEditor
         AttributeBrowser(QWidget *parent = 0);
         ~AttributeBrowser();
 
+        //! add entity components that we want to edit with attribute browser.
+        //! @param entityComponents list of components that we want to edit.
         void AddEntityComponents(std::vector<Foundation::ComponentInterfacePtr> entityComponents);
+
+        //! Returns QtTreePropertyBrowser object.
+        //! @return property browser pointer.
         QtTreePropertyBrowser *GetPropertyBrowser() const { return propertyBrowser_; }
 
     public slots:
-        void RefreshAttributeComponents();
+        //! Clear property browser and reinitialize all components and their attributes. 
+        //! Note! This method take some time cause all tree property browser's elements are reintialized (use this only when absolutely necessary).
+        void RedrawBrowserUi();
+
+        //! Clears all entity components from this objects map and clears the all property browser's elements.
         void ClearBrowser();
 
     signals:
-        void AttributesChanged();
+        //! Some of this browser's attribute has been changed by user.
+        //! @param attributeName attribute name that has been changed.
+        void AttributesChanged(const std::string &attributeName);
 
     private slots:
         //! Remove component editor from the map if it's emitted destoyed signal.
