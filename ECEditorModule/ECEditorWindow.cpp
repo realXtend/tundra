@@ -170,7 +170,7 @@ namespace ECEditor
 
         for(uint i = 0; i < entities.size(); ++i)
             for(uint j = 0; j < components.size(); ++j)
-                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
+                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::ComponentInterface::Local);
 
         RefreshEntityComponents();
     }
@@ -187,11 +187,11 @@ namespace ECEditor
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), Foundation::Local);
+            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), Foundation::ComponentInterface::Local);
             if (comp)
             {
                 // Trigger change notification in the component so that it updates its initial internal state, if necessary
-                comp->ComponentChanged(Foundation::Local);
+                comp->ComponentChanged(Foundation::ComponentInterface::Local);
             }
         }
 
@@ -206,7 +206,7 @@ namespace ECEditor
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); ++i)
-            scene->RemoveEntity(entities[i]->GetId(), Foundation::Local);
+            scene->RemoveEntity(entities[i]->GetId(), Foundation::ComponentInterface::Local);
     }
 
     void ECEditorWindow::RefreshEntityComponents()

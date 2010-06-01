@@ -24,7 +24,7 @@ namespace Foundation
         AttributeInterface(ComponentInterface* owner, const char* name) :
             owner_(owner),
             name_(name),
-            change_(None),
+            change_(ComponentInterface::None),
             null_(false)
         {
             if (owner)
@@ -34,19 +34,19 @@ namespace Foundation
         virtual ~AttributeInterface() {}
         
         void SetNull(bool enable) { null_ = enable; }
-        void ResetChange() { change_ = None; }
+        void ResetChange() { change_ = ComponentInterface::None; }
         
-        bool IsDirty() const { return change_ != None; }
+        bool IsDirty() const { return change_ != ComponentInterface::None; }
         bool IsNull() const { return null_; }
         ComponentInterface* GetOwner() const { return owner_; }
-        ChangeType GetChange() const { return change_; }
+        Foundation::ComponentInterface::ChangeType GetChange() const { return change_; }
         const char* GetName() const { return name_; }
         std::string GetNameString() const { return std::string(name_); }
         
         //! Convert attribute to string for XML serialization
         virtual std::string ToString() const = 0;
         //! Convert attribute from string for XML deserialization
-        virtual void FromString(const std::string& str, ChangeType change) = 0;
+        virtual void FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change) = 0;
         
     protected:
         //! Owning component
@@ -54,7 +54,7 @@ namespace Foundation
         //! Name of attribute
         const char* name_;
         //! Change type (dirty flag)
-        ChangeType change_;
+        Foundation::ComponentInterface::ChangeType change_;
         //! Null flag. If attribute is null, its value should be fetched from a parent entity
         bool null_;
     };
@@ -78,14 +78,14 @@ namespace Foundation
         
         T Get() const { return value_; }
         
-        void Set(T new_value, ChangeType change)
+        void Set(T new_value, Foundation::ComponentInterface::ChangeType change)
         {
             value_ = new_value;
             change_ = change;
         }
         
         virtual std::string ToString() const;
-        virtual void FromString(const std::string& str, ChangeType change);
+        virtual void FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change);
         
     private:
         //! Attribute value

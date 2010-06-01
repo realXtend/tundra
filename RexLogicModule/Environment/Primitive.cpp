@@ -114,7 +114,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
 
     //DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()),"AmbientRed");
     return entity;
@@ -1929,28 +1929,28 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
 }
 
-void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
 {
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == Foundation::Local)
+    if (change == Foundation::ComponentInterface::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::Network)
+    if (change == Foundation::ComponentInterface::Network)
         network_dirty_entities_.insert(entityid);
 }
 
-void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
 {
     if (!entity)
         return;
@@ -1959,9 +1959,9 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == Foundation::Local)
+    if (change == Foundation::ComponentInterface::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::Network)
+    if (change == Foundation::ComponentInterface::Network)
         network_dirty_entities_.insert(entityid);
 }
 
@@ -2081,8 +2081,8 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
             {
-                new_comp->DeserializeFrom(comp_elem, Foundation::Network);
-                new_comp->ComponentChanged(Foundation::Network);
+                new_comp->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Network);
+                new_comp->ComponentChanged(Foundation::ComponentInterface::Network);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
