@@ -287,7 +287,8 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    #print dir(PythonQt)
+    #print dir(PythonQt.Qt)
+    #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
     #import PythonQt.QtGui as gui
     #print dir(gui)
@@ -295,8 +296,8 @@ if 0: #pythonqt introspec
     #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
 
-    UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
-    print type(UiWidgetProperties), dir(UiWidgetProperties)
+    #UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
+    #print type(UiWidgetProperties), dir(UiWidgetProperties)
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
 if 0: #QVector3D
@@ -715,10 +716,10 @@ if 0: #getserver test
 
 if 0: #getrexlogic test
     l = r.getRexLogic()
-    print dir(l)
-    class entity_id_t(int): pass
-    entid = entity_id_t(2)
-    l.SendRexPrimData(entid)
+    print l, dir(l)
+    #class entity_id_t(int): pass
+    #entid = entity_id_t(2)
+    #l.SendRexPrimData(entid)
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
@@ -817,12 +818,31 @@ if 0: #a c++ side test func for api dev
     #~ pe.show()
 
 if 0: #QRenderer
-    rend = r.getQRenderer()
-    print rend
+    #rend = r.getQRenderer()
+    #print rend
+    #print rend.FrustumQuery
+    #print dir(rend)
+    #print rend.
 
-if 0:
+    #import PythonQt
+    #import __main__
+    #print dir(__main__)
+    #from __main__ import _naali
+    #print dir(PythonQt)
+    #PythonQt.__main__
+    #print _naali.GetRenderer()
+
+    import naali
+    print naali.renderer
+
+if 0: #worldstream
     worldstream = r.getServerConnection()
     print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])
+
+if 0: #scene, aka. SceneManager
+    import naali
+    s = naali.getScene("World")
+    print s
 
 if 0: 
     print r.c, dir(r.c)
@@ -1154,7 +1174,8 @@ if 0:
         print "swoot"
 
 if 0: #create a new component, hilight
-    e = r.getEntity(1876645543)
+    avid = r.getUserAvatarId()
+    e = r.getEntity(avid)
     try:
         e.highlight
     except AttributeError:
@@ -1172,6 +1193,49 @@ if 0: #create a new component, hilight
         print "vis"
     else:
         print "not"
+
+if 1: #test adding a dynamiccomponent
+    #entid = r.getUserAvatarId()
+    entid = 1369486610
+    ent = r.getEntity(entid)
+    try:
+        ent.dynamic
+    except AttributeError:
+        ent.createComponent("EC_DynamicComponent")
+    print ent.dynamic
+
+    d = ent.dynamic
+    print dir(d)
+    d.AddAttribute()
+    print d.GetAttribute()
+
+    d.SetAttribute(1)
+    print d.GetAttribute()
+
+if 0: #animation control
+    avid = r.getUserAvatarId()
+    ent = r.getEntity(avid)
+    try:
+        ent.animationcontroller
+    except AttributeError:
+        #ent.createComponent("EC_DynamicComponent")
+        print ent, "has no animation controller component"
+    
+    a = ent.animationcontroller
+    print a, dir(a)
+    #animname = "Fly"
+    animname = "Walk"
+    a.EnableAnimation(animname)
+    #print a.SetAnimationTimePosition("Walk", 0.2)
+
+    #step with consequent calls
+    try:
+        r.t
+    except: #first run
+        r.t = 0
+    r.t += 0.1
+    print a.SetAnimationTimePosition(animname, r.t % 1)
+    
         
 if 0: #log level visibility
     r.logDebug("Debug")

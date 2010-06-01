@@ -18,6 +18,7 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #endif 
 
 #include <boost/shared_ptr.hpp>
+
 #include <vector>
 #include <list>
 
@@ -48,7 +49,7 @@ namespace
 }
 
 typedef unsigned int request_tag_t;
-typedef std::vector<request_tag_t> RequestTagVector;    
+typedef std::vector<request_tag_t> RequestTagVector;
 
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;

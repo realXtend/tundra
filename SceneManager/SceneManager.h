@@ -81,7 +81,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(), Foundation::ChangeType change = Foundation::LocalOnly);
+        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(), Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
 
         //! Returns entity with the specified id
         /*!
@@ -98,7 +98,7 @@ namespace Scene
             \param id Id of the entity to remove
             \param change Origin of change regards to network replication
         */
-        void RemoveEntity(entity_id_t id, Foundation::ChangeType change = Foundation::LocalOnly);
+        void RemoveEntity(entity_id_t id, Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
 
         //! Get the next free entity id. Can be used with CreateEntity().
         entity_id_t GetNextFreeId();
@@ -119,35 +119,37 @@ namespace Scene
         /*! \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+
+        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, Foundation::ComponentInterface::ChangeType change);
         
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         //! Emit a notification of an entity having been created
         /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
             should not usually decide the entityID itself.
             \param entity Entity pointer
             \param change Type of change (local, from network...)
          */
-        void EmitEntityCreated(Scene::Entity* entity, Foundation::ChangeType change);
+        void EmitEntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
         
         //! Emit a notification of an entity being removed. 
         /*! Note: the entity pointer will be invalid shortly after!
             \param entity Entity pointer
             \param change Type of change (local, from network...)
          */
-        void EmitEntityRemoved(Scene::Entity* entity, Foundation::ChangeType change);
+        void EmitEntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
         
     private:
         SceneManager &operator =(const SceneManager &other);
@@ -165,23 +167,29 @@ namespace Scene
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void ComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+
+        //! Signal when a component is initialized.
+        /*! Python and Javascript handlers use this instead of subclassing and overriding the component constructor
+         *! -- not used now 'cause ComponentAdded is also emitted upon initialization (loading from server ) 
+         void ComponentInitialized(Foundation::ComponentInterface* comp);*/
+
         //! Signal when an entity created
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
-        void EntityCreated(Scene::Entity* entity, Foundation::ChangeType change);
+        void EntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
         //! Signal when an entity deleted
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
-        void EntityRemoved(Scene::Entity* entity, Foundation::ChangeType change);
+        void EntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
     };
 }
 

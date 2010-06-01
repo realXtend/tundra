@@ -91,10 +91,6 @@ namespace UiServices
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
 
         //! Please dont call this if you dont know what you are doing
-        //! Set the current chat controller object to world chat widget
-        void SetWorldChatController(QObject *controller) const;
-
-        //! Please dont call this if you dont know what you are doing
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy) const;
 

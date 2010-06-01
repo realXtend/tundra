@@ -59,6 +59,11 @@ namespace RexLogic
     class TaigaLoginHandler;
     class MainPanelHandler;
     class WorldInputLogic;
+    namespace InWorldChat
+    {
+        class Provider;
+    }
+    typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
 
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
@@ -91,7 +96,6 @@ namespace RexLogic
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
@@ -150,6 +154,8 @@ namespace RexLogic
         //!         and EC_OpenSimPresence component.
         __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) const { return GetEntityWithComponent(entityid, "EC_OpenSimAvatar"); }
         Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid) const;
+
+        InWorldChatProviderPtr GetInWorldChatProvider() const;
 
         //! Register uuid - localid pair
         void RegisterFullId(const RexUUID &fullid, entity_id_t entityid);
@@ -356,6 +362,8 @@ namespace RexLogic
 
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
+
+        InWorldChatProviderPtr in_world_chat_provider_;
     };
 }
 

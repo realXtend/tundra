@@ -76,7 +76,7 @@ void EC_NoteCard::SerializeTo(QDomDocument& doc, QDomElement& base_element) cons
     WriteAttribute(doc, comp_element, "text", safe_text);
 }
 
-void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ChangeType change)
+void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change)
 {
     // Check that type is right, otherwise do nothing
     if (!BeginDeserialization(element))
@@ -133,7 +133,7 @@ void EC_NoteCard::OnTextChanged()
 
 void EC_NoteCard::SyncToNetwork()
 {
-    ComponentChanged(Foundation::Local);
+    ComponentChanged(Foundation::ComponentInterface::Local);
     text_dirty_ = false;
     title_dirty_ = false;
 }

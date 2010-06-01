@@ -5,12 +5,19 @@
 
 #include "WorldStream.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
+#include "NetworkMessages/NetOutMessage.h"
+
 #include "ProtocolModuleOpenSim.h"
 #include "ProtocolModuleTaiga.h"
 #include "QuatUtils.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
+#include "RexTypes.h"
+#include "LoggingFunctions.h"
+#include "EC_OpenSimPrim.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("WorldStream");
 
 #include <QString>
 #include <QUrl>
@@ -20,8 +27,6 @@
 
 namespace ProtocolUtilities
 {
-
-const std::string &WorldStream::loggerName_ = "WorldStream";
 
 WorldStream::WorldStream(Foundation::Framework *framework) :
     framework_(framework),
@@ -285,7 +290,7 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
     NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectAdd);
     assert(m);
 
-    Vector3 scale(0.5f, 0.5f, 0.5f);
+    RexTypes::Vector3 scale(0.5f, 0.5f, 0.5f);
     Quaternion rotation(0, 0, 0, 1);
 
     // AgentData
@@ -328,7 +333,7 @@ void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &force)
+void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool force)
 {
     if (!connected_)
         return;
@@ -348,7 +353,7 @@ void WorldStream::SendObjectDeletePacket(const uint32_t &local_id, const bool &f
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool &force)
+void WorldStream::SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool force)
 {
     if (!connected_)
         return;
@@ -481,7 +486,54 @@ void WorldStream::SendObjectDeselectPacket(std::vector<entity_id_t> object_id_li
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateInfo>& update_info_list)
+void WorldStream::SendObjectShapeUpdate(const EC_OpenSimPrim &prim)
+{
+    if (!connected_)
+        return;
+
+    // Shape update
+    NetOutMessage *m = StartMessageBuilding(RexNetMsgObjectShape);
+    assert(m);
+
+    // AgentData
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+    
+    // Block count
+    m->SetVariableBlockCount(1);
+
+    // ObjectData
+    m->AddU32(prim.LocalId);
+    m->AddU8(prim.PathCurve);
+    m->AddU8(prim.ProfileCurve);
+
+    m->AddU16(prim.PathBegin / 0.00002f);
+    m->AddU16(prim.PathEnd / 0.00002f);
+
+    m->AddU8(prim.PathScaleX / 0.01f);
+    m->AddU8(prim.PathScaleY / 0.01f);
+    m->AddU8((int8_t)(prim.PathShearX / 0.01f));
+    m->AddU8((int8_t)(prim.PathShearY / 0.01f));
+
+    m->AddS8(prim.PathTwist / 0.01f);
+    m->AddS8(prim.PathTwistBegin / 0.01f);
+    m->AddS8(prim.PathRadiusOffset / 0.01f);
+    m->AddS8(prim.PathTaperX / 0.01f);
+    m->AddS8(prim.PathTaperY / 0.01f);
+
+    // prim.PathRevolutions - skip this, has to be 0.015 steps, no editing in ui either
+    m->AddU8(1 - 0.015f);
+    m->AddS8(prim.PathSkew / 0.01f);
+
+    m->AddU16(prim.ProfileBegin / 0.00002f);
+    m->AddU16(prim.ProfileEnd / 0.00002f);
+    m->AddU16(prim.ProfileHollow / 0.00002f);
+
+    // Send
+    FinishMessageBuilding(m);
+}
+
+void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUpdateInfo>& update_info_list)
 {
     if (!connected_)
         return;
@@ -513,12 +565,12 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(13);
 
         // Position
-        memcpy(&data[offset], &update_info_list[i].position_, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        memcpy(&data[offset], &update_info_list[i].position_, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
 
         // Scale
-        memcpy(&data[offset], &update_info_list[i].scale_, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        memcpy(&data[offset], &update_info_list[i].scale_, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
     }
 
     // Add the data.
@@ -544,14 +596,21 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<ObjectUpdateI
         m->AddU8(2);
         
         // Rotation
-        Vector3 val = PackQuaternionToFloat3(update_info_list[i].orientation_);
-        memcpy(&data[offset], &val, sizeof(Vector3));
-        offset += sizeof(Vector3);
+        RexTypes::Vector3 val = PackQuaternionToFloat3(update_info_list[i].orientation_);
+        memcpy(&data[offset], &val, sizeof(RexTypes::Vector3));
+        offset += sizeof(RexTypes::Vector3);
     }
 
     // Add the data.
     m->AddBuffer(offset, data);
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectNamePacket(const ObjectNameInfo& name_info)
+{
+    std::vector<ObjectNameInfo> vector;
+    vector.push_back(name_info);
+    SendObjectNamePacket(vector);
 }
 
 void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)
@@ -576,6 +635,8 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
         m->AddU32(name_info_list[i].local_id_);
         m->AddString(name_info_list[i].name_);
     }
+
+    FinishMessageBuilding(m);
 }
 
 void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
@@ -593,9 +654,16 @@ void WorldStream::SendObjectGrabPacket(entity_id_t object_id)
     // ObjectData
     m->AddU32(object_id);
     //! \todo Touch offset is not send / calculated currently since it is not really used by the server anyway. -cm
-    m->AddVector3(Vector3::ZERO);
+    m->AddVector3(RexTypes::Vector3::ZERO);
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectDescriptionPacket(const ObjectDescriptionInfo& description_info)
+{
+    std::vector<ObjectDescriptionInfo> vector;
+    vector.push_back(description_info);
+    SendObjectDescriptionPacket(vector);
 }
 
 void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list)
@@ -620,6 +688,8 @@ void WorldStream::SendObjectDescriptionPacket(const std::vector<ObjectDescriptio
         m->AddU32(description_info_list[i].local_id_);
         m->AddString(description_info_list[i].description_);
     }
+
+    FinishMessageBuilding(m);
 }
 
 void WorldStream::SendRegionHandshakeReplyPacket(const RexUUID &agent_id, const RexUUID &session_id, uint32_t flags)
@@ -1586,16 +1656,15 @@ void WorldStream::SendGodKickUserPacket(const RexUUID &user_id, const std::strin
     FinishMessageBuilding(m);
 }
 
-std::string WorldStream::GetCapability(const std::string &name)
+QString WorldStream::GetCapability(const QString &name) const
 {
-    protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!GetCurrentProtocolModule())
     {
         LogError("Getting network interface did not succeed.");
         return "";
     }
 
-    return protocolModule_->GetCapability(name);
+    return GetCurrentProtocolModule()->GetCapability(name.toStdString()).c_str();
 }
 
 volatile Connection::State WorldStream::GetConnectionState()
@@ -1656,7 +1725,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
     }
 }
 
-boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule()
+boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule() const
 {
     switch(currentProtocolType_)
     {
@@ -1670,7 +1739,7 @@ boost::shared_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModule
     }
 }
 
-boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer()
+boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWeakPointer() const
 {
     switch(currentProtocolType_)
     {

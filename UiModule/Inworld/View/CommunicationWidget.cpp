@@ -1,31 +1,81 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "CommunicationWidget.h"
+
 #include "UiProxyWidget.h"
+#include "UiModule.h"
+#include "ModuleManager.h"
+#include "Inworld/InworldSceneController.h"
+#include "VoiceUsersWidget.h"
+#include "VoiceControl.h"
+
 #include <CommunicationsService.h>
 #include <QWidget>
 #include <QStackedLayout>
-#include <QPlainTextEdit>
 #include <QTimer>
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
 #include <QGraphicsScene>
-#include <CommunicationsService.h>
-#include "UiModule.h"                       // For 'UI service'
-#include "ModuleManager.h"                  // For 'UI service'
-#include <Inworld/InworldSceneController.h> // For 'UI service'
-#include "VoiceUsersWidget.h"
-#include "VoiceControl.h"
+#include <QTextBrowser>
+
+#include "DebugOperatorNew.h"
+
+namespace
+{
+    /// HTTP schema indentifier
+    const QString &cHttpSchema = "http://";
+
+    /// HTTP schema indentifier
+    const QString &cHttpsSchema = "https://";
+
+    /// Hyperlink start tag
+    const QString &cLinkStartTag = "<a href=\"";
+
+    /// Hyperlink middle tag
+    const QString &cLinkMiddleTag= "\">";
+
+    /// Hyperlink end tag
+    const QString &cLinkEndTag= "</a>";
+
+    /// Finds valid hyperlinks in message and generates HTML tags for them
+    /// @param message Message to be parsed
+    /// @param indentifier Schema indentifier e.g. "http://"
+    void GenerateHyperlinks(QString &message, const QString &indentifier)
+    {
+        QString link;
+        int startIndex = 0, endIndex = 0;
+        int hyperlinkCount = message.count(indentifier);
+        while (hyperlinkCount > 0)
+        {
+            startIndex = message.indexOf(indentifier, endIndex);
+            assert(startIndex != -1);
+
+            endIndex = message.indexOf(' ', startIndex);
+            endIndex = endIndex > -1 ? endIndex : message.length();
+            assert(endIndex > startIndex);
+
+            link = message.mid(startIndex, endIndex - startIndex);
+
+            message.insert(endIndex, cLinkEndTag);
+            message.insert(startIndex, cLinkMiddleTag);
+            message.insert(startIndex, link);
+            message.insert(startIndex, cLinkStartTag);
+
+            endIndex += link.length();
+            --hyperlinkCount;
+        }
+    }
+}
 
 namespace CoreUi
 {
-
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
         framework_(framework),
         QGraphicsProxyWidget(),
         internal_widget_(new QWidget()),
-        current_controller_(0),
         im_proxy_(0),
         viewmode_(Normal),
         resizing_horizontal_(false),
@@ -34,7 +84,8 @@ namespace CoreUi
         voice_state_widget_(0),
         voice_users_info_widget_(0),
         voice_users_widget_(0),
-        voice_users_proxy_widget_(0)
+        voice_users_proxy_widget_(0),
+        in_world_chat_session_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -54,10 +105,14 @@ namespace CoreUi
         contentContainerLayout->addLayout(stacked_layout_);
 
         // History view mode
-        history_view_text_edit_ = new QPlainTextEdit(chatContentWidget);
-        history_view_text_edit_->setReadOnly(true);
+        history_view_text_edit_ = new QTextBrowser(chatContentWidget);
+        history_view_text_edit_->setOpenExternalLinks(true);
         history_view_text_edit_->setObjectName("historyViewTextEdit");
-        history_view_text_edit_->setStyleSheet("QPlainTextEdit#historyViewTextEdit { background-color: rgba(34,34,34,191); border-radius: 7px; border: 1px solid rgba(255,255,255,50); }");
+        history_view_text_edit_->setStyleSheet(
+            "QTextBrowser#historyViewTextEdit {"
+                "background-color: rgba(34,34,34,191);"
+                "border-radius: 7px; border: 1px solid rgba(255,255,255,50);"
+            "}");
         history_view_text_edit_->setFont(QFont("Calibri", 11));
         stacked_layout_->addWidget(history_view_text_edit_);
 
@@ -172,9 +227,17 @@ namespace CoreUi
             htmlcontent.append("]</span> <span style='color:#FF3330;'>");
         htmlcontent.append(sender);
         htmlcontent.append(": </span><span style='color:#EFEFEF;'>");
+
+        // If the message contains hyperlinks, make HTML tags for them.
+        if (message.contains(cHttpSchema))
+            GenerateHyperlinks(message, cHttpSchema);
+        if (message.contains(cHttpsSchema))
+            GenerateHyperlinks(message, cHttpsSchema);
+
         htmlcontent.append(message);
         htmlcontent.append("</span>");
-        history_view_text_edit_->appendHtml(htmlcontent);
+
+        history_view_text_edit_->append(htmlcontent);
 
         // Normal view
         if (!self_sent_message)
@@ -190,10 +253,9 @@ namespace CoreUi
 
         QString message = chatLineEdit->text();
         chatLineEdit->clear();
-        emit SendMessageToServer(message);
+        if (in_world_chat_session_)
+            in_world_chat_session_->SendTextMessage(message);
     }
-
-    // Protected
 
     void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
     {
@@ -277,29 +339,6 @@ namespace CoreUi
         QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
     }
 
-    // Public
-
-    void CommunicationWidget::UpdateController(QObject *controller)
-    {
-        // Disconnect previous
-        if (current_controller_)
-        {
-            this->disconnect(SIGNAL( SendMessageToServer(const QString&) ));
-            this->disconnect(current_controller_);
-        }
-
-        // Connect present controller
-        current_controller_ = controller;
-        connect(current_controller_, SIGNAL( MessageReceived(bool, QString, QString, QString) ),
-                this, SLOT( ShowIncomingMessage(bool, QString, QString, QString) ));
-        connect(this, SIGNAL( SendMessageToServer(const QString&) ), 
-                current_controller_, SLOT( SendChatMessageToServer(const QString&) ));
-
-        // Clear old ui messages from history view
-        if (history_view_text_edit_)
-            history_view_text_edit_->clear();
-    }
-
     void CommunicationWidget::UpdateImWidget(UiServices::UiProxyWidget *im_proxy)
     {
         im_proxy_ = im_proxy;
@@ -312,6 +351,8 @@ namespace CoreUi
             if (comm.get())
             {
                 connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+                connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
+                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
             }
         }
     }
@@ -319,6 +360,29 @@ namespace CoreUi
     void CommunicationWidget::SetFocusToChat()
     {
         chatLineEdit->setFocus(Qt::MouseFocusReason);
+    }
+
+    void CommunicationWidget::InitializeInWorldChat()
+    {
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                if (in_world_chat_session_)
+                {
+                    disconnect(in_world_chat_session_);
+                    in_world_chat_session_ = 0;
+                    history_view_text_edit_->clear();
+                }
+
+                in_world_chat_session_ = comm->InWorldChatSession();
+                if (!in_world_chat_session_)
+                    return;
+                
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&)), SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&)) );
+            }
+        }
     }
 
     void CommunicationWidget::InitializeInWorldVoice()
@@ -369,12 +433,8 @@ namespace CoreUi
             boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module.get())
             {
-                //UiServices::UiWidgetProperties widget_properties("IM", UiServices::SceneWidget);
                 voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_users_widget_);
                 voice_users_proxy_widget_->hide();
-                
-
-                //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }
         UpdateInWorldVoiceIndicator();
@@ -408,6 +468,14 @@ namespace CoreUi
 
         if (voice_users_info_widget_)
             voice_users_info_widget_->SetUsersCount(in_world_voice_session_->Participants().count());
+    }
+
+    void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
+    {
+        QString hour_str = QString::number(message.TimeStamp().time().hour());
+        QString minute_str = QString::number(message.TimeStamp().time().minute());
+        QString time_stamp_str = QString("%1:%2").arg(hour_str, 2, QChar('0')).arg(minute_str, 2, QChar('0'));
+        ShowIncomingMessage(message.IsOwnMessage(), message.Author(), time_stamp_str, message.Text());
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()
@@ -468,7 +536,4 @@ namespace CoreUi
     {
         emit DestroyMe(this);
     }
-
-
-
 }

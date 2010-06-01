@@ -7,7 +7,7 @@
 #include "ui_CommunicationWidget.h"
 
 class QStackedLayout;
-class QPlainTextEdit;
+class QTextBrowser;
 class QGraphicsSceneMouseEvent;
 
 namespace UiServices
@@ -21,6 +21,12 @@ namespace Communications
     {
         class SessionInterface;
         class ParticipantInterface;
+    }
+
+    namespace InWorldChat
+    {
+        class SessionInterface;
+        class TextMessageInterface;
     }
 }
 
@@ -46,12 +52,12 @@ namespace CoreUi
     class CommunicationWidget : public QGraphicsProxyWidget, private Ui::CommunicationWidget
     {
         Q_OBJECT
+
     public:
         CommunicationWidget(Foundation::Framework* framework);
-        enum ViewMode { Normal, History };      
+        enum ViewMode { Normal, History };
 
     public slots:
-        void UpdateController(QObject *controller);
         void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
         void SetFocusToChat();
         
@@ -73,19 +79,20 @@ namespace CoreUi
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
         void InitializeInWorldVoice();
+        void InitializeInWorldChat();
         void UninitializeInWorldVoice();
         void UpdateInWorldVoiceIndicator();
         void ShowVoiceControls();
         void HideVoiceControls();
+        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
 
     private:
         Foundation::Framework* framework_;
         ViewMode viewmode_;
 
         QWidget *internal_widget_;
-        QObject *current_controller_;
         QStackedLayout *stacked_layout_;
-        QPlainTextEdit *history_view_text_edit_;
+        QTextBrowser *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
@@ -101,7 +108,8 @@ namespace CoreUi
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
         CommUI::VoiceUsersWidget* voice_users_widget_;
         QGraphicsProxyWidget* voice_users_proxy_widget_;
-//        UiServices::UiProxyWidget* voice_users_proxy_widget_;
+
+        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
 
     signals:
         void SendMessageToServer(const QString &message);
@@ -109,8 +117,7 @@ namespace CoreUi
 
     class NormalChatViewWidget : public QWidget
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         NormalChatViewWidget(QWidget *parent);
@@ -120,14 +127,12 @@ namespace CoreUi
 
     private slots:
         void RemoveChatLabel(ChatLabel *label);
-
     };
 
     class ChatLabel : public QLabel
     {
-    
-    Q_OBJECT
-    
+        Q_OBJECT
+
     public:
         ChatLabel(bool own_message, QString message);
 

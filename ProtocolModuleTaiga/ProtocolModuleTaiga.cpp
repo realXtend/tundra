@@ -10,6 +10,8 @@
 #include "Framework.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
+#include "CoreException.h"
+#include "NetworkMessages/NetOutMessage.h"
 
 #include <Poco/ClassLibrary.h>
 #include <Poco/Net/NetException.h>
@@ -18,7 +20,6 @@
 
 namespace TaigaProtocol
 {
-
     ProtocolModuleTaiga::ProtocolModuleTaiga() :
         ModuleInterfaceImpl(Foundation::Module::MT_TaigaProtocol),
         connected_(false),
@@ -334,7 +335,6 @@ namespace TaigaProtocol
                 proceed = false;
         }
     }
-
 } // namespace TaigaProtocol
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

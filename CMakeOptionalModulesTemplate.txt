@@ -18,7 +18,7 @@ add_subdirectory (DebugStatsModule)
 #add_subdirectory (NetTestLogicModule)
 
 add_subdirectory (PythonScriptModule)
-add_subdirectory (CommunicationModule) #will be splitted to several modules
+add_subdirectory (TelepathyIMModule)
 add_subdirectory (OpenALAudioModule)
 add_subdirectory (ECEditorModule)
 #add_subdirectory (NoteCardModule)
@@ -28,6 +28,7 @@ add_subdirectory (InWorldChatModule)
 add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
 add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
 #add_subdirectory (EntityComponents/EC_NoteCard)     # declared by NoteCardModule
+add_subdirectory (EntityComponents/EC_DynamicComponent)      # declared by PythonScriptModule
 
 #add_subdirectory (LegacyAvatarModule)
 

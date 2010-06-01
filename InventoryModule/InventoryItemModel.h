@@ -178,8 +178,14 @@ namespace Inventory
         /// @param index Model inedx.
         void CopyAssetReferenceToClipboard(const QModelIndex &index);
 
+        void CheckTreeForDirtys();
+
+        void CheckChildrenForDirtys(QList<AbstractInventoryItem*> children);
+
     signals:
         void UploadStarted(const QString &filename);
+
+        void IndexModelIsDirty(const QModelIndex &index_model);
 
     private:
         /// Sets up view from data.

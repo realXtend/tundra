@@ -86,7 +86,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "CameraControllable.h"
 //now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
 //#include "ogrecamera.h"
-#include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
+
 #include "Avatar/AvatarControllable.h"
 
 #include "PyEntity.h"
@@ -122,6 +122,12 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include <QDebug>
 
+//ECs declared here
+#include "EC_DynamicComponent.h"
+
+//for py_print
+#include <stdio.h>
+
 namespace PythonScript
 {
     class PythonScriptModule;
@@ -153,7 +159,7 @@ namespace PythonScript
     {
         using namespace PythonScript;
 
-        //DECLARE_MODULE_EC(EC_OgreEntity);
+        DECLARE_MODULE_EC(EC_DynamicComponent);
     }
 
     // virtual
@@ -303,21 +309,27 @@ namespace PythonScript
                 PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", event_id, 0, 0, 0, 0);   
             }
             */
-            else//XXX change to if-else...
+            else //XXX change to if-else...
             {
                 value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
             }
         }
         else if (category_id == scene_event_category_)
         {
+            if (event_id == Scene::Events::EVENT_SCENE_ADDED)
+            {
+                Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+                value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
+            }
+
             /*
              only handles local modifications so far, needs a network refactorin of entity update events
              to get inbound network entity updates workin
             */
             if (event_id == Scene::Events::EVENT_ENTITY_UPDATED) //XXX remove this and handle with the new generic thing below?
             {
-                //LogInfo("Entity updated.");
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
+                //LogInfo("Entity updated.");
                 unsigned int ent_id = edata->localID;
                 if (ent_id != 0)
                     value = PyObject_CallMethod(pmmInstance, "ENTITY_UPDATED", "I", ent_id);
@@ -600,10 +612,39 @@ namespace PythonScript
    //     }
     }
 
-    PythonScriptModule *PythonScriptModule::GetInstance()
+    PythonScriptModule* PythonScriptModule::GetInstance()
     {
         assert(pythonScriptModuleInstance_);
         return pythonScriptModuleInstance_;
+    }
+
+    OgreRenderer::Renderer* PythonScriptModule::GetRenderer()
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> rendererptr= framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (rendererptr)
+        {
+            OgreRenderer::Renderer* renderer = rendererptr.get(); 
+            PythonQt::self()->registerClass(renderer->metaObject());
+            return renderer;
+        }
+        else
+            std::cout << "Renderer module not there?" << std::endl;
+
+        return 0;
+    }
+
+    Scene::SceneManager* PythonScriptModule::GetScene(QString name)
+    {
+        Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
+
+        if (sptr)
+        {
+            Scene::SceneManager* scene = sptr.get();
+            PythonQt::self()->registerClass(scene->metaObject());
+            return scene;
+        }
+
+        return 0;
     }
 }
 
@@ -708,15 +749,15 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQRenderer(PyObject *self)
 {
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (renderer){
-        //std::cout << "Screenshot in PYSM ... " << std::endl;
-        return PythonScriptModule::GetInstance()->WrapQObject(renderer.get());
-    }
-    else
-        std::cout << "Failed ..." << std::endl;
+    OgreRenderer::Renderer* renderer; 
+    renderer = dynamic_cast<OgreRenderer::Renderer*>(PythonScript::self()->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock().get());
 
+    if (renderer)
+    {
+        return PythonScriptModule::GetInstance()->WrapQObject(renderer);
+    }
+
+    PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
     return NULL;
 }
 
@@ -801,7 +842,7 @@ PyObject* GetEntity(PyObject *self, PyObject *args)
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
 
     if (scene == 0)
     {
@@ -1059,14 +1100,14 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     {
         EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
         if (!ec_canvas_source)
-            entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::LocalOnly);
+            entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::ComponentInterface::LocalOnly);
         ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
         if (ec_canvas_source)
         {
             QString url = webview->url().toString();
-            ec_canvas_source->source_.Set(url.toStdString(), Foundation::LocalOnly);
+            ec_canvas_source->source_.Set(url.toStdString(), Foundation::ComponentInterface::LocalOnly);
             ec_canvas_source->manipulate_ec_3dcanvas = false;
-            ec_canvas_source->ComponentChanged(Foundation::LocalOnly);
+            ec_canvas_source->ComponentChanged(Foundation::ComponentInterface::LocalOnly);
         }
     }
 }
@@ -1198,7 +1239,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     ent_id = (entity_id_t) ent_id_int;
 
-    Scene::ScenePtr scene = PythonScript::GetScene();
+    Scene::ScenePtr scene = PythonScript::GetScenePtr();
 
     if (scene == 0)
     {
@@ -1228,7 +1269,7 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
         return NULL;
     }
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in RemoveEntity.");
         return NULL;   
@@ -1255,7 +1296,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     meshname = std::string(c_text);
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
         return NULL;   
@@ -1520,9 +1561,9 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         map[UiDefines::TextNormal] = base_url + "edbutton_LSCENEtxt_normal.png";
         map[UiDefines::TextHover] = base_url + "edbutton_LSCENEtxt_hover.png";
         map[UiDefines::TextPressed] = base_url + "edbutton_LSCENEtxt_click.png";
-        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
+        map[UiDefines::IconNormal] = base_url + "edbutton_LSCENE_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_LSCENE_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_LSCENE_click.png";
         uiproperty.SetMenuNodeStyleMap(map);
     }
 
@@ -1570,6 +1611,7 @@ PyObject* GetRexLogic(PyObject *self)
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
     return NULL;
 }
+
 
 PyObject* GetServerConnection(PyObject *self)
 {
@@ -1738,7 +1780,7 @@ PyObject* NetworkUpdate(PyObject *self, PyObject *args)
     ent_id = (entity_id_t) ent_id_int;
     
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -2025,7 +2067,7 @@ namespace PythonScript
 
         entity_init(apiModule); 
         /* this is planned to be vice versa: 
-           the implementing modules, like here scene§ for Entity,
+           the implementing modules, like here scene for Entity,
            would call something here to get a ref to the module, or something?
         */
 
@@ -2033,13 +2075,16 @@ namespace PythonScript
         if (!pythonqt_inited)
         {
             PythonScript::initRexQtPy(apiModule);
-            //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            //mainModule.addObject("qtmodule", wrappedModule); 
+            PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+            mainModule.addObject("_naali", this);
+            
+            PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            PythonQt::self()->registerClass(&Foundation::ComponentInterface::staticMetaObject);
+
             pythonqt_inited = true;
             
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerCPPClass("Quaternion", "","", PythonQtCreateObject<QuaternionWrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
+            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
         }
 
         //load the py written module manager using the py c api directly

@@ -22,6 +22,8 @@
 #include "ModuleLoggingFunctions.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
+#include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
+#include "SceneManager.h"
 
 #include <PythonQt.h>
 #include <QList>
@@ -53,8 +55,14 @@ namespace PythonScript
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public Foundation::ModuleInterfaceImpl
+    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterfaceImpl
     {
+        Q_OBJECT
+
+    public slots: //things for the py side to call.
+        OgreRenderer::Renderer* GetRenderer();
+        Scene::SceneManager* GetScene(QString name);
+
     public:
         PythonScriptModule();
         virtual ~PythonScriptModule();
@@ -103,7 +111,7 @@ namespace PythonScript
         /// Returns the currently initialized PythonScriptModule.
         static PythonScriptModule *GetInstance();
 
-        Scene::ScenePtr GetScene() { return framework_->GetScene("World"); }
+        Scene::ScenePtr GetScenePtr() { return framework_->GetDefaultWorldScene(); }
         PyObject* WrapQObject(QObject* qobj) { return PythonQt::self()->priv()->wrapQObject(qobj); }
 
         PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);

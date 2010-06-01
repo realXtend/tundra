@@ -64,7 +64,7 @@ namespace Foundation
             MT_QtScript,
             MT_Console,
             MT_Asset,
-            MT_Communication,
+            MT_TelepathyIM,
             MT_Communications,
             MT_Input,
             MT_TextureDecoder,
@@ -88,7 +88,7 @@ namespace Foundation
             static const std::string type_strings[MT_Unknown] = {
                  "OgreRenderingModule", "OgreGtkWindowModule", "OpenALAudioModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
                  "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
-                 "CommunicationModule", "CommunicationUIModule", "WorldInput", "TextureDecoderModule", "InventoryModule",
+                 "TelepathyIMModule", "CommunicationsModule", "WorldInput", "TextureDecoderModule", "InventoryModule",
                  "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule", "LegacyAvatarModule" };
 
             return type_strings[type];

@@ -198,7 +198,16 @@ namespace OpenSimProtocol
             }
             else
             {
-                call.AddMember("start", "uri:"+startLocation_+"&amp;128&amp;128&amp;0");
+                if (startLocation_.find("&") == std::string::npos)                
+                {
+                    call.AddMember("start", "uri:"+startLocation_+"&amp;128&amp;128&amp;0");
+                }
+                else
+                {                   
+                    QString startloc(startLocation_.c_str());
+                    startloc.replace("&", "&amp;");
+                    call.AddMember("start", "uri:"+startloc.toStdString());
+                }
             }            
 
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());

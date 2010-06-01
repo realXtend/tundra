@@ -16,7 +16,7 @@
 namespace RexLogic
 {
 
-void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest, const std::vector<Scene::EntityPtr>& src)
+void PopulateUpdateInfos(std::vector<ProtocolUtilities::MultiObjectUpdateInfo>& dest, const std::vector<Scene::EntityPtr>& src)
 {
     for (uint i = 0; i < src.size(); ++i)
     {
@@ -28,7 +28,7 @@ void PopulateUpdateInfos(std::vector<ProtocolUtilities::ObjectUpdateInfo>& dest,
         if (!prim && !ogre_pos)
             continue;
 
-        ProtocolUtilities::ObjectUpdateInfo new_info;
+        ProtocolUtilities::MultiObjectUpdateInfo new_info;
         new_info.local_id_ = prim->LocalId;
         new_info.position_ = ogre_pos->GetPosition();
         new_info.orientation_ = ogre_pos->GetOrientation();
@@ -65,7 +65,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
         break;
     case Events::EVENT_ENTITY_UPDATED:
     {
-        std::vector<ProtocolUtilities::ObjectUpdateInfo> update_info_list;
+        std::vector<ProtocolUtilities::MultiObjectUpdateInfo> update_info_list;
         PopulateUpdateInfos(update_info_list, event_data->entity_ptr_list);
         owner_->GetServerConnection()->SendMultipleObjectUpdatePacket(update_info_list);
         break;

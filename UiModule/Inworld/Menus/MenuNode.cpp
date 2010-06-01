@@ -9,6 +9,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPropertyAnimation>
 #include <QDebug> 
+#include <QLabel>
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
@@ -40,8 +41,23 @@ namespace CoreUi
         }
         else
         {
-            // fall back here for text rendering widgts name if no graphics were provded!
-            center_image_width_ = 20; 
+            if (node_name_ != "RootNode")
+            {
+                // fall back here for text rendering widgts name if no graphics were provded!
+                QWidget *text_widget = centerContainer->findChild<QWidget*>("textWidget");
+                if (text_widget)
+                {
+                    QHBoxLayout *layout = new QHBoxLayout();
+                    QLabel *label = new QLabel(node_name_.toUpper());
+                    layout->addWidget(label);
+                    text_widget->setLayout(layout);
+                    label->setStyleSheet("background-color: transparent; color: white; font-size: 12px; text-align: center; font-weight: bold;");
+                    QFontMetrics metric(label->font());
+                    center_image_width_ = metric.width(label->text()) + 20;
+                }
+            }
+            else
+                center_image_width_ = 20;
         }
 
         QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);

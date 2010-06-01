@@ -28,8 +28,11 @@ namespace CommunicationsService
         virtual void Register(Communications::InWorldVoice::ProviderInterface& provider);
         virtual void Register(Communications::InWorldChat::ProviderInterface& provider);
 
+    private slots:
+        void InWorldChatSessionAvailable();
+        void InWorldChatSessionUnavailable();
+
     private:
-//        static Service* instance_;
         static boost::shared_ptr<Service> instance_;
         Communications::InWorldVoice::ProviderInterface* in_world_voice_provider_;
         Communications::InWorldChat::ProviderInterface* in_world_chat_provider_;

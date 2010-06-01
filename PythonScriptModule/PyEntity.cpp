@@ -10,9 +10,11 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_Highlight.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_DynamicComponent.h"
 
 #include <PythonQt.h>
 
@@ -34,7 +36,7 @@ namespace PythonScript
         }
         
         PythonScriptModule *owner = PythonScriptModule::GetInstance();
-        Scene::ScenePtr scene = owner->GetScene();
+        Scene::ScenePtr scene = owner->GetScenePtr();
         if (!scene)
         {
             PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -181,7 +183,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
@@ -362,6 +364,40 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         }
     }
 
+    else if (s_name.compare("dynamic") == 0)
+    {
+        //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+        const Foundation::ComponentInterfacePtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent");
+        EC_DynamicComponent* dynamic_component = 0;
+        if (dynamic_component_ptr)
+        {
+            dynamic_component = checked_static_cast<EC_DynamicComponent *>(dynamic_component_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(dynamic_component);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a dynamic component.");
+            return NULL;
+        }
+    }
+
+    else if (s_name.compare("animationcontroller") == 0)
+    {
+        //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+        const Foundation::ComponentInterfacePtr &animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
+        OgreRenderer::EC_OgreAnimationController* animationcontrol = 0;
+        if (animationcontrol_ptr)
+        {
+          animationcontrol = checked_static_cast<OgreRenderer::EC_OgreAnimationController *>(animationcontrol_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(animationcontrol);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have an AnimationController component.");
+            return NULL;
+        }
+    }
+
     PyErr_SetString(PyExc_AttributeError, "Unknown component type.");
     return NULL;
 }
@@ -392,7 +428,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
        is copy-paste from PythonScriptModule GetEntity 
        but to be removed when that map is used above.*/
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScene();
+    Scene::ScenePtr scene = owner->GetScenePtr();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");

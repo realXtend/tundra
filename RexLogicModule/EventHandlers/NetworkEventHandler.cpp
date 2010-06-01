@@ -28,6 +28,8 @@
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Ether/EtherLoginNotifier.h"
 
+#include "Communications/InWorldChat/Provider.h"
+
 #include <OgreMaterialManager.h>
 
 // LoadURL webview opening code is not on the py side, experimentally at least
@@ -140,6 +142,24 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 
     case RexNetMsgScriptTeleportRequest:
         return HandleOSNE_ScriptTeleport(netdata);
+
+    case RexNetMsgChatFromSimulator:
+        return HandleOSNE_ChatFromSimulator(netdata);
+
+    case RexNetMsgImprovedInstantMessage:
+        return HandleOSNE_ImprovedInstantMessage(netdata);
+
+    case RexNetMsgOnlineNotification:
+        return HandleOSNE_OnlineNotification(netdata);
+
+    case RexNetMsgOfflineNotification:
+        return HandleOSNE_OfflineNotification(netdata);
+
+    case RexNetMsgTerminateFriendship:
+        return HandleOSNE_TerminateFriendship(netdata);
+
+    case RexNetMsgDeclineFriendship:
+        return HandleOSNE_DeclineFriendship(netdata);
 
     default:
         break;
@@ -559,8 +579,15 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
         if (!ongoing_script_teleport_)
         {
             // Create question notification
+            QString posx = "";            
+            QString posy = "";
+            QString posz = "";
+            posx.setNum(position.x);
+            posy.setNum(position.y);
+            posz.setNum(position.z);
+
             UiServices::QuestionNotification *question_notification = 
-                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str()), 7000);
+                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
             // Connect notifier to recieve the answer signal
             QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
             // Send notification
@@ -571,6 +598,84 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
             notifier->SetIsTeleporting(true);
         }
     }
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
+    enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
+    enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
+    enum ChatSourceType { SOURCE_TYPE_SYSTEM = 0, SOURCE_TYPE_AGENT = 1, SOURCE_TYPE_OBJECT = 2 };
+//    enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
+
+    const ProtocolUtilities::NetMsgID msgID = data->messageID;
+    ProtocolUtilities::NetInMessage *msg = data->message;
+
+    try
+    {              
+        msg->ResetReading();
+
+        std::size_t size = 0;
+        const boost::uint8_t* buffer = msg->ReadBuffer(&size);
+        std::string from_name = std::string((char*)buffer);
+        RexUUID source = msg->ReadUUID();
+        RexUUID object_owner = msg->ReadUUID();
+        ChatSourceType source_type = static_cast<ChatSourceType>( msg->ReadU8() );
+        ChatType chat_type = static_cast<ChatType>( msg->ReadU8() ); 
+        ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg->ReadU8() );
+        RexTypes::Vector3 position = msg->ReadVector3();
+        std::string message = msg->ReadString();
+        if ( message.size() > 0 )
+        {
+            QString source_uuid = source.ToString().c_str();
+            QString source_name = from_name.c_str();
+            QString message_text = QString::fromUtf8(message.c_str(), message.size());
+
+            switch (source_type)
+            {
+            case SOURCE_TYPE_SYSTEM:
+            case SOURCE_TYPE_AGENT:
+            case SOURCE_TYPE_OBJECT:
+                rexlogicmodule_->GetInWorldChatProvider()->HandleIncomingChatMessage(source_uuid, source_name, message_text); 
+                break;
+            }
+        }
+    }
+    catch(NetMessageException /*&e*/)
+    {
+        return false;
+    }
+    return false;        
+}
+
+bool NetworkEventHandler::HandleOSNE_ImprovedInstantMessage(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_OnlineNotification(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_OfflineNotification(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_TerminateFriendship(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_DeclineFriendship(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    /// @todo: IMPLEMENT
     return false;
 }
 

@@ -1,6 +1,8 @@
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton, QLineEdit, QInputDialog 
+#from PythonQt.QtGui import QLineEdit #QInputDialog QGroupBox, QVBoxLayout, QPushButton, 
+from PythonQt import QtGui
+
 
 from circuits import Component
 
@@ -8,13 +10,13 @@ from circuits import Component
 #EXTERNAL = 0
 
 #print dir(PythonQt)
-UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
+#UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
 
 class TestGui(Component):
     def __init__(self):
         Component.__init__(self)
-        #loader = QUiLoader() 
-        uism = r.getUiSceneManager() #self.canvas = r.createCanvas(EXTERNAL)
+        #loader = QUiLoader()
+        #uism = r.getUiSceneManager() #self.canvas = r.createCanvas(EXTERNAL)
 
         #group = QGroupBox()
         #box = QVBoxLayout(group)
@@ -23,14 +25,15 @@ class TestGui(Component):
         #group.show()
         #self.canvas.AddWidget(group)
 
-        lineedit = QLineEdit()
-        self.widget = lineedit
-        #lineedit.show()
-        #uiprops = UiWidgetProperties("PythonQt Test")
-        #uism.AddWidgetToScene(lineedit) #uiprops) #self.canvas.AddWidget(lineedit)
+        #lineedit = QtGui.QLineEdit()
+        #self.widget = lineedit
+        #lineedit.connect('textChanged(QString)', self.changed)
+
+        self.widget = QtGui.QSlider(PythonQt.QtCore.Qt.Horizontal)
+        self.widget.connect('valueChanged(int)', self.changed)
 
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty()
+        uiprops = r.createUiWidgetProperty(1)
         uiprops.widget_name_ = "Test Widget"
         #uiprops.my_size_ = QSize(width, height)
         #self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
@@ -43,12 +46,10 @@ class TestGui(Component):
 
         #QInputDialog.getText(None, "Mesh asset UUID", "Please give mesh asset UUID", QLineEdit.Normal, "")
 
-        lineedit.connect('textChanged(QString)', self.changed)
-
         r.logInfo("TestGui inited.")
 
-    def changed(self, text):
-        r.logInfo("TestGui LineEdit changed: %s" % text)
+    def changed(self, val):
+        r.logInfo("TestGui widget calue changed: %s" % str(val))
                 
     def on_exit(self):
         r.logInfo("TestGui starting exit...")
