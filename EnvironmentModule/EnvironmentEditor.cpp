@@ -2177,10 +2177,10 @@ namespace Environment
 
                 //Calculate vertex color.
                 float vertex_distance_from_origo = sqrt(float(x * x) + float(y * y));
-                float apha = (paint_area_radius - vertex_distance_from_origo) / paint_area_radius;
-                if(apha < 0)
-                    apha = 0;
-                manual_paint_object_->colour(color.r, color.g, color.b, apha);
+                float alpha = (paint_area_radius - vertex_distance_from_origo) / paint_area_radius;
+                if(alpha < 0)
+                    alpha = 0;
+                manual_paint_object_->colour(color.r, color.g, color.b, alpha);
                 curIndex++;
             }
         }

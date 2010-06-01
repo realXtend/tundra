@@ -91,9 +91,9 @@ namespace ECEditor
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
         QWidget(),
         framework_(framework),
-        toggle_browser_button_(0),
+        toggle_entities_button_(0),
         entity_list_(0),
-        component_list_(0),
+        //component_list_(0),
         attribute_browser_(0)
     {
         Initialize();
@@ -102,7 +102,7 @@ namespace ECEditor
     ECEditorWindow::~ECEditorWindow()
     {
         // Explicitily delete component list widget because it's parent of dynamically allocated items.
-        SAFE_DELETE(component_list_);
+        //SAFE_DELETE(component_list_);
     }
 
     void ECEditorWindow::AddEntity(entity_id_t entity_id)
@@ -135,8 +135,8 @@ namespace ECEditor
     {
         if (entity_list_)
             entity_list_->clear();
-        if (component_list_)
-            component_list_->clear();
+        /*if (component_list_)
+            component_list_->clear();*/
     }
 
     void ECEditorWindow::DeleteEntitiesFromList()
@@ -154,7 +154,7 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::DeleteComponent()
+    /*void ECEditorWindow::DeleteComponent()
     {
         if (!component_list_)
             return;
@@ -173,7 +173,7 @@ namespace ECEditor
                 entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::Local);
 
         RefreshEntityComponents();
-    }
+    }*/
     
     void ECEditorWindow::CreateComponent()
     {
@@ -195,7 +195,7 @@ namespace ECEditor
             }
         }
 
-        RefreshEntityComponents();
+        //RefreshEntityComponents();
     }
 
     void ECEditorWindow::DeleteEntity()
@@ -209,7 +209,7 @@ namespace ECEditor
             scene->RemoveEntity(entities[i]->GetId(), Foundation::Local);
     }
 
-    void ECEditorWindow::RefreshEntityComponents()
+    /*void ECEditorWindow::RefreshEntityComponents()
     {
         for(int i = component_list_->topLevelItemCount() - 1; i >= 0; --i)
         {
@@ -234,10 +234,13 @@ namespace ECEditor
             }
         }
         RefreshPropertyBrowser();
-    }
+    }*/
 
     void ECEditorWindow::RefreshPropertyBrowser()
     {
+        if(!attribute_browser_)
+            return;
+
         attribute_browser_->ClearBrowser();
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
@@ -247,27 +250,6 @@ namespace ECEditor
         }
         //tell the attribute browser that all components have been sended and it's time to create the ui elements.
         attribute_browser_->RedrawBrowserUi();
-    }
-
-    void ECEditorWindow::TogglePropertiesBrowser()
-    {
-        if (attribute_browser_)
-        {
-            if (attribute_browser_->isVisible())
-            {
-                attribute_browser_->hide();
-                resize(size().width() - attribute_browser_->size().width(), size().height());
-                if (toggle_browser_button_)
-                    toggle_browser_button_->setText(tr("Properties >"));
-            }
-            else
-            {
-                attribute_browser_->show();
-                resize(size().width() + attribute_browser_->sizeHint().width(), size().height());
-                if (toggle_browser_button_)
-                    toggle_browser_button_->setText(tr("Properties <"));
-            }
-        }
     }
 
     void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -297,7 +279,7 @@ namespace ECEditor
         menu->popup(entity_list_->mapToGlobal(pos));
     }
 
-    void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
+    /*void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
     {
         assert(component_list_);
         if (!component_list_)
@@ -330,11 +312,12 @@ namespace ECEditor
         menu->addAction(pasteEntity);
 
         menu->popup(component_list_->mapToGlobal(pos));
-    }
+    }*/
 
     void ECEditorWindow::ShowXmlEditorForEntity()
     {
-        std::vector<EntityComponentSelection> selection = GetSelectedComponents();
+        std::vector<EntityComponentSelection> selection;// = GetSelectedComponents();
+        //TODO! add code that will iterate all entity components and return them as a vector.
         if (!selection.size())
             return;
 
@@ -342,7 +325,7 @@ namespace ECEditor
             emit EditEntityXml(ecs.entity);
     }
 
-    void ECEditorWindow::ShowXmlEditorForComponent()
+    /*void ECEditorWindow::ShowXmlEditorForComponent()
     {
         std::vector<EntityComponentSelection> selection = GetSelectedComponents();
         if (!selection.size())
@@ -351,11 +334,35 @@ namespace ECEditor
         foreach(EntityComponentSelection ecs, selection)
             foreach(Foundation::ComponentInterfacePtr component, ecs.components)
                 emit EditComponentXml(component);
+    }*/
+
+    void ECEditorWindow::ToggleEntityList()
+    {
+        QWidget *entity_widget = findChild<QWidget*>("entity_widget");
+        if(entity_widget)
+        {
+            if (entity_widget->isVisible())
+            {
+                entity_widget->hide();
+                resize(size().width() - entity_widget->size().width(), size().height());
+                if (toggle_entities_button_)
+                    toggle_entities_button_->setText(tr("Show entities"));
+            }
+            else
+            {
+                entity_widget->show();
+                resize(size().width() + entity_widget->sizeHint().width(), size().height());
+                if (toggle_entities_button_)
+                    toggle_entities_button_->setText(tr("Hide entities"));
+            }
+        }
     }
 
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
     {
         ClearEntities();
+        if(attribute_browser_)
+            attribute_browser_->ClearBrowser();
         QWidget::hideEvent(hide_event);
     }
 
@@ -391,15 +398,21 @@ namespace ECEditor
         setWindowTitle(contents->windowTitle());
         resize(contents->size());
 
-        toggle_browser_button_ = findChild<QPushButton *>("but_show_properties");
+        toggle_entities_button_ = findChild<QPushButton *>("but_show_entities");
         entity_list_ = findChild<QListWidget*>("list_entities");
-        component_list_ = findChild<QTreeWidget*>("list_components");
+        QWidget *entity_widget = findChild<QWidget*>("entity_widget");
+        if(entity_widget)
+            entity_widget->hide(); 
+        //component_list_ = new QTreeWidget();//findChild<QTreeWidget*>("list_components");
 
-        attribute_browser_ = new AttributeBrowser(this);
-        QVBoxLayout *property_layout = findChild<QVBoxLayout *>("verticalLayout_properties");
-        if (property_layout)
-            property_layout->addWidget(attribute_browser_);
-        attribute_browser_->hide();
+        QWidget *browserWidget = findChild<QWidget*>("browser_widget");
+        if(browserWidget)
+        {
+            attribute_browser_ = new AttributeBrowser(browserWidget);
+            QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
+            if (property_layout)
+                property_layout->addWidget(attribute_browser_);
+        }
 /*
         if (component_list_ && attribute_browser_)
             connect(attribute_browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentXmlData()));
@@ -408,22 +421,22 @@ namespace ECEditor
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
-            connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
+            //connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
+            connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
             connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
         }
 
-        if (component_list_)
+        /*if (component_list_)
         {
             component_list_->header()->setResizeMode(QHeaderView::ResizeToContents);
             component_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
 //            connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshComponentXmlData()));
-            connect(component_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
             connect(component_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
-        }
+        }*/
 
-        if (toggle_browser_button_)
-            connect(toggle_browser_button_, SIGNAL(pressed()), this, SLOT(TogglePropertiesBrowser()));
+        if (toggle_entities_button_)
+            connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
     }
 
     QStringList ECEditorWindow::GetAvailableComponents() const
@@ -463,11 +476,10 @@ namespace ECEditor
                     ret.push_back(entity);
             }
         }
-        
         return ret;
     }
     
-    std::vector<EntityComponentSelection> ECEditorWindow::GetSelectedComponents()
+    /*std::vector<EntityComponentSelection> ECEditorWindow::GetSelectedComponents()
     {
         std::vector<EntityComponentSelection> ret;
 
@@ -499,6 +511,6 @@ namespace ECEditor
         }
         
         return ret;
-    }
+    }*/
 }
 
