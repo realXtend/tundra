@@ -83,8 +83,8 @@ namespace ECEditor
         if(attribute)
         {
             attributeMap_[component] = attribute;
-            QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
             listenEditorChangedSignal_ = true;
+            QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
         }
     }
 
@@ -171,7 +171,7 @@ namespace ECEditor
             rootProperty_ = multiEditManager->addProperty(attributeName_);
             owner_->setFactoryForManager(multiEditManager, multiEditFactory);
             UpdateMultiEditorValue();
-            QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiSelectValueSelected(const QtProperty *, const QString &)));
+            QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiEditValueSelected(const QtProperty *, const QString &)));
         }
     }
 

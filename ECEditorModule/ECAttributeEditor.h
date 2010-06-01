@@ -30,11 +30,13 @@ namespace Foundation
 
 namespace ECEditor
 {
-    //! Abstract base class for attribute editing. User can add editable components using a AddNewComponent interface and the component is inculded
-    //! inside the object's map. Note! ECAttributeEditor wont update the ui until UpdateEditorUI method is called.
-    //! If attribute is edited outside of the editor, user need to inform the editor by calling a AttributeValueChanged method, witch will get new attribute values from the
-    //! AttributeInterface and update it's ui. If you are planing to add new attribute editor types you should take a look at ECAttributeEditor template class to see
-    //! how the other attribute types are included into the editor.
+    //! ECAttributeEditorBase class.
+    /*! Abstract base class for attribute editing. User can add editable components using a AddNewComponent interface and the component is inculded
+     * inside the object's map. Note! ECAttributeEditor wont update the ui until UpdateEditorUI method is called.
+     * If attribute is edited outside of the editor, user need to inform the editor by calling a AttributeValueChanged method, witch will get new attribute values from the
+     * AttributeInterface and update it's ui. If you are planing to add new attribute editor types you should take a look at ECAttributeEditor template class to see
+     * how the other attribute types are included into the editor.
+     */
     class ECAttributeEditorBase: public QObject
     {
         Q_OBJECT
@@ -100,7 +102,7 @@ namespace ECEditor
 
     private slots:
         //! If multiselect is in use and user have pick one of the value for all attributes this one is called.
-        void MultiSelectValueSelected(const QtProperty *property, const QString &value) {ValueSelected(property, value);}
+        void MultiEditValueSelected(const QtProperty *property, const QString &value) {ValueSelected(property, value);}
 
     signals:
         //! Attribute value has been changed by the editor.
@@ -140,6 +142,9 @@ namespace ECEditor
         bool useMultiEditor_;
     };
 
+    //! ECAttributeEditor template class that initializes each attribute type that we want to support in QtPropertyBrowser.
+    /*! 
+     */
     template<typename T> class ECAttributeEditor : public ECAttributeEditorBase
     {
     public:
@@ -176,6 +181,7 @@ namespace ECEditor
 
         //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
         void InitializeMultiEditor();
+
         //! Get each components atttribute value and convert it to string and put it send the string vector to
         //! multieditor manager.
         void UpdateMultiEditorValue();
