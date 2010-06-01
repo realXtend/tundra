@@ -15,8 +15,8 @@ from core.freshimport import freshimport
 modulenames = [
     #("usr.sleeper", "Sleeper"),
     #("apitest.circuits_testmodule", "TestModule"),
-    #("apitest.attrsync", "AnimationSync"),
-    ("apitest.door", "DoorHandler"),
+    ("apitest.attrsync", "AnimationSync"),
+    #("apitest.door", "DoorHandler"),
     #("apitest.pythonqt_gui", "TestGui"),
     #("apitest.thread_test", "TestThread"),
     #("usr.chathandler", ChatHandler),
