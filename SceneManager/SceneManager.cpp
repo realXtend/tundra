@@ -30,7 +30,7 @@ namespace Scene
         entities_.clear();
     }
     
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components, Foundation::ChangeType change)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components, Foundation::ComponentInterface::ChangeType change)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -80,7 +80,7 @@ namespace Scene
         return gid_;
     }
 
-    void SceneManager::RemoveEntity(entity_id_t id, Foundation::ChangeType change)
+    void SceneManager::RemoveEntity(entity_id_t id, Foundation::ComponentInterface::ChangeType change)
     {
         EntityMap::iterator it = entities_.find(id);
         if (it != entities_.end())
@@ -116,27 +116,32 @@ namespace Scene
         return entities;
     }
     
-    void SceneManager::EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+    void SceneManager::EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
     {
         emit ComponentChanged(comp, change);
     }
     
-    void SceneManager::EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+    void SceneManager::EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
     {
         emit ComponentAdded(entity, comp, change);
     }
     
-    void SceneManager::EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+    void SceneManager::EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
     {
         emit ComponentRemoved(entity, comp, change);
     }
-    
-    void SceneManager::EmitEntityCreated(Scene::Entity* entity, Foundation::ChangeType change)
+
+  /*void SceneManager::EmitComponentInitialized(Foundation::ComponentInterface* comp)
+    {
+        emit ComponentInitialized(comp);
+        }*/
+ 
+    void SceneManager::EmitEntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change)
     {
         emit EntityCreated(entity, change);
     }
     
-    void SceneManager::EmitEntityRemoved(Scene::Entity* entity, Foundation::ChangeType change)
+    void SceneManager::EmitEntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change)
     {
         emit EntityRemoved(entity, change);
     }

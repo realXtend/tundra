@@ -234,7 +234,7 @@ class WebDavClient(object):
     def uploadFileBuffer(self, dataBuffer, collectionWebDavPath, resourceWebDavName):
         if ( self.setCollectionStorerToPath(collectionWebDavPath) ):
             try:
-                self.resource.addResource(resourceWebDavName, dataBuffer)
+                self.resource.addResource(resourceWebDavName, dataBuffer.data())
                 return 'True'
             except WebdavError, IOError:
                 return WebdavError.__str__

@@ -51,6 +51,7 @@ This project has the following dependencies:
 
 - Google Protocol Buffers 2.3.0 , http://code.google.com/apis/protocolbuffers/
 
+- PythonQt, 2.0.1, http://pythonqt.sourceforge.net/
 
 
 Dependencies with modifications that are not in upstream yet
@@ -58,13 +59,6 @@ Dependencies with modifications that are not in upstream yet
 
 For these dependencies it is easiest to use the versions which we have
 in the Naali dependencies source repository, http://code.google.com/p/realxtend-naali-deps/
-
-- PythonQt : http://sourceforge.net/projects/pythonqt/
- * modified for Naali to run on Qt 4.6
- * applied a couple patches to allow init with an existing py interpreter
- 
- These patches have been put to tracker and communicated about to the
- owner, but are not applied yet at least.
 
 - YAPE - Yet Another Property Editor, http://www.kde-apps.org/content/show.php?content=100063 
  * modified to optionally accept a QApp reference from outside, 

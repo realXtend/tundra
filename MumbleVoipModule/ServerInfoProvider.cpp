@@ -66,7 +66,7 @@ namespace MumbleVoip
                 {
                     if (current_world_stream_)
                     {
-                        QString cap_mumble_server_info_url = current_world_stream_->GetCapability("mumble_server_info").c_str();
+                        QString cap_mumble_server_info_url = current_world_stream_->GetCapability("mumble_server_info");
                         if (cap_mumble_server_info_url.size() > 0)
                         {
                             ProtocolUtilities::ClientParameters client_info = current_world_stream_->GetInfo();

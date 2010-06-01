@@ -25,6 +25,12 @@ namespace OgreRenderer
         Q_OBJECT
         
         DECLARE_EC(EC_OgreAnimationController);
+
+    public slots:
+	//! Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
+        bool EnableAnimation(const QString &name) { return EnableAnimation(name.toStdString(), false); }
+        bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (Real)new_position); }
+
     public:
         
         //! Enumeration of animation phase
@@ -33,7 +39,8 @@ namespace OgreRenderer
             PHASE_FADEIN,
             PHASE_PLAY,
             PHASE_FADEOUT,
-            PHASE_STOP
+            PHASE_STOP,
+            PHASE_FREE //in external control. for dynamiccomponent testing now
         };
 
         //! Structure for an ongoing animation
@@ -91,7 +98,7 @@ namespace OgreRenderer
         
         //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
         bool EnableAnimation(const std::string& name, bool looped = true, Real fadein = 0.0f, bool high_priority = false);
-	
+
         //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
         bool EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein = 0.0f, Real fadeout = 0.0f, bool high_priority = false);
 

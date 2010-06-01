@@ -11,6 +11,8 @@
 #include "ModuleManager.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "HttpRequest.h"
+#include "CoreException.h"
+#include "NetworkMessages/NetOutMessage.h"
 
 #include <Poco/Net/NetException.h>
 #include <Poco/ClassLibrary.h>
@@ -22,7 +24,6 @@
 
 namespace OpenSimProtocol
 {
-
     ProtocolModuleOpenSim::ProtocolModuleOpenSim() :
         ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
         connected_(false),
@@ -338,7 +339,6 @@ namespace OpenSimProtocol
                 proceed = false;
         }
     }
-
 } // namespace OpenSimProtocol
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

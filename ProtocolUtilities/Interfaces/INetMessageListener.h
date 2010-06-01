@@ -8,6 +8,8 @@
 
 namespace ProtocolUtilities
 {
+    class NetInMessage;
+    class NetOutMessage;
 
     /** \brief Interface that is implemented by an object that is interested in receiving 
         network messages directly from a NetMessageManager object.
@@ -34,7 +36,6 @@ namespace ProtocolUtilities
         /// @param msg The message contents.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg) {}
     };
-
 }
 
 #endif // incl_ProtocolUtilities_INetMessageListener_h

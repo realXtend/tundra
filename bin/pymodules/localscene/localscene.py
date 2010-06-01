@@ -10,15 +10,19 @@ from PythonQt.QtCore import QFile
 import window
 import loader
 import dotscenemanager
+import sceneuploader
 
 from window import LocalSceneWindow as LCwindow
+from sceneuploader import SceneUploader as SUploader
+from sceneuploader import SceneSaver as SSaver
 
 from xml.dom.minidom import getDOMImplementation
 
 
+
 class LocalScene(Component):
     def __init__(self):
-        print "__init__"
+        #print "__init__"
         Component.__init__(self)
         self.window = LCwindow(self)
         self.xsift = 127
@@ -29,8 +33,10 @@ class LocalScene(Component):
         self.zscale = 1
         self.dotScene = None
         self.dsManager = None
+        self.worldstream = None
         self.flipZY = False
         self.highlight = False
+        self.uploader = None
         pass
 
     def loadScene(self, filename):
@@ -43,16 +49,26 @@ class LocalScene(Component):
 
     def saveScene(self, filename):
         # set new mesh positions & scales to file, positions, scales are stored in DotSceneManager.nodes[].naali_ent.placeable.Position & Scale
-        saver = SceneSaver()
-        saver.save(filename, self.dsManager.nodes)
-        #saver.save(filename, None)
+        saver = SSaver()
+        savename = filename+".saved"
+        saver.save(savename, self.dsManager.nodes)
 
     def unloadScene(self):
         loader.unload_dotscene(self.dotScene)
         pass
         
-    def publishScene(self):
-        print "publishing scene"
+    def publishScene(self, filename):
+        #print "publishing scene"
+        if(self.worldstream==None):
+            self.worldstream = r.getServerConnection()
+        # try to get capability UploadScene
+        uploadcap_url = self.worldstream.GetCapability('UploadScene')
+        #print str(uploadcap_url)
+        if(self.uploader==None):
+            self.uploader=SUploader(uploadcap_url)
+        self.uploader.uploadScene(filename, self.dotScene)
+        loader.unload_dotscene(self.dotScene)
+        #self.uploader.uploadScene("C:\CODE\NaaliGit2\naali\bin\test3.scene")
         
     def setxpos(self, x):
         self.xsift = x
@@ -91,7 +107,6 @@ class LocalScene(Component):
         pass
         
     def on_exit(self):
-        print "local scene exit"
         r.logInfo("Local Scene exiting...")
         self.window.on_exit()  
         r.logInfo("Local Done exiting...")
@@ -126,32 +141,14 @@ class SceneSaver:
         
         if(nodes != None):
             for k, oNode  in nodes.iteritems():
-                
-                #print dir(oNode.naali_ent)
-                #print str(oNode.naali_ent.prim.MeshID)
-                #print str(oNode.naali_ent)
-                #print oNode.entityNode.length
-                #print oNode.entityNode.count()
-                # for i in range(oNode.entityNode.length):
-                    # print str(oNode.entityNode[i])
-                # print str(oNode.naali_ent.placeable.Position)
-                # print dir(oNode.naali_ent.placeable.Position)
-                # print oNode.naali_ent.placeable.Position.x
-                # print oNode.naali_ent.placeable.Position.x()
-                
                 nodeNode = newdoc.createElement('node')
                 nodeNode.setAttribute("name", k)
                 nodeNode.setAttribute("id", oNode.id)
-                #nodeNode.setAttribute("id", k)
                 
-                position = newdoc.createElement('position')
-                
-                # position.setAttribute("x", str(oNode.position[0]))
-                # position.setAttribute("y", str(oNode.position[1]))
-                # position.setAttribute("z", str(oNode.position[2]))
-                position.setAttribute("x", str(oNode.naali_ent.placeable.Position.x()))
-                position.setAttribute("y", str(oNode.naali_ent.placeable.Position.y()))
-                position.setAttribute("z", str(oNode.naali_ent.placeable.Position.z()))
+                position = newdoc.createElement('position')                
+                position.setAttribute("x", str(oNode.naali_ent.placeable.Position.x()-127))
+                position.setAttribute("y", str(oNode.naali_ent.placeable.Position.y()-127))
+                position.setAttribute("z", str(oNode.naali_ent.placeable.Position.z()-25))
                                 
                 nodeNode.appendChild(position)
                 
@@ -174,18 +171,17 @@ class SceneSaver:
                 entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
-        print newdoc.toprettyxml()
         
-        f = open(filename + "test", 'w')
-        f.write(newdoc.toprettyxml())
-
-
+        #f = open(filename + "test", 'w')
+        f = open(filename, 'w')
         
-        
-        #if(nodes != None):
-            #sceneroot = newdoc.createTextNode('scene formatVersion=\"\"')
-            
-        
-        
-        
-
+        # remove first line + change ending tag from </scene formatVersion=""> to </scene>
+        contents = newdoc.toprettyxml()
+        lines = contents.split('\n')
+        lines = lines[1:]
+        lines = lines[:-1]
+        lines.remove("</scene formatVersion=\"\">")
+        lines.append("</scene>")
+        contents = '\n'.join(lines)
+        f.write(contents)
+        f.close()

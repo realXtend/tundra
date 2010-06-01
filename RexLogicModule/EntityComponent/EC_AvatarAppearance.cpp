@@ -174,6 +174,7 @@ namespace RexLogic
         bone_modifiers_.clear();
         morph_modifiers_.clear();
         master_modifiers_.clear();
+        attachments_.clear();
         properties_.clear();
         asset_map_.clear();
     }

@@ -80,10 +80,18 @@ namespace RexLogic
         
     public slots:
         //! Trigger EC sync because of component attributes changing
-        void OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change);
+        void OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         //! Trigger EC sync because of components added/removed to entity
-        void OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change);
-        
+        void OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        //! When rex prim propeties have changed, send update to sim
+        void OnRexPrimDataChanged(Scene::Entity* entity);
+        //! When prim shape propeties have changed, send update to sim
+        void OnPrimShapeChanged(const EC_OpenSimPrim& prim);
+        //! When prim name has changed
+        void OnPrimNameChanged(const EC_OpenSimPrim& prim);
+        //! When prim description has changed
+        void OnPrimDescriptionChanged(const EC_OpenSimPrim& prim);
+
     private:
         //! The owning module.
         RexLogicModule *rexlogicmodule_;

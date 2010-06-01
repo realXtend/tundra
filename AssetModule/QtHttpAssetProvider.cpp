@@ -94,13 +94,8 @@ namespace Asset
         }
         else
         {
-            if (asset_type == "Image")
-                int i = 1;
             asset_type_t asset_type_int = RexTypes::GetAssetTypeFromTypeName(asset_type);
-            if (asset_type_int == RexTypes::RexAT_Image)
-                int i = 2;// jpeg decode it boy 
             QtHttpAssetTransfer *transfer = 0;
-    
             if (IsAcceptableAssetType(asset_type) && RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
             {
                 // Http texture/meshes via cap url
@@ -206,7 +201,7 @@ namespace Asset
             RemoveFinishedTransfers(error_transfer_data.id, reply->url());
             StartTransferFromQueue();
 
-            AssetModule::LogDebug("HTTP asset " + error_transfer_data.id.toStdString() + " canceled");
+            AssetModule::LogDebug("HTTP asset " + error_transfer_data.id.toStdString() + " canceled. Network error occurred.");
             reply->deleteLater();
             return;
         }
@@ -266,6 +261,8 @@ namespace Asset
             // Asset data feched, lets store
             else
             {
+                AssetModule::LogDebug("HTTP asset " + tranfer_info.id.toStdString() + " completed");
+
                 // Store asset
                 boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
                 if (asset_service)
@@ -280,7 +277,6 @@ namespace Asset
 
                 RemoveFinishedTransfers(tranfer_info.id, QUrl());
                 StartTransferFromQueue();
-                AssetModule::LogDebug("HTTP asset " + tranfer_info.id.toStdString() + " completed");
             }
         }
 
@@ -312,9 +308,10 @@ namespace Asset
                 RexAssetMetadata *m = static_cast<RexAssetMetadata*>(metadata);
                 #endif
                 std::string std_md(decoded_metadata.toStdString());
-                
                 m->DesesrializeFromJSON(std_md); // TODO: implement a xml based metadata parser.
                 */
+
+                AssetModule::LogDebug("HTTP asset " + transfer_data.id.toStdString() + " completed with metadata");
 
                 // Store asset
                 boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
@@ -330,7 +327,6 @@ namespace Asset
 
                 RemoveFinishedTransfers(transfer_data.id, metadata_transfer_url);
                 StartTransferFromQueue();
-                AssetModule::LogDebug("HTTP asset " + transfer_data.id.toStdString() + " completed with metadata");
             }
         }
         reply->deleteLater();

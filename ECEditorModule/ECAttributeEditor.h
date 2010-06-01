@@ -204,16 +204,16 @@ namespace ECEditor
                     //! if attribute is serializable then replicate those changes.
                     if(component.lock()->IsSerializable())
                     {
-                        attribute->Set(value, Foundation::Local);
+                        attribute->Set(value, Foundation::ComponentInterface::Local);
                         listenEditorChangedSignal_ = false;
-                        attribute->GetOwner()->ComponentChanged(Foundation::Local);
+                        attribute->GetOwner()->ComponentChanged(Foundation::ComponentInterface::Local);
                         listenEditorChangedSignal_ = true;
                     }
                     else
                     {
-                        attribute->Set(value, Foundation::LocalOnly);
+                        attribute->Set(value, Foundation::ComponentInterface::LocalOnly);
                         listenEditorChangedSignal_ = false;
-                        attribute->GetOwner()->ComponentChanged(Foundation::LocalOnly);
+                        attribute->GetOwner()->ComponentChanged(Foundation::ComponentInterface::LocalOnly);
                         listenEditorChangedSignal_ = true;
                     }
                 }

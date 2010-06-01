@@ -87,7 +87,7 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     return std::string();
 }
 
-void ComponentInterface::ComponentChanged(Foundation::ChangeType change)
+void ComponentInterface::ComponentChanged(Foundation::ComponentInterface::ChangeType change)
 {
     change_ = change;
     
@@ -107,7 +107,7 @@ void ComponentInterface::ResetChange()
     for (uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->ResetChange();
     
-    change_ = Foundation::None;
+    change_ = Foundation::ComponentInterface::None;
 }
 
 void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
@@ -123,7 +123,7 @@ void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_elemen
     }
 }
 
-void ComponentInterface::DeserializeFrom(QDomElement& element, ChangeType change)
+void ComponentInterface::DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change)
 {
     if (!IsSerializable())
         return;

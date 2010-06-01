@@ -75,6 +75,13 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         Scene::EntityPtr entity = CreateNewPrimEntity(entityid);
         rexlogicmodule_->RegisterFullId(fullid,entityid); 
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+        
+        // Connect to property changes to be sent to sim
+        connect(prim, SIGNAL(RexPrimDataChanged(Scene::Entity*)), SLOT(OnRexPrimDataChanged(Scene::Entity*)));
+        connect(prim, SIGNAL(PrimShapeChanged(const EC_OpenSimPrim&)), SLOT(OnPrimShapeChanged(const EC_OpenSimPrim&)));
+        connect(prim, SIGNAL(PrimNameChanged(const EC_OpenSimPrim&)), SLOT(OnPrimNameChanged(const EC_OpenSimPrim&)));
+        connect(prim, SIGNAL(PrimDescriptionChanged(const EC_OpenSimPrim&)), SLOT(OnPrimDescriptionChanged(const EC_OpenSimPrim&)));
+
         prim->LocalId = entityid; ///\note In current design it holds that localid == entityid, but I'm not sure if this will always be so?
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
@@ -107,7 +114,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
 
     //DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()),"AmbientRed");
     return entity;
@@ -808,7 +815,7 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     if (entity)
     {
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        prim->ObjectName = name;
+        prim->Name = name;
         prim->Description = desc;
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
@@ -1247,7 +1254,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
         assert(component.get());
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
-        hoveringText.ShowMessage(text.c_str());
+        hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
     }
 }
 
@@ -1316,7 +1323,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
 
     OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
     if (!mesh) return;
-    
+
     // Use optionally skeleton if it's used and we already have the resource
     Foundation::ResourcePtr skel_res;
     if (!RexTypes::IsNull(prim->AnimationPackageID))
@@ -1334,6 +1341,18 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     {
         //! \todo what if multiple entities use the same mesh, but different skeleton?
         mesh->SetMeshWithSkeleton(res->GetId(), skel_res->GetId());
+    }
+
+    // Update material map if mesh has more materials than the existing prim
+    // This was added when setting mesh id (url based at least) left material count to 1 always
+    uint mesh_material_count = mesh->GetNumMaterials();
+    if (mesh_material_count > 0 && (mesh_material_count != prim->Materials.size()))
+    {
+        MaterialData mat_data;
+        mat_data.Type = 0;
+        mat_data.asset_id = RexUUID().ToString();
+        for (uint material = prim->Materials.size(); material<mesh_material_count; ++material)
+            prim->Materials[material] = mat_data;
     }
 
     // Set adjustment orientation for mesh (a legacy haxor, Ogre meshes usually have Y-axis as vertical)
@@ -1910,28 +1929,28 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
 }
 
-void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
 {
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == Foundation::Local)
+    if (change == Foundation::ComponentInterface::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::Network)
+    if (change == Foundation::ComponentInterface::Network)
         network_dirty_entities_.insert(entityid);
 }
 
-void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ChangeType change)
+void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
 {
     if (!entity)
         return;
@@ -1940,10 +1959,48 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == Foundation::Local)
+    if (change == Foundation::ComponentInterface::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::Network)
+    if (change == Foundation::ComponentInterface::Network)
         network_dirty_entities_.insert(entityid);
+}
+
+void Primitive::OnRexPrimDataChanged(Scene::Entity* entity)
+{
+    SendRexPrimData(entity->GetId());
+}
+
+void Primitive::OnPrimShapeChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+        connection->SendObjectShapeUpdate(prim);
+}
+
+void Primitive::OnPrimNameChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+    {
+        ProtocolUtilities::ObjectNameInfo name_info;
+        name_info.local_id_ = prim.LocalId;
+        name_info.name_ = prim.Name;
+
+        connection->SendObjectNamePacket(name_info);
+    }
+}
+
+void Primitive::OnPrimDescriptionChanged(const EC_OpenSimPrim& prim)
+{
+    WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+    if (connection)
+    {
+        ProtocolUtilities::ObjectDescriptionInfo desc_info;
+        desc_info.local_id_ = prim.LocalId;
+        desc_info.description_ = prim.Description;
+
+        connection->SendObjectDescriptionPacket(desc_info);
+    }
 }
 
 void Primitive::SerializeECsToNetwork()
@@ -2024,8 +2081,8 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
             {
-                new_comp->DeserializeFrom(comp_elem, Foundation::Network);
-                new_comp->ComponentChanged(Foundation::Network);
+                new_comp->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Network);
+                new_comp->ComponentChanged(Foundation::ComponentInterface::Network);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);

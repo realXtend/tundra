@@ -53,13 +53,11 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-add_definitions (-DCOMMUNICATIONS_MODULE_EXPORTS)
-
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 
-use_modules (MumbleVoipModule Core Foundation Interfaces RexCommon )
+use_modules ( Core Foundation Interfaces RexCommon )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

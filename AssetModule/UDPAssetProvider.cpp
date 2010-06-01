@@ -15,6 +15,8 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConfigurationManager.h"
+#include "NetworkMessages/NetInMessage.h"
+#include "NetworkMessages/NetOutMessage.h"
 
 using namespace OpenSimProtocol;
 using namespace RexTypes;

@@ -5,8 +5,6 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 
 
-
-
 class ToolBarWindow:
 
     def __init__(self, uistring):
@@ -29,12 +27,10 @@ class ToolBarWindow:
         pass
 
     def on_exit(self):
-        print "window on_exit.."
         try:
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
             uism.RemoveProxyWidgetFromScene(self.proxywidget)
-            print "remove proxy widget"
             return True
         except:
             print "ToolBarWindow (LocalSceneWindow) failure:"
@@ -112,11 +108,10 @@ class LocalSceneWindow(ToolBarWindow):
         self.controller.loadScene(self.filename)
 
     def btnUnloadClicked(self, args):
-        print "unload clicked"
         self.controller.unloadScene()
         
     def btnPublishClicked(self, args):
-        print "publish clicked"
+        self.controller.publishScene(self.filename)
         
     def btnSaveClicked(self, args):
         #self.filename = QFileDialog.getSaveFileName(self.widget, "FileDialog")

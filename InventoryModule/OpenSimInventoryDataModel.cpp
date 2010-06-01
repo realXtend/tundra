@@ -128,6 +128,7 @@ AbstractInventoryItem *OpenSimInventoryDataModel::GetOrCreateNewFolder(
             RexUUID(parent->GetID().toStdString()), RexUUID(newFolder->GetID().toStdString()),
             255, newFolder->GetName().toStdString().c_str());
 
+    newFolder->SetDirty(true);
     return parent->AddChild(newFolder);
 }
 
@@ -338,14 +339,14 @@ void OpenSimInventoryDataModel::UploadFile(const QString &filename, AbstractInve
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
+        QString upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url.isEmpty())
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
-        SetUploadCapability(upload_url);
+        SetUploadCapability(upload_url.toStdString());
     }
 
     QStringList filenames, names;
@@ -359,14 +360,14 @@ void OpenSimInventoryDataModel::UploadFiles(QStringList &filenames, QStringList 
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
+        QString upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url.isEmpty())
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
-        SetUploadCapability(upload_url);
+        SetUploadCapability(upload_url.toStdString());
     }
 
     emit MultiUploadStarted(filenames.size());
@@ -380,14 +381,14 @@ void OpenSimInventoryDataModel::UploadFilesFromBuffer(QStringList &filenames, QV
 
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
+        QString upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url.isEmpty())
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return;
         }
 
-        SetUploadCapability(upload_url);
+        SetUploadCapability(upload_url.toStdString());
     }
 
     Thread thread(boost::bind(&OpenSimInventoryDataModel::ThreadedUploadBuffers, this, filenames, buffers));
@@ -634,14 +635,14 @@ bool OpenSimInventoryDataModel::UploadFile(
 {
     if (!HasUploadCapability())
     {
-        std::string upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
-        if (upload_url == "")
+        QString upload_url = currentWorldStream_->GetCapability("NewFileAgentInventory");
+        if (upload_url.isEmpty())
         {
             InventoryModule::LogError("Could not get upload capability for uploading. Uploading not possible");
             return false;
         }
 
-        SetUploadCapability(upload_url);
+        SetUploadCapability(upload_url.toStdString());
     }
 
     // Open the file.
@@ -677,7 +678,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     const RexUUID& folder_id,
     const QVector<uchar>& buffer)
 {
-    if (uploadCapability_ == "")
+    if (uploadCapability_.empty())
     {
         InventoryModule::LogError("Upload capability not set! Uploading not possible.");
         return false;
@@ -714,7 +715,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     // Parse the upload url from the response.
     std::map<std::string, std::string> llsd_map = RexTypes::ParseLLSDMap(response_str);
     std::string upload_url = llsd_map["uploader"];
-    if (upload_url == "")
+    if (upload_url.empty())
     {
         InventoryModule::LogError("Invalid response data for uploading an asset.");
         return false;
@@ -783,7 +784,7 @@ bool OpenSimInventoryDataModel::UploadBuffer(
     llsd_map = RexTypes::ParseLLSDMap(response_str);
     std::string asset_id = llsd_map["new_asset"];
     std::string inventory_id = llsd_map["new_inventory_item"];
-    if (asset_id == "" || inventory_id == "")
+    if (asset_id.empty() || inventory_id.empty())
     {
         InventoryModule::LogError("Invalid XML response data for uploading an asset.");
         return false;

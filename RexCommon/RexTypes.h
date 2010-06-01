@@ -8,12 +8,13 @@
 #ifndef incl_RexCommon_RexTypes_h
 #define incl_RexCommon_RexTypes_h
 
+#include "CoreTypes.h"
 #include "Vector3D.h"
-#include <map>
 #include <boost/cstdint.hpp>
+#include <map>
 #include <QString>
 
-///\todo Move all these to core framework headers.
+///\todo Move to CoreTypes.h. Currently (2010/06/01) MumbleVoipModule causes problems with its own stdint.h
 using boost::uint8_t;
 using boost::uint16_t;
 using boost::uint32_t;
@@ -34,7 +35,7 @@ namespace RexTypes
     ///\todo Is this needed? Only one message uses Vector4 (CameraConstraint).
     struct Vector4
     {
-        void Null() { x = y = z = w = 0.f; }
+        Vector4() { x = y = z = w = 0.f; }
         float x;
         float y;
         float z;

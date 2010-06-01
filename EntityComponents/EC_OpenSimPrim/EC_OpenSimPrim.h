@@ -16,6 +16,8 @@
 #include <QVariant>
 #include <QStringList>
 
+class QTimer;
+
 //! Material data structure
 struct MaterialData
 {
@@ -38,30 +40,29 @@ typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 //! Map for holding prim face uv parameter info
 typedef std::map<uint8_t, Real> UVParamMap;
 
-//! Each scene entity representing a prim in OpenSim sense has
-//! this component.
+//! Each scene entity representing a prim in OpenSim sense has this component.
 class EC_OpenSimPrim : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_OpenSimPrim);
 
     Q_OBJECT
-    Q_PROPERTY(QString ObjectName READ getObjectName WRITE setObjectName)
-    Q_PROPERTY(QString FullId READ getFullId)
+    Q_PROPERTY(QString Name READ getName WRITE setName)
+    Q_PROPERTY(QString FullId READ getFullId DESIGNABLE false)
     Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
     Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
-    Q_PROPERTY(QString MediaUrl READ getMediaUrl WRITE setMediaUrl)
+    Q_PROPERTY(QString MediaUrl READ getMediaUrl WRITE setMediaUrl DESIGNABLE false) // not handled anywhere
     Q_PROPERTY(QString HoveringText READ getHoveringText WRITE setHoveringText)
     Q_PROPERTY(bool CastShadows READ getCastShadows WRITE setCastShadows)
     Q_PROPERTY(double SoundVolume READ getSoundVolume WRITE setSoundVolume)
     Q_PROPERTY(double SoundRadius READ getSoundRadius WRITE setSoundRadius)
-    Q_PROPERTY(unsigned int Material READ getMaterial WRITE setMaterial)
+    Q_PROPERTY(unsigned int Material READ getMaterial WRITE setMaterial DESIGNABLE false)
     Q_PROPERTY(unsigned int ClickAction READ getClickAction WRITE setClickAction)
     Q_PROPERTY(unsigned int PathCurve READ getPathCurve WRITE setPathCurve)
     Q_PROPERTY(unsigned int ProfileCurve READ getProfileCurve WRITE setProfileCurve)
-    Q_PROPERTY(QVariant RegionHandle READ getRegionHandle WRITE setRegionHandle)
-    Q_PROPERTY(unsigned int LocalId READ getLocalId WRITE setLocalId)
+    Q_PROPERTY(QVariant RegionHandle READ getRegionHandle WRITE setRegionHandle DESIGNABLE false)
+    Q_PROPERTY(unsigned int LocalId READ getLocalId WRITE setLocalId DESIGNABLE false)
 
-    Q_PROPERTY(unsigned int PrimDefaultMaterialType READ getPrimDefaultMaterialType WRITE setPrimDefaultMaterialType)
+    Q_PROPERTY(unsigned int PrimDefaultMaterialType READ getPrimDefaultMaterialType WRITE setPrimDefaultMaterialType DESIGNABLE false)
     Q_PROPERTY(unsigned int DrawType READ getDrawType WRITE setDrawType)
 
     Q_PROPERTY(double DrawDistance READ getDrawDistance WRITE setDrawDistance)
@@ -92,18 +93,18 @@ class EC_OpenSimPrim : public Foundation::ComponentInterface
     Q_PROPERTY(double PathRadiusOffset READ getPathRadiusOffset WRITE setPathRadiusOffset)
     Q_PROPERTY(double PathTaperX READ getPathTaperX WRITE setPathTaperX)
     Q_PROPERTY(double PathTaperY READ getPathTaperY WRITE setPathTaperY)
-    Q_PROPERTY(double PathRevolutions READ getPathRevolutions WRITE setPathRevolutions)
+    Q_PROPERTY(double PathRevolutions READ getPathRevolutions WRITE setPathRevolutions DESIGNABLE false)
     Q_PROPERTY(double PathSkew READ getPathSkew WRITE setPathSkew)
     Q_PROPERTY(double ProfileBegin READ getProfileBegin WRITE setProfileBegin)
     Q_PROPERTY(double ProfileEnd READ getProfileEnd WRITE setProfileEnd)
     Q_PROPERTY(double ProfileHollow READ getProfileHollow WRITE setProfileHollow)
-    Q_PROPERTY(bool HasPrimShapeData READ getHasPrimShapeData)
+    Q_PROPERTY(bool HasPrimShapeData READ getHasPrimShapeData DESIGNABLE false)
     Q_PROPERTY(QVariant SelectPriority READ getSelectPriority WRITE setSelectPriority)
 
     Q_PROPERTY(unsigned int UpdateFlags READ getUpdateFlags WRITE setUpdateFlags)
-    Q_PROPERTY(unsigned int ParentId READ getParentId WRITE setParentId)
+    Q_PROPERTY(unsigned int ParentId READ getParentId WRITE setParentId DESIGNABLE false)
 
-    Q_PROPERTY(QVariantMap Materials READ getMaterials WRITE setMaterials)
+    Q_PROPERTY(QVariantMap Materials READ getMaterials WRITE setMaterials DESIGNABLE false)
 
 public:
     virtual ~EC_OpenSimPrim();
@@ -129,8 +130,8 @@ public:
     QString getAnimationName() const { return QString(AnimationName.c_str()); }
     void setAnimationName(QString value) { AnimationName = value.toStdString(); }
 
-    QString getObjectName() const { return QString(ObjectName.c_str()); }
-    void setObjectName(QString name) { ObjectName = name.toStdString(); }
+    QString getName() const { return QString(Name.c_str()); }
+    void setName(QString name) { Name = name.toStdString(); }
 
     QString getDescription() const { return QString(Description.c_str()); }
     void setDescription(QString value) { Description = value.toStdString(); }
@@ -177,53 +178,71 @@ public:
     void setLocalId(unsigned int lid) { LocalId = (uint32_t)lid; }
     unsigned int getLocalId() const { return LocalId; }
 
+    // PRIM SHAPE PROPERTIES
+
+    // 0 to 1, quanta = 0.01
     double getPathBegin() const { return (double)PathBegin; }
-    void setPathBegin(double value) { PathBegin = value; }
+    void setPathBegin(double value) { clamp<double>(value, 0, 1); PathBegin = (float)value; }
 
+    // 0 to 1, quanta = 0.01
     double getPathEnd()const  { return (double)PathEnd; }
-    void setPathEnd(double value) {PathEnd = value; }
+    void setPathEnd(double value) { clamp<double>(value, 0, 1); PathEnd = (float)value; }
 
+    // 0 to 1, quanta = 0.01
     double getPathScaleX() const { return (double)PathScaleX; }
-    void setPathScaleX(double value) { PathScaleX = value; }
+    void setPathScaleX(double value) { clamp<double>(value, 0, 1); PathScaleX = (float)value; }
 
+    // 0 to 1, quanta = 0.01
     double getPathScaleY() const { return (double)PathScaleY; }
-    void setPathScaleY(double value) { PathScaleY= value; }
+    void setPathScaleY(double value) { clamp<double>(value, 0, 1); PathScaleY = (float)value; }
 
+    // -.5 to .5, quanta = 0.01
     double getPathShearX() const { return (double)PathShearX; }
-    void setPathShearX(double value) { PathShearX= value; }
+    void setPathShearX(double value) { clamp<double>(value, -0.5, 0.5); PathShearX = (float)value; }
 
+    // -.5 to .5, quanta = 0.01
     double getPathShearY() const { return (double)PathShearY; }
-    void setPathShearY(double value) {PathShearY = value; }
+    void setPathShearY(double value) { clamp<double>(value, -0.5, 0.5); PathShearY = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathTwist() const { return (double)PathTwist; }
-    void setPathTwist(double value) { PathTwist= value; }
+    void setPathTwist(double value) { clamp<double>(value, -1, 1); PathTwist = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathTwistBegin() const { return (double)PathTwistBegin; }
-    void setPathTwistBegin(double value) { PathTwistBegin= value; }
+    void setPathTwistBegin(double value) { clamp<double>(value, -1, 1); PathTwistBegin = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathRadiusOffset() const { return (double)PathRadiusOffset; }
-    void setPathRadiusOffset(double value) { PathRadiusOffset= value; }
+    void setPathRadiusOffset(double value) { clamp<double>(value, -1, 1); PathRadiusOffset = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathTaperX() const { return (double)PathTaperX; }
-    void setPathTaperX(double value) { PathTaperX= value; }
+    void setPathTaperX(double value) { clamp<double>(value, -1, 1); PathTaperX = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathTaperY() const { return (double)PathTaperY; }
-    void setPathTaperY(double value) { PathTaperY= value; }
+    void setPathTaperY(double value) { clamp<double>(value, -1, 1); PathTaperY = (float)value; }
 
+    // 0 to 3, quanta = 0.015 NOT EDITABLE IN PROP EDITOR, caused too much problems (corrupted prims with wrong values)
     double getPathRevolutions() const { return (double)PathRevolutions; }
-    void setPathRevolutions(double value) { PathRevolutions= value; }
+    void setPathRevolutions(double value) { clamp<double>(value, 0, 3); PathRevolutions = (float)value; }
 
+    // -1 to 1, quanta = 0.01
     double getPathSkew() const { return (double)PathSkew; }
-    void setPathSkew(double value) { PathSkew= value; }
-
+    void setPathSkew(double value) { clamp<double>(value, -1, 1); (float)value; }
+    
+    // 0 to 1, quanta = 0.01
     double getProfileBegin() const { return (double)ProfileBegin; }
-    void setProfileBegin(double value) { ProfileBegin= value; }
+    void setProfileBegin(double value) { clamp<double>(value, 0, 1); ProfileBegin = (float)value; }
 
+    // 0 to 1, quanta = 0.01
     double getProfileEnd() const { return (double)ProfileEnd; }
-    void setProfileEnd(double value) { ProfileEnd= value; }
+    void setProfileEnd(double value) { clamp<double>(value, 0, 1); ProfileEnd = (float)value; }
 
+    // 0 to 1, quanta = 0.01
     double getProfileHollow() const { return (double)ProfileHollow; }
-    void setProfileHollow(double value) {ProfileHollow = value; }
+    void setProfileHollow(double value) { clamp<double>(value, 0, 1); ProfileHollow = (float)value; }
 
     bool getHasPrimShapeData() const { return HasPrimShapeData; }
 
@@ -242,13 +261,13 @@ public:
     void setScaleToPrim(bool value) { ScaleToPrim = value; }
 
     double getAnimationRate() const { return (double)AnimationRate; }
-    void setAnimationRate(double value) { AnimationRate = value; }
+    void setAnimationRate(double value) { AnimationRate = (float)value; }
 
     double getDrawDistance() const { return (double)DrawDistance; }
-    void setDrawDistance(double value) { DrawDistance = value; }
+    void setDrawDistance(double value) { DrawDistance = (float)value; }
 
     double getLOD() const { return (double)LOD; }
-    void setLOD(double value) { LOD = value; }
+    void setLOD(double value) { LOD = (float)value; }
 
     void setSelectPriority(const QVariant value) { SelectPriority = value.toULongLong(); }
     QVariant getSelectPriority() const { return QVariant(static_cast<qulonglong>(SelectPriority)); }
@@ -259,14 +278,14 @@ public:
     void setUpdateFlags(unsigned int value) { UpdateFlags = value; }
     unsigned int getUpdateFlags() const { return UpdateFlags; }
 
-    QVariantMap getMaterials();
+    QVariantMap getMaterials() const;
     void setMaterials(QVariantMap &qvmap);
 
 #ifdef _DEBUG
     void PrintDebug();
 #endif
 
-    ///\todo Make the variables private
+    ///\todo Maybe make the variables private?
     // !ID related
     uint64_t RegionHandle;
     uint32_t LocalId;
@@ -276,8 +295,8 @@ public:
     uint32_t CRC;
     uint16_t TimeDilation;
     uint8_t PCode;
-    std::string ObjectName;
 
+    std::string Name;
     std::string Description;
     std::string HoveringText;
     std::string MediaUrl;
@@ -359,6 +378,7 @@ public:
     //! Primitive shape related variables
     uint8_t PathCurve; 
     uint8_t ProfileCurve;
+
     float PathBegin;
     float PathEnd;
     float PathScaleX;
@@ -380,8 +400,31 @@ public:
 public slots:
     QStringList GetChildren();
 
+    void SetEditor(QObject *editor);
+    void MyPropertyChanged(QObject * obj, const QString & property_name, const QVariant & old_value, const QVariant & new_value);
+    void SendRexPrimDataUpdate();
+    void SendObjectShapeUpdate();
+    void SendObjectNameUpdate();
+    void SendObjectDescriptionUpdate();
+
+signals:
+    void RexPrimDataChanged(Scene::Entity*);
+    void PrimShapeChanged(const EC_OpenSimPrim&);
+    void PrimNameChanged(const EC_OpenSimPrim&);
+    void PrimDescriptionChanged(const EC_OpenSimPrim&);
+
 private:
     EC_OpenSimPrim(Foundation::ModuleInterface* module);
+
+    QObject *editor_;
+
+    QTimer *rex_prim_data_timer_;
+    QTimer *object_shape_update_timer_;
+    QTimer *object_name_update_timer_;
+    QTimer *object_description_update_timer_;
+
+    QStringList rex_prim_data_properties_;
+    QStringList object_shape_update_properties_;
 };
 
 #endif

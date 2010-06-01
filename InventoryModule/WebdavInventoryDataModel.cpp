@@ -28,14 +28,7 @@ namespace Inventory
         if (InitPythonQt())
             FetchRootFolder();
         else
-            ErrorOccurredCreateEmptyRootFolder();      
-
-        // Old code when we fetched the identiy and host from CB2
-        // leaving here as it may become relevant when openid users want webdav inv
-        //if (FetchWebdavUrlWithIdentity())
-        //    FetchRootFolder();
-        //else
-        //    ErrorOccurredCreateEmptyRootFolder();    
+            ErrorOccurredCreateEmptyRootFolder(); 
     }
 
     WebDavInventoryDataModel::~WebDavInventoryDataModel()
@@ -95,7 +88,8 @@ namespace Inventory
             {
                 if (result[0] == "True")
                 {
-                    FetchInventoryDescendents(parent);
+                    parent->SetDirty(true);
+                    //FetchInventoryDescendents(parent);
                     InventoryModule::LogDebug(QString("Webdav | Created folder named %1 to path %2\n").arg(newFolderName, parentPath).toStdString());
                     return parent->GetFirstChildFolderByName(newFolderName);
                 }
@@ -125,7 +119,8 @@ namespace Inventory
                 {
                     if (result[0] == "True")
                     {
-                        FetchInventoryDescendents(parent);
+                        parent->SetDirty(true);
+                        //FetchInventoryDescendents(parent);
                         InventoryModule::LogDebug(QString("Webdav | Moved folder %1 from %2 to %3\nNote: This fucntionality is experimental,").append(
                             "dont assume it went succesfull\n").arg(folderName, currentPath, newPath).toStdString());
                     }
@@ -205,12 +200,17 @@ namespace Inventory
                 if (type == "resource")
                     newItem = new InventoryAsset(path, asset_reference_url, name, selected);
                 else
+                {
                     newItem = new InventoryFolder(path, name, selected, true);
+                    dynamic_cast<InventoryFolder*>(newItem)->SetDirty(true);
+                }
                 selected->AddChild(newItem);
             }
         }
 
         InventoryModule::LogDebug(QString("Webdav | Fetched %1 children to path /%2").arg(QString::number(childMap.count()), itemPath).toStdString());
+
+        selected->SetDirty(false);
         return true;
     }
 
@@ -243,8 +243,13 @@ namespace Inventory
         {
             if (result[0] == "True")
             {
+                InventoryFolder *parent_folder = dynamic_cast<InventoryFolder*>(item->GetParent());
+                if (parent_folder)
+                    parent_folder->SetDirty(true);
+
+                //FetchInventoryDescendents(item->GetParent());
                 InventoryModule::LogDebug(QString("Webdav | Removed item from %1\n").arg(item->GetID()).toStdString());
-                FetchInventoryDescendents(item->GetParent());
+                
             }
             else
                 InventoryModule::LogDebug(QString("Webdav | Could not remove item from %1\n").arg(item->GetID()).toStdString());
@@ -265,7 +270,11 @@ namespace Inventory
         {
             if (result[0] == "True")
             {
-                FetchInventoryDescendents(item->GetParent());
+                InventoryFolder *parent_folder = dynamic_cast<InventoryFolder*>(item->GetParent());
+                if (parent_folder)
+                    parent_folder->SetDirty(true);
+
+                //FetchInventoryDescendents(item->GetParent());
                 InventoryModule::LogDebug(QString("Webdav | Renamed folder from %0 to %1 in path %3\n").arg(oldName, newName, parentPath).toStdString());
             }
             else
@@ -297,7 +306,8 @@ namespace Inventory
         {
             if (result[0] == "True")
             {
-                FetchInventoryDescendents(parent_folder);
+                parentFolder->SetDirty(true);
+                //FetchInventoryDescendents(parent_folder);
                 InventoryModule::LogDebug(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filePath, parentPath, filename).toStdString());
             }
             else
@@ -320,7 +330,8 @@ namespace Inventory
         {
             if (result[0] == "True")
             {
-                FetchInventoryDescendents(parent_folder);
+                parentFolder->SetDirty(true);
+                //FetchInventoryDescendents(parent_folder);
                 InventoryModule::LogDebug(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filename, parentPath, filename).toStdString());
             }
             else
@@ -331,7 +342,7 @@ namespace Inventory
     void WebDavInventoryDataModel::UploadFiles(QStringList &filenames, QStringList &item_names, AbstractInventoryItem *parent_folder)
     {
         ///\todo Use also the item names.
-        for(uint i = 0; i < filenames.size(); ++i)
+        for (uint i = 0; i < filenames.size(); ++i)
             UploadFile(filenames[i], parent_folder);
     }
 
@@ -340,7 +351,9 @@ namespace Inventory
     {
         for(uint i = 0; i < filenames.size(); ++i)
         {
-            QByteArray data((const char*)&buffers[i][0], buffers[i].size());
+            QByteArray data;
+            QDataStream data_stream(&data, QIODevice::ReadWrite);
+            data_stream.writeRawData((const char*)&buffers[i][0], buffers[i].size());
             UploadBuffer(filenames[i], data, parent_folder);
         }
     }
@@ -444,6 +457,7 @@ namespace Inventory
             parentFolder = new InventoryFolder("", QString("My Inventory"), false, rootFolder_);
             rootFolder_->AddChild(parentFolder);
             rootFolder_->SetDirty(true);
+            parentFolder->SetDirty(true);
         }
 
         AbstractInventoryItem *newItem = 0;
@@ -462,7 +476,10 @@ namespace Inventory
                 if (type.toLower() == "resource")
                     newItem = new InventoryAsset(path, "No url ref for folders.", name, parentFolder);
                 else
+                {
                     newItem = new InventoryFolder(path, name, parentFolder, true);
+                    dynamic_cast<InventoryFolder*>(newItem)->SetDirty(true);
+                }
                 parentFolder->AddChild(newItem);
             }
         }
@@ -475,6 +492,7 @@ namespace Inventory
         InventoryFolder *parentFolder = new InventoryFolder("/", QString("My Inventory"), false, rootFolder_);
         rootFolder_->AddChild(parentFolder);
         rootFolder_->SetDirty(true);
+        parentFolder->SetDirty(true);
     }
 
     QString WebDavInventoryDataModel::ValidateFolderPath(QString path)

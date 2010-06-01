@@ -364,6 +364,10 @@ namespace Foundation
         Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this));
         scenes_[name] = new_scene;
 
+        Scene::Events::SceneEventData event_data(name);
+        event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
+        GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
+
         return new_scene;
     }
 

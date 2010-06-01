@@ -90,6 +90,9 @@ namespace Inventory
         void changeEvent(QEvent* e);
 
     private slots:
+
+        void IndexIsDirty(const QModelIndex &index_model);
+
         /// Opens inventory item (folder or asset) when user double-clicks it.
         void OpenItem();
 
