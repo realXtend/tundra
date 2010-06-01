@@ -1929,12 +1929,12 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
 }
 
 void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
