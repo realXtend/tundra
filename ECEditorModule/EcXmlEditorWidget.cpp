@@ -168,9 +168,9 @@ void EcXmlEditorWidget::Save()
                     Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString());
                     if (comp)
                     {
-                        comp->DeserializeFrom(comp_elem, Foundation::Local);
+                        comp->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Local);
                         // Trigger sync to network
-                        comp->ComponentChanged(Foundation::Local);
+                        comp->ComponentChanged(Foundation::ComponentInterface::Local);
                     }
                     comp_elem = comp_elem.nextSiblingElement("component");
                 }

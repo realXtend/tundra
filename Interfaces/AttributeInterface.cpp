@@ -76,13 +76,13 @@ template<> std::string Attribute<AssetReference>::ToString() const
     return value.type_ + ":" + value.id_;
 }
 
-template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<std::string>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     // Todo decode/encode XML-risky characters
     Set(str, change);
 }
 
-template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<bool>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     std::string str_lower = str;
     boost::algorithm::to_lower(str_lower);
@@ -91,7 +91,7 @@ template<> void Attribute<bool>::FromString(const std::string& str, ChangeType c
     Set(value, change);
 }
 
-template<> void Attribute<int>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<int>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     try
     {
@@ -101,7 +101,7 @@ template<> void Attribute<int>::FromString(const std::string& str, ChangeType ch
     catch (...) {}
 }
 
-template<> void Attribute<uint>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<uint>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     try
     {
@@ -111,7 +111,7 @@ template<> void Attribute<uint>::FromString(const std::string& str, ChangeType c
     catch (...) {}
 }
 
-template<> void Attribute<Real>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Real>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     try
     {
@@ -121,7 +121,7 @@ template<> void Attribute<Real>::FromString(const std::string& str, ChangeType c
     catch (...) {}
 }
 
-template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Vector3df>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 3)
@@ -138,7 +138,7 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeT
     }
 }
 
-template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Color>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     Color value;
     StringVector components = SplitString(str, ' ');
@@ -167,7 +167,7 @@ template<> void Attribute<Color>::FromString(const std::string& str, ChangeType 
     }
 }
 
-template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<Quaternion>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 4)
@@ -185,7 +185,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Change
     }
 }
 
-template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change)
+template<> void Attribute<AssetReference>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
 {
     // We store type first, then ":", then asset id
     std::string::size_type pos = str.find(':');

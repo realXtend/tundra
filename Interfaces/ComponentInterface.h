@@ -26,20 +26,7 @@ namespace Foundation
     
     class AttributeInterface;
     typedef std::vector<AttributeInterface*> AttributeVector;
-    
-    //! Enumeration of attribute/component change types for replication
-    enum ChangeType
-    {
-        //! No change: attribute/component is up to date
-        None = 0,
-        //! Local change that should be replicated to server
-        Local,
-        //! Local change that should not be replicated to server
-        LocalOnly,
-        //! Change that came from network
-        Network
-    };
-    
+        
     //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
@@ -48,8 +35,22 @@ namespace Foundation
         friend class AttributeInterface;
         
         Q_OBJECT
+        Q_ENUMS(ChangeType)
         
     public:
+        //! Enumeration of attribute/component change types for replication
+        enum ChangeType
+        {
+            //! No change: attribute/component is up to date
+            None = 0,
+            //! Local change that should be replicated to server
+            Local,
+            //! Local change that should not be replicated to server
+            LocalOnly,
+            //! Change that came from network
+            Network
+        };
+
         explicit ComponentInterface(Foundation::Framework *framework);
         ComponentInterface(const ComponentInterface& rhs);
         virtual ~ComponentInterface();
@@ -69,10 +70,10 @@ namespace Foundation
         //! Component has changed. Send notification & queue network replication as necessary
         /*! Note: call this when you're satisfied & done with your current modifications
          */
-        void ComponentChanged(ChangeType change);
+        void ComponentChanged(ComponentInterface::ChangeType change);
         
         //! Read change status of the component
-        Foundation::ChangeType GetChange() const { return change_; }
+        Foundation::ComponentInterface::ChangeType GetChange() const { return change_; }
         //! Reset change status of component and all attributes
         /*! Called by serialization managers when they have managed syncing the component
          */
@@ -81,7 +82,7 @@ namespace Foundation
         //! Serialize to XML
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
         //! Deserialize from XML
-        virtual void DeserializeFrom(QDomElement& element, ChangeType change);
+        virtual void DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change);
         
     protected:
         //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
@@ -105,7 +106,7 @@ namespace Foundation
         //! Attribute list for introspection/reflection
         AttributeVector attributes_;
         //! Change status for the component itself
-        Foundation::ChangeType change_;
+        Foundation::ComponentInterface::ChangeType change_;
         
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC

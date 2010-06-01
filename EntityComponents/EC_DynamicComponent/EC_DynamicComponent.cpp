@@ -55,8 +55,8 @@ QVariant EC_DynamicComponent::GetAttribute()
 void EC_DynamicComponent::SetAttribute(float new_x)
 {
     LogInfo("SetAttribute");
-    x_.Set(new_x, Foundation::Local);
-    ComponentChanged(Foundation::Local);
+    x_.Set(new_x, Foundation::ComponentInterface::Local);
+    ComponentChanged(Foundation::ComponentInterface::Local);
 }
 
 uint EC_DynamicComponent::GetParentEntityId()
