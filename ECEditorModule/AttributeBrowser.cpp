@@ -67,7 +67,7 @@ namespace ECEditor
         }
 
         //Collapse all property tree's browseritems so that only the root items are visible.
-        if(propertyBrowser_)
+        /*if(propertyBrowser_)
         {
             QList<QtProperty*> properties = propertyBrowser_->properties();
             for(uint i = 0; i < properties.size(); i++)
@@ -76,7 +76,7 @@ namespace ECEditor
                 for(uint j = 0; j < items.size(); j++)
                     propertyBrowser_->setExpanded(items[j], false);
             }
-        }
+        }*/
     }
 
     void AttributeBrowser::ClearBrowser()

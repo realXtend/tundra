@@ -460,46 +460,65 @@ namespace ECEditor
         }
     }
 
-    /*
+    //-------------------------VECTOR3DF ATTRIBUTE TYPE-------------------------
+
     template<> void ECAttributeEditor<Vector3df>::UpdateEditorValue()
     {
-        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        if(property_ && attribute_)
+        if(!useMultiEditor_)
         {
-            QList<QtProperty *> children = property_->subProperties();
-            if(children.size() >= 3)
+            QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+            if(rootProperty_)
             {
-                Vector3df vectorValue = GetValue();
-                variantManager->setValue(children[0], vectorValue.x);
-                variantManager->setValue(children[1], vectorValue.y);
-                variantManager->setValue(children[2], vectorValue.z);
+                QList<QtProperty *> children = rootProperty_->subProperties();
+                if(children.size() >= 3)
+                {
+                    if(attributeMap_.size() <= 0)
+                        return;
+
+                    Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(attributeMap_.begin()->second);
+                    if(!attribute)
+                        return;
+
+                    Vector3df vectorValue = attribute->Get();
+                    variantManager->setValue(children[0], vectorValue.x);
+                    variantManager->setValue(children[1], vectorValue.y);
+                    variantManager->setValue(children[2], vectorValue.z);
+                }
             }
         }
     }
 
     template<> void ECAttributeEditor<Vector3df>::InitializeEditor()
     {
-        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();//dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
-        propertyMgr_ = variantManager;
-        factory_ = variantFactory;
-        property_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), attributeName_);
-        if(property_)
+        ECAttributeEditorBase::PreInitializeEditor();
+        if(!useMultiEditor_)
         {
-            QtProperty *childProperty = 0;
-            childProperty = variantManager->addProperty(QVariant::Double, "x");
-            property_->addSubProperty(childProperty);
+            QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();//dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+            QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
+            propertyMgr_ = variantManager;
+            factory_ = variantFactory;
+            rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), attributeName_);
 
-            childProperty = variantManager->addProperty(QVariant::Double, "y");
-            property_->addSubProperty(childProperty);
+            if(rootProperty_)
+            {
+                QtProperty *childProperty = 0;
+                childProperty = variantManager->addProperty(QVariant::Double, "x");
+                rootProperty_->addSubProperty(childProperty);
 
-            childProperty = variantManager->addProperty(QVariant::Double, "z");
-            property_->addSubProperty(childProperty);
-            UpdateEditorValue();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                childProperty = variantManager->addProperty(QVariant::Double, "y");
+                rootProperty_->addSubProperty(childProperty);
+
+                childProperty = variantManager->addProperty(QVariant::Double, "z");
+                rootProperty_->addSubProperty(childProperty);
+                UpdateEditorValue();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+            }
+            owner_->setFactoryForManager(variantManager, variantFactory);
         }
-        owner_->setFactoryForManager(variantManager, variantFactory);
-        owner_->addProperty(property_);
+        else
+        {
+            InitializeMultiEditor();
+        }
     }
 
     template<> void ECAttributeEditor<Vector3df>::SendNewValueToAttribute(QtProperty *property)
@@ -507,10 +526,17 @@ namespace ECEditor
         if(listenEditorChangedSignal_)
         {
             QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            QList<QtProperty *> children = property_->subProperties();
-            if(children.size() >= 3 && attribute_)
+            QList<QtProperty *> children = rootProperty_->subProperties();
+            if(children.size() >= 3)
             {
-                Vector3df newValue = attribute_->Get();
+                if(attributeMap_.size() <= 0)
+                return;
+
+                Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(attributeMap_.begin()->second);
+                if(!attribute)
+                    return;
+
+                Vector3df newValue = attribute->Get();
                 QString propertyName = property->propertyName();
                 if(propertyName == "x")
                     newValue.x = ParseString<Real>(property->valueText().toStdString());
@@ -521,7 +547,40 @@ namespace ECEditor
                 SetValue(newValue);
             }
         }
-    }*/
+    }
+
+    template<> void ECAttributeEditor<Vector3df>::ValueSelected(const QtProperty *property, const QString &value)
+    {
+        if(useMultiEditor_)
+        {
+            if(rootProperty_ == property)
+            {
+                StringVector values = SplitString(value.toStdString(), ' ');
+                if(values.size() != 3)
+                    return;
+
+                Real vector[3];
+                for(uint i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        vector[i] = ParseString<Real>(values[i]);
+                    }
+                    catch (boost::bad_lexical_cast e)
+                    {
+                        ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
+                        return;
+                    }
+                }
+                Vector3df newValue = Vector3df(vector[0], vector[1], vector[2]);
+
+                UninitializeEditor();
+                useMultiEditor_ = false;
+                InitializeEditor();
+                SetValue(newValue);
+            }
+        }
+    }
 
     //-------------------------COLOR ATTRIBUTE TYPE-------------------------
 

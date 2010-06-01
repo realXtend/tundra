@@ -23,6 +23,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
             attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), browser, component, editor);
+        else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))

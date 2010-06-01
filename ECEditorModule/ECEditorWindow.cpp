@@ -316,8 +316,16 @@ namespace ECEditor
 
     void ECEditorWindow::ShowXmlEditorForEntity()
     {
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         std::vector<EntityComponentSelection> selection;// = GetSelectedComponents();
-        //TODO! add code that will iterate all entity components and return them as a vector.
+        for(uint i = 0; i < entities.size(); i++)
+        {
+            EntityComponentSelection entityComponent;
+            entityComponent.entity = entities[i];
+            entityComponent.components = entities[i]->GetComponentVector();
+            selection.push_back(entityComponent);
+        }
+
         if (!selection.size())
             return;
 

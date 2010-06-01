@@ -98,7 +98,7 @@ namespace ECEditor
         void EditEntityXml(Scene::EntityPtr entity);
 
         /// Emitted user wants to edit EC attributes in XML editor.
-        void EditComponentXml(Foundation::ComponentPtr component);
+        //void EditComponentXml(Foundation::ComponentPtr component);
 
     protected:
         /// QWidget override.
