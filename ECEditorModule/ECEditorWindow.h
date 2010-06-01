@@ -62,7 +62,7 @@ namespace ECEditor
         void DeleteEntitiesFromList();
 
         /// Deletes currently selected components.
-        void DeleteComponent();
+        //void DeleteComponent();
 
         ///
         void CreateComponent();
@@ -71,13 +71,10 @@ namespace ECEditor
         void DeleteEntity();
 
         ///
-        void RefreshEntityComponents();
+        //void RefreshEntityComponents();
 
         ///
         void RefreshPropertyBrowser();
-
-        ///
-        void TogglePropertiesBrowser();
 
         /// Shows context menu for entities.
         /// @param pos Mouse position of right-click event.
@@ -85,13 +82,16 @@ namespace ECEditor
 
         /// Shows context menu for components.
         /// @param pos Mouse position of right-click event.
-        void ShowComponentContextMenu(const QPoint &pos);
+        //void ShowComponentContextMenu(const QPoint &pos);
 
         /// Shows EC XML editor.for entity's all components.
         void ShowXmlEditorForEntity();
 
         /// Shows EC XML editor.for a single component.
-        void ShowXmlEditorForComponent();
+        //void ShowXmlEditorForComponent();
+
+        /// Show/Hide entity list.
+        void ToggleEntityList();
 
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
@@ -118,14 +118,14 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> GetSelectedEntities();
 
         /// Returns list of selected components.
-        std::vector<EntityComponentSelection> GetSelectedComponents();
+        //std::vector<EntityComponentSelection> GetSelectedComponents();
 
         /// Framework pointer.
         Foundation::Framework *framework_;
 
-        QPushButton* toggle_browser_button_;
+        QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
-        QTreeWidget* component_list_;
+        //QTreeWidget* component_list_;
         AttributeBrowser* attribute_browser_;
     };
 }

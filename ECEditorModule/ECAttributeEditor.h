@@ -223,7 +223,7 @@ namespace ECEditor
         }
     };
 
-    template<typename T> void ECAttributeEditor<T>::ValueSelected(const QtProperty *property, const QString &value);
+    //template<typename T> void ECAttributeEditor<T>::ValueSelected(const QtProperty *property, const QString &value);
     template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
     template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
 
@@ -232,10 +232,25 @@ namespace ECEditor
     template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property);
     template<> void ECAttributeEditor<Real>::ValueSelected(const QtProperty *property, const QString &value);
 
+    template<> void ECAttributeEditor<int>::UpdateEditorValue();
+    template<> void ECAttributeEditor<int>::InitializeEditor();
+    template<> void ECAttributeEditor<int>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<int>::ValueSelected(const QtProperty *property, const QString &value);
+
+    template<> void ECAttributeEditor<bool>::UpdateEditorValue();
+    template<> void ECAttributeEditor<bool>::InitializeEditor();
+    template<> void ECAttributeEditor<bool>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<bool>::ValueSelected(const QtProperty *property, const QString &value);
+
     template<> void ECAttributeEditor<Color>::UpdateEditorValue();
     template<> void ECAttributeEditor<Color>::InitializeEditor();
     template<> void ECAttributeEditor<Color>::SendNewValueToAttribute(QtProperty *property);
     template<> void ECAttributeEditor<Color>::ValueSelected(const QtProperty *property, const QString &value);
+
+    template<> void ECAttributeEditor<std::string>::UpdateEditorValue();
+    template<> void ECAttributeEditor<std::string>::InitializeEditor();
+    template<> void ECAttributeEditor<std::string>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<std::string>::ValueSelected(const QtProperty *property, const QString &value);
 }
 
 

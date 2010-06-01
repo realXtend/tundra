@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>301</height>
+    <width>295</width>
+    <height>395</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,154 +50,111 @@ QLabel {
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
+         <widget class="QWidget" name="browser_widget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_entities">
-              <property name="text">
-               <string>Entities</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QListWidget" name="list_entities">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-                <horstretch>0</horstretch>
-                <verstretch>3</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>150</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="contextMenuPolicy">
-               <enum>Qt::CustomContextMenu</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <item>
-             <widget class="QLabel" name="label_components">
-              <property name="text">
-               <string>Components</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTreeWidget" name="list_components">
-              <property name="contextMenuPolicy">
-               <enum>Qt::CustomContextMenu</enum>
-              </property>
-              <property name="editTriggers">
-               <set>QAbstractItemView::NoEditTriggers</set>
-              </property>
-              <property name="rootIsDecorated">
-               <bool>true</bool>
-              </property>
-              <property name="headerHidden">
-               <bool>true</bool>
-              </property>
-              <property name="columnCount">
-               <number>3</number>
-              </property>
-              <attribute name="headerVisible">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerDefaultSectionSize">
-               <number>80</number>
-              </attribute>
-              <attribute name="headerHighlightSections">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerMinimumSectionSize">
-               <number>0</number>
-              </attribute>
-              <attribute name="headerStretchLastSection">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerDefaultSectionSize">
-               <number>80</number>
-              </attribute>
-              <attribute name="headerVisible">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerMinimumSectionSize">
-               <number>0</number>
-              </attribute>
-              <attribute name="headerHighlightSections">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerStretchLastSection">
-               <bool>false</bool>
-              </attribute>
-              <column>
-               <property name="text">
-                <string notr="true">1</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string notr="true">2</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string notr="true">3</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QPushButton" name="but_show_properties">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Properties &gt;</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
+           <widget class="QPushButton" name="but_show_entities">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Show entities</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_properties"/>
+       <layout class="QVBoxLayout" name="verticalLayout_enetities">
+        <item>
+         <widget class="QWidget" name="entity_widget" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_entities">
+             <property name="text">
+              <string>Selected entities:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="list_entities">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>3</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
