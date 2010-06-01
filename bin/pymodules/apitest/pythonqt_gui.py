@@ -1,8 +1,7 @@
 import rexviewer as r
 import PythonQt
-#from PythonQt.QtGui import QLineEdit #QInputDialog QGroupBox, QVBoxLayout, QPushButton, 
 from PythonQt import QtGui
-
+from PythonQt.QtGui import QLineEdit, QGroupBox, QVBoxLayout, QPushButton
 
 from circuits import Component
 
@@ -18,19 +17,26 @@ class TestGui(Component):
         #loader = QUiLoader()
         #uism = r.getUiSceneManager() #self.canvas = r.createCanvas(EXTERNAL)
 
-        #group = QGroupBox()
-        #box = QVBoxLayout(group)
-        #button = QPushButton(group)
-        #box.addWidget(button)
+        group = QGroupBox()
+        box = QVBoxLayout(group)
+
+        button1 = QPushButton("Button 1", group)
+        box.addWidget(button1)
+
+        button2 = QPushButton("Button 2", group)
+        box.addWidget(button2)
+
+        slider = QtGui.QSlider(PythonQt.QtCore.Qt.Horizontal)
+        box.addWidget(slider)
+        slider.connect('valueChanged(int)', self.changed)
+
         #group.show()
-        #self.canvas.AddWidget(group)
 
-        #lineedit = QtGui.QLineEdit()
-        #self.widget = lineedit
-        #lineedit.connect('textChanged(QString)', self.changed)
+        lineedit = QtGui.QLineEdit()
+        box.addWidget(lineedit)
+        lineedit.connect('textChanged(QString)', self.changed)
 
-        self.widget = QtGui.QSlider(PythonQt.QtCore.Qt.Horizontal)
-        self.widget.connect('valueChanged(int)', self.changed)
+        self.widget = group
 
         uism = r.getUiSceneManager()
         uiprops = r.createUiWidgetProperty(1)
@@ -49,7 +55,7 @@ class TestGui(Component):
         r.logInfo("TestGui inited.")
 
     def changed(self, val):
-        r.logInfo("TestGui widget calue changed: %s" % str(val))
+        r.logInfo("TestGui widget value changed: %s" % str(val))
                 
     def on_exit(self):
         r.logInfo("TestGui starting exit...")
