@@ -14,7 +14,7 @@
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module) :
   Foundation::ComponentInterface(module->GetFramework()),
-    x_(this, "x", 0)
+    json_(this, "json", "{}")
 {
   //QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
   //emit On
@@ -48,14 +48,17 @@ void EC_DynamicComponent::AddAttribute()
 QVariant EC_DynamicComponent::GetAttribute()
 {
     LogInfo("GetAttribute");
-    QVariant v(x_.Get());
+    //QVariant v(x_.Get());
+    QVariant v(QString::fromStdString(json_.Get()));
     return v;
 }
 
-void EC_DynamicComponent::SetAttribute(float new_x)
+//void EC_DynamicComponent::SetAttribute(float new_x)
+void EC_DynamicComponent::SetAttribute(QString new_json)
 {
     LogInfo("SetAttribute");
-    x_.Set(new_x, Foundation::ComponentInterface::Local);
+    //x_.Set(new_x, Foundation::ComponentInterface::Local);
+    json_.Set(new_json.toStdString(), Foundation::ComponentInterface::Local);
     ComponentChanged(Foundation::ComponentInterface::Local);
 }
 
