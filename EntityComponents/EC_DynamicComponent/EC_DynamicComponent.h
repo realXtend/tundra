@@ -27,14 +27,17 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    //! a test attribute - now a float to suite animation state
-    Foundation::Attribute<float> x_;
+    //a test attribute - was a float to suite animation state. worked ok
+    //Foundation::Attribute<float> x_;
+    //! a test attribute - now a string of JSON data to make shortcut to multiple vals & types
+    Foundation::Attribute<std::string> json_;
 
 public slots:
     void AddAttribute();
     QVariant GetAttribute();
     //private slots:
-    void SetAttribute(float new_x);
+    //void SetAttribute(float new_x);
+    void SetAttribute(QString new_json);
     uint GetParentEntityId(); //quick hack, should use GetParentEntity in ComponentInterface and add qt things to Entity (and eventualy get rid of PyEntity)
     
 private:
