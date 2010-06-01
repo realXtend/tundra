@@ -7,6 +7,7 @@
 #include <QObject>
 
 #include "AttributeInterface.h"
+#include "Vector3D.h"
 #include "CoreStringUtils.h"
 #include <map>
 
@@ -241,6 +242,11 @@ namespace ECEditor
     template<> void ECAttributeEditor<bool>::InitializeEditor();
     template<> void ECAttributeEditor<bool>::SendNewValueToAttribute(QtProperty *property);
     template<> void ECAttributeEditor<bool>::ValueSelected(const QtProperty *property, const QString &value);
+
+    template<> void ECAttributeEditor<Vector3df>::UpdateEditorValue();
+    template<> void ECAttributeEditor<Vector3df>::InitializeEditor();
+    template<> void ECAttributeEditor<Vector3df>::SendNewValueToAttribute(QtProperty *property);
+    template<> void ECAttributeEditor<Vector3df>::ValueSelected(const QtProperty *property, const QString &value);
 
     template<> void ECAttributeEditor<Color>::UpdateEditorValue();
     template<> void ECAttributeEditor<Color>::InitializeEditor();
