@@ -29,7 +29,7 @@ link_package (OGRE)
 link_modules (Core Foundation Interfaces SceneManager RexCommon)
 
 # MSVC -specific settings for preprocessor and PCH use
-if (MSVC)
+if (0)
     # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
@@ -40,6 +40,6 @@ if (MSVC)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
             endif()
     endforeach(src_file ${CPP_FILES})
-endif (MSVC)
+endif (0)
 
 final_target ()
