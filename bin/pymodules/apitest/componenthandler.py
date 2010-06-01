@@ -8,8 +8,6 @@ class DynamiccomponentHandler(circuits.Component):
     def __init__(self):
         circuits.Component.__init__(self)
         obid = None 
-        #obid = 1136641184
-        #obid = 1239367367
         self.comp = None
         if obid is not None:
             ent = r.getEntity(obid)
