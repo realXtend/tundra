@@ -195,7 +195,8 @@ class MoveManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
     MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0)
+    # multiply the two orientations, so we get the proper end orientation for the widget
+    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
     
     BLUEARROW = [1,2]
     REDARROW = [5,6]
@@ -228,33 +229,15 @@ class MoveManipulator(Manipulator):
                 mov = lengthx 
                 div = abs(rightvec[self.grabbed_axis])
                 if div == 0:
-                    div = 0.01 #not the best of ideas but...
+                    div = 0.00001 #not the best of ideas but...
                 mov *= rightvec[self.grabbed_axis]/div
                 if self.grabbed_axis == self.AXIS_GREEN:
-                    qpos.setX(qpos.x()+mov)
+                    qpos.setY(qpos.y()-mov)
                 else:
-                    qpos.setY(qpos.y()+mov)
+                    qpos.setX(qpos.x()-mov)
 
             ent.placeable.Position = qpos
             ent.network.Position = qpos
-
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ if self.grabbed:
-            #~ rightvec = Vector3(r.getCameraRight())
-            #~ upvec = Vector3(r.getCameraUp())
-            #~ pos = list(ent.pos)
-            #~ if self.grabbed_axis == self.AXIS_BLUE:
-                #~ mov = lengthy
-                #~ pos[2] -= mov
-            #~ else:
-                #~ mov = lengthx 
-                #~ div = abs(rightvec[self.grabbed_axis])
-                #~ if div == 0:
-                    #~ div = 0.01 #not the best of ideas but...
-                #~ mov *= rightvec[self.grabbed_axis]/div
-                #~ pos[self.grabbed_axis] += mov
-            
-            #~ ent.pos = pos[0], pos[1], pos[2]
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
