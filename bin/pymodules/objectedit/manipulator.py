@@ -21,7 +21,7 @@ class Manipulator:
     AXIS_BLUE = 2
     
     def __init__(self, creator):
-        self.controller = creator;
+        self.controller = creator
         self.manipulator = None
         self.grabbed_axis = None
         self.grabbed = False
