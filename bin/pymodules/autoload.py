@@ -15,8 +15,6 @@ from core.freshimport import freshimport
 modulenames = [
     #("usr.sleeper", "Sleeper"),
     #("apitest.circuits_testmodule", "TestModule"),
-    #("apitest.attrsync", "AnimationSync"),
-    #("apitest.door", "DoorHandler"),
     #("apitest.pythonqt_gui", "TestGui"),
     #("apitest.thread_test", "TestThread"),
     #("usr.chathandler", ChatHandler),
@@ -26,7 +24,10 @@ modulenames = [
     #("apitest.testrunner", "TestLoginLogoutExit",
     #("webserver.webcontroller", "WebServer"),
     ("localscene.localscene", "LocalScene"),
-    ("objectedit.objectedit", "ObjectEdit")
+    ("objectedit.objectedit", "ObjectEdit"),
+    #("apitest.attrsync", "AnimationSync"),
+    #("apitest.door", "DoorHandler"),
+    #("apitest.jscomponent", "JavascriptHandler")
     ]
 
 modules = []

@@ -1194,22 +1194,30 @@ if 0: #create a new component, hilight
     else:
         print "not"
 
-if 1: #test adding a dynamiccomponent
+if 0: #test adding a dynamiccomponent
     #entid = r.getUserAvatarId()
-    entid = 1369486610
+    entid = 1509821589
+
     ent = r.getEntity(entid)
     try:
         ent.dynamic
+        print "found dynamic comp"
     except AttributeError:
         ent.createComponent("EC_DynamicComponent")
+        print "created new dynamic comp"
     print ent.dynamic
 
     d = ent.dynamic
-    print dir(d)
-    d.AddAttribute()
-    print d.GetAttribute()
+    #print dir(d)
+    #d.AddAttribute()
+    #print d.GetAttribute()
 
-    d.SetAttribute(1)
+    if 0: #door
+        d.SetAttribute('{"locked": false, "opened": true}')
+       
+    if 1: #javascript source url
+        d.SetAttribute('{"js_src": "http://an.org/realxtend/door.js"}')
+
     print d.GetAttribute()
 
 if 0: #animation control
