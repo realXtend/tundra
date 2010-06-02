@@ -62,6 +62,7 @@ namespace PythonScript
     public slots: //things for the py side to call.
         OgreRenderer::Renderer* GetRenderer();
         Scene::SceneManager* GetScene(QString name);
+        void RunJavascriptString(QString codestr);
 
     public:
         PythonScriptModule();

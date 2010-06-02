@@ -1,7 +1,12 @@
 #include "StableHeaders.h"
 #include "JavascriptScriptModule.h"
-#include <QtScript>
+#include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
+
+//#include <QtScript>
+#include <QScriptEngine>
+#include <QtGui>
+Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 
 //#include <QtUiTools>
 
@@ -45,11 +50,20 @@ namespace JavascriptScript
         assert(!javascriptScriptModuleInstance_);
         javascriptScriptModuleInstance_ = this;
 
+        // Register ourselves as javascript scripting service.
+        boost::shared_ptr<JavascriptScriptModule> jsmodule = framework_->GetModuleManager()->GetModule<JavascriptScriptModule>(Foundation::Module::MT_QtScript).lock();
+        boost::weak_ptr<ScriptServiceInterface> service = boost::dynamic_pointer_cast<ScriptServiceInterface>(jsmodule);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_JavascriptScripting, service);
+
         QScriptValue res = engine.evaluate("1 + 1;");
         LogInfo("Javascript thinks 1 + 1 = " + res.toString().toStdString());
 
         engine.globalObject().setProperty("print", engine.newFunction(JavascriptScript::Print));
         //engine.globalObject().setProperty("loadUI", engine.newFunction(JavascriptScript::LoadUI));
+
+        QScriptValue objectbutton= engine.scriptValueFromQMetaObject<QPushButton>();
+	engine.globalObject().setProperty("QPushButton", objectbutton);
+
 
         engine.globalObject().setProperty("load", engine.newFunction(JavascriptScript::ScriptRunFile));
 
@@ -101,7 +115,7 @@ namespace JavascriptScript
 
         else
         {
-            engine.evaluate(QString::fromStdString(params[0]));
+            JavascriptScriptModule::RunString(QString::fromStdString(params[0]));
             return Console::ResultSuccess();
         }
     }
@@ -114,14 +128,21 @@ namespace JavascriptScript
         }
 
         QString scriptFileName = QString::fromStdString(params[0]);
-        JavascriptScriptModule::RunFile(scriptFileName);
+        JavascriptScriptModule::RunScript(scriptFileName);
 
         return Console::ResultSuccess();
     }
 
-    void JavascriptScriptModule::RunFile(QString scriptFileName)
+    void JavascriptScriptModule::RunString(QString scriptString)
     {
-        QFile scriptFile("jsmodules/intensity_js/intensity/" + scriptFileName);
+        LogInfo("Evaluating: " + scriptString.toStdString());
+        engine.evaluate(scriptString);
+    }
+
+    void JavascriptScriptModule::RunScript(QString scriptFileName)
+    {
+      //QFile scriptFile("jsmodules/intensity_js/intensity/" + scriptFileName);
+        QFile scriptFile(scriptFileName);
         scriptFile.open(QIODevice::ReadOnly);
         engine.evaluate(scriptFile.readAll(), scriptFileName);
         scriptFile.close();
@@ -190,7 +211,7 @@ QScriptValue JavascriptScript::ScriptRunFile(QScriptContext *context, QScriptEng
     QString scriptFileName = context->argument(0).toString();
 
     JavascriptScriptModule *owner = JavascriptScriptModule::GetInstance();
-    owner->RunFile(scriptFileName);
+    owner->RunScript(scriptFileName);
 
     return QScriptValue();
 }

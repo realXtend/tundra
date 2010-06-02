@@ -1,5 +1,6 @@
 import json
 import rexviewer as r
+import naali
 import urllib2
 
 from componenthandler import DynamiccomponentHandler
@@ -17,7 +18,9 @@ class JavascriptHandler(DynamiccomponentHandler):
         if js_src is not None:
             print "js source url:", js_src
             f = urllib2.urlopen(js_src)
-            print f.read()
+            code = f.read()
+            print code
+            naali.runjs(code)
 
     def on_exit(self):
         pass

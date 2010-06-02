@@ -2,6 +2,7 @@
 #define incl_JavascriptScriptModule_h
 
 #include "Foundation.h"
+#include "ScriptServiceInterface.h"
 #include "StableHeaders.h"
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
@@ -13,7 +14,7 @@ namespace JavascriptScript
      //hack to have a ref to framework so can get the module in api funcs
     static Foundation::Framework *staticframework;
 
-    class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterfaceImpl
+    class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterfaceImpl, public Foundation::ScriptServiceInterface
     {
     public:
         JavascriptScriptModule();
@@ -38,19 +39,20 @@ namespace JavascriptScript
 
         //QScriptValue test(QScriptContext *context, QScriptEngine *engine);
 
+        virtual void RunScript(QString scriptname);
+        virtual void RunString(QString codestr);
+
         Console::CommandResult ConsoleRunString(const StringVector &params);
         Console::CommandResult ConsoleRunFile(const StringVector &params);
-        void RunFile(QString scriptFileName);
 
     private:
         QScriptEngine engine;
-	};
+    };
 
-	//api stuff
-	//QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
-	QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
-        QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
-
+    //api stuff
+    //QScriptValue LoadUI(QScriptContext *context, QScriptEngine *engine);
+    QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
+    QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
 }
 
 #endif
