@@ -1,13 +1,17 @@
 import rexviewer as r
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QFileDialog
+from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QFileDialog, QMessageBox, QWidget
+
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile, QSize
+from PythonQt.QtCore import QFile, QSize, SIGNAL
 
+import Queue
 
-class ToolBarWindow:
+#class ToolBarWindow(circuits.Thread):
+class ToolBarWindow():
 
-    def __init__(self, uistring):
+    def __init__(self, uistring, queue, endApplication, controller):
+        self.controller = controller
         loader = QUiLoader()
         uifile = QFile(uistring)
         ui = loader.load(uifile)
@@ -17,34 +21,59 @@ class ToolBarWindow:
         
         uism = r.getUiSceneManager()
         uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
-        #uiprops.widget_name_ = "Object Edit"
         uiprops.widget_name_ = "Local Scene"
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)
 
         if not uism.AddProxyWidget(self.proxywidget):
-            print "Adding the ProxyWidget to the bar failed."
+            r.logInfo("Adding the ProxyWidget to the bar failed.")
+            
+        self.inputQueue = queue
+        self.endApplication = endApplication
         pass
-
+        
     def on_exit(self):
         try:
+            # end incoming loop
+            self.controller.isrunning = 0
+            self.inputQueue.put('__end__', '')
+            
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
             uism.RemoveProxyWidgetFromScene(self.proxywidget)
             return True
         except:
-            print "ToolBarWindow (LocalSceneWindow) failure:"
+            r.logInfo("LocalSceneWindow failure:")
             traceback.print_exc()
             return False
+
+    # for receiving input message events from other threads
+    def processIncoming(self):
+        #print "processIncoming"
+        while(self.inputQueue.qsize()):
+            try:
+                title, msg = self.inputQueue.get(0)
+                if(title=="__end__"):
+                    self.controller.isrunning = 0
+                    return
+                if(title=="__unload__"):
+                    self.controller.unloadScene()
+                    return
+                self.displayMessage(title, msg)
+            except Queue.Empty:
+                pass
+
+    def displayMessage(self, title, msg):
+        print "displayMessage"
+        QMessageBox.information(None, title, msg)
+                
         
-        
-        
-class LocalSceneWindow(ToolBarWindow):
+class LocalSceneWindow(ToolBarWindow, QWidget):
     UIFILE = "pymodules/localscene/localscene.ui"
     
-    def __init__(self, controller):
-        self.controller = controller
-        ToolBarWindow.__init__(self, "pymodules/localscene/localscene.ui")
+    def __init__(self, controller, queue, endApplication):
+        #PythonQt.PythonQtInstanceWrapper.__new__()
+        ToolBarWindow.__init__(self, "pymodules/localscene/localscene.ui", queue, endApplication, controller)
         
         self.widget = self.gui        
         self.xpos = self.gui.findChild("QDoubleSpinBox", "xpos")
@@ -68,6 +97,7 @@ class LocalSceneWindow(ToolBarWindow):
         self.btnUnload.connect("clicked(bool)", self.btnUnloadClicked)
         self.btnPublish.connect("clicked(bool)", self.btnPublishClicked)
         self.btnSave.connect("clicked(bool)", self.btnSaveClicked)
+        #self.btnSave.connect("clicked(bool)", self.threadTest)
         
         self.xpos.connect("valueChanged(double)", self.spinBoxXPosValueChanged)
         self.ypos.connect("valueChanged(double)", self.spinBoxYPosValueChanged)
@@ -83,9 +113,11 @@ class LocalSceneWindow(ToolBarWindow):
         
         self.sizeLock = False
         self.filename = ""
-        
         pass
-        
+
+    def threadTest(self):
+        self.controller.closeThread()
+                        
     def getButton(self, name, iconname, line, action):
         size = QSize(16, 16)
         button = buttons.PyPushButton()
@@ -111,11 +143,13 @@ class LocalSceneWindow(ToolBarWindow):
         self.controller.unloadScene()
         
     def btnPublishClicked(self, args):
-        self.controller.publishScene(self.filename)
+        #self.controller.publishScene(self.filename)
+        self.controller.startUpload(self.filename)
+        
         
     def btnSaveClicked(self, args):
-        #self.filename = QFileDialog.getSaveFileName(self.widget, "FileDialog")
         self.controller.saveScene(self.filename)
+        
         
     def spinBoxXPosValueChanged(self, double):
         self.controller.setxpos(double)
@@ -162,3 +196,4 @@ class LocalSceneWindow(ToolBarWindow):
         
     def checkBoxLockScaleToggled(self, enabled):
         self.sizeLock = enabled
+        
