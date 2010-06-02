@@ -148,24 +148,25 @@ class ObjectEdit(Component):
         return ent, children
         
     def parentalCheck(self, ent):
-        exitLoop = False
-        parent = False
         children = []
         
-        while(not exitLoop):
-            qprim = ent.prim
-            if qprim is not None:
-                if qprim.ParentId != 0:
-                    #~ r.logInfo("Entity had a parent, lets pick that instead!")
-                    ent = r.getEntity(qprim.ParentId)
-                else:
-                    #~ r.logInfo("Entity had no parent, maybe it has children?")
-                    children = qprim.GetChildren()
-                    if len(children)>0:
-                        parent = True
-                        
-                    exitLoop = True
-                    
+        while 1:
+            try:
+                qprim = ent.prim
+                if qprim is not None:
+                    if qprim.ParentId != 0:
+                        #~ r.logInfo("Entity had a parent, lets pick that instead!")
+                        temp_ent = r.getEntity(qprim.ParentId)
+                        if not temp_ent.editable:
+                            break
+                        else:
+                            ent = temp_ent
+                    else:
+                        #~ r.logInfo("Entity had no parent, maybe it has children?")
+                        children = qprim.GetChildren()
+                        break
+            except AttributeError:
+                break
         return ent, children
         
     def select(self, ent):
