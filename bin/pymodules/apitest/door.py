@@ -53,6 +53,13 @@ class DoorHandler(DynamiccomponentHandler):
         newpos = OPENPOS if self.door['opened'] else CLOSEPOS
         ent.placeable.Position = newpos        
         print self.door, ent.placeable.Position
+
+        self.openbut.text = "Close" if self.door['opened'] else "Open"
+        self.lockbut.text = "Unlock" if self.door['locked'] else "Lock"
+        if self.door['locked'] and not self.door['opened']:
+            self.openbut.enabled = False
+        else:
+            self.openbut.enabled = True
         
         """NOTE:
         this code doesn't now sync the normal ob pos to server
@@ -65,13 +72,13 @@ class DoorHandler(DynamiccomponentHandler):
         group = QGroupBox()
         box = QVBoxLayout(group)
 
-        openbut = QPushButton("Open", group)
-        lockbut = QPushButton("Unlock", group)
-        box.addWidget(openbut)
-        box.addWidget(lockbut)
+        self.openbut = QPushButton("init", group)
+        self.lockbut = QPushButton("init", group)
+        box.addWidget(self.openbut)
+        box.addWidget(self.lockbut)
 
-        openbut.connect('clicked()', self.open)
-        lockbut.connect('clicked()', self.lock)
+        self.openbut.connect('clicked()', self.open)
+        self.lockbut.connect('clicked()', self.lock)
 
         self.widget = group
         self.forcepos = None
