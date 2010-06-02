@@ -153,19 +153,24 @@ class ObjectEdit(Component):
         while 1:
             try:
                 qprim = ent.prim
-                if qprim is not None:
-                    if qprim.ParentId != 0:
-                        #~ r.logInfo("Entity had a parent, lets pick that instead!")
-                        temp_ent = r.getEntity(qprim.ParentId)
-                        if not temp_ent.editable:
-                            break
-                        else:
-                            ent = temp_ent
-                    else:
-                        #~ r.logInfo("Entity had no parent, maybe it has children?")
-                        children = qprim.GetChildren()
-                        break
             except AttributeError:
+                # we come here when parent has no EC_opensimprim component
+                break
+
+            if qprim.ParentId != 0:
+                #~ r.logInfo("Entity had a parent, lets pick that instead!")
+                # get the parent entity, and if it is editable set it to ent.
+                # on next loop we get prim from it and from that we get children.
+                temp_ent = r.getEntity(qprim.ParentId)
+                if not temp_ent.editable:
+                    # not a prim, so not selecting all children
+                    break
+                else:
+                    ent = temp_ent
+            else:
+                #~ r.logInfo("Entity had no parent, maybe it has children?")
+                # either we get children or not :) But this is the 'parent' in either case
+                children = qprim.GetChildren()
                 break
         return ent, children
         
