@@ -4,6 +4,7 @@
 #define incl_Interfaces_ScriptServiceInterface_h
 
 #include "ServiceInterface.h"
+#include <QString>
 
 namespace Foundation
 {
@@ -13,9 +14,8 @@ namespace Foundation
         ScriptServiceInterface() {}
         virtual ~ScriptServiceInterface() {}
 
-
-        virtual void RunScript(const std::string& scriptname) = 0;
-		virtual void RunString(const std::string& codestr) = 0;
+        virtual void RunScript(QString scriptname) = 0;
+        virtual void RunString(QString codestr) = 0;
 
 		//virtual ScriptObject* LoadScript(const std::string& scriptname, std::string& error) = 0;
 		//virtual ScriptObject* GetObject(const ScriptObject& script, const std::string& objectname, std::string& error) = 0;

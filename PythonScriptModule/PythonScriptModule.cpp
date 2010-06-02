@@ -493,7 +493,7 @@ namespace PythonScript
 
         else
         {
-            engine_->RunString(params[0]);
+            engine_->RunString(QString::fromStdString(params[0]));
             return Console::ResultSuccess();
         }
     }
@@ -530,7 +530,7 @@ namespace PythonScript
 
         else
         {
-            engine_->RunScript(params[0]);
+            engine_->RunScript(QString::fromStdString(params[0]));
             return Console::ResultSuccess();
         }
     }
@@ -645,6 +645,15 @@ namespace PythonScript
         }
 
         return 0;
+    }
+
+    void PythonScriptModule::RunJavascriptString(QString codestr)
+    {
+        boost::shared_ptr<Foundation::ScriptServiceInterface> js = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_JavascriptScripting).lock();
+        if (js)
+            js->RunString(codestr);
+        else
+            LogError("Javascript script service not available in py RunJavascriptString");
     }
 }
 
@@ -2052,7 +2061,7 @@ namespace PythonScript
         }
         engine_->Initialize();
               
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Scripting, engine_);
+        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_PythonScripting, engine_);
 
         assert(!pythonScriptModuleInstance_);
         pythonScriptModuleInstance_ = this;

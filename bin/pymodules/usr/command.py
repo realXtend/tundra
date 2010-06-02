@@ -844,6 +844,18 @@ if 0: #scene, aka. SceneManager
     s = naali.getScene("World")
     print s
 
+if 0: #javascript service
+    import naali
+    from naali import runjs
+    runjs('print("Hello from JS!")')
+    runjs('print("1 + 1 == " + 1 + 1)')
+    runjs('print("1 - 1 == " + 1 - 1)')
+    print ", done."
+
+    runjs('var b = new QPushButton;')
+    runjs('b.text = "hep";')
+    runjs('b.show();')
+
 if 0: 
     print r.c, dir(r.c)
     print r.c.widget

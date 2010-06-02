@@ -45,9 +45,9 @@ bool FrameworkEventHandler::HandleFrameworkEvent(event_id_t event_id, Foundation
                 if (!parameter.isEmpty())
                 {
                     boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice =
-                        rexLogic_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+                        rexLogic_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
                     if (pyservice)
-                        pyservice->RunScript(parameter.toStdString());
+                        pyservice->RunScript(parameter);
                     else
                         RexLogicModule::LogError("Python scripting service not available.");
                 }

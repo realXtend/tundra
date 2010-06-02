@@ -506,10 +506,10 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInbo
     std::string message = msg.ReadString(); // Message
     std::string url = msg.ReadString(); // URL
 
-    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_Scripting).lock();
+    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
     if (pyservice)
     {
-        pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + url + "');");
+      pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + QString::fromStdString(url) + "');");
     }
     return false;
 }

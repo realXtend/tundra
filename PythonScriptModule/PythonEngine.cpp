@@ -90,19 +90,19 @@ namespace PythonScript
         //PythonModule::LogInfo("Python interpreter reseted: all memory and state cleared.");
     }*/
 
-    void PythonEngine::RunString(const std::string& codestr)
+    void PythonEngine::RunString(QString codestr)
     {
-	PyRun_SimpleString(codestr.c_str());
+        PyRun_SimpleString(codestr.toAscii().data());
     }
 
-    void PythonEngine::RunScript(const std::string& scriptname)
+    void PythonEngine::RunScript(QString scriptname)
     {
-	FILE *fp = fopen(scriptname.c_str(), "r");
+        FILE *fp = fopen(scriptname.toAscii().data(), "r");
 	if (!fp) {
-	    PythonScriptModule::LogInfo("Failed to open script " + scriptname);
+            PythonScriptModule::LogInfo("Failed to open script " + scriptname.toStdString());
 	    return;
 	}
-	PyRun_SimpleFile(fp, scriptname.c_str());
+	PyRun_SimpleFile(fp, scriptname.toAscii().data());
 	fclose(fp);
     }
 
@@ -149,57 +149,11 @@ namespace PythonScript
         if (PyCallable_Check(pClass)) {
             pInstance = PyObject_CallObject(pClass, NULL); 
         } else {
-            error = "unable to create instance from class"; return NULL;
+        error = "unable to create instance from class"; return NULL;
         }
         obj->pythonObj = pInstance;
         return obj;
     }
 
-    void PythonEngine::SetCallback(void(*f)(char*), std::string key)
-    {
-        try{
-            //std::map<std::string, std::vector<void(*)(char*)>>::iterator iter = methods_.find(key);
-            std::map<std::string, StdFunctionVectorPtr>::iterator iter = methods_.find(key);
-            if(iter==methods_.end()){
-                //PythonScript::PythonModule::LogInfo("key not found, create new vector");
-                //std::cout << "key not found, create new vector" << std::endl;
-                PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
-                methods_[key] = PythonScript::StdFunctionVectorPtr(new std::vector<void(*)(char*)>());
-                methods_[key]->push_back(f);
-            } else {
-                iter->second->push_back(f);
-                //methods_[iter]->push_back(f);
-            }
-        } catch(...){
-            PythonScriptModule::LogInfo("Failed to add callback");
-            //std::cout << "Failed to add callback" << std::endl;
-        }
-    }
-
-    void PythonEngine::NotifyScriptEvent(const std::string& key, const std::string& message)
-    {
-        //std::cout << "NotifyScriptEvent" << std::endl;
-        try{
-            std::map<std::string, StdFunctionVectorPtr>::iterator iter = methods_.find(key);
-            if(iter==methods_.end()){
-                PythonScriptModule::LogInfo("no such event declared:");
-                PythonScriptModule::LogInfo(key);
-            } else {
-                StdFunctionVectorPtr vect = iter->second;
-                std::vector<void(*)(char*)>::iterator f_iter;
-                char* m = new char[message.size()+1];
-                strcpy(m, message.c_str());
-                for(f_iter = vect->begin(); f_iter != vect->end(); f_iter++){
-                    (*f_iter)(m);
-                }
-            }
-        } catch(...){
-            //PythonModule::LogInfo("Failed to notify");
-            PythonScriptModule::LogInfo("Failed to notify");
-        }
-    }
-
-    //===============================================================================================//
     */
 }
-
