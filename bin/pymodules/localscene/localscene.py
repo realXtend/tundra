@@ -6,11 +6,13 @@ from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
 
-#import localscene.window
 import window
 import loader
 import dotscenemanager
 import sceneuploader
+import PythonQt
+import threading
+import time
 
 from window import LocalSceneWindow as LCwindow
 from sceneuploader import SceneUploader as SUploader
@@ -18,13 +20,32 @@ from sceneuploader import SceneSaver as SSaver
 
 from xml.dom.minidom import getDOMImplementation
 
+# import circuits
+# from circuits.core import handler
+# from circuits import Event, Manager, Debugger
 
+import Queue
 
+        
 class LocalScene(Component):
     def __init__(self):
-        #print "__init__"
         Component.__init__(self)
-        self.window = LCwindow(self)
+
+        # Create the queue, for feeding events for ui
+        self.queue = Queue.Queue()
+
+        # A timer to periodically read input
+        self.timer = PythonQt.QtCore.QTimer()
+        PythonQt.QtCore.QObject.connect(self.timer,
+                           PythonQt.QtCore.SIGNAL("timeout()"),
+                           self.periodicCall)
+        self.timer.start(2000)        
+        self.window = LCwindow(self, self.queue, self.endApplication)
+        
+        self.isrunning = 1
+        
+        self.uploadThread = None
+        
         self.xsift = 127
         self.ysift = 127
         self.zsift = 25
@@ -37,6 +58,7 @@ class LocalScene(Component):
         self.flipZY = False
         self.highlight = False
         self.uploader = None
+        self.filename = ""        
         pass
 
     def loadScene(self, filename):
@@ -57,7 +79,9 @@ class LocalScene(Component):
         loader.unload_dotscene(self.dotScene)
         pass
         
-    def publishScene(self, filename):
+    def publishScene(self, filename=""):
+        if(filename==""):
+            filename = self.filename
         #print "publishing scene"
         if(self.worldstream==None):
             self.worldstream = r.getServerConnection()
@@ -67,9 +91,12 @@ class LocalScene(Component):
         if(self.uploader==None):
             self.uploader=SUploader(uploadcap_url)
         self.uploader.uploadScene(filename, self.dotScene)
-        loader.unload_dotscene(self.dotScene)
-        #self.uploader.uploadScene("C:\CODE\NaaliGit2\naali\bin\test3.scene")
-        
+        print "unloading dot scene"
+        self.queue.put(('__unload__', '__unload__scene__'))
+        #loader.unload_dotscene(self.dotScene)
+        #print "unloaded dot scene"
+        self.queue.put(('scene upload', 'upload done'))
+                
     def setxpos(self, x):
         self.xsift = x
         if(self.dsManager!=None):
@@ -111,11 +138,14 @@ class LocalScene(Component):
         self.window.on_exit()  
         r.logInfo("Local Done exiting...")
 
+        
     def on_hide(self, shown):
-        print "on hide"
+        #print "on hide"
+        pass
         
     def update(self, time):
-        #print "here", time
+        # print "here", time
+        # self.window.processIncoming()
         pass
 
     def on_logout(self, id):
@@ -126,12 +156,34 @@ class LocalScene(Component):
         if(self.dsManager!=None):
             self.dsManager.setHighlight(enabled)
 
+    def startUpload(self, filename):
+        self.filename = filename
+        self.uploadThread = threading.Thread(target=self.publishScene)
+        self.uploadThread.start()
+        pass
+    
+    def periodicCall(self):
+        #Check every 2000 ms if there is something new in the queue.
+        #self.timer.stop()
+        #print "periodicCall"
+        self.window.processIncoming()
+        # if self.isrunning:
+            # print "starting periodicCall"
+            # self.timer.start(2000)
+        if not self.isrunning:
+            self.timer.stop()
 
+    def endApplication(self):
+        self.isrunning = 0
+
+    def closeThread(self):
+        pass
+        
             
 class SceneSaver:
     def __init__(self):
         self.impl = getDOMImplementation()
-    
+        
     def save(self, filename, nodes):
         #newdoc = self.impl.createDocument(None, "some_tag", None)
         newdoc = self.impl.createDocument(None, "scene formatVersion=\"\"", None)

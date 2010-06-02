@@ -54,7 +54,9 @@ class SceneUploader:
         try:
             datagen, headers = multipart_encode({"uploadscene": open(self.file, "rb")})
             request = urllib2.Request(self.cap_url, datagen, headers) # post
+            print "------"
             r.logInfo(urllib2.urlopen(request).read())
+            print "------"
         except:
             r.logInfo("uploadScene failed")
 
@@ -92,50 +94,19 @@ class SceneUploader:
         return os.access(filepath, os.F_OK)
         pass
     
-    
-    def createZipFile2(self, dotScene):
-        #print "File", self.file
-        z = zipfile.ZipFile(self.file, "w") #, zipfile.ZIP_STORED, False)
-        scenefilename = self.file[:-4]
-        #z.write("test3.scene")
-        z.write(scenefilename)
-        relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
-        
-        z.close()
-        allreadyread = []
-        #z.open("localscenezip")
-        for k, oNode in dotScene.dotscenemanager.nodes.iteritems():
-            #print oNode.entityMeshFile
-            #print k
-            pathToFile = relativepath + os.sep + oNode.entityMeshFile
-            if(allreadyread.__contains__(pathToFile)==False):
-                #print pathToFile
-                allreadyread.append(pathToFile)
-                self._appendToZipFile(self.file, pathToFile)
-                # check for material file, cutout .mesh part 
-                materialfile = pathToFile[:-5] + ".material"
-                if(self.fileExists(materialfile)==True):
-                    self._appendToZipFile(self.file, materialfile)
-        
         
     def createZipFile(self, dotScene):
         # save setting first
-        # saver = SceneSaver()
-        # saver.save(self.file[:-4], dotScene.dotscenemanager.nodes)
-        
         self.copyfiles(dotScene)
         #relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
         allreadyread = []
-        # print "----------------------"
-        # print self.file
+        #print "----------------"
+        #print self.file
         zf = zipfile.ZipFile(self.file, "w")
-        
-
         for dirname, dirnames, filenames in os.walk(TEMP_UPLOAD_FOLDER):
             for filename in filenames:
                 filepath = os.path.join(dirname, filename)
                 zf.write(filepath)
-        
         zf.close()
         #cleanup
         #os.remove(temp_upload_folder)
@@ -156,24 +127,43 @@ class SceneUploader:
         # split = ds.fileName.split('/')
         # name = split[-1]
         name = self.nameFromFilepath(ds.fileName)
-                
         dstSceneFile = TEMP_UPLOAD_FOLDER + os.sep + name
+        
+        # if exists copy <scene_name>.material file to upload package
+        sceneMaterialFilePath=ds.fileName[:-6] + ".material"
+        if(self.fileExists(sceneMaterialFilePath)==True):
+            materialname = self.nameFromFilepath(sceneMaterialFilePath)
+            dstSceneMaterialFile = TEMP_UPLOAD_FOLDER + os.sep + materialname
+            shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
+            # copy images in scene material file
+            self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
         
         saver = SceneSaver()
         saver.save(dstSceneFile, ds.dotscenemanager.nodes)
-
         
         for k, oNode in ds.dotscenemanager.nodes.iteritems():
             #print k
-            pathToFile = relativepath + os.sep + oNode.entityMeshFile
             dstFile = TEMP_UPLOAD_FOLDER + os.sep + oNode.entityMeshFile
-            shutil.copyfile(pathToFile, dstFile);
-            materialfile = pathToFile[:-5] + ".material"
+            
+            # try first load from scene folder
+            sceneFilePath = os.path.dirname(ds.fileName) + os.sep + oNode.entityMeshFile
+            pathToFile = relativepath + os.sep + oNode.entityMeshFile
+            
+            materialfile = ''
+            
+            if(self.fileExists(sceneFilePath)):
+                shutil.copyfile(sceneFilePath, dstFile)
+                materialfile = sceneFilePath[:-5] + ".material"
+            elif(self.fileExists(pathToFile)):
+                shutil.copyfile(pathToFile, dstFile)
+                materialfile = pathToFile[:-5] + ".material"
+            
             #print materialfile
             if(self.fileExists(materialfile)==True):
                 dstFile = TEMP_UPLOAD_FOLDER + os.sep + oNode.entityMeshFile[:-5] + ".material"
                 shutil.copyfile(materialfile, dstFile)
                 self.copyTextures(materialfile, TEXTURE_FOLDER)
+            
             # check material folder
             materialfile2 = MATERIAL_FOLDER + os.sep + oNode.entityMeshFile[:-5] + ".material"
             #print materialfile2
@@ -187,10 +177,22 @@ class SceneUploader:
         #print list
         for name in list:
             #pathToFile = folder.replace('/', os.sep) + os.sep + name
-            pathToFile = TEXTURE_FOLDER.replace('/', os.sep) + os.sep + name
             dstFile = TEMP_UPLOAD_FOLDER + os.sep + name
-            shutil.copyfile(pathToFile, dstFile)
             
+            dirpath = os.path.dirname(matfile)
+            scenePath = dirpath + os.sep + name
+            if(self.fileExists(scenePath)):
+                #print "----------------------------"
+                #print "copying from ", scenePath
+                shutil.copyfile(scenePath, dstFile)
+                continue
+            
+            pathToFile = TEXTURE_FOLDER.replace('/', os.sep) + os.sep + name
+            if(self.fileExists(pathToFile)):
+                shutil.copyfile(pathToFile, dstFile)
+            else:
+                r.logInfo("Failed to find texture file specified in material file:")
+                r.logInfo(pathToFile)
     
     def getTexturesFromMaterialFile(self, matfile):
         txtList = []
@@ -218,7 +220,7 @@ class SceneUploader:
             pathToFile = pathToFolder + os.sep + filename
             pathToFile = pathToFile.replace("\"","")
             # read file and get .png's, .dds's, .tga's from it
-            print pathToFile
+            #print pathToFile
             f = open(pathToFile, 'r')
             line = " "
             while(line!=None and line!=""):
@@ -282,6 +284,10 @@ class SceneUploader:
                     tar.add(materialfile)
         tar.close()
 
+        
+    def parentFolderFromFilePath(self, path):
+        return os.path.dirname(path)
+        
         
 class SceneSaver:
     """ For uploading scene different from the saver in localscene """
