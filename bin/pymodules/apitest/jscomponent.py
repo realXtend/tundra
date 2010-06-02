@@ -8,19 +8,30 @@ from componenthandler import DynamiccomponentHandler
 class JavascriptHandler(DynamiccomponentHandler):
     GUINAME = "Javascript Handler"
 
+    def __init__(self):
+        DynamiccomponentHandler.__init__(self)
+        self.jsloaded = False
+
     def onChanged(self):
+        print "-----------------------------------"
         ent = r.getEntity(self.comp.GetParentEntityId())
         datastr = self.comp.GetAttribute()
-        print "GetAttr got:", datastr
+        #print "GetAttr got:", datastr
 
         data = json.loads(datastr)
         js_src = data.get('js_src', None)
-        if js_src is not None:
-            print "js source url:", js_src
-            f = urllib2.urlopen(js_src)
-            code = f.read()
-            print code
-            naali.runjs(code)
+        if not self.jsloaded and js_src is not None:
+            self.loadjs(js_src)
 
-    def on_exit(self):
-        pass
+    def loadjs(self, srcurl):
+        print "js source url:", srcurl
+        f = urllib2.urlopen(srcurl)
+        code = f.read()
+        print code
+        ctx = {
+            'component': self.comp
+            }
+        naali.runjs(code, ctx)
+
+        self.jsloaded = True
+

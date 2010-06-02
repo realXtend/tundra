@@ -14,6 +14,7 @@ class DynamiccomponentHandler(circuits.Component):
             self.add_component(ent)
 
         self.widget = None
+        self.proxywidget = None
         self.initgui()
         if self.widget is not None:
             self.registergui()
@@ -43,9 +44,12 @@ class DynamiccomponentHandler(circuits.Component):
         print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
-            comp.connect("OnChanged()", self.onChanged)
-            self.comp = comp
-            print "DYNAMIC COMPONENT FOUND", self.comp
+            if self.comp is None:
+                comp.connect("OnChanged()", self.onChanged)
+                self.comp = comp
+                print "DYNAMIC COMPONENT FOUND", self.comp
+            else:
+                print "ANOTHER DynamicComponent found - only one supported now, ignoring", entity, comp
 
     def add_component(self, ent):
         try:
@@ -57,13 +61,14 @@ class DynamiccomponentHandler(circuits.Component):
         comp = ent.dynamic
         #print dir(d)
         #d.AddAttribute()
-        print d.GetAttribute()
+        #print d.GetAttribute()
 
         d.connect("OnChanged()", self.onChanged)
         self.comp = comp
 
     def on_exit(self):
-        uism = r.getUiSceneManager()
-        uism.RemoveProxyWidgetFromScene(self.proxywidget)
+        if self.proxywidget is not None:
+            uism = r.getUiSceneManager()
+            uism.RemoveProxyWidgetFromScene(self.proxywidget)
 
 

@@ -120,13 +120,13 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include "MemoryLeakCheck.h"
 
-#include <QDebug>
+//#include <QDebug>
 
 //ECs declared here
 #include "EC_DynamicComponent.h"
 
 //for py_print
-#include <stdio.h>
+//#include <stdio.h>
 
 namespace PythonScript
 {
@@ -647,11 +647,11 @@ namespace PythonScript
         return 0;
     }
 
-    void PythonScriptModule::RunJavascriptString(QString codestr)
+    void PythonScriptModule::RunJavascriptString(QString codestr, QVariantMap context)
     {
         boost::shared_ptr<Foundation::ScriptServiceInterface> js = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_JavascriptScripting).lock();
         if (js)
-            js->RunString(codestr);
+            js->RunString(codestr, context);
         else
             LogError("Javascript script service not available in py RunJavascriptString");
     }
