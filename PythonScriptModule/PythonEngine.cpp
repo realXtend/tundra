@@ -90,9 +90,12 @@ namespace PythonScript
         //PythonModule::LogInfo("Python interpreter reseted: all memory and state cleared.");
     }*/
 
-    void PythonEngine::RunString(QString codestr)
+    //void PythonEngine::RunString(QString codestr, QMap<QString, QObject*> context)
+    void PythonEngine::RunString(QString codestr, QVariantMap context)
     {
         PyRun_SimpleString(codestr.toAscii().data());
+        //\note: doesn't handle extra context given, that was added to the interface for js
+        //can be added here too if needed.
     }
 
     void PythonEngine::RunScript(QString scriptname)

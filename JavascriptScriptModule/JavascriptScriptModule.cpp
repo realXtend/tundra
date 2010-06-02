@@ -6,6 +6,7 @@
 //#include <QtScript>
 #include <QScriptEngine>
 #include <QtGui>
+#include <QObject>
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 
 //#include <QtUiTools>
@@ -64,10 +65,29 @@ namespace JavascriptScript
         QScriptValue objectbutton= engine.scriptValueFromQMetaObject<QPushButton>();
 	engine.globalObject().setProperty("QPushButton", objectbutton);
 
-
         engine.globalObject().setProperty("load", engine.newFunction(JavascriptScript::ScriptRunFile));
 
-        engine.evaluate("print('Hello from qtscript');");
+        RunString("print('Hello from qtscript');");
+
+
+        QObject *x = new QObject();
+        x->setObjectName("1hep");
+        QObject *y = new QObject();
+        y->setObjectName("2hup");
+        QObject *z = new QObject();
+        z->setObjectName("3hop");
+
+        //QMap<QString, QObject*> ctx;        
+        //ctx["a"] = x;
+        //ctx["b"] = y;
+        //ctx["c"] = z;
+        //RunString("print('another hello ' + a.objectName + ' ' + b.objectName + ' ' + c.objectName)", ctx);
+
+        QVariantMap ctx2;
+        ctx2["a"] = QVariant::fromValue(x);
+        ctx2["b"] = QVariant::fromValue(y);
+        ctx2["c"] = QVariant::fromValue(z);
+        RunString("print('another hello ' + a.objectName + ' ' + b.objectName + ' ' + c.objectName)", ctx2);
 
         char* js = "print('hello from ui loader & handler script!');"
                    "ui = loadUI('dialog.ui');"
@@ -133,10 +153,33 @@ namespace JavascriptScript
         return Console::ResultSuccess();
     }
 
-    void JavascriptScriptModule::RunString(QString scriptString)
+  /*    void JavascriptScriptModule::RunString(QString codestr, QMap<QString, QObject*> context)
     {
-        LogInfo("Evaluating: " + scriptString.toStdString());
-        engine.evaluate(scriptString);
+        //LogInfo("Evaluating: " + scriptString.toStdString());
+        QMapIterator<QString, QObject*> i(context);
+        while (i.hasNext()) 
+        {
+            i.next();
+            //LogInfo(i.key().toStdString());
+            //LogInfo(i.value()->objectName().toStdString());
+            engine.globalObject().setProperty(i.key(), engine.newQObject(i.value()));
+        }
+
+        engine.evaluate(codestr);
+        }*/
+
+    void JavascriptScriptModule::RunString(QString codestr, QVariantMap context)
+    {
+        QMapIterator<QString, QVariant> i(context);
+        while (i.hasNext()) 
+        {
+            i.next();
+            //LogInfo(i.key().toStdString());
+            //LogInfo(i.value().value<QObject*>()->objectName().toStdString());
+            engine.globalObject().setProperty(i.key(), engine.newQObject(i.value().value<QObject*>()));
+        }
+
+        engine.evaluate(codestr);
     }
 
     void JavascriptScriptModule::RunScript(QString scriptFileName)

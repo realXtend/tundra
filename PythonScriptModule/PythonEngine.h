@@ -45,7 +45,8 @@ namespace PythonScript
         */
 
         virtual void RunScript(QString scriptname);
-        virtual void RunString(QString codestr);
+        //virtual void RunString(QString codestr, QMap<QString, QObject*> context = QMap<QString, QObject*>());
+        virtual void RunString(QString codestr, QVariantMap context = QVariantMap());
 
         // generic script wrapper interface
         /*

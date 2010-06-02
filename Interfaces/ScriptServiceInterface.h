@@ -5,6 +5,7 @@
 
 #include "ServiceInterface.h"
 #include <QString>
+#include <QVariant>
 
 namespace Foundation
 {
@@ -15,7 +16,8 @@ namespace Foundation
         virtual ~ScriptServiceInterface() {}
 
         virtual void RunScript(QString scriptname) = 0;
-        virtual void RunString(QString codestr) = 0;
+        //virtual void RunString(QString codest, QMap<QString, QObject*> context = QMap<QString, QObject*>()) = 0;
+        virtual void RunString(QString codestr, QVariantMap context = QVariantMap()) = 0;
 
 		//virtual ScriptObject* LoadScript(const std::string& scriptname, std::string& error) = 0;
 		//virtual ScriptObject* GetObject(const ScriptObject& script, const std::string& objectname, std::string& error) = 0;
