@@ -848,8 +848,11 @@ if 0: #javascript service
     import naali
     from naali import runjs
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
-    runjs('print("1 + 1 == " + 1 + 1)')
-    runjs('print("1 - 1 == " + 1 - 1)')
+    runjs('var a = {"a": true, "b": 2};')
+    runjs('print(a.a + ", " + a.b)')
+    runjs('print(JSON.stringify(a))')
+    #runjs('print("1 + 1 == " + 1 + 1)')
+    #runjs('print("1 - 1 == " + 1 - 1)')
     print ", done."
 
     if 0:
