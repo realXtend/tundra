@@ -12,7 +12,7 @@ print("1");
 function readdata(comp) {
 	var datastr = comp.GetAttribute(); 
 	print(datastr);
-	var data = eval('(' + datastr + ')');	
+	var data = JSON.parse(datastr);	
 	return data;
 }
 
@@ -37,7 +37,7 @@ print("4");
 
 function sync(comp, data) {
 	var newjson = JSON.stringify(data);
-	component.SetAttribute(newjson);
+	comp.SetAttribute(newjson);
 }
 
 print("5");
