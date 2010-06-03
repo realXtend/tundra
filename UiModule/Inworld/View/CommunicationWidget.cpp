@@ -128,6 +128,18 @@ namespace CoreUi
 //        connect(voiceToggle, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
 
         HideVoiceControls();
+
+        // Initialize In-World Voice
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+                connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
+                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
+            }
+        }
     }
 
     void CommunicationWidget::ShowVoiceControls()
@@ -344,17 +356,6 @@ namespace CoreUi
         im_proxy_ = im_proxy;
         imButton->setEnabled(true);
 
-        // Initialize In-World Voice
-        if (framework_ &&  framework_->GetServiceManager())
-        {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-            if (comm.get())
-            {
-                connect(comm.get(), SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
-                connect(comm.get(), SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
-                connect(comm.get(), SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
-            }
-        }
     }
 
     void CommunicationWidget::SetFocusToChat()
