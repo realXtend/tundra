@@ -17,6 +17,9 @@
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Communications/InWorldChat/Provider.h"
+#include "Renderer.h"
+
+#include <QMessageBox>
 
 namespace RexLogic
 {
@@ -81,6 +84,20 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         if (ui_module.get())
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 logged out").arg(event_data->fullName.c_str())));
+        break;
+    }
+    case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
+    {
+        owner_->LogoutAndDeleteWorld();
+        // Show dialog
+        QWidget* mainwindow = 0;
+        boost::shared_ptr<OgreRenderer::Renderer> renderer =
+            owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (renderer)
+            mainwindow = renderer->GetMainWindow();
+        QMessageBox msgBox(QMessageBox::Warning, QApplication::translate("RexLogic", "Kicked Out"), 
+            QApplication::translate("RexLogic", "You were kicked out from the server."), QMessageBox::Ok, mainwindow);
+        msgBox.exec();
         break;
     }
     default:

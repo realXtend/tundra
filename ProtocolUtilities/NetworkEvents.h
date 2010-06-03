@@ -111,6 +111,11 @@ namespace ProtocolUtilities
          *  Notifies that caps fetch is done. You can query caps from world stream after this is sent.
          */
         static const event_id_t EVENT_CAPS_FETCHED = 0x07;
+
+        /**
+         * User has been kicked out. Forced disconnect imminent
+         */
+        static const event_id_t EVENT_USER_KICKED_OUT = 0x08;
     }
 
     /// Enumeration of the network connection states.

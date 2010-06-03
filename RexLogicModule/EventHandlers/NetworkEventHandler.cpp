@@ -1,39 +1,43 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   NetworkStateEventHandler.cpp
+ *  @brief  Handles incoming SLUDP network events (messages) in a reX-specific way.
+ */
 
 #include "StableHeaders.h"
 #include "EventHandlers/NetworkEventHandler.h"
-#include "NetworkMessages/NetInMessage.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "ProtocolModuleOpenSim.h"
 #include "RexLogicModule.h"
-#include "Entity.h"
 #include "Avatar/AvatarControllable.h"
-#include "BitStream.h"
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
-#include "SceneEvents.h"
-#include "SoundServiceInterface.h"
-#include "AssetServiceInterface.h"
-#include "GenericMessageUtils.h"
-#include "ModuleManager.h"
-#include "ServiceManager.h"
-#include "WorldStream.h"
 #include "Communications/ScriptDialogHandler.h"
 #include "Communications/ScriptDialogRequest.h"
-#include <UiModule.h>
-#include <Inworld/InworldSceneController.h>
-#include <Inworld/ControlPanel/TeleportWidget.h>
+#include "Communications/InWorldChat/Provider.h"
+
+#include "NetworkMessages/NetInMessage.h"
+#include "WorldStream.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "ProtocolModuleOpenSim.h"
+#include "BitStream.h"
+#include "GenericMessageUtils.h"
+#include "SceneEvents.h"
+#include "Entity.h"
+#include "ModuleManager.h"
+#include "EventManager.h"
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Ether/EtherLoginNotifier.h"
-
-#include "Communications/InWorldChat/Provider.h"
+#include "ServiceManager.h"
+#include "SoundServiceInterface.h"
+#include "AssetServiceInterface.h"
+#include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
 #include <OgreMaterialManager.h>
-
-// LoadURL webview opening code is not on the py side, experimentally at least
-#include "ScriptServiceInterface.h"
 
 namespace
 {
@@ -59,18 +63,18 @@ void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, f
 namespace RexLogic
 {
 
-NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
-    rexlogicmodule_(rexlogicmodule),
+NetworkEventHandler::NetworkEventHandler(RexLogicModule *owner) :
+    owner_(owner),
     ongoing_script_teleport_(false)
 {
     // Get the pointe to the current protocol module
-    protocolModule_ = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
+    protocolModule_ = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
     
     boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = protocolModule_.lock();
     if (!sp.get())
         RexLogicModule::LogInfo("NetworkEventHandler: Protocol module not set yet. Will fetch when networking occurs.");
     
-    Foundation::ModuleWeakPtr renderer = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
+    Foundation::ModuleWeakPtr renderer = owner_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
     if (renderer.expired() == false)
     {
         DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
@@ -78,7 +82,7 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *rexlogicmodule) :
         DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
     }
 
-    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(rexlogicmodule_));
+    script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(owner_));
 }
 
 NetworkEventHandler::~NetworkEventHandler()
@@ -99,7 +103,7 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
         return HandleOSNE_AgentMovementComplete(netdata);
 
     case RexNetMsgAvatarAnimation:
-        return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_AvatarAnimation(netdata);
+        return owner_->GetAvatarHandler()->HandleOSNE_AvatarAnimation(netdata);
 
     case RexNetMsgGenericMessage:
         return HandleOSNE_GenericMessage(netdata);
@@ -117,13 +121,13 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
         return HandleOSNE_ObjectUpdate(netdata);
 
     case RexNetMsgObjectProperties:
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
+        return owner_->GetPrimitiveHandler()->HandleOSNE_ObjectProperties(netdata);
 
     case RexNetMsgAttachedSound:
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_AttachedSound(netdata);
+        return owner_->GetPrimitiveHandler()->HandleOSNE_AttachedSound(netdata);
 
     case RexNetMsgAttachedSoundGainChange:
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_AttachedSoundGainChange(netdata);
+        return owner_->GetPrimitiveHandler()->HandleOSNE_AttachedSoundGainChange(netdata);
 
     case RexNetMsgSoundTrigger:
         return HandleOSNE_SoundTrigger(netdata);
@@ -161,6 +165,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
     case RexNetMsgDeclineFriendship:
         return HandleOSNE_DeclineFriendship(netdata);
 
+    case RexNetMsgKickUser:
+        return HandleOSNE_KickUser(netdata);
+
     default:
         break;
     }
@@ -190,11 +197,11 @@ bool NetworkEventHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEven
         switch(pcode)
         {
         case 0x09:
-            result = rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data);
+            result = owner_->GetPrimitiveHandler()->HandleOSNE_ObjectUpdate(data);
             break;
 
         case 0x2f:
-            result = rexlogicmodule_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data);
+            result = owner_->GetAvatarHandler()->HandleOSNE_ObjectUpdate(data);
             break;
         }
     }
@@ -208,23 +215,24 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEv
     std::string methodname = ProtocolUtilities::ParseGenericMessageMethod(msg);
 
     if (methodname == "RexMediaUrl")
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
+        return owner_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
     else if (methodname == "RexData")
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexFreeData(data); 
+        return owner_->GetPrimitiveHandler()->HandleRexGM_RexFreeData(data); 
     else if (methodname == "RexPrimData")
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
+        return owner_->GetPrimitiveHandler()->HandleRexGM_RexPrimData(data); 
     else if (methodname == "RexPrimAnim")
-        return rexlogicmodule_->GetPrimitiveHandler()->HandleRexGM_RexPrimAnim(data); 
+        return owner_->GetPrimitiveHandler()->HandleRexGM_RexPrimAnim(data); 
     else if (methodname == "RexAppearance")
-        return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
+        return owner_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
     else if (methodname == "RexAnim")
-        return rexlogicmodule_->GetAvatarHandler()->HandleRexGM_RexAnim(data);
+        return owner_->GetAvatarHandler()->HandleRexGM_RexAnim(data);
     else
         return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
 {
+    ///\note This message is mostly handled by EnvironmentModule.
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -232,49 +240,19 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
     msg.SkipToNextVariable(); // SimAccess U8
 
     std::string sim_name = msg.ReadString(); // SimName
-    rexlogicmodule_->GetServerConnection()->SetSimName(sim_name);
-
-    /*msg.SkipToNextVariable(); // SimOwner
-    msg.SkipToNextVariable(); // IsEstateManager
-    msg.SkipToNextVariable(); // WaterHeight
-    msg.SkipToNextVariable(); // BillableFactor
-    msg.SkipToNextVariable(); // CacheID
-    for(int i = 0; i < 4; ++i)
-        msg.SkipToNextVariable(); // TerrainBase0..3
-    RexAssetID terrain[4];
-    // TerrainDetail0-3
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-
-    //TerrainStartHeight
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-
-    // TerrainHeightRange
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();*/
-
+    owner_->GetServerConnection()->SetSimName(sim_name);
     RexLogicModule::LogInfo("Joined to sim " + sim_name);
 
     // Create the "World" scene.
-    boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = rexlogicmodule_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
+    boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
     if (!sp.get())
     {
         RexLogicModule::LogError("NetworkEventHandler: Could not acquire Protocol Module!");
         return false;
     }
 
-    //RexLogic::TerrainPtr terrainHandler = rexlogicmodule_->GetTerrainHandler();
-    //terrainHandler->SetTerrainTextures(terrain);
-
     const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
-    rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
+    owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
     return false;
 }
 
@@ -286,12 +264,12 @@ bool NetworkEventHandler::HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEvent
     RexUUID aID = msg.ReadUUID();
     RexUUID sID = msg.ReadUUID();
 
-    if (aID == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
-        sID == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+    if (aID == owner_->GetServerConnection()->GetInfo().agentID &&
+        sID == owner_->GetServerConnection()->GetInfo().sessionID)
     {
         RexLogicModule::LogInfo("LogoutReply received with matching IDs. Logging out.");
-        rexlogicmodule_->GetServerConnection()->ForceServerDisconnect();
-        rexlogicmodule_->DeleteScene("World");
+        owner_->GetServerConnection()->ForceServerDisconnect();
+        owner_->DeleteScene("World");
     }
 
     return false;
@@ -305,21 +283,21 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(ProtocolUtilities::Ne
     RexUUID agentid = msg.ReadUUID();
     RexUUID sessionid = msg.ReadUUID();
 
-//    if (agentid == rexlogicmodule_->GetServerConnection()->GetInfo().agentID &&
-//    sessionid == rexlogicmodule_->GetServerConnection()->GetInfo().sessionID)
+//    if (agentid == owner_->GetServerConnection()->GetInfo().agentID &&
+//    sessionid == owner_->GetServerConnection()->GetInfo().sessionID)
     {
         Vector3 position = msg.ReadVector3(); 
         Vector3 lookat = msg.ReadVector3();
 
-        assert(rexlogicmodule_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
-        rexlogicmodule_->GetAvatarControllable()->HandleAgentMovementComplete(position, lookat);
+        assert(owner_->GetAvatarControllable() && "Handling agent movement complete event before avatar controller is created.");
+        owner_->GetAvatarControllable()->HandleAgentMovementComplete(position, lookat);
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
         uint64_t regionhandle = msg.ReadU64();
         uint32_t timestamp = msg.ReadU32(); 
     }
 
-    rexlogicmodule_->GetServerConnection()->SendAgentSetAppearancePacket();
+    owner_->GetServerConnection()->SendAgentSetAppearancePacket();
     return false;
 }
 
@@ -348,20 +326,20 @@ bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities
         switch(bytes_read)
         {
         case 30:
-            rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdate_30bytes(bytes); 
+            owner_->GetAvatarHandler()->HandleTerseObjectUpdate_30bytes(bytes); 
             break;
         case 44:
             //this size is only for prims
             localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]);
-            if (rexlogicmodule_->GetPrimEntity(localid))
-                rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_44bytes(bytes);
+            if (owner_->GetPrimEntity(localid))
+                owner_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_44bytes(bytes);
             break;
         case 60:
             localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[0]); 
-            if (rexlogicmodule_->GetPrimEntity(localid)) 
-                rexlogicmodule_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_60bytes(bytes);
-            else if (rexlogicmodule_->GetAvatarEntity(localid))
-                rexlogicmodule_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);
+            if (owner_->GetPrimEntity(localid)) 
+                owner_->GetPrimitiveHandler()->HandleTerseObjectUpdateForPrim_60bytes(bytes);
+            else if (owner_->GetAvatarEntity(localid))
+                owner_->GetAvatarHandler()->HandleTerseObjectUpdateForAvatar_60bytes(bytes);
             break;
         default:
             std::stringstream ss; 
@@ -385,10 +363,10 @@ bool NetworkEventHandler::HandleOSNE_KillObject(ProtocolUtilities::NetworkEventI
     for(size_t i = 0; i < instance_count; ++i)
     {
         uint32_t killedobjectid = msg.ReadU32();
-        if (rexlogicmodule_->GetPrimEntity(killedobjectid))
-            return rexlogicmodule_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
-        if (rexlogicmodule_->GetAvatarEntity(killedobjectid))
-            return rexlogicmodule_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);
+        if (owner_->GetPrimEntity(killedobjectid))
+            return owner_->GetPrimitiveHandler()->HandleOSNE_KillObject(killedobjectid);
+        if (owner_->GetAvatarEntity(killedobjectid))
+            return owner_->GetAvatarHandler()->HandleOSNE_KillObject(killedobjectid);
     }
 
     return false;
@@ -408,7 +386,7 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEven
 
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
 
@@ -438,7 +416,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     uint same_sound_detected = 0;
     sound_id_t sound_to_stop = 0;
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
 
@@ -506,11 +484,11 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInbo
     std::string message = msg.ReadString(); // Message
     std::string url = msg.ReadString(); // URL
 
-    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
+    boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice =
+        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
     if (pyservice)
-    {
-      pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + QString::fromStdString(url) + "');");
-    }
+        pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + QString::fromStdString(url) + "');");
+
     return false;
 }
 
@@ -530,17 +508,18 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
         block.agentID = agent_id;
         block.flags = flags_;
         block.regionX = msg.ReadU16();
-        block.regionY = msg.ReadU16();        
+        block.regionY = msg.ReadU16();
         block.regionName = msg.ReadString();
         block.access = msg.ReadU8();
         block.regionFlags = msg.ReadU32();
         block.waterHeight = msg.ReadU8();
         block.agents = msg.ReadU8();
         block.mapImageID = msg.ReadUUID();
-        mapBlocks.append(block);        
+        mapBlocks.append(block);
     }
 
-    boost::shared_ptr<UiServices::UiModule> ui_module =  rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
     return false;
@@ -560,7 +539,8 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
         return false;
 
     // Ui module
-    boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (!ui_module)
         return false;
             
@@ -572,14 +552,14 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
     // Cast to actual class from qobject ptr
     Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
     if (notifier)
-    {   
+    {
         if (!notifier->IsTeleporting())
             ongoing_script_teleport_ = false;
         
         if (!ongoing_script_teleport_)
         {
             // Create question notification
-            QString posx = "";            
+            QString posx = "";
             QString posy = "";
             QString posz = "";
             posx.setNum(position.x);
@@ -587,9 +567,12 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
             posz.setNum(position.z);
 
             UiServices::QuestionNotification *question_notification = 
-                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()), "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
+                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()),
+                    "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
+
             // Connect notifier to recieve the answer signal
             QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
+
             // Send notification
             ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
@@ -607,46 +590,48 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
     enum ChatType { Whisper = 0, Say = 1, Shout = 2, StartTyping = 4, StopTyping = 5, DebugChannel = 6, Region = 7, Owner = 8, Broadcast = 0xFF };
     enum ChatAudibleLevel { Not = -1, Barely = 0, Fully = 1 };
     enum ChatSourceType { SOURCE_TYPE_SYSTEM = 0, SOURCE_TYPE_AGENT = 1, SOURCE_TYPE_OBJECT = 2 };
-//    enum IMDialogTypes { DT_MessageFromAgent = 0, DT_MessageFromObject = 19, DT_FriendshipOffered = 38, DT_FriendshipAccepted = 39, DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42};
+/*
+    enum IMDialogTypes
+    {
+        DT_MessageFromAgent = 0,
+        DT_MessageFromObject = 19,
+        DT_FriendshipOffered = 38,
+        DT_FriendshipAccepted = 39,
+        DT_FriendshipDeclined = 40,
+        DT_StartTyping = 41,
+        DT_StopTyping = 42
+    };
+*/
 
-    const ProtocolUtilities::NetMsgID msgID = data->messageID;
     ProtocolUtilities::NetInMessage *msg = data->message;
+    msg->ResetReading();
+    std::size_t size = 0;
+    const boost::uint8_t* buffer = msg->ReadBuffer(&size);
+    std::string from_name = std::string((char*)buffer);
+    RexUUID source = msg->ReadUUID();
+    RexUUID object_owner = msg->ReadUUID();
+    ChatSourceType source_type = static_cast<ChatSourceType>( msg->ReadU8() );
+    ChatType chat_type = static_cast<ChatType>( msg->ReadU8() ); 
+    ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg->ReadU8() );
+    RexTypes::Vector3 position = msg->ReadVector3();
+    std::string message = msg->ReadString();
+    if ( message.size() > 0 )
+    {
+        QString source_uuid = source.ToString().c_str();
+        QString source_name = from_name.c_str();
+        QString message_text = QString::fromUtf8(message.c_str(), message.size());
 
-    try
-    {              
-        msg->ResetReading();
-
-        std::size_t size = 0;
-        const boost::uint8_t* buffer = msg->ReadBuffer(&size);
-        std::string from_name = std::string((char*)buffer);
-        RexUUID source = msg->ReadUUID();
-        RexUUID object_owner = msg->ReadUUID();
-        ChatSourceType source_type = static_cast<ChatSourceType>( msg->ReadU8() );
-        ChatType chat_type = static_cast<ChatType>( msg->ReadU8() ); 
-        ChatAudibleLevel audible = static_cast<ChatAudibleLevel>( msg->ReadU8() );
-        RexTypes::Vector3 position = msg->ReadVector3();
-        std::string message = msg->ReadString();
-        if ( message.size() > 0 )
+        switch (source_type)
         {
-            QString source_uuid = source.ToString().c_str();
-            QString source_name = from_name.c_str();
-            QString message_text = QString::fromUtf8(message.c_str(), message.size());
-
-            switch (source_type)
-            {
-            case SOURCE_TYPE_SYSTEM:
-            case SOURCE_TYPE_AGENT:
-            case SOURCE_TYPE_OBJECT:
-                rexlogicmodule_->GetInWorldChatProvider()->HandleIncomingChatMessage(source_uuid, source_name, message_text); 
-                break;
-            }
+        case SOURCE_TYPE_SYSTEM:
+        case SOURCE_TYPE_AGENT:
+        case SOURCE_TYPE_OBJECT:
+            owner_->GetInWorldChatProvider()->HandleIncomingChatMessage(source_uuid, source_name, message_text); 
+            break;
         }
     }
-    catch(NetMessageException /*&e*/)
-    {
-        return false;
-    }
-    return false;        
+
+    return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_ImprovedInstantMessage(ProtocolUtilities::NetworkEventInboundData *data)
@@ -676,6 +661,26 @@ bool NetworkEventHandler::HandleOSNE_TerminateFriendship(ProtocolUtilities::Netw
 bool NetworkEventHandler::HandleOSNE_DeclineFriendship(ProtocolUtilities::NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
+    return false;
+}
+
+bool NetworkEventHandler::HandleOSNE_KickUser(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+
+    msg.ResetReading();
+    msg.SkipToFirstVariableByName("AgentID");
+    RexUUID agent_id = msg.ReadUUID();
+    RexUUID session_id = msg.ReadUUID();
+    std::string reason = msg.ReadString();
+
+    if (agent_id == owner_->GetServerConnection()->GetInfo().agentID &&
+        session_id == owner_->GetServerConnection()->GetInfo().sessionID)
+    {
+        Foundation::EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
+        eventmgr->SendDelayedEvent(eventmgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_KICKED_OUT, Foundation::EventDataPtr());
+    }
+
     return false;
 }
 
