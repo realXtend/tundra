@@ -32,6 +32,7 @@ class JavascriptHandler(DynamiccomponentHandler):
             'component': self.comp
             }
         naali.runjs(code, ctx)
+        print "-- done with js"
 
         self.jsloaded = True
 
