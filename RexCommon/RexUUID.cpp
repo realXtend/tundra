@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 namespace
 {
 /// Converts a single char to a value of 0-15. (4 bits)
@@ -54,6 +53,11 @@ RexUUID::RexUUID(const char *str)
 RexUUID::RexUUID(const std::string &str)
 {
     FromString(str.c_str());
+}
+
+RexUUID::RexUUID(const QString &str)
+{
+    FromString(str.toStdString());
 }
 
 void RexUUID::SetNull()
@@ -201,5 +205,10 @@ bool RexUUID::operator <(const RexUUID &rhs) const
             return false;
 
     return false;
+}
+
+bool RexUUID::operator >(const RexUUID &rhs) const
+{
+    return rhs < *this;
 }
 
