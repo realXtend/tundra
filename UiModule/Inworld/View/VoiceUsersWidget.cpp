@@ -14,6 +14,7 @@ namespace CommUI
         connect(participant_, SIGNAL(StartSpeaking()), SLOT(UpdateStyleSheet()));
         connect(participant_, SIGNAL(StopSpeaking()), SLOT(UpdateStyleSheet()));
         connect(muteCheckBox, SIGNAL(clicked()), SLOT(ToggleMute()) );
+        connect(participant_, SIGNAL(StateChanged()), SLOT(UpdateStyleSheet()) );
         UpdateStyleSheet();
     }
 
