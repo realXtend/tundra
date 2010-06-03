@@ -33,7 +33,6 @@ namespace Ogre
 }
 
 class QWidget;
-class QRect;
 
 namespace OgreRenderer
 {
@@ -210,6 +209,9 @@ namespace OgreRenderer
         //! Update key bindings to QGraphicsView
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
+        //! Returns the main window.
+        QWidget *GetMainWindow() const { return main_window_; }
+
     public slots:
         //! Do a frustum query to the world from viewport coordinates.
         virtual QVariantList FrustumQuery(QRect &viewrect);
@@ -220,9 +222,6 @@ namespace OgreRenderer
 
         //! Initialises the events related info for this module
         void InitializeEvents();
-
-
-        
 
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
