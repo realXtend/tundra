@@ -22,7 +22,7 @@ include (ConfigurePackages)
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 # Use Caelum, but not Hydrax for now.
-SET (CAELUM 0)
+SET (CAELUM 1)
 SET (HYDRAX 0)
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
