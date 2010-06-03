@@ -1000,7 +1000,6 @@ QLabel {
     </message>
 </context>
 <context>
-<<<<<<< HEAD
     <name>HoveringButtonsWidget</name>
     <message>
         <source>HoveringButtonsWidget</source>
@@ -1027,8 +1026,6 @@ QLabel {
     </message>
 </context>
 <context>
-=======
->>>>>>> console command to run js code.
     <name>Inventory::InventoryWindow</name>
     <message>
         <source>&amp;Upload</source>
@@ -1533,7 +1530,6 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
-<<<<<<< HEAD
     <name>RendererSettings</name>
     <message>
         <source>Sound Settings</source>
@@ -1545,8 +1541,6 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
-=======
->>>>>>> console command to run js code.
     <name>ScriptDialog</name>
     <message>
         <source>Dialog</source>
@@ -1647,7 +1641,6 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
-<<<<<<< HEAD
     <name>TeleportWidget</name>
     <message>
         <source>Settings Widget</source>
@@ -1663,8 +1656,6 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
-=======
->>>>>>> console command to run js code.
     <name>TraditionalLoginWidget</name>
     <message>
         <source>realXtend Naali Login</source>
@@ -1801,7 +1792,6 @@ QPushButton:hover {
     </message>
 </context>
 <context>
-<<<<<<< HEAD
     <name>VoiceUsersWidget</name>
     <message>
         <source>Form</source>
@@ -1817,8 +1807,6 @@ QPushButton:hover {
     </message>
 </context>
 <context>
-=======
->>>>>>> console command to run js code.
     <name>WebLogin</name>
     <message>
         <source>realXtend Naali Web Login</source>
