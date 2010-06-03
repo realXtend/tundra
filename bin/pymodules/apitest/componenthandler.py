@@ -41,7 +41,7 @@ class DynamiccomponentHandler(circuits.Component):
     #    print "Comp inited:", comp
 
     def onComponentAdded(self, entity, comp, changetype):
-        print "Comp added:", entity, comp, changetype
+        #print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
             if self.comp is None:
