@@ -56,8 +56,8 @@ namespace JavascriptScript
         boost::weak_ptr<ScriptServiceInterface> service = boost::dynamic_pointer_cast<ScriptServiceInterface>(jsmodule);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_JavascriptScripting, service);
 
-        QScriptValue res = engine.evaluate("1 + 1;");
-        LogInfo("Javascript thinks 1 + 1 = " + res.toString().toStdString());
+        //QScriptValue res = engine.evaluate("1 + 1;");
+        //LogInfo("Javascript thinks 1 + 1 = " + res.toString().toStdString());
 
         engine.globalObject().setProperty("print", engine.newFunction(JavascriptScript::Print));
         //engine.globalObject().setProperty("loadUI", engine.newFunction(JavascriptScript::LoadUI));
@@ -65,30 +65,14 @@ namespace JavascriptScript
         QScriptValue objectbutton= engine.scriptValueFromQMetaObject<QPushButton>();
 	engine.globalObject().setProperty("QPushButton", objectbutton);
 
-        engine.globalObject().setProperty("load", engine.newFunction(JavascriptScript::ScriptRunFile));
+        JavascriptScriptModule::RunScript("jsmodules/lib/json2.js");
+
+        //was in intensity tests, but not perhaps the safest thing
+        //engine.globalObject().setProperty("load", engine.newFunction(JavascriptScript::ScriptRunFile));
 
         RunString("print('Hello from qtscript');");
 
-
-        QObject *x = new QObject();
-        x->setObjectName("1hep");
-        QObject *y = new QObject();
-        y->setObjectName("2hup");
-        QObject *z = new QObject();
-        z->setObjectName("3hop");
-
-        //QMap<QString, QObject*> ctx;        
-        //ctx["a"] = x;
-        //ctx["b"] = y;
-        //ctx["c"] = z;
-        //RunString("print('another hello ' + a.objectName + ' ' + b.objectName + ' ' + c.objectName)", ctx);
-
-        QVariantMap ctx2;
-        ctx2["a"] = QVariant::fromValue(x);
-        ctx2["b"] = QVariant::fromValue(y);
-        ctx2["c"] = QVariant::fromValue(z);
-        RunString("print('another hello ' + a.objectName + ' ' + b.objectName + ' ' + c.objectName)", ctx2);
-
+        /*
         char* js = "print('hello from ui loader & handler script!');"
                    "ui = loadUI('dialog.ui');"
                    "print(ui);"
@@ -98,8 +82,8 @@ namespace JavascriptScript
                    "print(ui.doubleSpinBox.valueChanged);"
                    "ui.doubleSpinBox['valueChanged(double)'].connect(changed);"
                    "print('connecting to doubleSpinBox.valueChanged ok from js (?)');";
- 
-        //engine.evaluate(QString::fromAscii(js));
+        engine.evaluate(QString::fromAscii(js));
+        */
     }
 
     void JavascriptScriptModule::Update(f64 frametime)
