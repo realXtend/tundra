@@ -112,9 +112,8 @@ namespace Console
         std::string cl = commandline;
 
         // separate command and parameters
-        /*        boost::char_separator<char> sep("([{]})");
+        boost::char_separator<char> sep("([{]})");
         tokenizer commandline_tok(cl, sep);
-
         
         std::string command;
         std::string param_line;
@@ -158,8 +157,10 @@ namespace Console
                 Console::CommandResult result = { false, "" };
                 return result;
             }
-            }*/
+            }
 
+        /* an alternative version that allows using () inside the command arguments, useful for pyexec & jsexec
+          \todo fix the impl above to support parentheses too
         std::string command;
         std::string param_line;
         StringVector params;
@@ -167,7 +168,7 @@ namespace Console
         size_t offset = cl.find_first_of("(");
         command = cl.substr(0, offset);
         param_line = cl.substr(offset + 1, cl.length() - 2); //find last ) instead?
-        params.push_back(param_line);
+        params.push_back(param_line);*/
 
         return ExecuteCommand(command, params);
     }
